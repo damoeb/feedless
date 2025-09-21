@@ -1,25 +1,20 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.util.*
 
-val versions = mapOf(
-  "kotlinxCoroutines" to "1.7.2",
-  "dgs-framework" to "8.7.1",
-  "testcontainers" to "1.21.0",
-)
-
 plugins {
-  // https://github.com/Netflix/dgs-framework/blob/v8.7.1/graphql-dgs-client/dependencies.lock
-  id("org.springframework.boot") version "3.2.5"
-  id("com.netflix.dgs.codegen") version "6.3.0"
-
-  id("com.adarshr.test-logger") version "4.0.0"
-  id("org.ajoberstar.grgit")
-  id("jacoco")
-  id("org.javacc.javacc") version "4.0.1"
 //  id("org.openapi.generator") version "7.9.0" // rest
 //  id("com.google.protobuf") version "0.9.2"
-  kotlin("jvm") version "1.9.20"
-  kotlin("plugin.spring") version "1.9.20"
+
+  alias(libs.plugins.spring.boot)
+  // https://github.com/Netflix/dgs-framework/blob/v8.7.1/graphql-dgs-client/dependencies.lock
+  alias(libs.plugins.dgs.codegen)
+  alias(libs.plugins.test.logger)
+  alias(libs.plugins.grgit)
+  alias(libs.plugins.jacoco)
+  alias(libs.plugins.javacc)
+
+  alias(libs.plugins.kotlin.jvm)
+  alias(libs.plugins.kotlin.spring)
 }
 
 apply(plugin = "io.spring.dependency-management")
@@ -93,128 +88,123 @@ tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
 dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-  implementation("org.jetbrains.kotlin:kotlin-reflect")
+  implementation(libs.kotlin.reflect)
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:${versions["kotlinxCoroutines"]}")
-  testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${versions["kotlinxCoroutines"]}")
-  implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor:${versions["kotlinxCoroutines"]}")
+  implementation(libs.kotlinx.coroutines.core)
+  testImplementation(libs.kotlinx.coroutines.test)
+  implementation(libs.kotlinx.coroutines.reactor)
 //  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")
-  implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+  implementation(libs.spring.boot.jpa)
 //  implementation("org.springframework.boot:spring-boot-starter-data-r2dbc")
-  implementation("org.springframework.boot:spring-boot-starter-web")
+  implementation(libs.spring.boot.web)
 //  implementation("org.springframework:spring-aspects")
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
-  implementation("org.springframework.boot:spring-boot-devtools")
-  implementation("org.springframework.boot:spring-boot-starter-validation")
-  implementation("org.springframework.boot:spring-boot-starter-webflux")
-  implementation("org.springframework.boot:spring-boot-starter-freemarker")
-  implementation("org.jetbrains.kotlin:kotlin-reflect")
-  implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+  implementation(libs.spring.boot.validation)
+  implementation(libs.spring.boot.webflux)
+  implementation(libs.spring.boot.freemarker)
 //  implementation("org.springframework.boot:spring-boot-starter-amqp")
-  implementation("org.apache.tika:tika-core:3.1.0")
-  implementation("org.apache.pdfbox:pdfbox-tools:3.0.5")
-  implementation("net.sf.cssbox:pdf2dom:2.0.3")
-  implementation("com.github.vladimir-bukhtoyarov:bucket4j-core:8.0.1")
+  implementation(libs.tika.core)
+  implementation(libs.pdfbox.tools)
+  implementation(libs.pdf2dom)
+  implementation(libs.bucket4j.core)
 //  implementation("org.redundent:kotlin-xml-builder:1.7.4")
   // https://mvnrepository.com/artifact/org.apache.commons/commons-text
-  implementation("org.apache.commons:commons-text:1.13.1")
-  implementation("org.sejda.webp-imageio:webp-imageio-sejda:0.1.0")
+  implementation(libs.commons.text)
+  implementation(libs.webp.imageio.sejda)
 
 
   // graphql
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")
-  implementation("org.springframework.boot:spring-boot-starter-websocket")
+  implementation(libs.spring.boot.websocket)
   implementation("org.springframework.security:spring-security-messaging")
-  implementation(platform("com.netflix.graphql.dgs:graphql-dgs-platform-dependencies:${versions["dgs-framework"]}"))
-  implementation("com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter:${versions["dgs-framework"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-extended-scalars:${versions["dgs-framework"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets:${versions["dgs-framework"]}")
-  implementation("com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure:${versions["dgs-framework"]}")
-  testImplementation("org.springframework.graphql:spring-graphql-test:1.2.3")
+  implementation(platform(libs.dgs.platform))
+  implementation(libs.dgs.starter)
+  implementation(libs.dgs.scalars)
+  implementation(libs.dgs.subscriptions)
+  implementation(libs.dgs.subscriptions.autoconfigure)
+  testImplementation(libs.spring.graphql.test)
 //  implementation("org.mapstruct:mapstruct:1.5.5.Final")
 //  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
   // cache
-  implementation("org.springframework.boot:spring-boot-starter-cache")
+  implementation(libs.spring.boot.cache)
   implementation("org.ehcache:ehcache:3.10.8")
 
   // monitoring
-  implementation("org.springframework.boot:spring-boot-starter-actuator")
+  implementation(libs.spring.boot.actuator)
 
   // mail
-  implementation("org.springframework.boot:spring-boot-starter-mail")
-  implementation("com.mailgun:mailgun-java:1.1.6")
+  implementation(libs.spring.boot.mail)
+  implementation(libs.mailgun.java)
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
-  implementation("net.logstash.logback:logstash-logback-encoder:8.1")
+  implementation(libs.logstash.logback.encoder)
 
   // security
-  implementation("org.springframework.boot:spring-boot-starter-security")
-  implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+  implementation(libs.spring.boot.security)
+  implementation(libs.spring.boot.oauth)
   // https://mvnrepository.com/artifact/com.nimbusds/nimbus-jose-jwt
-  implementation("com.nimbusds:nimbus-jose-jwt:10.3")
+  implementation(libs.nimbus.jose.jwt)
 
   // json feed
-  implementation("org.json:json:20240303")
-  implementation("com.google.guava:guava:33.4.8-jre")
-// https://mvnrepository.com/artifact/org.mnode.ical4j/ical4j
-  implementation("org.mnode.ical4j:ical4j:4.1.1")
+  implementation(libs.json)
+  implementation(libs.guava)
+  implementation(libs.ical4j)
 
-  implementation("org.apache.commons:commons-lang3:3.17.0")
-  implementation("commons-io:commons-io:2.19.0")
+
+  implementation(libs.commons.lang3)
+  implementation(libs.commons.io)
 
   // readability
-  implementation("net.dankito.readability4j:readability4j:1.0.8")
+  implementation(libs.readability4j)
 
   // reactor
   // https://mvnrepository.com/artifact/io.projectreactor/reactor-core
-  implementation("io.projectreactor:reactor-core:3.5.0")
-  implementation("io.projectreactor:reactor-test:3.5.0")
+  implementation(libs.reactor.core)
+  implementation(libs.reactor.test)
 
   // database
-  implementation("org.postgresql:postgresql:42.7.5")
-  implementation("org.hibernate.orm:hibernate-spatial:6.4.10.Final")
-  // https://kotlin-jdsl.gitbook.io/docs/jpql-with-kotlin-jdsl/expressions
-  implementation("com.linecorp.kotlin-jdsl:jpql-dsl:3.5.1")
-  implementation("com.linecorp.kotlin-jdsl:jpql-render:3.5.1")
-  implementation("com.linecorp.kotlin-jdsl:spring-data-jpa-support:3.5.1")
+  implementation(libs.postgresql)
+  implementation(libs.hibernate.spatial)
+  implementation(libs.kotlin.jdsl.jpql.dsl)
+  implementation(libs.kotlin.jdsl.jpql.render)
+  implementation(libs.kotlin.jdsl.spring.support)
+
 
   // text
   // https://mvnrepository.com/artifact/org.apache.lucene/lucene-analysis-common
-  implementation("org.apache.lucene:lucene-analysis-common:9.10.0")
-  implementation("org.apache.opennlp:opennlp-tools:2.3.3")
-  implementation("org.apache.commons:commons-math3:3.6.1")
-  testImplementation("io.jenetics:jenetics:7.2.0")
-  implementation("org.languagetool:language-en:6.4")
-  implementation("org.languagetool:language-de:6.4")
+  implementation(libs.lucene.analysis.common)
+  implementation(libs.opennlp.tools)
+  implementation(libs.commons.math3)
+  testImplementation(libs.jenetics)
+  implementation(libs.language.en)
+  implementation(libs.language.de)
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
-  implementation("org.flywaydb:flyway-core:9.22.3")
+  implementation(libs.flyway.core)
 
-  implementation("org.asynchttpclient:async-http-client:3.0.2")
-  implementation("com.guseyn.broken-xml:broken-xml:1.0.21")
-  implementation("com.rometools:rome:1.18.0")
-  implementation("com.rometools:rome-modules:1.16.0")
-  implementation("org.jsoup:jsoup:1.20.1")
-  implementation("us.codecraft:xsoup:0.3.7")
-  implementation("com.google.code.gson:gson:2.13.1")
+  implementation(libs.async.http.client)
+  implementation(libs.broken.xml)
+  implementation(libs.rome)
+  implementation(libs.rome.modules)
+  implementation(libs.jsoup)
+  implementation(libs.xsoup)
+  implementation(libs.gson)
 
   // https://github.com/shyiko/skedule
 //  implementation("com.github.shyiko.skedule:skedule:0.4.0")
 
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
+  testImplementation(libs.spring.boot.test)
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.testcontainers:postgresql:${versions["testcontainers"]}")
-  testImplementation("org.testcontainers:testcontainers:${versions["testcontainers"]}")
-  testImplementation("org.testcontainers:junit-jupiter:${versions["testcontainers"]}")
-// Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
-  testImplementation("net.jqwik:jqwik:1.9.2")
+  testImplementation(libs.testcontainers.postgresql)
+  testImplementation(libs.testcontainers.core)
+  testImplementation(libs.testcontainers.junit)
 
-
-  implementation("org.telegram:telegrambots-spring-boot-starter:6.9.0")
+  // Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
+  testImplementation(libs.jqwik)
+  implementation(libs.telegrambots.spring.boot.starter)
 
   // payments
   implementation("com.stripe:stripe-java:29.1.0")

@@ -1,0 +1,138 @@
+[versions]
+kotlin = "1.9.20"
+spring-boot = "3.2.5"
+dgs-codegen = "6.3.0"
+dgs = "8.7.1"
+test-logger = "4.0.0"
+javacc = "4.0.1"
+kotlinx-coroutines = "1.7.2"
+testcontainers = "1.21.0"
+tika = "3.1.0"
+pdfbox = "3.0.5"
+pdf2dom = "2.0.3"
+bucket4j = "8.0.1"
+commons-text = "1.13.1"
+webp-imageio = "0.1.0"
+spring-graphql-test = "1.2.3"
+mailgun-java = "1.1.6"
+logstash-logback = "8.1"
+nimbus-jose-jwt = "10.3"
+json = "20240303"
+guava = "33.4.8-jre"
+ical4j = "4.1.1"
+commons-lang3 = "3.17.0"
+commons-io = "2.19.0"
+readability4j = "1.0.8"
+reactor = "3.5.0"
+postgresql = "42.7.5"
+hibernate-spatial = "6.4.10.Final"
+kotlin-jdsl = "3.5.1"
+lucene = "9.10.0"
+opennlp = "2.3.3"
+commons-math3 = "3.6.1"
+jenetics = "7.2.0"
+languagetool = "6.4"
+flyway = "9.22.3"
+async-http-client = "3.0.2"
+broken-xml = "1.0.21"
+rome = "1.18.0"
+rome-modules = "1.16.0"
+jsoup = "1.20.1"
+xsoup = "0.3.7"
+gson = "2.13.1"
+jqwik = "1.9.2"
+telegrambots = "6.9.0"
+stripe = "29.1.0"
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+dgs-codegen = { id = "com.netflix.dgs.codegen", version.ref = "dgs-codegen" }
+
+test-logger = { id = "com.adarshr.test-logger", version.ref = "test-logger" }
+grgit = { id = "org.ajoberstar.grgit" }
+jacoco = { id = "io.freefair.aggregate-jacoco-report", version = "9.0.0-rc2" }
+javacc = { id = "org.javacc.javacc", version.ref = "javacc" }
+
+
+[libraries]
+async-http-client = { module = "org.asynchttpclient:async-http-client", version.ref = "async-http-client" }
+broken-xml = { module = "com.guseyn.broken-xml:broken-xml", version.ref = "broken-xml" }
+bucket4j-core = { module = "com.github.vladimir-bukhtoyarov:bucket4j-core", version.ref = "bucket4j" }
+
+commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+commons-math3 = { module = "org.apache.commons:commons-math3", version.ref = "commons-math3" }
+commons-text = { module = "org.apache.commons:commons-text", version.ref = "commons-text" }
+
+dgs-platform = { module = "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies", version.ref = "dgs" }
+dgs-scalars = { module = "com.netflix.graphql.dgs:graphql-dgs-extended-scalars", version.ref = "dgs" }
+dgs-starter = { module = "com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter", version.ref = "dgs" }
+dgs-subscriptions = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets", version.ref = "dgs" }
+dgs-subscriptions-autoconfigure = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure", version.ref = "dgs" }
+
+flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
+guava = { module = "com.google.guava:guava", version.ref = "guava" }
+hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate-spatial" }
+ical4j = { module = "org.mnode.ical4j:ical4j", version.ref = "ical4j" }
+jenetics = { module = "io.jenetics:jenetics", version.ref = "jenetics" }
+json = { module = "org.json:json", version.ref = "json" }
+jsoup = { module = "org.jsoup:jsoup", version.ref = "jsoup" }
+
+kotlin-jdsl-jpql-dsl = { module = "com.linecorp.kotlin-jdsl:jpql-dsl", version.ref = "kotlin-jdsl" }
+kotlin-jdsl-jpql-render = { module = "com.linecorp.kotlin-jdsl:jpql-render", version.ref = "kotlin-jdsl" }
+kotlin-jdsl-spring-support = { module = "com.linecorp.kotlin-jdsl:spring-data-jpa-support", version.ref = "kotlin-jdsl" }
+kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref = "kotlin" }
+
+kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+
+language-de = { module = "org.languagetool:language-de", version.ref = "languagetool" }
+language-en = { module = "org.languagetool:language-en", version.ref = "languagetool" }
+
+logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash-logback" }
+lucene-analysis-common = { module = "org.apache.lucene:lucene-analysis-common", version.ref = "lucene" }
+mailgun-java = { module = "com.mailgun:mailgun-java", version.ref = "mailgun-java" }
+nimbus-jose-jwt = { module = "com.nimbusds:nimbus-jose-jwt", version.ref = "nimbus-jose-jwt" }
+opennlp-tools = { module = "org.apache.opennlp:opennlp-tools", version.ref = "opennlp" }
+pdf2dom = { module = "net.sf.cssbox:pdf2dom", version.ref = "pdf2dom" }
+pdfbox-tools = { module = "org.apache.pdfbox:pdfbox-tools", version.ref = "pdfbox" }
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+
+reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
+reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
+
+readability4j = { module = "net.dankito.readability4j:readability4j", version.ref = "readability4j" }
+
+rome = { module = "com.rometools:rome", version.ref = "rome" }
+rome-modules = { module = "com.rometools:rome-modules", version.ref = "rome-modules" }
+
+spring-boot-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot" }
+spring-boot-bom = { module = "org.springframework.boot:spring-boot-dependencies", version.ref = "spring-boot" }
+spring-boot-cache = { module = "org.springframework.boot:spring-boot-starter-cache", version.ref = "spring-boot" }
+spring-boot-freemarker = { module = "org.springframework.boot:spring-boot-starter-freemarker", version.ref = "spring-boot" }
+spring-boot-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa", version.ref = "spring-boot" }
+spring-boot-mail = { module = "org.springframework.boot:spring-boot-starter-mail", version.ref = "spring-boot" }
+spring-boot-oauth = { module = "org.springframework.boot:spring-boot-starter-oauth2-client", version.ref = "spring-boot" }
+spring-boot-security = { module = "org.springframework.boot:spring-boot-starter-security", version.ref = "spring-boot" }
+spring-boot-test = { module = "org.springframework.boot:spring-boot-starter-test", version.ref = "spring-boot" }
+spring-boot-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "spring-boot" }
+spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
+spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot" }
+spring-boot-websocket = { module = "org.springframework.boot:spring-boot-starter-websocket", version.ref = "spring-boot" }
+spring-graphql-test = { module = "org.springframework.graphql:spring-graphql-test", version.ref = "spring-graphql-test" }
+
+testcontainers-core = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
+testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql", version.ref = "testcontainers" }
+
+tika-core = { module = "org.apache.tika:tika-core", version.ref = "tika" }
+webp-imageio-sejda = { module = "org.sejda.webp-imageio:webp-imageio-sejda", version.ref = "webp-imageio" }
+xsoup = { module = "us.codecraft:xsoup", version.ref = "xsoup" }
+jqwik = { module = "net.jqwik:jqwik", version.ref = "jqwik" }
+telegrambots-spring-boot-starter = { module = "org.telegram:telegrambots-spring-boot-starter", version.ref = "telegrambots" }
+stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripe" }
