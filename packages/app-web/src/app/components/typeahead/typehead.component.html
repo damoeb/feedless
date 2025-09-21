@@ -1,8 +1,9 @@
-<ion-searchbar placeholder="Search your Notebook"
-               #searchbar
-               autofocus
-               (ionFocus)="onFocus()"
-               [formControl]="queryControl"
+<ion-searchbar
+  placeholder="Search your Notebook"
+  #searchbar
+  autofocus
+  (ionFocus)="onFocus()"
+  [formControl]="queryControl"
 ></ion-searchbar>
 <ion-list style="background: transparent">
   <!--  @if (busy) {-->
@@ -19,7 +20,7 @@
       (mouseenter)="focussedMatchIndex = i"
       [button]="true"
       [ngClass]="{
-        'active': i === focussedMatchIndex,
+        active: i === focussedMatchIndex,
       }"
       lines="none"
       tabindex="-1"

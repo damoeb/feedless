@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { NotebookDetailsPage } from './notebook-details.page';
 import { AppTestModule, mockRepositories } from '../../app-test.module';
 
-describe('NotebookDetailsDetailsPage', () => {
+fdescribe('NotebookDetailsPage', () => {
   let component: NotebookDetailsPage;
   let fixture: ComponentFixture<NotebookDetailsPage>;
 

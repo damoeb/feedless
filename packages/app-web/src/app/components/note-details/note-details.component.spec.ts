@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoteDetailsComponent } from './note-details.component';
 import { AppTestModule } from '../../app-test.module';
+import { NoteHandle } from '../../pages/notebook-details/notebook-details.page';
+import { from, of } from 'rxjs';
 
 describe('NoteDetailsComponent', () => {
   let component: NoteDetailsComponent;
@@ -15,16 +17,17 @@ describe('NoteDetailsComponent', () => {
     component = fixture.componentInstance;
 
     const componentRef = fixture.componentRef;
-    componentRef.setInput('before', {
-      html: '',
-      text: '',
-      rawBase64: '',
-    });
-    componentRef.setInput('after', {
-      html: '',
-      text: '',
-      rawBase64: '',
-    });
+    const handle: NoteHandle = {
+      body: {} as any,
+      expanded: false,
+      disabled: false,
+      level: 0,
+      childrenCount: () => of(0),
+      scrollTo: (event: MouseEvent) => {},
+      children: () => from([]),
+      toggleUpvote: () => {},
+    };
+    componentRef.setInput('handle', handle);
 
     fixture.detectChanges();
   });

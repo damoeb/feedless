@@ -1,17 +1,11 @@
 {
   "root": true,
-  "ignorePatterns": [
-    "projects/**/*"
-  ],
+  "ignorePatterns": ["projects/**/*"],
   "overrides": [
     {
-      "files": [
-        "*.ts"
-      ],
+      "files": ["*.ts"],
       "parserOptions": {
-        "project": [
-          "tsconfig.json"
-        ],
+        "project": ["tsconfig.json"],
         "createDefaultProgram": true
       },
       "extends": [
@@ -22,10 +16,7 @@
         "@angular-eslint/component-class-suffix": [
           "error",
           {
-            "suffixes": [
-              "Page",
-              "Component"
-            ]
+            "suffixes": ["Page", "Component"]
           }
         ],
         "@angular-eslint/component-selector": [
@@ -47,16 +38,10 @@
       }
     },
     {
-      "files": [
-        "*.html"
-      ],
-      "extends": [
-        "plugin:@angular-eslint/template/recommended"
-      ],
+      "files": ["*.html"],
+      "extends": ["plugin:@angular-eslint/template/recommended"],
       "rules": {}
     }
   ],
-  "extends": [
-    "plugin:storybook/recommended"
-  ]
+  "extends": ["plugin:storybook/recommended"]
 }

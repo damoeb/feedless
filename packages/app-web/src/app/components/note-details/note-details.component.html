@@ -3,9 +3,11 @@
 <!--    <li>wefwef</li>-->
 <!--  </ul>-->
 <!--}-->
-<div class="note"
-     [id]="getId()"
-     [ngClass]="{'note--open': isOpen, 'note--disabled': handle().disabled}">
+<div
+  class="note"
+  [id]="getId()"
+  [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }"
+>
   <div class="note-header" (click)="toggle()">
     <div class="flex ion-nowrap">
       {{ note().title }}
@@ -16,9 +18,7 @@
     </div>
 
     @if (isMove) {
-      <div class="note-actions">
-        Move here
-      </div>
+      <div class="note-actions">Move here</div>
     } @else {
       <div class="note-actions">
         <ng-content></ng-content>
@@ -32,13 +32,9 @@
           </a>
         </div>
         <div>
-          <a (click)="extendNote($event)" href="javascript:void(0)">
-            Extend
-          </a>
+          <a (click)="extendNote($event)" href="javascript:void(0)"> Extend </a>
         </div>
       </div>
     }
-
   </div>
-
 </div>

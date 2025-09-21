@@ -10,7 +10,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('LoginPage', () => {
+describe('ConnectAppPage', () => {
   let component: ConnectAppPage;
   let fixture: ComponentFixture<ConnectAppPage>;
 

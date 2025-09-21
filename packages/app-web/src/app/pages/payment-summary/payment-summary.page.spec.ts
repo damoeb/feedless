@@ -5,7 +5,7 @@ import { AppTestModule } from '../../app-test.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService } from '../../services/app-config.service';
 
-describe('CheckoutPage', () => {
+describe('PaymentSummaryPage', () => {
   let component: PaymentSummaryPage;
   let fixture: ComponentFixture<PaymentSummaryPage>;
 

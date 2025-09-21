@@ -96,7 +96,6 @@ app-tree-view {
   .note {
     overflow-y: auto;
   }
-
 }
 
 .footer-toolbar {
@@ -138,7 +137,7 @@ ion-accordion.accordion-expanded {
   --line-width: 10px;
   --line-marginright: 3px;
 
-  &[drop-active=true] {
+  &[drop-active="true"] {
     --line-color: red;
   }
 
@@ -174,7 +173,14 @@ ion-accordion.accordion-expanded {
   background: var(--line-color);
   height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
   //width: 100%;
-  --_g: var(--s) repeat-x conic-gradient(from calc(var(--a) / -2) at bottom,
-    #0000, #000 1deg calc(var(--a) - 1deg), #0000 var(--a));
-  mask: 50% calc(-1*var(--b))/var(--_g) exclude, 50%/var(--_g);
+  --_g: var(--s) repeat-x
+    conic-gradient(
+      from calc(var(--a) / -2) at bottom,
+      #0000,
+      #000 1deg calc(var(--a) - 1deg),
+      #0000 var(--a)
+    );
+  mask:
+    50% calc(-1 * var(--b)) / var(--_g) exclude,
+    50% / var(--_g);
 }

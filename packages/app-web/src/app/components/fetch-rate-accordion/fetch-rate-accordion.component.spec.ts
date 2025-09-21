@@ -9,7 +9,7 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-describe('GenerateFeedModalComponent', () => {
+describe('FetchRateAccordionComponent', () => {
   let component: FetchRateAccordionComponent;
   let fixture: ComponentFixture<FetchRateAccordionComponent>;
 
