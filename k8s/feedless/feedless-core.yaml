@@ -97,7 +97,7 @@ spec:
                   name: feedless-secrets
                   key: SSO_GITHUB_CLIENT_SECRET
             - name: APP_ANALYTICS_PLAUSIBLEURL
-              value: "plausible.default.svc.cluster.local:8000"
+              value: "http://plausible.default.svc.cluster.local:8000"
             - name: APP_ANALYTICS_PLAUSIBLESITE
               value: "feedless.org"
             - name: APP_API_GATEWAY_URL
