@@ -7,8 +7,8 @@
     </ion-buttons>
 
     <ion-buttons slot="end">
-      <ion-button routerLink="/management/sources"> Sources </ion-button>
-      <ion-button routerLink="/management/documents"> Documents </ion-button>
+      <ion-button routerLink="/management/sources"> Sources</ion-button>
+      <ion-button routerLink="/management/documents"> Documents</ion-button>
       <app-dark-mode-button></app-dark-mode-button>
       <app-login-button></app-login-button>
     </ion-buttons>
@@ -19,6 +19,7 @@
     <!--    <ion-searchbar></ion-searchbar>-->
     <app-map
       #map
+      style="border-radius: 8px"
       (boundingBoxChange)="onMapChange($event)"
       [minZoom]="10"
       [maxZoom]="15"
@@ -26,15 +27,21 @@
     ></app-map>
 
     <div>
-      @if (repository) { @if(showSources) {
-      <app-sources
-        [repository]="repository"
-        (sourceChange)="onSourceChange($event)"
-        [sourcesFilter]="sourcesFilter"
-      >
-      </app-sources>
-      } @else { documents } } @else {
-      <ion-spinner name="dots"></ion-spinner>
+      @if (repository) {
+        @if (showSources) {
+          <h1 class="ion-margin">All Sources</h1>
+
+          <app-sources
+            [repository]="repository"
+            (sourceChange)="onSourceChange($event)"
+            [sourcesFilter]="sourcesFilter"
+          >
+          </app-sources>
+        } @else {
+          documents
+        }
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
       }
     </div>
   </div>

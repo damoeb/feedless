@@ -9,6 +9,7 @@ p {
 .sources {
   display: flex;
   //flex-direction: column;
+  column-gap: 10px;
   flex: 1;
 
   app-map {

@@ -221,10 +221,11 @@ export class SourcesComponent implements OnInit {
           page,
           pageSize: this.pageSize,
         },
-        {
-          ...this.sourcesFilter(),
-          like: this.queryFc.value,
-        },
+        this.queryFc.value
+          ? {
+              like: this.queryFc.value,
+            }
+          : this.sourcesFilter(),
         [
           { lastRecordsRetrieved: GqlSortOrder.Asc },
           { lastRefreshedAt: GqlSortOrder.Asc },

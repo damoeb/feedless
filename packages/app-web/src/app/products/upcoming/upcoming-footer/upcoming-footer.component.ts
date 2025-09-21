@@ -29,6 +29,14 @@ import { Subscription } from 'rxjs';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 import { RouterLink } from '@angular/router';
 import { SubmitModalModule } from '../submit-modal/submit-modal.module';
+import {
+  GqlRecordOrderByInput,
+  GqlRecordsWhereInput,
+  GqlSortOrder,
+} from '../../../../generated/graphql';
+import { ServerConfigService } from '../../../services/server-config.service';
+
+type SubscriptionType = 'cal' | 'atom';
 
 @Component({
   selector: 'app-upcoming-footer',
@@ -50,9 +58,10 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   private readonly appConfigService = inject(AppConfigService);
   private readonly geoService = inject(GeoService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly serverConfig = inject(ServerConfigService);
 
   readonly location = input<NamedLatLon>();
-
+  readonly perimeter = input<number>(10);
   private subscriptions: Subscription[] = [];
 
   constructor() {
@@ -175,10 +184,12 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
         {
           icon: 'calendar-number-outline',
           text: 'Kalender Import (iCal)',
+          handler: () => this.createCalenderOrFeedSubscription('cal'),
         },
         {
           icon: 'logo-rss',
           text: 'RSS Feed',
+          handler: () => this.createCalenderOrFeedSubscription('atom'),
         },
         {
           icon: 'close-outline',
@@ -192,5 +203,37 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
     });
 
     await actionSheet.present();
+  }
+
+  private createCalenderOrFeedSubscription(type: SubscriptionType) {
+    const where: GqlRecordsWhereInput = {
+      repository: {
+        id: this.getRepositoryId(),
+      },
+      publishedAt: {
+        inFuture: true,
+      },
+      latLng: {
+        near: {
+          point: {
+            lat: this.location().lat,
+            lng: this.location().lng,
+          },
+          distanceKm: this.perimeter(),
+        },
+      },
+    };
+
+    const orderBy: GqlRecordOrderByInput = {
+      startedAt: GqlSortOrder.Asc,
+    };
+
+    const url = `${this.serverConfig.apiUrl}/f/${this.getRepositoryId()}/${type}?where=${encodeURIComponent(JSON.stringify(where))}&orderBy=${encodeURIComponent(JSON.stringify(orderBy))}`;
+    console.log(`Subscribing ${type}`, url);
+
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('target', '_blank');
+    link.click();
   }
 }

@@ -124,6 +124,7 @@ input SourcesWhereInput {
   id: StringFilterInput
   latLng: GeoPointWhereInput
   like: String
+  disabled: Boolean
 }
 
 input SourceOrderByInput {
@@ -617,6 +618,7 @@ input GeoPointWhereNearInput {
 input DatesWhereInput {
   before: Long
   after: Long
+  inFuture: Boolean
 }
 
 input DateWhereInput {

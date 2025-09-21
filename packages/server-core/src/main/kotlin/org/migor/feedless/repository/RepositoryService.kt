@@ -27,6 +27,8 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.generated.types.RecordOrderByInput
+import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
@@ -119,6 +121,8 @@ class RepositoryService(
     repositoryId: RepositoryId,
     page: Int,
     tags: List<String>,
+    where: RecordsWhereInput?,
+    orderBy: RecordOrderByInput?,
   ): JsonFeed {
     val repository = context.getBean(RepositoryService::class.java).findById(repositoryId).orElseThrow()
 
@@ -129,6 +133,8 @@ class RepositoryService(
         repositoryId,
         status = ReleaseStatus.released,
         tags = tags,
+        where = where,
+        orderBy = orderBy,
         pageable = pageable,
       ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 

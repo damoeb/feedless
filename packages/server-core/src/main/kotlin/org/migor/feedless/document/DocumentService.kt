@@ -142,6 +142,10 @@ class DocumentService(
         it.after?.let {
           whereStatements.add(field.ge(it.toLocalDateTime()))
         }
+        // todo create a test
+        if (it.inFuture == true) {
+          whereStatements.add(field.ge(LocalDateTime.now()))
+        }
       }
 
       if (tags.isNotEmpty()) {

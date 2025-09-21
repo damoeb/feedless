@@ -196,6 +196,11 @@ class SourceService(
             )
           }
         }
+        it.disabled?.let {
+          whereStatements.add(
+            path(SourceEntity::disabled).eq(it),
+          )
+        }
         it.id?.let {
           it.eq?.let {
             whereStatements.add(path(SourceEntity::id).eq(UUID.fromString(it)))

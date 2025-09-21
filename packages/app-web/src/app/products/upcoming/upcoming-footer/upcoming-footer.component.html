@@ -4,22 +4,15 @@
       <div style="align-self: center">
         <ion-button
           color="primary"
-          shape="round"
-          class="pulsating-shadow"
-          (click)="createMailSubscription()"
+          (click)="createSubscription()"
         >
-          Veranstaltungskalender per E-Mail
+          Events abonnieren
           <ion-icon name="send-outline" slot="end"></ion-icon>
         </ion-button>
 
-        <ion-button
-          color="primary"
-          appDev
-          shape="round"
-          (click)="createSubscription()"
-        >
-          Veranstaltungskalender abonnieren 2
-          <ion-icon name="send-outline" slot="end"></ion-icon>
+        <ion-button color="light"
+                    href="mailto:markus@lokale.events?subject=Links">
+          Event-Link vorschlagen
         </ion-button>
       </div>
     }
@@ -37,9 +30,6 @@
       </div>
     }
     <div style="opacity: 0.8; text-align: center">
-      <ion-button fill="empty" href="mailto:markus@lokale.events?subject=Links">
-        Links vorschlagen
-      </ion-button>
 
       <ion-button fill="empty" routerLink="/ueber-uns"> Über uns</ion-button>
       <ion-button fill="empty" href="mailto:markus@lokale.events">

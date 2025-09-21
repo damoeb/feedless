@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
@@ -9,6 +10,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.generated.types.RecordOrderByInput
+import org.migor.feedless.generated.types.RecordsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -56,6 +59,8 @@ class RepositoryController {
     @PathVariable(name = "format") format: String,
     @RequestParam(value = "page", required = false, defaultValue = "0") page: Int,
     @RequestParam(value = "tags", required = false) tags: List<String>,
+    @RequestParam(value = "where", required = false) whereStr: String?,
+    @RequestParam(value = "orderByStr", required = false) orderByStr: String?,
   ): ResponseEntity<String> = coroutineScope {
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -68,8 +73,26 @@ class RepositoryController {
     feedExporter.to(
       HttpStatus.OK,
       format,
-      repositoryService.getFeedByRepositoryId(RepositoryId(repositoryId), page, tags)
+      repositoryService.getFeedByRepositoryId(
+        RepositoryId(repositoryId),
+        page,
+        tags,
+        parseWhere(whereStr),
+        parseOrderBy(orderByStr)
+      )
     )
+  }
+
+  private fun parseWhere(whereStr: String?): RecordsWhereInput? {
+    return whereStr?.let {
+      ObjectMapper().convertValue(whereStr, RecordsWhereInput::class.java)
+    }
+  }
+
+  private fun parseOrderBy(orderByStr: String?): RecordOrderByInput? {
+    return orderByStr?.let {
+      ObjectMapper().convertValue(orderByStr, RecordOrderByInput::class.java)
+    }
   }
 
   @GetMapping(
