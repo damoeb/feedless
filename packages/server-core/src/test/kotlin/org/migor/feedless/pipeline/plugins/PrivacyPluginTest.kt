@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
@@ -18,7 +19,6 @@ import org.mockito.Mockito.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.util.ResourceUtils
-import java.util.*
 
 internal class PrivacyPluginTest {
 
@@ -87,7 +87,7 @@ internal class PrivacyPluginTest {
     `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull()))
       .thenAnswer { mockHttpResponse }
 
-    val (markup, _) = plugin.extractAttachments(UUID.randomUUID(), document)
+    val (markup, _) = plugin.extractAttachments(randomDocumentId(), document)
     val images = Jsoup.parse(markup).select("img[src]")
     Assertions.assertTrue(images.isNotEmpty())
     val src = images.first()!!.attr("src")
@@ -124,7 +124,7 @@ internal class PrivacyPluginTest {
       }
     }
 
-    val (markup, attachments) = plugin.extractAttachments(UUID.randomUUID(), document)
+    val (markup, attachments) = plugin.extractAttachments(randomDocumentId(), document)
     assertThat(attachments.size).isEqualTo(1)
     val attachment = attachments[0]
     assertThat(attachment.mimeType).isEqualTo("application/pdf")

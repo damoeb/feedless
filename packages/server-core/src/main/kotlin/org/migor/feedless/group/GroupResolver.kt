@@ -10,10 +10,10 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.GroupAssignment
 import org.migor.feedless.generated.types.Role
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -25,7 +25,7 @@ class GroupResolver(
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignment> = coroutineScope {
     val user: User = dfe.getSource()
-    groupService.findAllByUserId(UUID.fromString(user.id))
+    groupService.findAllByUserId(UserId(user.id))
       .map {
         GroupAssignment(
           id = it.groupId.toString(),

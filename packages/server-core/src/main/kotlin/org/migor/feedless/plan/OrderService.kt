@@ -17,6 +17,7 @@ import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -31,6 +32,10 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
+
+data class OrderId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -86,8 +91,8 @@ class OrderService {
     log.info("[$corrId] create $create]")
     val order = OrderEntity()
     order.isOffer = BooleanUtils.isTrue(create.isOffer)
-    val productId = UUID.fromString(create.productId)
-    order.productId = productId
+    val productId = ProductId(UUID.fromString(create.productId))
+    order.productId = productId.value
     order.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
     order.invoiceRecipientName = create.invoiceRecipientName.trim()
     order.paymentMethod = create.paymentMethod.fromDTO()
@@ -97,7 +102,7 @@ class OrderService {
     order.targetGroupOther = create.targetGroup === ProductTargetGroup.other
 
     order.price = if (create.overwritePrice <= 0) {
-      productService.resolvePriceForProduct(productId, create.user.connect?.id?.let { UUID.fromString(it) })
+      productService.resolvePriceForProduct(productId, create.user.connect?.id?.let { UserId(UUID.fromString(it)) })
     } else {
       create.overwritePrice
     }

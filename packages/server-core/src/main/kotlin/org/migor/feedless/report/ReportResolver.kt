@@ -12,6 +12,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Report
 import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
@@ -19,7 +20,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -39,7 +39,7 @@ class ReportResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.Segmentation) segmentation: SegmentInput
   ): Report = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createReport")
-    reportService.createReport(UUID.fromString(repositoryId), segmentation, sessionService.userId()).toDto()
+    reportService.createReport(RepositoryId(repositoryId), segmentation, sessionService.userId()).toDto()
   }
 
   @Throttled
@@ -49,7 +49,7 @@ class ReportResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEREPORT_INPUT_ARGUMENT.ReportId) reportId: String,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("deleteReport $reportId")
-    reportService.deleteReport(reportId, sessionService.user())
+    reportService.deleteReport(ReportId(reportId), sessionService.user())
     true
   }
 }

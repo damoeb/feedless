@@ -13,6 +13,7 @@ import org.migor.feedless.feature.FeatureValueDAO
 import org.migor.feedless.feature.FeatureValueEntity
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.session.RequestContext
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
@@ -26,7 +27,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.util.*
 import kotlin.coroutines.coroutineContext
 
 
@@ -56,7 +56,7 @@ class PlanConstraintsService {
   private lateinit var featureGroupDAO: FeatureGroupDAO
 
   @Transactional(readOnly = true)
-  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UUID, product: Vertical): Int? {
+  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UserId, product: Vertical): Int? {
     val minItems =
       (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
     val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
@@ -72,7 +72,7 @@ class PlanConstraintsService {
   suspend fun coerceMinScheduledNextAt(
     lastDate: LocalDateTime,
     nextDate: LocalDateTime,
-    userId: UUID,
+    userId: UserId,
     product: Vertical
   ): LocalDateTime {
     val minRefreshRateInMinutes =
@@ -87,7 +87,7 @@ class PlanConstraintsService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UUID, product: Vertical): Int? {
+  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UserId, product: Vertical): Int? {
     val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
@@ -115,7 +115,7 @@ class PlanConstraintsService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UUID) {
+  suspend fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UserId) {
     actionsCount
       ?.let {
         val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
@@ -126,7 +126,7 @@ class PlanConstraintsService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun auditScrapeRequestTimeout(timeout: Int?, userId: UUID) {
+  suspend fun auditScrapeRequestTimeout(timeout: Int?, userId: UserId) {
     timeout
       ?.let {
         val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutMsecInt, userId)
@@ -137,7 +137,7 @@ class PlanConstraintsService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun auditRepositoryMaxCount(count: Int, userId: UUID) {
+  suspend fun auditRepositoryMaxCount(count: Int, userId: UserId) {
     val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
     if (maxRepoCount != null && maxRepoCount < count) {
       throw IllegalArgumentException("Too many repository (limit $maxRepoCount, actual $count")
@@ -145,34 +145,34 @@ class PlanConstraintsService {
   }
 
   @Transactional(readOnly = true)
-  suspend fun violatesRepositoriesMaxActiveCount(userId: UUID): Boolean {
+  suspend fun violatesRepositoriesMaxActiveCount(userId: UserId): Boolean {
     val activeCount = withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
+      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId.value, "")
     }
     return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
   @Transactional(readOnly = true)
-  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UUID, product: Vertical) {
+  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UserId, product: Vertical) {
     val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
     if (maxRequests != null && maxRequests < count) {
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }
   }
 
-  private suspend fun getFeatureInt(featureName: FeatureName, userId: UUID, product: Vertical? = null): Long? =
+  private suspend fun getFeatureInt(featureName: FeatureName, userId: UserId, product: Vertical? = null): Long? =
     getFeature(featureName, userId, resolveProduct(product))?.valueInt
 
   private suspend fun getFeatureBool(
     featureName: FeatureName,
-    userId: UUID,
+    userId: UserId,
     product: Vertical? = null
   ): Boolean? =
     getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
 
   private suspend fun getFeature(
     featureName: FeatureName,
-    userId: UUID,
+    userId: UserId,
     product: Vertical
   ): FeatureValueEntity? {
     return try {
@@ -184,10 +184,14 @@ class PlanConstraintsService {
           )
         } else {
           var plan =
-            planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
+            planDAO.findActiveByUserAndProductIn(userId.value, listOf(product, Vertical.feedless), LocalDateTime.now())
           if (plan == null) {
             productService.enableDefaultSaasProduct(product, userId)
-            plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product, Vertical.feedless), LocalDateTime.now())
+            plan = planDAO.findActiveByUserAndProductIn(
+              userId.value,
+              listOf(product, Vertical.feedless),
+              LocalDateTime.now()
+            )
           }
 
           featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId, featureName.name)

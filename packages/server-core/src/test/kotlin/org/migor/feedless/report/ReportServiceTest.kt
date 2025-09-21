@@ -7,6 +7,8 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
@@ -20,10 +22,12 @@ import org.migor.feedless.generated.types.SegmentReportInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.eq
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -39,21 +43,21 @@ class ReportServiceTest {
   private lateinit var userService: UserService
   private lateinit var segmentationService: SegmentationService
   private lateinit var context: ApplicationContext
-  private lateinit var repositoryId: UUID
+  private lateinit var repositoryId: RepositoryId
   private lateinit var segment: SegmentInput
   private lateinit var repository: RepositoryEntity
-  private lateinit var repositoryOwnerId: UUID
+  private lateinit var repositoryOwnerId: UserId
   private lateinit var user: UserEntity
 
   @BeforeEach
   fun setUp() = runTest {
-    repositoryId = UUID.randomUUID()
+    repositoryId = randomRepositoryId()
     reportDAO = mock(ReportDAO::class.java)
     repositoryService = mock(RepositoryService::class.java)
-    userService= mock(UserService::class.java)
+    userService = mock(UserService::class.java)
     segmentationService = mock(SegmentationService::class.java)
-    context= mock(ApplicationContext::class.java)
-    user= mock(UserEntity::class.java)
+    context = mock(ApplicationContext::class.java)
+    user = mock(UserEntity::class.java)
 
     reportService = ReportService(
       reportDAO,
@@ -69,20 +73,24 @@ class ReportServiceTest {
     `when`(context.getBean(eq(ReportService::class.java))).thenReturn(reportService)
 
     repository = mock(RepositoryEntity::class.java)
-    repositoryOwnerId = UUID.randomUUID()
-    `when`(repository.ownerId).thenReturn(repositoryOwnerId)
-    `when`(repositoryService.findById(any(UUID::class.java))).thenReturn(Optional.of(repository))
+    repositoryOwnerId = randomUserId()
+    `when`(repository.ownerId).thenReturn(repositoryOwnerId.value)
+    `when`(repositoryService.findById(any(RepositoryId::class.java))).thenReturn(Optional.of(repository))
 
     segment = SegmentInput(
-      `when` = TimeSegmentInput(ScheduledSegmentInput(
-        interval = IntervalUnit.WEEK,
-        startingAt = 0
-      )),
+      `when` = TimeSegmentInput(
+        ScheduledSegmentInput(
+          interval = IntervalUnit.WEEK,
+          startingAt = 0
+        )
+      ),
       what = SegmentRecordsWhereInput(tags = StringFilterInput()),
-      report = SegmentReportInput(plugin = PluginExecutionInput(
-        pluginId = "",
-        params = PluginExecutionParamsInput()
-      )),
+      report = SegmentReportInput(
+        plugin = PluginExecutionInput(
+          pluginId = "",
+          params = PluginExecutionParamsInput()
+        )
+      ),
       recipient = ReportRecipientInput(
         email = ReportEmailRecipientInput(
           email = "",

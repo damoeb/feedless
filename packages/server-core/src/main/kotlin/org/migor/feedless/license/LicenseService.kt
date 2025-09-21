@@ -24,6 +24,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.plan.OrderEntity
+import org.migor.feedless.plan.OrderId
 import org.migor.feedless.plan.ProductEntity
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toLocalDateTime
@@ -392,9 +393,9 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByOrderId(orderId: UUID): List<LicenseEntity> {
+  suspend fun findAllByOrderId(orderId: OrderId): List<LicenseEntity> {
     return withContext(Dispatchers.IO) {
-      licenseDAO.findAllByOrderId(orderId)
+      licenseDAO.findAllByOrderId(orderId.value)
     }
   }
 }

@@ -20,7 +20,6 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RestController
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
-import java.util.*
 
 @RestController
 @Transactional(propagation = Propagation.NEVER)
@@ -42,7 +41,7 @@ class DocumentController(
     @PathVariable("documentId") documentId: String,
   ): ResponseEntity<String> = coroutineScope {
     analyticsService.track()
-    documentService.findById(UUID.fromString(documentId))?.let { document ->
+    documentService.findById(DocumentId(documentId))?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "document"),

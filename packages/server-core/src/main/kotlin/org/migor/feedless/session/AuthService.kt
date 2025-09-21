@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
@@ -54,7 +55,7 @@ abstract class AuthService {
     throw AccessDeniedException("token not present")
   }
 
-  abstract suspend fun findUserById(userId: UUID): UserEntity?
+  abstract suspend fun findUserById(userId: UserId): UserEntity?
   abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecretEntity?
   suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {}
 }

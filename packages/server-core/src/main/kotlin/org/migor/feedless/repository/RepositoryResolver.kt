@@ -29,12 +29,12 @@ import org.migor.feedless.generated.types.Source
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
 import org.migor.feedless.session.injectCurrentUser
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.source.toDto
 import org.migor.feedless.user.userId
 import org.migor.feedless.user.userIdOptional
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
@@ -76,7 +76,7 @@ class RepositoryResolver(
       emptyList()
     } else {
       repositoryService.findAll(data.cursor.toPageable(), data.where, userId)
-        .map { it.toDto(it.ownerId == userId) }
+        .map { it.toDto(it.ownerId == userId.value) }
     }
   }
 
@@ -97,8 +97,8 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
   ): Repository = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("repository $data")
-    val repository = repositoryService.findById(UUID.fromString(data.where.id)).orElseThrow()
-    repository.toDto(repository.ownerId == coroutineContext.userIdOptional())
+    val repository = repositoryService.findById(RepositoryId(data.where.id)).orElseThrow()
+    repository.toDto(repository.ownerId == coroutineContext.userIdOptional()?.value)
   }
 
   @Throttled
@@ -120,7 +120,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
   ) = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("updateRepository $data")
-    repositoryService.updateRepository(UUID.fromString(data.where.id), data.data)
+    repositoryService.updateRepository(RepositoryId(data.where.id), data.data)
     true
   }
 
@@ -132,7 +132,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUniqueWhereInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("deleteRepository $data")
-    repositoryService.delete(UUID.fromString(data.id))
+    repositoryService.delete(RepositoryId(data.id))
     true
   }
 
@@ -150,7 +150,7 @@ class RepositoryResolver(
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
-        sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), pageable, where, order)
+        sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), pageable, where, order)
           .toList()
           .map { it.toDto() }
       }
@@ -165,7 +165,7 @@ class RepositoryResolver(
   ): Long = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      sourceService.countAllByRepositoryId(UUID.fromString(repository.id))
+      sourceService.countAllByRepositoryId(RepositoryId(repository.id))
     } else {
       0
     }
@@ -176,7 +176,7 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
     val source: Source = dfe.getSource()
-    sourceService.countDocumentsBySourceId(UUID.fromString(source.id))
+    sourceService.countDocumentsBySourceId(SourceId(source.id))
   }
 
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.Harvests)
@@ -184,7 +184,7 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): List<Harvest> = coroutineScope {
     val source: Source = dfe.getSource()
-    harvestService.lastHarvests(UUID.fromString(source.id)).map{it.toDto()}
+    harvestService.lastHarvests(UUID.fromString(source.id)).map { it.toDto() }
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCountWithProblems)
@@ -192,13 +192,13 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
     val repository: Repository = dfe.getSource()
-    sourceService.countProblematicSourcesByRepositoryId(UUID.fromString(repository.id))
+    sourceService.countProblematicSourcesByRepositoryId(RepositoryId(repository.id))
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val repository: Repository = dfe.getSource()
-    sourceService.findAllByRepositoryIdFiltered(UUID.fromString(repository.id), PageRequest.of(0, 10))
+    sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageRequest.of(0, 10))
       .mapNotNull { it.tags?.asList() }
       .flatten()
       .distinct()

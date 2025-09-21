@@ -6,6 +6,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.Mother.randomGroupId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.argThat
@@ -13,6 +15,7 @@ import org.migor.feedless.repository.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -20,9 +23,9 @@ import java.util.*
 
 class GroupServiceTest {
 
-  private val currentUserId = UUID.randomUUID()
-  private val userId = UUID.randomUUID()
-  private val groupId = UUID.randomUUID()
+  private val currentUserId = randomUserId()
+  private val userId = randomUserId()
+  private val groupId = randomGroupId()
   private lateinit var userGroupAssignmentDAO: UserGroupAssignmentDAO
   private lateinit var userDAO: UserDAO
   private lateinit var groupService: GroupService
@@ -36,14 +39,14 @@ class GroupServiceTest {
     userDAO = mock(UserDAO::class.java)
 
     user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId)
+    `when`(user.id).thenReturn(userId.value)
 
     currentUser = mock(UserEntity::class.java)
-    `when`(currentUser.id).thenReturn(currentUserId)
+    `when`(currentUser.id).thenReturn(currentUserId.value)
     `when`(userDAO.findById(any2())).thenReturn(Optional.of(currentUser))
 
     group = mock(GroupEntity::class.java)
-    `when`(group.id).thenReturn(groupId)
+    `when`(group.id).thenReturn(groupId.value)
 
     groupService = GroupService(userGroupAssignmentDAO, userDAO)
     `when`(userGroupAssignmentDAO.save(any2())).thenAnswer { it.arguments[0] }
@@ -65,7 +68,7 @@ class GroupServiceTest {
     groupService.addUserToGroup(user, group, role)
 
     // then
-    verify(userGroupAssignmentDAO).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
+    verify(userGroupAssignmentDAO).save(argThat { it.userId == userId.value && it.groupId == groupId.value && it.role == role })
   }
 
   @ParameterizedTest
@@ -86,7 +89,7 @@ class GroupServiceTest {
       groupService.addUserToGroup(user, group, role)
 
       // then
-      verify(userGroupAssignmentDAO).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
+      verify(userGroupAssignmentDAO).save(argThat { it.userId == userId.value && it.groupId == groupId.value && it.role == role })
     }
 
   @Test
@@ -170,10 +173,10 @@ class GroupServiceTest {
     return mockUserRoleForGroup(currentUserId, role)
   }
 
-  private fun mockUserRoleForGroup(userId: UUID, role: RoleInGroup): UserGroupAssignmentEntity {
+  private fun mockUserRoleForGroup(userId: UserId, role: RoleInGroup): UserGroupAssignmentEntity {
     val assignment = mock(UserGroupAssignmentEntity::class.java)
     `when`(assignment.role).thenReturn(role)
-    `when`(userGroupAssignmentDAO.findByUserIdAndGroupId(eq(userId), any2())).thenReturn(assignment)
+    `when`(userGroupAssignmentDAO.findByUserIdAndGroupId(eq(userId.value), any2())).thenReturn(assignment)
     return assignment
   }
 

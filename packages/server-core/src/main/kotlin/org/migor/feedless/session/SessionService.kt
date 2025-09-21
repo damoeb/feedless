@@ -9,6 +9,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
@@ -20,7 +21,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
-import java.util.*
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
@@ -37,7 +37,7 @@ fun createRequestContext(): RequestContext {
   runCatching {
     context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
       StringUtils.trimToNull((SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).principal.attributes[JwtParameterNames.USER_ID] as String)
-        ?.let { UUID.fromString(it) }
+        ?.let { UserId(it) }
     } else {
       null
     }
@@ -58,7 +58,7 @@ fun createRequestContext(): RequestContext {
 class RequestContext(
   var product: Vertical? = null,
   val corrId: String? = newCorrId(),
-  var userId: UUID? = null
+  var userId: UserId? = null
 ) : AbstractCoroutineContextElement(RequestContext) {
   companion object Key : CoroutineContext.Key<RequestContext>
 }
@@ -86,5 +86,5 @@ class SessionService {
   }
 
   @Deprecated("")
-  suspend fun userId(): UUID? = currentCoroutineContext()[RequestContext]?.userId
+  suspend fun userId(): UserId? = currentCoroutineContext()[RequestContext]?.userId
 }

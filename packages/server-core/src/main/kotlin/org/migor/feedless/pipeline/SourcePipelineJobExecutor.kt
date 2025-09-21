@@ -11,7 +11,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.RequestContext
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
@@ -21,7 +23,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
@@ -51,12 +52,12 @@ class SourcePipelineJobExecutor internal constructor(
             coroutineScope {
               groupedSources.map { groupedSources ->
                 try {
-                  val userId = getOwnerIdForSourceId(groupedSources.key)
+                  val userId = getOwnerIdForSourceId(SourceId(groupedSources.key))
                   async(RequestContext(userId = userId)) {
                     semaphore.acquire()
                     delay(300)
                     try {
-                      processSourcePipeline(groupedSources.key, groupedSources.value)
+                      processSourcePipeline(SourceId(groupedSources.key), groupedSources.value)
                     } finally {
                       semaphore.release()
                     }
@@ -77,13 +78,13 @@ class SourcePipelineJobExecutor internal constructor(
     }
   }
 
-  private suspend fun getOwnerIdForSourceId(sourceId: UUID): UUID {
+  private suspend fun getOwnerIdForSourceId(sourceId: SourceId): UserId {
     val repo =
       repositoryService.findBySourceId(sourceId) ?: throw sourcePipelineService.failAfterCleaningJobsForSource(sourceId)
-    return repo.ownerId
+    return UserId(repo.ownerId)
   }
 
-  private suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+  private suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJobEntity>) {
     val corrId = coroutineContext.corrId()
     try {
       sourceService.processSourcePipeline(sourceId, jobs)

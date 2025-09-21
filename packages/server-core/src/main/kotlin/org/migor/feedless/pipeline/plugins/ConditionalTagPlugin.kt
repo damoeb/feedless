@@ -11,6 +11,7 @@ import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -77,7 +78,7 @@ fun DocumentEntity.asJsonItem(repository: RepositoryEntity? = null): JsonItem {
     )
   }
   item.url = url
-  item.repositoryId = repositoryId
+  item.repositoryId = RepositoryId(repositoryId)
   item.repositoryName = repository?.title
   item.text = StringUtils.trimToEmpty(text)
   item.rawBase64 = raw?.let { Base64.getEncoder().encodeToString(raw) }

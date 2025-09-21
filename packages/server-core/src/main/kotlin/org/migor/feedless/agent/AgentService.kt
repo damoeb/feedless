@@ -25,6 +25,7 @@ import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
@@ -85,7 +86,7 @@ class AgentService(
               val agentRef =
                 AgentRef(
                   securityKey.id,
-                  securityKey.ownerId,
+                  UserId(securityKey.ownerId),
                   data.name,
                   data.version,
                   data.connectionId,
@@ -149,8 +150,8 @@ class AgentService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByUserId(userId: UUID?): List<AgentEntity> {
-    return agentRegistry.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+  suspend fun findAllByUserId(userId: UserId?): List<AgentEntity> {
+    return agentRegistry.findAllByOwnerIdOrOpenInstanceIsTrue(userId?.value)
   }
 
   @Transactional(propagation = Propagation.SUPPORTS)
@@ -203,7 +204,7 @@ class AgentService(
       agent.version = agentRef.version
       agent.lastSyncedAt = LocalDateTime.now()
       agent.connectionId = agentRef.connectionId
-      agent.ownerId = agentRef.ownerId
+      agent.ownerId = agentRef.ownerId.value
       agent.openInstance = true
       agentRegistry.save(agent)
     }
@@ -227,7 +228,7 @@ class AgentService(
 
 data class AgentRef(
   val secretKeyId: UUID,
-  val ownerId: UUID,
+  val ownerId: UserId,
   val name: String,
   val version: String,
   val connectionId: String,

@@ -6,14 +6,16 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.time.LocalDateTime
 import java.util.*
+
+data class PlanId(val value: UUID)
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -28,16 +30,16 @@ class PlanService {
   private lateinit var planDAO: PlanDAO
 
   @Transactional(readOnly = true)
-  suspend fun findById(id: String): Optional<FeatureGroupEntity> {
+  suspend fun findById(id: PlanId): Optional<FeatureGroupEntity> {
     return withContext(Dispatchers.IO) {
-      featureGroupDAO.findById(UUID.fromString(id))
+      featureGroupDAO.findById(id.value)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByUser(userId: UUID): List<PlanEntity> {
+  suspend fun findAllByUser(userId: UserId): List<PlanEntity> {
     return withContext(Dispatchers.IO) {
-      planDAO.findAllByUser(userId)
+      planDAO.findAllByUser(userId.value)
     }
   }
 }

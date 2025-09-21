@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 
 
 @DgsComponent
@@ -76,7 +75,7 @@ class OrderResolver {
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
   suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
     val order: Order = dfe.getRoot()
-    licenseService.findAllByOrderId(UUID.fromString(order.id)).map { it.toDTO() }
+    licenseService.findAllByOrderId(OrderId(order.id)).map { it.toDTO() }
   }
 
 }

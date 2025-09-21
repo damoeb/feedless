@@ -8,6 +8,9 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.Mother.randomDocumentId
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
@@ -35,6 +38,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.any
 import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.eq
@@ -45,6 +49,7 @@ import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.TelegramConnectionEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
@@ -77,10 +82,10 @@ class DocumentServiceTest {
   private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
   private lateinit var telegranBotService: TelegramBotService
   private lateinit var messageService: MessageService
-  private lateinit var documentId: UUID
+  private lateinit var documentId: DocumentId
   private lateinit var document: DocumentEntity
 
-  private val currentUserId = UUID.randomUUID()
+  private val currentUserId = randomUserId()
 
   @BeforeEach
   fun setUp() {
@@ -118,18 +123,19 @@ class DocumentServiceTest {
       messageService
     )
 
-    documentId = UUID.randomUUID()
+    documentId = randomDocumentId()
     val repositoryId = UUID.randomUUID()
     document = mock(DocumentEntity::class.java)
-    `when`(document.id).thenReturn(documentId)
+    `when`(document.id).thenReturn(documentId.value)
     `when`(document.url).thenReturn("http://localhost")
     `when`(document.title).thenReturn("foo bar")
     `when`(document.status).thenReturn(ReleaseStatus.unreleased)
     `when`(document.publishedAt).thenReturn(LocalDateTime.now())
     `when`(document.repositoryId).thenReturn(repositoryId)
-    `when`(documentDAO.findByIdWithSource(eq(documentId))).thenReturn(document)
+    `when`(documentDAO.findByIdWithSource(eq(documentId.value))).thenReturn(document)
 
     repository = mock(RepositoryEntity::class.java)
+    `when`(repository.ownerId).thenReturn(UUID.randomUUID())
     `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
   }
 
@@ -269,34 +275,35 @@ class DocumentServiceTest {
   }
 
   @Test
-  fun `processDocumentPlugins will save document when execution gets delayed`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val job = mock(DocumentPipelineJobEntity::class.java)
-    `when`(job.pluginId).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
-    `when`(job.executorParams).thenReturn(PluginExecutionJsonEntity())
-    `when`(
-      fulltextPlugin.mapEntity(
-        any(DocumentEntity::class.java),
-        any(RepositoryEntity::class.java),
-        any(PluginExecutionJsonEntity::class.java),
-        any(LogCollector::class.java),
+  fun `processDocumentPlugins will save document when execution gets delayed`() =
+    runTest(context = RequestContext(userId = currentUserId)) {
+      val job = mock(DocumentPipelineJobEntity::class.java)
+      `when`(job.pluginId).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
+      `when`(job.executorParams).thenReturn(PluginExecutionJsonEntity())
+      `when`(
+        fulltextPlugin.mapEntity(
+          any(DocumentEntity::class.java),
+          any(RepositoryEntity::class.java),
+          any(PluginExecutionJsonEntity::class.java),
+          any(LogCollector::class.java),
+        )
+      ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
+      assertThat(job.coolDownUntil).isNull()
+
+      // when
+      documentService.processDocumentPlugins(
+        documentId, listOf(job)
       )
-    ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
-    assertThat(job.coolDownUntil).isNull()
 
-    // when
-    documentService.processDocumentPlugins(
-      documentId, listOf(job)
-    )
-
-    // then
-    verify(job).coolDownUntil != null
-    documentPipelineJobDAO.save(job)
-    documentDAO.save(document)
-  }
+      // then
+      verify(job).coolDownUntil != null
+      documentPipelineJobDAO.save(job)
+      documentDAO.save(document)
+    }
 
   @Test
   fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = UUID.randomUUID()
+    val repositoryId = randomRepositoryId()
     mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
 
     // when
@@ -304,7 +311,7 @@ class DocumentServiceTest {
 
     // then
     verify(documentDAO).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
+      eq(repositoryId.value), any(LocalDateTime::class.java), any(
         ReleaseStatus::class.java
       )
     )
@@ -312,7 +319,7 @@ class DocumentServiceTest {
 
   @Test
   fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = UUID.randomUUID()
+    val repositoryId = randomRepositoryId()
     mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
 
     // when
@@ -320,7 +327,7 @@ class DocumentServiceTest {
 
     // then
     verify(documentDAO).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
+      eq(repositoryId.value), any(LocalDateTime::class.java), any(
         ReleaseStatus::class.java
       )
     )
@@ -328,7 +335,7 @@ class DocumentServiceTest {
 
   @Test
   fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = UUID.randomUUID()
+    val repositoryId = randomRepositoryId()
     mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
 
     // when
@@ -336,7 +343,7 @@ class DocumentServiceTest {
 
     // then
     verify(documentDAO).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
+      eq(repositoryId.value), any(LocalDateTime::class.java), any(
         ReleaseStatus::class.java
       )
     )
@@ -344,21 +351,21 @@ class DocumentServiceTest {
 
   @Test
   fun `create document without permissions fails`() {
-    val documentId = UUID.randomUUID()
-    val repositoryId = UUID.randomUUID()
+    val documentId = randomDocumentId()
+    val repositoryId = randomRepositoryId()
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = currentUserId)) {
         mockUser(currentUserId)
         mockDocument(documentId = documentId, repositoryId = repositoryId)
-        mockRepository(repositoryId, ownerId = UUID.randomUUID())
+        mockRepository(repositoryId, ownerId = randomUserId())
 
         val data = CreateRecordInput(
           title = "foo",
           publishedAt = Date().time,
           url = "",
           text = "",
-          repositoryId = RepositoryUniqueWhereInput(id = repositoryId.toString()),
+          repositoryId = RepositoryUniqueWhereInput(id = repositoryId.value.toString()),
         )
         documentService.createDocument(data)
       }
@@ -367,7 +374,7 @@ class DocumentServiceTest {
 
   @Test
   fun `create document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = UUID.randomUUID()
+    val repositoryId = randomRepositoryId()
 
     mockUser(currentUserId)
     `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
@@ -378,7 +385,7 @@ class DocumentServiceTest {
       publishedAt = Date().time,
       url = "",
       text = "",
-      repositoryId = RepositoryUniqueWhereInput(id = repositoryId.toString()),
+      repositoryId = RepositoryUniqueWhereInput(id = repositoryId.value.toString()),
     )
     documentService.createDocument(data)
 
@@ -387,18 +394,18 @@ class DocumentServiceTest {
 
   @Test
   fun `update document without permissions fails`() {
-    val documentId = UUID.randomUUID()
-    val repositoryId = UUID.randomUUID()
+    val documentId = randomDocumentId()
+    val repositoryId = randomRepositoryId()
 
     mockUser(currentUserId)
     mockDocument(documentId = documentId, repositoryId = repositoryId)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = currentUserId)) {
-        mockRepository(repositoryId, ownerId = UUID.randomUUID())
+        mockRepository(repositoryId, ownerId = randomUserId())
 
         val data = RecordUpdateInput()
-        val where = RecordUniqueWhereInput(id = documentId.toString())
+        val where = RecordUniqueWhereInput(id = documentId.value.toString())
         documentService.updateDocument(data, where)
       }
     }
@@ -406,8 +413,8 @@ class DocumentServiceTest {
 
   @Test
   fun `update document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val documentId = UUID.randomUUID()
-    val repositoryId = UUID.randomUUID()
+    val documentId = randomDocumentId()
+    val repositoryId = randomRepositoryId()
 
     mockUser(currentUserId)
     val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
@@ -415,7 +422,7 @@ class DocumentServiceTest {
     `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
 
     val data = RecordUpdateInput()
-    val where = RecordUniqueWhereInput(id = documentId.toString())
+    val where = RecordUniqueWhereInput(id = documentId.value.toString())
     documentService.updateDocument(data, where)
 
     verify(documentDAO).save(eq(document))
@@ -425,8 +432,8 @@ class DocumentServiceTest {
   @Test
   fun `given deleteDocuments is executed not by the owner, it fails`() {
     val repository = mock(RepositoryEntity::class.java)
-    val repositoryId = UUID.randomUUID()
-    `when`(repository.id).thenReturn(repositoryId)
+    val repositoryId = randomRepositoryId()
+    `when`(repository.id).thenReturn(repositoryId.value)
 
     `when`(repository.ownerId).thenReturn(UUID.randomUUID())
     `when`(repositoryDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(repository))
@@ -438,30 +445,30 @@ class DocumentServiceTest {
     }
   }
 
-  private fun mockUser(userId: UUID): UserEntity {
+  private fun mockUser(userId: UserId): UserEntity {
     val user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId)
-    `when`(userDAO.findById(eq(userId))).thenReturn(Optional.of(user))
+    `when`(user.id).thenReturn(userId.value)
+    `when`(userDAO.findById(eq(userId.value))).thenReturn(Optional.of(user))
     return user
   }
 
-  private fun mockDocument(documentId: UUID, repositoryId: UUID): DocumentEntity {
+  private fun mockDocument(documentId: DocumentId, repositoryId: RepositoryId): DocumentEntity {
     val document = mock(DocumentEntity::class.java)
-    `when`(document.id).thenReturn(documentId)
-    `when`(document.repositoryId).thenReturn(repositoryId)
-    `when`(documentDAO.findById(eq(documentId))).thenReturn(Optional.of(document))
+    `when`(document.id).thenReturn(documentId.value)
+    `when`(document.repositoryId).thenReturn(repositoryId.value)
+    `when`(documentDAO.findById(eq(documentId.value))).thenReturn(Optional.of(document))
     return document
   }
 
   private suspend fun mockRepository(
-    repositoryId: UUID,
-    ownerId: UUID,
+    repositoryId: RepositoryId,
+    ownerId: UserId,
     maxAgeDaysDateField: MaxAgeDaysDateField? = null,
     retentionMaxCapacity: Int? = null
   ): RepositoryEntity {
     val repository = mock(RepositoryEntity::class.java)
-    `when`(repository.id).thenReturn(repositoryId)
-    `when`(repository.ownerId).thenReturn(ownerId)
+    `when`(repository.id).thenReturn(repositoryId.value)
+    `when`(repository.ownerId).thenReturn(ownerId.value)
     maxAgeDaysDateField?.let {
       `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
     }
@@ -469,14 +476,14 @@ class DocumentServiceTest {
       `when`(repository.retentionMaxCapacity).thenReturn(it)
     }
     `when`(repository.retentionMaxAgeDays).thenReturn(20)
-    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.id).thenReturn(repositoryId.value)
     `when`(repository.product).thenReturn(Vertical.feedless)
-    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
+    `when`(repositoryDAO.findById(eq(repositoryId.value))).thenReturn(Optional.of(repository))
 
     `when`(
       planConstraintsService.coerceRetentionMaxAgeDays(
         repository.retentionMaxAgeDays,
-        repository.ownerId,
+        UserId(repository.ownerId),
         repository.product
       )
     ).thenReturn(20)
@@ -484,7 +491,7 @@ class DocumentServiceTest {
     `when`(
       planConstraintsService.coerceRetentionMaxCapacity(
         repository.retentionMaxCapacity,
-        repository.ownerId,
+        UserId(repository.ownerId),
         repository.product
       )
     ).thenReturn(retentionMaxCapacity)

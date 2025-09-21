@@ -30,6 +30,7 @@ import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.UpdateRecordInput
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.session.PermissionService
@@ -42,7 +43,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -64,11 +64,11 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
   ): Record = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("record $data")
-    permissionService.canReadDocument(UUID.fromString(data.where.id))
+    permissionService.canReadDocument(DocumentId(data.where.id))
     val document =
-      documentService.findById(UUID.fromString(data.where.id)) ?: throw NotFoundException("record not found")
+      documentService.findById(DocumentId(data.where.id)) ?: throw NotFoundException("record not found")
 
-    DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = UUID.fromString(data.where.id)
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = DocumentId(data.where.id)
 
     document.toDto(propertyService)
   }
@@ -80,14 +80,20 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
   ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("records $data")
-    val repositoryId = UUID.fromString(data.where.repository.id)
+    val repositoryId = RepositoryId(data.where.repository.id)
 
-    val repository = repositoryService.findById(repositoryId).orElseThrow { NotFoundException("repository ${repositoryId} not found") }
+    val repository =
+      repositoryService.findById(repositoryId).orElseThrow { NotFoundException("repository ${repositoryId} not found") }
     val pageable = data.cursor.toPageable()
     if (pageable.pageSize == 0) {
       emptyList()
     } else {
-      documentService.findAllByRepositoryId(repository.id, data.where, data.orderBy, pageable = pageable).map {
+      documentService.findAllByRepositoryId(
+        RepositoryId(repository.id),
+        data.where,
+        data.orderBy,
+        pageable = pageable
+      ).map {
         it.toDto(
           propertyService
         )
@@ -98,7 +104,7 @@ class DocumentResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
     val repository: Repository = dfe.getSource()!!
-    documentService.countByRepositoryId(UUID.fromString(repository.id))
+    documentService.countByRepositoryId(RepositoryId(repository.id))
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.DeleteRecords)
@@ -109,7 +115,7 @@ class DocumentResolver(
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     documentService.deleteDocuments(
       sessionService.user(),
-      UUID.fromString(data.where.repository.id),
+      RepositoryId(data.where.repository.id),
       data.where.id!!
     )
     true

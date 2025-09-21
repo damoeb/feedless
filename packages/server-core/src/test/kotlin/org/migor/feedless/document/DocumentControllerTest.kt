@@ -89,7 +89,7 @@ class DocumentControllerTest {
   @Test
   fun `returns 404 if document does not exist`() = runTest {
     val response = template.getForEntity("/article/${document.id}", String::class.java)
-    verify(documentService).findById(eq(document.id))
+    verify(documentService).findById(eq(DocumentId(document.id)))
     assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
   }
 

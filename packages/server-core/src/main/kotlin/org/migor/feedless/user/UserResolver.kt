@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -63,7 +62,7 @@ class UserResolver(
     @InputArgument authorize: Boolean,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.info("updateConnectedApp ${coroutineContext.userId()}")
-    userService.updateConnectedApp(coroutineContext.userId(), UUID.fromString(id), authorize)
+    userService.updateConnectedApp(coroutineContext.userId(), ConnectedAppId(id), authorize)
     true
   }
 
@@ -75,7 +74,7 @@ class UserResolver(
     @InputArgument id: String,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.info("deleteConnectedApp ${coroutineContext.userId()}")
-    userService.deleteConnectedApp(coroutineContext.userId(), UUID.fromString(id))
+    userService.deleteConnectedApp(coroutineContext.userId(), ConnectedAppId(id))
     true
   }
 
@@ -87,33 +86,33 @@ class UserResolver(
     @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,
   ): ConnectedApp = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.info("connectedApp ${coroutineContext.userId()} ")
-    userService.getConnectedAppByUserAndId(coroutineContext.userId(), UUID.fromString(id)).toDto()
+    userService.getConnectedAppByUserAndId(coroutineContext.userId(), ConnectedAppId(id)).toDto()
   }
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
   suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
     val session: Session = dfe.getSource()!!
-    session.userId?.let { userService.findById(UUID.fromString(it)).orElseThrow().toDTO() }
+    session.userId?.let { userService.findById(UserId(it)).orElseThrow().toDTO() }
   }
 
 
   @DgsData(field = DgsConstants.USER.ConnectedApps, parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun getConnectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedApp> = coroutineScope {
     val user: User = dfe.getSource()!!
-    connectedAppService.findAllByUserId(UUID.fromString(user.id)).filterIsInstance<TelegramConnectionEntity>()
+    connectedAppService.findAllByUserId(UserId(user.id)).filterIsInstance<TelegramConnectionEntity>()
       .map { it.toDto() }
   }
 
   @DgsData(field = DgsConstants.USER.Features, parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
     val user: User = dfe.getSource()!!
-    featureService.findAllByProductAndUserId(Vertical.feedless, UUID.fromString(user.id))
+    featureService.findAllByProductAndUserId(Vertical.feedless, UserId(user.id))
   }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)
   suspend fun userForOrder(dfe: DgsDataFetchingEnvironment): User = coroutineScope {
     val order: Order = dfe.getSource()!!
-    userService.findById(UUID.fromString(order.userId)).orElseThrow().toDTO()
+    userService.findById(UserId(order.userId)).orElseThrow().toDTO()
   }
 }
 

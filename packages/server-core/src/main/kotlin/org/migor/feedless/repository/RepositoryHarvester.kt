@@ -35,7 +35,9 @@ import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
@@ -83,7 +85,7 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
-  suspend fun handleRepository(repositoryId: UUID) {
+  suspend fun handleRepository(repositoryId: RepositoryId) {
     val corrId = coroutineContext.corrId()
     runCatching {
       log.info("[${corrId}] handleRepository $repositoryId")
@@ -106,7 +108,7 @@ class RepositoryHarvester(
 
       val scheduledNextAt = repositoryService.calculateScheduledNextAt(
         repository.sourcesSyncCron,
-        repository.ownerId,
+        UserId(repository.ownerId),
         repository.product,
         LocalDateTime.now()
       )
@@ -121,7 +123,7 @@ class RepositoryHarvester(
   }
 
   private suspend fun scrapeSources(
-    repositoryId: UUID,
+    repositoryId: RepositoryId,
   ) {
     val corrId = coroutineContext.corrId()
     var sources: List<SourceEntity>
@@ -229,12 +231,12 @@ class RepositoryHarvester(
 
   suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Int {
     val output = scrapeService.scrape(source, logCollector)
-    return importElement(output, source.repositoryId, source, logCollector)
+    return importElement(output, RepositoryId(source.repositoryId), source, logCollector)
   }
 
   private suspend fun importElement(
     output: ScrapeOutput,
-    repositoryId: UUID,
+    repositoryId: RepositoryId,
     source: SourceEntity,
     logCollector: LogCollector
   ): Int {
@@ -320,7 +322,11 @@ class RepositoryHarvester(
 
     val updated = fragment.asEntity(repository.id, source)
     val existing =
-      documentService.findFirstByContentHashOrUrlAndRepositoryId(updated.contentHash, updated.url, repository.id)
+      documentService.findFirstByContentHashOrUrlAndRepositoryId(
+        updated.contentHash,
+        updated.url,
+        RepositoryId(repository.id)
+      )
 
     val validNewOrUpdatedDocuments =
       filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository, logCollector)!!))
@@ -399,7 +405,11 @@ class RepositoryHarvester(
       .mapNotNull { updated ->
         try {
           val existing =
-            documentService.findFirstByContentHashOrUrlAndRepositoryId(updated.contentHash, updated.url, repository.id)
+            documentService.findFirstByContentHashOrUrlAndRepositoryId(
+              updated.contentHash,
+              updated.url,
+              RepositoryId(repository.id)
+            )
           updated.imageUrl = detectMainImageUrl(updated.html)
           createOrUpdate(updated, existing, repository, logCollector)
         } catch (e: Exception) {
@@ -421,7 +431,7 @@ class RepositoryHarvester(
     val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
-        val pageUrls = next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(source.id, url) }
+        val pageUrls = next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(SourceId(source.id), url) }
         log.info("[$corrId] Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
         sourcePipelineService.saveAll(
           pageUrls

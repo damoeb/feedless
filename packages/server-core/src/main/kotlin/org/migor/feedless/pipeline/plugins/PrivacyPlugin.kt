@@ -13,6 +13,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryEntity
@@ -77,7 +78,7 @@ class PrivacyPlugin : MapEntityPlugin {
 
 //    if (planConstraintsService.can(FeatureName.itemsInlineImages)) {
     document.html?.let {
-      val (html, attachments) = extractAttachments(document.id, HtmlUtil.parseHtml(it, document.url))
+      val (html, attachments) = extractAttachments(DocumentId(document.id), HtmlUtil.parseHtml(it, document.url))
       document.html = html
       document.attachments = attachments.toMutableList()
     } ?: log.debug("no html content present ${document.id}")
@@ -87,7 +88,7 @@ class PrivacyPlugin : MapEntityPlugin {
   }
 
   suspend fun extractAttachments(
-    documentId: UUID,
+    documentId: DocumentId,
     document: Document
   ): Pair<String, List<AttachmentEntity>> {
     val attachments = mutableListOf<AttachmentEntity>()
@@ -110,7 +111,7 @@ class PrivacyPlugin : MapEntityPlugin {
 
   private suspend fun handleImage(
     imageElement: Element,
-    documentId: UUID
+    documentId: DocumentId
   ): AttachmentEntity? {
     val corrId = coroutineContext.corrId()
     return try {
@@ -166,19 +167,19 @@ class PrivacyPlugin : MapEntityPlugin {
 
   private fun toAttachment(
     response: HttpResponse,
-    documentId: UUID
+    documentId: DocumentId
   ): AttachmentEntity {
     val attachment = AttachmentEntity()
     attachment.mimeType = response.contentType
     attachment.originalUrl = response.url
     attachment.data = response.responseBody
-    attachment.documentId = documentId
+    attachment.documentId = documentId.value
     return attachment
   }
 
   private suspend fun handleLinkedData(
     linkElement: Element,
-    documentId: UUID
+    documentId: DocumentId
   ): AttachmentEntity? {
     val corrId = coroutineContext.corrId()
     return try {

@@ -22,6 +22,7 @@ import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.TextAnnotation
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
@@ -73,7 +74,8 @@ class AnnotationResolver(
     userId?.let {
       context.repositoryId?.let { repositoryId ->
         annotationService.findAllVotesByUserIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
-      } ?: annotationService.findAllVotesByUserIdAndDocumentId(userId, context.documentId!!).map { it.toDto() }
+      } ?: annotationService.findAllVotesByUserIdAndDocumentId(userId, context.documentId!!)
+        .map { it.toDto() }
     } ?: emptyList()
   }
 
@@ -83,7 +85,7 @@ class AnnotationResolver(
   ): Annotations = coroutineScope {
     val repository: Repository = dfe.getSource()
 
-    val repositoryId = UUID.fromString(repository.id)
+    val repositoryId = RepositoryId(UUID.fromString(repository.id))
     DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
     Annotations(
       upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),

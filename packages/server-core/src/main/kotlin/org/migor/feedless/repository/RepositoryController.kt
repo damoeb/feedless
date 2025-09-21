@@ -68,7 +68,7 @@ class RepositoryController {
     feedExporter.to(
       HttpStatus.OK,
       format,
-      repositoryService.getFeedByRepositoryId(UUID.fromString(repositoryId), page, tags)
+      repositoryService.getFeedByRepositoryId(RepositoryId(repositoryId), page, tags)
     )
   }
 

@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -32,7 +34,9 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -55,7 +59,7 @@ class RepositoryHarvesterTest {
   private lateinit var repositoryService: RepositoryService
   private lateinit var scrapeService: ScrapeService
   private lateinit var repositoryHarvester: RepositoryHarvester
-  private lateinit var repositoryId: UUID
+  private lateinit var repositoryId: RepositoryId
 
   private lateinit var repository: RepositoryEntity
   private lateinit var source: SourceEntity
@@ -64,7 +68,7 @@ class RepositoryHarvesterTest {
 
   @BeforeEach
   fun setUp() = runTest {
-    repositoryId = UUID.randomUUID()
+    repositoryId = randomRepositoryId()
     documentService = mock(DocumentService::class.java)
     sourceService = mock(SourceService::class.java)
     meterRegistry = mock(MeterRegistry::class.java)
@@ -90,11 +94,11 @@ class RepositoryHarvesterTest {
     source = mock(SourceEntity::class.java)
     `when`(source.disabled).thenReturn(false)
     `when`(source.id).thenReturn(UUID.randomUUID())
-    `when`(source.repositoryId).thenReturn(repositoryId)
+    `when`(source.repositoryId).thenReturn(repositoryId.value)
     `when`(source.errorsInSuccession).thenReturn(0)
 
     repository = mock(RepositoryEntity::class.java)
-    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.id).thenReturn(repositoryId.value)
     `when`(repository.sourcesSyncCron).thenReturn("")
     `when`(repository.ownerId).thenReturn(UUID.randomUUID())
     `when`(repository.product).thenReturn(Vertical.feedless)
@@ -112,7 +116,7 @@ class RepositoryHarvesterTest {
 
     `when`(
       repositoryService.calculateScheduledNextAt(
-        any(String::class.java), any(UUID::class.java), any(
+        any(String::class.java), any(UserId::class.java), any(
           Vertical::class.java
         ), any(
           LocalDateTime::class.java
@@ -133,7 +137,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(0)
 
-    repositoryHarvester.handleRepository(repository.id)
+    repositoryHarvester.handleRepository(repositoryId)
 
     verify(scrapeService, times(1)).scrape(
       any2(),
@@ -159,7 +163,7 @@ class RepositoryHarvesterTest {
       ScrapeOutput(outputs = emptyList(), time = 0)
     )
 
-    repositoryHarvester.handleRepository(repository.id)
+    repositoryHarvester.handleRepository(repositoryId)
 
     verify(source).errorsInSuccession = 0
     verify(source).lastErrorMessage = null
@@ -178,7 +182,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(4)
 
-    repositoryHarvester.handleRepository(repository.id)
+    repositoryHarvester.handleRepository(repositoryId)
 
     verify(scrapeService, times(1)).scrape(
       any(SourceEntity::class.java),
@@ -205,7 +209,7 @@ class RepositoryHarvesterTest {
     )
 
     // when
-    repositoryHarvester.handleRepository(repository.id)
+    repositoryHarvester.handleRepository(repositoryId)
 
     // then
     assertThat(source.errorsInSuccession).isEqualTo(0)
@@ -221,7 +225,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature a url, then urls will be used to deduplicate`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       `when`(
         scrapeService.scrape(
           any(SourceEntity::class.java),
@@ -255,13 +259,13 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature fragments, the fragments will be persisted`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
 
       `when`(
         documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
-          any(UUID::class.java)
+          any(RepositoryId::class.java)
         )
       ).thenReturn(null)
       `when`(
@@ -299,7 +303,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature no url, then titles will be used to deduplicate`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       `when`(
         scrapeService.scrape(
           any(SourceEntity::class.java),
@@ -333,14 +337,14 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `updates for existing documents will be ignored, if repository has plugins`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(listOf(mock(PluginExecution::class.java)))
       val existing = mock(DocumentEntity::class.java)
       `when`(
         documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
-          any(UUID::class.java)
+          any(RepositoryId::class.java)
         )
       ).thenReturn(
         existing
@@ -383,7 +387,7 @@ class RepositoryHarvesterTest {
   @Test
   @Disabled("lastUpdateAt is polluted and cannot be used atm")
   fun `updates for existing documents will be processed, if repository has changed after existing has been created`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(listOf(createPlugin(), createPlugin()))
       val existing = mock(DocumentEntity::class.java)
       `when`(existing.id).thenReturn(UUID.randomUUID())
@@ -391,7 +395,7 @@ class RepositoryHarvesterTest {
         documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
-          any(UUID::class.java)
+          any(RepositoryId::class.java)
         )
       ).thenReturn(
         existing
@@ -437,7 +441,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `released documents will trigger post release effects`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(emptyList())
       val newDocument = mock(DocumentEntity::class.java)
       `when`(newDocument.id).thenReturn(UUID.randomUUID())
@@ -484,13 +488,13 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `updates for existing documents will be processed, if repository has no plugins`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       val existing = mock(DocumentEntity::class.java)
       `when`(
         documentService.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
-          any(UUID::class.java)
+          any(RepositoryId::class.java)
         )
       ).thenReturn(
         existing
@@ -539,22 +543,22 @@ class RepositoryHarvesterTest {
   @Test
   @Disabled
   fun `documents will inherit the plugins defined in repository`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       TODO()
     }
 
   @Test
   @Disabled
   fun `scrape will update the retrieval count`() =
-    runTest(context = RequestContext(userId = UUID.randomUUID())) {
+    runTest(context = RequestContext(userId = randomUserId())) {
       TODO()
     }
 
   @Test
-  fun `will follow pagination links`() = runTest(context = RequestContext(userId = UUID.randomUUID())) {
+  fun `will follow pagination links`() = runTest(context = RequestContext(userId = randomUserId())) {
     `when`(
       sourcePipelineService.existsBySourceIdAndUrl(
-        any(UUID::class.java),
+        any(SourceId::class.java),
         any(String::class.java)
       )
     ).thenReturn(false)

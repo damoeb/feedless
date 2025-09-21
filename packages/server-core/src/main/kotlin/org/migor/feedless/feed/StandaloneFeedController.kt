@@ -18,6 +18,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.util.toLocalDateTime
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -27,7 +28,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
-import java.util.*
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -86,7 +86,7 @@ class StandaloneFeedController(
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
       standaloneFeedService.getFeed(
-        UUID.fromString(feedId),
+        SourceId(feedId),
         feedUrl
       )
     }

@@ -36,6 +36,7 @@ import org.migor.feedless.plan.ProductService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,7 +45,6 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import java.util.*
 
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -99,13 +99,13 @@ class RepositoryServiceIntTest {
   }
 
   @Test
-  fun `create repos`() = runTest(context = RequestContext(userId = user.id)) {
+  fun `create repos`() = runTest(context = RequestContext(userId = UserId(user.id))) {
 
     `when`(sessionService.user())
       .thenReturn(user)
     `when`(sessionService.activeProductFromRequest())
       .thenReturn(org.migor.feedless.data.jpa.enums.Vertical.feedless)
-    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UUID::class.java)))
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UserId::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(eq(null)))
       .thenReturn(EntityVisibility.isPublic)

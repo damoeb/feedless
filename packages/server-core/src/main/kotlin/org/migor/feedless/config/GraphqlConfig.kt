@@ -10,7 +10,10 @@ import graphql.schema.idl.SchemaDirectiveWiringEnvironment
 import org.apache.commons.validator.EmailValidator
 import org.migor.feedless.AppLayer
 import org.migor.feedless.common.CacheKeyGenerator
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.UserId
 import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
@@ -18,7 +21,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
-import java.util.*
 
 @Configuration
 @Profile(AppLayer.api)
@@ -39,9 +41,9 @@ class GraphqlConfig {
 }
 
 class DgsCustomContext {
-  var repositoryId: UUID? = null
-  var documentId: UUID? = null
-  var userId: UUID? = null
+  var repositoryId: RepositoryId? = null
+  var documentId: DocumentId? = null
+  var userId: UserId? = null
 }
 
 @Profile(AppLayer.api)

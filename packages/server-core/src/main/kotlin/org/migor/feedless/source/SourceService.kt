@@ -37,7 +37,9 @@ import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
@@ -51,6 +53,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
+
+data class SourceId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -67,8 +73,12 @@ class SourceService(
 
   private val log = LoggerFactory.getLogger(SourceService::class.simpleName)
 
+  fun trackedRepositories() {
+//    sourceDAO.getRepositoryHealthByRepositoryIdIn()
+  }
+
   @Transactional
-  suspend fun processSourcePipeline(sourceId: UUID, jobs: List<SourcePipelineJobEntity>) {
+  suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJobEntity>) {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
 
@@ -77,7 +87,7 @@ class SourceService(
 
     val source = withContext(Dispatchers.IO) {
       sourcePipelineJobDAO.save(job)
-      sourceDAO.findByIdWithActions(sourceId)!!
+      sourceDAO.findByIdWithActions(sourceId.value)!!
     }
 
     try {
@@ -130,24 +140,24 @@ class SourceService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun countProblematicSourcesByRepositoryId(repositoryId: UUID): Int {
+  suspend fun countProblematicSourcesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
 //      sourceDAO.countByRepositoryIdAndDisabledTrue(repositoryId)
-      sourceDAO.countByRepositoryIdAndLastRecordsRetrieved(repositoryId, 0)
+      sourceDAO.countByRepositoryIdAndLastRecordsRetrieved(repositoryId.value, 0)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun countDocumentsBySourceId(sourceId: UUID): Int {
+  suspend fun countDocumentsBySourceId(sourceId: SourceId): Int {
     return withContext(Dispatchers.IO) {
-      documentDAO.countBySourceId(sourceId)
+      documentDAO.countBySourceId(sourceId.value)
     }
   }
 
   @Transactional
-  suspend fun setErrorState(sourceId: UUID, erroneous: Boolean, message: String?) {
+  suspend fun setErrorState(sourceId: SourceId, erroneous: Boolean, message: String?) {
     withContext(Dispatchers.IO) {
-      sourceDAO.setErrorState(sourceId, erroneous, message)
+      sourceDAO.setErrorState(sourceId.value, erroneous, message)
     }
   }
 
@@ -159,15 +169,15 @@ class SourceService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun countAllByRepositoryId(id: UUID): Long {
+  suspend fun countAllByRepositoryId(id: RepositoryId): Long {
     return withContext(Dispatchers.IO) {
-      sourceDAO.countByRepositoryId(id)
+      sourceDAO.countByRepositoryId(id.value)
     }
   }
 
   @Transactional(readOnly = true)
   suspend fun findAllByRepositoryIdFiltered(
-    repositoryId: UUID,
+    repositoryId: RepositoryId,
     pageable: Pageable,
     where: SourcesWhereInput? = null,
     orders: List<SourceOrderByInput>? = null
@@ -178,10 +188,11 @@ class SourceService(
       where?.let {
         it.like?.let { like ->
           if (like.length > 2) {
-            whereStatements.add(or(
-              path(SourceEntity::title).like("%$like%"),
-              path(FetchActionEntity::url).like("%$like%"),
-            )
+            whereStatements.add(
+              or(
+                path(SourceEntity::title).like("%$like%"),
+                path(FetchActionEntity::url).like("%$like%"),
+              )
             )
           }
         }
@@ -211,10 +222,12 @@ class SourceService(
           }
         }
       }
-      val applySortDirection = { path: Path<*>, direction: SortOrder -> when (direction) {
-        SortOrder.asc -> path.asc().nullsFirst()
-        SortOrder.desc -> path.desc().nullsLast()
-      } }
+      val applySortDirection = { path: Path<*>, direction: SortOrder ->
+        when (direction) {
+          SortOrder.asc -> path.asc().nullsFirst()
+          SortOrder.desc -> path.desc().nullsLast()
+        }
+      }
 
       orders?.let {
         sortableStatements.addAll(
@@ -239,9 +252,10 @@ class SourceService(
       select(path(SourceEntity::id))
         .from(
           entity(SourceEntity::class),
-          join(FetchActionEntity::class).on(path(FetchActionEntity::sourceId).eq(path(SourceEntity::id))))
+          join(FetchActionEntity::class).on(path(FetchActionEntity::sourceId).eq(path(SourceEntity::id)))
+        )
         .whereAnd(
-          path(SourceEntity::repositoryId).eq(repositoryId),
+          path(SourceEntity::repositoryId).eq(repositoryId.value),
           *whereStatements.toTypedArray(),
         )
         .orderBy(
@@ -261,7 +275,7 @@ class SourceService(
   }
 
   @Transactional
-  suspend fun createSources(ownerId: UUID, sourceInputs: List<SourceInput>, repository: RepositoryEntity) {
+  suspend fun createSources(ownerId: UserId, sourceInputs: List<SourceInput>, repository: RepositoryEntity) {
     log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
 
     withContext(Dispatchers.IO) {
@@ -372,18 +386,18 @@ class SourceService(
   }
 
   @Transactional
-  suspend fun deleteAllById(repositoryId: UUID, sourceIds: List<UUID>) {
+  suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) {
     log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
     withContext(Dispatchers.IO) {
-      val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
+      val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId.value, sourceIds.map { it.value })
       sourceDAO.deleteAllById(sources.map { it.id })
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(sourceId: UUID): Optional<SourceEntity> {
+  suspend fun findById(sourceId: SourceId): Optional<SourceEntity> {
     return withContext(Dispatchers.IO) {
-      sourceDAO.findById(sourceId)
+      sourceDAO.findById(sourceId.value)
     }
   }
 

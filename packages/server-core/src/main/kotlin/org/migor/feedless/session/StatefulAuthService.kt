@@ -14,6 +14,7 @@ import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -104,15 +105,15 @@ class StatefulAuthService : AuthService() {
   }
 
   @Transactional(readOnly = true)
-  override suspend fun findUserById(userId: UUID): UserEntity? {
+  override suspend fun findUserById(userId: UserId): UserEntity? {
     return withContext(Dispatchers.IO) {
-      userDAO.findById(userId).getOrNull()
+      userDAO.findById(userId.value).getOrNull()
     }
   }
 
   @Transactional(readOnly = true)
   override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecretEntity? {
-    return withContext(Dispatchers.IO){
+    return withContext(Dispatchers.IO) {
       userSecretDAO.findBySecretKeyValue(secretKey, email)
     }
   }

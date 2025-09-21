@@ -38,10 +38,13 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
@@ -58,6 +61,10 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
+
+data class DocumentId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -77,15 +84,15 @@ class DocumentService(
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
   @Transactional(readOnly = true)
-  suspend fun findById(id: UUID): DocumentEntity? {
+  suspend fun findById(id: DocumentId): DocumentEntity? {
     return withContext(Dispatchers.IO) {
-      documentDAO.findById(id).getOrNull()
+      documentDAO.findById(id.value).getOrNull()
     }
   }
 
   @Transactional(readOnly = true)
   suspend fun findAllByRepositoryId(
-    repositoryId: UUID,
+    repositoryId: RepositoryId,
     where: RecordsWhereInput? = null,
     orderBy: RecordOrderByInput? = null,
     status: ReleaseStatus = ReleaseStatus.released,
@@ -101,7 +108,7 @@ class DocumentService(
         entity(DocumentEntity::class),
       )
         .whereAnd(
-          path(DocumentEntity::repositoryId).eq(repositoryId),
+          path(DocumentEntity::repositoryId).eq(repositoryId.value),
           path(DocumentEntity::status).`in`(status),
           path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
           *whereStatements.toTypedArray()
@@ -180,7 +187,7 @@ class DocumentService(
         val retentionSize = runBlocking {
           planConstraintsService.coerceRetentionMaxCapacity(
             repository.retentionMaxCapacity,
-            repository.ownerId,
+            UserId(repository.ownerId),
             repository.product
           )
         }
@@ -199,16 +206,16 @@ class DocumentService(
   }
 
   @Transactional
-  suspend fun applyRetentionStrategy(repositoryId: UUID) {
+  suspend fun applyRetentionStrategy(repositoryId: RepositoryId) {
     val repository = withContext(Dispatchers.IO) {
-      repositoryDAO.findById(repositoryId).orElseThrow()
+      repositoryDAO.findById(repositoryId.value).orElseThrow()
     }
 
     val corrId = coroutineContext.corrId()
 
     planConstraintsService.coerceRetentionMaxAgeDays(
       repository.retentionMaxAgeDays,
-      repository.ownerId,
+      UserId(repository.ownerId),
       repository.product
     )
       ?.let { maxAgeDays ->
@@ -245,18 +252,18 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteDocuments(user: UserEntity, repositoryId: UUID, documentIds: StringFilterInput) {
+  suspend fun deleteDocuments(user: UserEntity, repositoryId: RepositoryId, documentIds: StringFilterInput) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
 
     withContext(Dispatchers.IO) {
-      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      val repository = repositoryDAO.findById(repositoryId.value).orElseThrow()
       if (repository.ownerId != user.id) {
         throw PermissionDeniedException("current user ist not owner")
       }
 
       val documents = documentDAO
         .findAllByRepositoryIdAndIdIn(
-          repositoryId, if (documentIds.`in` != null) {
+          repositoryId.value, if (documentIds.`in` != null) {
             documentIds.`in`.map { UUID.fromString(it) }
           } else {
             if (documentIds.eq != null) {
@@ -309,11 +316,11 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
+  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) {
-      documentDAO.findByIdWithSource(documentId)
+      documentDAO.findByIdWithSource(documentId.value)
     }
     val logCollector = LogCollector()
 
@@ -411,7 +418,7 @@ class DocumentService(
   ) {
     if (repository.pushNotificationsEnabled) {
       telegramBotServiceMaybe.getOrNull()?.let { telegramBot ->
-        telegramBot.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { telegramLink ->
+        telegramBot.findByUserIdAndAuthorizedIsTrue(UserId(repository.ownerId))?.let { telegramLink ->
           documents.forEach {
             messageService.publishMessage(
               TelegramBotService.toTopic(telegramLink.chatId),
@@ -451,9 +458,9 @@ class DocumentService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun countByRepositoryId(repositoryId: UUID): Long {
+  suspend fun countByRepositoryId(repositoryId: RepositoryId): Long {
     return withContext(Dispatchers.IO) {
-      documentDAO.countByRepositoryId(repositoryId)
+      documentDAO.countByRepositoryId(repositoryId.value)
     }
   }
 
@@ -502,9 +509,9 @@ class DocumentService(
   }
 
   @Transactional
-  suspend fun deleteById(documentId: UUID) {
+  suspend fun deleteById(documentId: DocumentId) {
     withContext(Dispatchers.IO) {
-      documentDAO.deleteById(documentId)
+      documentDAO.deleteById(documentId.value)
     }
   }
 
@@ -512,10 +519,10 @@ class DocumentService(
   suspend fun findFirstByContentHashOrUrlAndRepositoryId(
     contentHash: String,
     url: String,
-    repositoryId: UUID
+    repositoryId: RepositoryId
   ): DocumentEntity? {
     return withContext(Dispatchers.IO) {
-      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId.value)
     }
   }
 
@@ -527,9 +534,9 @@ class DocumentService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity> {
+  suspend fun findAllBySourceId(sourceId: SourceId, pageable: PageRequest): List<DocumentEntity> {
     return withContext(Dispatchers.IO) {
-      documentDAO.findAllBySourceId(sourceId, pageable)
+      documentDAO.findAllBySourceId(sourceId.value, pageable)
     }
   }
 

@@ -4,6 +4,9 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomDocumentId
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.AnnotationWhereUniqueInput
@@ -31,9 +34,9 @@ class AnnotationServiceTest {
   private lateinit var annotationDAO: AnnotationDAO
   private lateinit var annotationService: AnnotationService
   private lateinit var currentUser: UserEntity
-  private val currentUserId = UUID.randomUUID()
-  private val documentId = UUID.randomUUID()
-  private val repositoryId = UUID.randomUUID()
+  private val currentUserId = randomUserId()
+  private val documentId = randomDocumentId()
+  private val repositoryId = randomRepositoryId()
 
   @BeforeEach
   fun setUp() {
@@ -44,7 +47,7 @@ class AnnotationServiceTest {
     annotationService = AnnotationService(annotationDAO, voteDAO, textAnnotationDAO)
 
     currentUser = mock(UserEntity::class.java)
-    `when`(currentUser.id).thenReturn(currentUserId)
+    `when`(currentUser.id).thenReturn(currentUserId.value)
   }
 
   @Test
@@ -82,7 +85,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.toString())
+          document = RecordUniqueWhereInput(documentId.value.toString())
         ),
         annotation = OneOfAnnotationInput(
           flag = BoolUpdateOperationsInput(set = true)
@@ -90,7 +93,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.flag && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.flag && it.documentId == documentId.value })
   }
 
   @Test
@@ -99,7 +102,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.toString()),
+          document = RecordUniqueWhereInput(documentId.value.toString()),
         ),
         annotation = OneOfAnnotationInput(
           upVote = BoolUpdateOperationsInput(set = true)
@@ -107,7 +110,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.upVote && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.upVote && it.documentId == documentId.value })
   }
 
   @Test
@@ -116,7 +119,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.toString()),
+          document = RecordUniqueWhereInput(documentId.value.toString()),
         ),
         annotation = OneOfAnnotationInput(
           downVote = BoolUpdateOperationsInput(set = true)
@@ -124,7 +127,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.downVote && it.documentId == documentId })
+    verify(voteDAO).save(argThat { it.downVote && it.documentId == documentId.value })
   }
 
   @Test
@@ -133,7 +136,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.toString()),
+          repository = RepositoryUniqueWhereInput(repositoryId.value.toString()),
         ),
         annotation = OneOfAnnotationInput(
           flag = BoolUpdateOperationsInput(set = true)
@@ -141,7 +144,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.flag && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.flag && it.repositoryId == repositoryId.value })
   }
 
   @Test
@@ -150,7 +153,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.toString()),
+          repository = RepositoryUniqueWhereInput(repositoryId.value.toString()),
         ),
         annotation = OneOfAnnotationInput(
           upVote = BoolUpdateOperationsInput(set = true)
@@ -158,7 +161,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.upVote && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.upVote && it.repositoryId == repositoryId.value })
   }
 
   @Test
@@ -167,7 +170,7 @@ class AnnotationServiceTest {
     annotationService.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.toString()),
+          repository = RepositoryUniqueWhereInput(repositoryId.value.toString()),
         ),
         annotation = OneOfAnnotationInput(
           downVote = BoolUpdateOperationsInput(set = true)
@@ -175,7 +178,7 @@ class AnnotationServiceTest {
       ), currentUser
     )
 
-    verify(voteDAO).save(argThat { it.downVote && it.repositoryId == repositoryId })
+    verify(voteDAO).save(argThat { it.downVote && it.repositoryId == repositoryId.value })
   }
 
   @Test

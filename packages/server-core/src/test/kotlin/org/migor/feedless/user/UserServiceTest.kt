@@ -8,6 +8,8 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.Mother.randomConnectedAppId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
@@ -49,7 +51,7 @@ class UserServiceTest {
   lateinit var user: UserEntity
   lateinit var githubId: String
   lateinit var email: String
-  lateinit var userId: UUID
+  lateinit var userId: UserId
 
   @BeforeEach
   fun setUp() = runTest {
@@ -82,9 +84,9 @@ class UserServiceTest {
 
     user = mock(UserEntity::class.java)
     githubId = "123678"
-    userId = UUID.randomUUID()
+    userId = randomUserId()
     email = "$githubId@github.com"
-    `when`(user.id).thenReturn(userId)
+    `when`(user.id).thenReturn(userId.value)
 //    `when`(user.githubId).thenReturn(githubId)
     `when`(user.email).thenReturn(email)
     `when`(userDAO.findById(any2())).thenReturn(Optional.of(user))
@@ -160,7 +162,7 @@ class UserServiceTest {
     userService.updateLegacyUser(user, githubId)
 
     // then
-    verify(user).email = "$userId@feedless.org"
+    verify(user).email = "${userId.value}@feedless.org"
     verify(githubConnectionDAO, times(0)).save(argThat { it.githubId == githubId })
 
     verify(userDAO).save(eq(user))
@@ -172,7 +174,7 @@ class UserServiceTest {
     val data = UpdateCurrentUserInput(
       email = StringUpdateOperationsInput(email),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).email // read
     verify(user).email = email
@@ -187,7 +189,7 @@ class UserServiceTest {
     val data = UpdateCurrentUserInput(
       acceptedTermsAndServices = BoolUpdateOperationsInput(true),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).hasAcceptedTerms = true
     verify(user).acceptedTermsAt = any2()
@@ -200,7 +202,7 @@ class UserServiceTest {
     val data = UpdateCurrentUserInput(
       acceptedTermsAndServices = BoolUpdateOperationsInput(false),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).hasAcceptedTerms = false
     verify(user).acceptedTermsAt = null
@@ -213,7 +215,7 @@ class UserServiceTest {
     val data = UpdateCurrentUserInput(
       purgeScheduledFor = NullableUpdateOperationsInput(true),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).purgeScheduledFor = null
     verifyNoMoreInteractions(user)
@@ -225,7 +227,7 @@ class UserServiceTest {
     val data = UpdateCurrentUserInput(
       purgeScheduledFor = NullableUpdateOperationsInput(false),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).purgeScheduledFor = any2()
     verifyNoMoreInteractions(user)
@@ -242,7 +244,7 @@ class UserServiceTest {
       lastName = StringUpdateOperationsInput(lastName),
       country = StringUpdateOperationsInput(country),
     )
-    userService.updateUser(UUID.randomUUID(), data)
+    userService.updateUser(randomUserId(), data)
 
     verify(user).firstName = firstName
     verify(user).lastName = lastName
@@ -271,7 +273,7 @@ class UserServiceTest {
   @Test
   fun `deleting a connected app will fail if user is not authorized`() {
     val connectedApp = mock(ConnectedAppEntity::class.java)
-    val connectedAppId = UUID.randomUUID()
+    val connectedAppId = randomConnectedAppId()
     `when`(connectedApp.userId).thenReturn(UUID.randomUUID())
     `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any2(), eq(true))).thenReturn(connectedApp)
 
@@ -284,7 +286,7 @@ class UserServiceTest {
 
   @Test
   fun `deleting a connected app will fail if app-id is invalid`() {
-    val connectedAppId = UUID.randomUUID()
+    val connectedAppId = randomConnectedAppId()
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest {
@@ -296,9 +298,9 @@ class UserServiceTest {
   @Test
   fun `deleting a telegram connection will work`() = runTest {
     val connectedApp = mock(TelegramConnectionEntity::class.java)
-    val connectedAppId = UUID.randomUUID()
+    val connectedAppId = randomConnectedAppId()
     val telegramChatId: Long = 1234
-    `when`(connectedApp.userId).thenReturn(userId)
+    `when`(connectedApp.userId).thenReturn(userId.value)
     `when`(connectedApp.chatId).thenReturn(telegramChatId)
     `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any2(), eq(true))).thenReturn(connectedApp)
 
@@ -311,8 +313,8 @@ class UserServiceTest {
   @Test
   fun `deleting a github connection is defused`() {
     val connectedApp = mock(GithubConnectionEntity::class.java)
-    val connectedAppId = UUID.randomUUID()
-    `when`(connectedApp.userId).thenReturn(userId)
+    val connectedAppId = randomConnectedAppId()
+    `when`(connectedApp.userId).thenReturn(userId.value)
     `when`(connectedAppDAO.findByIdAndAuthorizedEquals(any(UUID::class.java), eq(true))).thenReturn(connectedApp)
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {

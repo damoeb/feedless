@@ -37,6 +37,10 @@ import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
+data class UserId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service} & ${AppLayer.repository}")
@@ -98,7 +102,7 @@ class UserService(
       createInboxRepository(savedUser)
 
       // todo saas only?
-      productService.enableDefaultSaasProduct(Vertical.feedless, savedUser.id)
+      productService.enableDefaultSaasProduct(Vertical.feedless, UserId(savedUser.id))
       savedUser
     }
   }
@@ -141,9 +145,9 @@ class UserService(
   }
 
   @Transactional
-  suspend fun updateUser(userId: UUID, data: UpdateCurrentUserInput) {
+  suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) {
     val user = withContext(Dispatchers.IO) {
-      userDAO.findById(userId).orElseThrow { NotFoundException("user not found") }
+      userDAO.findById(userId.value).orElseThrow { NotFoundException("user not found") }
     }
 
     var changed = false
@@ -239,35 +243,35 @@ class UserService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(userId: UUID): Optional<UserEntity> {
+  suspend fun findById(userId: UserId): Optional<UserEntity> {
     return withContext(Dispatchers.IO) {
-      userDAO.findById(userId)
+      userDAO.findById(userId.value)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun getConnectedAppByUserAndId(userId: UUID, connectedAppId: UUID): ConnectedAppEntity {
+  suspend fun getConnectedAppByUserAndId(userId: UserId, connectedAppId: ConnectedAppId): ConnectedAppEntity {
     return withContext(Dispatchers.IO) {
-      connectedAppDAO.findByIdAndUserIdEquals(connectedAppId, userId)
-        ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+      connectedAppDAO.findByIdAndUserIdEquals(connectedAppId.value, userId.value)
+        ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId.value, false)
         ?: throw IllegalArgumentException("not found")
     }
   }
 
   @Transactional
-  suspend fun updateConnectedApp(userId: UUID, connectedAppId: UUID, authorize: Boolean) {
+  suspend fun updateConnectedApp(userId: UserId, connectedAppId: ConnectedAppId, authorize: Boolean) {
     withContext(Dispatchers.IO) {
       val app =
         getConnectedAppByUserAndId(userId, connectedAppId)
       app.userId?.let {
-        if (userId != it) {
+        if (userId.value != it) {
           throw PermissionDeniedException("error")
         }
       }
 
       app.authorized = authorize
       app.authorizedAt = LocalDateTime.now()
-      app.userId = userId
+      app.userId = userId.value
 
       connectedAppDAO.save(app)
       telegramBotServiceMaybe.getOrNull()?.let {
@@ -279,12 +283,13 @@ class UserService(
   }
 
   @Transactional
-  suspend fun deleteConnectedApp(currentUserId: UUID, connectedAppId: UUID) {
+  suspend fun deleteConnectedApp(currentUserId: UserId, connectedAppId: ConnectedAppId) {
     withContext(Dispatchers.IO) {
       val app =
-        connectedAppDAO.findByIdAndAuthorizedEquals(connectedAppId, true) ?: throw IllegalArgumentException("not found")
+        connectedAppDAO.findByIdAndAuthorizedEquals(connectedAppId.value, true)
+          ?: throw IllegalArgumentException("not found")
 //      app.userId?.let {
-      if (currentUserId != app.userId) {
+      if (currentUserId.value != app.userId) {
         throw PermissionDeniedException("error")
       }
 //      }
@@ -328,10 +333,10 @@ fun CoroutineContext.corrId(): String? {
   return this[RequestContext]?.corrId
 }
 
-fun CoroutineContext.userIdOptional(): UUID? {
+fun CoroutineContext.userIdOptional(): UserId? {
   return this[RequestContext]?.userId
 }
 
-fun CoroutineContext.userId(): UUID {
+fun CoroutineContext.userId(): UserId {
   return this.userIdOptional()!!
 }

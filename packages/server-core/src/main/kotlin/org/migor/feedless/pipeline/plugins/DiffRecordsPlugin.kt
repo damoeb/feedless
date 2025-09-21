@@ -10,6 +10,7 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.RecordField
 import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -33,7 +34,7 @@ import kotlin.math.abs
 
 suspend fun getLastReleasedDocumentByRepositoryId(
   documentService: DocumentService,
-  repositoryId: UUID
+  repositoryId: RepositoryId
 ): DocumentEntity? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
   return documentService.findAllByRepositoryId(

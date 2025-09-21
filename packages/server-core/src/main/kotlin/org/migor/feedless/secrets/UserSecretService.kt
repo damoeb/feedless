@@ -8,6 +8,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -60,17 +61,17 @@ class UserSecretService(
     }
   }
 
-  @Transactional
-  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
-    withContext(Dispatchers.IO) {
-      userSecretDAO.updateLastUsed(id, date)
-    }
-  }
+//  @Transactional
+//  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
+//    withContext(Dispatchers.IO) {
+//      userSecretDAO.updateLastUsed(id, date)
+//    }
+//  }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByOwnerId(userId: UUID): List<UserSecretEntity> {
+  suspend fun findAllByOwnerId(userId: UserId): List<UserSecretEntity> {
     return withContext(Dispatchers.IO) {
-      userSecretDAO.findAllByOwnerId(userId)
+      userSecretDAO.findAllByOwnerId(userId.value)
     }
   }
 

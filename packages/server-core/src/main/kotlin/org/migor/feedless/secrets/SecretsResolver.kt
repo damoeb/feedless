@@ -18,6 +18,7 @@ import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
+import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
@@ -35,7 +36,7 @@ class SecretsResolver(
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
     val user: User = dfe.getSource()!!
-    userSecretService.findAllByOwnerId(UUID.fromString(user.id)).map { it.toDto() }
+    userSecretService.findAllByOwnerId(UserId(user.id)).map { it.toDto() }
   }
 
 

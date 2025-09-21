@@ -24,6 +24,7 @@ import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
@@ -88,7 +89,7 @@ class StandaloneFeedServiceTest {
     `when`(sourceService.findById(any2())).thenReturn(Optional.of(source))
     `when`(documentService.findAllBySourceId(any2(), any2())).thenReturn(listOf())
 
-    val feed = standaloneFeedService.getFeed(mock(UUID::class.java), "feedUrl")
+    val feed = standaloneFeedService.getFeed(mock(SourceId::class.java), "feedUrl")
     assertThat(feed).isNotNull()
   }
 

@@ -5,6 +5,8 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.actions.ExtractEmit
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.ScrapeActionDAO
@@ -29,6 +31,7 @@ import org.migor.feedless.pipeline.SourcePipelineJobDAO
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.any2
 import org.migor.feedless.repository.argThat
 import org.migor.feedless.repository.eq
@@ -43,7 +46,7 @@ class SourceServiceTest {
   private lateinit var scrapeActionDAO: ScrapeActionDAO
   private lateinit var sourceService: SourceService
   private lateinit var repository: RepositoryEntity
-  private lateinit var repositoryId: UUID
+  private lateinit var repositoryId: RepositoryId
 
   @BeforeEach
   fun setUp() {
@@ -60,8 +63,8 @@ class SourceServiceTest {
     )
 
     repository = mock(RepositoryEntity::class.java)
-    repositoryId = UUID.randomUUID()
-    `when`(repository.id).thenReturn(repositoryId)
+    repositoryId = randomRepositoryId()
+    `when`(repository.id).thenReturn(repositoryId.value)
   }
 
   @Test
@@ -73,7 +76,7 @@ class SourceServiceTest {
         flow = ScrapeFlowInput(sequence = listOf(ScrapeActionInput(fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput())))))
       )
     )
-    sourceService.createSources(UUID.randomUUID(), inputs, repository)
+    sourceService.createSources(randomUserId(), inputs, repository)
 
     verify(sourceDAO).saveAll(argThat<List<SourceEntity>> { it.size == 1 })
     verify(scrapeActionDAO).saveAll(argThat<List<ScrapeActionEntity>> { it.size == 1 })
@@ -117,7 +120,7 @@ class SourceServiceTest {
       )
     )
     val source = mock(SourceEntity::class.java)
-    `when`(source.repositoryId).thenReturn(repositoryId)
+    `when`(source.repositoryId).thenReturn(repositoryId.value)
     `when`(source.id).thenReturn(sourceId)
     `when`(sourceDAO.findById(eq(sourceId))).thenReturn(Optional.of(source))
 
@@ -149,8 +152,8 @@ class SourceServiceTest {
       `when`(source.id).thenReturn(it)
       source
     }
-    val sourceIds = sources.map { it.id }
-    `when`(sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)).thenReturn(sources)
+    val sourceIds = sources.map { SourceId(it.id) }
+    `when`(sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId.value, sources.map { it.id })).thenReturn(sources)
     sourceService.deleteAllById(repositoryId, sourceIds)
     verify(sourceDAO).deleteAllById(argThat<List<UUID>> { it.size == sources.size })
   }

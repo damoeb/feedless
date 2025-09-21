@@ -7,6 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.config.SystemSettingsDAO
 import org.migor.feedless.config.SystemSettingsEntity
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -217,7 +218,7 @@ class TelegramBotServiceTest {
     jsonItem.url = "https://some-url"
     jsonItem.publishedAt = LocalDateTime.now()
     jsonItem.text = "lorem ipsum"
-    jsonItem.repositoryId = UUID.randomUUID()
+    jsonItem.repositoryId = randomRepositoryId()
     jsonItem.repositoryName = "foo-repository"
 
     assertThat(jsonItem.toTelegramMessage(isSaas)).isEqualTo(exptected)

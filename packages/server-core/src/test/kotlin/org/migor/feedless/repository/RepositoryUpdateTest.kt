@@ -4,6 +4,8 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.common.PropertyService
@@ -25,7 +27,9 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
+import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -41,13 +45,13 @@ class RepositoryUpdateTest {
   private lateinit var repositoryDAO: RepositoryDAO
   private lateinit var sessionService: SessionService
   private lateinit var planConstraintsService: PlanConstraintsService
-  private lateinit var repositoryId: UUID
-  private lateinit var ownerId: UUID
+  private lateinit var repositoryId: RepositoryId
+  private lateinit var ownerId: UserId
   private lateinit var repository: RepositoryEntity
   private lateinit var data: RepositoryUpdateDataInput
   private lateinit var applicationContext: ApplicationContext
   private lateinit var sourceService: SourceService
-  private val currentUserId = UUID.randomUUID()
+  private val currentUserId = randomUserId()
 
   @BeforeEach
   fun setUp() {
@@ -73,11 +77,11 @@ class RepositoryUpdateTest {
 
     `when`(applicationContext.getBean(eq(RepositoryService::class.java))).thenReturn(repositoryService)
 
-    repositoryId = UUID.randomUUID()
-    ownerId = UUID.randomUUID()
+    repositoryId = randomRepositoryId()
+    ownerId = randomUserId()
     repository = mock(RepositoryEntity::class.java)
-    `when`(repository.id).thenReturn(repositoryId)
-    `when`(repository.ownerId).thenReturn(ownerId)
+    `when`(repository.id).thenReturn(repositoryId.value)
+    `when`(repository.ownerId).thenReturn(ownerId.value)
     `when`(repository.lastUpdatedAt).thenReturn(LocalDateTime.now())
     data = RepositoryUpdateDataInput(
       description = NullableStringUpdateOperationsInput(set = "new-description"),
@@ -114,35 +118,36 @@ class RepositoryUpdateTest {
   @Test
   fun `given current user has insuffieient priveleges, update will fail`() {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = UUID.randomUUID())) {
-        `when`(repositoryService.findById(any2())).thenReturn(Optional.of( repository ))
+      runTest(context = RequestContext(userId = randomUserId())) {
+        doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
         repositoryService.updateRepository(repositoryId, data)
       }
     }
   }
 
   @Test
-  fun `given all requirements are met, repository data will be updated`() = runTest(context = RequestContext(userId = ownerId)) {
-    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
-      it.arguments[0]
-    }
-    `when`(
-      planConstraintsService.coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2(),
-        any2(),
-      )
-    ).thenReturn(LocalDateTime.now())
-    mockActiveProductFromRequest()
-    `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
-    mockRepositorySave()
+  fun `given all requirements are met, repository data will be updated`() =
+    runTest(context = RequestContext(userId = ownerId)) {
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
+        it.arguments[0]
+      }
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2(),
+          any2(),
+        )
+      ).thenReturn(LocalDateTime.now())
+      mockActiveProductFromRequest()
+      `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
+      mockRepositorySave()
 
-    repositoryService.updateRepository(repositoryId, data)
+      repositoryService.updateRepository(repositoryId, data)
 
-    verify(repository).title = "new-title"
-    verify(repository).description = "new-description"
-    verify(repository).sourcesSyncCron = "* * * * * *"
+      verify(repository).title = "new-title"
+      verify(repository).description = "new-description"
+      verify(repository).sourcesSyncCron = "* * * * * *"
 //    verify(repository).pushNotificationsMuted = true
 //    verify(repository).visibility = EntityVisibility.isPrivate
 //    verify(repository).plugins = emptyList()
@@ -152,13 +157,13 @@ class RepositoryUpdateTest {
 //    verify(repository).retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.startingAt
 //    verify(repository).sources = mutableListOf()
 //
-    verify(repositoryDAO).save(any2())
-  }
+      verify(repositoryDAO).save(any2())
+    }
 
   @Test
   fun `given a valid update request, sources can be added`() = runTest(context = RequestContext(userId = ownerId)) {
     // given
-    `when`(repositoryService.findById(any2())).thenReturn(Optional.of( repository ))
+    doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
     mockActiveProductFromRequest()
     mockRepositorySave()
 
@@ -172,7 +177,7 @@ class RepositoryUpdateTest {
   @Test
   fun `given a valid update request, sources can be updated`() = runTest(context = RequestContext(userId = ownerId)) {
     // given
-    `when`(repositoryService.findById(any2())).thenReturn(Optional.of( repository ))
+    doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
     mockActiveProductFromRequest()
     mockRepositorySave()
 
@@ -186,7 +191,7 @@ class RepositoryUpdateTest {
   @Test
   fun `given a valid update request, sources can be removed`() = runTest(context = RequestContext(userId = ownerId)) {
     // given
-    `when`(repositoryService.findById(any2())).thenReturn(Optional.of( repository ))
+    doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
     mockActiveProductFromRequest()
     mockRepositorySave()
 

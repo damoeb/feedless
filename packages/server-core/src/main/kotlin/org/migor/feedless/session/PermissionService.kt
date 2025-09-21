@@ -7,6 +7,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.user.UserDAO
@@ -15,7 +16,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 
 @Service
@@ -43,14 +43,14 @@ class PermissionService(
   suspend fun canWrite(repository: RepositoryEntity) {
     val currentUserId = currentCoroutineContext()[RequestContext]!!.userId!!
     withContext(Dispatchers.IO) {
-      val currentUser = userDAO.findById(currentUserId).orElseThrow()
+      val currentUser = userDAO.findById(currentUserId.value).orElseThrow()
       if (!(currentUser.admin || currentUser.id == repository.ownerId)) {
         throw PermissionDeniedException("Must be owner")
       }
     }
   }
 
-  fun canReadDocument(documentId: UUID) {
+  fun canReadDocument(documentId: DocumentId) {
 
   }
 }

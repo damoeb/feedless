@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -60,7 +59,7 @@ class FeatureResolver(
   ): Boolean =
     withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       log.debug("updateFeature $data")
-      featureService.updateFeatureValue(UUID.fromString(data.id), data.value.numVal, data.value.boolVal)
+      featureService.updateFeatureValue(FeatureValueId(data.id), data.value.numVal, data.value.boolVal)
       true
     }
 }

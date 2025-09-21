@@ -3,6 +3,7 @@ package org.migor.feedless.session
 import jakarta.servlet.http.HttpServletRequest
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.security.access.AccessDeniedException
@@ -10,7 +11,6 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 
 @Service
@@ -45,8 +45,8 @@ class StatelessAuthService : AuthService() {
     }
   }
 
-  override suspend fun findUserById(userId: UUID): UserEntity? {
-    return if (root.id == userId) {
+  override suspend fun findUserById(userId: UserId): UserEntity? {
+    return if (root.id == userId.value) {
       root
     } else {
       null

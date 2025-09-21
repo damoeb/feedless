@@ -9,6 +9,7 @@ import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -18,6 +19,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
+
+data class ProductId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -53,15 +58,16 @@ class ProductService(
         listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
       } ?: data.id?.`in`?.let { ids ->
         productDAO.findAllByIdIn(ids.map { UUID.fromString(it) })
-      } ?: data.vertical?.let {  productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical?.fromDto() ?: Vertical.feedless)
-    } ?: throw IllegalArgumentException("Insufficient filter params")
+      } ?: data.vertical?.let {
+        productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical.fromDto())
+      } ?: throw IllegalArgumentException("Insufficient filter params")
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun resolvePriceForProduct(productId: UUID, existingUserId: UUID?): Double {
+  suspend fun resolvePriceForProduct(productId: ProductId, existingUserId: UserId?): Double {
     val product = withContext(Dispatchers.IO) {
-      productDAO.findById(productId).orElseThrow()
+      productDAO.findById(productId.value).orElseThrow()
     }
     val prices = product.prices.filter { it.validTo?.isAfter(LocalDateTime.now()) ?: true }
       .filter { it.validFrom?.isBefore(LocalDateTime.now()) ?: true }
@@ -112,17 +118,17 @@ class ProductService(
   }
 
   @Transactional
-  suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UUID) {
+  suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) {
     val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
-    val user = withContext(Dispatchers.IO) { userDAO.findById(userId).orElseThrow() }
+    val user = withContext(Dispatchers.IO) { userDAO.findById(userId.value).orElseThrow() }
 
     enableSaasProduct(product, user)
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByProductId(productId: UUID): List<PricedProductEntity> {
+  suspend fun findAllByProductId(productId: ProductId): List<PricedProductEntity> {
     return withContext(Dispatchers.IO) {
-      pricedProductDAO.findAllByProductId(productId)
+      pricedProductDAO.findAllByProductId(productId.value)
     }
   }
 }

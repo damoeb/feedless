@@ -10,9 +10,11 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.RequestContext
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
@@ -22,7 +24,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
@@ -52,12 +53,12 @@ class DocumentPipelineJobExecutor internal constructor(
             coroutineScope {
               groupedDocuments.map { groupedDocuments ->
                 try {
-                  val userId = getOwnerIdForDocumentId(groupedDocuments.key)
+                  val userId = getOwnerIdForDocumentId(DocumentId(groupedDocuments.key))
                   async(RequestContext(userId = userId, corrId = corrId)) {
                     semaphore.acquire()
                     delay(300)
                     try {
-                      processDocumentPlugins(groupedDocuments.key, groupedDocuments.value)
+                      processDocumentPlugins(DocumentId(groupedDocuments.key), groupedDocuments.value)
                     } finally {
                       semaphore.release()
                     }
@@ -78,14 +79,14 @@ class DocumentPipelineJobExecutor internal constructor(
     }
   }
 
-  private suspend fun getOwnerIdForDocumentId(documentId: UUID): UUID {
+  private suspend fun getOwnerIdForDocumentId(documentId: DocumentId): UserId {
     val repo = withContext(Dispatchers.IO) {
-      repositoryService.findByDocumentId(documentId)
+      repositoryService.findByDocumentId(documentId.value)
     } ?: throw documentPipelineService.failAfterCleaningJobsForDocument(documentId)
-    return repo.ownerId
+    return UserId(repo.ownerId)
   }
 
-  private suspend fun processDocumentPlugins(documentId: UUID, jobs: List<DocumentPipelineJobEntity>) {
+  private suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJobEntity>) {
     try {
       documentService.processDocumentPlugins(documentId, jobs)
     } catch (t: Throwable) {

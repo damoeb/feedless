@@ -24,6 +24,7 @@ import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.any2
 import org.migor.feedless.session.PermissionService
@@ -61,7 +62,6 @@ import java.time.LocalDateTime
   MockBean(ProductDAO::class),
   MockBean(RepositoryService::class),
   MockBean(HttpService::class),
-  MockBean(PlanConstraintsService::class),
   MockBean(DocumentPipelineJobDAO::class),
   MockBean(PluginService::class),
   MockBean(FeatureService::class),
@@ -89,7 +89,7 @@ class DocumentIntTest {
   @Autowired
   lateinit var documentDAO: DocumentDAO
 
-  @Autowired
+  @MockBean
   lateinit var planConstraintsService: PlanConstraintsService
 
   val past = LocalDateTime.now().minusDays(1)
@@ -191,7 +191,7 @@ class DocumentIntTest {
   @Test
   fun `given where is null, findAll filters repoId and status`() = runTest {
     val documents = documentService.findAllByRepositoryId(
-      repositoryId = repository.id,
+      repositoryId = RepositoryId(repository.id),
       status = ReleaseStatus.released,
       pageable = PageRequest.of(0, 10),
     )

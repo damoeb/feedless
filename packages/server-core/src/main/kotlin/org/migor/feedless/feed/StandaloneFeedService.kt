@@ -1,7 +1,6 @@
 package org.migor.feedless.feed
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
@@ -20,6 +19,7 @@ import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
@@ -28,6 +28,7 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.source.SourceEntity
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
@@ -73,7 +74,7 @@ class StandaloneFeedService(
   fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-  suspend fun getFeed(sourceId: UUID, feedUrl: String): JsonFeed {
+  suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
     val feed =
       sourceService.findById(sourceId).orElseThrow { NotFoundException("feedId not found") }.toJsonFeed(feedUrl)
     feed.items =
@@ -177,7 +178,12 @@ class StandaloneFeedService(
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-  suspend fun transformFeed(nativeFeedUrl: String, filter: String?, ts: LocalDateTime? = null, feedUrl: String): JsonFeed {
+  suspend fun transformFeed(
+    nativeFeedUrl: String,
+    filter: String?,
+    ts: LocalDateTime? = null,
+    feedUrl: String
+  ): JsonFeed {
     return if (standaloneSupport(ts)) {
       val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
       filter?.let {
@@ -213,7 +219,7 @@ class StandaloneFeedService(
     repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
       val documents = documentService.findAllByRepositoryId(
-        repo.id,
+        RepositoryId(repo.id),
         status = ReleaseStatus.released,
         pageable = pageable,
       )

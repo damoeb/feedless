@@ -19,6 +19,7 @@ import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.user.TelegramConnectionDAO
 import org.migor.feedless.user.TelegramConnectionEntity
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
@@ -35,7 +36,6 @@ import org.telegram.telegrambots.meta.api.objects.Update
 import reactor.core.publisher.Flux
 import java.net.URI
 import java.time.Duration
-import java.util.*
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -254,9 +254,9 @@ class TelegramBotService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findByUserIdAndAuthorizedIsTrue(ownerId: UUID): TelegramConnectionEntity? {
+  suspend fun findByUserIdAndAuthorizedIsTrue(ownerId: UserId): TelegramConnectionEntity? {
     return withContext(Dispatchers.IO) {
-      telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(ownerId)
+      telegramConnectionDAO.findByUserIdAndAuthorizedIsTrue(ownerId.value)
     }
   }
 

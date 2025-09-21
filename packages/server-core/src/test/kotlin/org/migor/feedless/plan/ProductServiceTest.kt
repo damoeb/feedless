@@ -4,10 +4,12 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.repository.any2
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -20,15 +22,15 @@ class ProductServiceTest {
   private lateinit var userDAO: UserDAO
   private lateinit var planDAO: PlanDAO
   private lateinit var pricedProductDAO: PricedProductDAO
-  private lateinit var userId: UUID
+  private lateinit var userId: UserId
 
   @BeforeEach
   fun setUp() {
-    userId = UUID.randomUUID()
-    productDAO= mock(ProductDAO::class.java)
-    userDAO= mock(UserDAO::class.java)
-    planDAO= mock(PlanDAO::class.java)
-    pricedProductDAO= mock(PricedProductDAO::class.java)
+    userId = randomUserId()
+    productDAO = mock(ProductDAO::class.java)
+    userDAO = mock(UserDAO::class.java)
+    planDAO = mock(PlanDAO::class.java)
+    pricedProductDAO = mock(PricedProductDAO::class.java)
     service = ProductService(
       productDAO,
       userDAO,

@@ -7,6 +7,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.coroutines.coroutineContext
+
+data class GroupId(val value: UUID)
 
 @Service
 @Transactional(readOnly = true)
@@ -56,13 +59,13 @@ class GroupService(
     }
   }
 
-  private fun assertCurrentUserHasPermissions(currentUserId: UUID, group: GroupEntity) {
-    val isAdmin = userDAO.findById(currentUserId).orElseThrow().admin
+  private fun assertCurrentUserHasPermissions(currentUserId: UserId, group: GroupEntity) {
+    val isAdmin = userDAO.findById(currentUserId.value).orElseThrow().admin
 
     if (!isAdmin) {
       val deniedException = PermissionDeniedException("")
       val currentUserPermissions =
-        userGroupAssignmentDAO.findByUserIdAndGroupId(currentUserId, group.id) ?: throw deniedException
+        userGroupAssignmentDAO.findByUserIdAndGroupId(currentUserId.value, group.id) ?: throw deniedException
       if (RoleInGroup.owner != currentUserPermissions.role) {
         throw deniedException
       }
@@ -70,9 +73,9 @@ class GroupService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByUserId(userId: UUID): List<UserGroupAssignmentEntity> {
+  suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignmentEntity> {
     return withContext(Dispatchers.IO) {
-      userGroupAssignmentDAO.findAllByUserId(userId)
+      userGroupAssignmentDAO.findAllByUserId(userId.value)
     }
   }
 }

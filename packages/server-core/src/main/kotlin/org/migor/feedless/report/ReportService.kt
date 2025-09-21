@@ -10,9 +10,11 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.GeoPointInput
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.fromDto
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toLocalDateTime
@@ -27,6 +29,10 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 import java.util.*
+
+data class ReportId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -43,12 +49,12 @@ class ReportService(
   private val log = LoggerFactory.getLogger(ReportService::class.simpleName)
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun createReport(repositoryId: UUID, segment: SegmentInput, currentUserId: UUID?): ReportEntity {
+  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput, currentUserId: UserId?): ReportEntity {
     log.debug("createReport for $repositoryId")
     val report = ReportEntity()
 
     currentUserId?.let {
-      report.userId = it
+      report.userId = it.value
     }
 
     val repository = repositoryService.findById(repositoryId).orElseThrow()
@@ -60,7 +66,7 @@ class ReportService(
       throw IllegalArgumentException() // obscured login request
     }
 
-    val isOwner = repository.ownerId == user?.id || repository.ownerId == currentUserId
+    val isOwner = repository.ownerId == user?.id || repository.ownerId == currentUserId?.value
     // todo enable this
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
 //      throw IllegalArgumentException() // obscured access denied
@@ -68,7 +74,7 @@ class ReportService(
 
     val segmentation = SegmentationEntity()
     segmentation.size = 200
-    segmentation.repositoryId = repositoryId
+    segmentation.repositoryId = repositoryId.value
     val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
     segmentation.timeSegmentStartingAt = startingAt
     segment.what.latLng?.let {
@@ -116,16 +122,16 @@ class ReportService(
   }
 
   @Transactional
-  suspend fun deleteReport(reportId: String, currentUser: UserEntity) {
+  suspend fun deleteReport(reportId: ReportId, currentUser: UserEntity) {
     withContext(Dispatchers.IO) {
-      reportDAO.deleteById(UUID.fromString(reportId))
+      reportDAO.deleteById(reportId.value)
     }
   }
 
   @Transactional
-  suspend fun updateReportById(reportId: UUID, authorize: Boolean) {
+  suspend fun updateReportById(reportId: ReportId, authorize: Boolean) {
     withContext(Dispatchers.IO) {
-      reportDAO.findById(reportId).orElseThrow()?.let {
+      reportDAO.findById(reportId.value).orElseThrow()?.let {
         it.authorized = authorize
         it.authorizedAt = LocalDateTime.now()
         reportDAO.save(it)

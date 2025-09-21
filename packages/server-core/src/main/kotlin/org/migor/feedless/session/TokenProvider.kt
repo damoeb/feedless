@@ -145,7 +145,7 @@ class TokenProvider(
 
   suspend fun getExpiration(authority: AuthTokenType): Duration {
     // todo from properties
-    return when(authority) {
+    return when (authority) {
       AuthTokenType.ANONYMOUS -> 1.days
       AuthTokenType.USER -> 48.hours
       AuthTokenType.AGENT -> 356.days

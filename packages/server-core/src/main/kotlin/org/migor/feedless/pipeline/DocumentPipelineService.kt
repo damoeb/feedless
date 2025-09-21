@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.DocumentId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -27,11 +28,11 @@ class DocumentPipelineService internal constructor(
   }
 
   @Transactional
-  suspend fun failAfterCleaningJobsForDocument(documentId: UUID): IllegalArgumentException {
+  suspend fun failAfterCleaningJobsForDocument(documentId: DocumentId): IllegalArgumentException {
     withContext(Dispatchers.IO) {
       try {
         log.info("clean jobs for document $documentId")
-        documentPipelineJobDAO.deleteAllByDocumentIdIn(listOf(documentId))
+        documentPipelineJobDAO.deleteAllByDocumentIdIn(listOf(documentId.value))
       } catch (e: Exception) {
         log.warn("job cleanup of document $documentId failed: ${e.message}")
       }

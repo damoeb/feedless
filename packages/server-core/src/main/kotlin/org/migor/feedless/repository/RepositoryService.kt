@@ -34,8 +34,10 @@ import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
@@ -66,6 +68,10 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
 }
 
 
+data class RepositoryId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
@@ -94,9 +100,9 @@ class RepositoryService(
   suspend fun create(data: List<RepositoryCreateInput>): List<Repository> {
     log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
 
-    val ownerId = getActualUserOrDefaultUser().id
+    val ownerId = UserId(getActualUserOrDefaultUser().id)
     val totalCount = withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerId(ownerId)
+      repositoryDAO.countByOwnerId(ownerId.value)
     }
     planConstraintsService.auditRepositoryMaxCount(totalCount, ownerId)
     if (planConstraintsService.violatesRepositoriesMaxActiveCount(ownerId)) {
@@ -110,7 +116,7 @@ class RepositoryService(
 
   @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tags")
   suspend fun getFeedByRepositoryId(
-    repositoryId: UUID,
+    repositoryId: RepositoryId,
     page: Int,
     tags: List<String>,
   ): JsonFeed {
@@ -163,7 +169,7 @@ class RepositoryService(
   suspend fun findAll(
     pageable: Pageable,
     where: RepositoriesWhereInput?,
-    userId: UUID?
+    userId: UserId?
   ): List<RepositoryEntity> {
     log.debug("userId=$userId")
 
@@ -181,7 +187,7 @@ class RepositoryService(
 
           userId?.let {
             whereStatements.add(
-              path(RepositoryEntity::ownerId).eq(userId)
+              path(RepositoryEntity::ownerId).eq(userId.value)
             )
           }
 
@@ -252,7 +258,7 @@ class RepositoryService(
           *whereStatements.toTypedArray(),
           or(
             path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
-            path(RepositoryEntity::ownerId).eq(userId),
+            path(RepositoryEntity::ownerId).eq(userId?.value),
           )
         ).orderBy(
           path(RepositoryEntity::lastUpdatedAt).desc()
@@ -262,9 +268,9 @@ class RepositoryService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(repositoryId: UUID): Optional<RepositoryEntity> {
+  suspend fun findById(repositoryId: RepositoryId): Optional<RepositoryEntity> {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findById(repositoryId)
+      repositoryDAO.findById(repositoryId.value)
     }
   }
 
@@ -290,10 +296,10 @@ class RepositoryService(
 //  }
 
   @Transactional
-  suspend fun delete(repositoryId: UUID) {
+  suspend fun delete(repositoryId: RepositoryId) {
     withContext(Dispatchers.IO) {
-      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
-      if (repository.ownerId != coroutineContext.userId()) {
+      val repository = repositoryDAO.findById(repositoryId.value).orElseThrow()
+      if (repository.ownerId != coroutineContext.userId().value) {
         throw PermissionDeniedException("not authorized")
       }
       log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
@@ -303,7 +309,7 @@ class RepositoryService(
 
   suspend fun calculateScheduledNextAt(
     cron: String,
-    ownerId: UUID,
+    ownerId: UserId,
     product: Vertical,
     after: LocalDateTime
   ): LocalDateTime {
@@ -315,11 +321,11 @@ class RepositoryService(
     )
   }
 
-  suspend fun updateRepository(id: UUID, data: RepositoryUpdateDataInput) {
+  suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
     val repository = context.getBean(RepositoryService::class.java).findById(id)
       .orElseThrow { NotFoundException("Repository $id not found") }
     val corrId = coroutineContext.corrId()
-    if (repository.ownerId != coroutineContext.userId()) {
+    if (repository.ownerId != coroutineContext.userId().value) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[$corrId] update $id")
@@ -331,7 +337,7 @@ class RepositoryService(
       it.set?.let {
         repository.sourcesSyncCron = planConstraintsService.auditCronExpression(it)
         repository.triggerScheduledNextAt = calculateScheduledNextAt(
-          it, repository.ownerId,
+          it, UserId(repository.ownerId),
           product,
           repository.lastUpdatedAt
         )
@@ -355,7 +361,7 @@ class RepositoryService(
       repository.triggerScheduledNextAt = planConstraintsService.coerceMinScheduledNextAt(
         repository.lastUpdatedAt,
         next,
-        repository.ownerId,
+        UserId(repository.ownerId),
         product
       )
       log.info("[${coroutineContext.corrId()}] nextUpdateAt ${repository.triggerScheduledNextAt}")
@@ -370,28 +376,28 @@ class RepositoryService(
         log.info("[${coroutineContext.corrId()}] retentionMaxItems ${it.set}")
       }
       if (it.maxAgeDays != null || it.maxCapacity != null) {
-        documentService.applyRetentionStrategy(repository.id)
+        documentService.applyRetentionStrategy(RepositoryId(repository.id))
       }
     }
 
     data.sources?.let {
       it.add?.let {
-        sourceService.createSources(repository.ownerId, it, repository)
+        sourceService.createSources(UserId(repository.ownerId), it, repository)
       }
       it.update?.let {
         sourceService.updateSources(repository, it)
       }
       it.remove?.let {
-        sourceService.deleteAllById(repository.id, it.map { UUID.fromString(it) })
+        sourceService.deleteAllById(RepositoryId(repository.id), it.map { SourceId(it) })
       }
     }
     context.getBean(RepositoryService::class.java).save(repository)
   }
 
   @Transactional(readOnly = true)
-  fun countAll(userId: UUID?, product: Vertical): Int {
+  fun countAll(userId: UserId?, product: Vertical): Int {
     return userId
-      ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
+      ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it.value, product) }
       ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)
   }
 
@@ -412,7 +418,7 @@ class RepositoryService(
   }
 
   private suspend fun createRepository(
-    ownerId: UUID,
+    ownerId: UserId,
     repoInput: RepositoryCreateInput
   ): RepositoryEntity {
     val repo = RepositoryEntity()
@@ -424,7 +430,7 @@ class RepositoryService(
     val product = sessionService.activeProductFromRequest()!!
 
     planConstraintsService.auditSourcesMaxCountPerRepository(repoInput.sources.size, ownerId, product)
-    repo.ownerId = ownerId
+    repo.ownerId = ownerId.value
     repoInput.plugins?.let {
       if (it.size > 5) {
         throw BadRequestException("Too many plugins ${it.size}, limit 5")
@@ -489,9 +495,9 @@ class RepositoryService(
 //  }
 
   @Transactional
-  suspend fun findBySourceId(sourceId: UUID): RepositoryEntity? {
+  suspend fun findBySourceId(sourceId: SourceId): RepositoryEntity? {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findBySourceId(sourceId)
+      repositoryDAO.findBySourceId(sourceId.value)
     }
   }
 

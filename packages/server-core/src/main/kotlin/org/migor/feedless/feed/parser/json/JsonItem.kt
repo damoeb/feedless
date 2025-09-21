@@ -1,9 +1,9 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
+import org.migor.feedless.repository.RepositoryId
 import java.io.Serializable
 import java.time.LocalDateTime
-import java.util.*
 
 open class JsonItem : Serializable {
 
@@ -18,7 +18,7 @@ open class JsonItem : Serializable {
   }
 
   @Transient
-  var repositoryId: UUID? = null
+  var repositoryId: RepositoryId? = null
 
   @Transient
   var repositoryName: String? = null

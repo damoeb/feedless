@@ -12,6 +12,7 @@ import org.asynchttpclient.Dsl
 import org.asynchttpclient.HttpResponseStatus
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.repository.RepositoryId
 import org.slf4j.LoggerFactory
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
@@ -23,7 +24,6 @@ import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 import java.util.concurrent.TimeUnit
 
 data class PlausibleEvent(val name: String, val url: String, val domain: String)
@@ -119,7 +119,7 @@ class AnalyticsService {
     }
   }
 
-  suspend fun getUniquePageViewsForRepository(repoId: UUID): Int {
+  suspend fun getUniquePageViewsForRepository(repoId: RepositoryId): Int {
 //    curl "https://plausible.io/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo&filters=visit:source%3D%3DGoogle" \
 //    -H "Authorization: Bearer ${TOKEN}"
     val response = httpClient.prepareGet("$plausibleUrl/api/event")
@@ -128,6 +128,7 @@ class AnalyticsService {
       .toCompletableFuture()
       .orTimeout(5, TimeUnit.SECONDS)
       .await()
+    // todo fix repoId is not used
 //      .get(3, TimeUnit.SECONDS)
 
     return if (response.statusCode == 200) {

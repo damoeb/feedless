@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -25,10 +26,10 @@ class SourcePipelineService internal constructor(
   }
 
   @Transactional
-  suspend fun failAfterCleaningJobsForSource(sourceId: UUID): IllegalArgumentException {
+  suspend fun failAfterCleaningJobsForSource(sourceId: SourceId): IllegalArgumentException {
     withContext(Dispatchers.IO) {
       try {
-        sourcePipelineJobDAO.deleteBySourceId(sourceId)
+        sourcePipelineJobDAO.deleteBySourceId(sourceId.value)
       } catch (e: Exception) {
         log.warn("job cleanup of source $sourceId failed: ${e.message}")
       }
@@ -47,9 +48,9 @@ class SourcePipelineService internal constructor(
   }
 
   @Transactional(readOnly = true)
-  suspend fun existsBySourceIdAndUrl(id: UUID, url: String): Boolean {
+  suspend fun existsBySourceIdAndUrl(id: SourceId, url: String): Boolean {
     return withContext(Dispatchers.IO) {
-      sourcePipelineJobDAO.existsBySourceIdAndUrl(id, url)
+      sourcePipelineJobDAO.existsBySourceIdAndUrl(id.value, url)
     }
   }
 

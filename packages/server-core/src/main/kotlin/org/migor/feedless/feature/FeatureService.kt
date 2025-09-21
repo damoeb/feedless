@@ -12,7 +12,9 @@ import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.FeatureIntValueInput
 import org.migor.feedless.plan.PlanDAO
 import org.migor.feedless.plan.ProductDAO
+import org.migor.feedless.plan.ProductId
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -21,6 +23,14 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
+
+data class FeatureGroupId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
+
+data class FeatureValueId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -37,9 +47,9 @@ class FeatureService(
   private val log = LoggerFactory.getLogger(FeatureService::class.simpleName)
 
   @Transactional(readOnly = true)
-  suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: UUID? = null): Boolean {
+  suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: FeatureGroupId? = null): Boolean {
     return withContext(Dispatchers.IO) {
-      val featureGroupId = featureGroupIdOptional ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
+      val featureGroupId = featureGroupIdOptional?.value ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
 
       featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
         run {
@@ -51,9 +61,9 @@ class FeatureService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByProductAndUserId(product: Vertical, userId: UUID): List<Feature> {
+  suspend fun findAllByProductAndUserId(product: Vertical, userId: UserId): List<Feature> {
     return withContext(Dispatchers.IO) {
-      val plan = planDAO.findActiveByUserAndProductIn(userId, listOf(product), LocalDateTime.now())
+      val plan = planDAO.findActiveByUserAndProductIn(userId.value, listOf(product), LocalDateTime.now())
       plan?.let {
         val productFeatures = featureValueDAO.resolveAllByFeatureGroupId(plan.product!!.featureGroupId)
         toDTO(productFeatures)
@@ -75,17 +85,17 @@ class FeatureService(
 
   @Transactional
   suspend fun updateFeatureValue(
-    id: UUID,
+    id: FeatureValueId,
     intValue: FeatureIntValueInput?,
     boolValue: FeatureBooleanValueInput?,
-    productId: UUID? = null
+    productId: ProductId? = null
   ) {
     if (!sessionService.user().admin) {
       throw IllegalArgumentException("must be root")
     }
 
     withContext(Dispatchers.IO) {
-      val feature = featureValueDAO.findById(id).orElseThrow()
+      val feature = featureValueDAO.findById(id.value).orElseThrow()
 
       if (feature.valueType == FeatureValueType.bool) {
         feature.valueBoolean = boolValue!!.value
@@ -155,17 +165,17 @@ class FeatureService(
         listOf(featureGroupDAO.findById(UUID.fromString(where.id.eq)).orElseThrow())
       }
     }
-    return groups.map { it.toDto(findAllByGroupId(it.id, inherit)) }
+    return groups.map { it.toDto(findAllByGroupId(FeatureGroupId(it.id), inherit)) }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByGroupId(featureGroupId: UUID, inherit: Boolean): List<Feature> {
+  suspend fun findAllByGroupId(featureGroupId: FeatureGroupId, inherit: Boolean): List<Feature> {
     return withContext(Dispatchers.IO) {
       toDTO(
         if (inherit) {
-          featureValueDAO.resolveAllByFeatureGroupId(featureGroupId)
+          featureValueDAO.resolveAllByFeatureGroupId(featureGroupId.value)
         } else {
-          featureValueDAO.findAllByFeatureGroupId(featureGroupId)
+          featureValueDAO.findAllByFeatureGroupId(featureGroupId.value)
         }
       )
     }

@@ -5,11 +5,14 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -67,8 +70,8 @@ class AnnotationService(
         upvote,
         downvote,
         user.id,
-        documentId,
-        repositoyId
+        documentId?.value,
+        repositoyId?.value
       )
     ) {
       throw IllegalArgumentException("duplicate")
@@ -95,8 +98,8 @@ class AnnotationService(
         i.fromChar,
         i.toChar,
         user.id,
-        documentId,
-        repositoyId
+        documentId?.value,
+        repositoyId?.value
       )
     ) {
       throw IllegalArgumentException("duplicate")
@@ -107,50 +110,52 @@ class AnnotationService(
 
   private fun linkDocumentOrRepository(
     a: AnnotationEntity,
-    documentId: UUID?, repositoryId: UUID?
+    documentId: DocumentId?, repositoryId: RepositoryId?
   ) {
     if (repositoryId == null) {
       if (documentId == null) {
         throw IllegalArgumentException("where statement is insufficient")
       } else {
-        a.documentId = documentId
+        a.documentId = documentId.value
       }
     } else {
-      a.repositoryId = repositoryId
+      a.repositoryId = repositoryId.value
     }
   }
 
   private fun resolveReferences(
     where: AnnotationWhereInput,
-  ): Pair<UUID?, UUID?> {
-    return Pair(where.document?.id?.let { UUID.fromString(it) }, where.repository?.id?.let { UUID.fromString(it) })
+  ): Pair<DocumentId?, RepositoryId?> {
+    return Pair(
+      where.document?.id?.let { DocumentId(UUID.fromString(it)) },
+      where.repository?.id?.let { RepositoryId(UUID.fromString(it)) })
   }
 
   @Transactional(readOnly = true)
-  suspend fun countUpVotesByRepositoryId(repositoryId: UUID): Int {
+  suspend fun countUpVotesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
-      voteDAO.countUpVotesIsTrueByRepositoryId(repositoryId)
+      voteDAO.countUpVotesIsTrueByRepositoryId(repositoryId.value)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun countDownVotesByRepositoryId(repositoryId: UUID): Int {
+  suspend fun countDownVotesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
-      voteDAO.countDownVoteIsTrueByRepositoryId(repositoryId)
+      voteDAO.countDownVoteIsTrueByRepositoryId(repositoryId.value)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllVotesByUserIdAndRepositoryId(userId: UUID, repositoryId: UUID): List<VoteEntity> {
+  suspend fun findAllVotesByUserIdAndRepositoryId(userId: UserId, repositoryId: RepositoryId): List<VoteEntity> {
     return withContext(Dispatchers.IO) {
-      voteDAO.findAllByOwnerIdAndRepositoryId(userId, repositoryId)
+      voteDAO.findAllByOwnerIdAndRepositoryId(userId.value, repositoryId.value)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllVotesByUserIdAndDocumentId(userId: UUID, documentId: UUID): List<VoteEntity> {
+  suspend fun findAllVotesByUserIdAndDocumentId(userId: UserId, documentId: DocumentId): List<VoteEntity> {
     return withContext(Dispatchers.IO) {
-      voteDAO.findAllByOwnerIdAndDocumentId(userId, documentId)
+      voteDAO.findAllByOwnerIdAndDocumentId(userId.value, documentId.value)
     }
   }
 

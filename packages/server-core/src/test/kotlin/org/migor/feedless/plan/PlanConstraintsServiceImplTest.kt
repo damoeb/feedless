@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureGroupDAO
@@ -22,6 +23,7 @@ import org.migor.feedless.repository.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
@@ -55,16 +57,16 @@ class PlanConstraintsServiceImplTest {
   @InjectMocks
   lateinit var service: PlanConstraintsService
 
-  private lateinit var userId: UUID
-  private val currentUserId = UUID.randomUUID()
+  private lateinit var userId: UserId
+  private val currentUserId = randomUserId()
   private lateinit var user: UserEntity
   private val product = Vertical.feedless
 
   @BeforeEach
   fun beforeEach() = runTest {
-    userId = UUID.randomUUID()
+    userId = randomUserId()
     user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId)
+    `when`(user.id).thenReturn(userId.value)
     `when`(userDAO.findById(any2())).thenReturn(Optional.of(user))
 
     val system = mock(FeatureGroupEntity::class.java)

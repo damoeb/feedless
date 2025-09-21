@@ -11,6 +11,10 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
+data class ConnectedAppId(val value: UUID) {
+  constructor(value: String) : this(UUID.fromString(value))
+}
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
@@ -20,9 +24,9 @@ class ConnectedAppService {
   lateinit var connectedAppDAO: ConnectedAppDAO
 
   @Transactional(readOnly = true)
-  suspend fun findAllByUserId(userId: UUID): List<ConnectedAppEntity> {
+  suspend fun findAllByUserId(userId: UserId): List<ConnectedAppEntity> {
     return withContext(Dispatchers.IO) {
-      connectedAppDAO.findAllByUserId(userId)
+      connectedAppDAO.findAllByUserId(userId.value)
     }
   }
 
