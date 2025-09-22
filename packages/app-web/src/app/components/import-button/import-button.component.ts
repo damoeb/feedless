@@ -29,6 +29,7 @@ import { ModalService } from '../../services/modal.service';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
 import { ImportOpmlModalModule } from '../../modals/import-opml-modal/import-opml-modal.module';
+import { SourceService } from '../../services/source.service';
 
 @Component({
   selector: 'app-import-button',
@@ -86,7 +87,7 @@ export class ImportButtonComponent {
     }
   }
 
-  async importFeedlessJson(uploadEvent: Event) {
+  async createRepositoriesFromJson(uploadEvent: Event) {
     const data = await this.fileService.uploadAsText(uploadEvent);
     const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
 

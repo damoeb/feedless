@@ -53,6 +53,7 @@ import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-bui
 import dayjs from 'dayjs';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
+import { SourceService } from '../../services/source.service';
 
 @Component({
   selector: 'app-sources',
@@ -87,6 +88,7 @@ export class SourcesComponent implements OnInit {
   private readonly modalService = inject(ModalService);
   private readonly toastCtrl = inject(ToastController);
   private readonly actionSheetCtrl = inject(ActionSheetController);
+  private readonly sourceService = inject(SourceService);
   sourceChange = output<Source[]>();
 
   readonly repository = input.required<RepositoryFull>();
@@ -121,57 +123,10 @@ export class SourcesComponent implements OnInit {
   }
 
   async importFeedlessJson(uploadEvent: Event) {
-    const data = await this.fileService.uploadAsText(uploadEvent);
-    const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
-    const selectables: SelectableEntity<GqlSourceInput>[] = sortBy(
-      repositories
-        .filter((r) => r.sources)
-        .flatMap((r) => r.sources)
-        .map<SelectableEntity<GqlSourceInput>>((source) => {
-          const disabled = this.repository().sources.some(
-            (existingSource) => existingSource.title == source.title,
-          );
-          return {
-            entity: source,
-            disabled,
-            note: disabled ? 'Already exists by name' : null,
-            label: source.title,
-          };
-        }),
-      (selectable) => selectable.entity.title,
+    return this.sourceService.uploadFeedlessJson(
+      uploadEvent,
+      this.repository().id,
     );
-
-    const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
-      {
-        selectables,
-        title: 'Import Sources',
-        description: 'Select those sources you want to import',
-      },
-    );
-
-    if (selected.length > 0) {
-      await this.repositoryService.updateRepository({
-        where: {
-          id: this.repository().id,
-        },
-        data: {
-          sources: {
-            add: selected,
-          },
-        },
-      });
-
-      await this.fetchSources(this.currentSourcesPage, 'network-only');
-      this.changeRef.detectChanges();
-
-      const toast = await this.toastCtrl.create({
-        message: `Added ${selected.length} sources`,
-        duration: 3000,
-        color: 'success',
-      });
-
-      await toast.present();
-    }
   }
 
   async deleteSource(source: RepositorySource) {
