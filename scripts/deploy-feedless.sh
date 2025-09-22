@@ -7,11 +7,11 @@ docker push localhost:5000/damoeb/feedless:app-latest
 docker push localhost:5000/damoeb/feedless:core-latest
 docker push localhost:5000/damoeb/feedless:agent-latest
 
-kubectl apply -f ../k8s/feedless-agent.yaml
+kubectl apply -f k8s/feedless/feedless-agent.yaml
 kubectl rollout restart deployment feedless-agent
 
-kubectl apply -f ../k8s/feedless-web.yaml
+kubectl apply -f k8s/feedless/feedless-web.yaml
 kubectl rollout restart deployment feedless-web
 
-kubectl apply -f ../k8s/feedless-core.yaml
+kubectl apply -f k8s/feedless/feedless-core.yaml
 kubectl rollout restart deployment feedless-core

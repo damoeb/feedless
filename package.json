@@ -8,8 +8,7 @@
   },
   "scripts": {
     "updateReadme": "for pj in products/* .; do mustache packages/app-web/all-verticals.json $pj/README.mustache.md $pj/README.md; done",
-    "commit": "echo \"Error: no test specified\" && exit 1",
-    "test": "jest"
+    "commit": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
