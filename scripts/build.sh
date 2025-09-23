@@ -1,7 +1,9 @@
 #!/bin/bash
 
-DEPLOY_SCRIPT=$1
 LOCK_FILE="./build.lockfile"
+
+echo "Remove unused docker images"
+docker rmi $(docker images -q damoeb/feedless)
 
 if [ -f "${LOCK_FILE}" ]; then
   echo "Aborting, lockfile found ${LOCK_FILE}"
@@ -25,23 +27,11 @@ else
     --workdir /opt/feedless \
     -v "${PWD}:/opt/feedless" \
     -v "${PWD}/build-cache:/opt/feedless/build-cache" \
-    -it amazoncorretto:21 cd /opt/feedless && ./gradlew --no-daemon build && \
+    -it amazoncorretto:24 cd /opt/feedless && ./gradlew --no-daemon bundle && \
 
   BUILD_EXIT_CODE=$?
   echo "BUILD exited with ${BUILD_EXIT_CODE}"
   echo "$LATEST_COMMIT" > "$PWD"/LAST_BUILD_COMMIT
-
-  if [ "$BUILD_EXIT_CODE" = "0" ]; then
-    echo "Build was successful"
-
-    if [ -n "$DEPLOY_SCRIPT" ]; then
-      echo "Triggering deploy script $DEPLOY_SCRIPT"
-      cd $(dirname "${DEPLOY_SCRIPT}") && sh $(basename "${DEPLOY_SCRIPT}")
-    else
-      echo "Error: DEPLOY_SCRIPT is not set." >&2
-      exit 1
-    fi
-  fi
 fi
 
 rm ${LOCK_FILE}

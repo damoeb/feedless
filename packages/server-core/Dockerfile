@@ -1,10 +1,10 @@
-FROM amazoncorretto:21-alpine-jdk as build
+FROM amazoncorretto:24-alpine-jdk as build
 WORKDIR /usr/feedless
 COPY docker-entrypoint.sh pre-boot.sh ./
 COPY build/libs/app.jar app.jar
 
 
-FROM amazoncorretto:21-alpine-jdk
+FROM amazoncorretto:24-alpine-jdk
 ARG workdir=/usr/feedless
 WORKDIR $workdir
 ARG APP_VERSION
