@@ -18,7 +18,17 @@
     {{ description }}
   </p>
   <ion-list>
-    @for (ref of entitiesWithFormControl; track ref) {
+    <ion-item lines="full">
+      <ion-checkbox [formControl]="selectAllFormControl"
+                    labelPlacement="end">Select
+        @if (selectAllFormControl.value) {
+          None
+        } @else {
+          All
+        }
+      </ion-checkbox>
+    </ion-item>
+    @for (ref of entitiesWithFormControl; track createTrackById(ref)) {
       <div>
         <ion-item lines="full" [disabled]="ref.entity.disabled">
           <ion-checkbox
