@@ -11,7 +11,10 @@ import {
   AppConfigService,
   VerticalSpecWithRoutes,
 } from '../../services/app-config.service';
-import { RepositoryModalComponentProps } from '../../modals/repository-modal/repository-modal.component';
+import {
+  RepositoryModalComponent,
+  RepositoryModalComponentProps,
+} from '../../modals/repository-modal/repository-modal.component';
 import {
   FeedBuilderComponent,
   FeedWithRequest,
@@ -30,7 +33,6 @@ import { RepositoryService } from '../../services/repository.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
 import { IonContent } from '@ionic/angular/standalone';
-import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
 
 @Component({
@@ -38,7 +40,7 @@ import { DEFAULT_FETCH_CRON } from '../../defaults';
   templateUrl: './feed-builder.page.html',
   styleUrls: ['./feed-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonContent, FeedBuilderComponent, RepositoryModalModule],
+  imports: [IonContent, FeedBuilderComponent, RepositoryModalComponent],
   standalone: true,
 })
 export class FeedBuilderPage implements OnInit, OnDestroy {
@@ -129,7 +131,10 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           sources: [source],
         } as any,
       };
-      await this.modalService.openRepositoryEditor(componentProps);
+      await this.modalService.openRepositoryEditor(
+        RepositoryModalComponent,
+        componentProps,
+      );
     } else {
       const repositories = await this.repositoryService.createRepositories([
         {

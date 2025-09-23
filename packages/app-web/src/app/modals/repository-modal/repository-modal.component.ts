@@ -5,8 +5,41 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
-import { ModalController, ToastController } from '@ionic/angular/standalone';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
+import {
+  IonAccordion,
+  IonAccordionGroup,
+  IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonCol,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonItemDivider,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonRadio,
+  IonRadioGroup,
+  IonRow,
+  IonSelect,
+  IonSelectOption,
+  IonText,
+  IonTextarea,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+  ToastController,
+} from '@ionic/angular/standalone';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlConditionalTagInput,
@@ -19,7 +52,7 @@ import {
   GqlStringFilterOperator,
   GqlVisibility,
 } from '../../../generated/graphql';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RepositoryFull } from '../../graphql/types';
@@ -37,9 +70,15 @@ import { DEFAULT_FETCH_CRON } from '../../defaults';
 import { FeatureService } from '../../services/feature.service';
 import {
   FilterField,
+  FilterItemsAccordionComponent,
   FilterOperator,
 } from '../../components/filter-items-accordion/filter-items-accordion.component';
 import { ModalService } from '../../services/modal.service';
+import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { JsonPipe, KeyValuePipe } from '@angular/common';
+import { BubbleComponent } from '../../components/bubble/bubble.component';
+import { FlowModalComponent } from '../flow-modal/flow-modal.component';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -81,12 +120,49 @@ type RepositoryFormGroupDef = {
   enabledPushNotifications: FormControl<boolean>;
   applyConditionalTagsPlugin: FormControl<boolean>;
 };
+
 @Component({
   selector: 'app-repository-modal',
   templateUrl: './repository-modal.component.html',
   styleUrls: ['./repository-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  standalone: true,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonLabel,
+    IonContent,
+    IonList,
+    IonRow,
+    IonCol,
+    IonInput,
+    FormsModule,
+    ReactiveFormsModule,
+    IonTextarea,
+    FetchRateAccordionComponent,
+    IonAccordionGroup,
+    IonAccordion,
+    IonItem,
+    IonNote,
+    IonCheckbox,
+    IonRadioGroup,
+    IonRadio,
+    RemoveIfProdDirective,
+    IonSelect,
+    IonSelectOption,
+    RouterLink,
+    FilterItemsAccordionComponent,
+    JsonPipe,
+    KeyValuePipe,
+    BubbleComponent,
+    IonText,
+    IonItemDivider,
+    FlowModalComponent,
+  ],
 })
 export class RepositoryModalComponent
   implements RepositoryModalComponentProps, OnInit
@@ -438,6 +514,6 @@ export class RepositoryModalComponent
   }
 
   openFlowModal() {
-    return this.modalService.openFlowModal({});
+    return this.modalService.openFlowModal(FlowModalComponent, {});
   }
 }

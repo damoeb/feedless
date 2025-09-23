@@ -28,18 +28,17 @@ describe('SourcesComponent', () => {
   });
 
   describe('feed-builder-modal is openened', () => {
-    let openFeedBuilderSpy: jasmine.Spy<ModalService[keyof ModalService]>;
+    let openFeedBuilderSpy: jest.SpyInstance;
 
     beforeEach(() => {
       const repositoryService = TestBed.inject(RepositoryService);
-      spyOn(repositoryService, 'getSourceFullByRepository').and.returnValue(
-        Promise.resolve({} as any),
-      );
+      jest
+        .spyOn(repositoryService, 'getSourceFullByRepository')
+        .mockResolvedValue({} as any);
       const modalService = TestBed.inject(ModalService);
-      openFeedBuilderSpy = spyOn(
-        modalService,
-        'openFeedBuilder',
-      ).and.returnValue(Promise.resolve());
+      openFeedBuilderSpy = jest
+        .spyOn(modalService, 'openFeedBuilder')
+        .mockResolvedValue();
     });
 
     it('for add source', async () => {

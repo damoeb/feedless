@@ -8,8 +8,33 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
-import { FormControl, FormGroup } from '@angular/forms';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+} from '@angular/forms';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonListHeader,
+  IonNote,
+  IonRadio,
+  IonRadioGroup,
+  IonSelect,
+  IonSelectOption,
+  IonText,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { FeedOrRepository } from '../../../components/feed-builder/feed-builder.component';
 import {
   GqlItemFilterParamsInput,
@@ -19,6 +44,8 @@ import {
 import { ServerConfigService } from '../../../services/server-config.service';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { FeedBuilderModalComponent } from '../../../modals/feed-builder-modal/feed-builder-modal.component';
+import { RemoteFeedPreviewComponent } from '../../../components/remote-feed-preview/remote-feed-preview.component';
 
 type KindOfTracker = 'static' | 'dynamic';
 type SunsetPolicy = 'FirstSnapshot' | '12_hours' | '24_hours';
@@ -30,7 +57,30 @@ export interface TrackerEditModalComponentProps {}
   templateUrl: './tracker-edit-modal.component.html',
   styleUrls: ['./tracker-edit-modal.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  standalone: false,
+  standalone: true,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonLabel,
+    IonContent,
+    RemoteFeedPreviewComponent,
+    IonList,
+    IonListHeader,
+    IonRadioGroup,
+    FormsModule,
+    ReactiveFormsModule,
+    IonItem,
+    IonRadio,
+    IonNote,
+    IonText,
+    IonInput,
+    IonSelect,
+    IonSelectOption,
+  ],
 })
 export class TrackerEditModalComponent
   implements TrackerEditModalComponentProps, OnInit, OnDestroy
@@ -73,6 +123,7 @@ export class TrackerEditModalComponent
 
   async openFeedBuilder() {
     await this.modalService.openFeedBuilder(
+      FeedBuilderModalComponent,
       {
         modalTitle: 'Pick Link Source',
         submitButtonText: 'Use Feed',

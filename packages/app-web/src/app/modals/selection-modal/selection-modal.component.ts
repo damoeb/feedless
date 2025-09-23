@@ -6,11 +6,25 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonNote,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
-import { FormControl } from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 
 export interface SelectionModalComponentProps<T> {
@@ -35,8 +49,24 @@ type EntityWithFormControl<T> = {
   selector: 'app-selection-modal',
   templateUrl: './selection-modal.component.html',
   styleUrls: ['./selection-modal.component.scss'],
-  standalone: false,
+  standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonTitle,
+    IonContent,
+    IonList,
+    IonItem,
+    IonCheckbox,
+    FormsModule,
+    ReactiveFormsModule,
+    IonLabel,
+    IonNote,
+  ],
 })
 export class SelectionModalComponent<T>
   implements SelectionModalComponentProps<T>, OnInit, OnDestroy

@@ -2,7 +2,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportOpmlModalComponent } from './import-opml-modal.component';
 import { AppTestModule } from '../../app-test.module';
-import { ImportOpmlModalModule } from './import-opml-modal.module';
 
 describe('ImportOpmlModalComponent', () => {
   let component: ImportOpmlModalComponent;
@@ -10,7 +9,7 @@ describe('ImportOpmlModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ImportOpmlModalModule, AppTestModule.withDefaults()],
+      imports: [ImportOpmlModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ImportOpmlModalComponent);

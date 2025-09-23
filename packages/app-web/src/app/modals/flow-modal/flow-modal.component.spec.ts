@@ -1,8 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { FlowModalComponent } from '././flow-modal.component';
+import { FlowModalComponent } from './flow-modal.component';
 import { AppTestModule } from '../../app-test.module';
-import { FlowModalModule } from './flow-modal.module';
 
 describe('FlowModalComponent', () => {
   let component: FlowModalComponent;
@@ -10,7 +9,7 @@ describe('FlowModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FlowModalModule, AppTestModule.withDefaults()],
+      imports: [FlowModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(FlowModalComponent);

@@ -187,7 +187,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('changes', changes);
     if (changes.perimeter?.currentValue) {
       this.perimeterFc.setValue(changes.perimeter.currentValue, {
         emitEvent: false,

@@ -1,6 +1,18 @@
 import { Component, inject } from '@angular/core';
-import { FeedWithRequest } from '../../components/feed-builder/feed-builder.component';
-import { ModalController } from '@ionic/angular/standalone';
+import {
+  FeedBuilderComponent,
+  FeedWithRequest,
+} from '../../components/feed-builder/feed-builder.component';
+import {
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular/standalone';
 import { GqlSourceInput } from '../../../generated/graphql';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import { addIcons } from 'ionicons';
@@ -16,7 +28,17 @@ export interface FeedBuilderModalComponentProps {
   selector: 'app-feed-builder-modal',
   templateUrl: './feed-builder-modal.component.html',
   styleUrls: ['./feed-builder-modal.component.scss'],
-  standalone: false,
+  standalone: true,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonIcon,
+    IonContent,
+    FeedBuilderComponent,
+  ],
 })
 export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps

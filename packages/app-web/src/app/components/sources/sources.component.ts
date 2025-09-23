@@ -31,13 +31,7 @@ import { BubbleColor, BubbleComponent } from '../bubble/bubble.component';
 import { RepositoryFull, RepositorySource } from '../../graphql/types';
 import { FetchPolicy } from '@apollo/client/core';
 import { ArrayElement, Nullable } from '../../types';
-import {
-  GqlRepositoryCreateInput,
-  GqlSortOrder,
-  GqlSourceInput,
-  GqlSourcesWhereInput,
-} from '../../../generated/graphql';
-import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
+import { GqlSortOrder, GqlSourcesWhereInput } from '../../../generated/graphql';
 import { cloneDeep, sortBy } from 'lodash-es';
 import {
   FeedOrRepository,
@@ -49,11 +43,14 @@ import { ModalService } from '../../services/modal.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
 import { addOutline, cloudUploadOutline, refreshOutline } from 'ionicons/icons';
-import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
 import dayjs from 'dayjs';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
 import { SourceService } from '../../services/source.service';
+import { FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
+import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
+import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
+import { CodeEditorModalComponent } from '../../modals/code-editor-modal/code-editor-modal.component';
 
 @Component({
   selector: 'app-sources',
@@ -74,7 +71,6 @@ import { SourceService } from '../../services/source.service';
     PaginationComponent,
     IonIcon,
     IonToolbar,
-    FeedBuilderModalModule,
     IonSearchbar,
     ReactiveFormsModule,
   ],
@@ -205,7 +201,9 @@ export class SourcesComponent implements OnInit {
   }
 
   async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
-    const geoTag = await this.modalService.openSearchAddressModal();
+    const geoTag = await this.modalService.openSearchAddressModal(
+      SearchAddressModalComponent,
+    );
     if (geoTag) {
       await this.repositoryService.updateRepository({
         where: {
@@ -239,7 +237,7 @@ export class SourcesComponent implements OnInit {
   }
 
   async editTags(source: ArrayElement<RepositoryFull['sources']>) {
-    const tags = await this.modalService.openTagModal({
+    const tags = await this.modalService.openTagModal(TagsModalComponent, {
       tags: source.tags || [],
     });
     await this.repositoryService.updateRepository({
@@ -323,6 +321,7 @@ export class SourcesComponent implements OnInit {
     };
 
     await this.modalService.openFeedBuilder(
+      FeedBuilderModalComponent,
       {
         source: await toSource(),
       },
@@ -439,7 +438,7 @@ export class SourcesComponent implements OnInit {
         this.repository().id,
         source.id,
       );
-    await this.modalService.openCodeEditorModal({
+    await this.modalService.openCodeEditorModal(CodeEditorModalComponent, {
       readOnly: true,
       contentType: 'text',
       text: `ok: ${harvest.ok}

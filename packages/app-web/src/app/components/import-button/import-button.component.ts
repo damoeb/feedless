@@ -27,9 +27,7 @@ import { RepositoryService } from '../../services/repository.service';
 import { GqlRepositoryCreateInput } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
-import { ImportOpmlModalModule } from '../../modals/import-opml-modal/import-opml-modal.module';
-import { SourceService } from '../../services/source.service';
+import { SelectionModalComponent } from '../../modals/selection-modal/selection-modal.component';
 
 @Component({
   selector: 'app-import-button',
@@ -44,8 +42,8 @@ import { SourceService } from '../../services/source.service';
     IonList,
     IonItem,
     RemoveIfProdDirective,
-    SelectionModalModule,
-    ImportOpmlModalModule,
+    SelectionModalComponent,
+    ImportOpmlModalComponent,
   ],
   standalone: true,
 })
@@ -91,14 +89,17 @@ export class ImportButtonComponent {
     const data = await this.fileService.uploadAsText(uploadEvent);
     const repositories = JSON.parse(data) as GqlRepositoryCreateInput[];
 
-    const selected = await this.modalService.openSelectionModal({
-      title: 'Import Repositories',
-      description: '',
-      selectables: repositories.map((r) => ({
-        entity: r,
-        label: r.title,
-      })),
-    });
+    const selected = await this.modalService.openSelectionModal(
+      SelectionModalComponent<GqlRepositoryCreateInput>,
+      {
+        title: 'Import Repositories',
+        description: '',
+        selectables: repositories.map((r) => ({
+          entity: r,
+          label: r.title,
+        })),
+      },
+    );
 
     if (selected.length > 0) {
       const repo = await this.repositoryService.createRepositories(selected);

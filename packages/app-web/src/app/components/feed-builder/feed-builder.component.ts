@@ -63,9 +63,6 @@ import {
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
-import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
-import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
-import { InteractiveWebsiteModalModule } from '../../modals/interactive-website-modal/interactive-website-modal.module';
 import {
   standaloneV1WebToFeedRoute,
   standaloneV2FeedTransformRoute,
@@ -77,6 +74,8 @@ import { assignIn, first, intersection, isArray } from 'lodash-es';
 import { RouteNode } from 'typesafe-routes';
 import { Parser } from 'typesafe-routes/src/parser';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
+import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
 
 /**
  * IDEEN
@@ -148,9 +147,9 @@ export type StandaloneUrlParams = {
     IonAccordion,
     IonNote,
     FilterItemsAccordionComponent,
-    TagsModalModule,
-    SearchAddressModalModule,
-    InteractiveWebsiteModalModule,
+    TagsModalComponent,
+    SearchAddressModalComponent,
+    InteractiveWebsiteModalComponent,
     IonButton,
     RemoveIfProdDirective,
     IonInput,
@@ -381,14 +380,16 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async showTagsModal() {
-    this.tags = await this.modalService.openTagModal({
+    this.tags = await this.modalService.openTagModal(TagsModalComponent, {
       tags: this.tags || [],
     });
     this.changeRef.detectChanges();
   }
 
   async showLocationPickerModal() {
-    this.geoLocation = await this.modalService.openSearchAddressModal();
+    this.geoLocation = await this.modalService.openSearchAddressModal(
+      SearchAddressModalComponent,
+    );
     console.log('this.geoLocation', this.geoLocation);
     this.changeRef.detectChanges();
   }

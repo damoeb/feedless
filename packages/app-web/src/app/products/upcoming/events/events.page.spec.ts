@@ -28,7 +28,7 @@ describe('EventsPage', () => {
 
     fixture = TestBed.createComponent(EventsPage);
     const router = TestBed.inject(Router);
-    spyOn(router, 'navigateByUrl').and.returnValue(Promise.resolve(true));
+    jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

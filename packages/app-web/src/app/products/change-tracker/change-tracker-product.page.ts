@@ -17,7 +17,10 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
 import { ModalService } from '../../services/modal.service';
-import { TrackerEditModalComponentProps } from './tracker-edit/tracker-edit-modal.component';
+import {
+  TrackerEditModalComponent,
+  TrackerEditModalComponentProps,
+} from './tracker-edit/tracker-edit-modal.component';
 import { addIcons } from 'ionicons';
 import { logoGithub } from 'ionicons/icons';
 import {
@@ -36,7 +39,6 @@ import { TrialWarningComponent } from '../../components/trial-warning/trial-warn
 
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 import { LoginButtonComponent } from '../../components/login-button/login-button.component';
-import { TrackerEditModalModule } from './tracker-edit/tracker-edit-modal.module';
 
 @Component({
   selector: 'app-change-tracker-product-page',
@@ -58,7 +60,6 @@ import { TrackerEditModalModule } from './tracker-edit/tracker-edit-modal.module
     IonRouterOutlet,
     IonFooter,
     IonChip,
-    TrackerEditModalModule,
   ],
   standalone: true,
 })
@@ -108,6 +109,6 @@ export class ChangeTrackerProductPage implements OnInit, OnDestroy {
 
   async openCreateTrackerModal() {
     const props: TrackerEditModalComponentProps = {};
-    await this.modalService.openTrackerEditor(props);
+    await this.modalService.openTrackerEditor(TrackerEditModalComponent, props);
   }
 }

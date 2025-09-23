@@ -6,16 +6,18 @@ import {
 } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
-import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../../modals/code-editor-modal/code-editor-modal.component';
 import { IonButton } from '@ionic/angular/standalone';
-import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 
 @Component({
   selector: 'app-console-button',
   templateUrl: './console-button.component.html',
   styleUrls: ['./console-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, CodeEditorModalModule],
+  imports: [IonButton, CodeEditorModalComponent],
   standalone: true,
 })
 export class ConsoleButtonComponent {
@@ -31,7 +33,10 @@ export class ConsoleButtonComponent {
       controls: false,
       text: stringifyLogStatement(this.logs()),
     };
-    return this.modalService.openCodeEditorModal(props);
+    return this.modalService.openCodeEditorModal(
+      CodeEditorModalComponent,
+      props,
+    );
   }
 }
 

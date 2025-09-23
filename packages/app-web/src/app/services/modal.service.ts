@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, Type } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
 import {
@@ -57,6 +57,7 @@ export class ModalService {
   private isModalOpen = false;
 
   async openFeedBuilder(
+    component: Type<FeedBuilderModalComponent>,
     componentProps: FeedBuilderModalComponentProps,
     overwriteHandler: Nullable<
       (
@@ -67,7 +68,7 @@ export class ModalService {
   ) {
     await this.updateUrlParams(ModalName.feedBuilder);
     const modal = await this.modalCtrl.create({
-      component: FeedBuilderModalComponent,
+      component,
       componentProps,
       cssClass: 'fullscreen-modal',
       showBackdrop: true,
@@ -92,11 +93,12 @@ export class ModalService {
   }
 
   async openTagModal(
+    component: Type<TagsModalComponent>,
     componentProps: TagsModalComponentProps,
   ): Promise<string[]> {
     await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
-      component: TagsModalComponent,
+      component,
       componentProps,
       cssClass: 'tiny-modal',
       showBackdrop: true,
@@ -109,10 +111,11 @@ export class ModalService {
   }
 
   async openFlowModal(
+    component: Type<FlowModalComponent>,
     componentProps: FlowModalComponentProps,
   ): Promise<string[]> {
     const modal = await this.modalCtrl.create({
-      component: FlowModalComponent,
+      component,
       componentProps,
       showBackdrop: true,
       backdropDismiss: true,
@@ -137,11 +140,12 @@ export class ModalService {
   // }
 
   async openSelectionModal<T>(
+    component: Type<SelectionModalComponent<T>>,
     componentProps: SelectionModalComponentProps<T>,
   ): Promise<T[]> {
     // await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
-      component: SelectionModalComponent,
+      component,
       componentProps,
       showBackdrop: true,
       backdropDismiss: false,
@@ -153,11 +157,12 @@ export class ModalService {
   }
 
   async openCodeEditorModal(
+    component: Type<CodeEditorModalComponent>,
     componentProps: CodeEditorModalComponentProps,
   ): Promise<string[]> {
     await this.updateUrlParams(ModalName.codeEditor);
     const modal = await this.modalCtrl.create({
-      component: CodeEditorModalComponent,
+      component,
       componentProps,
       showBackdrop: true,
       backdropDismiss: false,
@@ -181,10 +186,10 @@ export class ModalService {
   //   await modal.present();
   // }
 
-  async openSearchAddressModal(): Promise<NamedLatLon> {
+  async openSearchAddressModal(component: Type<any>): Promise<NamedLatLon> {
     await this.updateUrlParams(ModalName.searchAddress);
     const modal = await this.modalCtrl.create({
-      component: SearchAddressModalComponent,
+      component,
       // cssClass: 'fullscreen-modal',
       showBackdrop: true,
       backdropDismiss: true,
@@ -196,7 +201,10 @@ export class ModalService {
     return response.data!;
   }
 
-  async openRepositoryEditor(componentProps: RepositoryModalComponentProps) {
+  async openRepositoryEditor(
+    component: Type<RepositoryModalComponent>,
+    componentProps: RepositoryModalComponentProps,
+  ) {
     if (this.isModalOpen) {
       return;
     }
@@ -204,7 +212,7 @@ export class ModalService {
       this.isModalOpen = true;
       await this.updateUrlParams(ModalName.editRepository);
       const modal = await this.modalCtrl.create({
-        component: RepositoryModalComponent,
+        component,
         componentProps,
       });
 
@@ -216,10 +224,13 @@ export class ModalService {
     }
   }
 
-  async openTrackerEditor(componentProps: TrackerEditModalComponentProps) {
+  async openTrackerEditor(
+    component: Type<TrackerEditModalComponent>,
+    componentProps: TrackerEditModalComponentProps,
+  ) {
     await this.updateUrlParams(ModalName.editTracker);
     const modal = await this.modalCtrl.create({
-      component: TrackerEditModalComponent,
+      component,
       cssClass: 'fullscreen-modal',
       componentProps,
     });

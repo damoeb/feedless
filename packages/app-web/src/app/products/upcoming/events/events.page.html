@@ -1,213 +1,211 @@
 @if (date && perimeter) {
-  <app-upcoming-header
-    #header
-    [date]="date"
-    [location]="location"
-    [perimeter]="perimeter"
-  ></app-upcoming-header>
+<app-upcoming-header
+  #header
+  [date]="date"
+  [location]="location"
+  [perimeter]="perimeter"
+></app-upcoming-header>
 }
 <ion-content>
   <div class="events">
     @if (location) {
-      <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
-        <!--        <ion-buttons slot="start">-->
-        <!--          <ion-button-->
-        <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
-        <!--                    formatDate(date?.subtract(1, 'day'), 'DD.MM')"-->
-        <!--            (click)="changeDate(-1)"-->
-        <!--          >-->
-        <!--            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>-->
-        <!--            vorheriger Tag-->
-        <!--          </ion-button>-->
-        <!--        </ion-buttons>-->
-        <!--        <ion-buttons slot="end">-->
-        <!--          <ion-button-->
-        <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
-        <!--                    formatDate(date?.add(1, 'day'), 'DD.MM')"-->
-        <!--            (click)="changeDate(+1)"-->
-        <!--          >-->
-        <!--            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>-->
-        <!--            nächster Tag-->
-        <!--          </ion-button>-->
-        <!--        </ion-buttons>-->
-        <!--      </ion-toolbar>-->
+    <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
+    <!--        <ion-buttons slot="start">-->
+    <!--          <ion-button-->
+    <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+    <!--                    formatDate(date?.subtract(1, 'day'), 'DD.MM')"-->
+    <!--            (click)="changeDate(-1)"-->
+    <!--          >-->
+    <!--            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>-->
+    <!--            vorheriger Tag-->
+    <!--          </ion-button>-->
+    <!--        </ion-buttons>-->
+    <!--        <ion-buttons slot="end">-->
+    <!--          <ion-button-->
+    <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+    <!--                    formatDate(date?.add(1, 'day'), 'DD.MM')"-->
+    <!--            (click)="changeDate(+1)"-->
+    <!--          >-->
+    <!--            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>-->
+    <!--            nächster Tag-->
+    <!--          </ion-button>-->
+    <!--        </ion-buttons>-->
+    <!--      </ion-toolbar>-->
 
-      <div class="ion-margin-bottom" style="min-height: 50vh">
-        @if (date) {
-          <div class="calendar ion-margin-top">
-            <div class="calendar-row">
-              <div
-                style="font-size: 2rem; align-content: center"
-                class="ion-hide-md-down"
+    <div class="ion-margin-bottom" style="min-height: 50vh">
+      @if (date) {
+      <div class="calendar ion-margin-top">
+        <div class="calendar-row">
+          <div
+            style="font-size: 2rem; align-content: center"
+            class="ion-hide-md-down"
+          >
+            <a
+              [routerLink]="getDateUrl(dateWindow[0].date.subtract(3, 'days'))"
+            >
+              <ion-button
+                size="expand"
+                color="light"
+                (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(-3)"
               >
-                <a
-                  [routerLink]="getDateUrl(dateWindow[0].date.subtract(3, 'days'))"
-                >
-                  <ion-button
-                    size="expand"
-                    color="light"
-                    (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(-3)"
-                  >
-                    <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
-                  </ion-button>
-                </a>
-              </div>
-              <div class="calendar-days">
-                @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
-                  <a
-                    [routerLink]="'/'+createUrl(location, d.date)"
-                    [ngClass]="{
+                <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>
+              </ion-button>
+            </a>
+          </div>
+          <div class="calendar-days">
+            @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
+            <a
+              [routerLink]="'/'+createUrl(location, d.date)"
+              [ngClass]="{
                                 'ion-hide-md-down': d.offset > 3
                               }"
-                  >
-                    <div
-                      class="calendar-day"
-                      (click)="$event.preventDefault(); $event.stopImmediatePropagation(); changeDate(d.date)"
-                      [ngClass]="{
+            >
+              <div
+                class="calendar-day"
+                (click)="$event.preventDefault(); $event.stopImmediatePropagation(); changeDate(d.date)"
+                [ngClass]="{
                                 past: isPast(d.date),
                                 active: isSame(date, d.date, ['day', 'month', 'year']),
                               }"
-                    >
-                      <div>{{ getWeekday(d.date) }}</div>
-                      <h3 style="font-size: 1.5rem">{{ formatDate(d.date, "D") }}</h3>
-                      @if (i == 0 || d.date.date() === 1) {
-                        <div class="nowrap">{{ formatDate(d.date, "MMM YY") }}</div>
-                      }
-                    </div>
-                  </a>
+              >
+                <div>{{ getWeekday(d.date) }}</div>
+                <h3 style="font-size: 1.5rem">{{ formatDate(d.date, "D") }}</h3>
+                @if (i == 0 || d.date.date() === 1) {
+                <div class="nowrap">{{ formatDate(d.date, "MMM YY") }}</div>
                 }
               </div>
-              <div style="font-size: 2rem; align-content: center">
-                <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
-                  <ion-button
-                    size="expand"
-                    color="light"
-                    (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(4)"
-                  >
-                    <ion-icon
-                      name="arrow-forward-outline"
-                      slot="icon-only"
-                    ></ion-icon>
-                  </ion-button>
-                </a>
-              </div>
-            </div>
-            @if (!isDateInCalendar(now)) {
-              <div style="justify-self: center">
-                <ion-button size="small" (click)="changeDate(now)"
-                >Heute anzeigen
-                </ion-button>
-              </div>
+            </a>
             }
           </div>
-          <div class="ion-padding-horizontal">
-            <h1
-              style="
+          <div style="font-size: 2rem; align-content: center">
+            <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
+              <ion-button
+                size="expand"
+                color="light"
+                (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(4)"
+              >
+                <ion-icon
+                  name="arrow-forward-outline"
+                  slot="icon-only"
+                ></ion-icon>
+              </ion-button>
+            </a>
+          </div>
+        </div>
+        @if (!isDateInCalendar(now)) {
+        <div style="justify-self: center">
+          <ion-button size="small" (click)="changeDate(now)"
+            >Heute anzeigen
+          </ion-button>
+        </div>
+        }
+      </div>
+      <div class="ion-padding-horizontal">
+        <h1
+          style="
             font-size: 1.8rem;
             font-weight: bold;
             white-space: break-spaces;
           "
-            >
-              Veranstaltungen in {{ location?.place }}
-            </h1>
-            <h2 style="font-size: 1.2rem">
-              {{ getWeekday(date) }}, {{ formatDate(date, 'DD.MM.YYYY') }} @if (isPast(date)) {
-              <ion-badge color="danger">Datum in Vergangenheit</ion-badge>
-            }
-            </h2>
-            @if (loadingDay) {
-              <ion-spinner name="dots"></ion-spinner>
-            }
-            @if (!loadingDay) {
-              <div style="display: flex" [ngClass]="{'past-events': isPast(date)}">
-                <div>
-                  @if (placesByDistance.length === 0) {
-                    <div style="font-size: 1.2rem">
-                      <p style="color: var(--ion-color-medium)">
-                        Leider keine Veranstaltungen gefunden
-                      </p>
-                      <p class="ion-margin-top">
-                        <a href="mailto:markus@lokale.events?subject=Links">
-                          <ion-button>Event-Links vorschlagen</ion-button>
+        >
+          Veranstaltungen in {{ location?.place }}
+        </h1>
+        <h2 style="font-size: 1.2rem">
+          {{ getWeekday(date) }}, {{ formatDate(date, 'DD.MM.YYYY') }} @if
+          (isPast(date)) {
+          <ion-badge color="danger">Datum in Vergangenheit</ion-badge>
+          }
+        </h2>
+        @if (loadingDay) {
+        <ion-spinner name="dots"></ion-spinner>
+        } @if (!loadingDay) {
+        <div style="display: flex" [ngClass]="{'past-events': isPast(date)}">
+          <div>
+            @if (placesByDistance.length === 0) {
+            <div style="font-size: 1.2rem">
+              <p style="color: var(--ion-color-medium)">
+                Leider keine Veranstaltungen gefunden
+              </p>
+              <p class="ion-margin-top">
+                <a href="mailto:markus@lokale.events?subject=Links">
+                  <ion-button>Event-Links vorschlagen</ion-button>
+                </a>
+              </p>
+            </div>
+            } @for (placesGroup of placesByDistance; track placesGroup) {
+            <div>
+              @for (place of placesGroup.places; track place) {
+              <h2 class="ion-padding-top">
+                <a
+                  [routerLink]="getPlaceUrl(place?.place)"
+                  [title]="'Wechsle nach ' + place?.place?.place"
+                  style="color: var(--ion-color-dark)"
+                >
+                  {{ place?.place?.place }}</a
+                >
+                @if (placesGroup?.distance && placesGroup.distance > 0) {
+                <ion-note> ~ {{ placesGroup.distance }} Km entfernt</ion-note>
+                }
+              </h2>
+              <ul class="ion-no-padding">
+                @for (event of place.events; track event) {
+                <li class="ion-margin-bottom ion-margin-start">
+                  <article itemscope itemtype="https://schema.org/Event">
+                    <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+                    <header>
+                      <h3 itemprop="title">
+                        <!--                          <a [routerLink]="getEventUrl(event)">-->
+                        @if (!event.url) {
+                        <span> {{ event.title }} </span>
+                        } @if (event.url) {
+                        <a [href]="event.url" target="_blank">
+                          {{ event.title }}
                         </a>
-                      </p>
-                    </div>
-                  }
-                  @for (placesGroup of placesByDistance; track placesGroup) {
-                    <div>
-                      @for (place of placesGroup.places; track place) {
-                        <h2 class="ion-padding-top">
-                          <a
-                            [routerLink]="getPlaceUrl(place?.place)"
-                            [title]="'Wechsle nach ' + place?.place?.place"
-                            style="color: var(--ion-color-dark)"
-                          >
-                            {{ place?.place?.place }}</a
-                          >
-                          @if (placesGroup?.distance && placesGroup.distance > 0) {
-                            <ion-note> ~ {{ placesGroup.distance }} Km entfernt</ion-note>
-                          }
-                        </h2>
-                        <ul class="ion-no-padding">
-                          @for (event of place.events; track event) {
-                            <li class="ion-margin-bottom ion-margin-start">
-                              <article itemscope itemtype="https://schema.org/Event">
-                                <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
-                                <header>
-                                  <h3 itemprop="title">
-                                    <!--                          <a [routerLink]="getEventUrl(event)">-->
-                                    @if (!event.url) {
-                                      <span> {{ event.title }} </span>
-                                    }
-                                    @if (event.url) {
-                                      <a [href]="event.url" target="_blank">
-                                        {{ event.title }}
-                                      </a>
-                                    }
-                                    <!--                    <ion-badge color="warning">Kinder</ion-badge>-->
-                                  </h3>
-                                  <!--                  <ion-note>{{ event.url }}</ion-note>-->
-                                  <!--                  <p itemprop="description">-->
-                                  <!--                    {{ event.text }}-->
-                                  <!--                  </p>-->
-                                </header>
-                                <!--                  <section>-->
-                                <!--                    <h2>Event Details</h2>-->
-                                <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
-                                <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
-                                <!--                  </section>-->
-                                <!--                  <section>-->
-                                <!--                    <h2>Location</h2>-->
-                                <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
-                                <!--                      <span itemprop="name">Zurich Music Hall</span>-->
-                                <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
-                                <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
-                                <!--                        <meta itemprop="latitude" content="47.3769">-->
-                                <!--                        <meta itemprop="longitude" content="8.5417">-->
-                                <!--                      </div>-->
-                                <!--                    </address>-->
-                                <!--                  </section>-->
-                                <!--                  <footer>-->
-                                <!--                    <p>-->
-                                <!--                      For tickets, visit our-->
-                                <!--                      <a href="https://example.com/tickets"-->
-                                <!--                        >official ticket page</a-->
-                                <!--                      >.-->
-                                <!--                    </p>-->
-                                <!--                  </footer>-->
-                              </article>
-                            </li>
-                          }
-                        </ul>
-                      }
-                    </div>
-                  }
-                </div>
-              </div>
+                        }
+                        <!--                    <ion-badge color="warning">Kinder</ion-badge>-->
+                      </h3>
+                      <!--                  <ion-note>{{ event.url }}</ion-note>-->
+                      <!--                  <p itemprop="description">-->
+                      <!--                    {{ event.text }}-->
+                      <!--                  </p>-->
+                    </header>
+                    <!--                  <section>-->
+                    <!--                    <h2>Event Details</h2>-->
+                    <!--                    <p>Start Date: <time itemprop="startDate" datetime="2024-06-20T19:30">June 20, 2024, 7:30 PM</time></p>-->
+                    <!--                    <p>End Date: <time itemprop="endDate" datetime="2024-06-20T22:30">June 20, 2024, 10:30 PM</time></p>-->
+                    <!--                  </section>-->
+                    <!--                  <section>-->
+                    <!--                    <h2>Location</h2>-->
+                    <!--                    <address itemprop="location" itemscope itemtype="https://schema.org/Place">-->
+                    <!--                      <span itemprop="name">Zurich Music Hall</span>-->
+                    <!--                      <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+                    <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
+                    <!--                        <meta itemprop="latitude" content="47.3769">-->
+                    <!--                        <meta itemprop="longitude" content="8.5417">-->
+                    <!--                      </div>-->
+                    <!--                    </address>-->
+                    <!--                  </section>-->
+                    <!--                  <footer>-->
+                    <!--                    <p>-->
+                    <!--                      For tickets, visit our-->
+                    <!--                      <a href="https://example.com/tickets"-->
+                    <!--                        >official ticket page</a-->
+                    <!--                      >.-->
+                    <!--                    </p>-->
+                    <!--                  </footer>-->
+                  </article>
+                </li>
+                }
+              </ul>
+              }
+            </div>
             }
           </div>
+        </div>
         }
       </div>
+      }
+    </div>
     }
   </div>
 </ion-content>

@@ -9,7 +9,6 @@ import {
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
-import { RepositoryModalModule } from './repository-modal.module';
 
 describe('RepositoryModalComponent', () => {
   let component: RepositoryModalComponent;
@@ -17,7 +16,7 @@ describe('RepositoryModalComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), RepositoryModalModule],
+      imports: [AppTestModule.withDefaults(), RepositoryModalComponent],
     }).compileComponents();
 
     await mockServerSettings(

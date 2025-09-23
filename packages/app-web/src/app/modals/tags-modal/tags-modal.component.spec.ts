@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TagsModalComponent } from './tags-modal.component';
 import { AppTestModule } from '../../app-test.module';
-import { TagsModalModule } from './tags-modal.module';
+import { FeedBuilderComponent } from '../../components/feed-builder/feed-builder.component';
 
 describe('TagsModalComponent', () => {
   let component: TagsModalComponent;
@@ -10,7 +10,7 @@ describe('TagsModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TagsModalModule, AppTestModule.withDefaults()],
+      imports: [FeedBuilderComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TagsModalComponent);

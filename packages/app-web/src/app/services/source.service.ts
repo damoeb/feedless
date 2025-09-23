@@ -3,7 +3,10 @@ import {
   GqlRepositoryCreateInput,
   GqlSourceInput,
 } from '../../generated/graphql';
-import { SelectableEntity } from '../modals/selection-modal/selection-modal.component';
+import {
+  SelectableEntity,
+  SelectionModalComponent,
+} from '../modals/selection-modal/selection-modal.component';
 import { sortBy } from 'lodash-es';
 import { HttpClient } from '@angular/common/http';
 import { FileService } from './file.service';
@@ -40,6 +43,7 @@ export class SourceService {
     );
 
     const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
+      SelectionModalComponent<GqlSourceInput>,
       {
         selectables,
         title: 'Import Sources',

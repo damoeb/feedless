@@ -8,6 +8,7 @@ import {
 } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
+import { Plans } from '../../../generated/graphql';
 
 describe('SubscriptionsPage', () => {
   let component: SubscriptionsPage;
@@ -19,8 +20,17 @@ describe('SubscriptionsPage', () => {
       providers: [],
     }).compileComponents();
 
+    const apolloMockController = TestBed.inject(ApolloMockController);
+
+    // Mock the Plans query to return empty array
+    apolloMockController.mockQuery(Plans).and.resolveOnce(async () => ({
+      data: {
+        plans: [],
+      },
+    }));
+
     await mockServerSettings(
-      TestBed.inject(ApolloMockController),
+      apolloMockController,
       TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );

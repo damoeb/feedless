@@ -88,7 +88,7 @@ export class ApolloMockController {
 
   client() {
     return {
-      query: jasmine.createSpy('query').and.callFake((args) => {
+      query: jest.fn().mockImplementation((args) => {
         const mock = this.mockedRequests
           .filter((it) => it.query === args.query)
           .find((it) => isUndefined(it.condition) || it.condition(args));
@@ -96,8 +96,20 @@ export class ApolloMockController {
         if (mock) {
           return mock.resolver(args);
         }
+
+        // Return a default empty response to prevent undefined promise errors
+        return Promise.resolve({
+          data: {
+            repository: {
+              sources: [],
+            },
+            plans: [],
+          },
+          loading: false,
+          networkStatus: 7,
+        });
       }),
-      mutate: jasmine.createSpy('mutate').and.callFake((args) => {
+      mutate: jest.fn().mockImplementation((args) => {
         const mock = this.mockedRequests
           .filter((it) => it.mutate === args.mutate)
           .find((it) => isUndefined(it.condition) || it.condition(args));
@@ -105,6 +117,18 @@ export class ApolloMockController {
         if (mock) {
           return mock.resolver(args);
         }
+
+        // Return a default empty response to prevent undefined promise errors
+        return Promise.resolve({
+          data: {
+            repository: {
+              sources: [],
+            },
+            plans: [],
+          },
+          loading: false,
+          networkStatus: 7,
+        });
       }),
       // subscribe: jasmine.createSpy('subscribe').and.callFake((args) => {
       //   if (args.mutate === AuthAnonymous) {
@@ -468,18 +492,16 @@ export async function mockServerSettings(
       };
     });
 
-  serverSettingsService.createApolloClient = jasmine
-    .createSpy()
-    .and.returnValue(apolloClient);
+  serverSettingsService.createApolloClient = jest
+    .fn()
+    .mockReturnValue(apolloClient);
   const httpClient = TestBed.inject(HttpClient);
   const mockConfig: VerticalAppConfig = {
     apiUrl: '',
     attributionHtml: '',
     product: GqlVertical.Feedless,
   };
-  httpClient.get = jasmine
-    .createSpy('mockHttpGet')
-    .and.returnValue(of(mockConfig));
+  httpClient.get = jest.fn().mockReturnValue(of(mockConfig));
   await serverSettingsService.fetchServerSettings();
   return apolloMockController;
 }

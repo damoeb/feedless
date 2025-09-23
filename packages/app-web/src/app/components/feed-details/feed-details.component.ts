@@ -19,6 +19,7 @@ import {
 import { Annotation, Record, RepositoryFull } from '../../graphql/types';
 import {
   RepositoryModalAccordion,
+  RepositoryModalComponent,
   RepositoryModalComponentProps,
 } from '../../modals/repository-modal/repository-modal.component';
 import { ModalName, ModalService } from '../../services/modal.service';
@@ -83,7 +84,6 @@ import {
   starOutline,
   trashOutline,
 } from 'ionicons/icons';
-import { FileService } from '../../services/file.service';
 import { DatePipe, NgClass } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
@@ -91,15 +91,13 @@ import { HistogramComponent } from '../histogram/histogram.component';
 import { ImageDiffComponent } from '../image-diff/image-diff.component';
 import { TextDiffComponent } from '../text-diff/text-diff.component';
 import { PlayerComponent } from '../player/player.component';
-import { FeedBuilderModalModule } from '../../modals/feed-builder-modal/feed-builder-modal.module';
-import { TagsModalModule } from '../../modals/tags-modal/tags-modal.module';
-import { SelectionModalModule } from '../../modals/selection-modal/selection-modal.module';
-import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
-import { SearchAddressModalModule } from '../../modals/search-address-modal/search-address-modal.module';
-import { RepositoryModalModule } from '../../modals/repository-modal/repository-modal.module';
 import { SourcesComponent } from '../sources/sources.component';
-import { SelectableEntity } from '../../modals/selection-modal/selection-modal.component';
 import { SourceService } from '../../services/source.service';
+import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
+import { CodeEditorModalComponent } from '../../modals/code-editor-modal/code-editor-modal.component';
+import { SelectionModalComponent } from '../../modals/selection-modal/selection-modal.component';
+import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
+import { FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -151,12 +149,12 @@ type Pair<A, B> = {
     IonCheckbox,
     PlayerComponent,
     DatePipe,
-    FeedBuilderModalModule,
-    TagsModalModule,
-    SelectionModalModule,
-    CodeEditorModalModule,
-    SearchAddressModalModule,
-    RepositoryModalModule,
+    FeedBuilderModalComponent,
+    TagsModalComponent,
+    SelectionModalComponent,
+    CodeEditorModalComponent,
+    SearchAddressModalComponent,
+    RepositoryModalComponent,
     SourcesComponent,
   ],
   standalone: true,
@@ -164,7 +162,6 @@ type Pair<A, B> = {
 export class FeedDetailsComponent implements OnInit, OnDestroy {
   private readonly modalService = inject(ModalService);
   private readonly authGuard = inject(AuthGuardService);
-  private readonly fileService = inject(FileService);
   private readonly alertCtrl = inject(AlertController);
   private readonly annotationService = inject(AnnotationService);
   private readonly popoverCtrl = inject(PopoverController);
@@ -310,7 +307,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       repository: this.repository(),
       openAccordions: accordions,
     };
-    await this.modalService.openRepositoryEditor(componentProps);
+    await this.modalService.openRepositoryEditor(
+      RepositoryModalComponent,
+      componentProps,
+    );
     await this.popoverCtrl.dismiss();
   }
 
@@ -476,7 +476,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async showCode() {
-    await this.modalService.openCodeEditorModal({
+    await this.modalService.openCodeEditorModal(CodeEditorModalComponent, {
       title: 'JSON Editor',
       text: JSON.stringify(
         await this.repositoryService.getRepositoryInputWithSourcesAndFlow(

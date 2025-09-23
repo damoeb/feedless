@@ -32,7 +32,10 @@ import { ModalService } from '../../services/modal.service';
 import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
 import { debounce as rxDebounce, interval, Subscription } from 'rxjs';
 import { SourceBuilder } from '../interactive-website/source-builder';
-import { CodeEditorModalComponentProps } from '../../modals/code-editor-modal/code-editor-modal.component';
+import {
+  CodeEditorModalComponent,
+  CodeEditorModalComponentProps,
+} from '../../modals/code-editor-modal/code-editor-modal.component';
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location, NgStyle } from '@angular/common';
@@ -65,7 +68,6 @@ import {
 import { BubbleComponent } from '../bubble/bubble.component';
 import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
-import { CodeEditorModalModule } from '../../modals/code-editor-modal/code-editor-modal.module';
 import { BlockElementComponent } from '../block-element/block-element.component';
 
 export type TypedFormControls<TControl> = {
@@ -101,7 +103,7 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonSpinner,
     RemoteFeedPreviewComponent,
     ConsoleButtonComponent,
-    CodeEditorModalModule,
+    CodeEditorModalComponent,
     BlockElementComponent,
   ],
   standalone: true,
@@ -358,7 +360,10 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             contentType: 'html',
             readOnly: true,
           };
-          await this.modalService.openCodeEditorModal(componentProps);
+          await this.modalService.openCodeEditorModal(
+            CodeEditorModalComponent,
+            componentProps,
+          );
         } else {
           const toast = await this.toastCtrl.create({
             message: 'Item XPath does not return matches',

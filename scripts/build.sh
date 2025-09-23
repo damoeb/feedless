@@ -25,13 +25,7 @@ else
     --workdir /opt/feedless \
     -v "${PWD}:/opt/feedless" \
     -v "${PWD}/build-cache:/opt/feedless/build-cache" \
-    -it amazoncorretto:21 cd /opt/feedless && ./gradlew --no-daemon prepare && \
-#  docker run -u "$UID:$GID" --workdir /opt/feedless/packages/app-web -v "${PWD}:/opt/feedless" -it zenika/alpine-chrome:117-with-node npm run test:ci && \
-  docker run -u "$UID:$GID" \
-    -v "${PWD}:/opt/feedless" \
-    -v "${PWD}/build-cache:/opt/feedless/build-cache" \
-    -it amazoncorretto:21 cd /opt/feedless && ./gradlew --no-daemon build -x packages:app-web:test && \
-  ./gradlew --no-daemon bundle -x packages:app-web:test
+    -it amazoncorretto:21 cd /opt/feedless && ./gradlew --no-daemon build && \
 
   BUILD_EXIT_CODE=$?
   echo "BUILD exited with ${BUILD_EXIT_CODE}"
