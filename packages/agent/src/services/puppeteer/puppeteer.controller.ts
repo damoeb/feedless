@@ -66,36 +66,36 @@ export class PuppeteerController implements OnModuleInit {
   // }
 
   // http://localhost:3000/api/intern/prerender?url=https://derstandard.at
-  // @Get('api/intern/prerender')
-  // async prerenderWebsite(
-  //   @Query('url') url: string,
-  //   // @Headers('x-corr-id') corrIdParam: string,
-  //   // @Query('options') optionsRaw: string,
-  // ): Promise<ScrapeResponseInput> {
-  //   const corrId = newCorrId();
-  //   // const options = defaults(
-  //   //   optionsRaw ? (JSON.parse(optionsRaw) as ScrapeOptions) : {},
-  //   //   defaultOptions,
-  //   // );
-  //   // this.logger.log(options)
-  //   this.log.log(`[${corrId}] prerenderWebsite ${url}}`);
-  //   const job: Source = {
-  //     id: '',
-  //     title: '',
-  //     flow: {
-  //       sequence: [
-  //         {
-  //           fetch: {
-  //             get: {
-  //               url: {
-  //                 literal: url,
-  //               },
-  //             },
-  //           },
-  //         },
-  //       ],
-  //     },
-  //   };
-  //   return this.puppeteer.submit(job);
-  // }
+  @Get('api/intern/prerender')
+  async prerenderWebsite(
+    @Query('url') url: string,
+    // @Headers('x-corr-id') corrIdParam: string,
+    // @Query('options') optionsRaw: string,
+  ): Promise<ScrapeResponseInput> {
+    const corrId = newCorrId();
+    // const options = defaults(
+    //   optionsRaw ? (JSON.parse(optionsRaw) as ScrapeOptions) : {},
+    //   defaultOptions,
+    // );
+    // this.logger.log(options)
+    this.log.log(`[${corrId}] prerenderWebsite ${url}`);
+    const job: Source = {
+      id: corrId,
+      title: `Prerender ${url}`,
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: url,
+                },
+              },
+            },
+          },
+        ],
+      },
+    };
+    return this.puppeteer.submit(job);
+  }
 }
