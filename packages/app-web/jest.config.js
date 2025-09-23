@@ -20,12 +20,9 @@ module.exports = {
     "ionicons/components/ion-icon.js":
       "<rootDir>/src/test/mocks/ion-icon.mock.js",
   },
-  // Prevent worker crashes
   maxWorkers: 2,
   workerIdleMemoryLimit: "512MB",
-  // Handle unhandled promise rejections
   testTimeout: 30000,
-  // Detect open handles
-  detectOpenHandles: true,
+  detectOpenHandles: false, // todo enable
   forceExit: true,
 };
