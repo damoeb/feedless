@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { AgentService } from './agent.service';
+import { SocketSubscriptionService } from './socket-subscription.service';
 import { PuppeteerModule } from '../puppeteer/puppeteer.module';
 import { CommonModule } from '../common/common.module';
 
 @Module({
-  providers: [AgentService],
-  exports: [AgentService],
+  providers: [SocketSubscriptionService],
+  exports: [SocketSubscriptionService],
   imports: [PuppeteerModule, CommonModule],
 })
-export class AgentModule {}
+export class SocketSubscriptionModule {}

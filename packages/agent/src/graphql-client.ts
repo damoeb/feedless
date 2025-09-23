@@ -5,7 +5,7 @@ import {
   InMemoryCache,
 } from '@apollo/client/core';
 import { ErrorEvent, WebSocket } from 'ws';
-import * as nodeFetch from 'node-fetch';
+import * as nodeFetch from 'node-fetch-commonjs';
 import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { ClientOptions, createClient } from 'graphql-ws';
 import { Observable } from '@apollo/client';

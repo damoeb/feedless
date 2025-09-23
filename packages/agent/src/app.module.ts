@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppService } from './app.service';
 import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
 import { AppController } from './app.controller';
-import { AgentModule } from './services/agent/agent.module';
+import { SocketSubscriptionModule } from './services/socket-subscription/socket-subscription.module';
 import { CommonModule } from './services/common/common.module';
 import { ConfigModule } from '@nestjs/config';
 
@@ -20,7 +20,7 @@ export interface AgentScope {
 @Module({
   imports: [
     PuppeteerModule,
-    AgentModule,
+    SocketSubscriptionModule,
     CommonModule,
     ConfigModule.forRoot({
       isGlobal: true,

@@ -64,11 +64,6 @@ val testTask = tasks.register<YarnTask>("test") {
   outputs.upToDateWhen { true }
 }
 
-//val buildGhosteryTask = tasks.register("buildGhostery", Exec::class) {
-//  commandLine("sh", "./build-ghostery.sh")
-//  outputs.dir("ghostery-extension/extension-manifest-v2/dist")
-//}
-
 val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
   dependsOn(prepareTask, lintTask, testTask)
@@ -79,8 +74,15 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("dist")
 }
 
+val validateAgentContainer = tasks.register("validateAgentContainer", Exec::class) {
+  commandLine(
+    "./test/system/validate-agent-container.sh"
+  )
+}
+
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
+  finalizedBy(validateAgentContainer)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
 

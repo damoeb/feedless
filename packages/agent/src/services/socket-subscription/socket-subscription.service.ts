@@ -6,8 +6,8 @@ import { GraphqlClient } from '../../graphql-client';
 import { ScrapeResponseInput } from '../../generated/graphql';
 
 @Injectable()
-export class AgentService implements OnModuleInit {
-  private readonly log = new Logger(AgentService.name);
+export class SocketSubscriptionService implements OnModuleInit {
+  private readonly log = new Logger(SocketSubscriptionService.name);
 
   constructor(
     private readonly puppeteerService: PuppeteerService,
@@ -15,15 +15,17 @@ export class AgentService implements OnModuleInit {
   ) {}
 
   onModuleInit() {
-    try {
-      this.init();
-    } catch (e) {
-      this.log.error('init', e);
-      process.exit(1);
+    if (!this.config.getBoolean('APP_DISABLE_SOCKET_SUBSCRIPTION')) {
+      try {
+        this.initSubscription();
+      } catch (e) {
+        this.log.error('init', e);
+        process.exit(1);
+      }
     }
   }
 
-  private init() {
+  private initSubscription() {
     const graphqlClient = new GraphqlClient(
       this.host(),
       this.useSecure(),
