@@ -4,8 +4,6 @@ set -euo pipefail
 
 # --- Config ---
 CONTAINER_NAME="agent-test-container"
-HEALTH_ENDPOINT="/health"
-TEST_ENDPOINT="/test"
 MAX_WAIT=30
 HOST_PORT=3000
 
@@ -18,12 +16,12 @@ echo "Starting Docker container..."
 
 docker run -d --rm --name "$CONTAINER_NAME" --cap-add=SYS_ADMIN -p $HOST_PORT:3000 -e APP_DISABLE_SOCKET_SUBSCRIPTION=true damoeb/feedless:agent-latest > /dev/null
 
-echo "Waiting for service to become healthy..."
+echo "Waiting for service to become ready..."
 start_time=$(date +%s)
 
 while true; do
-  if curl -s --connect-timeout 2 --max-time 5 "http://localhost:$HOST_PORT/health" | grep -q 'true'; then
-    echo "✅ Container is life!"
+  if curl -s --connect-timeout 2 --max-time 5 "http://localhost:$HOST_PORT/readyiness" | grep -q 'true'; then
+    echo "✅ Container is ready"
     break
   fi
 

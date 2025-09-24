@@ -8,6 +8,7 @@ import { ScrapeResponseInput } from '../../generated/graphql';
 @Injectable()
 export class SocketSubscriptionService implements OnModuleInit {
   private readonly log = new Logger(SocketSubscriptionService.name);
+  private isConnected = false;
 
   constructor(
     private readonly puppeteerService: PuppeteerService,
@@ -38,6 +39,10 @@ export class SocketSubscriptionService implements OnModuleInit {
     const secretKey = this.config.getString('APP_SECRET_KEY', { mask: 4 });
     graphqlClient.authenticateAgent(email, secretKey, version).subscribe(
       async (event) => {
+        if (!this.isConnected) {
+          this.isConnected = true;
+          this.log.log('Socket subscription connected');
+        }
         this.log.debug('incoming event');
         if (event.scrape) {
           this.log.debug(`harvestRequest ${JSON.stringify(event)}`);
@@ -81,11 +86,16 @@ export class SocketSubscriptionService implements OnModuleInit {
         }
       },
       (error) => {
+        this.isConnected = false;
         this.log.error(error);
         console.log(error);
         // process.exit(1);
       },
     );
+  }
+
+  isSocketConnected(): boolean {
+    return this.isConnected;
   }
 
   private useSecure(): boolean {

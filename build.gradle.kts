@@ -38,35 +38,18 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
   )
 }
 
+val validateAgentServerCanConnect = tasks.register("validateAgentServerCanConnect", Exec::class) {
+  commandLine(
+    "./test/system/validate-agent-server-can-connect.sh"
+  )
+}
+
 val buildImages = tasks.register("buildImages") {
+// todo enable finalizedBy(validateAgentServerCanConnect)
   dependsOn(
     appWebDockerImageTask(),
     serverCoreDockerImageTask(),
     agentDockerImageTask(),
-  )
-}
-
-val stopServices = tasks.register("stopServices", Exec::class) {
-  dependsOn(buildImages)
-  commandLine("docker-compose", "stop", "feedless-app", "feedless-agent", "feedless-core")
-}
-val cleanServices = tasks.register("cleanServices", Exec::class) {
-  dependsOn(stopServices)
-  commandLine("docker-compose", "rm", "-f", "feedless-app", "feedless-agent", "feedless-core")
-}
-tasks.register("startServices", Exec::class) {
-  dependsOn(
-    buildImages,
-    stopServices,
-    cleanServices
-  )
-  commandLine(
-    "${podmanOrDocker()}-compose",
-    "up",
-    "--detach",
-    "feedless-app",
-    "feedless-agent",
-    "feedless-core"
   )
 }
 
@@ -94,18 +77,6 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
     "docker/aio-with-chromium"
   )
 }
-
-
-//tasks.register("publish", Exec::class) {
-////  dependsOn(buildTask)
-//
-//  val gitHash = grgit.head().id
-//  val semver = (findProperty("feedlessVersion") as String).split(".")
-//  val major = semver[0]
-//  val minor = semver[1]
-//  val patch = semver[2]
-//  commandLine("sh", "./scripts/semver-tag-docker-images.sh", gitHash, major, minor, patch)
-//}
 
 subprojects {
   tasks.register("lintDockerImage", Exec::class) {
