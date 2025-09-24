@@ -210,7 +210,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
       repository: {
         id: this.getRepositoryId(),
       },
-      publishedAt: {
+      startedAt: {
         inFuture: true,
       },
       latLng: {

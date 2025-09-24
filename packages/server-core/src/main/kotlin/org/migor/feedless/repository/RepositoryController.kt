@@ -1,6 +1,6 @@
 package org.migor.feedless.repository
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
@@ -85,13 +85,13 @@ class RepositoryController {
 
   private fun parseWhere(whereStr: String?): RecordsWhereInput? {
     return whereStr?.let {
-      ObjectMapper().convertValue(whereStr, RecordsWhereInput::class.java)
+      Gson().fromJson(it, RecordsWhereInput::class.java)
     }
   }
 
   private fun parseOrderBy(orderByStr: String?): RecordOrderByInput? {
     return orderByStr?.let {
-      ObjectMapper().convertValue(orderByStr, RecordOrderByInput::class.java)
+      Gson().fromJson(it, RecordOrderByInput::class.java)
     }
   }
 
