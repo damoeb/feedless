@@ -214,7 +214,7 @@ class RepositoryHarvester(
       source.errorsInSuccession += 1
       logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
       log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
-      source.disabled = source.errorsInSuccession >= maxErrorCount
+      source.disabled = false
       source.lastErrorMessage = e?.message
 
       if (source.disabled) {
