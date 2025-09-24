@@ -246,31 +246,64 @@ export class EventsPage implements OnInit, OnDestroy {
 
   private getPageTags(): PageTags {
     const location = this.location;
+    const dateStr = this.date ? this.formatDate(this.date, 'DD.MM.YYYY') : '';
+    const eventCountStr =
+      this.eventCount > 0 ? ` - ${this.eventCount} Events` : '';
+
     if (location) {
+      const keywords = [
+        'Events',
+        'Veranstaltungen',
+        location.displayName,
+        location.area,
+        location.countryCode,
+        'lokale Events',
+        'Aktivitäten',
+        'Familien',
+        'Sport',
+        'Kultur',
+        'Freizeit',
+        dateStr,
+      ].filter(Boolean);
+
       return {
-        title: `Events in ${location.displayName}, ${location.area} | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
-        description: `Erfahre alles über aktuelle Veranstaltungen in ${location.displayName}, ${location.area}. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke, was in ${location.displayName}, ${location.area} geboten wird. Ideal für Einheimische, Familien und Besucher.`,
-        publisher: 'upcoming',
-        category: '',
+        title: `Events in ${location.displayName}, ${location.area}${eventCountStr} | lokale.events`,
+        description: `Entdecke ${this.eventCount > 0 ? this.eventCount + ' ' : ''}aktuelle Veranstaltungen in ${location.displayName}, ${location.area}${dateStr ? ' am ' + dateStr : ''}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
+        publisher: 'lokale.events',
+        category: 'Events',
         url: document.location.href,
         region: location.area,
         place: location.displayName,
         lang: 'de',
         publishedAt: dayjs(),
         position: location,
+        keywords,
+        author: 'lokale.events Team',
+        robots: 'index, follow',
+        canonicalUrl: `https://lokale.events${this.createUrl(location, this.date)}`,
       };
     } else {
       return {
-        title: `lokale.events | Entdecke lokale Veranstaltungen, Familien- und Sport-Aktivitäten in deiner Umgebung`,
-        description: `Erfahre alles über aktuelle Veranstaltungen in deiner Umgebung. Von Veranstaltungen, Familien- und Sport-Aktivitäten und Märkten, entdecke. Ideal für Einheimische, Familien und Besucher.`,
-        publisher: 'upcoming',
-        category: '',
+        title: `lokale.events | Entdecke Events und Veranstaltungen in deiner Umgebung`,
+        description: `Finde spannende lokale Veranstaltungen in deiner Nähe. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - entdecke was deine Region zu bieten hat.`,
+        publisher: 'lokale.events',
+        category: 'Events',
         url: document.location.href,
-        // region: location.area,
-        // place: location.displayName,
         lang: 'de',
         publishedAt: dayjs(),
-        // position: [location.lat, location.lng],
+        keywords: [
+          'Events',
+          'Veranstaltungen',
+          'lokale Events',
+          'Aktivitäten',
+          'Familien',
+          'Sport',
+          'Kultur',
+          'Freizeit',
+        ],
+        author: 'lokale.events Team',
+        robots: 'index, follow',
+        canonicalUrl: 'https://lokale.events/',
       };
     }
   }
@@ -440,38 +473,74 @@ export class EventsPage implements OnInit, OnDestroy {
 
   createWebsiteSchema(): WebPage {
     const tags = this.getPageTags();
+    const events = this.placesByDistance
+      .flatMap((distanced) => distanced.places)
+      .flatMap((place) =>
+        place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
+      )
+      .filter((event) => event);
+
     return {
       '@type': 'WebPage',
       name: tags.title,
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
       url: location.href,
+      inLanguage: 'de-DE',
+      about: {
+        '@type': 'Thing',
+        name: `Events in ${this.location?.displayName || 'deiner Nähe'}`,
+        description: tags.description,
+      },
       breadcrumb: createBreadcrumbsSchema(this.location),
       mainEntity: {
         '@type': 'ItemList',
-        itemListElement: this.placesByDistance
-          .flatMap((distanced) => distanced.places)
-          .filter((place) => place.place)
-          .map((place) => this.toSchemaOrgPlace(place)),
+        name: `Events in ${this.location?.displayName || 'deiner Nähe'}`,
+        description: `Liste der aktuellen Veranstaltungen${this.date ? ' am ' + this.formatDate(this.date, 'DD.MM.YYYY') : ''}`,
+        numberOfItems: this.eventCount,
+        itemListElement: events.map((event, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          item: event,
+        })),
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'lokale.events',
+        url: 'https://lokale.events',
       },
     };
   }
 
   private toSchemaOrgEvent(event: Record, location: NamedLatLon): SchemaEvent {
+    const startDate = dayjs(event.startingAt);
     return {
       '@type': 'Event',
       name: event.title,
-      description: event.text,
+      description: event.text || `Veranstaltung in ${location.displayName}`,
       eventStatus: 'EventScheduled',
-      startDate: dayjs(event.startingAt).format('YYYY-MM-DD'),
-      endDate: dayjs(event.startingAt).format('YYYY-MM-DD'),
-      duration: 'PT2H',
-      // endDate: dayjs(event.startingAt).add(2, 'hours').format('YYYY-MM-DD'),
-      // endDate: '2024-11-15T22:15',
+      eventAttendanceMode: 'OfflineEventAttendanceMode',
+      startDate: startDate.toISOString(),
       url: event.url,
       location: {
         '@type': 'Place',
         name: location.displayName,
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: location.place,
+          addressRegion: location.area,
+          addressCountry: location.countryCode,
+        },
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: location.lat,
+          longitude: location.lng,
+        },
+      },
+      organizer: {
+        '@type': 'Organization',
+        name: 'lokale.events',
+        url: 'https://lokale.events',
       },
     };
   }
@@ -495,6 +564,7 @@ export class EventsPage implements OnInit, OnDestroy {
         })
     );
   }
+
   // getEventUrl(event: Record) {
   //   const { countryCode, region, place, year, month, day } =
   //     this.activatedRoute.snapshot.params;

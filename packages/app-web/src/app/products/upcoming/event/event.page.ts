@@ -118,34 +118,92 @@ export class EventPage implements OnInit, OnDestroy {
 
   createWebsiteSchema(): WebPage {
     const tags = this.getPageTags();
+    const startDate = dayjs(this.event.startingAt);
+
     return {
       '@type': 'WebPage',
       name: tags.title,
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
-      url: 'https://example.com/upcoming-events',
+      url: document.location.href,
+      inLanguage: 'de-DE',
       breadcrumb: createBreadcrumbsSchema(this.location),
       mainEntity: {
         '@type': 'Event',
-        location: 'Memphis, TN, US',
-        startDate: '2011-05-20',
-        url: 'foo-fighters-may20-fedexforum',
+        name: this.event.title,
+        description:
+          this.event.text || `Veranstaltung in ${this.location?.displayName}`,
+        startDate: startDate.toISOString(),
+        eventStatus: 'EventScheduled',
+        eventAttendanceMode: 'OfflineEventAttendanceMode',
+        url: this.event.url,
+        location: {
+          '@type': 'Place',
+          name: this.location?.displayName,
+          address: {
+            '@type': 'PostalAddress',
+            addressLocality: this.location?.place,
+            addressRegion: this.location?.area,
+            addressCountry: this.location?.countryCode,
+          },
+          geo: {
+            '@type': 'GeoCoordinates',
+            latitude: this.location?.lat,
+            longitude: this.location?.lng,
+          },
+        },
+        organizer: {
+          '@type': 'Organization',
+          name: 'lokale.events',
+          url: 'https://lokale.events',
+        },
+        offers: {
+          '@type': 'Offer',
+          availability: 'InStock',
+          price: '0',
+          priceCurrency: 'EUR',
+          url: this.event.url,
+        },
+        keywords: this.event.tags?.join(', ') || '',
+      },
+      publisher: {
+        '@type': 'Organization',
+        name: 'lokale.events',
+        url: 'https://lokale.events',
       },
     };
   }
 
   private getPageTags(): PageTags {
+    const startDate = dayjs(this.event.startingAt);
+    const keywords = [
+      this.event.title,
+      'Event',
+      'Veranstaltung',
+      this.location?.displayName,
+      this.location?.area,
+      this.location?.countryCode,
+      startDate.format('DD.MM.YYYY'),
+      'lokale Events',
+      ...(this.event.tags || []),
+    ].filter(Boolean);
+
     return {
-      title: `${this.event.title}`,
-      description: `${this.event.text}`,
-      publisher: 'upcoming',
-      category: '',
+      title: `${this.event.title} | Event in ${this.location?.displayName} | lokale.events`,
+      description: `${this.event.text || 'Veranstaltung in ' + this.location?.displayName} am ${startDate.format('DD.MM.YYYY')}. Erfahre mehr über dieses Event in ${this.location?.displayName}, ${this.location?.area}.`,
+      publisher: 'lokale.events',
+      category: 'Event',
       url: document.location.href,
-      region: this.location.area,
-      place: this.location.displayName,
+      region: this.location?.area,
+      place: this.location?.displayName,
       lang: 'de',
       publishedAt: dayjs(this.event.createdAt),
+      startingAt: startDate,
       position: this.location,
+      keywords,
+      author: 'lokale.events Team',
+      robots: 'index, follow',
+      canonicalUrl: document.location.href,
     };
   }
 

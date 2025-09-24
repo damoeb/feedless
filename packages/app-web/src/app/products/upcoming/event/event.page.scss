@@ -3,4 +3,65 @@
 .desc {
   font-size: 1.1rem;
   line-height: 2rem;
+  margin: 1rem 0;
+  color: var(--ion-color-dark);
+}
+
+// SEO enhancements for event page
+.event-link {
+  margin: 0.5rem 0;
+
+  ion-note a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.event-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+
+  ion-badge {
+    font-size: 0.8rem;
+  }
+}
+
+.event-datetime {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  time {
+    font-weight: 500;
+    color: var(--ion-color-primary);
+  }
+}
+
+h1 {
+  margin-bottom: 1rem;
+
+  a {
+    color: var(--ion-color-dark);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+section {
+  margin: 2rem 0;
+
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--ion-color-dark);
+  }
 }

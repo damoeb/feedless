@@ -50,3 +50,33 @@ h2 {
 .past-events {
   filter: grayscale(1);
 }
+
+// Event SEO enhancements
+.event-description {
+  margin: 0.5rem 0;
+  color: var(--ion-color-medium-shade);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.event-details {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.5rem;
+
+  time {
+    font-weight: 500;
+    color: var(--ion-color-primary);
+  }
+}
+
+.event-tags {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+
+  ion-badge {
+    font-size: 0.75rem;
+  }
+}

@@ -6,6 +6,8 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
+import { PageService } from '../../../services/page.service';
+import dayjs from 'dayjs';
 import {
   IonButton,
   IonButtons,
@@ -74,7 +76,26 @@ export class ManagementPage implements OnInit {
       null,
     );
     this.showSources = this.activatedRoute.snapshot.data.sources == true;
+    this.setPageTags();
     this.changeRef.detectChanges();
+  }
+
+  private setPageTags() {
+    // This page is behind authentication, so we set robots to noindex
+    const pageService = inject(PageService);
+    const tags = {
+      title: this.showSources ? 'Event Sources Management | lokale.events' : 'Event Management | lokale.events',
+      description: this.showSources ? 'Verwalte Event-Quellen und -Feeds für lokale.events' : 'Event-Management Dashboard für lokale.events',
+      publisher: 'lokale.events',
+      category: 'Management',
+      url: document.location.href,
+      lang: 'de',
+      publishedAt: dayjs(),
+      keywords: ['Management', 'Events', 'Administration', 'lokale.events'],
+      author: 'lokale.events Team',
+      robots: 'noindex, nofollow', // Private admin area
+    };
+    pageService.setMetaTags(tags);
   }
 
   private getRepositoryId(): string {
