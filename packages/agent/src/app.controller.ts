@@ -19,15 +19,21 @@ export class AppController {
     const isLive = this.isLife();
 
     if (!isLive) {
-      throw new HttpException('Service is not live', HttpStatus.SERVICE_UNAVAILABLE);
+      throw new HttpException(
+        'Service is not live',
+        HttpStatus.SERVICE_UNAVAILABLE,
+      );
     }
 
     return true;
   }
 
   private isLife(): boolean {
-    const isSocketDisabled = this.config.getBoolean('APP_DISABLE_SOCKET_SUBSCRIPTION');
-    const isSocketConnected = this.socketSubscriptionService.isSocketConnected();
+    const isSocketDisabled = this.config.getBoolean(
+      'APP_DISABLE_SOCKET_SUBSCRIPTION',
+    );
+    const isSocketConnected =
+      this.socketSubscriptionService.isSocketConnected();
     return isSocketDisabled || isSocketConnected;
   }
 }

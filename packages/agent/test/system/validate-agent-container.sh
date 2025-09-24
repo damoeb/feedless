@@ -20,7 +20,7 @@ echo "Waiting for service to become ready..."
 start_time=$(date +%s)
 
 while true; do
-  if curl -s --connect-timeout 2 --max-time 5 "http://localhost:$HOST_PORT/readyiness" | grep -q 'true'; then
+  if curl -s --connect-timeout 2 --max-time 5 "http://localhost:$HOST_PORT/readiness" | grep -q 'true'; then
     echo "✅ Container is ready"
     break
   fi
@@ -29,7 +29,7 @@ while true; do
   elapsed=$((current_time - start_time))
 
   if [ $elapsed -ge $MAX_WAIT ]; then
-    echo "❌ Timeout waiting for health check."
+    echo "❌ Timeout waiting for readiness."
     docker stop "$CONTAINER_NAME" >/dev/null
     exit 1
   fi
