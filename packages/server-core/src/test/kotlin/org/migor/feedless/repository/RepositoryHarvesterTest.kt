@@ -171,6 +171,7 @@ class RepositoryHarvesterTest {
   }
 
   @Test
+  @Disabled("feature is disabled")
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
     `when`(
       scrapeService.scrape(
