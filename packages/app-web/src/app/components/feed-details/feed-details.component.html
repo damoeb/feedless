@@ -14,7 +14,7 @@
     }
     @if (repository().pushNotificationsEnabled) {
       <ion-chip (click)="editRepository(['notifications'])"
-        >Push Notifications
+      >Push Notifications
       </ion-chip>
     }
   </ion-row>
@@ -42,7 +42,7 @@
           <ion-icon name="git-branch-outline" slot="start"></ion-icon>
           <ion-label> Sources</ion-label>
           <ion-badge color="light" style="margin-left: 5px"
-            >{{ repository().sourcesCount }}
+          >{{ repository().sourcesCount }}
             @if (repository().sourcesCountWithProblems > 0) {
               <span>
                 /
@@ -77,7 +77,7 @@
           <ion-icon name="star-outline" slot="start"></ion-icon>
           Star
           <ion-badge color="light" style="margin-left: 5px"
-            >{{ getStartCount() }}
+          >{{ getStartCount() }}
           </ion-badge>
         </ion-button>
       }
@@ -86,7 +86,7 @@
           <ion-icon name="star" slot="start"></ion-icon>
           Starred
           <ion-badge color="light" style="margin-left: 5px"
-            >{{ getStartCount() }}
+          >{{ getStartCount() }}
           </ion-badge>
         </ion-button>
       }
@@ -169,7 +169,7 @@
             <dd>
               {{ fromNow(repository().nextUpdateAt) }}
               <ion-button
-                (click)="refreshSources()"
+                (click)="forceSync()"
                 [disabled]="repository().sources.length === 0"
                 class="ion-margin-start"
                 shape="round"
@@ -244,7 +244,7 @@
             <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
             @if (repository().product === GqlProductName.VisualDiff) {
               <ion-segment-button [value]="viewModeDiff"
-                >Diff
+              >Diff
               </ion-segment-button>
             }
           </ion-segment>
@@ -316,14 +316,14 @@
                     <ion-text
                       class="ion-margin-end"
                       style="align-content: center"
-                      >Select All
+                    >Select All
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
                     <ion-text
                       class="ion-margin-end"
                       style="align-content: center"
-                      >({{ selectedCount }})
+                    >({{ selectedCount }})
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
@@ -359,7 +359,7 @@
                   <ion-toolbar style="--background: transparent">
                     <ion-buttons>
                       <ion-note
-                        >{{ fromNow(document.publishedAt) }} on
+                      >{{ fromNow(document.publishedAt) }} on
                         {{ hostname(document.url) }}
                         <!--                      https://www.openstreetmap.org/#map=14/-->
                         @if (document.latLng) {
@@ -369,8 +369,8 @@
                       @if (document.tags.length > 0) {
                         <ion-note>
                           <em class="ion-padding-start">{{
-                            getTags(document)
-                          }}</em>
+                              getTags(document)
+                            }}</em>
                         </ion-note>
                       }
                     </ion-buttons>

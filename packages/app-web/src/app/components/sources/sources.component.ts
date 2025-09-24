@@ -32,7 +32,7 @@ import { RepositoryFull, RepositorySource } from '../../graphql/types';
 import { FetchPolicy } from '@apollo/client/core';
 import { ArrayElement, Nullable } from '../../types';
 import { GqlSortOrder, GqlSourcesWhereInput } from '../../../generated/graphql';
-import { cloneDeep, sortBy } from 'lodash-es';
+import { cloneDeep } from 'lodash-es';
 import {
   FeedOrRepository,
   tagsToString,
@@ -451,5 +451,9 @@ filtered items: ${harvest.itemsIgnored}
 ${harvest.logs}`,
       title: 'Harvest Logs',
     });
+  }
+
+  async forceSync() {
+    await this.repositoryService.forceSourceSync(this.repository().id);
   }
 }

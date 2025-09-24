@@ -54,6 +54,7 @@ import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import dayjs from 'dayjs';
 import { ArrayElement } from '../types';
+import { ToastController } from '@ionic/angular/standalone';
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
 export type Harvest = ArrayElement<
@@ -70,6 +71,7 @@ export class RepositoryService {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
+  private readonly toastCtrl = inject(ToastController);
 
   async createRepositories(
     data: GqlRepositoryCreateInput[],
@@ -381,6 +383,26 @@ export class RepositoryService {
       sourceInput.latLng = removeTypename(source.latLng) as any;
     }
     return sourceInput;
+  }
+
+  async forceSourceSync(id: string) {
+    await this.updateRepository({
+      where: {
+        id,
+      },
+      data: {
+        nextUpdateAt: {
+          set: null,
+        },
+      },
+    });
+    const toast = await this.toastCtrl.create({
+      message: 'Source sync scheduled',
+      duration: 3000,
+      color: 'success',
+    });
+
+    await toast.present();
   }
 }
 

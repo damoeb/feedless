@@ -11,8 +11,6 @@ import {
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
-  GqlRepositoryCreateInput,
-  GqlSourceInput,
   GqlVertical,
   GqlVisibility,
 } from '../../../generated/graphql';
@@ -57,7 +55,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { dateFormat, SessionService } from '../../services/session.service';
 import { RecordService } from '../../services/record.service';
 import { ServerConfigService } from '../../services/server-config.service';
-import { isUndefined, sortBy, without } from 'lodash-es';
+import { isUndefined, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { relativeTimeOrElse } from '../agents/agents.component';
@@ -93,11 +91,7 @@ import { TextDiffComponent } from '../text-diff/text-diff.component';
 import { PlayerComponent } from '../player/player.component';
 import { SourcesComponent } from '../sources/sources.component';
 import { SourceService } from '../../services/source.service';
-import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
 import { CodeEditorModalComponent } from '../../modals/code-editor-modal/code-editor-modal.component';
-import { SelectionModalComponent } from '../../modals/selection-modal/selection-modal.component';
-import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
-import { FeedBuilderModalComponent } from '../../modals/feed-builder-modal/feed-builder-modal.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -149,12 +143,6 @@ type Pair<A, B> = {
     IonCheckbox,
     PlayerComponent,
     DatePipe,
-    FeedBuilderModalComponent,
-    TagsModalComponent,
-    SelectionModalComponent,
-    CodeEditorModalComponent,
-    SearchAddressModalComponent,
-    RepositoryModalComponent,
     SourcesComponent,
   ],
   standalone: true,
@@ -453,26 +441,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return pairs;
   }
 
-  async refreshSources() {
-    await this.repositoryService.updateRepository({
-      where: {
-        id: this.repository().id,
-      },
-      data: {
-        nextUpdateAt: {
-          set: null,
-        },
-      },
-    });
-    this.changeRef.detectChanges();
-
-    const toast = await this.toastCtrl.create({
-      message: 'Refresh scheduled',
-      duration: 3000,
-      color: 'success',
-    });
-
-    await toast.present();
+  async forceSync() {
+    await this.repositoryService.forceSourceSync(this.repository().id);
   }
 
   async showCode() {

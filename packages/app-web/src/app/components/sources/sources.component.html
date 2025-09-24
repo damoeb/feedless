@@ -15,16 +15,27 @@
       placeholder="Search url or title"
     ></ion-searchbar>
     <ion-buttons slot="end">
+      <!--      <ion-button-->
+      <!--        (click)="fetchCurrentPage('network-only')"-->
+      <!--        [disabled]="repository().sources.length === 0"-->
+      <!--        class="ion-margin-start"-->
+      <!--        shape="round"-->
+      <!--        size="small"-->
+      <!--        title="Trigger Refresh"-->
+      <!--      >-->
+      <!--        <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
+      <!--        Reload-->
+      <!--      </ion-button>-->
       <ion-button
-        (click)="fetchCurrentPage('network-only')"
+        (click)="forceSync()"
         [disabled]="repository().sources.length === 0"
         class="ion-margin-start"
         shape="round"
         size="small"
-        title="Trigger Refresh"
+        title="Force Sync"
       >
         <ion-icon name="refresh-outline" slot="start"></ion-icon>
-        Reload
+        Sync
       </ion-button>
       <ion-button (click)="jsonPicker.click()">
         <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
@@ -80,19 +91,19 @@
               (click)="editTags(source)"
               [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
               fill="clear"
-              >{{ stringifyTags(source) }}
+            >{{ stringifyTags(source) }}
             </ion-button>
             <ion-button
               (click)="editLatLon(source)"
               [color]="source.latLng ? 'medium' : 'primary'"
               fill="clear"
-              >{{ stringifyLocalization(source) }}
+            >{{ stringifyLocalization(source) }}
             </ion-button>
           </ion-buttons>
 
           @if (source.disabled) {
             <p>
-              <ion-label color="danger"> Disabled. </ion-label>
+              <ion-label color="danger"> Disabled.</ion-label>
             </p>
           }
         </ion-col>
@@ -135,11 +146,13 @@
               color="light"
               (click)="editOrAddSource(source)"
             >
-              Edit</ion-button
+              Edit
+            </ion-button
             >
             @if (source.lastRefreshedAt !== null) {
               <ion-button fill="solid" color="light" (click)="showLogs(source)"
-                >Logs</ion-button
+              >Logs
+              </ion-button
               >
             }
             <ion-button
