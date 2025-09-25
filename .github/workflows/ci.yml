@@ -18,10 +18,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: 'corretto'
-          java-version: 'latest'
+          java-version: '21'
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
 
       - name: Build with Gradle
-        run: ./gradlew lint test -x packages:app-web:test
+        run: ./gradlew lint test
