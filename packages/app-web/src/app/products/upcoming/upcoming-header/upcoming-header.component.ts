@@ -45,9 +45,9 @@ import {
   IonButtons,
   IonHeader,
   IonIcon,
-  IonInput,
   IonItem,
   IonList,
+  IonSearchbar,
   IonSelect,
   IonSelectOption,
   IonToolbar,
@@ -88,7 +88,6 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonHeader,
     IonToolbar,
     IonButton,
-    IonInput,
     FormsModule,
     ReactiveFormsModule,
     IonSelect,
@@ -99,6 +98,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonItem,
     IonIcon,
     RouterLink,
+    IonSearchbar,
   ],
   standalone: true,
 })
@@ -256,7 +256,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         return {
           url: this.getUrlForLocation(match),
           labelHtml: tokens.reduce((hl, token) => {
-            return hl.replace(new RegExp(token, 'i'), `<mark>${token}</mark>`);
+            return hl.replace(
+              new RegExp(token, 'i'),
+              `<strong>${token}</strong>`,
+            );
           }, match.displayName),
         };
       });
@@ -572,5 +575,11 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         }));
       }
     }
+  }
+
+  onFocus(searchbar: IonSearchbar) {
+    this.expand = 'suggestions';
+    const input = searchbar.getInputElement();
+    input.then((el) => el.select());
   }
 }

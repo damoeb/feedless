@@ -28,27 +28,24 @@
     >
       <div style="display: flex; flex: 1">
         <a routerLink="/" aria-label="lokale.events">
-          <ion-button color="light" class="ion-hide-sm-down" size="block">
-            <strong>lokale</strong><em>.events</em>
-          </ion-button>
-          <ion-button color="light" class="ion-hide-sm-up" size="block">
-            <ion-icon name="location-outline"></ion-icon><em>.events</em>
+          <ion-button color="light" size="block" fill="empty">
+            Events
           </ion-button>
         </a>
-        <ion-input
-          (ionFocus)="expand = 'suggestions'"
-          [formControl]="locationFc"
-          fill="outline"
-          placeholder="PLZ oder Ortschaft"
-          style="
+        <ion-searchbar (ionFocus)="onFocus(searchbar)"
+                       #searchbar
+                       [formControl]="locationFc"
+                       fill="outline"
+                       placeholder="PLZ oder Ortschaft"
+                       style="
             flex: 1;
             border-radius: 8px;
             margin: 5px;
             --border-color: var(--ion-color-primary);
             box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
-          "
-        >
-        </ion-input>
+          ">
+
+        </ion-searchbar>
         <ion-select
           [formControl]="perimeterFc"
           #perimeterCtrl
@@ -144,11 +141,11 @@
         }
       </ion-list>
       <!--      <app-map-->
-      <!--        [position]="getCurrentLatLon()"-->
-      <!--        style="height: 200px; border-radius: 8px; overflow: hidden"-->
-      <!--        (positionChange)="handlePositionChange($event)"-->
-      <!--        [perimeter]="perimeterFc.value"-->
-      <!--      ></app-map>-->
+        <!--        [position]="getCurrentLatLon()"-->
+        <!--        style="height: 200px; border-radius: 8px; overflow: hidden"-->
+        <!--        (positionChange)="handlePositionChange($event)"-->
+        <!--        [perimeter]="perimeterFc.value"-->
+        <!--      ></app-map>-->
     }
 
     <!--    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">-->

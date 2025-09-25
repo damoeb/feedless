@@ -22,9 +22,11 @@
   flex-grow: 1;
   flex-shrink: 0;
   flex-basis: 13%;
+
   a {
     color: var(--ion-color-dark);
   }
+
   time {
     align-content: center;
   }
@@ -62,11 +64,11 @@
   &--today {
     --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
     background: repeating-linear-gradient(
-      45deg,
-      color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
-      color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
-      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
-      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
+        45deg,
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
     ) !important;
   }
 
@@ -91,7 +93,7 @@
 }
 
 .suggestion {
-  margin-left: 150px;
+  margin-left: 50px;
   //@media screen and (min-width: 401px) and (max-width: 575px) {
   //  margin-left: 100px;
   //}
@@ -99,11 +101,5 @@
   //  margin-left: 80px;
   //}
 
-  color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));
-
-  mark {
-    background-color: transparent;
-    color: var(--app-foreground);
-    font-weight: bold;
-  }
+  //color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));
 }
