@@ -24,7 +24,6 @@ import {
   IonSearchbar,
   IonText,
   IonToolbar,
-  ToastController,
 } from '@ionic/angular/standalone';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { BubbleColor, BubbleComponent } from '../bubble/bubble.component';
@@ -38,7 +37,6 @@ import {
   tagsToString,
 } from '../feed-builder/feed-builder.component';
 import { RepositoryService, Source } from '../../services/repository.service';
-import { FileService } from '../../services/file.service';
 import { ModalService } from '../../services/modal.service';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
@@ -80,9 +78,7 @@ export class SourcesComponent implements OnInit {
   private readonly alertCtrl = inject(AlertController);
   private readonly repositoryService = inject(RepositoryService);
   private readonly changeRef = inject(ChangeDetectorRef);
-  private readonly fileService = inject(FileService);
   private readonly modalService = inject(ModalService);
-  private readonly toastCtrl = inject(ToastController);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly sourceService = inject(SourceService);
   sourceChange = output<Source[]>();
@@ -94,7 +90,7 @@ export class SourcesComponent implements OnInit {
   currentSourcesPage: number = 0;
   sources: Source[] = [];
   protected readonly fromNow = relativeTimeOrElse;
-  protected pageSize = 20;
+  protected pageSize = 10;
   protected queryFc = new FormControl<string>('');
 
   constructor() {

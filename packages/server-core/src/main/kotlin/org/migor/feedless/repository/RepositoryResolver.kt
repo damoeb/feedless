@@ -45,9 +45,10 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 
-fun Cursor.toPageable(): Pageable {
+fun Cursor.toPageable(maxPageSize: Int? = null): Pageable {
   val pageNumber = page.coerceAtLeast(0)
-  val pageSize = (pageSize ?: PropertyService.maxPageSize).coerceAtLeast(1).coerceAtMost(PropertyService.maxPageSize)
+  val pageSize =
+    (pageSize ?: PropertyService.maxPageSize).coerceAtLeast(1).coerceAtMost(maxPageSize ?: PropertyService.maxPageSize)
   return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
 }
 
@@ -146,7 +147,7 @@ class RepositoryResolver(
   ): List<Source> = coroutineScope {
     val repository: Repository = dfe.getSource()
     if (repository.currentUserIsOwner) {
-      val pageable = cursor.toPageable()
+      val pageable = cursor.toPageable(10)
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
