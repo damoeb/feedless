@@ -14,10 +14,12 @@ ion-content::part(scroll) {
   flex: 1;
   column-gap: 0.5rem;
   justify-content: center;
+
   > * {
     flex: 1;
   }
 }
+
 .calendar-day {
   flex: 1;
   max-width: 130px;
@@ -35,6 +37,7 @@ ion-content::part(scroll) {
     color: var(--ion-color-medium);
     opacity: 0.5;
   }
+
   &.active {
     color: var(--ion-color-primary);
     //background: var(--ion-color-light);
@@ -78,5 +81,17 @@ h2 {
 
   ion-badge {
     font-size: 0.75rem;
+  }
+}
+
+.localized-event {
+  background: rgba(var(--app-foreground-rgb), 0.05);
+  padding: 6px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+
+  h3 {
+    line-height: 1.8rem;
+    margin: 0;
   }
 }

@@ -10,9 +10,7 @@ import {
 import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
-import { groupBy, sortBy, unionBy, uniqBy } from 'lodash-es';
-import { RecordService } from '../../../services/record.service';
-import { Record } from '../../../graphql/types';
+import { groupBy, sortBy, times, unionBy, uniqBy } from 'lodash-es';
 import {
   BreadcrumbList,
   Event as SchemaEvent,
@@ -45,13 +43,15 @@ import {
   IonIcon,
   IonNote,
   IonSpinner,
+  IonText,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
+import { EventService, LocalizedEvent } from '../event.service';
 
-type Distance2Events = { [distance: string]: Record[] };
+type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
   distance: string;
-  events: Record[];
+  events: LocalizedEvent[];
 };
 
 type PlaceByDistance = {
@@ -61,7 +61,7 @@ type PlaceByDistance = {
 
 type EventsAtPlace = {
   place: NamedLatLon;
-  events: Record[];
+  events: LocalizedEvent[];
 };
 
 function roundLatLon(v: number): number {
@@ -114,6 +114,11 @@ type DateWindowItem = {
   offset: number;
 };
 
+interface EventGroupsPerDay {
+  date: Dayjs;
+  eventGroups: PlaceByDistance[];
+}
+
 @Component({
   selector: 'app-events-page',
   templateUrl: './events.page.html',
@@ -130,12 +135,13 @@ type DateWindowItem = {
     RouterLink,
     IonNote,
     UpcomingFooterComponent,
+    IonText,
   ],
   standalone: true,
 })
 export class EventsPage implements OnInit, OnDestroy {
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly recordService = inject(RecordService);
+  private readonly eventService = inject(EventService);
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly locationService = inject(Location);
   private readonly pageService = inject(PageService);
@@ -154,9 +160,8 @@ export class EventsPage implements OnInit, OnDestroy {
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
 
-  protected placesByDistance: PlaceByDistance[] = [];
+  protected placesByDistancePerDay: EventGroupsPerDay[] = [];
   protected loadingDay = true;
-  protected eventCount: number = 0;
 
   constructor() {
     addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
@@ -247,8 +252,6 @@ export class EventsPage implements OnInit, OnDestroy {
   private getPageTags(): PageTags {
     const location = this.location;
     const dateStr = this.date ? this.formatDate(this.date, 'DD.MM.YYYY') : '';
-    const eventCountStr =
-      this.eventCount > 0 ? ` - ${this.eventCount} Events` : '';
 
     if (location) {
       const keywords = [
@@ -267,8 +270,8 @@ export class EventsPage implements OnInit, OnDestroy {
       ].filter(Boolean);
 
       return {
-        title: `Events in ${location.displayName}, ${location.area}${eventCountStr} | lokale.events`,
-        description: `Entdecke ${this.eventCount > 0 ? this.eventCount + ' ' : ''}aktuelle Veranstaltungen in ${location.displayName}, ${location.area}${dateStr ? ' am ' + dateStr : ''}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
+        title: `Events in ${location.displayName}, ${location.area} | lokale.events`,
+        description: `Entdecke aktuelle Veranstaltungen in ${location.displayName}, ${location.area}${dateStr ? ' am ' + dateStr : ''}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
         publisher: 'lokale.events',
         category: 'Events',
         url: document.location.href,
@@ -335,8 +338,11 @@ export class EventsPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  private fetchEventOfDay(day: Dayjs): Promise<Record[]> {
-    return this.recordService.findAllByRepositoryId({
+  private fetchEventsBetweenDates(
+    minDate: Dayjs,
+    maxDate: Dayjs,
+  ): Promise<LocalizedEvent[]> {
+    return this.eventService.findAllByRepositoryId({
       cursor: {
         page: 0,
         pageSize: 50,
@@ -355,13 +361,13 @@ export class EventsPage implements OnInit, OnDestroy {
           },
         },
         startedAt: {
-          after: day
+          after: minDate
             .clone()
             .set('hours', 0)
             .set('minutes', 0)
             .set('seconds', 0)
             .valueOf(),
-          before: day
+          before: maxDate
             .clone()
             .set('hours', 24)
             .set('minutes', 0)
@@ -375,79 +381,38 @@ export class EventsPage implements OnInit, OnDestroy {
   private async fetchEvents(date: Dayjs) {
     try {
       this.loadingDay = true;
-      this.placesByDistance = [];
+      this.placesByDistancePerDay = [];
       this.changeRef.detectChanges();
 
-      const events = await this.fetchEventOfDay(date.clone());
-      this.eventCount = events.length;
+      const minDate = date;
+      const maxDate = minDate.add(2, 'days');
 
-      const places: NamedLatLon[] = await Promise.all(
-        unionBy(
-          events.map((e) => e.latLng),
-          (e) => `${e.lat},${e.lng}`,
-        )
-          .filter((e) => e)
-          .map((latLon) => {
-            const namedPlace = getCachedLocations().find(
-              (place) =>
-                roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lng) == roundLatLon(latLon.lng),
-            );
-            if (namedPlace) {
-              return namedPlace;
-            } else {
-              console.log('Cannot resolve', latLon);
-              return this.openStreetMapService.reverseSearch(
-                latLon.lat,
-                latLon.lng,
-              );
-            }
-          }),
+      const toIsoString = (date: Dayjs): string =>
+        date.startOf('day').toISOString();
+
+      const daysInWindow = times(maxDate.diff(minDate, 'days') + 1).map(
+        (offset) => toIsoString(minDate.add(offset, 'days')),
       );
 
-      const groups = events.reduce((agg, event) => {
-        const distance = this.getGeoDistance(event).toFixed(0);
-        if (!agg[distance]) {
-          agg[distance] = [];
-        }
+      const events = await this.fetchEventsBetweenDates(minDate, maxDate);
 
-        agg[distance].push(event);
+      const places: NamedLatLon[] = await this.resolvePlaces(events);
 
-        return agg;
-      }, {} as Distance2Events);
+      const eventsPerDay = groupBy(events, (event: LocalizedEvent) =>
+        toIsoString(dayjs(event.startingAt)),
+      );
 
-      this.placesByDistance = sortBy(
-        Object.keys(groups).map((distance) => ({
-          distance,
-          places: [] as string[],
-          events: groups[distance],
-        })),
-        (event) => parseInt(event.distance),
-      ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
-        const latLonGroups = groupBy(eventGroup.events, (e) =>
-          JSON.stringify(e.latLng),
-        );
-        groupedPlaces.push({
-          distance: parseInt(eventGroup.distance),
-          places: Object.keys(latLonGroups).map((latLonGroup) => {
-            const latLon = latLonGroups[latLonGroup][0].latLng;
-            const place = places.find(
-              (place) =>
-                roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lng) == roundLatLon(latLon.lng),
-            );
-            if (!place) {
-              console.warn(`Cannot resolve latlon` + JSON.stringify(latLon));
-            }
-            return {
-              events: latLonGroups[latLonGroup],
-              place: place,
-            };
-          }),
-        });
-
-        return groupedPlaces;
-      }, [] as PlaceByDistance[]);
+      this.placesByDistancePerDay = daysInWindow.map<EventGroupsPerDay>(
+        (dateKey) => {
+          return {
+            date: dayjs(dateKey),
+            eventGroups: this.getPlacesByDistance(
+              eventsPerDay[dateKey] ?? [],
+              places,
+            ),
+          };
+        },
+      );
 
       this.pageService.setJsonLdData(this.createWebsiteSchema());
     } catch (e) {
@@ -458,7 +423,82 @@ export class EventsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  private getGeoDistance(event: Record): number {
+  private async resolvePlaces(events: LocalizedEvent[]) {
+    return Promise.all(
+      unionBy(
+        events.map((e) => e.latLng),
+        (e) => `${e.lat},${e.lng}`,
+      )
+        .filter((e) => e)
+        .map((latLon) => {
+          const namedPlace = getCachedLocations().find(
+            (place) =>
+              roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
+              roundLatLon(place.lng) == roundLatLon(latLon.lng),
+          );
+          if (namedPlace) {
+            return namedPlace;
+          } else {
+            console.log('Cannot resolve', latLon);
+            return this.openStreetMapService.reverseSearch(
+              latLon.lat,
+              latLon.lng,
+            );
+          }
+        }),
+    );
+  }
+
+  private getPlacesByDistance(
+    events: LocalizedEvent[],
+    places: NamedLatLon[],
+  ): PlaceByDistance[] {
+    const groups = events.reduce((agg, event) => {
+      const distance = this.getGeoDistance(event).toFixed(0);
+      if (!agg[distance]) {
+        agg[distance] = [];
+      }
+
+      agg[distance].push(event);
+
+      return agg;
+    }, {} as Distance2Events);
+
+    return sortBy(
+      Object.keys(groups).map((distance) => ({
+        distance,
+        places: [] as string[],
+        events: groups[distance],
+      })),
+      (event) => parseInt(event.distance),
+    ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
+      const latLonGroups = groupBy(eventGroup.events, (e) =>
+        JSON.stringify(e.latLng),
+      );
+      groupedPlaces.push({
+        distance: parseInt(eventGroup.distance),
+        places: Object.keys(latLonGroups).map((latLonGroup) => {
+          const latLon = latLonGroups[latLonGroup][0].latLng;
+          const place = places.find(
+            (place) =>
+              roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
+              roundLatLon(place.lng) == roundLatLon(latLon.lng),
+          );
+          if (!place) {
+            console.warn(`Cannot resolve latlon` + JSON.stringify(latLon));
+          }
+          return {
+            events: latLonGroups[latLonGroup],
+            place: place,
+          };
+        }),
+      });
+
+      return groupedPlaces;
+    }, [] as PlaceByDistance[]);
+  }
+
+  private getGeoDistance(event: LocalizedEvent): number {
     return this.getDistanceFromLatLonInKm(
       event.latLng.lat,
       event.latLng.lng,
@@ -473,7 +513,7 @@ export class EventsPage implements OnInit, OnDestroy {
 
   createWebsiteSchema(): WebPage {
     const tags = this.getPageTags();
-    const events = this.placesByDistance
+    const events = this.placesByDistancePerDay[0].eventGroups
       .flatMap((distanced) => distanced.places)
       .flatMap((place) =>
         place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
@@ -497,7 +537,6 @@ export class EventsPage implements OnInit, OnDestroy {
         '@type': 'ItemList',
         name: `Events in ${this.location?.displayName || 'deiner Nähe'}`,
         description: `Liste der aktuellen Veranstaltungen${this.date ? ' am ' + this.formatDate(this.date, 'DD.MM.YYYY') : ''}`,
-        numberOfItems: this.eventCount,
         itemListElement: events.map((event, index) => ({
           '@type': 'ListItem',
           position: index + 1,
@@ -512,7 +551,10 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  private toSchemaOrgEvent(event: Record, location: NamedLatLon): SchemaEvent {
+  private toSchemaOrgEvent(
+    event: LocalizedEvent,
+    location: NamedLatLon,
+  ): SchemaEvent {
     const startDate = dayjs(event.startingAt);
     return {
       '@type': 'Event',
@@ -565,7 +607,7 @@ export class EventsPage implements OnInit, OnDestroy {
     );
   }
 
-  // getEventUrl(event: Record) {
+  // getEventUrl(event: LocalizedEvent) {
   //   const { countryCode, region, place, year, month, day } =
   //     this.activatedRoute.snapshot.params;
   //
@@ -715,17 +757,30 @@ export class EventsPage implements OnInit, OnDestroy {
         .set('seconds', date.second())
         .set('milliseconds', date.millisecond());
       const diffInHours = date.diff(now, 'day');
-      switch (diffInHours) {
-        case 0:
-          return 'Heute';
-        case -1:
-          return 'Gestern';
-        case 1:
-          return 'Morgen';
-        default:
-          return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.day()];
+      return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.day()];
+    }
+  }
+
+  getRelativeDateLabel(date: Dayjs): string {
+    if (date) {
+      const now = dayjs().startOf('day');
+      const diffInDays = date.startOf('day').diff(now, 'day');
+      // const diffInWeeks = date.diff(now, 'week');
+      if (Math.abs(diffInDays) < 7) {
+        const prefix = diffInDays < 0 ? 'vor' : 'in';
+        switch (diffInDays) {
+          case 0:
+            return 'Heute';
+          case -1:
+            return 'Gestern';
+          case 1:
+            return 'Morgen';
+          default:
+            return `${prefix} ${diffInDays} Tagen`;
+        }
       }
     }
+    return '';
   }
 
   protected isSame(a: dayjs.Dayjs, b: dayjs.Dayjs, units: dayjs.OpUnitType[]) {
@@ -784,6 +839,14 @@ export class EventsPage implements OnInit, OnDestroy {
     } else {
       return this.activatedRoute.snapshot.params as any;
     }
+  }
+
+  cleanTitle(title: string) {
+    return title.replaceAll(/[0-9]{1,2}\.[ ]?[a-z]{3,10}[ ]?[0-9]{2,4}/gi, '');
+  }
+
+  isToday(date: Dayjs): boolean {
+    return date.startOf('day').diff(dayjs().startOf('day'), 'hour') === 0;
   }
 }
 

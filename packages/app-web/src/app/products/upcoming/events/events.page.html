@@ -100,123 +100,88 @@
               </div>
             }
           </div>
-          <div class="ion-padding-horizontal">
-            <header>
-              <h1
-                style="
-              font-size: 1.8rem;
-              font-weight: bold;
-            "
-              >
-                Veranstaltungen in {{ location?.place }}
-              </h1>
-              <h2 style="font-size: 1.2rem">
-                <time [attr.datetime]="date?.toISOString()">
-                  {{ getWeekday(date) }}, {{ formatDate(date, 'DD.MM.YYYY') }}
-                </time>
-                @if (isPast(date)) {
-                  <ion-badge color="danger">Datum in Vergangenheit</ion-badge>
-                }
-              </h2>
-              @if (eventCount > 0) {
-                <p style="color: var(--ion-color-medium); margin-top: 0.5rem">
-                  {{ eventCount }} {{ eventCount === 1 ? 'Veranstaltung' : 'Veranstaltungen' }} gefunden
-                </p>
-              }
-            </header>
+          <div style="display: flex; column-gap: 8px">
             @if (loadingDay) {
               <ion-spinner name="dots"></ion-spinner>
             }
             @if (!loadingDay) {
-              <div style="display: flex" [ngClass]="{'past-events': isPast(date)}">
-                <div>
-                  @if (placesByDistance.length === 0) {
-                    <div style="font-size: 1.2rem">
-                      <p style="color: var(--ion-color-medium)">
-                        Leider keine Veranstaltungen gefunden
-                      </p>
-                      <p class="ion-margin-top">
-                        <a href="mailto:markus@lokale.events?subject=Links">
-                          <ion-button>Event-Links vorschlagen</ion-button>
-                        </a>
-                      </p>
-                    </div>
-                  }
-                  @for (placesGroup of placesByDistance; track placesGroup) {
+              @for (day of placesByDistancePerDay; track day) {
+                <div style="flex: 1">
+                  <header>
+                    <h2 style="font-size: 1.2rem">
+                      <time [attr.datetime]="day.date.toDate().toISOString()">
+                        {{ getWeekday(day.date) }}, {{ formatDate(day.date, 'DD.MM.YYYY') }}
+                      </time>
+                      @if (getRelativeDateLabel(day.date)) {
+                        <div class="ion-margin-top">
+                          <ion-badge
+                            [color]="isToday(day.date) ? 'primary': 'light'">{{ getRelativeDateLabel(day.date) }}
+                          </ion-badge>
+                        </div>
+                      }
+                    </h2>
+                  </header>
+
+                  <div style="display: flex" [ngClass]="{'past-events': isPast(day.date)}">
                     <div>
-                      @for (place of placesGroup.places; track place) {
-                        <h2 class="ion-padding-top">
-                          <a
-                            [routerLink]="getPlaceUrl(place?.place)"
-                            [title]="'Wechsle nach ' + place?.place?.place"
-                            style="color: var(--ion-color-dark)"
-                            itemprop="url"
-                          >
-                            <span itemprop="name">{{ place?.place?.place }}</span></a
-                          >
-                          @if (placesGroup?.distance && placesGroup.distance > 0) {
-                            <ion-note> ~ {{ placesGroup.distance }} Km entfernt</ion-note>
-                          }
-                        </h2>
-                        <ul class="ion-no-padding">
-                          @for (event of place.events; track event) {
-                            <li class="ion-margin-bottom ion-margin-start">
-                              <article itemscope itemtype="https://schema.org/Event">
-                                <header>
-                                  <h3 itemprop="name">
-                                    @if (!event.url) {
-                                      <span> {{ event.title }} </span>
-                                    }
-                                    @if (event.url) {
-                                      <a [href]="event.url" target="_blank" rel="noopener" itemprop="url">
-                                        {{ event.title }}
-                                      </a>
-                                    }
-                                  </h3>
-                                  @if (event.text) {
-                                    <p itemprop="description" class="event-description">
-                                      {{ event.text }}
-                                    </p>
+                      @if (day.eventGroups.length === 0) {
+                        <div>
+                          <p class="ion-padding-top">
+                            <ion-text color="medium">
+                              Keine Veranstaltungen gefunden
+                            </ion-text>
+                          </p>
+                        </div>
+                      }
+                      @for (placesGroup of day.eventGroups; track placesGroup) {
+                        <div>
+                          @for (place of placesGroup.places; track place) {
+                            <h2 class="ion-padding-top">
+                              <a
+                                [routerLink]="getPlaceUrl(place?.place)"
+                                [title]="'Wechsle nach ' + place?.place?.place"
+                                style="color: var(--ion-color-dark)"
+                                itemprop="url"
+                              >
+                                <span itemprop="name">{{ place?.place?.place }}</span></a
+                              >
+                              @if (placesGroup?.distance && placesGroup.distance > 0) {
+                                <ion-note> ~ {{ placesGroup.distance }} Km</ion-note>
+                              }
+                            </h2>
+                            <div>
+                              @for (event of place.events; track event) {
+                                <div class="localized-event">
+                                  @if (event.url) {
+                                    <a [href]="event.url" target="_blank" rel="noopener" itemprop="url">
+                                      <article itemscope itemtype="https://schema.org/Event">
+                                        <header>
+                                          <h3 itemprop="name">
+                                            {{ cleanTitle(event.title) }}
+
+                                          </h3>
+                                        </header>
+                                      </article>
+                                    </a>
+                                  } @else {
+                                    <article itemscope itemtype="https://schema.org/Event">
+                                      <header>
+                                        <h3 itemprop="name">
+                                          {{ cleanTitle(event.title) }}
+                                        </h3>
+                                      </header>
+                                    </article>
                                   }
-                                </header>
-                                <!--                    <div class="event-details">-->
-                                <!--                      <time [attr.datetime]="event.startingAt" itemprop="startDate">-->
-                                <!--                        {{ formatDate(event.startingAt, 'HH:mm') }}-->
-                                <!--                      </time>-->
-                                <!--                      @if (event.tags && event.tags.length > 0) {-->
-                                <!--                      <div class="event-tags" itemprop="keywords" [attr.content]="event.tags.join(', ')">-->
-                                <!--                        @for (tag of event.tags; track tag) {-->
-                                <!--                        <ion-badge color="secondary">{{ tag }}</ion-badge>-->
-                                <!--                        }-->
-                                <!--                      </div>-->
-                                <!--                      }-->
-                                <!--                    </div>-->
-                                <!--                    <meta itemprop="eventStatus" content="EventScheduled" />-->
-                                <!--                    <meta itemprop="eventAttendanceMode" content="OfflineEventAttendanceMode" />-->
-                                <!--                    <div itemprop="location" itemscope itemtype="https://schema.org/Place" style="display: none;">-->
-                                <!--                      <span itemprop="name">{{ place?.place?.displayName }}</span>-->
-                                <!--                      <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">-->
-                                <!--                        <meta itemprop="latitude" [content]="place?.place?.lat" />-->
-                                <!--                        <meta itemprop="longitude" [content]="place?.place?.lng" />-->
-                                <!--                      </div>-->
-                                <!--                    </div>-->
-                                <!--                  <footer>-->
-                                <!--                    <p>-->
-                                <!--                      For tickets, visit our-->
-                                <!--                      <a href="https://example.com/tickets"-->
-                                <!--                        >official ticket page</a-->
-                                <!--                      >.-->
-                                <!--                    </p>-->
-                                <!--                  </footer>-->
-                              </article>
-                            </li>
+                                </div>
+                              }
+                            </div>
                           }
-                        </ul>
+                        </div>
                       }
                     </div>
-                  }
+                  </div>
                 </div>
-              </div>
+              }
             }
           </div>
         }

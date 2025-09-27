@@ -1,6 +1,27 @@
+fragment EventFragment on Record {
+  id
+  tags
+  title
+  html
+  text
+  url
+  startingAt
+  latLng {
+    lat
+    lng
+  }
+}
+
+
 query findEvents($where: RecordsWhereInput!) {
   recordsFrequency(where: $where, groupBy: startingAt) {
     count
     group
+  }
+}
+
+query eventsByIds($data: RecordsInput!) {
+  records(data: $data) {
+    ...EventFragment
   }
 }
