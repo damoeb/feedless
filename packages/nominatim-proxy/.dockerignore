@@ -1,0 +1,5 @@
+node_modules
+.gradle
+dist
+build.gradle.kts
+Dockerfile

@@ -1,0 +1,25 @@
+{
+  "name": "nominatim-proxy",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc",
+    "clean": "rimraf dist",
+    "test": ""
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "http-proxy-middleware": "^3.0.5",
+    "rimraf": "6.0.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/node": "20.8.10",
+    "typescript": "5.9.2"
+  }
+}

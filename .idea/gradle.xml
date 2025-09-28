@@ -12,6 +12,7 @@
             <option value="$PROJECT_DIR$/packages" />
             <option value="$PROJECT_DIR$/packages/agent" />
             <option value="$PROJECT_DIR$/packages/app-web" />
+            <option value="$PROJECT_DIR$/packages/nominatim-proxy" />
             <option value="$PROJECT_DIR$/packages/server-core" />
           </set>
         </option>

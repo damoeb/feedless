@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: nominatim
+spec:
+  selector:
+    app: nominatim
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nominatim
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nominatim
+  template:
+    metadata:
+      labels:
+        app: nominatim
+    spec:
+      containers:
+        - name: nominatim
+          image: mediagis/nominatim:4.4
+          env:
+            - name: PBF_URL
+              value: https://download.geofabrik.de/europe/switzerland-latest.osm.pbf
+            - name: IMPORT_STYLE
+              value: addr
+            - name: THREADS
+              value: "4"
+            - name: NOMINATIM_PASSWORD
+              value: supersecurepassword
+            - name: POSTGRES_PASSWORD
+              value: postgres
+          ports:
+            - containerPort: 8080
