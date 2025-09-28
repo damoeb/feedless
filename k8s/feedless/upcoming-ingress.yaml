@@ -7,6 +7,15 @@ spec:
     regex: ^/(config.json|index.html|robots.txt|sitemap.xml)$
     replacement: /verticals-data/upcoming/$1
 
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: osm-rewrite
+spec:
+  replacePathRegex:
+    regex: ^/osm/(.*)$
+    replacement: /$1
+
 
 ---
 
@@ -47,6 +56,15 @@ spec:
           port: 80
       middlewares:
         - name: upcoming-rewrite
+
+    # Handle open-street-map
+    - match: Host(`lokale.events`) && PathPrefix(`/osm`)
+      kind: Rule
+      services:
+        - name: nominatim
+          port: 80
+      middlewares:
+        - name: osm-rewrite
 
 ---
 

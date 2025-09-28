@@ -89,6 +89,7 @@ export class OpenStreetMapService {
   }
 
   async searchByQuery(query: string): Promise<NamedLatLon[]> {
+    // const url = `/osm/search?q=${encodeURIComponent(
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
       query,
     )}&format=json&polygon=1&addressdetails=1&category=boundary&limit=5&addressdetails=1`;
@@ -101,6 +102,7 @@ export class OpenStreetMapService {
     lat: number | string,
     lon: number | string,
   ): Promise<NamedLatLon> {
+    // const url = `/osm/reverse?lat=${lat}&lon=${lon}&format=json`;
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
     return firstValueFrom(this.httpClient.get<OsmMatch>(url)).then(
       convertOsmMatchToNamedLatLon,
