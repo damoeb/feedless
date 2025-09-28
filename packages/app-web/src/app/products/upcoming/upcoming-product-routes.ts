@@ -138,51 +138,108 @@ export const UPCOMING_ROUTES: Routes = [
       {
         path: upcomingBaseRoute.children.management.template,
         canActivate: [AuthGuardService],
-        redirectTo: '/' + upcomingBaseRoute({}).management({}).sources({}).$,
+        children: [
+          {
+            path: upcomingBaseRoute.children.management.children.sources
+              .template,
+            data: { sources: true },
+            loadComponent: () =>
+              import('./management/management.page').then(
+                (m) => m.ManagementPage,
+              ),
+          },
+          {
+            path: upcomingBaseRoute.children.management.children.documents
+              .template,
+            loadComponent: () =>
+              import('./management/management.page').then(
+                (m) => m.ManagementPage,
+              ),
+          },
+          {
+            path: '**',
+            redirectTo:
+              '/' + upcomingBaseRoute({}).management({}).sources({}).$,
+          },
+        ],
       },
-      {
-        path: upcomingBaseRoute.children.management.children.sources.template,
-        canActivate: [AuthGuardService],
-        data: { sources: true },
-        loadComponent: () =>
-          import('./management/management.page').then((m) => m.ManagementPage),
-      },
-      {
-        path: upcomingBaseRoute.children.management.children.documents.template,
-        canActivate: [AuthGuardService],
-        loadComponent: () =>
-          import('./management/management.page').then((m) => m.ManagementPage),
-      },
-      // Most specific routes first to avoid redirect chains
-      {
-        path: upcomingBaseRoute.children.events.children.countryCode.children
-          .region.children.place.children.dateTime.children.eventId.template,
-        loadComponent: () =>
-          import('./event/event.page').then((m) => m.EventPage),
-      },
-      {
-        path: upcomingBaseRoute.children.events.children.countryCode.children
-          .region.children.place.children.dateTime.template,
-        loadComponent: () =>
-          import('./events/events.page').then((m) => m.EventsPage),
-      },
-      {
-        path: upcomingBaseRoute.children.events.children.countryCode.children
-          .region.children.place.template,
-        loadComponent: () =>
-          import('./events/events.page').then((m) => m.EventsPage),
-      },
-      {
-        path: upcomingBaseRoute.children.events.template,
-        loadComponent: () =>
-          import('./events/events.page').then((m) => m.EventsPage),
-      },
-      // Default route (least specific)
       {
         path: '',
         pathMatch: 'full',
         loadComponent: () =>
           import('./events/events.page').then((m) => m.EventsPage),
+      },
+      {
+        path: upcomingBaseRoute.children.events.template,
+        children: [
+          {
+            path: '',
+            loadComponent: () =>
+              import('./events/events.page').then((m) => m.EventsPage),
+          },
+          {
+            path: upcomingBaseRoute.children.events.children.countryCode
+              .template,
+            children: [
+              {
+                path: '',
+                loadComponent: () =>
+                  import('./events/events.page').then((m) => m.EventsPage),
+              },
+              {
+                // path: 'events/in/:state',
+                path: upcomingBaseRoute.children.events.children.countryCode
+                  .children.region.template,
+                children: [
+                  {
+                    path: '',
+                    loadComponent: () =>
+                      import('./events/events.page').then((m) => m.EventsPage),
+                  },
+                  {
+                    // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
+                    path: upcomingBaseRoute.children.events.children.countryCode
+                      .children.region.children.place.template,
+                    children: [
+                      {
+                        path: '',
+                        loadComponent: () =>
+                          import('./events/events.page').then(
+                            (m) => m.EventsPage,
+                          ),
+                      },
+                      {
+                        // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
+                        path: upcomingBaseRoute.children.events.children
+                          .countryCode.children.region.children.place.children
+                          .dateTime.template,
+                        children: [
+                          {
+                            path: '',
+                            loadComponent: () =>
+                              import('./events/events.page').then(
+                                (m) => m.EventsPage,
+                              ),
+                          },
+                          {
+                            // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
+                            path: upcomingBaseRoute.children.events.children
+                              .countryCode.children.region.children.place
+                              .children.dateTime.children.eventId.template,
+                            loadComponent: () =>
+                              import('./event/event.page').then(
+                                (m) => m.EventPage,
+                              ),
+                          },
+                        ],
+                      },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+        ],
       },
     ],
   },

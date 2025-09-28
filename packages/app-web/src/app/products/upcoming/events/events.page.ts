@@ -34,7 +34,7 @@ import {
   arrowForwardOutline,
   sendOutline,
 } from 'ionicons/icons';
-import { LatLng, NamedLatLon, Nullable } from '../../../types';
+import { isDefined, LatLng, NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
   IonBadge,
@@ -396,7 +396,9 @@ export class EventsPage implements OnInit, OnDestroy {
 
       const events = await this.fetchEventsBetweenDates(minDate, maxDate);
 
-      const places: NamedLatLon[] = await this.resolvePlaces(events);
+      const places: NamedLatLon[] = await this.resolvePlaces(events).then(
+        (places) => places.filter((place) => isDefined(place)),
+      );
 
       const eventsPerDay = groupBy(events, (event: LocalizedEvent) =>
         toIsoString(dayjs(event.startingAt)),
@@ -423,7 +425,9 @@ export class EventsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  private async resolvePlaces(events: LocalizedEvent[]) {
+  private async resolvePlaces(
+    events: LocalizedEvent[],
+  ): Promise<(NamedLatLon | null)[]> {
     return Promise.all(
       unionBy(
         events.map((e) => e.latLng),
@@ -440,10 +444,9 @@ export class EventsPage implements OnInit, OnDestroy {
             return namedPlace;
           } else {
             console.log('Cannot resolve', latLon);
-            return this.openStreetMapService.reverseSearch(
-              latLon.lat,
-              latLon.lng,
-            );
+            return this.openStreetMapService
+              .reverseSearch(latLon.lat, latLon.lng)
+              .catch((): null => null);
           }
         }),
     );
@@ -479,11 +482,20 @@ export class EventsPage implements OnInit, OnDestroy {
         distance: parseInt(eventGroup.distance),
         places: Object.keys(latLonGroups).map((latLonGroup) => {
           const latLon = latLonGroups[latLonGroup][0].latLng;
-          const place = places.find(
-            (place) =>
-              roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-              roundLatLon(place.lng) == roundLatLon(latLon.lng),
-          );
+          const fallbackPlace: NamedLatLon = {
+            lat: latLon.lat,
+            lng: latLon.lng,
+            place: '',
+            displayName: 'Unbekannt',
+            area: '',
+            countryCode: '',
+          };
+          const place: NamedLatLon =
+            places.find(
+              (place) =>
+                roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
+                roundLatLon(place.lng) == roundLatLon(latLon.lng),
+            ) ?? fallbackPlace;
           if (!place) {
             console.warn(`Cannot resolve latlon` + JSON.stringify(latLon));
           }

@@ -11,7 +11,7 @@ type SEOConfig = {
   ogImage?: string;
   twitterCard: string;
   structuredData?: any;
-  additionalMeta?: Array<{name?: string; property?: string; content: string}>;
+  additionalMeta?: Array<{ name?: string; property?: string; content: string }>;
 };
 
 class AppsDataGenerator {
@@ -81,7 +81,10 @@ class AppsDataGenerator {
     );
   }
 
-  private generateUpcomingSitemapLinks(domain: string, lastMod: string): Array<{
+  private generateUpcomingSitemapLinks(
+    domain: string,
+    lastMod: string,
+  ): Array<{
     url: string;
     changefreq: 'daily' | 'weekly' | 'monthly' | 'yearly';
     lastmod: string;
@@ -118,7 +121,7 @@ class AppsDataGenerator {
       '/events/in/CH/ZH/Urdorf/',
     ];
 
-    locationUrls.forEach(url => {
+    locationUrls.forEach((url) => {
       // Add current date and next few days for each location
       const today = new Date();
       for (let i = 0; i < 7; i++) {
@@ -134,7 +137,7 @@ class AppsDataGenerator {
           url: dateUrl,
           changefreq: 'daily' as const,
           lastmod: lastMod,
-          priority: i === 0 ? 0.9 : 0.7 - (i * 0.05), // Higher priority for today
+          priority: i === 0 ? 0.9 : 0.7 - i * 0.05, // Higher priority for today
         });
       }
 
@@ -212,10 +215,10 @@ User-agent: Bingbot
 Crawl-delay: 1`;
     } else {
       // Default robots.txt for other verticals
-    const allowed = app.links.filter((link) => link.allow).map((l) => l.url);
-    const disallowed = app.links
-      .filter((link) => !link.allow)
-      .map((l) => l.url) || [''];
+      const allowed = app.links.filter((link) => link.allow).map((l) => l.url);
+      const disallowed = app.links
+        .filter((link) => !link.allow)
+        .map((l) => l.url) || [''];
 
       robotsContent = `User-agent: *
 ${allowed.map((url) => `Allow: ${url}`).join('\n')}
@@ -245,13 +248,10 @@ Sitemap: ${domain}/sitemap.xml
           '<meta name="description" content="">',
           `<meta name="description" content="${seoConfig.description}">`,
         )
-        .replace(
-          '</head>',
-          `  ${structuredData}\n  </head>`
-        );
+        .replace('</head>', `  ${structuredData}\n  </head>`);
     } else {
       // Default implementation for other verticals
-    const data = `<link rel="preconnect" href="${api}">`;
+      const data = `<link rel="preconnect" href="${api}">`;
       enhancedIndex = index
         .replace('<!-- FEEDLESS_META -->', data)
         .replace('<!-- FEEDLESS_TITLE -->', app.title)
@@ -264,9 +264,12 @@ Sitemap: ${domain}/sitemap.xml
     this.writeFile(join(outDir, `index.html`), enhancedIndex);
   }
 
-  private getUpcomingSEOConfig(app: VerticalSpec): SEOConfig & { description: string } {
+  private getUpcomingSEOConfig(
+    app: VerticalSpec,
+  ): SEOConfig & { description: string } {
     return {
-      description: 'Entdecke lokale Veranstaltungen und Events in deiner Nähe. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen - finde spannende Events in der Schweiz.',
+      description:
+        'Entdecke lokale Veranstaltungen und Events in deiner Nähe. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen - finde spannende Events in der Schweiz.',
       keywords: [
         'lokale Events',
         'Veranstaltungen',
@@ -281,38 +284,42 @@ Sitemap: ${domain}/sitemap.xml
         'Workshops',
         'Nachbarschaftsfeste',
         'Event Kalender',
-        'lokale Aktivitäten'
+        'lokale Aktivitäten',
       ],
       ogImage: `https://${app.domain}/assets/upcoming.jpeg`,
       twitterCard: 'summary_large_image',
       structuredData: {
         '@context': 'https://schema.org',
         '@type': 'WebSite',
-        'name': app.title,
-        'description': app.summary,
-        'url': `https://${app.domain}`,
-        'potentialAction': {
+        name: app.title,
+        description: app.summary,
+        url: `https://${app.domain}`,
+        potentialAction: {
           '@type': 'SearchAction',
-          'target': {
+          target: {
             '@type': 'EntryPoint',
-            'urlTemplate': `https://${app.domain}/events/in/{search_term_string}`
+            urlTemplate: `https://${app.domain}/events/in/{search_term_string}`,
           },
-          'query-input': 'required name=search_term_string'
+          'query-input': 'required name=search_term_string',
         },
-        'publisher': {
+        publisher: {
           '@type': 'Organization',
-          'name': 'lokale.events',
-          'url': `https://${app.domain}`,
-          'logo': {
+          name: 'lokale.events',
+          url: `https://${app.domain}`,
+          logo: {
             '@type': 'ImageObject',
-            'url': `https://${app.domain}/assets/icons/icon-512x512.png`
-          }
-        }
+            url: `https://${app.domain}/assets/icons/icon-512x512.png`,
+          },
+        },
       },
       additionalMeta: [
         { name: 'author', content: 'lokale.events Team' },
         { name: 'robots', content: 'index, follow, max-image-preview:large' },
-        { name: 'googlebot', content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1' },
+        {
+          name: 'googlebot',
+          content:
+            'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+        },
         { property: 'og:locale', content: 'de_DE' },
         { property: 'og:site_name', content: 'lokale.events' },
         { name: 'twitter:site', content: '@lokale_events' },
@@ -320,12 +327,15 @@ Sitemap: ${domain}/sitemap.xml
         { name: 'geo.region', content: 'CH' },
         { name: 'geo.placename', content: 'Schweiz' },
         { name: 'geo.position', content: '46.8182;8.2275' },
-        { name: 'ICBM', content: '46.8182, 8.2275' }
-      ]
+        { name: 'ICBM', content: '46.8182, 8.2275' },
+      ],
     };
   }
 
-  private generateUpcomingMetaTags(app: VerticalSpec, seoConfig: SEOConfig & { description: string }): string {
+  private generateUpcomingMetaTags(
+    app: VerticalSpec,
+    seoConfig: SEOConfig & { description: string },
+  ): string {
     const domain = `https://${app.domain}`;
     const api = `https://api.${app.domain}`;
 
@@ -389,38 +399,39 @@ Sitemap: ${domain}/sitemap.xml
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'WebSite',
-      'name': app.title,
-      'description': app.summary,
-      'url': domain,
-      'potentialAction': {
+      name: app.title,
+      description: app.summary,
+      url: domain,
+      potentialAction: {
         '@type': 'SearchAction',
-        'target': {
+        target: {
           '@type': 'EntryPoint',
-          'urlTemplate': `${domain}/events/in/{search_term_string}`
+          urlTemplate: `${domain}/events/in/{search_term_string}`,
         },
-        'query-input': 'required name=search_term_string'
+        'query-input': 'required name=search_term_string',
       },
-      'publisher': {
+      publisher: {
         '@type': 'Organization',
-        'name': 'lokale.events',
-        'url': domain,
-        'logo': {
+        name: 'lokale.events',
+        url: domain,
+        logo: {
           '@type': 'ImageObject',
-          'url': `${domain}/assets/icons/icon-512x512.png`,
-          'width': 512,
-          'height': 512
+          url: `${domain}/assets/icons/icon-512x512.png`,
+          width: 512,
+          height: 512,
         },
-        'sameAs': [] as string[]
-          // Add social media profiles when available
-          // 'https://twitter.com/lokale_events',
-          // 'https://facebook.com/lokale.events'
+        sameAs: [] as string[],
+        // Add social media profiles when available
+        // 'https://twitter.com/lokale_events',
+        // 'https://facebook.com/lokale.events'
       },
-      'mainEntity': {
+      mainEntity: {
         '@type': 'ItemList',
-        'name': 'Lokale Veranstaltungen',
-        'description': 'Liste der aktuellen lokalen Veranstaltungen und Events in der Schweiz',
-        'numberOfItems': 'varies'
-      }
+        name: 'Lokale Veranstaltungen',
+        description:
+          'Liste der aktuellen lokalen Veranstaltungen und Events in der Schweiz',
+        numberOfItems: 'varies',
+      },
     };
 
     return `<script type="application/ld+json">\n${JSON.stringify(structuredData, null, 2)}\n  </script>`;
