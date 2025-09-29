@@ -150,7 +150,9 @@ export class EventsPage implements OnInit, OnDestroy {
   private readonly router = inject(Router);
 
   date: Dayjs = dayjs();
-  now: Dayjs = dayjs();
+  readonly now: Dayjs = dayjs();
+  readonly minDate: Dayjs = dayjs().subtract(2, 'week');
+  readonly maxDate: Dayjs = dayjs().add(2, 'month');
   perimeter: number = 10;
   latLon: Nullable<LatLng>;
   location: Nullable<NamedLatLon>;
@@ -170,30 +172,6 @@ export class EventsPage implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.pageService.setMetaTags(this.getPageTags());
 
-    // const fgl: PlacesLatLon[] = [];
-    // for (let index in sg) {
-    //   try {
-    //     const place = sg[index];
-    //     const matches = await this.openStreetMapService.searchByQuery(
-    //       `Schweiz ${place.area} ${place.place}`,
-    //     );
-    //     console.log(matches[0]);
-    //     fgl.push({
-    //       lat: matches[0].lat,
-    //       lng: matches[0].lng,
-    //       language: 'de',
-    //       place: place.place,
-    //       zip: matches[0].zip,
-    //       area: place.area,
-    //     });
-    //   } catch (e) {
-    //     console.error(e);
-    //     fgl.push(sg[index]);
-    //   }
-    // }
-    //
-    // console.log(JSON.stringify(fgl, null, 2));
-
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         try {
@@ -211,7 +189,16 @@ export class EventsPage implements OnInit, OnDestroy {
             );
 
           this.perimeter = perimeter || 10;
-          await this.changeDate(parseDateFromUrl(params));
+          const dateFromUrl = parseDateFromUrl(params);
+          if (
+            dateFromUrl.isBefore(this.minDate) ||
+            dateFromUrl.isAfter(this.maxDate)
+          ) {
+            //
+            await this.redirectToToday();
+          } else {
+            await this.changeDate(dateFromUrl);
+          }
 
           this.changeRef.detectChanges();
 
@@ -243,6 +230,11 @@ export class EventsPage implements OnInit, OnDestroy {
         );
       }
     }
+  }
+
+  private async redirectToToday() {
+    const url = this.getDateUrl(dayjs())!!;
+    await this.router.navigateByUrl(url);
   }
 
   formatDate(date: Dayjs, format: string) {
@@ -599,7 +591,10 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  getDateUrl(date: Nullable<Dayjs>, location: Nullable<NamedLatLon> = null) {
+  getDateUrl(
+    date: Nullable<Dayjs>,
+    location: Nullable<NamedLatLon> = null,
+  ): string {
     const { countryCode, region, place } = this.getLocationOrElse(location);
     const { year, month, day } = this.getDateOrElse(date);
 
@@ -718,11 +713,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private createDateWindow(dateP: Dayjs) {
-    const date = this.coerceDate(
-      dateP,
-      dayjs().subtract(2, 'week'),
-      dayjs().add(2, 'month'),
-    );
+    const date = this.coerceDate(dateP, this.minDate, this.maxDate);
     if (
       this.dateWindow.length > 0 &&
       this.dateWindow[0].date.isBefore(date) &&
