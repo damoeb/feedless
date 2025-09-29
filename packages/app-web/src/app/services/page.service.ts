@@ -16,6 +16,7 @@ export type PageTags = {
   position?: LatLng;
   publishedAt: Dayjs;
   startingAt?: Dayjs;
+  expiresAt?: Dayjs;
   keywords?: string[];
   image?: string;
   author?: string;
@@ -48,12 +49,18 @@ export class PageService {
       { name: 'publisher', content: options.publisher },
       { name: 'date', content: options.publishedAt.format('YYYY-MM-DD') },
       { name: 'robots', content: options.robots || 'index, follow' },
-      { name: 'viewport', content: options.viewport || 'width=device-width, initial-scale=1.0' },
+      {
+        name: 'viewport',
+        content: options.viewport || 'width=device-width, initial-scale=1.0',
+      },
     ];
 
     // Add keywords if provided
     if (options.keywords && options.keywords.length > 0) {
-      basicTags.push({ name: 'keywords', content: options.keywords.join(', ') });
+      basicTags.push({
+        name: 'keywords',
+        content: options.keywords.join(', '),
+      });
     }
 
     // Add author if provided
@@ -61,12 +68,18 @@ export class PageService {
       basicTags.push({ name: 'author', content: options.author });
     }
 
-    // Add expires date for events
-    if (options.startingAt) {
+    if (options.expiresAt) {
       basicTags.push({
         name: 'expires',
-        content: options.startingAt.add(1, 'month').format('YYYY-MM-DD'),
+        content: options.expiresAt.format('YYYY-MM-DD'),
       });
+    } else {
+      if (options.startingAt) {
+        basicTags.push({
+          name: 'expires',
+          content: options.startingAt.add(1, 'month').format('YYYY-MM-DD'),
+        });
+      }
     }
 
     this.addMetaTags(basicTags);
@@ -148,21 +161,40 @@ export class PageService {
 
   private clearMetaTags() {
     // Remove existing meta tags to prevent duplicates
-    const existingTags = document.querySelectorAll('meta[name], meta[property]');
+    const existingTags = document.querySelectorAll(
+      'meta[name], meta[property]',
+    );
     existingTags.forEach((tag) => {
       const name = tag.getAttribute('name') || tag.getAttribute('property');
-      if (name && (name.startsWith('og:') || name.startsWith('twitter:') ||
-                  ['description', 'keywords', 'author', 'robots', 'geo.region', 'geo.placename', 'geo.position', 'ICBM'].includes(name))) {
+      if (
+        name &&
+        (name.startsWith('og:') ||
+          name.startsWith('twitter:') ||
+          [
+            'description',
+            'keywords',
+            'author',
+            'robots',
+            'geo.region',
+            'geo.placename',
+            'geo.position',
+            'ICBM',
+          ].includes(name))
+      ) {
         tag.remove();
       }
     });
 
     // Remove existing JSON-LD scripts
-    const existingJsonLd = document.querySelectorAll('script[type="application/ld+json"]');
+    const existingJsonLd = document.querySelectorAll(
+      'script[type="application/ld+json"]',
+    );
     existingJsonLd.forEach((script) => script.remove());
 
     // Remove existing canonical links
-    const existingCanonical = document.querySelectorAll('link[rel="canonical"]');
+    const existingCanonical = document.querySelectorAll(
+      'link[rel="canonical"]',
+    );
     existingCanonical.forEach((link) => link.remove());
   }
 
@@ -176,7 +208,9 @@ export class PageService {
   setJsonLdData(data: WebPage | BreadcrumbList | Event) {
     // Add structured data with caching to prevent duplicates
     const dataString = JSON.stringify(data, null, 2);
-    const existingScript = document.querySelector(`script[type="application/ld+json"][data-content="${btoa(dataString)}"]`);
+    const existingScript = document.querySelector(
+      `script[type="application/ld+json"][data-content="${btoa(dataString)}"]`,
+    );
 
     if (!existingScript) {
       const script = document.createElement('script');
@@ -185,44 +219,5 @@ export class PageService {
       script.textContent = dataString;
       document.head.append(script);
     }
-  }
-
-  // Add method to generate Open Graph image URL
-  generateOgImageUrl(title: string, location?: string): string {
-    // Generate a dynamic OG image URL (this would typically point to a service that generates images)
-    const params = new URLSearchParams({
-      title: title.substring(0, 60), // Limit title length
-      ...(location && { location }),
-    });
-    return `https://lokale.events/api/og-image?${params.toString()}`;
-  }
-
-  // Helper method to generate rich snippets for events
-  generateEventStructuredData(event: any, location: any): Event {
-    return {
-      '@type': 'Event',
-      name: event.title,
-      description: event.text || event.description,
-      startDate: event.startingAt ? new Date(event.startingAt).toISOString() : undefined,
-      endDate: event.endingAt ? new Date(event.endingAt).toISOString() : undefined,
-      eventStatus: 'EventScheduled',
-      eventAttendanceMode: 'OfflineEventAttendanceMode',
-      location: {
-        '@type': 'Place',
-        name: location?.displayName || location?.place,
-        address: location?.displayName,
-        geo: location ? {
-          '@type': 'GeoCoordinates',
-          latitude: location.lat,
-          longitude: location.lng,
-        } : undefined,
-      },
-      url: event.url,
-      organizer: {
-        '@type': 'Organization',
-        name: 'lokale.events',
-        url: 'https://lokale.events',
-      },
-    };
   }
 }

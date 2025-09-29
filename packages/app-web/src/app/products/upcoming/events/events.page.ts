@@ -184,7 +184,6 @@ export class EventsPage implements OnInit, OnDestroy {
             dateFromUrl.isBefore(this.minDate) ||
             dateFromUrl.isAfter(this.maxDate)
           ) {
-            //
             await this.redirectToToday();
           } else {
             await this.changeDate(dateFromUrl);
@@ -223,8 +222,9 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private async redirectToToday() {
+    // todo do a server redirect
     const url = this.getDateUrl(dayjs())!!;
-    await this.router.navigateByUrl(url);
+    await this.router.navigateByUrl(url, { replaceUrl: true });
   }
 
   formatDate(date: Dayjs, format: string) {
@@ -263,6 +263,7 @@ export class EventsPage implements OnInit, OnDestroy {
         publishedAt: dayjs(),
         position: location,
         keywords,
+        expiresAt: this.date,
         author: 'lokale.events Team',
         robots: 'index, follow',
         canonicalUrl: `https://lokale.events${this.createUrl(location, this.date)}`,
@@ -287,6 +288,7 @@ export class EventsPage implements OnInit, OnDestroy {
           'Freizeit',
         ],
         author: 'lokale.events Team',
+        expiresAt: this.date,
         robots: 'index, follow',
         canonicalUrl: 'https://lokale.events/',
       };
@@ -509,6 +511,7 @@ export class EventsPage implements OnInit, OnDestroy {
       name: tags.title,
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
+      temporalCoverage: `${this.date.subtract(2, 'months').toISOString()}/${this.date.add(1, 'week').toISOString()}`,
       url: location.href,
       inLanguage: 'de-DE',
       about: {
@@ -544,9 +547,12 @@ export class EventsPage implements OnInit, OnDestroy {
       '@type': 'Event',
       name: event.title,
       description: event.text || `Veranstaltung in ${location.displayName}`,
-      eventStatus: 'EventScheduled',
+      eventStatus: startDate.isBefore(dayjs())
+        ? 'EventScheduled'
+        : 'EventCancelled',
       eventAttendanceMode: 'OfflineEventAttendanceMode',
       startDate: startDate.toISOString(),
+      endDate: startDate.endOf('day').toISOString(),
       url: event.url,
       location: {
         '@type': 'Place',
@@ -655,7 +661,6 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   async changeDate(date: Dayjs) {
-    console.log('changeDate', date);
     this.date = date;
     this.patchUrlInAddressBar();
     await this.fetchEvents(this.date);
