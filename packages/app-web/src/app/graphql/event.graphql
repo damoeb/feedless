@@ -12,7 +12,6 @@ fragment EventFragment on Record {
   }
 }
 
-
 query findEvents($where: RecordsWhereInput!) {
   recordsFrequency(where: $where, groupBy: startingAt) {
     count

@@ -32,19 +32,20 @@
             <strong>Lokale</strong>.<em>Events</em>
           </ion-button>
         </a>
-        <ion-searchbar (ionFocus)="onFocus(searchbar)"
-                       #searchbar
-                       [formControl]="locationFc"
-                       fill="outline"
-                       placeholder="PLZ oder Ortschaft"
-                       style="
+        <ion-searchbar
+          (ionFocus)="onFocus(searchbar)"
+          #searchbar
+          [formControl]="locationFc"
+          fill="outline"
+          placeholder="PLZ oder Ortschaft"
+          style="
             flex: 1;
             border-radius: 8px;
             margin: 5px;
             --border-color: var(--ion-color-primary);
             box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
-          ">
-
+          "
+        >
         </ion-searchbar>
         <ion-select
           [formControl]="perimeterFc"
@@ -142,11 +143,11 @@
         }
       </ion-list>
       <!--      <app-map-->
-        <!--        [position]="getCurrentLatLon()"-->
-        <!--        style="height: 200px; border-radius: 8px; overflow: hidden"-->
-        <!--        (positionChange)="handlePositionChange($event)"-->
-        <!--        [perimeter]="perimeterFc.value"-->
-        <!--      ></app-map>-->
+      <!--        [position]="getCurrentLatLon()"-->
+      <!--        style="height: 200px; border-radius: 8px; overflow: hidden"-->
+      <!--        (positionChange)="handlePositionChange($event)"-->
+      <!--        [perimeter]="perimeterFc.value"-->
+      <!--      ></app-map>-->
     }
 
     <!--    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">-->

@@ -91,13 +91,13 @@
               (click)="editTags(source)"
               [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
               fill="clear"
-            >{{ stringifyTags(source) }}
+              >{{ stringifyTags(source) }}
             </ion-button>
             <ion-button
               (click)="editLatLon(source)"
               [color]="source.latLng ? 'medium' : 'primary'"
               fill="clear"
-            >{{ stringifyLocalization(source) }}
+              >{{ stringifyLocalization(source) }}
             </ion-button>
           </ion-buttons>
 
@@ -147,13 +147,11 @@
               (click)="editOrAddSource(source)"
             >
               Edit
-            </ion-button
-            >
+            </ion-button>
             @if (source.lastRefreshedAt !== null) {
               <ion-button fill="solid" color="light" (click)="showLogs(source)"
-              >Logs
-              </ion-button
-              >
+                >Logs
+              </ion-button>
             }
             <ion-button
               fill="solid"

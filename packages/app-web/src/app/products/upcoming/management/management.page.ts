@@ -84,8 +84,12 @@ export class ManagementPage implements OnInit {
     // This page is behind authentication, so we set robots to noindex
     const pageService = inject(PageService);
     const tags = {
-      title: this.showSources ? 'Event Sources Management | lokale.events' : 'Event Management | lokale.events',
-      description: this.showSources ? 'Verwalte Event-Quellen und -Feeds für lokale.events' : 'Event-Management Dashboard für lokale.events',
+      title: this.showSources
+        ? 'Event Sources Management | lokale.events'
+        : 'Event Management | lokale.events',
+      description: this.showSources
+        ? 'Verwalte Event-Quellen und -Feeds für lokale.events'
+        : 'Event-Management Dashboard für lokale.events',
       publisher: 'lokale.events',
       category: 'Management',
       url: document.location.href,

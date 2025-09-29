@@ -64,11 +64,11 @@
   &--today {
     --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
     background: repeating-linear-gradient(
-        45deg,
-        color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
-        color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
-        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
-        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
+      45deg,
+      color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
+      color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
+      color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
     ) !important;
   }
 

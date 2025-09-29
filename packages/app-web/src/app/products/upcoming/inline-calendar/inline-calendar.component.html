@@ -22,16 +22,20 @@
 
       @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
         <a
-          [routerLink]="'/'+getDateUrl(d.date)"
-          [ngClass]="{'ion-hide-md-down': d.offset > 3}"
+          [routerLink]="'/' + getDateUrl(d.date)"
+          [ngClass]="{ 'ion-hide-md-down': d.offset > 3 }"
         >
           <div
             class="calendar-day"
-            (click)="$event.preventDefault(); $event.stopImmediatePropagation(); changeDate.emit(d.date)"
+            (click)="
+              $event.preventDefault();
+              $event.stopImmediatePropagation();
+              changeDate.emit(d.date)
+            "
             [ngClass]="{
-                                past: isPast(d.date),
-                                active: isSameDate(date(), d.date, ['day', 'month', 'year']),
-                              }"
+              past: isPast(d.date),
+              active: isSameDate(date(), d.date, ['day', 'month', 'year']),
+            }"
           >
             <div>{{ getWeekday(d.date) }}</div>
             <h3 style="font-size: 1.5rem">{{ formatDate(d.date, "D") }}</h3>
@@ -50,22 +54,12 @@
             color="light"
             (click)="shiftDateWindow(4, $event)"
           >
-            <ion-icon
-              name="arrow-forward-outline"
-              slot="icon-only"
-            ></ion-icon>
+            <ion-icon name="arrow-forward-outline" slot="icon-only"></ion-icon>
           </ion-button>
         </a>
       } @else {
-        <ion-button
-          size="expand"
-          [disabled]="true"
-          color="light"
-        >
-          <ion-icon
-            name="arrow-forward-outline"
-            slot="icon-only"
-          ></ion-icon>
+        <ion-button size="expand" [disabled]="true" color="light">
+          <ion-icon name="arrow-forward-outline" slot="icon-only"></ion-icon>
         </ion-button>
       }
     </div>
@@ -73,7 +67,7 @@
   @if (!isDateInCalendar(now)) {
     <div style="justify-self: center">
       <ion-button size="small" (click)="changeDate.emit(now)"
-      >Heute anzeigen
+        >Heute anzeigen
       </ion-button>
     </div>
   }

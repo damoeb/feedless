@@ -286,7 +286,8 @@ Extraction
       pageTitle: 'lokale.events',
       listed: false,
       subtitle: 'Localized event sourcing',
-      summary: 'Entdecke lokale Veranstaltungen und Events in der Schweiz - von Familien-Events bis zu kulturellen Veranstaltungen',
+      summary:
+        'Entdecke lokale Veranstaltungen und Events in der Schweiz - von Familien-Events bis zu kulturellen Veranstaltungen',
       descriptionMarkdown: `lokale.events ist deine Plattform für lokale Veranstaltungen in der Schweiz. Entdecke Events in deiner Nähe - von Familien-Aktivitäten über Sport-Events bis hin zu kulturellen Veranstaltungen, Märkten und Nachbarschaftsfesten.
 
 Früher war der soziale Event-Kalender [Yahoo Upcoming](https://en.wikipedia.org/wiki/Upcoming) sehr beliebt, dann übernahmen Social Media Konzerne. Seit einigen Jahren bemerke ich, dass die meisten lokal relevanten Events nicht-kommerziell sind und daher nicht auf kommerziellen Ticket-Plattformen gelistet werden, sondern nur auf ihren eigenen Websites geteilt werden - hauptsächlich durch Mundpropaganda.
