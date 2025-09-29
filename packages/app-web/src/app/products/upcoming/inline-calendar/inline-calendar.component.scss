@@ -1,0 +1,45 @@
+@use "../upcoming-mixins";
+
+.calendar {
+  backdrop-filter: blur(4px) grayscale(100%);
+}
+
+.calendar-row {
+  display: flex;
+  column-gap: 0.5rem;
+}
+
+.calendar-days {
+  display: flex;
+  flex: 1;
+  column-gap: 0.5rem;
+  justify-content: center;
+
+  > * {
+    flex: 1;
+  }
+}
+
+.calendar-day {
+  flex: 1;
+  max-width: 130px;
+  padding: 1rem;
+  border-radius: 8px;
+  align-items: baseline;
+  text-align: center;
+  cursor: pointer;
+  //color: var(--ion-color-medium);
+  div {
+    opacity: 0.7;
+  }
+
+  &.past {
+    color: var(--ion-color-medium);
+    opacity: 0.5;
+  }
+
+  &.active {
+    color: var(--ion-color-primary);
+    //background: var(--ion-color-light);
+  }
+}

@@ -2,7 +2,9 @@
   <div class="events">
     @if (location()) {
       <div style="align-self: center">
-        <ion-button color="primary" (click)="createSubscription()">
+        <ion-button color="primary"
+                    appDev
+                    (click)="createSubscription()">
           Events abonnieren
           <ion-icon name="send-outline" slot="end"></ion-icon>
         </ion-button>

@@ -54,6 +54,7 @@ import {
 } from '@ionic/angular/standalone';
 
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
+import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
 
 type Day = {
   day: Dayjs | null;
@@ -65,10 +66,6 @@ type Day = {
 };
 type Months = {
   [month: number]: Day[];
-};
-
-type Years = {
-  [year: number]: Months;
 };
 
 type SiteLocale = 'de' | 'en';
@@ -99,6 +96,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonIcon,
     RouterLink,
     IonSearchbar,
+    RemoveIfProdDirective,
   ],
   standalone: true,
 })
@@ -109,7 +107,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly appConfigService = inject(AppConfigService);
   private readonly activatedRoute = inject(ActivatedRoute);
 
-  years: Years = {};
   productConfig: VerticalSpecWithRoutes;
   locationFc = new FormControl<string>('');
   private readonly subscriptions: Subscription[] = [];

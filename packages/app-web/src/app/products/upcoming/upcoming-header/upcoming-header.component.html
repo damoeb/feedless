@@ -29,7 +29,7 @@
       <div style="display: flex; flex: 1">
         <a routerLink="/" aria-label="lokale.events">
           <ion-button color="light" size="block" fill="empty">
-            Events
+            <strong>Lokale</strong>.<em>Events</em>
           </ion-button>
         </a>
         <ion-searchbar (ionFocus)="onFocus(searchbar)"
@@ -61,6 +61,7 @@
         </ion-select>
         <ion-button
           color="light"
+          appDev
           aria-label="Umkreis konfigurieren"
           title="Umkreis konfigurieren"
           (click)="perimeterCtrl.open($event)"

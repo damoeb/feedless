@@ -11,12 +11,7 @@ import { AppConfigService } from '../../../services/app-config.service';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import { groupBy, sortBy, times, unionBy, uniqBy } from 'lodash-es';
-import {
-  BreadcrumbList,
-  Event as SchemaEvent,
-  Place as SchemaPlace,
-  WebPage,
-} from 'schema-dts';
+import { BreadcrumbList, Event as SchemaEvent, WebPage } from 'schema-dts';
 import { getCachedLocations } from '../places';
 import { PageService, PageTags } from '../../../services/page.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -37,16 +32,14 @@ import {
 import { isDefined, LatLng, NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
-  IonBadge,
-  IonButton,
   IonContent,
-  IonIcon,
   IonNote,
   IonSpinner,
   IonText,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../event.service';
+import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
@@ -109,7 +102,7 @@ export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
   };
 }
 
-type DateWindowItem = {
+export type DateWindowItem = {
   date: Dayjs;
   offset: number;
 };
@@ -127,15 +120,13 @@ interface EventGroupsPerDay {
   imports: [
     UpcomingHeaderComponent,
     IonContent,
-    IonButton,
-    IonIcon,
     NgClass,
-    IonBadge,
     IonSpinner,
     RouterLink,
     IonNote,
     UpcomingFooterComponent,
     IonText,
+    InlineCalendarComponent,
   ],
   standalone: true,
 })
@@ -157,7 +148,6 @@ export class EventsPage implements OnInit, OnDestroy {
   latLon: Nullable<LatLng>;
   location: Nullable<NamedLatLon>;
   loading: boolean = true;
-  dateWindow: DateWindowItem[] = [];
   private subscriptions: Subscription[] = [];
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
@@ -353,18 +343,8 @@ export class EventsPage implements OnInit, OnDestroy {
           },
         },
         startedAt: {
-          after: minDate
-            .clone()
-            .set('hours', 0)
-            .set('minutes', 0)
-            .set('seconds', 0)
-            .valueOf(),
-          before: maxDate
-            .clone()
-            .set('hours', 24)
-            .set('minutes', 0)
-            .set('seconds', 0)
-            .valueOf(),
+          after: minDate.startOf('day').valueOf(),
+          before: maxDate.startOf('day').valueOf(),
         },
       },
     });
@@ -635,20 +615,20 @@ export class EventsPage implements OnInit, OnDestroy {
   //   );
   // }
 
-  private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
-    return {
-      '@type': 'Place',
-      name: place.place.place,
-      geo: {
-        '@type': 'GeoCoordinates',
-        latitude: place.place.lat,
-        longitude: place.place.lng,
-      },
-      event: place.events.map((event) =>
-        this.toSchemaOrgEvent(event, place.place),
-      ),
-    };
-  }
+  // private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
+  //   return {
+  //     '@type': 'Place',
+  //     name: place.place.place,
+  //     geo: {
+  //       '@type': 'GeoCoordinates',
+  //       latitude: place.place.lat,
+  //       longitude: place.place.lng,
+  //     },
+  //     event: place.events.map((event) =>
+  //       this.toSchemaOrgEvent(event, place.place),
+  //     ),
+  //   };
+  // }
 
   getPlaceUrl(location: NamedLatLon): string {
     if (location) {
@@ -675,10 +655,11 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   async changeDate(date: Dayjs) {
+    console.log('changeDate', date);
     this.date = date;
-    this.createDateWindow(this.date);
     this.patchUrlInAddressBar();
     await this.fetchEvents(this.date);
+    this.changeRef.detectChanges();
   }
 
   patchUrlInAddressBar() {
@@ -712,57 +693,11 @@ export class EventsPage implements OnInit, OnDestroy {
     return JSON.parse(localStorage.getItem('savedLocations') || '[]');
   }
 
-  private createDateWindow(dateP: Dayjs) {
-    const date = this.coerceDate(dateP, this.minDate, this.maxDate);
-    if (
-      this.dateWindow.length > 0 &&
-      this.dateWindow[0].date.isBefore(date) &&
-      this.dateWindow[this.dateWindow.length - 1].date.isAfter(date) &&
-      this.dateWindow[0].date.isAfter(dayjs().add(2, 'month').add(7, 'day'))
-    ) {
-      return;
-    }
-
-    const createDateWindowItem = (offset: number): DateWindowItem => {
-      return {
-        date: date.add(offset, 'day'),
-        offset: Math.abs(offset),
-      };
-    };
-
-    this.dateWindow = [
-      createDateWindowItem(-1),
-      createDateWindowItem(0),
-      createDateWindowItem(1),
-      createDateWindowItem(2),
-      createDateWindowItem(3),
-      createDateWindowItem(4),
-      createDateWindowItem(5),
-    ];
-    this.changeRef.detectChanges();
-  }
-
   isPast(day: Dayjs): boolean {
-    return day.isBefore(
-      dayjs()
-        .set('hours', 0)
-        .set('minutes', 0)
-        .set('seconds', 0)
-        .set('milliseconds', 0),
-    );
+    return day.isBefore(dayjs().startOf('day'));
   }
 
-  getWeekday(date: Dayjs): string {
-    if (date) {
-      const now = dayjs()
-        .set('hours', date.hour())
-        .set('minutes', date.minute())
-        .set('seconds', date.second())
-        .set('milliseconds', date.millisecond());
-      const diffInHours = date.diff(now, 'day');
-      return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.day()];
-    }
-  }
+  protected readonly getWeekday = getWeekday;
 
   getRelativeDateLabel(date: Dayjs): string {
     if (date) {
@@ -784,32 +719,6 @@ export class EventsPage implements OnInit, OnDestroy {
       }
     }
     return '';
-  }
-
-  protected isSame(a: dayjs.Dayjs, b: dayjs.Dayjs, units: dayjs.OpUnitType[]) {
-    return units.every((unit) => a.isSame(b, unit));
-  }
-
-  moveCalendarWindow(days: number) {
-    this.createDateWindow(this.dateWindow[0].date.add(days, 'days'));
-  }
-
-  isDateInCalendar(date: Dayjs) {
-    return this.dateWindow.some((d) =>
-      this.isSame(date, d.date, ['year', 'month', 'day']),
-    );
-  }
-
-  private coerceDate(date: Dayjs, min: Dayjs, max: Dayjs) {
-    if (date.isBefore(min)) {
-      return min;
-    } else {
-      if (date.isAfter(max)) {
-        return max;
-      } else {
-        return date;
-      }
-    }
   }
 
   private getDateOrElse(date: Dayjs): {
@@ -851,8 +760,28 @@ export class EventsPage implements OnInit, OnDestroy {
   isToday(date: Dayjs): boolean {
     return date.startOf('day').diff(dayjs().startOf('day'), 'hour') === 0;
   }
+
+  getDateUrlFactory() {
+    return this.getDateUrl.bind(this);
+  }
 }
 
 export function getPreviousLocations(): NamedLatLon[] {
   return JSON.parse(localStorage.getItem('savedLocations') || '[]');
+}
+
+export function getWeekday(date: Dayjs): string {
+  if (date) {
+    const now = dayjs()
+      .set('hours', date.hour())
+      .set('minutes', date.minute())
+      .set('seconds', date.second())
+      .set('milliseconds', date.millisecond());
+    const diffInHours = date.diff(now, 'day');
+    return ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'][date.day()];
+  }
+}
+
+export function formatDate(date: Dayjs, format: string) {
+  return date?.locale('de')?.format(format);
 }
