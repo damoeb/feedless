@@ -7,7 +7,6 @@ import {
   IonIcon,
   IonItem,
   IonLabel,
-  IonList,
   IonReorder,
   IonReorderGroup,
   IonTitle,
@@ -16,7 +15,6 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { chevronBackOutline } from 'ionicons/icons';
-import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
 export interface FlowModalComponentProps {
   // tags: string[];
@@ -35,8 +33,6 @@ export interface FlowModalComponentProps {
     IonButton,
     IonIcon,
     IonContent,
-    IonList,
-    SearchbarComponent,
     IonItem,
     IonLabel,
     IonReorder,
