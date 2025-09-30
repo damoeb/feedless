@@ -42,4 +42,10 @@ describe('EventsPage', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it.only('should create', () => {
+    expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
+      ' Mittagessen',
+    );
+  });
 });

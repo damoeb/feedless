@@ -348,7 +348,7 @@ export class EventsPage implements OnInit, OnDestroy {
         },
         startedAt: {
           after: minDate.startOf('day').valueOf(),
-          before: maxDate.startOf('day').valueOf(),
+          before: maxDate.endOf('day').valueOf(),
         },
       },
     });
@@ -761,11 +761,9 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    return title.replaceAll(/[0-9]{1,2}\.[ ]?[a-z]{3,10}[ ]?[0-9]{2,4}/gi, '');
-  }
-
-  isToday(date: Dayjs): boolean {
-    return date.startOf('day').diff(dayjs().startOf('day'), 'hour') === 0;
+    return title
+      .replaceAll(/[0-9]{1,2}\.[ .]?[a-z]{3,10}[ .]?[0-9]{2,4}/gi, '')
+      .replaceAll(/[0-9]{1,2}\.[ .]?[0-9]{1,2}[ .]?[0-9]{2,4}/gi, '');
   }
 
   getDateUrlFactory() {
