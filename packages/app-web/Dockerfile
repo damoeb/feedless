@@ -1,4 +1,4 @@
-FROM openresty/openresty:1.21.4.1-0-alpine
+FROM openresty/openresty:alpine
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY build/generated /usr/share/nginx/html/verticals-data
 COPY www/browser /usr/share/nginx/html
