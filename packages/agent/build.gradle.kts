@@ -74,7 +74,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("dist")
 }
 
-val validateAgentContainer = tasks.register("validateAgentContainer", Exec::class) {
+val systemTest = tasks.register("systemTest", Exec::class) {
   commandLine(
     "./test/system/validate-agent-container.sh"
   )
@@ -82,7 +82,7 @@ val validateAgentContainer = tasks.register("validateAgentContainer", Exec::clas
 
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
-  finalizedBy(validateAgentContainer)
+  finalizedBy(systemTest)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
 
