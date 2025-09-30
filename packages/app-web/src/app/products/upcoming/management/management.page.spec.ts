@@ -4,7 +4,7 @@ import { ManagementPage } from './management.page';
 import { AppConfigService } from '../../../services/app-config.service';
 import { PageService } from '../../../services/page.service';
 
-describe.skip('ManagementPage', () => {
+describe('ManagementPage', () => {
   let component: ManagementPage;
   let fixture: ComponentFixture<ManagementPage>;
 
@@ -18,7 +18,12 @@ describe.skip('ManagementPage', () => {
           },
         }),
       ],
-      providers: [{ provide: PageService, useValue: {} }],
+      providers: [{
+        provide: PageService,
+        useValue: {
+          setMetaTags: jest.fn()
+        }
+      }],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

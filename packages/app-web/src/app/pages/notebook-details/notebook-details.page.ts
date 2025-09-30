@@ -257,7 +257,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private unsubscribeEvents(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
+    this.subscriptions.forEach((s) => s?.unsubscribe());
   }
 
   loadAutoSuggestions(query: string, type: string): Promise<Completion[]> {

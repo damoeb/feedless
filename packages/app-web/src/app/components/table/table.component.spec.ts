@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { TableComponent } from './table.component';
 import { AppTestModule } from '../../app-test.module';
 
-xdescribe('TableComponent', () => {
+describe('TableComponent', () => {
   let component: TableComponent<any>;
   let fixture: ComponentFixture<TableComponent<any>>;
 
@@ -15,7 +15,7 @@ xdescribe('TableComponent', () => {
     fixture = TestBed.createComponent(TableComponent);
     component = fixture.componentInstance;
     const componentRef = fixture.componentRef;
-    componentRef.setInput('rows', []);
+    componentRef.setInput('rows', [{ id: 1, name: 'Test' }]);
     fixture.detectChanges();
   }));
 

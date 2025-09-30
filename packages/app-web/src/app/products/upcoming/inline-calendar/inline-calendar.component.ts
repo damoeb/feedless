@@ -13,7 +13,7 @@ import dayjs, { Dayjs, OpUnitType } from 'dayjs';
 import { RouterLink } from '@angular/router';
 import { NgClass } from '@angular/common';
 import 'dayjs/locale/de';
-import { IonButton, IonIcon, IonLabel } from '@ionic/angular/standalone';
+import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { DateWindowItem, formatDate, getWeekday } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
@@ -23,7 +23,7 @@ import { calendarNumberOutline } from 'ionicons/icons';
   templateUrl: './inline-calendar.component.html',
   styleUrls: ['./inline-calendar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, IonIcon, NgClass, RouterLink, IonLabel],
+  imports: [IonButton, IonIcon, NgClass, RouterLink],
   standalone: true,
 })
 export class InlineCalendarComponent implements OnInit, OnChanges {
@@ -117,7 +117,7 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
     );
   }
 
-  shiftDateWindow(offset: number, event: PointerEvent) {
+  shiftDateWindow(offset: number, event: MouseEvent) {
     this.changeDate.emit(this.date().add(offset, 'day'));
     event.preventDefault();
     event.stopPropagation();

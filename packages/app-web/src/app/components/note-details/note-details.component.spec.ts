@@ -6,7 +6,7 @@ import { from, of } from 'rxjs';
 import { NotebookService } from '../../services/notebook.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
-describe.skip('NoteDetailsComponent', () => {
+describe('NoteDetailsComponent', () => {
   let component: NoteDetailsComponent;
   let fixture: ComponentFixture<NoteDetailsComponent>;
 
@@ -20,7 +20,15 @@ describe.skip('NoteDetailsComponent', () => {
             assertLoggedIn: () => {},
           },
         },
-        { provide: NotebookService, useValue: jest.fn().mockReturnValue({}) },
+        {
+          provide: NotebookService,
+          useValue: {
+            openNoteChanges: { subscribe: jest.fn() },
+            closeNoteChanges: { subscribe: jest.fn() },
+            moveStartChanges: { subscribe: jest.fn() },
+            moveEndChanges: { subscribe: jest.fn() }
+          }
+        },
       ],
     }).compileComponents();
 

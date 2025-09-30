@@ -14,7 +14,7 @@ import {
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
-xdescribe('ImportButtonComponent', () => {
+describe('ImportButtonComponent', () => {
   let component: ImportButtonComponent;
   let fixture: ComponentFixture<ImportButtonComponent>;
 

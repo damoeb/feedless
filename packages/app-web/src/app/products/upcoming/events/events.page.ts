@@ -200,7 +200,9 @@ export class EventsPage implements OnInit, OnDestroy {
           //   this.geoService.getCurrentLatLon(),
           // );
 
-          await this.headerComponent().fetchSuggestions('');
+          if (this.headerComponent()) {
+            await this.headerComponent().fetchSuggestions('');
+          }
         } finally {
           this.loading = false;
         }

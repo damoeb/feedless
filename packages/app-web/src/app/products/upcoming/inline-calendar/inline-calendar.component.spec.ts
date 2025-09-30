@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { InlineCalendarComponent } from './inline-calendar.component';
 
-describe.skip('InlineCalendar', () => {
+describe('InlineCalendar', () => {
   let component: InlineCalendarComponent;
   let fixture: ComponentFixture<InlineCalendarComponent>;
 

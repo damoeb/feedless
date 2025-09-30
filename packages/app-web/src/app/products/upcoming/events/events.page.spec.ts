@@ -7,8 +7,9 @@ import {
   mockRecords,
 } from '../../../app-test.module';
 import { Router } from '@angular/router';
+import dayjs from 'dayjs';
 
-describe.skip('EventsPage', () => {
+describe('EventsPage', () => {
   let component: EventsPage;
   let fixture: ComponentFixture<EventsPage>;
 
@@ -30,6 +31,10 @@ describe.skip('EventsPage', () => {
     const router = TestBed.inject(Router);
     jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     component = fixture.componentInstance;
+
+    component.date = dayjs();
+    component.perimeter = 10;
+
     await component.ngOnInit();
     fixture.detectChanges();
   }));

@@ -4,7 +4,7 @@ import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { NotebookService } from '../../services/notebook.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
-xdescribe('NotebookDetailsPage', () => {
+describe('NotebookDetailsPage', () => {
   let component: NotebookDetailsPage;
   let fixture: ComponentFixture<NotebookDetailsPage>;
 
@@ -24,7 +24,29 @@ xdescribe('NotebookDetailsPage', () => {
             assertLoggedIn: () => {},
           },
         },
-        { provide: NotebookService, useValue: jest.fn().mockReturnValue({}) },
+        {
+          provide: NotebookService,
+          useValue: {
+            systemBusyChanges: { subscribe: jest.fn() },
+            openNoteChanges: { subscribe: jest.fn() },
+            notesChanges: { asObservable: jest.fn().mockReturnValue({ subscribe: jest.fn() }) },
+            suggestByType: jest.fn().mockResolvedValue([]),
+            openNotebook: jest.fn(),
+            findById: jest.fn().mockResolvedValue({}),
+            hasSettingsValue: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+            getSettingsValue: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+            createNote: jest.fn().mockResolvedValue({}),
+            updateNote: jest.fn(),
+            countChildren: jest.fn().mockReturnValue(0),
+            findAllChildren: jest.fn().mockReturnValue([]),
+            closeNoteChanges: { next: jest.fn() },
+            deleteById: jest.fn(),
+            showToast: jest.fn(),
+            moveStartChanges: { next: jest.fn() },
+            getSettingsOrDefault: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+            openNoteById: jest.fn()
+          }
+        },
       ],
     }).compileComponents();
 
