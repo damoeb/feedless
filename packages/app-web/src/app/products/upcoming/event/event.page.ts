@@ -21,7 +21,12 @@ import {
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
-import { arrowBackOutline, calendarNumberOutline } from 'ionicons/icons';
+import {
+  arrowBackOutline,
+  calendarNumberOutline,
+  documentOutline,
+  openOutline,
+} from 'ionicons/icons';
 import { NamedLatLon } from '../../../types';
 
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
@@ -36,6 +41,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
+import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 
 @Component({
   selector: 'app-event-page',
@@ -54,6 +60,7 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
     IonNote,
     IonBadge,
     UpcomingFooterComponent,
+    InlineCalendarComponent,
   ],
   standalone: true,
 })
@@ -73,7 +80,12 @@ export class EventPage implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   constructor() {
-    addIcons({ arrowBackOutline, calendarNumberOutline });
+    addIcons({
+      arrowBackOutline,
+      calendarNumberOutline,
+      documentOutline,
+      openOutline,
+    });
   }
 
   async ngOnInit() {
@@ -247,5 +259,15 @@ END:VCALENDAR`;
 
   formatDate(date: number, format: string) {
     return dayjs(date).locale('de').format(format);
+  }
+
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) {
+      return '0 Bytes';
+    }
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
   }
 }

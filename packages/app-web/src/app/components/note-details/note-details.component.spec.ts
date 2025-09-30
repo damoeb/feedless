@@ -26,8 +26,8 @@ describe('NoteDetailsComponent', () => {
             openNoteChanges: { subscribe: jest.fn() },
             closeNoteChanges: { subscribe: jest.fn() },
             moveStartChanges: { subscribe: jest.fn() },
-            moveEndChanges: { subscribe: jest.fn() }
-          }
+            moveEndChanges: { subscribe: jest.fn() },
+          },
         },
       ],
     }).compileComponents();

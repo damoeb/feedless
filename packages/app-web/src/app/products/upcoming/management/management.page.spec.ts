@@ -18,12 +18,14 @@ describe('ManagementPage', () => {
           },
         }),
       ],
-      providers: [{
-        provide: PageService,
-        useValue: {
-          setMetaTags: jest.fn()
-        }
-      }],
+      providers: [
+        {
+          provide: PageService,
+          useValue: {
+            setMetaTags: jest.fn(),
+          },
+        },
+      ],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

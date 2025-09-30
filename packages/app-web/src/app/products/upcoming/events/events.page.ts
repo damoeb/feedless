@@ -174,7 +174,7 @@ export class EventsPage implements OnInit, OnDestroy {
           this.latLon = this.location;
 
           const { perimeter } =
-            upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
+            upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.children.perimeter.parseParams(
               params as any,
             );
 
@@ -348,7 +348,7 @@ export class EventsPage implements OnInit, OnDestroy {
         },
         startedAt: {
           after: minDate.startOf('day').valueOf(),
-          before: maxDate.endOf('day').valueOf(),
+          before: maxDate.startOf('day').valueOf(),
         },
       },
     });
@@ -594,34 +594,35 @@ export class EventsPage implements OnInit, OnDestroy {
         .region({ region })
         .place({ place })
         .dateTime({
-          perimeter: this.perimeter,
           year,
           month,
           day,
         })
+        .perimeter({
+          perimeter: this.perimeter,
+        })
     );
   }
 
-  // getEventUrl(event: LocalizedEvent) {
-  //   const { countryCode, region, place, year, month, day } =
-  //     this.activatedRoute.snapshot.params;
-  //
-  //   return (
-  //     '/' +
-  //     homeRoute({})
-  //       .events({})
-  //       .countryCode({ countryCode })
-  //       .region({ region })
-  //       .place({ place })
-  //       .dateTime({
-  //         perimeter: this.perimeter,
-  //         year,
-  //         month,
-  //         day,
-  //       })
-  //       .eventId({ eventId: event.id }).$
-  //   );
-  // }
+  getEventUrl(event: LocalizedEvent): string {
+    const { countryCode, region, place, year, month, day } =
+      this.activatedRoute.snapshot.params;
+
+    return (
+      '/' +
+      upcomingBaseRoute({})
+        .events({})
+        .countryCode({ countryCode })
+        .region({ region })
+        .place({ place })
+        .dateTime({
+          year,
+          month,
+          day,
+        })
+        .eventId({ eventId: (event as any).id }).$
+    );
+  }
 
   // private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
   //   return {
@@ -653,10 +654,12 @@ export class EventsPage implements OnInit, OnDestroy {
           .region({ region: area })
           .place({ place })
           .dateTime({
-            perimeter: this.perimeter,
             year,
             month,
             day,
+          })
+          .perimeter({
+            perimeter: this.perimeter,
           }).$
       );
     }
@@ -680,10 +683,12 @@ export class EventsPage implements OnInit, OnDestroy {
       .region({ region: location.area })
       .place({ place: location.place })
       .dateTime({
-        perimeter: 10,
         year: parseInt(date.format('YYYY')),
         month: parseInt(date.format('MM')),
         day: parseInt(date.format('DD')),
+      })
+      .perimeter({
+        perimeter: 10,
       }).$;
   }
 
@@ -761,9 +766,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    return title
-      .replaceAll(/[0-9]{1,2}\.[ .]?[a-z]{3,10}[ .]?[0-9]{2,4}/gi, '')
-      .replaceAll(/[0-9]{1,2}\.[ .]?[0-9]{1,2}[ .]?[0-9]{2,4}/gi, '');
+    return title.replaceAll(/[0-9]{1,2}\.[ ]?[a-z]{3,10}[ ]?[0-9]{2,4}/gi, '');
   }
 
   getDateUrlFactory() {

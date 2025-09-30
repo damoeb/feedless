@@ -30,41 +30,34 @@
 //   parse: parse(defaultValue),
 // });
 
-import { booleanParser, intParser, route } from 'typesafe-routes';
-import { strParser } from './products/default-routes';
+import { bool, createRoutes, int, str } from 'typesafe-routes';
 
-export const standaloneV2WebToFeedRoute = route(
-  'api/w2f&:url&:link&:context&:q&:out&:date&:dateIsEvent&:ts',
-  {
-    url: strParser,
-    link: strParser,
-    context: strParser,
-    date: strParser,
-    dateIsEvent: booleanParser,
-    q: strParser,
-    out: strParser,
-    ts: intParser,
+export const standaloneV2WebToFeedRoute = createRoutes({
+  feed: {
+    path: ['api', 'w2f'],
+    query: [
+      str('url'),
+      str('link'),
+      str('context'),
+      str('date'),
+      bool('dateIsEvent'),
+      str('q'),
+      str('out'),
+      int('ts'),
+    ],
   },
-  {},
-);
+});
 
-export const standaloneV1WebToFeedRoute = route(
-  'feed&:url&:pContext&:pLink',
-  {
-    url: strParser,
-    pLink: strParser,
-    pContext: strParser,
+export const standaloneV1WebToFeedRoute = createRoutes({
+  feed: {
+    path: ['feed'],
+    query: [str('url'), str('pLink'), str('pContext')],
   },
-  {},
-);
+});
 
-export const standaloneV2FeedTransformRoute = route(
-  'api/tf&:url&:q&:out&:ts',
-  {
-    url: strParser,
-    q: strParser,
-    out: strParser,
-    ts: intParser,
+export const standaloneV2FeedTransformRoute = createRoutes({
+  feed: {
+    path: ['api', 'tf'],
+    query: [str('url'), str('q'), str('out'), int('ts')],
   },
-  {},
-);
+});

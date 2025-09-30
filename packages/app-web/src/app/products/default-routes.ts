@@ -2,16 +2,12 @@ import { Routes } from '@angular/router';
 import { AuthGuardService } from '../guards/auth-guard.service';
 import { ProfileGuardService } from '../guards/profile-guard.service';
 import { SaasGuardService } from '../guards/saas-guard.service';
-import { Parser } from 'typesafe-routes/build/parser';
+import { param } from 'typesafe-routes';
 
-export const upperCaseStringParser: Parser<string> = {
-  parse: (s) => s.toUpperCase(),
-  serialize: (s) => s.toUpperCase(),
-};
-export const strParser: Parser<string> = {
-  parse: (s) => decodeURIComponent(s),
-  serialize: (s) => s,
-};
+export const upperCaseStringParser = param({
+  serialize: (value: string) => value.toUpperCase(),
+  parse: (value: string) => value.toUpperCase(),
+});
 
 export const DefaultRoutes: Routes = [
   {

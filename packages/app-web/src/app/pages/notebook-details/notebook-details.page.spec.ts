@@ -29,12 +29,22 @@ describe('NotebookDetailsPage', () => {
           useValue: {
             systemBusyChanges: { subscribe: jest.fn() },
             openNoteChanges: { subscribe: jest.fn() },
-            notesChanges: { asObservable: jest.fn().mockReturnValue({ subscribe: jest.fn() }) },
+            notesChanges: {
+              asObservable: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+            },
             suggestByType: jest.fn().mockResolvedValue([]),
             openNotebook: jest.fn(),
             findById: jest.fn().mockResolvedValue({}),
-            hasSettingsValue: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
-            getSettingsValue: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
+            hasSettingsValue: jest
+              .fn()
+              .mockReturnValue({
+                pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+              }),
+            getSettingsValue: jest
+              .fn()
+              .mockReturnValue({
+                pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+              }),
             createNote: jest.fn().mockResolvedValue({}),
             updateNote: jest.fn(),
             countChildren: jest.fn().mockReturnValue(0),
@@ -43,9 +53,13 @@ describe('NotebookDetailsPage', () => {
             deleteById: jest.fn(),
             showToast: jest.fn(),
             moveStartChanges: { next: jest.fn() },
-            getSettingsOrDefault: jest.fn().mockReturnValue({ pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }) }),
-            openNoteById: jest.fn()
-          }
+            getSettingsOrDefault: jest
+              .fn()
+              .mockReturnValue({
+                pipe: jest.fn().mockReturnValue({ subscribe: jest.fn() }),
+              }),
+            openNoteById: jest.fn(),
+          },
         },
       ],
     }).compileComponents();

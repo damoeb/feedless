@@ -2,18 +2,25 @@ import { ActivatedRoute, Params, Routes } from '@angular/router';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { NamedLatLon } from '../../types';
-import { intParser, route } from 'typesafe-routes';
-import { Parser } from 'typesafe-routes/build/parser';
-import { strParser, upperCaseStringParser } from '../default-routes';
+import {
+  createRoutes,
+  int,
+  param,
+  parsePath,
+  renderPath,
+  str,
+  template,
+} from 'typesafe-routes';
+import { upperCaseStringParser } from '../default-routes';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
 export const perimeterUnit = 'Km';
 
 export function parseDateFromUrl(params: Params): Dayjs {
-  const { year, month, day } =
-    upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
-      params as any,
-    );
+  const { year, month, day } = parsePath(
+    upcomingBaseRoute.events.countryCode.region.place.dateTime,
+    params,
+  );
   const date = dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
   if (date?.isValid()) {
     return date;
@@ -26,18 +33,18 @@ export async function parseLocationFromUrl(
   activatedRoute: ActivatedRoute,
   openStreetMapService: OpenStreetMapService,
 ): Promise<NamedLatLon> {
-  const { countryCode } =
-    upcomingBaseRoute.children.events.children.countryCode.parseParams(
-      activatedRoute.snapshot.params as any,
-    );
-  const { region } =
-    upcomingBaseRoute.children.events.children.countryCode.children.region.parseParams(
-      activatedRoute.snapshot.params as any,
-    );
-  const { place } =
-    upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.parseParams(
-      activatedRoute.snapshot.params as any,
-    );
+  const { countryCode } = parsePath(
+    upcomingBaseRoute.events.countryCode,
+    activatedRoute.snapshot.params,
+  );
+  const { region } = parsePath(
+    upcomingBaseRoute.events.countryCode.region,
+    activatedRoute.snapshot.params,
+  );
+  const { place } = parsePath(
+    upcomingBaseRoute.events.countryCode.region.place,
+    activatedRoute.snapshot.params,
+  );
 
   const err = Error('Cannot parse location from url');
 
@@ -55,93 +62,103 @@ export async function parseLocationFromUrl(
   throw err;
 }
 
-export const perimeterParser: Parser<number> = {
-  parse: (s) => parseInt(s.replace(perimeterUnit, '')),
-  serialize: (s) => `${s}${perimeterUnit}`,
-};
+export const perimeterParser = param<number>({
+  parse: (value: string) => parseInt(value.replace(perimeterUnit, '')),
+  serialize: (value: number) => `${value}${perimeterUnit}`,
+});
 
-export const upcomingBaseRoute = route(
-  '',
-  {},
-  {
-    terms: route('agb', {}, {}),
-    login: route('login', {}, {}),
-    about: route('ueber-uns', {}, {}),
-    management: route(
-      'management',
-      {},
-      {
-        sources: route('sources', {}, {}),
-        documents: route('documents', {}, {}),
-      },
-    ),
-    events: route(
-      'events/in',
-      {},
-      {
-        countryCode: route(
-          ':countryCode',
-          { countryCode: upperCaseStringParser },
-          {
-            region: route(
-              ':region',
-              { region: strParser },
-              {
-                place: route(
-                  ':place',
-                  {
-                    place: strParser,
-                  },
-                  {
-                    dateTime: route(
-                      'am/:year/:month/:day/innerhalb/:perimeter',
-                      {
-                        year: intParser,
-                        month: intParser,
-                        day: intParser,
-                        perimeter: perimeterParser,
-                      },
-                      {
-                        eventId: route(':eventId', { eventId: strParser }, {}),
-                      },
-                    ),
-                  },
-                ),
-              },
-            ),
-          },
-        ),
-      },
-    ),
+export const upcomingBaseRoute = createRoutes({
+  terms: {
+    path: ['agb'],
   },
-);
+  login: {
+    path: ['login'],
+  },
+  about: {
+    path: ['ueber-uns'],
+  },
+  management: {
+    path: ['management'],
+    children: {
+      sources: {
+        path: ['sources'],
+      },
+      documents: {
+        path: ['documents'],
+      },
+    },
+  },
+  events: {
+    path: ['events', 'in'],
+    children: {
+      countryCode: {
+        path: [upperCaseStringParser('countryCode')],
+        children: {
+          region: {
+            path: [str('region')],
+            children: {
+              place: {
+                path: [str('place')],
+                children: {
+                  dateTime: {
+                    path: ['am', int('year'), int('month'), int('day')],
+                    children: {
+                      perimeter: {
+                        path: [perimeterParser('perimeter')],
+                      },
+                      eventId: {
+                        path: [int('eventId')],
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  },
+  // events2: {
+  //   path: [
+  //     'events',
+  //     'in',
+  //     upperCaseStringParser('countryCode'),
+  //     str('region'),
+  //     str('place'),
+  //     'am',
+  //     int('year'),
+  //     int('month'),
+  //     int('day'),
+  //   ],
+  // }
+});
 
 export const UPCOMING_ROUTES: Routes = [
   {
-    path: upcomingBaseRoute.template,
+    path: template(upcomingBaseRoute),
     children: [
       {
-        path: upcomingBaseRoute.children.about.template,
+        path: template(upcomingBaseRoute.about),
         loadComponent: () =>
           import('./about-us/about-us.page').then((m) => m.AboutUsPage),
       },
       {
-        path: upcomingBaseRoute.children.terms.template,
+        path: template(upcomingBaseRoute.terms),
         loadComponent: () =>
           import('./terms/terms.page').then((m) => m.TermsPage),
       },
       {
-        path: upcomingBaseRoute.children.login.template,
+        path: template(upcomingBaseRoute.login),
         loadComponent: () =>
           import('../../pages/login/login.page').then((m) => m.LoginPage),
       },
       {
-        path: upcomingBaseRoute.children.management.template,
+        path: template(upcomingBaseRoute.management),
         canActivate: [AuthGuardService],
         children: [
           {
-            path: upcomingBaseRoute.children.management.children.sources
-              .template,
+            path: template(upcomingBaseRoute.management.sources),
             data: { sources: true },
             loadComponent: () =>
               import('./management/management.page').then(
@@ -149,8 +166,7 @@ export const UPCOMING_ROUTES: Routes = [
               ),
           },
           {
-            path: upcomingBaseRoute.children.management.children.documents
-              .template,
+            path: template(upcomingBaseRoute.management.documents),
             loadComponent: () =>
               import('./management/management.page').then(
                 (m) => m.ManagementPage,
@@ -159,7 +175,7 @@ export const UPCOMING_ROUTES: Routes = [
           {
             path: '**',
             redirectTo:
-              '/' + upcomingBaseRoute({}).management({}).sources({}).$,
+              '/' + renderPath(upcomingBaseRoute.management.sources, {}),
           },
         ],
       },
@@ -170,7 +186,7 @@ export const UPCOMING_ROUTES: Routes = [
           import('./events/events.page').then((m) => m.EventsPage),
       },
       {
-        path: upcomingBaseRoute.children.events.template,
+        path: template(upcomingBaseRoute.events),
         children: [
           {
             path: '',
@@ -178,8 +194,7 @@ export const UPCOMING_ROUTES: Routes = [
               import('./events/events.page').then((m) => m.EventsPage),
           },
           {
-            path: upcomingBaseRoute.children.events.children.countryCode
-              .template,
+            path: template(upcomingBaseRoute.events.countryCode),
             children: [
               {
                 path: '',
@@ -188,8 +203,7 @@ export const UPCOMING_ROUTES: Routes = [
               },
               {
                 // path: 'events/in/:state',
-                path: upcomingBaseRoute.children.events.children.countryCode
-                  .children.region.template,
+                path: template(upcomingBaseRoute.events.countryCode.region),
                 children: [
                   {
                     path: '',
@@ -198,8 +212,9 @@ export const UPCOMING_ROUTES: Routes = [
                   },
                   {
                     // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
-                    path: upcomingBaseRoute.children.events.children.countryCode
-                      .children.region.children.place.template,
+                    path: template(
+                      upcomingBaseRoute.events.countryCode.region.place,
+                    ),
                     children: [
                       {
                         path: '',
@@ -210,9 +225,10 @@ export const UPCOMING_ROUTES: Routes = [
                       },
                       {
                         // path: 'events/in/:state/:country/:place/am/:year/:month/:day/innerhalb/:perimeter',
-                        path: upcomingBaseRoute.children.events.children
-                          .countryCode.children.region.children.place.children
-                          .dateTime.template,
+                        path: template(
+                          upcomingBaseRoute.events.countryCode.region.place
+                            .dateTime.perimeter,
+                        ),
                         children: [
                           {
                             path: '',
@@ -223,9 +239,10 @@ export const UPCOMING_ROUTES: Routes = [
                           },
                           {
                             // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
-                            path: upcomingBaseRoute.children.events.children
-                              .countryCode.children.region.children.place
-                              .children.dateTime.children.eventId.template,
+                            path: template(
+                              upcomingBaseRoute.events.countryCode.region.place
+                                .dateTime.eventId,
+                            ),
                             loadComponent: () =>
                               import('./event/event.page').then(
                                 (m) => m.EventPage,

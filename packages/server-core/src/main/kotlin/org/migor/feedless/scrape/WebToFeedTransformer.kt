@@ -145,6 +145,7 @@ enum class ExtendContext(val value: String) {
  * - semantic tags are not valued as much as they should
  * - choosing context node may result in more rules
  */
+// todo split into list parser, field parser
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")

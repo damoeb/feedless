@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -17,7 +7,7 @@ import {
   GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -32,18 +22,15 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
-  InteractiveWebsiteModalComponentProps,
+  InteractiveWebsiteModalComponentProps
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -58,21 +45,16 @@ import {
   checkmarkOutline,
   closeOutline,
   logoJavascript,
-  settingsOutline,
+  settingsOutline
 } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
-import {
-  standaloneV1WebToFeedRoute,
-  standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { LatLng, Nullable } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { assignIn, first, intersection, isArray } from 'lodash-es';
-import { RouteNode } from 'typesafe-routes';
-import { Parser } from 'typesafe-routes/src/parser';
+import { parsePath, parseQuery, renderPath, RoutesProps } from 'typesafe-routes';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
 import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
@@ -147,9 +129,6 @@ export type StandaloneUrlParams = {
     IonAccordion,
     IonNote,
     FilterItemsAccordionComponent,
-    TagsModalComponent,
-    SearchAddressModalComponent,
-    InteractiveWebsiteModalComponent,
     IonButton,
     RemoveIfProdDirective,
     IonInput,
@@ -468,22 +447,19 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
     const keys = Object.keys(params);
 
-    const canParseUrl = <PM extends Record<string, Parser<any>>, C extends {}>(
-      route: RouteNode<string, PM, C>,
-    ): boolean => {
+    const canParseUrl = (route: RoutesProps<any, any>): boolean => {
       return (
         intersection(Object.keys(route.parserMap), keys).length === keys.length
       );
     };
-
-    if (canParseUrl(standaloneV2WebToFeedRoute)) {
+    if (canParseUrl(standaloneV2WebToFeedRoute.feed)) {
       return assignIn(
         defaultParams,
-        standaloneV2WebToFeedRoute.parseParams(params as any),
+        parsePath(standaloneV2WebToFeedRoute.feed, params),
       );
     } else {
-      if (canParseUrl(standaloneV1WebToFeedRoute)) {
-        const parsed = standaloneV1WebToFeedRoute.parseParams(params as any);
+      if (canParseUrl(standaloneV1WebToFeedRoute.feed)) {
+        const parsed = parseQuery(standaloneV1WebToFeedRoute.feed, params);
         return assignIn(defaultParams, {
           url: parsed.url,
           context: parsed.pContext,
@@ -640,7 +616,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       const gf = this.selectedFeed.genericFeed;
       return (
         baseUrl +
-        standaloneV2WebToFeedRoute({
+        renderPath(standaloneV2WebToFeedRoute.feed, {
           url: this.url,
           link: gf.selectors.linkXPath,
           context: gf.selectors.contextXPath,
@@ -654,7 +630,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     } else {
       return (
         baseUrl +
-        standaloneV2FeedTransformRoute({
+        renderPath(standaloneV2FeedTransformRoute.feed, {
           url: this.selectedFeed.nativeFeed.feedUrl,
           q,
           out: 'atom',

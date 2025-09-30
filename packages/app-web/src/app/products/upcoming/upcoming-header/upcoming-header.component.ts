@@ -472,10 +472,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         place,
       })
       .dateTime({
-        perimeter: this.perimeterFc.value,
         year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
         month: parseInt(this.currentDate.locale(this.locale).format('MM')),
         day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+      })
+      .perimeter({
+        perimeter: this.perimeterFc.value,
       }).$;
 
     await this.router.navigateByUrl(url, { replaceUrl: true });
@@ -521,10 +523,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           place,
         })
         .dateTime({
-          perimeter: this.perimeter(),
           year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
           month: parseInt(this.currentDate.locale(this.locale).format('MM')),
           day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+        })
+        .perimeter({
+          perimeter: this.perimeter(),
         }).$
     );
   }

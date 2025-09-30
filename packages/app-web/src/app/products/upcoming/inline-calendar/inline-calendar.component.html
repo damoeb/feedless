@@ -23,7 +23,7 @@
       @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
         <a
           [routerLink]="'/' + getDateUrl(d.date)"
-          [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length -4 }"
+          [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length - 4 }"
         >
           <div
             class="calendar-day"
@@ -67,7 +67,7 @@
   @if (!isDateInCalendar(now)) {
     <div style="justify-self: center">
       <ion-button size="small" (click)="changeDate.emit(now)"
-      >Heute anzeigen
+        >Heute anzeigen
       </ion-button>
     </div>
   }
