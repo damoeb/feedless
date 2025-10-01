@@ -53,8 +53,8 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { LatLng, Nullable } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
-import { assignIn, first, intersection, isArray } from 'lodash-es';
-import { parsePath, parseQuery, renderPath, RoutesProps } from 'typesafe-routes';
+import { assignIn, first, isArray } from 'lodash-es';
+import { parseQuery, renderPath } from 'typesafe-routes';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
 import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
@@ -431,41 +431,25 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       dateIsEvent: false,
     };
 
-    const params = new URL(url).search
-      .substring(1)
-      .split('&')
-      .reduce(
-        (params, param) => {
-          const parts = param.split('=', 2);
-          if (parts && parts[0]) {
-            params[parts[0]] = decodeURIComponent(parts[1]);
-          }
-          return params;
-        },
-        {} as { [s: string]: string },
-      );
+    const queryParamString = new URL(url).search.substring(1);
 
-    const keys = Object.keys(params);
-
-    const canParseUrl = (route: RoutesProps<any, any>): boolean => {
-      return (
-        intersection(Object.keys(route.parserMap), keys).length === keys.length
-      );
-    };
-    if (canParseUrl(standaloneV2WebToFeedRoute.feed)) {
+    try {
       return assignIn(
         defaultParams,
-        parsePath(standaloneV2WebToFeedRoute.feed, params),
-      );
-    } else {
-      if (canParseUrl(standaloneV1WebToFeedRoute.feed)) {
-        const parsed = parseQuery(standaloneV1WebToFeedRoute.feed, params);
+        parseQuery(standaloneV2WebToFeedRoute.feed, queryParamString),
+      ) as StandaloneUrlParams;
+    } catch (e) {
+      try {
+        const parsed = parseQuery(
+          standaloneV1WebToFeedRoute.feed,
+          queryParamString,
+        );
         return assignIn(defaultParams, {
           url: parsed.url,
           context: parsed.pContext,
           link: parsed.pLink,
-        });
-      } else {
+        }) as StandaloneUrlParams;
+      } catch (e) {
         throw new Error('not a standalone url');
       }
     }

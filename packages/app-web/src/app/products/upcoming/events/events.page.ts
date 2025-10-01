@@ -40,6 +40,7 @@ import {
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
+import { parsePath, renderPath } from 'typesafe-routes';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
@@ -62,42 +63,43 @@ function roundLatLon(v: number): number {
 }
 
 export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
-  const country = upcomingBaseRoute({}).events({}).countryCode({
-    countryCode: location.countryCode,
-  });
-  const region = country.region({
-    region: location.area,
-  });
-  const place = region.place({
-    place: location.place,
-  });
+  // todo fix
+  // const country = parsePath(upcomingBaseRoute.events.countryCode.region.({}).countryCode({
+  //   countryCode: location.countryCode,
+  // });
+  // const region = country.region({
+  //   region: location.area,
+  // });
+  // const place = region.place({
+  //   place: location.place,
+  // });
   return {
     '@type': 'BreadcrumbList',
     itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        item: {
-          '@id': `https://lokale.events/${country.$}`,
-          name: `Events in ${location.countryCode}`,
-        },
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        item: {
-          '@id': `https://lokale.events/${region.$}`,
-          name: `Events in ${location.area}, ${location.countryCode}`,
-        },
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        item: {
-          '@id': `https://lokale.events/${place.$}`,
-          name: `Events in ${location.displayName}`,
-        },
-      },
+      // {
+      //   '@type': 'ListItem',
+      //   position: 1,
+      //   item: {
+      //     '@id': `https://lokale.events/${country.$}`,
+      //     name: `Events in ${location.countryCode}`,
+      //   },
+      // },
+      // {
+      //   '@type': 'ListItem',
+      //   position: 2,
+      //   item: {
+      //     '@id': `https://lokale.events/${region.$}`,
+      //     name: `Events in ${location.area}, ${location.countryCode}`,
+      //   },
+      // },
+      // {
+      //   '@type': 'ListItem',
+      //   position: 3,
+      //   item: {
+      //     '@id': `https://lokale.events/${place.$}`,
+      //     name: `Events in ${location.displayName}`,
+      //   },
+      // },
     ],
   };
 }
@@ -173,10 +175,11 @@ export class EventsPage implements OnInit, OnDestroy {
 
           this.latLon = this.location;
 
-          const { perimeter } =
-            upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.children.perimeter.parseParams(
-              params as any,
-            );
+          const { perimeter } = parsePath(
+            upcomingBaseRoute.events.countryCode.region.place.dateTime
+              .perimeter,
+            params,
+          );
 
           this.perimeter = perimeter || 10;
           const dateFromUrl = parseDateFromUrl(params);
@@ -217,15 +220,14 @@ export class EventsPage implements OnInit, OnDestroy {
       const savedLocations: NamedLatLon[] = this.getSavedLocations();
       if (savedLocations.length > 0) {
         await this.router.navigateByUrl(
-          this.getDateUrl(dayjs(), savedLocations[0]),
+          this.createDateUrl(dayjs(), savedLocations[0]),
         );
       }
     }
   }
 
   private async redirectToToday() {
-    // todo do a server redirect
-    const url = this.getDateUrl(dayjs())!!;
+    const url = this.createDateUrl(dayjs())!!;
     await this.router.navigateByUrl(url, { replaceUrl: true });
   }
 
@@ -579,49 +581,94 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  getDateUrl(
+  createDateUrl(
     date: Nullable<Dayjs>,
     location: Nullable<NamedLatLon> = null,
   ): string {
     const { countryCode, region, place } = this.getLocationOrElse(location);
     const { year, month, day } = this.getDateOrElse(date);
 
-    return (
-      '/' +
-      upcomingBaseRoute({})
-        .events({})
-        .countryCode({ countryCode })
-        .region({ region })
-        .place({ place })
-        .dateTime({
-          year,
-          month,
-          day,
-        })
-        .perimeter({
-          perimeter: this.perimeter,
-        })
+    return this.renderUrl(
+      countryCode,
+      region,
+      place,
+      year,
+      month,
+      day,
+      this.perimeter,
     );
   }
 
-  getEventUrl(event: LocalizedEvent): string {
+  createUrl(location: NamedLatLon, date: Dayjs): string {
+    return this.renderUrl(
+      location.countryCode,
+      location.area,
+      location.place,
+      parseInt(date.format('YYYY')),
+      parseInt(date.format('MM')),
+      parseInt(date.format('DD')),
+      10,
+    );
+  }
+
+  createEventUrl(event: LocalizedEvent): string {
     const { countryCode, region, place, year, month, day } =
       this.activatedRoute.snapshot.params;
 
-    return (
-      '/' +
-      upcomingBaseRoute({})
-        .events({})
-        .countryCode({ countryCode })
-        .region({ region })
-        .place({ place })
-        .dateTime({
-          year,
-          month,
-          day,
-        })
-        .eventId({ eventId: (event as any).id }).$
+    return renderPath(
+      upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId,
+      {
+        countryCode,
+        region,
+        place,
+        year,
+        month,
+        day,
+        eventId: (event as any).id,
+      },
     );
+  }
+
+  private renderUrl(
+    countryCode: string,
+    region: string,
+    place: string,
+    year: number,
+    month: number,
+    day: number,
+    perimeter: number,
+  ) {
+    return renderPath(
+      upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+      {
+        countryCode,
+        region,
+        place,
+        year,
+        month,
+        day,
+        perimeter,
+      },
+    );
+  }
+
+  getPlaceUrl(location: NamedLatLon): string {
+    if (location) {
+      const { countryCode, area, place } = location;
+      const { year, month, day } = parsePath(
+        upcomingBaseRoute.events.countryCode.region.place.dateTime,
+        this.activatedRoute.snapshot.params,
+      );
+      return this.renderUrl(
+        countryCode,
+        area,
+        place,
+        year,
+        month,
+        day,
+        this.perimeter,
+      );
+    }
   }
 
   // private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
@@ -639,32 +686,6 @@ export class EventsPage implements OnInit, OnDestroy {
   //   };
   // }
 
-  getPlaceUrl(location: NamedLatLon): string {
-    if (location) {
-      const { countryCode, area, place } = location;
-      const { year, month, day } =
-        upcomingBaseRoute.children.events.children.countryCode.children.region.children.place.children.dateTime.parseParams(
-          this.activatedRoute.snapshot.params as any,
-        );
-      return (
-        '/' +
-        upcomingBaseRoute({})
-          .events({})
-          .countryCode({ countryCode })
-          .region({ region: area })
-          .place({ place })
-          .dateTime({
-            year,
-            month,
-            day,
-          })
-          .perimeter({
-            perimeter: this.perimeter,
-          }).$
-      );
-    }
-  }
-
   async changeDate(date: Dayjs) {
     this.date = date;
     this.patchUrlInAddressBar();
@@ -674,22 +695,6 @@ export class EventsPage implements OnInit, OnDestroy {
 
   patchUrlInAddressBar() {
     this.locationService.replaceState(this.createUrl(this.location, this.date));
-  }
-
-  createUrl(location: NamedLatLon, date: Dayjs): string {
-    return upcomingBaseRoute({})
-      .events({})
-      .countryCode({ countryCode: location.countryCode })
-      .region({ region: location.area })
-      .place({ place: location.place })
-      .dateTime({
-        year: parseInt(date.format('YYYY')),
-        month: parseInt(date.format('MM')),
-        day: parseInt(date.format('DD')),
-      })
-      .perimeter({
-        perimeter: 10,
-      }).$;
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
@@ -766,11 +771,13 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    return title.replaceAll(/[0-9]{1,2}\.[ ]?[a-z]{3,10}[ ]?[0-9]{2,4}/gi, '');
+    return title
+      .replaceAll(/[0-9]{1,2}\.[ .]?[a-z]{3,10}[ .]?[0-9]{2,4}/gi, '')
+      .replaceAll(/[0-9]{1,2}\.[ .]?[0-9]{1,2}[ .]?[0-9]{2,4}/gi, '');
   }
 
   getDateUrlFactory() {
-    return this.getDateUrl.bind(this);
+    return this.createDateUrl.bind(this);
   }
 }
 

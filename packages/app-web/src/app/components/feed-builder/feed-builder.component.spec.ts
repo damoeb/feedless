@@ -11,6 +11,7 @@ import {
   standaloneV1WebToFeedRoute,
   standaloneV2WebToFeedRoute,
 } from '../../router-utils';
+import { renderPath, renderQuery } from 'typesafe-routes';
 
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
@@ -58,21 +59,26 @@ describe('FeedBuilderComponent', () => {
         ts: 0,
         q: 'q',
       };
-      const url = standaloneV2WebToFeedRoute(input).$;
+      const path = renderPath(standaloneV2WebToFeedRoute.feed, input);
+      const query = renderQuery(standaloneV2WebToFeedRoute.feed, input);
+
       const output = component.parseStandaloneUrl(
-        'http://localhost:8080/' + url,
+        `http://localhost/${path}?${query}`,
       );
       expect(output).toEqual(input);
     });
+
     it('V1', () => {
       const input = {
         url: 'url',
         pContext: 'context',
         pLink: 'link',
       };
-      const url = standaloneV1WebToFeedRoute(input).$;
+      const path = renderPath(standaloneV1WebToFeedRoute.feed, input);
+      const query = renderQuery(standaloneV1WebToFeedRoute.feed, input);
+
       const output = component.parseStandaloneUrl(
-        'http://localhost:8080/' + url,
+        `http://localhost/${path}?${query}`,
       );
       expect(output).toEqual({
         url: 'url',

@@ -55,18 +55,7 @@ import {
 
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
-
-type Day = {
-  day: Dayjs | null;
-  today?: boolean;
-  past?: boolean;
-  isFirstWeek?: boolean;
-  otherMonth?: boolean;
-  printMonth?: boolean;
-};
-type Months = {
-  [month: number]: Day[];
-};
+import { renderPath, safeParsePath } from 'typesafe-routes';
 
 type SiteLocale = 'de' | 'en';
 type LocationSuggestion = {
@@ -131,8 +120,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   protected perimeterFc = new FormControl<number>(10);
   // protected categoriesFc = new FormControl<string[]>([]);
   // protected categories = ['Algemein', 'Kinder', 'Sport', 'Veranstaltung'];
-  private timeWindowTo: number;
-  private timeWindowFrom: number;
   protected locationSuggestions: LocationSuggestion[];
   protected locationNotAvailable: boolean = true;
   protected currentLocation: NamedLatLon;
@@ -270,7 +257,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       const previousLocations = matchHighlighter(
         uniqBy(getPreviousLocations(), (l) => `${l.lat}:${l.lng}`),
       );
-      const breadcrumbs = this.getBreadcrumbs();
+      const breadcrumbs: LocationSuggestion[] = this.getBreadcrumbs();
       this.locationSuggestions = [...previousLocations, ...breadcrumbs];
     } else {
       this.locationSuggestions = matchHighlighter(
@@ -457,30 +444,29 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   private async patchUrl() {
-    console.log('patchUrl');
-    const { countryCode, area, place } = await parseLocationFromUrl(
-      this.activatedRoute,
-      this.openStreetMapService,
-    );
-    const url = upcomingBaseRoute({})
-      .events({})
-      .countryCode({ countryCode })
-      .region({
-        region: area,
-      })
-      .place({
-        place,
-      })
-      .dateTime({
-        year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-        month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-        day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-      })
-      .perimeter({
-        perimeter: this.perimeterFc.value,
-      }).$;
+    try {
+      console.log('patchUrl');
+      const { countryCode, area, place } = await parseLocationFromUrl(
+        this.activatedRoute,
+        this.openStreetMapService,
+      );
+      const url = renderPath(
+        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+        {
+          countryCode,
+          region: area,
+          place,
+          year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
+          month: parseInt(this.currentDate.locale(this.locale).format('MM')),
+          day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+          perimeter: this.perimeterFc.value,
+        },
+      );
 
-    await this.router.navigateByUrl(url, { replaceUrl: true });
+      await this.router.navigateByUrl(url, { replaceUrl: true });
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   // formatToRelativeDay(inputDate: Dayjs, suffix: string = '') {
@@ -513,55 +499,53 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   // }
 
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
-    return (
-      '/' +
-      upcomingBaseRoute({})
-        .events({})
-        .countryCode({ countryCode })
-        .region({ region: area })
-        .place({
-          place,
-        })
-        .dateTime({
-          year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-          month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-          day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-        })
-        .perimeter({
-          perimeter: this.perimeter(),
-        }).$
+    return renderPath(
+      upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+      {
+        countryCode,
+        region: area,
+        place,
+        year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
+        month: parseInt(this.currentDate.locale(this.locale).format('MM')),
+        day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+        perimeter: this.perimeter(),
+      },
     );
   }
 
   private getBreadcrumbs(): LocationSuggestion[] {
-    const { countryCode } =
-      upcomingBaseRoute.children.events.children.countryCode.parseParams(
-        this.activatedRoute.snapshot.params as any,
-      );
-    const { region } =
-      upcomingBaseRoute.children.events.children.countryCode.children.region.parseParams(
-        this.activatedRoute.snapshot.params as any,
-      );
+    const withCountryCode = safeParsePath(
+      upcomingBaseRoute.events.countryCode,
+      location.pathname,
+    );
+    const withRegion = safeParsePath(
+      upcomingBaseRoute.events.countryCode.region,
+      location.pathname,
+    );
 
-    if (region) {
+    if (withRegion.success) {
       return getCachedLocations()
-        .filter((l) => l.countryCode == countryCode && l.area == region)
+        .filter(
+          (l) =>
+            l.countryCode == withRegion.data.countryCode &&
+            l.area == withRegion.data.region,
+        )
         .map<LocationSuggestion>((l) => ({
           url: this.getUrlForLocation(l),
           labelHtml: l.displayName,
         }));
     } else {
-      if (countryCode) {
+      if (withCountryCode.success) {
         return uniqBy(
-          getCachedLocations().filter((l) => l.countryCode == countryCode),
+          getCachedLocations().filter(
+            (l) => l.countryCode == withCountryCode.data.countryCode,
+          ),
           'area',
         ).map<LocationSuggestion>(({ countryCode, area }) => ({
-          url:
-            '/' +
-            upcomingBaseRoute({})
-              .events({})
-              .countryCode({ countryCode })
-              .region({ region: area }).$,
+          url: renderPath(upcomingBaseRoute.events.countryCode.region, {
+            countryCode,
+            region: area,
+          }),
           labelHtml: `${countryCode} ${area}...`,
         }));
       } else {
@@ -569,9 +553,9 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           getCachedLocations(),
           'countryCode',
         ).map<LocationSuggestion>(({ countryCode }) => ({
-          url:
-            '/' +
-            upcomingBaseRoute({}).events({}).countryCode({ countryCode }).$,
+          url: renderPath(upcomingBaseRoute.events.countryCode, {
+            countryCode,
+          }),
           labelHtml: `${countryCode} ...`,
         }));
       }
