@@ -25,6 +25,8 @@ spec:
   secretName: feedless-org-tls
   dnsNames:
     - grafana.feedless.org
+    - feedless.org
+    - api.feedless.org
     - staging.feedless.org
     - api.staging.feedless.org
     - plausible.feedless.org
@@ -32,6 +34,8 @@ spec:
     - rssproxy.feedless.org
     - api.visualdiff.feedless.org
     - visualdiff.feedless.org
+    - api.notes.feedless.org
+    - notes.feedless.org
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer

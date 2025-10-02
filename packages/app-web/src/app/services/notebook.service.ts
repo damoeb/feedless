@@ -1,16 +1,14 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  combineLatest,
+  catchError,
   firstValueFrom,
   forkJoin,
   map,
-  merge,
   Observable,
   of,
   OperatorFunction,
   ReplaySubject,
   switchMap,
-  take,
   zip,
 } from 'rxjs';
 import { Document } from 'flexsearch';
@@ -33,7 +31,7 @@ import { ArrayElement, isNonNull, NestedKeys, TypeAtPath } from '../types';
 import { RecordService } from './record.service';
 import dayjs from 'dayjs';
 import { isNullish } from '@apollo/client/cache/inmemory/helpers';
-import { liveQuery } from 'dexie';
+import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
 
@@ -360,7 +358,7 @@ export class NotebookService {
     console.log('new note', note);
 
     this.notesChanges.next({ a: note.id, b: ChangeModifier.create });
-    // await this.recordService.createRecords([this.covertNoteToRecord(note)]);
+    await this.recordService.createRecords([this.covertNoteToRecord(note)]);
 
     if (params.parent) {
       const parentNote = await this.findById(params.parent);
@@ -389,18 +387,20 @@ export class NotebookService {
   }
 
   private attachChildCount$(): OperatorFunction<Note[], Note[]> {
-    return map((notes) => notes);
-    // return switchMap((notes: Note[]) =>
-    //   forkJoin(
-    //     notes.map((note) =>
-    //       firstValueFrom(this.findAllChildren(note.id)).then((children) => {
-    //         console.log('wef');
-    //         note.childrenCount = children.length;
-    //         return note;
-    //       }),
-    //     ),
-    //   ),
-    // );
+    return switchMap((notes: Note[]) =>
+      forkJoin(
+        notes.map((note) => {
+          return of({ ...note, childrenCount: 0 });
+          // return this.findAllChildrenById(note.id).pipe(
+          //   map((children) => ({
+          //     ...note,
+          //     childrenCount: children.length,
+          //   })),
+          //   catchError(() => of({ ...note, childrenCount: 0 })),
+          // );
+        }),
+      ),
+    );
   }
 
   private covertNoteToRecord(note: Note): GqlCreateRecordInput {
@@ -439,40 +439,40 @@ export class NotebookService {
       const upSyncNew = notes.filter(
         (note) => note.createdAt > notebook.lastSyncedAt,
       );
-      // await this.recordService.createRecords(
-      //   upSyncNew.map((note) => this.covertNoteToRecord(note)),
-      // );
-      // todo activate
-      // const upSyncChanged = notes.filter(
-      //   (note) => note.updatedAt > notebook.lastSyncedAt,
-      // );
-      // await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
+      await this.recordService.createRecords(
+        upSyncNew.map((note) => this.covertNoteToRecord(note)),
+      );
+
+      const upSyncChanged = notes.filter(
+        (note) => note.updatedAt > notebook.lastSyncedAt,
+      );
+      await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
 
       // sync down
-      // try {
-      //   let page = 0;
-      //   while (true) {
-      //     const records = await this.recordService.findAllFullByRepositoryId({
-      //       where: {
-      //         repository: {
-      //           id: notebook.id,
-      //         },
-      //         updatedAt: {
-      //           after: notebook.lastUpdatedAt,
-      //         },
-      //       },
-      //       cursor: {
-      //         page,
-      //       },
-      //     });
-      //     if (records.length == 0) {
-      //       break;
-      //     }
-      //     page++;
-      //   }
-      // } catch (e) {
-      //   console.error(e);
-      // }
+      try {
+        let page = 0;
+        while (true) {
+          const records = await this.recordService.findAllFullByRepositoryId({
+            where: {
+              repository: {
+                id: notebook.id,
+              },
+              updatedAt: {
+                after: notebook.lastUpdatedAt,
+              },
+            },
+            cursor: {
+              page,
+            },
+          });
+          if (records.length == 0) {
+            break;
+          }
+          page++;
+        }
+      } catch (e) {
+        console.error(e);
+      }
 
       notebook.lastSyncedAt = new Date();
       notebookRepository.notebooks.update(notebook.id, notebook);
@@ -574,19 +574,19 @@ export class NotebookService {
       links: extractByRegExp(reLink),
     };
 
-    // await this.recordService.updateRecord({
-    //   data: {
-    //     title: {
-    //       set: note.title,
-    //     },
-    //     text: {
-    //       set: note.text,
-    //     },
-    //   },
-    //   where: {
-    //     id: note.id,
-    //   },
-    // });
+    await this.recordService.updateRecord({
+      data: {
+        title: {
+          set: note.title,
+        },
+        text: {
+          set: note.text,
+        },
+      },
+      where: {
+        id: note.id,
+      },
+    });
     this.index.update(this.toIndexDocument(note));
     console.log('updateNote', note);
     await notebookRepository.notes.update(note.id, note);
@@ -807,16 +807,16 @@ export class NotebookService {
 
     this.index.remove(id);
     await notebookRepository.notes.delete(id);
-    // await this.recordService.removeById({
-    //   where: {
-    //     id: {
-    //       eq: id,
-    //     },
-    //     repository: {
-    //       id: this.currentRepositoryId,
-    //     },
-    //   },
-    // });
+    await this.recordService.removeById({
+      where: {
+        id: {
+          eq: id,
+        },
+        repository: {
+          id: this.currentRepositoryId,
+        },
+      },
+    });
     this.notesChanges.next({ a: id, b: ChangeModifier.remove });
 
     if (note.parent) {
@@ -854,7 +854,7 @@ export class NotebookService {
   }
 
   findAllChildren(id: string): Observable<Note[]> {
-    console.log('findAllChildren');
+    console.log('findAllChildren', id);
     const children$ = this.findAllChildrenById(id);
     return children$
       .pipe(this.filterInternalNotes$())
@@ -993,15 +993,15 @@ export class NotebookService {
   }
 }
 
-function convertToRx<T>(customObservable: any): Observable<T> {
+function convertToRx<T>(customObservable: DexieObservable<T>): Observable<T> {
   return new Observable<T>((subscriber) => {
-    const unsubscribe = customObservable.subscribe((value: any) => {
+    const subscription = customObservable.subscribe((value: T) => {
       subscriber.next(value);
     });
 
     // Return cleanup logic
     return () => {
-      unsubscribe();
+      subscription.unsubscribe();
     };
   });
 }

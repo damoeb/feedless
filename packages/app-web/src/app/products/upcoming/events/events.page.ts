@@ -588,7 +588,7 @@ export class EventsPage implements OnInit, OnDestroy {
     const { countryCode, region, place } = this.getLocationOrElse(location);
     const { year, month, day } = this.getDateOrElse(date);
 
-    return this.renderUrl(
+    return renderUrl(
       countryCode,
       region,
       place,
@@ -600,7 +600,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   createUrl(location: NamedLatLon, date: Dayjs): string {
-    return this.renderUrl(
+    return renderUrl(
       location.countryCode,
       location.area,
       location.place,
@@ -629,29 +629,6 @@ export class EventsPage implements OnInit, OnDestroy {
     );
   }
 
-  private renderUrl(
-    countryCode: string,
-    region: string,
-    place: string,
-    year: number,
-    month: number,
-    day: number,
-    perimeter: number,
-  ) {
-    return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
-      {
-        countryCode,
-        region,
-        place,
-        year,
-        month,
-        day,
-        perimeter,
-      },
-    );
-  }
-
   getPlaceUrl(location: NamedLatLon): string {
     if (location) {
       const { countryCode, area, place } = location;
@@ -659,7 +636,7 @@ export class EventsPage implements OnInit, OnDestroy {
         upcomingBaseRoute.events.countryCode.region.place.dateTime,
         this.activatedRoute.snapshot.params,
       );
-      return this.renderUrl(
+      return renderUrl(
         countryCode,
         area,
         place,
@@ -799,4 +776,27 @@ export function getWeekday(date: Dayjs): string {
 
 export function formatDate(date: Dayjs, format: string) {
   return date?.locale('de')?.format(format);
+}
+
+export function renderUrl(
+  countryCode: string,
+  region: string,
+  place: string,
+  year: number,
+  month: number,
+  day: number,
+  perimeter: number,
+) {
+  return renderPath(
+    upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+    {
+      countryCode,
+      region,
+      place,
+      year,
+      month,
+      day,
+      perimeter,
+    },
+  );
 }

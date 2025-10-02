@@ -1,4 +1,4 @@
-@if (rows) {
+@if (rows()) {
   <div [ngStyle]="{ '--app-table-columns': getHeaders().length }" class="table">
     <div class="table-header">
       @for (header of getHeaders(); track header) {

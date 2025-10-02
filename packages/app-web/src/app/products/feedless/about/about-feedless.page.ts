@@ -65,7 +65,7 @@ export class AboutFeedlessPage implements OnInit {
 
   async ngOnInit() {
     const allProducts = await this.appConfigService.getAllAppConfigs();
-    this.listedProducts = allProducts.filter((p) => p.listed);
+    this.listedProducts = allProducts.filter((p) => p.domain);
     // this.unstableProducts = allProducts.filter((p) => !p.listed);
     this.changeRef.detectChanges();
   }

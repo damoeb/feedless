@@ -78,6 +78,8 @@ export class EventPage implements OnInit, OnDestroy {
   event: Record;
 
   private subscriptions: Subscription[] = [];
+  readonly minDate: Dayjs = dayjs().subtract(2, 'week');
+  readonly maxDate: Dayjs = dayjs().add(2, 'month');
 
   constructor() {
     addIcons({
@@ -269,5 +271,14 @@ END:VCALENDAR`;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  getDateUrlFactory() {
+    // todo impl
+    return () => '';
+  }
+
+  changeDate(date: Dayjs) {
+    // todo impl
   }
 }

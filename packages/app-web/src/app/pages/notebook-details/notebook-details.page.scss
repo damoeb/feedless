@@ -110,7 +110,7 @@ app-tree-view {
     flex-direction: column;
     width: 600px;
     overflow: auto;
-    height: 50vh;
+    min-height: 500px;
     box-shadow: 0px -2px 2px 0px rgb(208, 208, 208);
     border-top: 1px solid rgba(var(--app-foreground-rgb), 0.4);
     border-top-left-radius: 10px;
@@ -173,14 +173,12 @@ ion-accordion.accordion-expanded {
   background: var(--line-color);
   height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
   //width: 100%;
-  --_g: var(--s) repeat-x
-    conic-gradient(
+  --_g: var(--s) repeat-x conic-gradient(
       from calc(var(--a) / -2) at bottom,
       #0000,
       #000 1deg calc(var(--a) - 1deg),
       #0000 var(--a)
-    );
-  mask:
-    50% calc(-1 * var(--b)) / var(--_g) exclude,
-    50% / var(--_g);
+  );
+  mask: 50% calc(-1 * var(--b)) / var(--_g) exclude,
+  50% / var(--_g);
 }

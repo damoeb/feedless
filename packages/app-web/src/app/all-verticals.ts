@@ -47,7 +47,6 @@ export type VerticalSpec = {
   videoUrl?: string;
   costs?: CostItem[];
   links: AppLink[];
-  listed: boolean;
   features: string[];
 };
 
@@ -73,7 +72,6 @@ export const allVerticals: AllVerticals = {
       subtitle: 'RSS Feed Builder',
       version: [3, 0, 0, 'rc-1'],
       phase: 'rc',
-      listed: true,
       summary: 'Create feeds from Websites',
       descriptionMarkdown: `RSS-proxy allows you to do create an ATOM or JSON feed of any static website or feeds (web to feed),
 just by analyzing just the HTML structure. Usually the structuring to a feed works automatically.`,
@@ -127,7 +125,6 @@ docker-compose up`,
       subtitle: 'Page Tracker',
       version: [0, 1, 0],
       domain: 'visualdiff.feedless.org',
-      listed: true,
       phase: 'alpha',
       summary: 'Detect changes in a website and get a notified',
       descriptionMarkdown:
@@ -161,7 +158,6 @@ docker-compose up`,
       subtitle: 'Reader Mode',
       phase: 'alpha',
       version: [0, 1, 0],
-      listed: false,
       summary:
         'Unclutter a website and transform it into a version optimized for reading',
       descriptionMarkdown: `Unclutter a website and transform it into a version optimized for reading.
@@ -190,10 +186,10 @@ docker-compose up`,
       id: 'untold',
       product: GqlVertical.UntoldNotes,
       titleHtml: '<strong>Un</strong><em>told</em>',
+      domain: 'notes.feedless.org',
       pageTitle: 'Untold Notes',
       title: 'Untold Notes',
       offlineSupport: true,
-      listed: false,
       version: [0, 1, 0],
       phase: 'development',
       subtitle: 'Note App',
@@ -228,7 +224,6 @@ way to think, learn and remember.`,
     //   pageTitle: 'Mail Digest',
     //   title: 'Mail Digest',
     //   offlineSupport: false,
-    //   listed: false,
     //   phase: 'planning',
     //   subtitle: 'Digest Service',
     //   summary: 'Get the gist of your feeds or data streams.',
@@ -253,7 +248,6 @@ way to think, learn and remember.`,
       subtitle: 'All In One',
       version: [0, 7, 0],
       phase: 'development',
-      listed: false,
       summary: 'Build automated workflows visually or using code',
       descriptionMarkdown: `Time is precious, let's automate the web, build our custom well-behaving bots. _feedless_ is a general platform to
       build web-based workflows. Extendable using plugins. Popular solutions like zapier of ITTT steer into that direction.
@@ -284,7 +278,6 @@ Extraction
       title: 'lokale.events',
       titleHtml: '<strong>lokale</strong><em>events</em>',
       pageTitle: 'lokale.events',
-      listed: false,
       subtitle: 'Localized event sourcing',
       summary:
         'Entdecke lokale Veranstaltungen und Events in der Schweiz - von Familien-Events bis zu kulturellen Veranstaltungen',
@@ -322,7 +315,6 @@ lokale.events sammelt diese versteckten Schätze und macht sie für alle sichtba
     //   id: 'changeTracker',
     //   product: GqlProductCategory.PageChangeTracker,
     //   title: 'Page Change Tracker',
-    //   listed: false,
     //   titleHtml: '<strong>Page</strong><em>Change</em>',
     //   pageTitle: 'Page Change Tracker',
     //   subtitle: 'Track any change of a website',

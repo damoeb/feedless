@@ -10,7 +10,15 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
+import {
+  debounceTime,
+  firstValueFrom,
+  from,
+  map,
+  Observable,
+  Subscription,
+  zip,
+} from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
@@ -81,9 +89,9 @@ import { NestedKeys, Nullable, TypeAtPath } from '../../types';
 import {
   CdkNestedTreeNode,
   CdkTree,
-  CdkTreeNode,
   CdkTreeNodeDef,
   CdkTreeNodeOutlet,
+  FlatTreeControl,
 } from '@angular/cdk/tree';
 import { BubbleComponent } from '../../components/bubble/bubble.component';
 import { SessionService } from '../../services/session.service';
@@ -146,10 +154,8 @@ export type NoteHandle = {
     CdkTree,
     CdkNestedTreeNode,
     // noinspection ES6UnusedImports
-    CdkTreeNode,
     CdkTreeNodeOutlet,
     // noinspection ES6UnusedImports
-    CdkTreeNodeDef,
     NgStyle,
     BubbleComponent,
     IonText,
@@ -158,6 +164,7 @@ export type NoteHandle = {
     AsyncPipe,
     NotebookSettingsComponent,
     IonMenuButton,
+    CdkTreeNodeDef,
   ],
   standalone: true,
 })
@@ -205,6 +212,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     this.childrenAccessor = this.childrenAccessor.bind(this);
     this.toNoteHandle = this.toNoteHandle.bind(this);
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
+    this.trackByFn = this.trackByFn.bind(this);
     addIcons({
       cloudDownloadOutline,
       cloudUploadOutline,
@@ -342,14 +350,16 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       // upVoteAnnotationId: upVoted?.id,
       formControl,
       subscriptions: [
-        formControl.valueChanges.subscribe(async (text) => {
-          if (editor.note.text != text) {
-            editor.note.text = text;
-            await this.updateNote(note);
-          }
+        formControl.valueChanges
+          .pipe(debounceTime(400))
+          .subscribe(async (text) => {
+            if (editor.note.text != text) {
+              editor.note.text = text;
+              await this.updateNote(note);
+            }
 
-          formControl.markAsPristine();
-        }),
+            formControl.markAsPristine();
+          }),
       ],
     };
     // await this.refreshReferences(openNote);
@@ -508,10 +518,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   trackByFn(index: number, item: NoteHandle) {
-    const trackId = `${item.body.id}/${item.body.updatedAt}`;
-    // const trackId = `${item.body.id}/${item.body.references.childrenCount}:${item.body.updatedAt}`;
-    // console.log(trackId);
-    return trackId;
+    return item.body.id;
   }
 
   private loadTree() {

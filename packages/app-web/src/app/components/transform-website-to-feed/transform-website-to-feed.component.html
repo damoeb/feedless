@@ -39,7 +39,7 @@
                     "
                   >
                     <ion-label
-                      >Generic with {{ genericFeed.count }} items
+                    >Generic with {{ genericFeed.count }} items
                       @if (genericFeed.selectors.dateXPath) {
                         <span>+date</span>
                       }
@@ -102,8 +102,9 @@
               </ion-item>
               <ion-item>
                 <ion-note
-                  >The URL will be used to avoid duplicate feed items. If the
-                  URL isn't available, the title will be used instead.</ion-note
+                >The URL will be used to avoid duplicate feed items. If the
+                  URL isn't available, the title will be used instead.
+                </ion-note
                 >
               </ion-item>
               <!--        <ion-item>-->
@@ -150,7 +151,7 @@
                     [formControl]="genFeedXpathsFg.controls.dateIsStartOfEvent"
                     labelPlacement="end"
                     name="dateIsStartOfEvent"
-                    >Item Date is Start Date (Event)
+                  >Item Date is Start Date (Event)
                   </ion-checkbox>
                 </ion-item>
               }
@@ -181,7 +182,7 @@
                     <a
                       href="https://github.com/code4craft/xsoup"
                       target="_blank"
-                      >xpath syntax reference</a
+                    >xpath syntax reference</a
                     >
                   </ion-note>
                 </ion-label>
@@ -210,7 +211,7 @@
   </div>
 
   <div class="flex__column" right style="flex: 2; position: relative">
-    @if (sourceBuilder) {
+    @if (sourceBuilder()) {
       <app-interactive-website
         #interactiveWebsite
         (segmentChange)="handleSegmentChange($event)"
