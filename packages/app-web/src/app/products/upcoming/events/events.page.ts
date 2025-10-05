@@ -692,6 +692,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   protected readonly getWeekday = getWeekday;
+  protected collapsedDescription = true;
 
   getRelativeDateLabel(date: Dayjs): string {
     if (date) {

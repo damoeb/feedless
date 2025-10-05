@@ -51,9 +51,16 @@ h2 {
 // Event SEO enhancements
 .event-description {
   margin: 0.5rem 0;
-  color: var(--ion-color-medium-shade);
-  font-size: 0.9rem;
-  line-height: 1.4;
+  font-size: 1rem;
+  line-height: 1.4rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.5;
+  cursor: pointer;
+
+  &--collapsed {
+    white-space: nowrap;
+  }
 }
 
 .event-details {
