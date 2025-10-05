@@ -4,6 +4,20 @@ version: '3.4'
 
 services:
 
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    ports:
+      - 8025:8025
+      - 1025:1025
+    environment:
+      MP_MAX_MESSAGES: 5000
+      MP_DATABASE: /data/mailpit.db
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
 #    command: bash -c "gradle buildDockerAioChromium"
 
 #  mq:
@@ -25,16 +39,6 @@ services:
 ##      - discovery.type=single-node
 #    ports:
 #      - "9200:9200"
-
-  feedless-ingress:
-    image: damoeb/feedless:ingress-latest
-    environment:
-      API_SERVER_NAMES: "api.feedless.org"
-      APP_SERVER_NAMES: "feedless.org"
-      INTERNAL_API_URL: "localhost:8080"
-      INTERNAL_APP_URL: "localhost:4200"
-    ports:
-      - "8888:80"
 
 #  smtp:
 #    image: rnwood/smtp4dev
