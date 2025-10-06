@@ -23,7 +23,7 @@ import { last, uniqBy } from 'lodash-es';
 import { SessionService } from '../../services/session.service';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { fixUrl, isValidUrl } from '../../app.module';
-import { Embeddable } from '../../components/embedded-image/embedded-image.component';
+import { Embeddable } from '../../components/annotate-image/annotate-image.component';
 import { addIcons } from 'ionicons';
 import { settingsOutline } from 'ionicons/icons';
 import {

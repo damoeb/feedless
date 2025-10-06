@@ -13,7 +13,7 @@ import {
 import {
   BoundingBox,
   XyPosition,
-} from '../embedded-image/embedded-image.component';
+} from '../annotate-image/annotate-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { ReplaySubject } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';

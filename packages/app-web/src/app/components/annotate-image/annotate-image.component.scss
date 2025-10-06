@@ -1,0 +1,30 @@
+.highlight-border {
+  cursor: crosshair;
+  border: 2px solid var(--ion-color-danger);
+}
+
+.annotation-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+.background-image {
+  pointer-events: none;
+}
+
+.bounding-box,
+.position-marker {
+  cursor: pointer;
+  transition: stroke-width 0.2s ease;
+  fill: red;
+  fill-opacity: 0;
+  stroke: red;
+  stroke-width: 2;
+
+  &:hover {
+    stroke-width: 3;
+    stroke: #950000;
+  }
+
+}

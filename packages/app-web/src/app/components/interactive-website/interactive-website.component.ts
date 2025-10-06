@@ -22,8 +22,8 @@ import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
   Embeddable,
-  EmbeddedImageComponent,
-} from '../embedded-image/embedded-image.component';
+  AnnotateImageComponent,
+} from '../annotate-image/annotate-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { addIcons } from 'ionicons';
 import { addOutline, removeOutline } from 'ionicons/icons';
@@ -71,7 +71,7 @@ type ViewMode = 'markup' | 'image';
     IonLabel,
     IonText,
     NgStyle,
-    EmbeddedImageComponent,
+    AnnotateImageComponent,
     EmbeddedMarkupComponent,
     ConsoleButtonComponent,
     IonItem,

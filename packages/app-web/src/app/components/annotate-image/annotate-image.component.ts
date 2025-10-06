@@ -11,7 +11,12 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import { GqlBoundingBoxInput, GqlXyPosition } from '../../../generated/graphql';
+import {
+  FieldWrapper,
+  GqlBoundingBoxInput,
+  GqlXyPosition,
+  Scalars,
+} from '../../../generated/graphql';
 import { debounce, DebouncedFunc } from 'lodash-es';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { firstValueFrom, Subscription } from 'rxjs';
@@ -45,13 +50,13 @@ interface Box {
 
 @Component({
   selector: 'app-embedded-image',
-  templateUrl: './embedded-image.component.html',
-  styleUrls: ['./embedded-image.component.scss'],
+  templateUrl: './annotate-image.component.html',
+  styleUrls: ['./annotate-image.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [NgClass],
   standalone: true,
 })
-export class EmbeddedImageComponent
+export class AnnotateImageComponent
   implements AfterViewInit, OnDestroy, OnInit
 {
   private readonly changeRef = inject(ChangeDetectorRef);
@@ -68,20 +73,20 @@ export class EmbeddedImageComponent
   private pickedPosition: EventEmitter<XyPosition | null> =
     new EventEmitter<XyPosition | null>();
 
-  readonly imageLayerCanvas = viewChild.required<ElementRef>('imageLayer');
-
-  readonly overlayCanvas = viewChild.required<ElementRef>('overlay');
+  readonly svgContainer = viewChild.required<ElementRef>('svgContainer');
 
   drag: boolean = false;
   mode: OperatorMode = 'move';
-  box: Nullable<Box>;
-  position: Nullable<{ x: number; y: number }>;
+  box: Nullable<Box> = { x: 200, y: 200, w: 200, h: 100 };
+  position: Nullable<{ x: number; y: number }> = { x: 100, y: 100 };
 
   private subscriptions: Subscription[] = [];
 
   private boxFrom: Nullable<{ x: number; y: number }>;
   private readonly drawBoxDebounced: DebouncedFunc<(box: Box) => void>;
-  private imageUrl: Nullable<string>;
+  protected imageUrl: Nullable<string>;
+  imageWidth: number = 0;
+  imageHeight: number = 0;
 
   constructor() {
     this.drawBoxDebounced = debounce(this.drawBox, 5);
@@ -99,6 +104,13 @@ export class EmbeddedImageComponent
   }
 
   handleMouseMove(event: MouseEvent) {
+    const svgRect = this.svgContainer().nativeElement.getBoundingClientRect();
+    const scaleX = this.imageWidth / svgRect.width;
+    const scaleY = this.imageHeight / svgRect.height;
+
+    const x = (event.clientX - svgRect.left) * scaleX;
+    const y = (event.clientY - svgRect.top) * scaleY;
+
     switch (this.mode) {
       case 'move':
         if (this.drag) {
@@ -109,41 +121,68 @@ export class EmbeddedImageComponent
         break;
       case 'mark':
         if (this.boxFrom) {
-          this.drawBoxDebounced(this.toBox(event));
+          const currentBox = {
+            x: this.boxFrom.x,
+            y: this.boxFrom.y,
+            w: x - this.boxFrom.x,
+            h: y - this.boxFrom.y,
+          };
+          this.drawBoxDebounced(this.normalizeBox(currentBox));
         }
         break;
     }
   }
 
   handleMouseDown(event: MouseEvent) {
+    const svgRect = this.svgContainer().nativeElement.getBoundingClientRect();
+    const scaleX = this.imageWidth / svgRect.width;
+    const scaleY = this.imageHeight / svgRect.height;
+
+    const x = (event.clientX - svgRect.left) * scaleX;
+    const y = (event.clientY - svgRect.top) * scaleY;
+
     switch (this.mode) {
       case 'move':
         this.drag = true;
         break;
       case 'mark':
-        this.boxFrom = { x: event.offsetX, y: event.offsetY };
+        this.boxFrom = { x, y };
         break;
     }
   }
 
   handleMouseUp(event: MouseEvent) {
+    const svgRect = this.svgContainer().nativeElement.getBoundingClientRect();
+    const scaleX = this.imageWidth / svgRect.width;
+    const scaleY = this.imageHeight / svgRect.height;
+
+    const x = (event.clientX - svgRect.left) * scaleX;
+    const y = (event.clientY - svgRect.top) * scaleY;
+
     switch (this.mode) {
       case 'move':
         this.drag = false;
         break;
       case 'mark':
-        const box = this.toBox(event);
-        if (box.h > 10 && box.w > 10) {
-          this.box = box;
-          this.pickedBoundingBox.emit(box);
-        } else {
-          this.box = null;
-          this.drawBox({ x: 0, y: 0, w: 0, h: 0 });
+        if (this.boxFrom) {
+          const currentBox = {
+            x: this.boxFrom.x,
+            y: this.boxFrom.y,
+            w: x - this.boxFrom.x,
+            h: y - this.boxFrom.y,
+          };
+          const box = this.normalizeBox(currentBox);
+          if (box.h > 10 && box.w > 10) {
+            this.box = box;
+            this.pickedBoundingBox.emit(box);
+          } else {
+            this.box = null;
+          }
         }
         this.boxFrom = null;
         break;
       case 'position':
-        this.position = { x: event.offsetX, y: event.offsetY };
+        this.position = { x, y };
         this.drawPosition();
         this.pickedPosition.emit(this.position);
         break;
@@ -169,14 +208,14 @@ export class EmbeddedImageComponent
     image.src = this.imageUrl;
 
     image.onload = () => {
-      const imageLayerCanvas = this.imageLayerCanvas();
-      imageLayerCanvas.nativeElement.height = image.height;
-      imageLayerCanvas.nativeElement.width = image.width;
-      const overlayCanvas = this.overlayCanvas();
-      overlayCanvas.nativeElement.height = image.height;
-      overlayCanvas.nativeElement.width = image.width;
-      const ctx = imageLayerCanvas.nativeElement.getContext('2d');
-      ctx.drawImage(image, 0, 0);
+      this.imageWidth = image.width;
+      this.imageHeight = image.height;
+
+      // Set SVG dimensions
+      const svgElement = this.svgContainer().nativeElement;
+      svgElement.setAttribute('width', image.width);
+      svgElement.setAttribute('height', image.height);
+      svgElement.setAttribute('viewBox', `0 0 ${image.width} ${image.height}`);
     };
 
     this.changeRef.detectChanges();
@@ -188,7 +227,7 @@ export class EmbeddedImageComponent
     sliceSize: number = 512,
   ) {
     const byteCharacters = atob(b64Data);
-    const byteArrays: Uint8Array[] = [];
+    const byteArrays: BlobPart[] = [];
 
     for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
       const slice = byteCharacters.slice(offset, offset + sliceSize);
@@ -206,61 +245,52 @@ export class EmbeddedImageComponent
 
   private drawBox({ x, y, w, h }: Box) {
     console.log('drawBox');
-    const { height: canvasHeight, width: canvasWidth } =
-      this.overlayCanvas().nativeElement;
-    const ctx: CanvasRenderingContext2D =
-      this.overlayCanvas().nativeElement.getContext('2d');
-    this.resetCanvas();
-    if (w > 0 && h > 0) {
-      ctx.strokeStyle = 'black';
-      ctx.fillStyle = 'black';
-      ctx.fillRect(0, 0, x, canvasHeight);
-      ctx.fillRect(0, 0, canvasWidth, y);
-      ctx.fillRect(0, y + h, canvasWidth, canvasHeight);
-      ctx.fillRect(x + w, y, canvasWidth, canvasHeight);
-
-      ctx.beginPath();
-      ctx.rect(x, y, w, h);
-      ctx.stroke();
-    }
+    // With SVG, we don't need to manually draw - the template handles rendering
+    // The box property is bound to the template, so changes are automatic
+    this.changeRef.detectChanges();
   }
 
-  private toBox({ offsetX: x2, offsetY: y2 }: MouseEvent): Box {
-    const { x: x1, y: y1 } = this.boxFrom!;
-    let x,
-      y: number = 0;
-    if (x1 < x2) {
+  private normalizeBox(box: Box): Box {
+    const { x: x1, y: y1, w: w1, h: h1 } = box;
+    let x, y, w, h: number;
+
+    if (w1 < 0) {
+      x = x1 + w1;
+      w = Math.abs(w1);
+    } else {
       x = x1;
-    } else {
-      x = x2;
+      w = w1;
     }
-    if (y1 < y2) {
+
+    if (h1 < 0) {
+      y = y1 + h1;
+      h = Math.abs(h1);
+    } else {
       y = y1;
-    } else {
-      y = y2;
+      h = h1;
     }
-    const w = Math.abs(x1 - x2);
-    const h = Math.abs(y1 - y2);
 
     return { x, y, w, h };
   }
 
   private drawPosition() {
-    this.resetCanvas();
-    const ctx: CanvasRenderingContext2D =
-      this.overlayCanvas().nativeElement.getContext('2d');
-    ctx.strokeStyle = this.strokeStyle();
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.arc(this.position!.x, this.position!.y, 20, 0, 2 * Math.PI);
-    ctx.stroke();
+    // With SVG, we don't need to manually draw - the template handles rendering
+    // The position property is bound to the template, so changes are automatic
+    this.changeRef.detectChanges();
   }
 
-  private resetCanvas() {
-    const { height, width } = this.overlayCanvas().nativeElement;
-    const ctx: CanvasRenderingContext2D =
-      this.overlayCanvas().nativeElement.getContext('2d');
-    ctx.clearRect(0, 0, height, width);
+  deleteBox() {
+    // todo impl
+    // this.box = null;
+    // this.pickedBoundingBox.emit(null);
+    this.changeRef.detectChanges();
+  }
+
+  deletePosition() {
+    // todo impl
+    // this.position = null;
+    // this.pickedPosition.emit(null);
+    this.changeRef.detectChanges();
   }
 
   ngOnInit(): void {
@@ -272,7 +302,10 @@ export class EmbeddedImageComponent
           this.changeRef.detectChanges();
           firstValueFrom(this.pickedPosition).then((point) => {
             console.log('pickPoint', point);
-            callback(point);
+            callback({
+              x: this.toInt(point.x),
+              y: this.toInt(point.y),
+            });
             this.mode = 'move';
             this.changeRef.detectChanges();
           });
@@ -286,11 +319,20 @@ export class EmbeddedImageComponent
           firstValueFrom(this.pickedBoundingBox).then((bbox) => {
             console.log('pickArea', bbox);
             this.mode = 'move';
-            callback(bbox);
+            callback({
+              x: this.toInt(bbox.x),
+              y: this.toInt(bbox.y),
+              w: this.toInt(bbox.w),
+              h: this.toInt(bbox.h),
+            });
             this.changeRef.detectChanges();
           });
         },
       ),
     );
+  }
+
+  private toInt(val: number) {
+    return parseInt(val.toFixed(0));
   }
 }

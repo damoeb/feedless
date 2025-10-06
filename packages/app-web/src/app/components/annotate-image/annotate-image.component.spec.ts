@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { EmbeddedImageComponent } from './embedded-image.component';
+import { AnnotateImageComponent } from './annotate-image.component';
 import { AppTestModule } from '../../app-test.module';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { ScrapeService } from '../../services/scrape.service';
 
 describe('EmbeddedImageComponent', () => {
-  let component: EmbeddedImageComponent;
-  let fixture: ComponentFixture<EmbeddedImageComponent>;
+  let component: AnnotateImageComponent;
+  let fixture: ComponentFixture<AnnotateImageComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [EmbeddedImageComponent, AppTestModule.withDefaults()],
+      imports: [AnnotateImageComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EmbeddedImageComponent);
+    fixture = TestBed.createComponent(AnnotateImageComponent);
     component = fixture.componentInstance;
     const componentRef = fixture.componentRef;
     componentRef.setInput(

@@ -18,7 +18,7 @@ import { Location, NgClass } from '@angular/common';
 import {
   BoundingBox,
   XyPosition,
-} from '../../components/embedded-image/embedded-image.component';
+} from '../../components/annotate-image/annotate-image.component';
 import {
   GqlFeedlessPlugins,
   GqlRecordField,

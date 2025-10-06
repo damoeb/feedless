@@ -12,7 +12,7 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import { Embeddable } from '../embedded-image/embedded-image.component';
+import { Embeddable } from '../annotate-image/annotate-image.component';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { debounce, distinct, interval, Subscription } from 'rxjs';
 import { NgClass, NgStyle } from '@angular/common';
