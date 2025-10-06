@@ -154,8 +154,8 @@ export class EventsPage implements OnInit, OnDestroy {
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
 
-  protected placesByDistancePerDay: EventGroupsPerDay[] = [];
-  protected loadingDay = true;
+  placesByDistancePerDay: EventGroupsPerDay[] = [];
+  loadingDay = true;
 
   constructor() {
     addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
@@ -326,7 +326,7 @@ export class EventsPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  private fetchEventsBetweenDates(
+  fetchEventsBetweenDates(
     minDate: Dayjs,
     maxDate: Dayjs,
   ): Promise<LocalizedEvent[]> {
@@ -350,7 +350,7 @@ export class EventsPage implements OnInit, OnDestroy {
         },
         startedAt: {
           after: minDate.startOf('day').valueOf(),
-          before: maxDate.startOf('day').valueOf(),
+          before: maxDate.endOf('day').valueOf(),
         },
       },
     });
