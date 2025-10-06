@@ -116,7 +116,7 @@
                               <div>
                                 @for (event of place.events; track event) {
                                   <div class="localized-event">
-                                    <a [href]="event.url" itemprop="url" rel="nofollow">
+                                    <app-external-link [href]="event.url">
                                       <article itemscope itemtype="https://schema.org/Event">
                                         <header>
                                           <h3 itemprop="name">
@@ -124,7 +124,7 @@
                                           </h3>
                                         </header>
                                       </article>
-                                    </a>
+                                    </app-external-link>
                                   </div>
                                 }
                               </div>

@@ -41,6 +41,7 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
 import { EventService, LocalizedEvent } from '../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 import { parsePath, renderPath } from 'typesafe-routes';
+import { ExternalLinkComponent } from '../../../components/external-link/external-link.component';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
@@ -129,6 +130,7 @@ interface EventGroupsPerDay {
     UpcomingFooterComponent,
     IonText,
     InlineCalendarComponent,
+    ExternalLinkComponent,
   ],
   standalone: true,
 })
