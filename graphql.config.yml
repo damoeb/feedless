@@ -1,5 +1,5 @@
 documents: '**/*.graphql'
-schema: packages/server-core/src/main/resources/schema/schema.graphqls
+schema: packages/graphql-api/src/main/resources/schema/schema.graphqls
 extensions:
   endpoints:
     Default GraphQL Endpoint:

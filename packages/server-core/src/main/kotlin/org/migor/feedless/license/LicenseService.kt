@@ -22,7 +22,7 @@ import org.apache.commons.lang3.time.DateUtils
 import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Vertical
+import org.migor.feedless.Vertical
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.OrderId
 import org.migor.feedless.plan.ProductEntity

@@ -569,8 +569,8 @@ private fun ScrapeExtractFragment.asEntity(repositoryId: UUID, source: SourceEnt
   d.sourceId = source.id
   d.repositoryId = repositoryId
   if (data?.data != null) {
-    d.raw = Base64.getDecoder().decode(data.data)
-    d.rawMimeType = data.mimeType
+    d.raw = Base64.getDecoder().decode(data!!.data)
+    d.rawMimeType = data!!.mimeType
   }
   d.tags = source.tags
   d.contentHash = CryptUtil.sha1(

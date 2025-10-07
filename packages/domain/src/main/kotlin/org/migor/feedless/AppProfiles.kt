@@ -36,11 +36,3 @@ object AppProfiles {
   const val selfHosted = "selfHosted"
 
 }
-
-object AppLayer {
-  const val security = "securityLayer"
-  const val api = "apiLayer"
-  const val service = "serviceLayer"
-  const val repository = "repositoryLayer"
-  const val scheduler = "schedulerLayer"
-}

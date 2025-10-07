@@ -1,6 +1,5 @@
 package org.migor.feedless.plan
 
-import PostgreSQLExtension
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -9,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.feature.FeatureDAO
 import org.migor.feedless.feature.FeatureEntity
 import org.migor.feedless.feature.FeatureGroupDAO
@@ -118,7 +118,11 @@ class FeatureServiceTest {
     // when
     featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameA to createFeatureValue(randomInt)), false)
     featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureNameB to createFeatureValue(randomInt)), false)
-    featureService.assignFeatureValues(childFeatureGroup, mapOf(featureNameA to createFeatureValue(otherRandomInt)), false)
+    featureService.assignFeatureValues(
+      childFeatureGroup,
+      mapOf(featureNameA to createFeatureValue(otherRandomInt)),
+      false
+    )
 
     // then
     val parentValue = featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, featureA.name)

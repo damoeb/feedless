@@ -11,6 +11,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.user.UserEntity
 import java.time.LocalDateTime
 import java.util.*
@@ -41,3 +42,6 @@ open class OneTimePasswordEntity : EntityWithUUID() {
 
 }
 
+fun OneTimePasswordEntity.toDomain(): OneTimePassword {
+  return OneTimePasswordMapper.INSTANCE.toDomain(this)
+}

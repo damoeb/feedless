@@ -7,6 +7,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.migor.feedless.report.ReportId
 import org.migor.feedless.report.ReportService
+import org.migor.feedless.template.ChangeTrackerAuthorizedTemplate
+import org.migor.feedless.template.FreemarkerTemplateService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -21,7 +23,7 @@ import org.springframework.web.bind.annotation.PathVariable
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
 class MailController(
   private val reportService: ReportService,
-  private val templateService: TemplateService
+  private val templateService: FreemarkerTemplateService
 ) {
 
   private val log = LoggerFactory.getLogger(MailController::class.simpleName)

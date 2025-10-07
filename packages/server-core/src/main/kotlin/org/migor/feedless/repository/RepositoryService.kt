@@ -10,13 +10,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.attachment.createAttachmentUrl
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
@@ -186,7 +186,7 @@ class RepositoryService(
           where.visibility?.let { visibility ->
             visibility.`in`?.let {
               whereStatements.add(
-                path(RepositoryEntity::visibility).`in`(visibility.`in`.map { it.fromDto() }),
+                path(RepositoryEntity::visibility).`in`(visibility.`in`!!.map { it.fromDto() }),
               )
             }
           }
@@ -453,7 +453,7 @@ class RepositoryService(
     repo.pushNotificationsEnabled = BooleanUtils.isTrue(repoInput.pushNotificationsMuted)
 
     repo.sourcesSyncCron = repoInput.refreshCron?.let {
-      planConstraintsService.auditCronExpression(repoInput.refreshCron)
+      planConstraintsService.auditCronExpression(repoInput.refreshCron ?: "")
     } ?: ""
     repo.retentionMaxCapacity =
       planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, ownerId, product)

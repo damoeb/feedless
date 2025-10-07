@@ -4,10 +4,10 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.Vertical
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.feature.FeatureGroupDAO
@@ -162,11 +162,12 @@ class Seeder(
       val repositoryId = standaloneFeedNotificationRepo.id
 
       val title = "SERVICE ANNOUNCEMENT: About this feed"
-      val notification = documentDAO.findByTitleInAndRepositoryId(listOf(title, deprecationMessageTitle), repositoryId) ?: run {
-        val d = DocumentEntity()
-        d.repositoryId = repositoryId
-        d
-      }
+      val notification =
+        documentDAO.findByTitleInAndRepositoryId(listOf(title, deprecationMessageTitle), repositoryId) ?: run {
+          val d = DocumentEntity()
+          d.repositoryId = repositoryId
+          d
+        }
 
       val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls"
       notification.url = url
@@ -226,10 +227,10 @@ class Seeder(
 
   private fun seedProducts(root: UserEntity) {
     val baseFeatureGroup = featureGroupDAO.findByParentFeatureGroupIdIsNull() ?: run {
-        val group = FeatureGroupEntity()
-        group.name = "feedless"
-        featureGroupDAO.save(group)
-      }
+      val group = FeatureGroupEntity()
+      group.name = "feedless"
+      featureGroupDAO.save(group)
+    }
 
     runBlocking {
       featureService.assignFeatureValues(
@@ -426,11 +427,11 @@ class Seeder(
   ): FeatureGroupEntity {
     log.info("resolveFeatureGroup $name")
     val group = featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: run {
-        val group = FeatureGroupEntity()
-        group.name = name
-        group.parentFeatureGroupId = parentFeatureGroupId
-        featureGroupDAO.save(group)
-      }
+      val group = FeatureGroupEntity()
+      group.name = name
+      group.parentFeatureGroupId = parentFeatureGroupId
+      featureGroupDAO.save(group)
+    }
 
     featureService.assignFeatureValues(group, features)
     return group

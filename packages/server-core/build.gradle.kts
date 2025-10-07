@@ -6,15 +6,15 @@ plugins {
 //  id("com.google.protobuf") version "0.9.2"
 
   alias(libs.plugins.spring.boot)
-  // https://github.com/Netflix/dgs-framework/blob/v8.7.1/graphql-dgs-client/dependencies.lock
-  alias(libs.plugins.dgs.codegen)
   alias(libs.plugins.test.logger)
   alias(libs.plugins.grgit)
   alias(libs.plugins.jacoco)
   alias(libs.plugins.javacc)
+  alias(libs.plugins.dgs.codegen)
 
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
+  alias(libs.plugins.kapt)
 }
 
 apply(plugin = "io.spring.dependency-management")
@@ -53,22 +53,6 @@ tasks.jacocoTestReport {
 //  }
 //}
 
-tasks.test {
-  val osName = System.getProperty("os.name").lowercase()
-  if (osName.contains("linux")) {
-//    val process = ProcessBuilder("id", "-u").start()
-//    val uid = process.inputStream.bufferedReader().readText().trim()
-//    environment("DOCKER_HOST", "unix:///run/user/$uid/podman/podman.sock")
-    environment("DOCKER_HOST", "unix:///var/run/docker.sock")
-  } else {
-    throw IllegalArgumentException("test currently only run on linux")
-  }
-//  } else if (os.isMacOsX) {
-//    environment("DOCKER_HOST", "unix:///tmp/podman.sock")
-//  }
-//  environment("TESTCONTAINERS_RYUK_DISABLED", "true")
-}
-
 tasks.check {
   dependsOn(tasks.jacocoTestCoverageVerification)
 }
@@ -100,7 +84,7 @@ dependencies {
 //  implementation("org.springframework:spring-aspects")
   implementation(libs.spring.boot.validation)
   implementation(libs.spring.boot.webflux)
-  implementation(libs.spring.boot.freemarker)
+
 //  implementation("org.springframework.boot:spring-boot-starter-amqp")
   implementation(libs.tika.core)
   implementation(libs.pdfbox.tools)
@@ -111,6 +95,11 @@ dependencies {
   implementation(libs.commons.text)
   implementation(libs.webp.imageio.sejda)
 
+  implementation(project(":packages:domain"))
+  api(project(":packages:graphql-api"))
+
+  implementation("org.mapstruct:mapstruct:1.6.3")
+  kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
   // graphql
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")
@@ -118,12 +107,11 @@ dependencies {
   implementation("org.springframework.security:spring-security-messaging")
   implementation(platform(libs.dgs.platform))
   implementation(libs.dgs.starter)
+
   implementation(libs.dgs.scalars)
   implementation(libs.dgs.subscriptions)
   implementation(libs.dgs.subscriptions.autoconfigure)
   testImplementation(libs.spring.graphql.test)
-//  implementation("org.mapstruct:mapstruct:1.5.5.Final")
-//  annotationProcessor("org.mapstruct:mapstruct-processor:1.5.5.Final")
 
   // cache
   implementation(libs.spring.boot.cache)
@@ -133,8 +121,7 @@ dependencies {
   implementation(libs.spring.boot.actuator)
 
   // mail
-  implementation(libs.spring.boot.mail)
-  implementation(libs.mailgun.java)
+  implementation(project(":packages:mail-adapter"))
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")
@@ -214,47 +201,6 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
   this.archiveFileName.set("app.${archiveExtension.get()}")
 }
 
-// https://netflix.github.io/dgs/generating-code-from-schema/
-val graphqlCodegen = tasks.withType<com.netflix.graphql.dgs.codegen.gradle.GenerateJavaTask> {
-  schemaPaths = mutableListOf(
-    "$projectDir/src/main/resources/schema/schema.graphqls"
-  )
-  typeMapping = mutableMapOf("Upload" to "org.springframework.web.multipart.MultipartFile")
-  packageName = "org.migor.feedless.generated"
-  generateInterfaces = false
-  generateClient = true
-  generateDataTypes = true
-  language = "kotlin"
-//  generateKotlinNullableClasses = true
-  generateKotlinClosureProjections = true
-}
-
-//val restCodegen = tasks.withType<org.openapitools.generator.gradle.plugin.tasks.GenerateTask> {
-//  generatorName.set("spring")
-//  inputSpec.set(project.file("src/main/resources/schema/openapi.yaml").path)
-//  outputDir.set("$buildDir/generated")
-//  apiPackage.set("org.migor.feedless.api")
-////  modelPackage.set("com.example.model")
-////  invokerPackage.set("com.example.invoker")
-//
-//  configOptions.putAll(
-//    mapOf(
-//      "dateLibrary" to "java8",
-////      "library" to "spring-boot",
-//      "enumPropertyNaming" to "camelCase",
-//      "useTags" to "true"
-//    )
-//  )
-//}
-
-val codegen = tasks.register("codegen") {
-  dependsOn(graphqlCodegen)
-}
-
-tasks.named<JavaCompile>("compileJava") {
-  dependsOn(graphqlCodegen)
-}
-
 tasks.withType<KotlinCompile> {
   kotlinOptions {
 //    freeCompilerArgs = listOf("-Xjsr305=strict")
@@ -271,16 +217,16 @@ tasks.withType<Test> {
   finalizedBy(tasks.getByName("jacocoTestReport"))
 }
 
-//val fetchGithubJars = tasks.register("fetchGithubJars", Exec::class) {
-//  commandLine("sh", "./fetchGithubJars.sh")
+// todo enable cc
+//val compilejj = tasks.getByName<org.javacc.plugin.gradle.javacc.CompileJavaccTask>("compileJavacc") {
+//  inputDirectory = file("src/main/kotlin/org/migor/feedless/document/filter")
+//  outputDirectory = file("src/generated/java/org/migor/feedless/document/filter/generated")
 //}
-val compilejj = tasks.getByName<org.javacc.plugin.gradle.javacc.CompileJavaccTask>("compileJavacc") {
-  inputDirectory = file("src/main/kotlin/org/migor/feedless/document/filter")
-  outputDirectory = file("src/generated/java/org/migor/feedless/document/filter/generated")
-}
+//
+//tasks.named("kaptGenerateStubsKotlin") {
+//  mustRunAfter(compilejj)
+//}
 
-tasks.getByName("compileKotlin").dependsOn(compilejj, codegen)
-tasks.getByName("compileTestKotlin").dependsOn(compilejj, codegen)
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   systemProperty("APP_BUILD_TIMESTAMP", Date().time)
@@ -292,7 +238,7 @@ val lintTask = tasks.register("lint") {
 //  dependsOn("lintDockerImage")
 }
 tasks.register("start") {
-  dependsOn("codegen", "bootRun")
+  dependsOn("bootRun")
 }
 
 val buildTask = tasks.findByPath("build")!!.dependsOn(lintTask, "test", "bootJar")

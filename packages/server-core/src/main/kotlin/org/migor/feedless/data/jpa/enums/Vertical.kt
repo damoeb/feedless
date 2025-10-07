@@ -1,19 +1,7 @@
 package org.migor.feedless.data.jpa.enums
 
+import org.migor.feedless.Vertical
 import org.migor.feedless.generated.types.Vertical as VerticalDto
-
-enum class Vertical {
-  all,
-  visualDiff,
-  pageChangeTracker,
-  rssProxy,
-  reader,
-  upcoming,
-  digest,
-  feedless,
-  feedDump,
-  untoldNotes,
-}
 
 fun VerticalDto.fromDto(): Vertical {
   return when (this) {

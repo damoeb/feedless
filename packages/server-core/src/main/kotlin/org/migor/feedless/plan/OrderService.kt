@@ -108,8 +108,8 @@ class OrderService {
     }
     create.user.connect?.let {
       order.userId = UUID.fromString(it.id)
-    } ?: create.user.create?.let {
-      order.userId = createUser(create.user.create).id
+    } ?: create.user.create?.let { userCreateInput ->
+      order.userId = createUser(userCreateInput).id
     } ?: throw IllegalArgumentException("Neither connect or create is present")
     return withContext(Dispatchers.IO) {
       orderDAO.save(order)

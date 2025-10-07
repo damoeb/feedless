@@ -4,7 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Vertical
+import org.migor.feedless.Vertical
+
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.user.UserDAO
@@ -36,21 +37,6 @@ class ProductService(
 
   private val log = LoggerFactory.getLogger(ProductService::class.simpleName)
 
-  @Deprecated("hardcoded")
-  fun getDomain(product: Vertical): String {
-    return when (product) {
-      Vertical.visualDiff -> "visualdiff.com"
-      Vertical.pageChangeTracker -> "pagechangetracker.com"
-      Vertical.rssProxy -> "rssproxy.migor.org"
-      Vertical.feedless -> "feedless.org"
-      Vertical.untoldNotes -> "notes.feedless.org"
-      Vertical.upcoming -> "upcoming.feedless.org"
-      Vertical.reader -> "reader.feedless.org"
-      Vertical.feedDump -> "dump.feedless.org"
-      else -> throw IllegalArgumentException("$product not supported")
-    }
-  }
-
   @Transactional(readOnly = true)
   suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
     return withContext(Dispatchers.IO) {
@@ -59,7 +45,7 @@ class ProductService(
       } ?: data.id?.`in`?.let { ids ->
         productDAO.findAllByIdIn(ids.map { UUID.fromString(it) })
       } ?: data.vertical?.let {
-        productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical.fromDto())
+        productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical!!.fromDto())
       } ?: throw IllegalArgumentException("Insufficient filter params")
     }
   }

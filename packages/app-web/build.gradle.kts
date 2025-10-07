@@ -29,7 +29,7 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   dependsOn(yarnInstallTask)
 
   inputs.property("nodejsVersion", findProperty("nodejsVersion"))
-  inputs.files("../server-core/src/main/resources/schema/schema.graphqls", "generate-verticals-data.ts")
+  inputs.files("../graphql-api/src/main/resources/schema/schema.graphqls", "generate-verticals-data.ts")
 
   outputs.files(
     "build/generate-verticals-data.js",

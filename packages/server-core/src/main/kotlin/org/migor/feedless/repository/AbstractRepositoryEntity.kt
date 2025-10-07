@@ -23,13 +23,13 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
+import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentEntity.Companion.LEN_STR_DEFAULT

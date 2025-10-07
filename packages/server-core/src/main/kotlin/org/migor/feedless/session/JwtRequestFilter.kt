@@ -10,8 +10,8 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.Vertical
 import org.migor.feedless.api.ApiParams
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -71,6 +71,7 @@ class JwtRequestFilter : Filter {
       authorizedClientRegistrationId
     )
   }
+
   private fun getAuthorities(jwt: Jwt): List<String> {
     return jwt.getClaim("authorities") as List<String>
   }

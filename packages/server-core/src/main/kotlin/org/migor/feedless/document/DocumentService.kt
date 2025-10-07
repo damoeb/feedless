@@ -268,7 +268,7 @@ class DocumentService(
       val documents = documentDAO
         .findAllByRepositoryIdAndIdIn(
           repositoryId.value, if (documentIds.`in` != null) {
-            documentIds.`in`.map { UUID.fromString(it) }
+            documentIds.`in`!!.map { UUID.fromString(it) }
           } else {
             if (documentIds.eq != null) {
               listOf(UUID.fromString(documentIds.eq))

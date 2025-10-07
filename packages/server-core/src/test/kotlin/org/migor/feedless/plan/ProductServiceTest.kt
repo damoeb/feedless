@@ -5,7 +5,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUserId
-import org.migor.feedless.data.jpa.enums.Vertical
+import org.migor.feedless.Vertical
 import org.migor.feedless.repository.any2
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity

@@ -55,11 +55,11 @@ class ProductResolver(
   @DgsData(parentType = DgsConstants.PRODUCT.TYPE_NAME, field = DgsConstants.PRODUCT.FeatureGroup)
   suspend fun getFeatureGroup(dfe: DgsDataFetchingEnvironment): FeatureGroup? = coroutineScope {
     val product: Product = dfe.getSource()!!
-    product.featureGroupId?.let {
+    product.featureGroupId?.let { featureGroupId ->
       FeatureGroup(
-        id = product.featureGroupId,
+        id = featureGroupId,
         name = "",
-        features = featureService.findAllByGroupId(FeatureGroupId(product.featureGroupId), true)
+        features = featureService.findAllByGroupId(FeatureGroupId(featureGroupId), true)
       )
     }
   }

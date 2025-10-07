@@ -1,36 +1,31 @@
 package org.migor.feedless.mail
 
-import jakarta.mail.internet.MimeMessage
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.Vertical
-import org.migor.feedless.plan.ProductService
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.Vertical
+import org.migor.feedless.otp.OneTimePassword
+import org.migor.feedless.template.TemplateService
+import org.migor.feedless.user.User
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Profile
 import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
-class MailServiceImpl : MailService {
+@ConditionalOnMissingBean(MailService::class)
+class NativeMailService : MailService {
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
 
   @Autowired
   private lateinit var javaMailSender: JavaMailSender
 
   @Autowired
-  private lateinit var productService: ProductService
-
-  @Autowired
   private lateinit var templateService: TemplateService
 
-  @Deprecated("")
   private fun send(to: String, body: Email) {
     val mailMessage = SimpleMailMessage()
     mailMessage.from = body.from
@@ -53,7 +48,7 @@ class MailServiceImpl : MailService {
 ////    sendWelcomeAnyMail(corrId, user, WelcomeFreeMailTemplate(WelcomeMailParams(user.subscription!!.product!!.partOf!!.name)))
 //  }
 
-  override suspend fun sendAuthCode(user: UserEntity, otp: OneTimePasswordEntity, description: String) {
+  override suspend fun sendAuthCode(user: User, otp: OneTimePassword, description: String) {
 //    if (StringUtils.isBlank(user.email)) {
 //      throw IllegalArgumentException("Email is not defined")
 //    }
@@ -80,17 +75,12 @@ class MailServiceImpl : MailService {
   }
 
   override suspend fun getNoReplyAddress(product: Vertical): String {
-    return "no-reply@${productService.getDomain(product)}"
+    return "no-reply@feedless.org"
   }
 
-  @Deprecated("")
-  override suspend fun send(mimeMessage: MimeMessage) {
-    log.debug("sending mail $mimeMessage")
-    javaMailSender.send(mimeMessage)
-  }
-
-  override suspend fun createMimeMessage(): MimeMessage {
-    return javaMailSender.createMimeMessage()
+  override suspend fun send(email: Email) {
+    log.debug("sending mail $email")
+//  todo  javaMailSender.send(mimeMessage)
   }
 
 //  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {

@@ -48,7 +48,7 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
 
   inputs.property("nodejsVersion", findProperty("nodejsVersion"))
   inputs.dir("src")
-  inputs.files("codegen.yml", "yarn.lock", "../server-core/src/main/resources/schema/schema.graphqls")
+  inputs.files("codegen.yml", "yarn.lock", "../graphql-api/src/main/resources/schema/schema.graphqls")
   outputs.upToDateWhen { true }
 }
 

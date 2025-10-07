@@ -1,5 +1,5 @@
 [versions]
-kotlin = "1.9.20"
+kotlin = "1.9.21"
 spring-boot = "3.2.5"
 dgs-codegen = "6.3.0"
 dgs = "8.7.1"
@@ -47,6 +47,7 @@ stripe = "29.1.0"
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-spring = { id = "org.jetbrains.kotlin.plugin.spring", version.ref = "kotlin" }
+kapt = { id = "org.jetbrains.kotlin.kapt", version.ref = "kotlin" }
 
 spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
 dgs-codegen = { id = "com.netflix.dgs.codegen", version.ref = "dgs-codegen" }

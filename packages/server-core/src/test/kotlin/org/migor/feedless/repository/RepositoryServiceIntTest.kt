@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import PostgreSQLExtension
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -8,6 +7,8 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PostgreSQLExtension
+import org.migor.feedless.Vertical
 import org.migor.feedless.actions.ExtractEmit
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.ScrapeActionDAO
@@ -29,7 +30,6 @@ import org.migor.feedless.generated.types.ScrapeExtractInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
-import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
@@ -45,6 +45,7 @@ import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.migor.feedless.generated.types.Vertical as VerticalDto
 
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -104,7 +105,7 @@ class RepositoryServiceIntTest {
     `when`(sessionService.user())
       .thenReturn(user)
     `when`(sessionService.activeProductFromRequest())
-      .thenReturn(org.migor.feedless.data.jpa.enums.Vertical.feedless)
+      .thenReturn(Vertical.feedless)
     `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UserId::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(eq(null)))
@@ -113,7 +114,7 @@ class RepositoryServiceIntTest {
     repositoryService.create(
       listOf(
         RepositoryCreateInput(
-          product = Vertical.rssProxy,
+          product = VerticalDto.rssProxy,
           sources = listOf(
             SourceInput(
               title = "wef",

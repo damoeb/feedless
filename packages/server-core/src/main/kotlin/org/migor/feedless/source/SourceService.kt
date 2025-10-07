@@ -238,13 +238,13 @@ class SourceService(
         sortableStatements.addAll(
           orders.map {
             if (it.title != null) {
-              applySortDirection(path(SourceEntity::title), it.title)
+              applySortDirection(path(SourceEntity::title), it.title!!)
             } else {
               if (it.lastRecordsRetrieved != null) {
-                applySortDirection(path(SourceEntity::lastRecordsRetrieved), it.lastRecordsRetrieved)
+                applySortDirection(path(SourceEntity::lastRecordsRetrieved), it.lastRecordsRetrieved!!)
               } else {
                 if (it.lastRefreshedAt != null) {
-                  applySortDirection(path(SourceEntity::lastRefreshedAt), it.lastRefreshedAt)
+                  applySortDirection(path(SourceEntity::lastRefreshedAt), it.lastRefreshedAt!!)
                 } else {
                   throw IllegalArgumentException("Underspecified source order params")
                 }
@@ -343,11 +343,11 @@ class SourceService(
         var changed = false
 
         sourceUpdate.data.tags?.let {
-          source.tags = sourceUpdate.data.tags.set.toTypedArray()
+          source.tags = it.set.toTypedArray()
           changed = true
         }
         sourceUpdate.data.title?.let {
-          source.title = sourceUpdate.data.title.set
+          source.title = it.set
           changed = true
         }
         sourceUpdate.data.latLng?.let { point ->
@@ -368,12 +368,14 @@ class SourceService(
 
           flow.set?.let {
             // append new actions
-            val actions = flow.set.fromDto().mapIndexed { index, scrapeAction ->
+            val actions = flow.set?.fromDto()?.mapIndexed { index, scrapeAction ->
               scrapeAction.sourceId = source.id
               scrapeAction.pos = index
               scrapeAction
             }
-            saveScrapeActions.addAll(actions)
+            actions?.let {
+              saveScrapeActions.addAll(actions)
+            }
           }
         }
 

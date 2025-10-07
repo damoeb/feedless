@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.toDomain
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -35,7 +36,7 @@ class OneTimePasswordService(
       oneTimePasswordDAO.save(otp)
     }
     log.debug("sending otp '${otp.password}'")
-    mailService.sendAuthCode(user, otp, description)
+    mailService.sendAuthCode(user.toDomain(), otp.toDomain(), description)
     return otp
   }
 

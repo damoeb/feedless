@@ -4,6 +4,9 @@ include("packages:app-web")
 include("packages:server-core")
 include("packages:agent")
 include("packages:nominatim-proxy")
+include("packages:mail-adapter")
+include("packages:domain")
+include("packages:graphql-api")
 
 buildscript {
   repositories {

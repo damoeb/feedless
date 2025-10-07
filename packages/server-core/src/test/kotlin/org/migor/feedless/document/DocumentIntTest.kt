@@ -1,6 +1,5 @@
 package org.migor.feedless.document
 
-import PostgreSQLExtension
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -9,11 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PostgreSQLExtension
+import org.migor.feedless.Vertical
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.GroupService
 import org.migor.feedless.pipeline.DocumentPipelineJobDAO

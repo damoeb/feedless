@@ -83,7 +83,7 @@ open class UserEntity : EntityWithUUID() {
   open var spammingVotes: Boolean = false
 
   @Column(nullable = false, name = "is_shaddow_banned")
-  open var shaddowBanned: Boolean = false
+  open var shadowBanned: Boolean = false
 
   @Column(nullable = false, name = "is_banned")
   open var banned: Boolean = false
@@ -167,3 +167,7 @@ fun UserEntity.toDTO(): User =
 //          .dateFormat(propertyService.dateFormat)
 //          .timeFormat(propertyService.timeFormat)
   )
+
+fun UserEntity.toDomain(): org.migor.feedless.user.User {
+  return UserMapper.INSTANCE.toDomain(this)
+}

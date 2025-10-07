@@ -13,9 +13,9 @@ import jakarta.persistence.Table
 import jakarta.persistence.UniqueConstraint
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.migor.feedless.Vertical
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.generated.types.Product

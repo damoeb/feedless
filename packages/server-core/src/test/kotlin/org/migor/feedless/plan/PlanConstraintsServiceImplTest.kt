@@ -10,8 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.Vertical
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.Vertical
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureGroupEntity
 import org.migor.feedless.feature.FeatureName
