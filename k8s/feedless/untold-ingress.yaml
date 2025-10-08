@@ -27,7 +27,6 @@ metadata:
   name: untold-route
 spec:
   entryPoints:
-    - web
     - websecure
   routes:
     # Handle `/`
