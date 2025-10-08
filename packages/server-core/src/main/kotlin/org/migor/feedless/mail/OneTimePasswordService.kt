@@ -4,22 +4,22 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.user.UserEntity
-import org.migor.feedless.user.toDomain
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.Duration
 import java.time.LocalDateTime
 
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.mail} & ${AppLayer.service}")
+@Profile("${AppProfiles.security} & ${AppLayer.service}")
 class OneTimePasswordService(
-  private val mailService: MailService,
   private val oneTimePasswordDAO: OneTimePasswordDAO
 ) {
 
@@ -29,14 +29,19 @@ class OneTimePasswordService(
   private val otpConfirmCodeLength: Int = 5
 
   @Transactional
-  suspend fun createOTP(user: UserEntity, description: String): OneTimePasswordEntity {
+  suspend fun createOTP(user: UserEntity): OneTimePasswordEntity {
     val otp = createOTP()
     otp.userId = user.id
     withContext(Dispatchers.IO) {
+      oneTimePasswordDAO.findFirstByUserIdOrderByCreatedAtDesc(user.id)?.let {
+        val now = LocalDateTime.now()
+        if (it.createdAt.isAfter(now.minusMinutes(2))) {
+          throw ResumableHarvestException("Token cooldown", Duration.between(it.createdAt, now))
+        }
+      }
       oneTimePasswordDAO.save(otp)
     }
     log.debug("sending otp '${otp.password}'")
-    mailService.sendAuthCode(user.toDomain(), otp.toDomain(), description)
     return otp
   }
 

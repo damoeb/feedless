@@ -39,13 +39,13 @@ type Authentication {
   token: String!
 }
 
-type AuthenticationEvent {
-  authentication: Authentication
-  confirmCode: ConfirmCode
-}
-
 type ConfirmCode {
   length: Int!
+  otpId: ID!
+}
+
+input ConfirmCodeInput {
+  value: String!
   otpId: ID!
 }
 
@@ -155,7 +155,9 @@ type LoginResponse {
 
 type Mutation {
   authAnonymous: Authentication!
-  authConfirmCode(data: ConfirmAuthCodeInput!): Boolean!
+  authenticateWithCodeViaMail(data: AuthViaMailInput!): ConfirmCode!
+  authConfirmCode(data: ConfirmAuthCodeInput!): Authentication!
+
   createAnnotation(data: CreateAnnotationInput!): Annotation!
   deleteAnnotation(data: DeleteAnnotationInput!): Boolean!
 
@@ -947,14 +949,13 @@ type License {
 }
 
 type Subscription {
-  authViaMail(data: AuthViaMailInput!): AuthenticationEvent!
+  #  authViaMail(data: AuthViaMailInput!): AuthenticationEvent!
   registerAgent(data: RegisterAgentInput!): AgentEvent!
   agents: [Agent!]!
 }
 
 input AuthViaMailInput {
   email: String! @email
-  token: String!
   product: Vertical!
   osInfo: String!
   allowCreate: Boolean!

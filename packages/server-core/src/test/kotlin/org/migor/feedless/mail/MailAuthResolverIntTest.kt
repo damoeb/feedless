@@ -1,4 +1,4 @@
-package org.migor.feedless.api.graphql
+package org.migor.feedless.mail
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
@@ -11,15 +11,17 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.AuthUserInput
-import org.migor.feedless.secrets.UserSecretEntity
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.generated.types.AuthViaMailInput
+import org.migor.feedless.generated.types.Authentication
+import org.migor.feedless.generated.types.ConfirmAuthCodeInput
+import org.migor.feedless.generated.types.ConfirmCode
+import org.migor.feedless.generated.types.Vertical
+import org.migor.feedless.report.ReportService
+import org.migor.feedless.repository.any2
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.user.UserEntity
-import org.migor.feedless.user.UserService
-import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean
@@ -28,16 +30,11 @@ import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.web.reactive.function.client.WebClient
-
-
-const val rootEmail = "fooEmail"
-const val rootSecretKey = "barBarBarKey"
+import java.util.*
 
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = [
-    "app.rootEmail=$rootEmail",
-    "app.rootSecretKey=$rootSecretKey",
     "app.apiGatewayUrl=https://localhost",
     "app.actuatorPassword=s3cr3t",
   ],
@@ -48,15 +45,18 @@ const val rootSecretKey = "barBarBarKey"
   AppLayer.service,
   AppProfiles.properties,
   AppLayer.security,
-  AppProfiles.authRoot,
+  AppProfiles.mail,
   AppProfiles.session,
 )
 @MockBeans(
   MockBean(ServerConfigResolver::class),
   MockBean(PermissionService::class),
+  MockBean(OneTimePasswordDAO::class),
+  MockBean(ReportService::class),
+  MockBean(MailService::class),
 )
 @Import(DisableDatabaseConfiguration::class)
-class AuthenticationTest {
+class MailAuthResolverIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
 
@@ -64,10 +64,7 @@ class AuthenticationTest {
   private var port: Int = 0
 
   @MockBean
-  lateinit var userService: UserService
-
-  @MockBean
-  lateinit var userSecretService: UserSecretService
+  lateinit var mailAuthenticationService: MailAuthenticationService
 
   @BeforeEach
   fun setUp() {
@@ -76,48 +73,65 @@ class AuthenticationTest {
   }
 
   @Test
-  fun `authAnonymous works`() = runTest {
+  fun authenticateUsingMail() = runTest {
+    val confirmCode = ConfirmCode(
+      length = 4,
+      otpId = UUID.randomUUID().toString(),
+    )
+    Mockito.`when`(mailAuthenticationService.authenticateUsingMail(any2())).thenReturn(confirmCode)
     val graphQLMutation = DgsClient.buildMutation {
-      authAnonymous {
-        token
-        corrId
+      authenticateWithCodeViaMail(
+        data = AuthViaMailInput(
+          email = "someone@localhost",
+          product = Vertical.feedless,
+          osInfo = "Linux",
+          allowCreate = false
+        )
+      ) {
+        length
+        otpId
       }
     }
 
     val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
       .await()
-      .extractValue<LinkedHashMap<String, Any>>("data.authAnonymous")
+      .extractValue<LinkedHashMap<String, Any>>("data.authenticateWithCodeViaMail")
 
     val auth = ObjectMapper().convertValue(response, Map::class.java)
 
-    assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
+    assertThat(auth[DgsConstants.CONFIRMCODE.Length] as Int).isEqualTo(confirmCode.length)
+    assertThat(auth[DgsConstants.CONFIRMCODE.OtpId] as String).isEqualTo(confirmCode.otpId)
   }
 
   @Test
-  fun `authUser works`() = runTest {
-    // given
-    val mockUser = UserEntity()
-    mockUser.admin = true
-    Mockito.`when`(userService.findByEmail(anyString())).thenReturn(mockUser)
-    val mockSecretKey = UserSecretEntity()
-    Mockito.`when`(userSecretService.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)
-
-    // when
+  fun authConfirmCode() = runTest {
+    val authentication = Authentication(
+      corrId = UUID.randomUUID().toString(),
+      token = UUID.randomUUID().toString()
+    )
+    Mockito.`when`(mailAuthenticationService.confirmAuthCode(any2(), any2())).thenReturn(authentication)
     val graphQLMutation = DgsClient.buildMutation {
-      authUser(data = AuthUserInput(email = rootEmail, secretKey = rootSecretKey)) {
-        token
+      authConfirmCode(
+        data = ConfirmAuthCodeInput(
+          code = "someone@localhost",
+          otpId = ""
+        )
+      ) {
         corrId
+        token
       }
     }
 
     val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
       .await()
-      .extractValue<LinkedHashMap<String, Any>>("data.authUser")
+      .extractValue<LinkedHashMap<String, Any>>("data.authConfirmCode")
 
-    // then
     val auth = ObjectMapper().convertValue(response, Map::class.java)
-    assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
+
+    assertThat(auth[DgsConstants.AUTHENTICATION.CorrId] as String).isEqualTo(authentication.corrId)
+    assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isEqualTo(authentication.token)
+
   }
 }

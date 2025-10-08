@@ -25,5 +25,6 @@ dependencies {
   implementation(libs.spring.boot.mail)
   implementation(libs.mailgun.java)
   implementation(libs.spring.boot.freemarker)
+  implementation(libs.commons.lang3)
 }
 

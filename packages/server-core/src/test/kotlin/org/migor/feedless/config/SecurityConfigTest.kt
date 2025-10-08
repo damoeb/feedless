@@ -11,6 +11,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.document.DocumentController
+import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionResolver
@@ -42,6 +43,7 @@ const val actuatorPassword = "password"
   MockBean(SessionResolver::class),
   MockBean(DocumentController::class),
   MockBean(PermissionService::class),
+  MockBean(OneTimePasswordService::class),
 )
 @ActiveProfiles(
   "test",

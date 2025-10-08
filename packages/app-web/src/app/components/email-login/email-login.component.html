@@ -39,7 +39,7 @@
         }
       </form>
       @if (mode === "enterConfirmationCode") {
-        <form (ngSubmit)="sendAuthCode()">
+        <form (ngSubmit)="sendConfirmationCode()">
           <ion-item>
             <ion-input
               [formControl]="confirmationCodeFc"
@@ -50,7 +50,7 @@
             ></ion-input>
           </ion-item>
           <ion-item
-            (click)="sendAuthCode()"
+            (click)="sendConfirmationCode()"
             [button]="true"
             class="ion-margin-top"
             color="primary"

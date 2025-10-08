@@ -1,6 +1,5 @@
-import { ChangeDetectorRef, Component, inject, OnDestroy } from '@angular/core';
-import { GqlConfirmCode } from '../../../generated/graphql';
-import { AuthService } from '../../services/auth.service';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { AuthService, ConfirmCode } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
 import {
@@ -21,6 +20,7 @@ import {
   IonList,
   IonSpinner,
 } from '@ionic/angular/standalone';
+import { Nullable } from '../../types';
 
 @Component({
   selector: 'app-email-login',
@@ -40,7 +40,7 @@ import {
   ],
   standalone: true,
 })
-export class EmailLoginComponent implements OnDestroy {
+export class EmailLoginComponent {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
@@ -53,16 +53,11 @@ export class EmailLoginComponent implements OnDestroy {
   ]);
   busy = false;
   confirmationCodeFc: FormControl<string>;
-  private confirmationCodeSpec: Pick<GqlConfirmCode, 'length' | 'otpId'>;
-  private subscriptionHandle: { unsubscribe: () => void; closed: boolean };
+  private confirmationCodeSpec: Nullable<ConfirmCode> = null;
   errorMessage: string;
 
   constructor() {
     addIcons({ arrowForwardOutline });
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe();
   }
 
   async initiateSession() {
@@ -73,51 +68,34 @@ export class EmailLoginComponent implements OnDestroy {
       this.errorMessage = null;
       this.busy = true;
       this.changeRef.detectChanges();
-      this.subscriptionHandle = (
-        await this.authService.authorizeUserViaMail(this.emailFc.value)
-      ).subscribe(
-        async (response) => {
-          console.log('response', response);
-          const data = response.data.authViaMail;
-          if (data.confirmCode) {
-            this.busy = false;
-            this.mode = 'enterConfirmationCode';
-            this.confirmationCodeSpec = data.confirmCode;
-            const length = data.confirmCode.length;
-            this.confirmationCodeFc = new FormControl<string>('', [
-              Validators.required,
-              Validators.minLength(length),
-              Validators.maxLength(length),
-            ]);
-            this.changeRef.detectChanges();
-          } else if (data.authentication) {
-            this.mode = 'finalized';
-            await this.authService.handleAuthenticationToken(
-              data.authentication.token,
-            );
-            await this.handleSuccess();
-            this.changeRef.detectChanges();
-            this.unsubscribe();
-          } else {
-            console.log('ws event', response.data.authViaMail);
-          }
-        },
-        (e) => {
-          console.error('caught', e.message);
-          this.errorMessage = e.message;
-          this.busy = false;
-          this.changeRef.detectChanges();
-        },
+
+      const confirmCode = await this.authService.authorizeUserViaMail(
+        this.emailFc.value,
       );
+      this.confirmationCodeSpec = confirmCode;
+      this.mode = 'enterConfirmationCode';
+
+      const length = confirmCode.length;
+      this.confirmationCodeFc = new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(length),
+        Validators.maxLength(length),
+      ]);
+      this.changeRef.detectChanges();
     } catch (e) {
+      console.error(e);
       this.busy = false;
       this.changeRef.detectChanges();
     }
   }
 
-  async sendAuthCode() {
+  async sendConfirmationCode() {
     try {
-      if (this.confirmationCodeFc.invalid || this.busy) {
+      if (
+        this.confirmationCodeFc.invalid ||
+        this.busy ||
+        !this.confirmationCodeSpec
+      ) {
         return;
       }
 
@@ -135,12 +113,6 @@ export class EmailLoginComponent implements OnDestroy {
     } finally {
       this.busy = false;
       this.changeRef.detectChanges();
-    }
-  }
-
-  private unsubscribe(): void {
-    if (this.subscriptionHandle && !this.subscriptionHandle.closed) {
-      this.subscriptionHandle.unsubscribe();
     }
   }
 

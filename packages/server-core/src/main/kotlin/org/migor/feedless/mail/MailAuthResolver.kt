@@ -2,7 +2,6 @@ package org.migor.feedless.mail
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
-import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
@@ -14,11 +13,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthViaMailInput
-import org.migor.feedless.generated.types.AuthenticationEvent
+import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
-import org.migor.feedless.session.AuthService
+import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.util.CryptUtil
-import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
@@ -30,17 +28,15 @@ import org.springframework.web.context.request.ServletWebRequest
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
 class MailAuthResolver(
   private val mailAuthenticationService: MailAuthenticationService,
-  private val authService: AuthService
 ) {
 
   private val log = LoggerFactory.getLogger(MailAuthResolver::class.simpleName)
 
-  @DgsSubscription(field = DgsConstants.SUBSCRIPTION.AuthViaMail)
-  suspend fun authViaMail(@InputArgument(DgsConstants.SUBSCRIPTION.AUTHVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): Publisher<AuthenticationEvent> =
+  @DgsMutation(field = DgsConstants.MUTATION.AuthenticateWithCodeViaMail)
+  suspend fun authViaMail(@InputArgument(DgsConstants.MUTATION.AUTHENTICATEWITHCODEVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): ConfirmCode =
     coroutineScope {
       val corrId = CryptUtil.newCorrId()
       log.debug("[$corrId] authViaMail ${data.product}")
-      authService.decodeToken(data.token)
       mailAuthenticationService.authenticateUsingMail(data)
     }
 
@@ -49,10 +45,9 @@ class MailAuthResolver(
   suspend fun authConfirmCode(
     @InputArgument(DgsConstants.MUTATION.AUTHCONFIRMCODE_INPUT_ARGUMENT.Data) data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
-  ): Boolean = coroutineScope {
+  ): Authentication = coroutineScope {
     log.debug("authConfirmCode")
     mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
-    true
   }
 
   private fun resolveHttpResponse(dfe: DataFetchingEnvironment): HttpServletResponse {

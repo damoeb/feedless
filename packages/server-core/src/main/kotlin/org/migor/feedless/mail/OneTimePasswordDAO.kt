@@ -12,4 +12,5 @@ import java.util.*
 @Profile("${AppProfiles.mail} & ${AppLayer.repository}")
 interface OneTimePasswordDAO : JpaRepository<OneTimePasswordEntity, UUID> {
   fun deleteAllByValidUntilBefore(now: LocalDateTime)
+  fun findFirstByUserIdOrderByCreatedAtDesc(userId: UUID): OneTimePasswordEntity?
 }

@@ -2,17 +2,6 @@ fragment AuthenticationFragment on Authentication {
   token
   corrId
 }
-subscription authViaMail($data: AuthViaMailInput!) {
-  authViaMail(data: $data) {
-    authentication {
-      ...AuthenticationFragment
-    }
-    confirmCode {
-      length
-      otpId
-    }
-  }
-}
 
 mutation authAnonymous {
   authAnonymous {
@@ -26,6 +15,15 @@ mutation authUser($data: AuthUserInput!) {
   }
 }
 
+mutation authUsingMail($data: AuthViaMailInput!) {
+  authenticateWithCodeViaMail(data: $data) {
+    length
+    otpId
+  }
+}
+
 mutation confirmCode($data: ConfirmAuthCodeInput!) {
-  authConfirmCode(data: $data)
+  authConfirmCode(data: $data) {
+    corrId
+  }
 }

@@ -2,23 +2,19 @@ import { inject, Injectable } from '@angular/core';
 import {
   AuthAnonymous,
   AuthUser,
-  AuthViaMail,
+  AuthUsingMail,
   ConfirmCode,
   GqlAuthAnonymousMutation,
   GqlAuthAnonymousMutationVariables,
   GqlAuthUserInput,
   GqlAuthUserMutation,
   GqlAuthUserMutationVariables,
-  GqlAuthViaMailSubscription,
-  GqlAuthViaMailSubscriptionVariables,
+  GqlAuthUsingMailMutation,
+  GqlAuthUsingMailMutationVariables,
   GqlConfirmCodeMutation,
   GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
-import {
-  ApolloClient,
-  FetchResult,
-  Observable as ApolloObservable,
-} from '@apollo/client/core';
+import { ApolloClient } from '@apollo/client/core';
 import {
   BehaviorSubject,
   firstValueFrom,
@@ -32,6 +28,9 @@ import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { Nullable } from '../types';
+
+export type ConfirmCode =
+  GqlAuthUsingMailMutation['authenticateWithCodeViaMail'];
 
 interface RichAuthToken {
   authorities: string[];
@@ -63,25 +62,20 @@ export class AuthService {
     return this.authStatus.asObservable();
   }
 
-  async authorizeUserViaMail(
-    email: string,
-  ): Promise<ApolloObservable<FetchResult<GqlAuthViaMailSubscription>>> {
-    const authentication = await this.authorizeAnonymous();
-    return this.apollo.subscribe<
-      GqlAuthViaMailSubscription,
-      GqlAuthViaMailSubscriptionVariables
-    >({
-      query: AuthViaMail,
-      variables: {
-        data: {
-          email,
-          token: authentication.token,
-          product: environment.product,
-          osInfo: ``,
-          allowCreate: true,
+  async authorizeUserViaMail(email: string): Promise<ConfirmCode> {
+    return this.apollo
+      .mutate<GqlAuthUsingMailMutation, GqlAuthUsingMailMutationVariables>({
+        mutation: AuthUsingMail,
+        variables: {
+          data: {
+            email,
+            product: environment.product,
+            osInfo: ``,
+            allowCreate: true,
+          },
         },
-      },
-    });
+      })
+      .then((data) => data.data.authenticateWithCodeViaMail);
   }
 
   async authorizeUser(data: GqlAuthUserInput): Promise<void> {
