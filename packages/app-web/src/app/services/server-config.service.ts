@@ -7,30 +7,26 @@ import {
   ServerSettings,
 } from '../../generated/graphql';
 import { HttpClient } from '@angular/common/http';
-import { firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
-import { AlertController } from '@ionic/angular/standalone';
 import { LocalizedLicense } from '../graphql/types';
 import { environment } from '../../environments/environment';
-import { AlertButton } from '@ionic/core/dist/types/components/alert/alert-interface';
 import { VerticalAppConfig } from '../types';
 
-type ToastOptions = {
+export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
+
+export interface ConfigError {
   header: string;
   message: string;
-  subHeader?: string | undefined;
   cssClass?: string;
-  buttons?: AlertButton[];
-};
-
-export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
+  retryable?: boolean;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ServerConfigService {
   private readonly httpClient = inject(HttpClient);
-  private readonly alertCtrl = inject(AlertController);
 
   apiUrl!: string;
   private profiles!: GqlProfileName[];
@@ -38,41 +34,61 @@ export class ServerConfigService {
   private version!: string;
   private license: LocalizedLicense;
 
+  private readonly systemErrorSubject = new BehaviorSubject<ConfigError | null>(
+    null,
+  );
+  public readonly systemError$: Observable<ConfigError | null> =
+    this.systemErrorSubject.asObservable();
+
   async fetchConfig(): Promise<VerticalAppConfig> {
-    const config = await firstValueFrom(
-      this.httpClient.get<VerticalAppConfig>('/config.json'),
-    );
-
-    this.apiUrl = config.apiUrl;
-
-    const product = config.product;
-
-    if (product) {
-      console.log(`enabling product ${product}`);
-      const products: GqlVertical[] = Object.keys(GqlVertical).map(
-        // @ts-ignore
-        (p) => GqlVertical[p],
+    try {
+      const config = await firstValueFrom(
+        this.httpClient.get<VerticalAppConfig>('/config.json'),
       );
-      console.log(`Know products ${products.join(', ')}`);
-      if (!products.some((otherProduct) => otherProduct == product)) {
-        const message = `Product '${product}' does not exist. Know products are ${products.join(
-          ', ',
-        )}`;
-        await this.showToast({
+
+      this.apiUrl = config.apiUrl;
+
+      const product = config.product;
+
+      const throwInvalidConfigError = (message: string) => {
+        this.systemErrorSubject.next({
           header: 'Invalid Config',
           cssClass: 'fatal-alert medium-alert',
-          message,
+          message: message,
+          retryable: false,
         });
-      }
-    } else {
-      await this.showToast({
-        header: 'Invalid Config',
-        cssClass: 'fatal-alert medium-alert',
-        message: `Cannot map hostname ${location.hostname} to product`,
-      });
-    }
+        console.error(message);
+      };
 
-    return config;
+      if (product) {
+        console.log(`enabling product ${product}`);
+        const products: GqlVertical[] = Object.keys(GqlVertical).map(
+          // @ts-ignore
+          (p) => GqlVertical[p],
+        );
+        console.log(`Know products ${products.join(', ')}`);
+        if (!products.some((otherProduct) => otherProduct == product)) {
+          const message = `Product '${product}' does not exist. Know products are ${products.join(
+            ', ',
+          )}`;
+          throwInvalidConfigError(message);
+        }
+      } else {
+        throwInvalidConfigError(
+          `Cannot map hostname ${location.hostname} to product`,
+        );
+      }
+
+      return config;
+    } catch (error) {
+      this.systemErrorSubject.next({
+        header: 'Configuration Error',
+        message:
+          'Failed to load application configuration. Please check your connection and try again.',
+        retryable: true,
+      });
+      console.error(error);
+    }
   }
 
   async fetchServerSettings(): Promise<void> {
@@ -94,11 +110,12 @@ export class ServerConfigService {
       this.license = response.license;
     } catch (e) {
       if (!environment.offlineSupport) {
-        await this.showToast({
-          header: 'Offline',
-          message: `Our servers are currently unavailable, and we're working to restore access as quickly as possible. Thank you for your patience!`,
+        this.systemErrorSubject.next({
+          header: 'Connection lost',
+          message: `Cannot reach the server, maybe you are offline`,
+          retryable: true,
         });
-        throw e;
+        console.error(e);
       }
     }
   }
@@ -108,25 +125,6 @@ export class ServerConfigService {
       link: new HttpLink({ uri: `${this.apiUrl}/graphql` }),
       cache: new InMemoryCache(),
     });
-  }
-
-  private async showToast({
-    header,
-    message,
-    subHeader,
-    cssClass,
-    buttons,
-  }: ToastOptions) {
-    const alert = await this.alertCtrl.create({
-      header,
-      backdropDismiss: false,
-      message,
-      subHeader,
-      cssClass,
-      buttons: buttons ?? [],
-    });
-
-    await alert.present();
   }
 
   hasProfile(profile: GqlProfileName) {

@@ -19,6 +19,10 @@ import { kebabCase } from 'lodash-es';
 import {
   IonApp,
   IonButtons,
+  IonCard,
+  IonCardContent,
+  IonCardHeader,
+  IonCardTitle,
   IonContent,
   IonFooter,
   IonHeader,
@@ -29,12 +33,16 @@ import {
   IonMenu,
   IonMenuButton,
   IonRouterOutlet,
+  IonSpinner,
   IonSplitPane,
   IonToolbar,
   MenuController,
 } from '@ionic/angular/standalone';
 import { ProductTitleComponent } from './components/product-title/product-title.component';
-import { ServerConfigService } from './services/server-config.service';
+import {
+  ConfigError,
+  ServerConfigService,
+} from './services/server-config.service';
 import { addIcons } from 'ionicons';
 import {
   cardOutline,
@@ -67,6 +75,11 @@ import dayjs from 'dayjs';
     IonItem,
     RouterLink,
     IonLabel,
+    IonSpinner,
+    IonCard,
+    IonCardHeader,
+    IonCardTitle,
+    IonCardContent,
   ],
   standalone: true,
 })
@@ -84,6 +97,8 @@ export class AppComponent implements OnDestroy, OnInit {
   private subscriptions: Subscription[] = [];
   private isDarkMode!: boolean;
   private vertical!: GqlVertical;
+
+  configError: ConfigError | null = null;
 
   constructor() {
     addIcons({
@@ -129,6 +144,11 @@ export class AppComponent implements OnDestroy, OnInit {
           this.vertical = vertical.product;
           this.propagateColorModeAndProduct();
         }),
+
+      this.serverConfig.systemError$.subscribe((error) => {
+        this.configError = error;
+        this.changeRef.detectChanges();
+      }),
     );
   }
 
