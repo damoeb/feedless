@@ -27,7 +27,8 @@
     "test:watch": "jest --watch",
     "lint": "yarn prettier --write --log-level=warn .",
     "outdated": "upgrade-interactive --latest",
-    "codegen": "graphql-codegen --config codegen.yml"
+    "codegen": "graphql-codegen --config codegen.yml",
+    "clean": "rm -rf www build coverage .angular .gradle all-verticals.json src/generated"
   },
   "private": true,
   "dependencies": {

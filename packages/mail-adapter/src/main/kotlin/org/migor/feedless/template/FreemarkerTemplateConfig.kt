@@ -1,11 +1,11 @@
-package org.migor.feedless.config
+package org.migor.feedless.template
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.servlet.view.freemarker.FreeMarkerConfigurer
 
 @Configuration
-class TemplateConfig {
+class FreemarkerTemplateConfig {
 
   @Bean
   fun createFreeMarkerConfigurer(): FreeMarkerConfigurer {

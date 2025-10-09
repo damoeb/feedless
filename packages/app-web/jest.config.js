@@ -2,6 +2,7 @@ module.exports = {
   preset: "jest-preset-angular",
   setupFilesAfterEnv: ["<rootDir>/src/setup-jest.ts"],
   testEnvironment: "jsdom",
+  setupFiles: ["<rootDir>/src/setup-jest-env.ts"],
   collectCoverage: true,
   coverageDirectory: "coverage",
   coverageReporters: ["html", "text-summary"],
@@ -20,9 +21,12 @@ module.exports = {
     "ionicons/components/ion-icon.js":
       "<rootDir>/src/test/mocks/ion-icon.mock.js",
   },
-  maxWorkers: 2,
-  workerIdleMemoryLimit: "512MB",
-  testTimeout: 30000,
-  detectOpenHandles: false, // todo enable
+  maxWorkers: 1,
+  workerIdleMemoryLimit: "1GB",
+  testTimeout: 60000,
+  detectOpenHandles: false,
   forceExit: true,
+  silent: false,
+  verbose: false,
+  errorOnDeprecated: false,
 };

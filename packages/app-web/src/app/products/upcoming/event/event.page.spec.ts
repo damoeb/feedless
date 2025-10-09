@@ -23,6 +23,13 @@ describe('EventPage', () => {
     fixture.detectChanges();
   }));
 
+  afterEach(() => {
+    if (component && typeof component.ngOnDestroy === 'function') {
+      component.ngOnDestroy();
+    }
+    fixture.destroy();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });

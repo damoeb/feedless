@@ -43,6 +43,7 @@ gson = "2.13.1"
 jqwik = "1.9.2"
 telegrambots = "6.9.0"
 stripe = "29.1.0"
+gradle-node-plugin = "5.0.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

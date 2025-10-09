@@ -1,38 +1,19 @@
 package org.migor.feedless.template
 
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableMailConfiguration
-import org.migor.feedless.mail.MailService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
-import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
 
-@SpringBootTest
-@ActiveProfiles(
-  "test",
-  AppProfiles.mail,
-  AppLayer.service,
-)
-@MockBeans(
-  MockBean(MailService::class),
-  MockBean(OneTimePasswordService::class),
-)
+@SpringBootTest(classes = [FreemarkerTemplateService::class, FreemarkerTemplateConfig::class])
+@ActiveProfiles(AppProfiles.mail, AppLayer.service)
 class FreemarkerTemplateServiceTest {
 
   @Autowired
   lateinit var templateService: FreemarkerTemplateService
-
-  @BeforeEach
-  fun setUp() {
-  }
 
   @Test
   fun test_welcomePaidMail() {

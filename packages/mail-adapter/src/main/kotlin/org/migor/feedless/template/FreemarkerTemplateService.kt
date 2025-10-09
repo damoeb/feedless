@@ -13,7 +13,7 @@ import java.io.OutputStreamWriter
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class FreemarkerTemplateService(
   private val freemarkerConfigurer: FreeMarkerConfigurer
-): TemplateService {
+) : TemplateService {
 
   private val log = LoggerFactory.getLogger(FreemarkerTemplateService::class.simpleName)
 

@@ -4,13 +4,13 @@ buildscript {
   repositories {
     gradlePluginPortal()
   }
-  dependencies {
-    classpath("com.github.node-gradle:gradle-node-plugin:${findProperty("gradleNodePluginVersion")}")
-  }
 }
 
 plugins {
   id("org.ajoberstar.grgit")
+  alias(libs.plugins.kotlin.jvm) apply false
+  alias(libs.plugins.kotlin.spring) apply false
+  alias(libs.plugins.kapt) apply false
 }
 
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {

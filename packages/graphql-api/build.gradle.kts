@@ -1,5 +1,4 @@
 plugins {
-  alias(libs.plugins.spring.boot)
   // https://github.com/Netflix/dgs-framework/blob/v8.7.1/graphql-dgs-client/dependencies.lock
   alias(libs.plugins.dgs.codegen)
 

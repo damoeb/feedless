@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.DisableMailConfiguration
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
@@ -55,7 +56,10 @@ import java.util.*
   MockBean(ReportService::class),
   MockBean(MailService::class),
 )
-@Import(DisableDatabaseConfiguration::class)
+@Import(
+  DisableDatabaseConfiguration::class,
+  DisableMailConfiguration::class,
+)
 class MailAuthResolverIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient

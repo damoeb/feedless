@@ -28,7 +28,7 @@ repositories {
 
 sourceSets.getByName("main") {
   java.srcDir("src/main/java")
-  java.srcDir("src/generated/java")
+  java.srcDir("$buildDir/generated/javacc")
 //  java.srcDir("$buildDir/generated/src/main/java")
 //  java.srcDir("src/main/kotlin")
   resources.srcDir("src/main/resources")
@@ -217,15 +217,14 @@ tasks.withType<Test> {
   finalizedBy(tasks.getByName("jacocoTestReport"))
 }
 
-// todo enable cc
-//val compilejj = tasks.getByName<org.javacc.plugin.gradle.javacc.CompileJavaccTask>("compileJavacc") {
-//  inputDirectory = file("src/main/kotlin/org/migor/feedless/document/filter")
-//  outputDirectory = file("src/generated/java/org/migor/feedless/document/filter/generated")
-//}
-//
-//tasks.named("kaptGenerateStubsKotlin") {
-//  mustRunAfter(compilejj)
-//}
+val compilejj = tasks.getByName<org.javacc.plugin.gradle.javacc.CompileJavaccTask>("compileJavacc") {
+  inputDirectory = file("src/main/kotlin/org/migor/feedless/document/filter")
+  outputDirectory = file("$buildDir/generated/javacc/org/migor/feedless/document/filter/generated")
+}
+
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
+  dependsOn(compilejj)
+}
 
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {

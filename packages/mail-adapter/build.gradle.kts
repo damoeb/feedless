@@ -17,14 +17,26 @@ dependencies {
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
-  implementation("org.springframework.boot:spring-boot-starter-web")
   implementation("org.jetbrains.kotlin:kotlin-reflect")
-
-  testImplementation("org.springframework.boot:spring-boot-starter-test")
 
   implementation(libs.spring.boot.mail)
   implementation(libs.mailgun.java)
   implementation(libs.spring.boot.freemarker)
+  implementation(libs.spring.boot.web)
+  testImplementation(libs.spring.boot.test)
   implementation(libs.commons.lang3)
 }
 
+sourceSets {
+  main {
+    java.srcDirs("src/main/kotlin")
+  }
+  test {
+    java.srcDirs("src/test/kotlin")
+  }
+}
+
+// ✅ Add this to enable JUnit 5
+tasks.test {
+  useJUnitPlatform()
+}

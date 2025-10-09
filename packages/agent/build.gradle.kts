@@ -9,8 +9,13 @@ plugins {
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
 // https://github.com/node-gradle/gradle-node-plugin/blob/master/src/test/resources/fixtures/kotlin/build.gradle.kts
 node {
-  val nodejsVersion = findProperty("nodejsVersion") as String
-  version.set(nodejsVersion)
+  val nvmrcFile = file(".nvmrc")
+  val nodeVersion = if (nvmrcFile.exists()) {
+    nvmrcFile.readText().trim()
+  } else {
+    throw IllegalStateException(".nvmrc file not found")
+  }
+  version.set(nodeVersion)
   download.set(true)
 }
 
@@ -27,7 +32,7 @@ val gradleCleanTask = tasks.register<Delete>("clean") {
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
 
-  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+  inputs.file(".nvmrc")
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
 }
@@ -36,7 +41,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
   dependsOn(yarnInstallTask)
   args.set(listOf("lint"))
 
-  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+  inputs.file(".nvmrc")
   inputs.dir("src")
   inputs.files("yarn.lock")
   outputs.upToDateWhen { true }
@@ -46,7 +51,7 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
 
-  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+  inputs.file(".nvmrc")
   inputs.dir("src")
   inputs.files("codegen.yml", "yarn.lock", "../graphql-api/src/main/resources/schema/schema.graphqls")
   outputs.upToDateWhen { true }
@@ -68,7 +73,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   args.set(listOf("build"))
   dependsOn(prepareTask, lintTask, testTask)
 
-  inputs.property("nodejsVersion", findProperty("nodejsVersion"))
+  inputs.file(".nvmrc")
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
   outputs.dir("dist")
