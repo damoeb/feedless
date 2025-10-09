@@ -9,8 +9,10 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
+import org.migor.feedless.any2
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableIntUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput

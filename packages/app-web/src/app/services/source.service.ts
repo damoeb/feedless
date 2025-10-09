@@ -1,8 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  GqlRepositoryCreateInput,
-  GqlSourceInput,
-} from '../../generated/graphql';
+import { GqlRepositoryCreateInput, GqlSourceInput } from '../../generated/graphql';
 import {
   SelectableEntity,
   SelectionModalComponent,
@@ -39,7 +36,7 @@ export class SourceService {
             label: source.title,
           };
         }),
-      (selectable) => selectable.entity.title,
+      (selectable) => selectable.entity.title
     );
 
     const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
@@ -48,13 +45,11 @@ export class SourceService {
         selectables,
         title: 'Import Sources',
         description: 'Select those sources you want to import',
-      },
+      }
     );
 
     if (selected.length > 0) {
-      console.log(
-        `Adding ${selected.length} sources to repository ${repositoryId}`,
-      );
+      console.log(`Adding ${selected.length} sources to repository ${repositoryId}`);
       await this.repositoryService.updateRepository({
         where: {
           id: repositoryId,

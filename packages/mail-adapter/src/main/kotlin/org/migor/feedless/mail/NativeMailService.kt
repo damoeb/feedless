@@ -5,7 +5,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.template.AuthCodeMailParams
-import org.migor.feedless.template.AuthCodeMailTemplate
+import org.migor.feedless.template.MailTemplateAuthCode
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
 import org.slf4j.LoggerFactory
@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 import java.time.format.DateTimeFormatter
 
 @Service
-@Profile("!${AppProfiles.saas} & ${AppProfiles.mail} & ${AppLayer.service}")
+@Profile("${AppProfiles.mail} & ${AppLayer.service}")
 class NativeMailService : MailService {
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
 
@@ -49,7 +49,7 @@ class NativeMailService : MailService {
     send(
       from = "no-reply@localhost",
       to = arrayOf(user.email),
-      text = templateService.renderTemplate(AuthCodeMailTemplate(params)),
+      text = templateService.renderTemplate(MailTemplateAuthCode(params)),
       subject = subject,
     )
   }

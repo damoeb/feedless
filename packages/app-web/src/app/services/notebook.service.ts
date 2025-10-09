@@ -35,13 +35,11 @@ import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
 
-export type CreateNoteParams = Partial<
-  Pick<Note, 'title' | 'id' | 'text' | 'parent'>
->;
+export type CreateNoteParams = Partial<Pick<Note, 'title' | 'id' | 'text' | 'parent'>>;
 
-export type Notebook = ArrayElement<
-  GqlCreateRepositoriesMutation['createRepositories']
-> & { lastSyncedAt: Date };
+export type Notebook = ArrayElement<GqlCreateRepositoriesMutation['createRepositories']> & {
+  lastSyncedAt: Date;
+};
 
 export enum NotebookActionId {
   deleteNote = 'deleteNote',
@@ -258,11 +256,7 @@ export class NotebookService {
     return notebook;
   }
 
-  async suggestByType(
-    query: string,
-    type: string,
-    note: Note,
-  ): Promise<Completion[]> {
+  async suggestByType(query: string, type: string, note: Note): Promise<Completion[]> {
     // switch (type) {
     //   case 'Hashtag':
     //     return [
@@ -277,19 +271,14 @@ export class NotebookService {
       ...(await this.suggestDefaultTemplates(note)),
       ...(await this.suggestActions()),
     ].filter(
-      (completion) =>
-        completion.label.toLowerCase().indexOf(query.toLowerCase().trim()) > -1,
+      (completion) => completion.label.toLowerCase().indexOf(query.toLowerCase().trim()) > -1
     );
     const noteSuggestion = await this.suggestNotes(query);
 
     return [...internalSuggestions, ...noteSuggestion];
   }
 
-  async findAll(
-    query: string,
-    index: NoteIndex[] = [],
-    limit: number = 200,
-  ): Promise<Note[]> {
+  async findAll(query: string, index: NoteIndex[] = [], limit: number = 200): Promise<Note[]> {
     try {
       const results = this.index.search(query, {
         limit: 10,
@@ -309,10 +298,10 @@ export class NotebookService {
   }
 
   getSettingsValue<T extends NestedKeys<NotebookSettings>>(
-    path: T,
+    path: T
   ): Observable<TypeAtPath<NotebookSettings, T>> {
     return this.getSettingsOrDefault().pipe(
-      map((settings) => get(settings, path) as TypeAtPath<NotebookSettings, T>),
+      map((settings) => get(settings, path) as TypeAtPath<NotebookSettings, T>)
     );
   }
 
@@ -320,15 +309,10 @@ export class NotebookService {
     T extends NestedKeys<NotebookSettings>,
     V extends TypeAtPath<NotebookSettings, T>,
   >(path: T, value: V): Observable<boolean> {
-    return this.getSettingsValue(path).pipe(
-      map((actualValue) => actualValue === value),
-    );
+    return this.getSettingsValue(path).pipe(map((actualValue) => actualValue === value));
   }
 
-  async createNote(
-    params: CreateNoteParams = {},
-    triggerOpen: boolean = false,
-  ) {
+  async createNote(params: CreateNoteParams = {}, triggerOpen: boolean = false) {
     console.log('create note params', params);
     const title = params.title ?? '';
     const now = new Date();
@@ -379,10 +363,8 @@ export class NotebookService {
   private filterInternalNotes$(): OperatorFunction<Note[], Note[]> {
     return switchMap((notes) =>
       this.getSettingsValue('general.hideInternalNotes').pipe(
-        map((hide) =>
-          hide ? notes.filter((root) => this.filterInternalNotes(root)) : notes,
-        ),
-      ),
+        map((hide) => (hide ? notes.filter((root) => this.filterInternalNotes(root)) : notes))
+      )
     );
   }
 
@@ -398,8 +380,8 @@ export class NotebookService {
           //   })),
           //   catchError(() => of({ ...note, childrenCount: 0 })),
           // );
-        }),
-      ),
+        })
+      )
     );
   }
 
@@ -421,8 +403,7 @@ export class NotebookService {
     console.log('openNotebook', repositoryId);
     this.systemBusyChanges.next(true);
 
-    const notebook: Notebook =
-      await notebookRepository.notebooks.get(repositoryId);
+    const notebook: Notebook = await notebookRepository.notebooks.get(repositoryId);
 
     if (notebook) {
       this.createIndex();
@@ -436,16 +417,12 @@ export class NotebookService {
       console.log('Notes indexed');
 
       // sync up
-      const upSyncNew = notes.filter(
-        (note) => note.createdAt > notebook.lastSyncedAt,
-      );
+      const upSyncNew = notes.filter((note) => note.createdAt > notebook.lastSyncedAt);
       await this.recordService.createRecords(
-        upSyncNew.map((note) => this.covertNoteToRecord(note)),
+        upSyncNew.map((note) => this.covertNoteToRecord(note))
       );
 
-      const upSyncChanged = notes.filter(
-        (note) => note.updatedAt > notebook.lastSyncedAt,
-      );
+      const upSyncChanged = notes.filter((note) => note.updatedAt > notebook.lastSyncedAt);
       await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
 
       // sync down
@@ -492,8 +469,7 @@ export class NotebookService {
       const alert = await this.alertCtrl.create({
         header: 'Notebook',
         backdropDismiss: false,
-        message:
-          'The requested notebook does not exist locally and cannot be fetched',
+        message: 'The requested notebook does not exist locally and cannot be fetched',
         cssClass: 'fatal-alert',
         buttons: [
           {
@@ -621,9 +597,9 @@ export class NotebookService {
                 // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
               };
             }
-          }),
+          })
         );
-      }),
+      })
     );
   }
 
@@ -632,7 +608,7 @@ export class NotebookService {
       return [];
     } else {
       const name2Template = await firstValueFrom(
-        this.getSettingsValue('editor.customNoteTemplates'),
+        this.getSettingsValue('editor.customNoteTemplates')
       );
       return mapObj(name2Template, (value, key) => {
         return {
@@ -650,21 +626,19 @@ export class NotebookService {
       return firstValueFrom(
         zip(
           this.getSettingsValue('editor.useDefaultTemplates'),
-          this.getSettingsValue('general.language'),
+          this.getSettingsValue('general.language')
         ).pipe(
           map(([useDefaultTemplates, language]) => {
             if (useDefaultTemplates) {
-              return translations[language].defaultTemplates.map<Completion>(
-                (template) => ({
-                  label: template.label,
-                  apply: template.templateValue,
-                }),
-              );
+              return translations[language].defaultTemplates.map<Completion>((template) => ({
+                label: template.label,
+                apply: template.templateValue,
+              }));
             } else {
               return [];
             }
-          }),
-        ),
+          })
+        )
       );
     }
   }
@@ -672,12 +646,7 @@ export class NotebookService {
   private async suggestActions(): Promise<Completion[]> {
     const newNoteId = await this.createNoteId();
     const applyAction = (actionCallback: () => void) => {
-      return (
-        view: EditorView,
-        completion: Completion,
-        from: number,
-        to: number,
-      ) => {
+      return (view: EditorView, completion: Completion, from: number, to: number) => {
         actionCallback();
         view.dispatch({
           changes: {
@@ -733,7 +702,7 @@ export class NotebookService {
     console.log('remoteNotebooks', remoteNotebooks);
 
     const newRepositories = remoteNotebooks.filter(
-      (r) => !this.notebooks.some((notebook) => notebook.id == r.id),
+      (r) => !this.notebooks.some((notebook) => notebook.id == r.id)
     );
 
     if (newRepositories.length > 0) {
@@ -741,7 +710,7 @@ export class NotebookService {
         notebookRepository.notebooks.add({
           ...repository,
           lastSyncedAt: new Date(0),
-        }),
+        })
       );
       this.notebooks = await notebookRepository.notebooks.toArray();
     }
@@ -836,13 +805,11 @@ export class NotebookService {
           .where('repositoryId')
           .equals(this.currentRepositoryId)
           .filter((note) => isNullish(note.parent))
-          .toArray(),
-      ),
+          .toArray()
+      )
     );
 
-    return roots$
-      .pipe(this.filterInternalNotes$())
-      .pipe(this.attachChildCount$());
+    return roots$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
   }
 
   private toIndexDocument(note: Note): NoteDocument {
@@ -856,9 +823,7 @@ export class NotebookService {
   findAllChildren(id: string): Observable<Note[]> {
     console.log('findAllChildren', id);
     const children$ = this.findAllChildrenById(id);
-    return children$
-      .pipe(this.filterInternalNotes$())
-      .pipe(this.attachChildCount$());
+    return children$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
   }
 
   private findAllChildrenById(id: string): Observable<Note[]> {
@@ -869,8 +834,8 @@ export class NotebookService {
           .equals(id)
           .filter((note) => note.repositoryId === this.currentRepositoryId)
           .limit(100)
-          .toArray(),
-      ),
+          .toArray()
+      )
     );
   }
 
@@ -881,8 +846,8 @@ export class NotebookService {
           .where('parent')
           .equals(id)
           .filter((note) => note.repositoryId === this.currentRepositoryId)
-          .count(),
-      ),
+          .count()
+      )
     );
   }
 
@@ -917,7 +882,7 @@ export class NotebookService {
         title: this.notebookJsonName,
         text: JSON.stringify(defaultSettings, null, 2),
       },
-      true,
+      true
     );
   }
 
@@ -929,15 +894,9 @@ export class NotebookService {
           .equals(this.currentRepositoryId)
           .sortBy('updatedAt')
           .then((notes) =>
-            slice(
-              notes
-                .filter((note) => note.title !== this.notebookJsonName)
-                .reverse(),
-              0,
-              limit,
-            ),
-          ),
-      ),
+            slice(notes.filter((note) => note.title !== this.notebookJsonName).reverse(), 0, limit)
+          )
+      )
     );
   }
 
@@ -948,18 +907,16 @@ export class NotebookService {
           .where('repositoryId')
           .equals(this.currentRepositoryId)
           .sortBy('updatedAt')
-          .then((notes) =>
-            slice(notes.filter((note) => note.isUpVoted).reverse(), 0, limit),
-          ),
-      ),
+          .then((notes) => slice(notes.filter((note) => note.isUpVoted).reverse(), 0, limit))
+      )
     );
   }
 
   private createNoteId(): Promise<string> {
     return firstValueFrom(
       this.getSettingsValue('editor.noteIdDatePattern').pipe(
-        map((noteIdDatePattern) => dayjs().format(noteIdDatePattern)),
-      ),
+        map((noteIdDatePattern) => dayjs().format(noteIdDatePattern))
+      )
     );
   }
 
@@ -973,7 +930,7 @@ export class NotebookService {
             label: `${translations[lang].actions[action as keyof typeof NotebookActionId]}`,
           });
         }
-      }),
+      })
     );
   }
 

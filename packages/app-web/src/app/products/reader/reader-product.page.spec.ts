@@ -12,8 +12,7 @@ describe('ReaderProductPage', () => {
       imports: [
         ReaderProductPage,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockScrape(apolloMockController),
+          configurer: (apolloMockController) => mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

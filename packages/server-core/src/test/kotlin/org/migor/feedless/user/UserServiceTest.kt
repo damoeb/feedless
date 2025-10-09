@@ -11,6 +11,10 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.Mother.randomConnectedAppId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.any
+import org.migor.feedless.any2
+import org.migor.feedless.anyList
+import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
@@ -20,10 +24,6 @@ import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.plan.ProductService
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.anyList
-import org.migor.feedless.repository.eq
 import org.migor.feedless.transport.TelegramBotService
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.mock

@@ -15,9 +15,7 @@ import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
   selector: '[appControlValueAccessor]',
   standalone: false,
 })
-export class ControlValueAccessorDirective<T>
-  implements ControlValueAccessor, OnInit
-{
+export class ControlValueAccessorDirective<T> implements ControlValueAccessor, OnInit {
   control: FormControl<T> | undefined;
   isRequired = false;
 
@@ -43,8 +41,7 @@ export class ControlValueAccessorDirective<T>
             .getControl(formControl as FormControlName);
           break;
         default:
-          this.control = (formControl as FormControlDirective)
-            .form as FormControl;
+          this.control = (formControl as FormControlDirective).form as FormControl;
           break;
       }
     } catch (err) {
@@ -64,7 +61,7 @@ export class ControlValueAccessorDirective<T>
         takeUntil(this._destroy$),
         startWith(this.control.value),
         distinctUntilChanged(),
-        tap((val) => fn(val)),
+        tap((val) => fn(val))
       )
       .subscribe(() => this.control?.markAsUntouched());
   }

@@ -106,20 +106,15 @@ export class LoginPage implements OnInit, OnDestroy {
             await this.router.navigateByUrl(url);
           } else {
             this.showSSO = this.serverConfig.hasProfile(GqlProfileName.AuthSso);
-            this.showMailLogin = this.serverConfig.hasProfile(
-              GqlProfileName.AuthMail,
-            );
+            this.showMailLogin = this.serverConfig.hasProfile(GqlProfileName.AuthMail);
             this.loading = false;
             this.changeRef.detectChanges();
           }
-        }),
+        })
     );
   }
 
-  async loginWithUserPassword(
-    email: string | number,
-    password: string | number,
-  ) {
+  async loginWithUserPassword(email: string | number, password: string | number) {
     this.errorMessage = null;
     try {
       return await this.authService.authorizeUser({

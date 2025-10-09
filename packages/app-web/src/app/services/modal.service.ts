@@ -60,11 +60,8 @@ export class ModalService {
     component: Type<FeedBuilderModalComponent>,
     componentProps: FeedBuilderModalComponentProps,
     overwriteHandler: Nullable<
-      (
-        data: Nullable<FeedOrRepository>,
-        role: Nullable<String>,
-      ) => Promise<void>
-    > = null,
+      (data: Nullable<FeedOrRepository>, role: Nullable<String>) => Promise<void>
+    > = null
   ) {
     await this.updateUrlParams(ModalName.feedBuilder);
     const modal = await this.modalCtrl.create({
@@ -94,7 +91,7 @@ export class ModalService {
 
   async openTagModal(
     component: Type<TagsModalComponent>,
-    componentProps: TagsModalComponentProps,
+    componentProps: TagsModalComponentProps
   ): Promise<string[]> {
     await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
@@ -112,7 +109,7 @@ export class ModalService {
 
   async openFlowModal(
     component: Type<FlowModalComponent>,
-    componentProps: FlowModalComponentProps,
+    componentProps: FlowModalComponentProps
   ): Promise<string[]> {
     const modal = await this.modalCtrl.create({
       component,
@@ -141,7 +138,7 @@ export class ModalService {
 
   async openSelectionModal<T>(
     component: Type<SelectionModalComponent<T>>,
-    componentProps: SelectionModalComponentProps<T>,
+    componentProps: SelectionModalComponentProps<T>
   ): Promise<T[]> {
     // await this.updateUrlParams(ModalName.tagEditor);
     const modal = await this.modalCtrl.create({
@@ -158,7 +155,7 @@ export class ModalService {
 
   async openCodeEditorModal(
     component: Type<CodeEditorModalComponent>,
-    componentProps: CodeEditorModalComponentProps,
+    componentProps: CodeEditorModalComponentProps
   ): Promise<string[]> {
     await this.updateUrlParams(ModalName.codeEditor);
     const modal = await this.modalCtrl.create({
@@ -203,7 +200,7 @@ export class ModalService {
 
   async openRepositoryEditor(
     component: Type<RepositoryModalComponent>,
-    componentProps: RepositoryModalComponentProps,
+    componentProps: RepositoryModalComponentProps
   ) {
     if (this.isModalOpen) {
       return;
@@ -226,7 +223,7 @@ export class ModalService {
 
   async openTrackerEditor(
     component: Type<TrackerEditModalComponent>,
-    componentProps: TrackerEditModalComponentProps,
+    componentProps: TrackerEditModalComponentProps
   ) {
     await this.updateUrlParams(ModalName.editTracker);
     const modal = await this.modalCtrl.create({

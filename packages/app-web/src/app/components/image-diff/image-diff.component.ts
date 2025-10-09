@@ -54,11 +54,9 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
     if (this.after()) {
       this.diffImageUrl = await this.createImageDiff(
         this.before().rawBase64,
-        this.after().rawBase64,
+        this.after().rawBase64
       );
-      this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
-        this.diffImageUrl,
-      );
+      this.safeDiffImageUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(this.diffImageUrl);
     }
 
     this.changeRef.detectChanges();
@@ -103,10 +101,7 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
     });
   }
 
-  private async createImageDiff(
-    img1Base64: string,
-    img2Base64: string,
-  ): Promise<string> {
+  private async createImageDiff(img1Base64: string, img2Base64: string): Promise<string> {
     const image1 = await this.createCanvasContext(img1Base64);
     // Fits the size of image1
     const diffSize = image1.size;
@@ -119,10 +114,7 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
     }
     diffCanvas.width = diffSize.width;
     diffCanvas.height = diffSize.height;
-    const outputDiff = diffContext.createImageData(
-      diffSize.width,
-      diffSize.height,
-    );
+    const outputDiff = diffContext.createImageData(diffSize.width, diffSize.height);
 
     const numDiffPixels = pixelmatch(
       image1.context.getImageData(0, 0, diffSize.width, diffSize.height).data,
@@ -133,15 +125,14 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
       {
         threshold: 0,
         diffColor: [255, 0, 0],
-      },
+      }
     );
 
     console.log({
       numDiffPixels,
       width: diffSize.width,
       height: diffSize.height,
-      diffPercentage:
-        (100 * numDiffPixels) / (diffSize.width * diffSize.height),
+      diffPercentage: (100 * numDiffPixels) / (diffSize.width * diffSize.height),
     });
 
     diffContext.putImageData(outputDiff, 0, 0);

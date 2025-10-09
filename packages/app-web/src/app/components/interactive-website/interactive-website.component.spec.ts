@@ -14,8 +14,7 @@ describe('InteractiveWebsiteComponent', () => {
       imports: [
         InteractiveWebsiteComponent,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockScrape(apolloMockController),
+          configurer: (apolloMockController) => mockScrape(apolloMockController),
         }),
       ],
     }).compileComponents();
@@ -25,7 +24,7 @@ describe('InteractiveWebsiteComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput(
       'sourceBuilder',
-      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService))
     );
 
     fixture.detectChanges();

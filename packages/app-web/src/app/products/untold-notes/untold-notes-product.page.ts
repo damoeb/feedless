@@ -8,10 +8,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   IonButtons,
   IonContent,
@@ -52,12 +49,10 @@ export class UntoldNotesProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      })
     );
   }
 

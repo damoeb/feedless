@@ -8,10 +8,7 @@ import {
   platformBrowserDynamicTesting,
 } from '@angular/platform-browser-dynamic/testing';
 
-getTestBed().initTestEnvironment(
-  BrowserDynamicTestingModule,
-  platformBrowserDynamicTesting(),
-);
+getTestBed().initTestEnvironment(BrowserDynamicTestingModule, platformBrowserDynamicTesting());
 
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -52,9 +49,7 @@ Object.defineProperty(global, 'URL', {
     constructor(url) {
       this.href = url;
       this.search = url.includes('?') ? url.substring(url.indexOf('?')) : '';
-      this.pathname = url.includes('?')
-        ? url.substring(0, url.indexOf('?'))
-        : url;
+      this.pathname = url.includes('?') ? url.substring(0, url.indexOf('?')) : url;
     }
 
     static createObjectURL = jest.fn(() => 'mocked-object-url');

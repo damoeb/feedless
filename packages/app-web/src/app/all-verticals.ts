@@ -158,21 +158,14 @@ docker-compose up`,
       subtitle: 'Reader Mode',
       phase: 'alpha',
       version: [0, 1, 0],
-      summary:
-        'Unclutter a website and transform it into a version optimized for reading',
+      summary: 'Unclutter a website and transform it into a version optimized for reading',
       descriptionMarkdown: `Unclutter a website and transform it into a version optimized for reading.
       Create an immersive reading experience without the dark patterns, advertisements and bad user interfaces.
       Inspiration for this comes from uncomissioned readability.com or instapaper`,
       // costs: 4.99,
       videoUrl: 'https://www.youtube.com/watch?v=PolMYwBVmzc',
       links: [{ url: '/', allow: true }],
-      features: [
-        'Font Family',
-        'Text Size',
-        'Text Alignment',
-        'Bionic Font',
-        'Self Hosting',
-      ],
+      features: ['Font Family', 'Text Size', 'Text Alignment', 'Bionic Font', 'Self Hosting'],
       localSetupBeforeMarkup: `It will just feedless.`,
       localSetupBash: `bash
 wget https://raw.githubusercontent.com/damoeb/reader/master/selfhosting.env \\
@@ -193,8 +186,7 @@ docker-compose up`,
       version: [0, 1, 0],
       phase: 'development',
       subtitle: 'Note App',
-      summary:
-        'Minimalistic, Searchable and Linkable markdown notes the Zettelkasten way',
+      summary: 'Minimalistic, Searchable and Linkable markdown notes the Zettelkasten way',
       descriptionMarkdown: `Minimalistic, Searchable and Linkable markdown notes to facilitate
 [Luhmann's Zettelkasten](https://en.wikipedia.org/wiki/Zettelkasten)
 approach in the tradition of [Notational Velocity](https://en.wikipedia.org/wiki/Notational_Velocity)
@@ -304,11 +296,7 @@ lokale.events sammelt diese versteckten Schätze und macht sie für alle sichtba
         { url: '/management/', allow: false },
         { url: '/login', allow: false },
       ],
-      features: [
-        'Seed Events from Websites',
-        'Source Localization',
-        'Self-Hosting or SaaS',
-      ],
+      features: ['Seed Events from Websites', 'Source Localization', 'Self-Hosting or SaaS'],
       localSetupBash: ``,
     },
     // {

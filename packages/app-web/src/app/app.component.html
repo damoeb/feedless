@@ -1,7 +1,7 @@
 @if (verticalConfig) {
   <ion-app>
     @if (configError) {
-      <ion-card style="margin: auto;">
+      <ion-card style="margin: auto">
         <ion-card-header>
           <ion-card-title>
             {{ configError.header }}
@@ -13,25 +13,14 @@
         </ion-card-content>
       </ion-card>
     } @else {
-
-      <ion-split-pane
-        [when]="'10000'"
-        (click)="toggleMenu()"
-        contentId="main-content"
-      >
-        <ion-menu
-          contentId="main-content"
-          type="push"
-          (click)="$event.stopPropagation()"
-        >
+      <ion-split-pane [when]="'10000'" (click)="toggleMenu()" contentId="main-content">
+        <ion-menu contentId="main-content" type="push" (click)="$event.stopPropagation()">
           <ion-header>
             <ion-toolbar>
               <ion-buttons slot="start">
                 <ion-menu-button></ion-menu-button>
               </ion-buttons>
-              <app-product-title
-                class="ion-margin-horizontal"
-              ></app-product-title>
+              <app-product-title class="ion-margin-horizontal"></app-product-title>
             </ion-toolbar>
             <ion-list>
               @if (serverConfig.isSelfHosted()) {
@@ -55,9 +44,8 @@
                 version
                 <a
                   [href]="
-                  'https://github.com/damoeb/feedless/commit/' +
-                  serverConfig.getBuild().commit
-                "
+                    'https://github.com/damoeb/feedless/commit/' + serverConfig.getBuild().commit
+                  "
                 >
                   {{ getBuildCommit() }}
                 </a>

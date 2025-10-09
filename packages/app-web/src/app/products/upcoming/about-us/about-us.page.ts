@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { PageService, PageTags } from '../../../services/page.service';
@@ -28,8 +23,7 @@ export class AboutUsPage implements OnInit {
 
   private getPageTags(): PageTags {
     return {
-      title:
-        'Über lokale.events | Entdecke lokale Veranstaltungen in deiner Region',
+      title: 'Über lokale.events | Entdecke lokale Veranstaltungen in deiner Region',
       description:
         'Erfahre mehr über lokale.events - die Plattform für lokale Veranstaltungen und Events. Wir bringen Menschen zusammen und machen regionale Schätze sichtbar.',
       publisher: 'lokale.events',

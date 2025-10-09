@@ -28,13 +28,7 @@ import { SearchbarComponent } from '../../../elements/searchbar/searchbar.compon
   styleUrls: ['./about-rss-builder.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [
-    IonContent,
-    ProductHeaderComponent,
-    SearchbarComponent,
-    RouterLink,
-    IonItem,
-  ],
+  imports: [IonContent, ProductHeaderComponent, SearchbarComponent, RouterLink, IonItem],
   standalone: true,
 })
 export class AboutRssBuilderPage implements OnInit {
@@ -45,8 +39,7 @@ export class AboutRssBuilderPage implements OnInit {
   private readonly appConfigService = inject(AppConfigService);
   readonly serverConfig = inject(ServerConfigService);
 
-  readonly opmlPickerElement =
-    viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
+  readonly opmlPickerElement = viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
 
   protected readonly dateFormat = dateFormat;
   protected license: LocalizedLicense;

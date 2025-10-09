@@ -12,20 +12,12 @@ export const markdownLanguageSupport = markdown({
         {
           name: NODE_HASHTAG,
           parse(context: InlineContext, next: number, pos: number): number {
-            if (
-              context.char(pos) === '#'.charCodeAt(0) &&
-              context.char(pos + 1) !== 32
-            ) {
+            if (context.char(pos) === '#'.charCodeAt(0) && context.char(pos + 1) !== 32) {
               let end = pos + 1;
-              while (
-                end < context.end - 1 &&
-                ![0, 32].includes(context.char(end))
-              ) {
+              while (end < context.end - 1 && ![0, 32].includes(context.char(end))) {
                 end++;
               }
-              return context.addElement(
-                context.elt(NODE_HASHTAG, pos, end + 1),
-              );
+              return context.addElement(context.elt(NODE_HASHTAG, pos, end + 1));
             }
 
             return -1;

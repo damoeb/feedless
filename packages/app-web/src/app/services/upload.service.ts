@@ -24,37 +24,35 @@ export class UploadService {
   }
 
   uploadFile(uploadEvent: Event): void {
-    Array.from((uploadEvent.target as any).files as any).forEach(
-      (file: any) => {
-        console.log('upload', file);
-        const handler = this.fileHandlers.find((fileHandler) => {
-          return fileHandler.mimeTypes.some((mimeTypeRE) => {
-            const matches = file.type.match(new RegExp(mimeTypeRE));
-            return matches && matches.length > 0;
-          });
+    Array.from((uploadEvent.target as any).files as any).forEach((file: any) => {
+      console.log('upload', file);
+      const handler = this.fileHandlers.find((fileHandler) => {
+        return fileHandler.mimeTypes.some((mimeTypeRE) => {
+          const matches = file.type.match(new RegExp(mimeTypeRE));
+          return matches && matches.length > 0;
         });
+      });
 
-        if (!handler) {
-          // this.core.showError(`Your file '${file.name}' has MIME type '${file.type}',` +
-          //   ` should be one of ${this.getAcceptedMimes()}.`, 'Unsupported MIME Type');
-          throw new Error(`No handler available for ${file.type}`);
-        }
+      if (!handler) {
+        // this.core.showError(`Your file '${file.name}' has MIME type '${file.type}',` +
+        //   ` should be one of ${this.getAcceptedMimes()}.`, 'Unsupported MIME Type');
+        throw new Error(`No handler available for ${file.type}`);
+      }
 
-        const reader = new FileReader();
+      const reader = new FileReader();
 
-        reader.onloadend = async (event) => {
-          const data: ArrayBuffer | string = (event.target as any).result;
-          await handler.handleData(file, data as any);
-        };
+      reader.onloadend = async (event) => {
+        const data: ArrayBuffer | string = (event.target as any).result;
+        await handler.handleData(file, data as any);
+      };
 
-        // Read in the image file as a data URL.
-        if (handler.binaryContent) {
-          reader.readAsDataURL(file);
-        } else {
-          reader.readAsText(file);
-        }
-      },
-    );
+      // Read in the image file as a data URL.
+      if (handler.binaryContent) {
+        reader.readAsDataURL(file);
+      } else {
+        reader.readAsText(file);
+      }
+    });
   }
 
   getAcceptedMimeTypes(): string {
@@ -73,11 +71,7 @@ export class UploadService {
 
           // const note = await this.core.createBinaryNote(file, dataUrl, 'image');
           const caption = await this.askForCaption(file);
-          return this.recordService.createRecordFromUpload(
-            caption,
-            file,
-            dataUrl,
-          );
+          return this.recordService.createRecordFromUpload(caption, file, dataUrl);
         },
         binaryContent: true,
       },
@@ -86,11 +80,7 @@ export class UploadService {
         handleData: async (file, dataUrl) => {
           console.log('upload pdf');
           const caption = await this.askForCaption(file);
-          return this.recordService.createRecordFromUpload(
-            caption,
-            file,
-            dataUrl,
-          );
+          return this.recordService.createRecordFromUpload(caption, file, dataUrl);
         },
         binaryContent: true,
       },

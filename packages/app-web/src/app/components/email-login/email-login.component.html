@@ -20,7 +20,7 @@
             </ion-label>
           </ion-item>
         }
-        @if (mode === "enterMail") {
+        @if (mode === 'enterMail') {
           <ion-item
             (click)="initiateSession()"
             [button]="true"
@@ -38,7 +38,7 @@
           </ion-item>
         }
       </form>
-      @if (mode === "enterConfirmationCode") {
+      @if (mode === 'enterConfirmationCode') {
         <form (ngSubmit)="sendConfirmationCode()">
           <ion-item>
             <ion-input

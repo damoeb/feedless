@@ -240,23 +240,19 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.activatedRoute.queryParams.subscribe((queryParams) => {
         if (queryParams.modal) {
           if (queryParams.modal === ModalName.editRepository) {
-            this.editRepository(
-              queryParams.accordion ? [queryParams.accordion] : [],
-            );
+            this.editRepository(queryParams.accordion ? [queryParams.accordion] : []);
           }
         }
       }),
       this.selectAllFc.valueChanges.subscribe((isChecked) => {
-        this.documents.forEach((document) =>
-          document.fc.setValue(isChecked, { emitEvent: false }),
-        );
+        this.documents.forEach((document) => document.fc.setValue(isChecked, { emitEvent: false }));
         if (isChecked) {
           this.selectedCount = this.documents.length;
         } else {
           this.selectedCount = 0;
         }
         this.changeRef.detectChanges();
-      }),
+      })
     );
     await this.fetchPage();
     this.changeRef.detectChanges();
@@ -268,13 +264,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       this.viewModeFc.setValue('diff');
     }
     this.compareByField = repository.plugins.find(
-      (plugin) => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffRecords,
+      (plugin) => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffRecords
     )?.params?.org_feedless_diff_records?.compareBy?.field;
 
-    if (
-      repository.visibility === GqlVisibility.IsPrivate &&
-      repository.shareKey?.length > 0
-    ) {
+    if (repository.visibility === GqlVisibility.IsPrivate && repository.shareKey?.length > 0) {
       this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
     } else {
       this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom`;
@@ -295,10 +288,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       repository: this.repository(),
       openAccordions: accordions,
     };
-    await this.modalService.openRepositoryEditor(
-      RepositoryModalComponent,
-      componentProps,
-    );
+    await this.modalService.openRepositoryEditor(RepositoryModalComponent, componentProps);
     await this.popoverCtrl.dismiss();
   }
 
@@ -323,7 +313,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           },
         },
       },
-      'network-only',
+      'network-only'
     );
     this.documents = documents.map((document) => {
       const fc = new FormControl<boolean>(false);
@@ -337,7 +327,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
           this.selectAllFc.setValue(this.selectedCount !== 0, {
             emitEvent: false,
           });
-        }),
+        })
       );
       return {
         ...document,
@@ -449,11 +439,9 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     await this.modalService.openCodeEditorModal(CodeEditorModalComponent, {
       title: 'JSON Editor',
       text: JSON.stringify(
-        await this.repositoryService.getRepositoryInputWithSourcesAndFlow(
-          this.repository(),
-        ),
+        await this.repositoryService.getRepositoryInputWithSourcesAndFlow(this.repository()),
         null,
-        2,
+        2
       ),
       contentType: 'json',
     });
@@ -514,7 +502,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   async exportRepository() {
     await this.repositoryService.downloadRepositories(
       [this.repository()],
-      `feedless-repo-${this.repository().id}.json`,
+      `feedless-repo-${this.repository().id}.json`
     );
   }
 
@@ -523,10 +511,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async appendSourcesFromJson(uploadEvent: Event) {
-    return this.sourceService.uploadFeedlessJson(
-      uploadEvent,
-      this.repository().id,
-    );
+    return this.sourceService.uploadFeedlessJson(uploadEvent, this.repository().id);
   }
 
   async openDataModal() {}

@@ -42,12 +42,10 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   async ngOnInit(): Promise<void> {
     this.subscriptions.push(
-      this.authService
-        .authorizationChange()
-        .subscribe(async (authorization) => {
-          this.authorization = authorization;
-          this.changeRef.detectChanges();
-        }),
+      this.authService.authorizationChange().subscribe(async (authorization) => {
+        this.authorization = authorization;
+        this.changeRef.detectChanges();
+      })
     );
   }
 

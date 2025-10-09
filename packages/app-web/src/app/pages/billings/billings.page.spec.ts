@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BillingsPage } from './billings.page';
-import {
-  AppTestModule,
-  mockBillings,
-  mockRepositories,
-} from '../../app-test.module';
+import { AppTestModule, mockBillings, mockRepositories } from '../../app-test.module';
 
 describe('BillingsPage', () => {
   let component: BillingsPage;

@@ -8,6 +8,10 @@ import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.any
+import org.migor.feedless.anyOrNull
+import org.migor.feedless.argThat
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.AnnotationWhereUniqueInput
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
@@ -16,10 +20,6 @@ import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.anyOrNull
-import org.migor.feedless.repository.argThat
-import org.migor.feedless.repository.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock

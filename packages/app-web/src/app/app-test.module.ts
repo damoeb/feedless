@@ -3,10 +3,7 @@ import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
 import { SwUpdateMock } from '../test/sw-update.mock';
 import { SwUpdate } from '@angular/service-worker';
-import {
-  ApolloQueryResult,
-  OperationVariables,
-} from '@apollo/client/core/types';
+import { ApolloQueryResult, OperationVariables } from '@apollo/client/core/types';
 import {
   AuthAnonymous,
   FindEvents,
@@ -53,27 +50,14 @@ import {
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
 import { ServerConfigService } from './services/server-config.service';
-import {
-  HttpClient,
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
+import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from './services/app-config.service';
-import {
-  ModalController,
-  PopoverController,
-  ToastController,
-} from '@ionic/angular/standalone';
+import { AppConfigService, VerticalSpecWithRoutes } from './services/app-config.service';
+import { ModalController, PopoverController, ToastController } from '@ionic/angular/standalone';
 import { VerticalAppConfig } from './types';
 
-export type MockedRequestResolver<R, V> = (
-  args: V,
-) => Promise<Partial<ApolloQueryResult<R>>>;
+export type MockedRequestResolver<R, V> = (args: V) => Promise<Partial<ApolloQueryResult<R>>>;
 export type MockCondition<V> = (args: V) => boolean;
 
 interface MockedRequest {
@@ -144,16 +128,14 @@ export class ApolloMockController {
     };
   }
 
-  mockQuery<
-    T = any,
-    TVariables extends OperationVariables = OperationVariables,
-  >(query: DocumentNode, condition?: MockCondition<TVariables>) {
+  mockQuery<T = any, TVariables extends OperationVariables = OperationVariables>(
+    query: DocumentNode,
+    condition?: MockCondition<TVariables>
+  ) {
     return {
       and: {
         resolveOnce: (
-          resolver: (
-            args: TVariables,
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
+          resolver: (args: TVariables) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
         ) => {
           this.mockedRequests.push({
             query,
@@ -166,16 +148,14 @@ export class ApolloMockController {
     };
   }
 
-  mockMutate<
-    T = any,
-    TVariables extends OperationVariables = OperationVariables,
-  >(query: DocumentNode, condition?: MockCondition<TVariables>) {
+  mockMutate<T = any, TVariables extends OperationVariables = OperationVariables>(
+    query: DocumentNode,
+    condition?: MockCondition<TVariables>
+  ) {
     return {
       and: {
         resolveOnce: (
-          resolver: (
-            args: TVariables,
-          ) => Promise<Partial<ApolloQueryResult<Partial<T>>>>,
+          resolver: (args: TVariables) => Promise<Partial<ApolloQueryResult<Partial<T>>>>
         ) => {
           this.mockedRequests.push({
             query,
@@ -219,10 +199,7 @@ export class AppTestModule {
     const config = assignIn({}, defaultAppTestModuleConfig, options);
     const apolloMockController = new ApolloMockController();
     apolloMockController
-      .mockMutate<
-        GqlAuthAnonymousMutation,
-        GqlAuthAnonymousMutationVariables
-      >(AuthAnonymous)
+      .mockMutate<GqlAuthAnonymousMutation, GqlAuthAnonymousMutationVariables>(AuthAnonymous)
       .and.resolveOnce(async () => {
         return {
           data: {
@@ -294,10 +271,7 @@ export class AppTestModule {
 
 export function mockProducts(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlListProductsQuery,
-      GqlListProductsQueryVariables
-    >(ListProducts)
+    .mockQuery<GqlListProductsQuery, GqlListProductsQueryVariables>(ListProducts)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -345,10 +319,7 @@ export function mockRecords(apolloMockController: ApolloMockController) {
 
 export function mockFullRecords(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlFullRecordByIdsQuery,
-      GqlFullRecordByIdsQueryVariables
-    >(FullRecordByIds)
+    .mockQuery<GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables>(FullRecordByIds)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -396,10 +367,7 @@ export const mocks: Mocks = {
 
 export function mockRepository(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlRepositoryByIdQuery,
-      GqlRepositoryByIdQueryVariables
-    >(RepositoryById)
+    .mockQuery<GqlRepositoryByIdQuery, GqlRepositoryByIdQueryVariables>(RepositoryById)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -411,10 +379,7 @@ export function mockRepository(apolloMockController: ApolloMockController) {
 
 export function mockRepositories(apolloMockController: ApolloMockController) {
   return apolloMockController
-    .mockQuery<
-      GqlListRepositoriesQuery,
-      GqlListRepositoriesQueryVariables
-    >(ListRepositories)
+    .mockQuery<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>(ListRepositories)
     .and.resolveOnce(async () => {
       return {
         data: {
@@ -463,13 +428,10 @@ export function mockEvents(apolloMockController: ApolloMockController) {
 export async function mockServerSettings(
   apolloMockController: ApolloMockController,
   serverSettingsService: ServerConfigService,
-  apolloClient: ApolloClient<any>,
+  apolloClient: ApolloClient<any>
 ) {
   apolloMockController
-    .mockQuery<
-      GqlServerSettingsQuery,
-      GqlServerSettingsQueryVariables
-    >(ServerSettings)
+    .mockQuery<GqlServerSettingsQuery, GqlServerSettingsQueryVariables>(ServerSettings)
     .and.resolveOnce(async () => {
       const serverSettings: GqlServerSettings = {
         // license: {},
@@ -492,9 +454,7 @@ export async function mockServerSettings(
       };
     });
 
-  serverSettingsService.createApolloClient = jest
-    .fn()
-    .mockReturnValue(apolloClient);
+  serverSettingsService.createApolloClient = jest.fn().mockReturnValue(apolloClient);
   const httpClient = TestBed.inject(HttpClient);
   const mockConfig: VerticalAppConfig = {
     apiUrl: '',

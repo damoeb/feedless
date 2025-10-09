@@ -1,5 +1,4 @@
 plugins {
-  alias(libs.plugins.spring.boot)
   alias(libs.plugins.test.logger)
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
@@ -19,6 +18,8 @@ dependencies {
   testImplementation(kotlin("test"))
   implementation("org.jetbrains.kotlin:kotlin-reflect")
 
+  implementation(libs.kotlinx.coroutines.core)
+  testImplementation(libs.kotlinx.coroutines.test)
   implementation(libs.spring.boot.mail)
   implementation(libs.mailgun.java)
   implementation(libs.spring.boot.freemarker)
@@ -27,16 +28,6 @@ dependencies {
   implementation(libs.commons.lang3)
 }
 
-sourceSets {
-  main {
-    java.srcDirs("src/main/kotlin")
-  }
-  test {
-    java.srcDirs("src/test/kotlin")
-  }
-}
-
-// ✅ Add this to enable JUnit 5
 tasks.test {
   useJUnitPlatform()
 }

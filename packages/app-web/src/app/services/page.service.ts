@@ -37,10 +37,7 @@ export class PageService {
     this.clearMetaTags();
 
     this.title.setTitle(options.title);
-    document
-      .getElementsByTagName('html')
-      .item(0)
-      .setAttribute('lang', options.lang);
+    document.getElementsByTagName('html').item(0).setAttribute('lang', options.lang);
 
     // Basic meta tags
     const basicTags: MetaDefinition[] = [
@@ -161,9 +158,7 @@ export class PageService {
 
   private clearMetaTags() {
     // Remove existing meta tags to prevent duplicates
-    const existingTags = document.querySelectorAll(
-      'meta[name], meta[property]',
-    );
+    const existingTags = document.querySelectorAll('meta[name], meta[property]');
     existingTags.forEach((tag) => {
       const name = tag.getAttribute('name') || tag.getAttribute('property');
       if (
@@ -186,15 +181,11 @@ export class PageService {
     });
 
     // Remove existing JSON-LD scripts
-    const existingJsonLd = document.querySelectorAll(
-      'script[type="application/ld+json"]',
-    );
+    const existingJsonLd = document.querySelectorAll('script[type="application/ld+json"]');
     existingJsonLd.forEach((script) => script.remove());
 
     // Remove existing canonical links
-    const existingCanonical = document.querySelectorAll(
-      'link[rel="canonical"]',
-    );
+    const existingCanonical = document.querySelectorAll('link[rel="canonical"]');
     existingCanonical.forEach((link) => link.remove());
   }
 
@@ -209,7 +200,7 @@ export class PageService {
     // Add structured data with caching to prevent duplicates
     const dataString = JSON.stringify(data, null, 2);
     const existingScript = document.querySelector(
-      `script[type="application/ld+json"][data-content="${btoa(dataString)}"]`,
+      `script[type="application/ld+json"][data-content="${btoa(dataString)}"]`
     );
 
     if (!existingScript) {

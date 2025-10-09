@@ -20,10 +20,7 @@ import { Order } from '../types';
 export class OrderService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
 
-  async orders(
-    data: GqlOrdersInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Order[]> {
+  async orders(data: GqlOrdersInput, fetchPolicy: FetchPolicy = 'cache-first'): Promise<Order[]> {
     return this.apollo
       .query<GqlOrdersQuery, GqlOrdersQueryVariables>({
         query: Orders,
@@ -38,7 +35,7 @@ export class OrderService {
   async upsertOrder(
     create: GqlOrderCreateInput,
     where: GqlOrderWhereUniqueInput = null,
-    update: GqlOrderUpdateInput = null,
+    update: GqlOrderUpdateInput = null
   ): Promise<Order> {
     return this.apollo
       .mutate<GqlUpsertOrderMutation, GqlUpsertOrderMutationVariables>({

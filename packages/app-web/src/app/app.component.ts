@@ -10,10 +10,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { SessionService } from './services/session.service';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from './services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from './services/app-config.service';
 import { GqlVertical } from '../generated/graphql';
 import { kebabCase } from 'lodash-es';
 import {
@@ -39,10 +36,7 @@ import {
   MenuController,
 } from '@ionic/angular/standalone';
 import { ProductTitleComponent } from './components/product-title/product-title.component';
-import {
-  ConfigError,
-  ServerConfigService,
-} from './services/server-config.service';
+import { ConfigError, ServerConfigService } from './services/server-config.service';
 import { addIcons } from 'ionicons';
 import {
   cardOutline,
@@ -112,12 +106,10 @@ export class AppComponent implements OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((verticalConfig) => {
-          this.verticalConfig = verticalConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((verticalConfig) => {
+        this.verticalConfig = verticalConfig;
+        this.changeRef.detectChanges();
+      }),
       this.activatedRoute.queryParams.subscribe(async (queryParams) => {
         if (queryParams.token) {
           console.log('with token');
@@ -138,17 +130,15 @@ export class AppComponent implements OnDestroy, OnInit {
         this.isDarkMode = isDarkMode;
         this.propagateColorModeAndProduct();
       }),
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((vertical) => {
-          this.vertical = vertical.product;
-          this.propagateColorModeAndProduct();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((vertical) => {
+        this.vertical = vertical.product;
+        this.propagateColorModeAndProduct();
+      }),
 
       this.serverConfig.systemError$.subscribe((error) => {
         this.configError = error;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 

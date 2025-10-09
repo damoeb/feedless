@@ -26,7 +26,7 @@ describe('ExternalLinkComponent', () => {
 
   it('should create', () => {
     expect(fixture.debugElement.nativeElement.innerHTML).toEqual(
-      '<a itemprop="url" rel="nofollow" href="https://localhost/some-url"></a>',
+      '<a itemprop="url" rel="nofollow" href="https://localhost/some-url"></a>'
     );
   });
 });

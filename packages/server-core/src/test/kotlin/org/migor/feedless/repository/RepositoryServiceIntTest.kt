@@ -13,10 +13,12 @@ import org.migor.feedless.actions.ExtractEmit
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.any
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.document.DocumentDAO
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.DOMElementByXPathInput

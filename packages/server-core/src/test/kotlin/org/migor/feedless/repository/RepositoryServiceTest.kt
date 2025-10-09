@@ -12,10 +12,13 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomSourceId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.any
+import org.migor.feedless.any2
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.HttpFetchInput
 import org.migor.feedless.generated.types.HttpGetRequestInput
 import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput
@@ -35,8 +38,6 @@ import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
-import org.mockito.ArgumentMatcher
-import org.mockito.ArgumentMatchers
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -330,12 +331,3 @@ class RepositoryServiceTest {
     assertThat(diffInUnit).isEqualTo(increment)
   }
 }
-
-
-fun <T> anyList(): List<T> = Mockito.anyList<T>()
-fun <T> any(type: Class<T>): T = Mockito.any<T>(type)
-fun <T> any2(): T = ArgumentMatchers.any<T>()
-fun <T> anyOrNull2(): T? = ArgumentMatchers.any<T?>()
-fun <T> argThat(matcher: ArgumentMatcher<T>): T = Mockito.argThat<T>(matcher)
-fun <T> anyOrNull(type: Class<T>): T? = Mockito.any<T?>(type)
-fun <T> eq(type: T): T = Mockito.eq<T>(type) ?: type

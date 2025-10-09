@@ -1,16 +1,7 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical } from '../../../generated/graphql';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
 import { Session } from '../../graphql/types';
@@ -86,12 +77,10 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
       this.authService.authorizationChange().subscribe((authorization) => {
         this.authorization = authorization;
       }),
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      })
     );
   }
 

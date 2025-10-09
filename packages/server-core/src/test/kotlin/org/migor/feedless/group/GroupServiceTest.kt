@@ -9,9 +9,9 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.Mother.randomGroupId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.argThat
-import org.migor.feedless.repository.eq
+import org.migor.feedless.any2
+import org.migor.feedless.argThat
+import org.migor.feedless.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity

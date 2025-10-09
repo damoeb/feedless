@@ -48,9 +48,7 @@ interface GeneralFilterData {
 }
 
 type GeneralFilterParams = ArrayElement<
-  ArrayElement<
-    RepositoryWithFrequency['plugins']
-  >['params']['org_feedless_filter']
+  ArrayElement<RepositoryWithFrequency['plugins']>['params']['org_feedless_filter']
 >;
 
 @Component({
@@ -84,9 +82,7 @@ export class FilterItemsAccordionComponent implements OnInit {
   protected filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
 
   readonly filterPlugin =
-    input.required<
-      ArrayElement<RepositoryFull['plugins']>['params']['org_feedless_filter']
-    >();
+    input.required<ArrayElement<RepositoryFull['plugins']>['params']['org_feedless_filter']>();
 
   readonly labelPrefix = input.required<string>();
 
@@ -120,26 +116,22 @@ export class FilterItemsAccordionComponent implements OnInit {
     const filter = new FormGroup({
       type: new FormControl<FilterType>('exclude', [Validators.required]),
       field: new FormControl<FilterField>('title', [Validators.required]),
-      operator: new FormControl<FilterOperator>(
-        GqlStringFilterOperator.Contains,
-        [Validators.required],
-      ),
-      value: new FormControl<string>('', [
+      operator: new FormControl<FilterOperator>(GqlStringFilterOperator.Contains, [
         Validators.required,
-        Validators.minLength(1),
       ]),
+      value: new FormControl<string>('', [Validators.required, Validators.minLength(1)]),
     });
 
     if (params?.composite) {
       const data = params.composite;
       const type = Object.keys(data).find(
         // @ts-ignore
-        (field) => field != '__typename' && !!data[field],
+        (field) => field != '__typename' && !!data[field]
       );
       // @ts-ignore
       const field = Object.keys(data[type]).find(
         // @ts-ignore
-        (field) => field != '__typename' && !!data[type][field],
+        (field) => field != '__typename' && !!data[type][field]
       );
       filter.patchValue({
         type: type as any,
@@ -181,10 +173,7 @@ export class FilterItemsAccordionComponent implements OnInit {
       this.addGeneralFilter(null, true);
     }
 
-    merge(
-      this.formFg.controls.filterExpression.valueChanges,
-      this.filterChanges,
-    )
+    merge(this.formFg.controls.filterExpression.valueChanges, this.filterChanges)
       .pipe(debounce(() => interval(100)))
       .subscribe(async () => {
         this.emitParams();

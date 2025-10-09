@@ -4,17 +4,8 @@ import { RouteReuseStrategy } from '@angular/router';
 import { BrowserModule } from '@angular/platform-browser';
 import { AppRoutingModule } from './app-routing.module';
 import { AppLoadModule } from './app-load.module';
-import {
-  IonicRouteStrategy,
-  provideIonicAngular,
-} from '@ionic/angular/standalone';
-import {
-  ApolloClient,
-  ApolloLink,
-  HttpLink,
-  InMemoryCache,
-  split,
-} from '@apollo/client/core';
+import { IonicRouteStrategy, provideIonicAngular } from '@ionic/angular/standalone';
+import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, split } from '@apollo/client/core';
 import { HttpErrorInterceptorService } from './services/http-error-interceptor.service';
 import { ServerConfigService } from './services/server-config.service';
 import { AppConfigService } from './services/app-config.service';
@@ -25,10 +16,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { onError } from '@apollo/client/link/error';
-import {
-  provideHttpClient,
-  withInterceptorsFromDi,
-} from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 // export const appConfig: ApplicationConfig = {
@@ -39,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     importProvidersFrom(
       BrowserModule,
       AppRoutingModule,
-      AppLoadModule,
+      AppLoadModule
       // IonApp,
       // IonRouterOutlet,
     ),
@@ -56,13 +44,10 @@ export const appConfig: ApplicationConfig = {
         httpErrorInterceptorService: HttpErrorInterceptorService,
         serverConfig: ServerConfigService,
         appConfig: AppConfigService,
-        abortController: ApolloAbortControllerService,
+        abortController: ApolloAbortControllerService
       ): ApolloClient<any> => {
         const wsUrl = `${serverConfig.apiUrl.replace('http', 'ws')}/subscriptions`;
-        const newCorrId = (Math.random() + 1)
-          .toString(36)
-          .substring(7)
-          .toUpperCase();
+        const newCorrId = (Math.random() + 1).toString(36).substring(7).toUpperCase();
         if (!localStorage.getItem('corrId')) {
           localStorage.setItem('corrId', newCorrId);
         }
@@ -83,27 +68,22 @@ export const appConfig: ApplicationConfig = {
             ({ query }) => {
               const definition = getMainDefinition(query);
               return (
-                definition.kind === 'OperationDefinition' &&
-                definition.operation === 'subscription'
+                definition.kind === 'OperationDefinition' && definition.operation === 'subscription'
               );
             },
             new GraphQLWsLink(
               createClient({
                 url: wsUrl,
-              }),
+              })
             ),
             ApolloLink.from([
               removeTypenameFromVariables(),
               onError(({ graphQLErrors, networkError }) => {
                 if (networkError) {
-                  httpErrorInterceptorService.interceptNetworkError(
-                    networkError,
-                  );
+                  httpErrorInterceptorService.interceptNetworkError(networkError);
                 }
                 if (graphQLErrors) {
-                  httpErrorInterceptorService.interceptGraphQLErrors(
-                    graphQLErrors,
-                  );
+                  httpErrorInterceptorService.interceptGraphQLErrors(graphQLErrors);
                 }
               }),
               new HttpLink({
@@ -114,7 +94,7 @@ export const appConfig: ApplicationConfig = {
                   'x-product': appConfig.activeProductConfig.product,
                 },
               }),
-            ]),
+            ])
           ),
           cache: new InMemoryCache(),
         });

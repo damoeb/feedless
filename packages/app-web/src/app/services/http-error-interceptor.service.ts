@@ -16,7 +16,7 @@ export class HttpErrorInterceptorService {
           response: Response;
           result: Record<string, any>;
           statusCode: number;
-        }),
+        })
   ): void {
     const message = `[Network error]: ${networkError}`;
     console.error(message);

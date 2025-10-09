@@ -5,11 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 import { AppComponent } from './app.component';
 import { AppTestModule } from './app-test.module';
-import {
-  GqlSessionQuery,
-  GqlSessionQueryVariables,
-  Session,
-} from '../generated/graphql';
+import { GqlSessionQuery, GqlSessionQueryVariables, Session } from '../generated/graphql';
 
 describe('AppComponent', () => {
   beforeEach(async () => {

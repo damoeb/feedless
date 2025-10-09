@@ -7,21 +7,16 @@ describe.only('upcomingBaseRoute', () => {
     it('by place and date', () => {
       const date = dayjs('2025/12/12', 'YYYY/MM/DD');
       const locale = 'de';
-      const url = renderPath(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
-        {
-          countryCode: '1234',
-          region: 'AR',
-          place: 'Place',
-          year: parseInt(date.locale(locale).format('YYYY')),
-          month: parseInt(date.locale(locale).format('MM')),
-          day: parseInt(date.locale(locale).format('DD')),
-          perimeter: 10,
-        },
-      );
-      expect(url).toEqual(
-        '/events/in/1234/AR/Place/am/2025/12/12/innerhalb/10Km',
-      );
+      const url = renderPath(upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter, {
+        countryCode: '1234',
+        region: 'AR',
+        place: 'Place',
+        year: parseInt(date.locale(locale).format('YYYY')),
+        month: parseInt(date.locale(locale).format('MM')),
+        day: parseInt(date.locale(locale).format('DD')),
+        perimeter: 10,
+      });
+      expect(url).toEqual('/events/in/1234/AR/Place/am/2025/12/12/innerhalb/10Km');
     });
   });
 
@@ -31,7 +26,7 @@ describe.only('upcomingBaseRoute', () => {
 
       const { year, month, day } = parsePath(
         upcomingBaseRoute.events.countryCode.region.place.dateTime,
-        url,
+        url
       );
 
       expect(year).toEqual(2025);

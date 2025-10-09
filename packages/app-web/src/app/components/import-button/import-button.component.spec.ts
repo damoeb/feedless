@@ -1,16 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { ImportButtonComponent } from './import-button.component';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../app-test.module';
-import {
-  Agents,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
-} from '../../../generated/graphql';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
+import { Agents, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -40,7 +32,7 @@ describe('ImportButtonComponent', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     fixture = TestBed.createComponent(ImportButtonComponent);

@@ -37,7 +37,7 @@ export class PaymentPage implements OnInit, OnDestroy {
             location.href = `${this.serverConfig.apiUrl}/payment/${params.billingId}/callback`;
           }, 3000);
         }
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }

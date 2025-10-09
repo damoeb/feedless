@@ -41,7 +41,7 @@ export class TableComponent<T> implements OnInit, OnDestroy {
       const columns = this.getColumnIds();
       return sortedUniqBy(
         columns.map((name) => ({ name })),
-        'name',
+        'name'
       );
     } else {
       return [];
@@ -63,8 +63,6 @@ export class TableComponent<T> implements OnInit, OnDestroy {
   }
 
   getRows() {
-    return this.rows().map((row) =>
-      this.getColumnIds().map((column) => ({ value: row[column] })),
-    );
+    return this.rows().map((row) => this.getColumnIds().map((column) => ({ value: row[column] })));
   }
 }

@@ -41,9 +41,7 @@ export class PlayerComponent {
   }
 
   private firstAudioEnclosure(document: Record): Enclosure {
-    return first(
-      document.attachments.filter((e) => e.type.startsWith('audio/')),
-    );
+    return first(document.attachments.filter((e) => e.type.startsWith('audio/')));
   }
 
   firstAudioLength(document: Record): string {

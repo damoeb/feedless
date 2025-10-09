@@ -28,13 +28,10 @@ export const hashtagMatcher = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      this.decorations = hashtagMatchDecorator.updateDeco(
-        update,
-        this.decorations,
-      );
+      this.decorations = hashtagMatchDecorator.updateDeco(update, this.decorations);
     }
   },
   {
     decorations: (instance) => instance.decorations,
-  },
+  }
 );

@@ -9,9 +9,7 @@
 
       <ion-list class="ion-padding">
         @if (currentStep === 'email') {
-        <ion-item>
-          Please provide an email address where we should send your license
-        </ion-item>
+        <ion-item> Please provide an email address where we should send your license </ion-item>
         <form (ngSubmit)="next()">
           <ion-row class="ion-padding-horizontal">
             <ion-col size="11">
@@ -23,9 +21,7 @@
               ></ion-input>
             </ion-col>
             <ion-col size="1">
-              <ion-button (click)="next()" color="primary" expand="block"
-                >Next
-              </ion-button>
+              <ion-button (click)="next()" color="primary" expand="block">Next </ion-button>
             </ion-col>
           </ion-row>
         </form>
@@ -115,9 +111,7 @@
               labelPlacement="start"
             >
               @for (country of countries; track country) {
-              <ion-select-option [value]="country.code">
-                {{ country.name }}
-              </ion-select-option>
+              <ion-select-option [value]="country.code"> {{ country.name }} </ion-select-option>
               }
             </ion-select>
           </ion-col>
@@ -144,21 +138,14 @@
         </ion-row>
         <ion-row class="ion-margin-top">
           <ion-col push="4" size="8">
-            <ion-checkbox
-              [formControl]="formFg.controls.acceptedTerms"
-              labelPlacement="end"
-            >
+            <ion-checkbox [formControl]="formFg.controls.acceptedTerms" labelPlacement="end">
               I have read and agree to the terms and conditions
             </ion-checkbox>
           </ion-col>
         </ion-row>
         <ion-row class="ion-margin-top">
           <ion-col size="12">
-            <ion-button
-              (click)="createBilling()"
-              [disabled]="loading"
-              expand="block"
-            >
+            <ion-button (click)="createBilling()" [disabled]="loading" expand="block">
               Buy
             </ion-button>
           </ion-col>

@@ -16,12 +16,7 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RepositoryService } from '../../services/repository.service';
 import {
   GqlFeedlessPlugins,
@@ -69,9 +64,7 @@ type FcOutline = {
     IonNote,
   ],
 })
-export class ImportOpmlModalComponent
-  implements OnInit, ImportOpmlModalComponentProps
-{
+export class ImportOpmlModalComponent implements OnInit, ImportOpmlModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
   private readonly repositoryService = inject(RepositoryService);
 
@@ -90,9 +83,7 @@ export class ImportOpmlModalComponent
   }
 
   ngOnInit() {
-    this.fcOutlines = this.outlines.map((outline) =>
-      this.addFormControl(outline),
-    );
+    this.fcOutlines = this.outlines.map((outline) => this.addFormControl(outline));
   }
 
   async importSelected() {
@@ -154,7 +145,7 @@ export class ImportOpmlModalComponent
             visibility: GqlVisibility.IsPrivate,
             plugins,
           };
-        }),
+        })
     );
   }
 
@@ -177,16 +168,12 @@ export class ImportOpmlModalComponent
       return {
         ...outline,
         fc,
-        outlines: outline.outlines?.map((childOutline) =>
-          this.addFormControl(childOutline),
-        ),
+        outlines: outline.outlines?.map((childOutline) => this.addFormControl(childOutline)),
       };
     }
     return {
       ...outline,
-      outlines: outline.outlines?.map((childOutline) =>
-        this.addFormControl(childOutline),
-      ),
+      outlines: outline.outlines?.map((childOutline) => this.addFormControl(childOutline)),
     };
   }
 }

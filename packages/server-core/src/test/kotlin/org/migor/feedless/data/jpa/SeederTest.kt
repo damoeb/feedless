@@ -2,8 +2,10 @@ package org.migor.feedless.data.jpa
 
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.any2
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureGroupDAO
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.StandaloneFeedService
@@ -13,8 +15,6 @@ import org.migor.feedless.group.UserGroupAssignmentDAO
 import org.migor.feedless.plan.PricedProductDAO
 import org.migor.feedless.plan.ProductDAO
 import org.migor.feedless.repository.RepositoryDAO
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.eq
 import org.migor.feedless.secrets.UserSecretDAO
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -77,9 +77,9 @@ class SeederTest {
     Mockito.`when`(propertyService.rootEmail).thenReturn("admin@foo")
     Mockito.`when`(propertyService.anonymousEmail).thenReturn("anon@foo")
     Mockito.`when`(propertyService.rootSecretKey).thenReturn("aSecretSecret")
-    Mockito.`when`(userDAO.saveAndFlush(any2())).thenAnswer{ it.arguments[0] }
-    Mockito.`when`(repositoryDAO.save(any2())).thenAnswer{ it.arguments[0] }
-    Mockito.`when`(featureGroupDAO.save(any2())).thenAnswer{ it.arguments[0] }
+    Mockito.`when`(userDAO.saveAndFlush(any2())).thenAnswer { it.arguments[0] }
+    Mockito.`when`(repositoryDAO.save(any2())).thenAnswer { it.arguments[0] }
+    Mockito.`when`(featureGroupDAO.save(any2())).thenAnswer { it.arguments[0] }
     Mockito.`when`(standaloneFeedService.getRepoTitleForStandaloneFeedNotifications()).thenReturn("opsops")
 
 

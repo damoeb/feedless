@@ -1,10 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { ApolloClient } from '@apollo/client/core';
-import {
-  Agents,
-  GqlAgentsQuery,
-  GqlAgentsQueryVariables,
-} from '../../generated/graphql';
+import { Agents, GqlAgentsQuery, GqlAgentsQueryVariables } from '../../generated/graphql';
 import { GetElementType } from '../graphql/types';
 import { Observable, of, switchMap } from 'rxjs';
 import { Observable as ZenObservable } from 'zen-observable-ts';
@@ -33,12 +29,12 @@ export class AgentService {
               })
               .map((response) => {
                 return response.data.agents;
-              }),
+              })
           );
         } else {
           return of([]);
         }
-      }),
+      })
     );
   }
 }

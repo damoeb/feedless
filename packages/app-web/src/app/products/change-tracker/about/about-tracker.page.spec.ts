@@ -18,8 +18,7 @@ describe('AboutPcTrackerPage', () => {
       imports: [
         AboutTrackerPage,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockRepositories(apolloMockController),
+          configurer: (apolloMockController) => mockRepositories(apolloMockController),
         }),
       ],
     }).compileComponents();
@@ -27,7 +26,7 @@ describe('AboutPcTrackerPage', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     fixture = TestBed.createComponent(AboutTrackerPage);

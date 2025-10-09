@@ -80,5 +80,5 @@ export const inlineImagePlugin = ViewPlugin.fromClass(
     //     return false
     //   }
     // }
-  },
+  }
 );

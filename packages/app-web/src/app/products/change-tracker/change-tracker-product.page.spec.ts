@@ -19,8 +19,7 @@ describe('ChangeTrackerProductPage', () => {
       imports: [
         ChangeTrackerProductPage,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockScrape(apolloMockController),
+          configurer: (apolloMockController) => mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],
@@ -29,7 +28,7 @@ describe('ChangeTrackerProductPage', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     fixture = TestBed.createComponent(ChangeTrackerProductPage);

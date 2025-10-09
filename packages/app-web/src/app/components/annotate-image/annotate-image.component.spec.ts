@@ -19,7 +19,7 @@ describe('EmbeddedImageComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput(
       'sourceBuilder',
-      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService))
     );
     componentRef.setInput('embed', {
       data: '',

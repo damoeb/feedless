@@ -10,11 +10,7 @@ describe('ProfilePage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ProfilePage,
-        AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+      imports: [ProfilePage, AppTestModule.withDefaults(), RouterTestingModule.withRoutes([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProfilePage);

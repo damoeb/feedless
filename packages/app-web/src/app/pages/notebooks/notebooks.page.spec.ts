@@ -12,8 +12,7 @@ describe('NotebooksPage', () => {
       imports: [
         NotebooksPage,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockRepositories(apolloMockController),
+          configurer: (apolloMockController) => mockRepositories(apolloMockController),
         }),
       ],
       providers: [

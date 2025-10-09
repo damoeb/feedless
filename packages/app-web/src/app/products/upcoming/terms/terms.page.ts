@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
 import { PageService, PageTags } from '../../../services/page.service';
 import dayjs from 'dayjs';

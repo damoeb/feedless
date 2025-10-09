@@ -32,9 +32,7 @@ export class OpmlService {
       await toast.present();
       throw new Error(`${errorNode}`);
     } else {
-      const groups = Array.from(
-        doc.documentElement.querySelectorAll('body>outline'),
-      );
+      const groups = Array.from(doc.documentElement.querySelectorAll('body>outline'));
       return groups.map((group) => this.parseOutline(group));
     }
   }
@@ -45,9 +43,7 @@ export class OpmlService {
       text: group.getAttribute('text'),
       xmlUrl: group.getAttribute('xmlUrl'),
       htmlUrl: group.getAttribute('htmlUrl'),
-      outlines: Array.from(group.children).map((child) =>
-        this.parseOutline(child),
-      ),
+      outlines: Array.from(group.children).map((child) => this.parseOutline(child)),
     };
   }
 }

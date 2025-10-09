@@ -32,27 +32,25 @@ export class ConnectedAppService {
   }
 
   async updateConnectedApp(id: string, authorize: boolean): Promise<void> {
-    await this.apollo.mutate<
-      GqlUpdateConnectedAppMutation,
-      GqlUpdateConnectedAppMutationVariables
-    >({
-      mutation: UpdateConnectedApp,
-      variables: {
-        id,
-        authorize,
-      },
-    });
+    await this.apollo.mutate<GqlUpdateConnectedAppMutation, GqlUpdateConnectedAppMutationVariables>(
+      {
+        mutation: UpdateConnectedApp,
+        variables: {
+          id,
+          authorize,
+        },
+      }
+    );
   }
 
   async deleteConnectedApp(id: string): Promise<void> {
-    await this.apollo.mutate<
-      GqlDeleteConnectedAppMutation,
-      GqlDeleteConnectedAppMutationVariables
-    >({
-      mutation: DeleteConnectedApp,
-      variables: {
-        id,
-      },
-    });
+    await this.apollo.mutate<GqlDeleteConnectedAppMutation, GqlDeleteConnectedAppMutationVariables>(
+      {
+        mutation: DeleteConnectedApp,
+        variables: {
+          id,
+        },
+      }
+    );
   }
 }

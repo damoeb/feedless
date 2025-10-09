@@ -8,8 +8,7 @@ import { FeedlessMenuComponent } from './feedless-menu/feedless-menu.component';
 export const FEEDLESS_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./feedless-product.page').then((m) => m.FeedlessProductPage),
+    loadComponent: () => import('./feedless-product.page').then((m) => m.FeedlessProductPage),
     children: [
       {
         path: '',
@@ -19,7 +18,7 @@ export const FEEDLESS_ROUTES: Routes = [
             path: 'feed-builder',
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.routes').then(
-                (m) => m.FEED_BUILDER_ROUTES,
+                (m) => m.FEED_BUILDER_ROUTES
               ),
           },
           {
@@ -27,30 +26,25 @@ export const FEEDLESS_ROUTES: Routes = [
             // canActivate: [AuthGuardService],
             loadChildren: () =>
               import('../../pages/tracker-edit/tracker-edit.routes').then(
-                (m) => m.TRACKER_EDIT_ROUTES,
+                (m) => m.TRACKER_EDIT_ROUTES
               ),
           },
           {
             path: 'notebooks',
             // canActivate: [AuthGuardService],
             loadChildren: () =>
-              import('../../pages/notebooks/notebooks.routes').then(
-                (m) => m.NOTEBOOKS_ROUTING,
-              ),
+              import('../../pages/notebooks/notebooks.routes').then((m) => m.NOTEBOOKS_ROUTING),
           },
           {
             path: 'workflow-builder',
             loadChildren: () =>
-              import(
-                '../../pages/workflow-builder/workflow-builder.routes'
-              ).then((m) => m.WORKFLOW_BUILDER_ROUTES),
+              import('../../pages/workflow-builder/workflow-builder.routes').then(
+                (m) => m.WORKFLOW_BUILDER_ROUTES
+              ),
           },
           {
             path: 'products',
-            loadChildren: () =>
-              import('./products/products-routes').then(
-                (m) => m.PRODUCT_ROUTES,
-              ),
+            loadChildren: () => import('./products/products-routes').then((m) => m.PRODUCT_ROUTES),
           },
           {
             path: '',

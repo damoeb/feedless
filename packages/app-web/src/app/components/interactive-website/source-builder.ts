@@ -10,10 +10,7 @@ import {
   GqlSource,
   GqlSourceInput,
 } from '../../../generated/graphql';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../annotate-image/annotate-image.component';
+import { BoundingBox, XyPosition } from '../annotate-image/annotate-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { ReplaySubject } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
@@ -23,24 +20,20 @@ import { isDefined } from '../../types';
 
 export type ScrapeControllerState = 'DIRTY' | 'PRISTINE';
 
-function assertTrue(
-  condition: boolean,
-  error: string,
-  flow: GqlScrapeActionInput[],
-) {
+function assertTrue(condition: boolean, error: string, flow: GqlScrapeActionInput[]) {
   if (!condition) {
     throw new Error(`${error}, flow=${JSON.stringify(flow, null, 2)}`);
   }
 }
 
 export function getFirstFetchUrlLiteral(
-  actions: { fetch?: GqlHttpFetch | GqlHttpFetchInput }[],
+  actions: { fetch?: GqlHttpFetch | GqlHttpFetchInput }[]
 ): string {
   return getFirstFetch(actions)?.get?.url?.literal;
 }
 
 export function getFirstFetch(
-  actions: { fetch?: GqlHttpFetch | GqlHttpFetchInput }[],
+  actions: { fetch?: GqlHttpFetch | GqlHttpFetchInput }[]
 ): GqlHttpFetch {
   const fetchList = actions.filter((action) => isDefined(action.fetch));
   if (fetchList.length > 0) {
@@ -72,10 +65,7 @@ export class SourceBuilder {
     latLng: new FormControl<GqlSourceInput['latLng']>(null),
   });
 
-  static fromSource(
-    source: GqlSourceInput,
-    scrapeService: ScrapeService,
-  ): SourceBuilder {
+  static fromSource(source: GqlSourceInput, scrapeService: ScrapeService): SourceBuilder {
     return new SourceBuilder(scrapeService, source);
   }
 
@@ -103,7 +93,7 @@ export class SourceBuilder {
 
   private constructor(
     private scrapeService: ScrapeService,
-    source: GqlSourceInput,
+    source: GqlSourceInput
   ) {
     this.patch(pick(source, ['latLng', 'tags', 'title']));
     this.flow = cloneDeep(source.flow.sequence);
@@ -119,14 +109,9 @@ export class SourceBuilder {
     params: Partial<
       Pick<
         GqlHttpGetRequestInput,
-        | 'additionalWaitSec'
-        | 'url'
-        | 'timeout'
-        | 'language'
-        | 'forcePrerender'
-        | 'viewport'
+        'additionalWaitSec' | 'url' | 'timeout' | 'language' | 'forcePrerender' | 'viewport'
       >
-    >,
+    >
   ) {
     console.log(params);
     const fetchAction = getFirstFetch(this.flow);
@@ -137,9 +122,7 @@ export class SourceBuilder {
     return this;
   }
 
-  patch(
-    param: Partial<Pick<GqlSourceInput, 'tags' | 'latLng' | 'title' | 'draft'>>,
-  ) {
+  patch(param: Partial<Pick<GqlSourceInput, 'tags' | 'latLng' | 'title' | 'draft'>>) {
     this.meta.patchValue(param);
     this.events.stateChange.next('DIRTY');
   }
@@ -163,13 +146,11 @@ export class SourceBuilder {
   addOrUpdatePluginById(
     pluginId: GqlFeedlessPlugins,
     action: GqlScrapeActionInput,
-    before: GqlFeedlessPlugins = null,
+    before: GqlFeedlessPlugins = null
   ) {
     console.log('updatePluginById', pluginId, this.flow);
 
-    const updateIndex = this.flow.findIndex(
-      (a) => a.execute?.pluginId === pluginId,
-    );
+    const updateIndex = this.flow.findIndex((a) => a.execute?.pluginId === pluginId);
     if (updateIndex > -1) {
       console.log(`update #${updateIndex}`);
       this.flow[updateIndex] = action;
@@ -177,9 +158,7 @@ export class SourceBuilder {
       console.log('add');
 
       if (before) {
-        const addBeforeIndex = this.flow.findIndex(
-          (a) => a.execute?.pluginId === before,
-        );
+        const addBeforeIndex = this.flow.findIndex((a) => a.execute?.pluginId === before);
         if (addBeforeIndex > -1) {
           this.flow = [
             ...this.flow.slice(0, addBeforeIndex),
@@ -207,8 +186,8 @@ export class SourceBuilder {
   }
 
   hasFetchActionReturnedHtml() {
-    const contentType = this.response?.outputs?.find((o) => o.response.fetch)
-      ?.response?.fetch?.debug?.contentType;
+    const contentType = this.response?.outputs?.find((o) => o.response.fetch)?.response?.fetch
+      ?.debug?.contentType;
     return contentType?.toLowerCase()?.startsWith('text/html');
   }
 
@@ -273,29 +252,23 @@ export class SourceBuilder {
       'fetchFeeds',
       this.flow,
       '->',
-      this.flow.filter((a) => !isDefined(a.execute)),
+      this.flow.filter((a) => !isDefined(a.execute))
     );
 
     this.validateFlow();
     this.response = await this.scrapeService.scrape(
       this.toSource(
         {
-          sequence: [
-            ...this.flow.filter((a) => !isDefined(a.execute)),
-            ...actions,
-          ],
+          sequence: [...this.flow.filter((a) => !isDefined(a.execute)), ...actions],
         },
-        title,
-      ),
+        title
+      )
     );
     this.events.stateChange.next('DIRTY');
     return this.response;
   }
 
-  private toSource(
-    flow: GqlScrapeFlowInput,
-    title: string = null,
-  ): GqlSourceInput {
+  private toSource(flow: GqlScrapeFlowInput, title: string = null): GqlSourceInput {
     return {
       id: '',
       title: title || this.meta.value.title,
@@ -310,18 +283,18 @@ export class SourceBuilder {
     assertTrue(
       fetchActionCount === 1,
       `Invalid number of fetch actions ${fetchActionCount}`,
-      this.flow,
+      this.flow
     );
 
     assertTrue(
       this.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed).length <= 1,
       'too many feed plugins',
-      this.flow,
+      this.flow
     );
     assertTrue(
       this.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeeds).length <= 1,
       'too many feeds plugins',
-      this.flow,
+      this.flow
     );
   }
 
@@ -332,18 +305,14 @@ export class SourceBuilder {
 
 export function findAllByPluginsIdIn(
   source: GqlSourceInput,
-  pluginIds: GqlFeedlessPlugins[],
+  pluginIds: GqlFeedlessPlugins[]
 ): GqlScrapeActionInput[] {
-  return source.flow.sequence.filter((a) =>
-    pluginIds.includes(a.execute?.pluginId as any),
-  );
+  return source.flow.sequence.filter((a) => pluginIds.includes(a.execute?.pluginId as any));
 }
 
 export function findAllByPluginsIdNotIn(
   source: GqlSourceInput,
-  pluginIds: GqlFeedlessPlugins[],
+  pluginIds: GqlFeedlessPlugins[]
 ): GqlScrapeActionInput[] {
-  return source.flow.sequence.filter(
-    (a) => !pluginIds.includes(a.execute?.pluginId as any),
-  );
+  return source.flow.sequence.filter((a) => !pluginIds.includes(a.execute?.pluginId as any));
 }

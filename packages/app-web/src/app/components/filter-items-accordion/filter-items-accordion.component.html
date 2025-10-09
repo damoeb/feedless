@@ -20,11 +20,7 @@
             justify="end"
             style="flex: 3"
           ></ion-checkbox>
-          <ion-label
-            class="ion-text-left"
-            id="applyFiltersLast__label"
-            style="flex: 9"
-          >
+          <ion-label class="ion-text-left" id="applyFiltersLast__label" style="flex: 9">
             Run Filter last
           </ion-label>
         </ion-item>
@@ -39,10 +35,7 @@
           }
           <div class="flex__row">
             <div class="flex__column" style="row-gap: 5px">
-              <div
-                class="flex__row ion-align-items-center"
-                style="column-gap: 7px"
-              >
+              <div class="flex__row ion-align-items-center" style="column-gap: 7px">
                 <ion-select
                   [formControl]="filter.controls.type"
                   [interfaceOptions]="{
@@ -52,12 +45,8 @@
                   fill="outline"
                   interface="popover"
                 >
-                  <ion-select-option [value]="FilterTypeInclude"
-                    >include
-                  </ion-select-option>
-                  <ion-select-option [value]="FilterTypeExclude"
-                    >exclude
-                  </ion-select-option>
+                  <ion-select-option [value]="FilterTypeInclude">include </ion-select-option>
+                  <ion-select-option [value]="FilterTypeExclude">exclude </ion-select-option>
                 </ion-select>
                 <ion-text>if</ion-text>
                 <ion-select
@@ -66,15 +55,9 @@
                   fill="outline"
                   interface="popover"
                 >
-                  <ion-select-option [value]="FilterFieldLink"
-                    >link
-                  </ion-select-option>
-                  <ion-select-option [value]="FilterFieldTitle"
-                    >title
-                  </ion-select-option>
-                  <ion-select-option [value]="FilterFieldContent"
-                    >content
-                  </ion-select-option>
+                  <ion-select-option [value]="FilterFieldLink">link </ion-select-option>
+                  <ion-select-option [value]="FilterFieldTitle">title </ion-select-option>
+                  <ion-select-option [value]="FilterFieldContent">content </ion-select-option>
                 </ion-select>
                 <ion-select
                   [formControl]="filter.controls.operator"
@@ -88,8 +71,7 @@
                   <ion-select-option [value]="GqlStringFilterOperator.Matches"
                     >matches
                   </ion-select-option>
-                  <ion-select-option
-                    [value]="GqlStringFilterOperator.StartsWidth"
+                  <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
                     >starts with
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
@@ -124,11 +106,7 @@
 }
 
 @if (!hideIfEmpty() || hasFilters()) {
-  <ion-accordion
-    [disabled]="disabled()"
-    toggleIconSlot="start"
-    value="filter-expression"
-  >
+  <ion-accordion [disabled]="disabled()" toggleIconSlot="start" value="filter-expression">
     <ion-item slot="header">
       <ion-label [color]="hasFilterExpression() ? 'dark' : 'medium'">
         {{ labelPrefix() }} Expression Filters

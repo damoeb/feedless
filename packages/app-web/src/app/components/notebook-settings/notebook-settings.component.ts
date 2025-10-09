@@ -6,10 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {
-  NotebookService,
-  NotebookSettings,
-} from '../../services/notebook.service';
+import { NotebookService, NotebookSettings } from '../../services/notebook.service';
 import { map, Subscription } from 'rxjs';
 
 import {
@@ -68,7 +65,7 @@ export class NotebookSettingsComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.sessionService.watchColorScheme().subscribe((isDarkMode) => {
         this.isDarkMode = isDarkMode;
-      }),
+      })
     );
   }
 
@@ -76,24 +73,24 @@ export class NotebookSettingsComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  ifActiveOption<
-    T extends NestedKeys<NotebookSettings>,
-    V extends TypeAtPath<NotebookSettings, T>,
-  >(option: T, expectedValue: V) {
+  ifActiveOption<T extends NestedKeys<NotebookSettings>, V extends TypeAtPath<NotebookSettings, T>>(
+    option: T,
+    expectedValue: V
+  ) {
     return this.notebookService.getSettingsValue(option).pipe(
       map((value) => {
         if (value == expectedValue) {
           return 'primary';
         }
         return 'light';
-      }),
+      })
     );
   }
 
-  changeOption<
-    T extends NestedKeys<NotebookSettings>,
-    V extends TypeAtPath<NotebookSettings, T>,
-  >(option: T, value: V) {
+  changeOption<T extends NestedKeys<NotebookSettings>, V extends TypeAtPath<NotebookSettings, T>>(
+    option: T,
+    value: V
+  ) {
     // this.readerOptions[option] = value;
     // this.changeRef.detectChanges();
   }
@@ -105,11 +102,7 @@ export class NotebookSettingsComponent implements OnInit, OnDestroy {
   changeNumOption<
     T extends NestedKeys<NotebookSettings>,
     V extends TypeAtPath<NotebookSettings, T> & number,
-  >(
-    numOption: T,
-    increment: number,
-    constraints: { min: number; max: number },
-  ) {
+  >(numOption: T, increment: number, constraints: { min: number; max: number }) {
     // const value: number = this.getOption(numOption);
     // this.changeOption(
     //   numOption,

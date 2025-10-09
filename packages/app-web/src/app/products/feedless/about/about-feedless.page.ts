@@ -6,10 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import '@justinribeiro/lite-youtube';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../../services/app-config.service';
 import {
   IonBadge,
   IonContent,
@@ -20,12 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ModalName } from '../../../services/modal.service';
 import { addIcons } from 'ionicons';
-import {
-  chevronForwardOutline,
-  eyeOutline,
-  gitNetworkOutline,
-  listOutline,
-} from 'ionicons/icons';
+import { chevronForwardOutline, eyeOutline, gitNetworkOutline, listOutline } from 'ionicons/icons';
 import { ProductHeaderComponent } from '../../../components/product-header/product-header.component';
 import { RouterLink } from '@angular/router';
 import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';

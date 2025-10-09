@@ -14,8 +14,7 @@ describe('FeedsPage', () => {
         FeedsPage,
         IonicModule.forRoot(),
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockRepositories(apolloMockController),
+          configurer: (apolloMockController) => mockRepositories(apolloMockController),
         }),
       ],
       providers: [

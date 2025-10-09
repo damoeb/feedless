@@ -12,9 +12,7 @@ export class AppUpdateService {
 
   constructor() {
     this.swUpdate.versionUpdates
-      .pipe(
-        filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'),
-      )
+      .pipe(filter((evt): evt is VersionReadyEvent => evt.type === 'VERSION_READY'))
       .pipe(throttle(() => interval(3000)))
       .subscribe(async (event) => {
         console.log(event);

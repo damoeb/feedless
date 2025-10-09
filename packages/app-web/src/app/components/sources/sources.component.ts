@@ -32,10 +32,7 @@ import { FetchPolicy } from '@apollo/client/core';
 import { ArrayElement, Nullable } from '../../types';
 import { GqlSortOrder, GqlSourcesWhereInput } from '../../../generated/graphql';
 import { cloneDeep } from 'lodash-es';
-import {
-  FeedOrRepository,
-  tagsToString,
-} from '../feed-builder/feed-builder.component';
+import { FeedOrRepository, tagsToString } from '../feed-builder/feed-builder.component';
 import { RepositoryService, Source } from '../../services/repository.service';
 import { ModalService } from '../../services/modal.service';
 import { PaginationComponent } from '../pagination/pagination.component';
@@ -106,19 +103,14 @@ export class SourcesComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.queryFc.valueChanges
-      .pipe(debounce(() => interval(400)))
-      .subscribe((query) => {
-        this.fetchCurrentPage();
-      });
+    this.queryFc.valueChanges.pipe(debounce(() => interval(400))).subscribe((query) => {
+      this.fetchCurrentPage();
+    });
     this.fetchCurrentPage();
   }
 
   async importFeedlessJson(uploadEvent: Event) {
-    return this.sourceService.uploadFeedlessJson(
-      uploadEvent,
-      this.repository().id,
-    );
+    return this.sourceService.uploadFeedlessJson(uploadEvent, this.repository().id);
   }
 
   async deleteSource(source: RepositorySource) {
@@ -173,11 +165,8 @@ export class SourcesComponent implements OnInit {
               like: this.queryFc.value,
             }
           : this.sourcesFilter(),
-        [
-          { lastRecordsRetrieved: GqlSortOrder.Asc },
-          { lastRefreshedAt: GqlSortOrder.Asc },
-        ],
-        fetchPolicy,
+        [{ lastRecordsRetrieved: GqlSortOrder.Asc }, { lastRefreshedAt: GqlSortOrder.Asc }],
+        fetchPolicy
       );
       this.sourceChange.emit(this.sources);
     } finally {
@@ -186,9 +175,7 @@ export class SourcesComponent implements OnInit {
     this.changeRef.detectChanges();
   }
 
-  getHealthColorForSource(
-    source: ArrayElement<RepositoryFull['sources']>,
-  ): BubbleColor {
+  getHealthColorForSource(source: ArrayElement<RepositoryFull['sources']>): BubbleColor {
     if (source.disabled || source.lastRecordsRetrieved === 0) {
       return 'red';
     } else {
@@ -197,9 +184,7 @@ export class SourcesComponent implements OnInit {
   }
 
   async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
-    const geoTag = await this.modalService.openSearchAddressModal(
-      SearchAddressModalComponent,
-    );
+    const geoTag = await this.modalService.openSearchAddressModal(SearchAddressModalComponent);
     if (geoTag) {
       await this.repositoryService.updateRepository({
         where: {
@@ -267,9 +252,7 @@ export class SourcesComponent implements OnInit {
 
   stringifyLocalization(source: ArrayElement<RepositoryFull['sources']>) {
     const { latLng } = source;
-    return latLng
-      ? `(${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)})`
-      : 'Add geo tag';
+    return latLng ? `(${latLng.lat.toFixed(4)},${latLng.lng.toFixed(4)})` : 'Add geo tag';
   }
 
   async setDisabledForSource(source: RepositorySource, isDisabled: boolean) {
@@ -308,10 +291,7 @@ export class SourcesComponent implements OnInit {
     const toSource = async () => {
       if (source) {
         return this.repositoryService.toSourceInput(
-          await this.repositoryService.getSourceFullByRepository(
-            this.repository().id,
-            source.id,
-          ),
+          await this.repositoryService.getSourceFullByRepository(this.repository().id, source.id)
         );
       }
     };
@@ -380,7 +360,7 @@ export class SourcesComponent implements OnInit {
           }
           this.changeRef.detectChanges();
         }
-      },
+      }
     );
   }
 
@@ -429,11 +409,10 @@ export class SourcesComponent implements OnInit {
   }
 
   async showLogs(source: Source) {
-    const harvest =
-      await this.repositoryService.getLastHarvestFromSourcesByRepository(
-        this.repository().id,
-        source.id,
-      );
+    const harvest = await this.repositoryService.getLastHarvestFromSourcesByRepository(
+      this.repository().id,
+      source.id
+    );
     await this.modalService.openCodeEditorModal(CodeEditorModalComponent, {
       readOnly: true,
       contentType: 'text',

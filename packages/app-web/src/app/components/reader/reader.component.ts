@@ -8,10 +8,7 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  ReaderLinkTarget,
-  ReaderTextTransform,
-} from '../../products/reader/reader-product.page';
+import { ReaderLinkTarget, ReaderTextTransform } from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
 import { ServerConfigService } from '../../services/server-config.service';
 import { isDefined } from '../../types';
@@ -48,14 +45,12 @@ export class ReaderComponent implements OnChanges {
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
     if (changes.linkTarget && changes.linkTarget.currentValue) {
-      const currentLinkTarget: ReaderLinkTarget =
-        changes.linkTarget.currentValue;
+      const currentLinkTarget: ReaderLinkTarget = changes.linkTarget.currentValue;
       this.openLinkInReader = currentLinkTarget === 'reader';
     }
 
     if (changes.textTransform && changes.textTransform.currentValue) {
-      const currentTextTransform: ReaderTextTransform =
-        changes.textTransform.currentValue;
+      const currentTextTransform: ReaderTextTransform = changes.textTransform.currentValue;
       this.useBionic = currentTextTransform === 'bionic';
     }
 
@@ -73,10 +68,7 @@ export class ReaderComponent implements OnChanges {
 
   private getContent(): string {
     if (this.hasReadability()) {
-      const document = new DOMParser().parseFromString(
-        this.html(),
-        'text/html',
-      );
+      const document = new DOMParser().parseFromString(this.html(), 'text/html');
       Array.from(document.body.querySelectorAll('img[src]'))
         .filter((img) => img.getAttribute('src').startsWith('http'))
         .forEach((img) => {
@@ -84,7 +76,7 @@ export class ReaderComponent implements OnChanges {
             'src',
             this.serverConfig.apiUrl +
               '/attachment/proxy?url=' +
-              encodeURIComponent(img.getAttribute('src')),
+              encodeURIComponent(img.getAttribute('src'))
           );
         });
       Array.from(document.body.querySelectorAll('a[href]')).forEach((ahref) => {
@@ -99,10 +91,7 @@ export class ReaderComponent implements OnChanges {
           }
           if (this.showLinksHostname) {
             try {
-              ahref.insertAdjacentText(
-                'afterend',
-                ` (${new URL(url).hostname})`,
-              );
+              ahref.insertAdjacentText('afterend', ` (${new URL(url).hostname})`);
             } catch (e) {
               // ignore
             }
@@ -117,9 +106,7 @@ export class ReaderComponent implements OnChanges {
         };
 
         Array.from(document.body.querySelectorAll('p,span,li,blockquote'))
-          .flatMap((p) =>
-            Array.from(p.childNodes).filter((it) => it.nodeType === 3),
-          )
+          .flatMap((p) => Array.from(p.childNodes).filter((it) => it.nodeType === 3))
           .forEach((it) => {
             it.replaceWith(
               el(
@@ -130,8 +117,8 @@ export class ReaderComponent implements OnChanges {
                     el('strong', text.substring(0, Math.ceil(text.length / 2))),
                     text.substring(Math.ceil(text.length / 2), text.length),
                     ' ',
-                  ]),
-              ),
+                  ])
+              )
             );
           });
       }

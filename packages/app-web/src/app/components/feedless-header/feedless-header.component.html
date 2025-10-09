@@ -22,15 +22,9 @@
 
       <ion-buttons class="ion-margin-horizontal">
         @if (serverConfig.isSaas()) {
-          <app-repositories-button
-            name="Directory"
-            link="/directory"
-          ></app-repositories-button>
+          <app-repositories-button name="Directory" link="/directory"></app-repositories-button>
         }
-        <app-repositories-button
-          link="/feeds"
-          name="Feeds"
-        ></app-repositories-button>
+        <app-repositories-button link="/feeds" name="Feeds"></app-repositories-button>
         <ion-button
           href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"
           target="_blank"
@@ -44,12 +38,7 @@
     </div>
 
     <ion-buttons slot="end">
-      <ion-button
-        color="primary"
-        fill="solid"
-        routerLink="/feed-builder"
-        routerLinkActive="hidden"
-      >
+      <ion-button color="primary" fill="solid" routerLink="/feed-builder" routerLinkActive="hidden">
         Create Feed
       </ion-button>
       <ion-button routerLink="/notifications" appDev>

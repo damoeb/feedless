@@ -81,18 +81,9 @@ export class ProfilePage implements OnInit, OnDestroy {
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     emailVerified: new FormControl<boolean>(false),
-    country: new FormControl<string>('', [
-      Validators.minLength(2),
-      Validators.maxLength(50),
-    ]),
-    firstName: new FormControl<string>('', [
-      Validators.minLength(2),
-      Validators.maxLength(50),
-    ]),
-    lastName: new FormControl<string>('', [
-      Validators.minLength(2),
-      Validators.maxLength(50),
-    ]),
+    country: new FormControl<string>('', [Validators.minLength(2), Validators.maxLength(50)]),
+    firstName: new FormControl<string>('', [Validators.minLength(2), Validators.maxLength(50)]),
+    lastName: new FormControl<string>('', [Validators.minLength(2), Validators.maxLength(50)]),
   });
   protected readonly dateTimeFormat = dateTimeFormat;
   private subscriptions: Subscription[] = [];
@@ -136,7 +127,7 @@ export class ProfilePage implements OnInit, OnDestroy {
           });
           this.changeRef.detectChanges();
         }
-      }),
+      })
     );
   }
 
@@ -223,9 +214,7 @@ export class ProfilePage implements OnInit, OnDestroy {
   }
 
   async disconnectApp(appName: string) {
-    await this.connectedAppService.deleteConnectedApp(
-      this.getConnectedAppByName(appName).id,
-    );
+    await this.connectedAppService.deleteConnectedApp(this.getConnectedAppByName(appName).id);
     location.reload();
   }
 
@@ -241,7 +230,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     const repos = await this.getAllRepositories();
     await this.repositoryService.downloadRepositories(
       repos,
-      `feedless-full-backup-${dayjs().format('YYYY-MM-DD')}.json`,
+      `feedless-full-backup-${dayjs().format('YYYY-MM-DD')}.json`
     );
   }
 
@@ -271,8 +260,8 @@ export class ProfilePage implements OnInit, OnDestroy {
               page: 0,
               pageSize: 0,
             },
-            null,
-          ),
+            null
+          )
         );
       }
       page++;

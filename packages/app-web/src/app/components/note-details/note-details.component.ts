@@ -9,10 +9,7 @@ import {
 } from '@angular/core';
 import { Note, NotebookService, NoteId } from '../../services/notebook.service';
 import { NgClass } from '@angular/common';
-import {
-  createNoteHandleId,
-  NoteHandle,
-} from '../../pages/notebook-details/notebook-details.page';
+import { createNoteHandleId, NoteHandle } from '../../pages/notebook-details/notebook-details.page';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { Subscription } from 'rxjs';
 
@@ -67,7 +64,7 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
         }
         this.isMove = false;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 
@@ -77,10 +74,7 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
 
   toggle() {
     if (this.isMove) {
-      this.notebookService.changeParentById(
-        this.noteIdMoved,
-        this.handle().body.id,
-      );
+      this.notebookService.changeParentById(this.noteIdMoved, this.handle().body.id);
     } else {
       return this.notebookService.openNoteById(this.handle().body.id);
     }
@@ -91,7 +85,7 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
       {
         parent: this.handle().body.id,
       },
-      true,
+      true
     );
     event.stopPropagation();
   }

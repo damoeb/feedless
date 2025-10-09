@@ -1,4 +1,4 @@
-@use "../../../mixins";
+@use '../../../mixins';
 
 .progress {
   height: 5px;
@@ -41,7 +41,7 @@ ion-toolbar {
 }
 
 ion-content {
-  --font-serif: "Merriweather", serif;
+  --font-serif: 'Merriweather', serif;
   --font-sans-serif: Helvetica;
 }
 

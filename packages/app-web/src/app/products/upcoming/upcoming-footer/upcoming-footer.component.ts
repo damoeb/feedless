@@ -42,14 +42,7 @@ type SubscriptionType = 'cal' | 'atom';
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [
-    IonFooter,
-    IonButton,
-    IonIcon,
-    RemoveIfProdDirective,
-    RouterLink,
-    SubmitModalModule,
-  ],
+  imports: [IonFooter, IonButton, IonIcon, RemoveIfProdDirective, RouterLink, SubmitModalModule],
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {
@@ -139,9 +132,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.geoService.getCurrentLatLon().subscribe((location) => {}),
-    );
+    this.subscriptions.push(this.geoService.getCurrentLatLon().subscribe((location) => {}));
   }
 
   ngOnDestroy(): void {

@@ -1,11 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EventsPage } from './events.page';
-import {
-  AppTestModule,
-  mockEvents,
-  mockFullRecords,
-  mockRecords,
-} from '../../../app-test.module';
+import { AppTestModule, mockEvents, mockFullRecords, mockRecords } from '../../../app-test.module';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { EventService } from '../event.service';
@@ -74,9 +69,7 @@ describe('EventsPage', () => {
   });
 
   it('#cleanTitle', () => {
-    expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
-      ' Mittagessen',
-    );
+    expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(' Mittagessen');
   });
 
   it('#fetchEventsBetweenDates uses minDate start and maxDate end', () => {

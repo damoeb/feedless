@@ -1,13 +1,9 @@
 <ion-row>
-  <ion-col class="ion-align-self-center ion-text-right" size="3">
-    Refresh Rate
-  </ion-col>
+  <ion-col class="ion-align-self-center ion-text-right" size="3"> Refresh Rate </ion-col>
   <ion-col size="9">
     <ion-select [formControl]="control" fill="outline" interface="popover">
       @for (option of options; track option) {
-        <ion-select-option [value]="option.value"
-          >{{ option.key }}
-        </ion-select-option>
+        <ion-select-option [value]="option.value">{{ option.key }} </ion-select-option>
       }
     </ion-select>
   </ion-col>

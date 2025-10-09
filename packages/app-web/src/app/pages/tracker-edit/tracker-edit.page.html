@@ -3,10 +3,9 @@
     <h2 class="ion-padding-horizontal">Page Tracker Builder</h2>
     @if (!formGroup.value.url) {
     <p class="ion-padding pitch">
-      Monitor changes on any website, whether it's a shift in pixels, markup or
-      text. You can track changes of an entire webpage or just a specific
-      section, and get notified as soon as something is updated without manually
-      checking sites.
+      Monitor changes on any website, whether it's a shift in pixels, markup or text. You can track
+      changes of an entire webpage or just a specific section, and get notified as soon as something
+      is updated without manually checking sites.
     </p>
     }
 
@@ -63,11 +62,8 @@
                           (ionItemReorder)="handleReorderActions($any($event))"
                           [disabled]="false"
                         >
-                          @for (action of getActionFgs(); track action; let i =
-                          $index) {
-                          <ion-item
-                            [ngClass]="{ action__raw: !!action.value.raw }"
-                          >
+                          @for (action of getActionFgs(); track action; let i = $index) {
+                          <ion-item [ngClass]="{ action__raw: !!action.value.raw }">
                             <div class="flex__row">
                               <div>
                                 <ion-select
@@ -76,32 +72,20 @@
                                   interface="popover"
                                   placeholder="Action"
                                 >
-                                  <ion-select-option value="click"
-                                    >Click
-                                  </ion-select-option>
-                                  <ion-select-option
-                                    [disabled]="true"
-                                    value="header"
+                                  <ion-select-option value="click">Click </ion-select-option>
+                                  <ion-select-option [disabled]="true" value="header"
                                     >Header
                                   </ion-select-option>
-                                  <ion-select-option
-                                    [disabled]="true"
-                                    value="purge"
+                                  <ion-select-option [disabled]="true" value="purge"
                                     >Purge
                                   </ion-select-option>
-                                  <ion-select-option
-                                    [disabled]="true"
-                                    value="select"
+                                  <ion-select-option [disabled]="true" value="select"
                                     >Select
                                   </ion-select-option>
-                                  <ion-select-option
-                                    [disabled]="true"
-                                    value="type"
+                                  <ion-select-option [disabled]="true" value="type"
                                     >Type
                                   </ion-select-option>
-                                  <ion-select-option
-                                    [disabled]="true"
-                                    value="wait"
+                                  <ion-select-option [disabled]="true" value="wait"
                                     >Wait
                                   </ion-select-option>
                                 </ion-select>
@@ -112,14 +96,9 @@
                                 expand="block"
                                 style="flex: 1"
                               >
-                                {{ getPositionLabel(action) || 'Click on
-                                Screenshot' }}
+                                {{ getPositionLabel(action) || 'Click on Screenshot' }}
                               </ion-button>
-                              <ion-button
-                                (click)="removeAction(i)"
-                                color="medium"
-                                fill="clear"
-                              >
+                              <ion-button (click)="removeAction(i)" color="medium" fill="clear">
                                 <ion-icon name="trash-outline"></ion-icon>
                               </ion-button>
                             </div>
@@ -129,9 +108,7 @@
                         </ion-reorder-group>
                         <ion-item [disabled]="actionsFg.invalid">
                           <ion-label>
-                            <a (click)="addAction()" href="javascript:void(0)"
-                              >Add Action</a
-                            >
+                            <a (click)="addAction()" href="javascript:void(0)">Add Action</a>
                           </ion-label>
                         </ion-item>
                       </ion-list>
@@ -155,22 +132,12 @@
                     interface="popover"
                     placeholder="Compare Type"
                   >
-                    <ion-select-option [value]="GqlRecordField.Pixel"
-                      >Visual
-                    </ion-select-option>
-                    <ion-select-option [value]="GqlRecordField.Text"
-                      >Text
-                    </ion-select-option>
-                    <ion-select-option [value]="GqlRecordField.Markup"
-                      >Markup
-                    </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Pixel">Visual </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Text">Text </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Markup">Markup </ion-select-option>
                   </ion-select>
                 </ion-col>
-                <ion-col
-                  class="flex__row controls"
-                  size="7"
-                  style="align-items: end"
-                >
+                <ion-col class="flex__row controls" size="7" style="align-items: end">
                   @if (formGroup.value.compareType === GqlRecordField.Pixel) {
                   <ion-select
                     [formControl]="formGroup.controls.output"
@@ -178,15 +145,9 @@
                     interface="popover"
                     placeholder="Screen"
                   >
-                    <ion-select-option [value]="pageFragmentArea"
-                      >Area
-                    </ion-select-option>
-                    <ion-select-option [value]="pageFragmentPage"
-                      >All page
-                    </ion-select-option>
-                    <ion-select-option [value]="pageFragmentElement"
-                      >Element
-                    </ion-select-option>
+                    <ion-select-option [value]="pageFragmentArea">Area </ion-select-option>
+                    <ion-select-option [value]="pageFragmentPage">All page </ion-select-option>
+                    <ion-select-option [value]="pageFragmentElement">Element </ion-select-option>
                   </ion-select>
                   } @if (formGroup.value.compareType !== GqlRecordField.Pixel ||
                   formGroup.value.output === pageFragmentElement) {
@@ -195,16 +156,14 @@
                     [color]="formGroup.controls.elementXpath.invalid ? 'danger' : 'light'"
                     class="ion-margin-end"
                   >
-                    {{ getXPathLabel(formGroup.controls.elementXpath) || 'Choose
-                    Element' }}
+                    {{ getXPathLabel(formGroup.controls.elementXpath) || 'Choose Element' }}
                   </ion-button>
                   } @if (formGroup.controls.areaBoundingBox.enabled) {
                   <ion-button
                     (click)="pickArea()"
                     [color]="formGroup.controls.areaBoundingBox.invalid ? 'danger' : 'light'"
                   >
-                    {{ getBoundingBoxLabel(formGroup.controls.areaBoundingBox)
-                    || 'Draw Area' }}
+                    {{ getBoundingBoxLabel(formGroup.controls.areaBoundingBox) || 'Draw Area' }}
                   </ion-button>
                   }
                   <ion-select
@@ -213,18 +172,10 @@
                     interface="popover"
                     placeholder="Trigger"
                   >
-                    <ion-select-option [value]="0"
-                      >Any change
-                    </ion-select-option>
-                    <ion-select-option [value]="0.01"
-                      >Tiny 1%
-                    </ion-select-option>
-                    <ion-select-option [value]="0.1"
-                      >Medium 10%
-                    </ion-select-option>
-                    <ion-select-option [value]="0.25"
-                      >Major 25%
-                    </ion-select-option>
+                    <ion-select-option [value]="0">Any change </ion-select-option>
+                    <ion-select-option [value]="0.01">Tiny 1% </ion-select-option>
+                    <ion-select-option [value]="0.1">Medium 10% </ion-select-option>
+                    <ion-select-option [value]="0.25">Major 25% </ion-select-option>
                   </ion-select>
                 </ion-col>
               </ion-row>
@@ -242,15 +193,9 @@
                     interface="popover"
                     placeholder="Output"
                   >
-                    <ion-select-option [value]="GqlRecordField.Pixel"
-                      >Visual
-                    </ion-select-option>
-                    <ion-select-option [value]="GqlRecordField.Text"
-                      >Text
-                    </ion-select-option>
-                    <ion-select-option [value]="GqlRecordField.Markup"
-                      >Markup
-                    </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Pixel">Visual </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Text">Text </ion-select-option>
+                    <ion-select-option [value]="GqlRecordField.Markup">Markup </ion-select-option>
                   </ion-select>
                 </ion-col>
                 <ion-col size="6" size-md="4">
@@ -260,12 +205,8 @@
                     interface="popover"
                     placeholder="Screen"
                   >
-                    <ion-select-option [value]="pageFragmentArea"
-                      >Area
-                    </ion-select-option>
-                    <ion-select-option [value]="pageFragmentPage"
-                      >All page
-                    </ion-select-option>
+                    <ion-select-option [value]="pageFragmentArea">Area </ion-select-option>
+                    <ion-select-option [value]="pageFragmentPage">All page </ion-select-option>
                   </ion-select>
                 </ion-col>
                 <ion-col size="12" size-md="4">
@@ -275,27 +216,13 @@
                     interface="popover"
                     placeholder="Frequency"
                   >
-                    <ion-select-option value="0 */15 * * * *"
-                      >Every 15 min
-                    </ion-select-option>
-                    <ion-select-option value="0 */30 * * * *"
-                      >Every 30 min
-                    </ion-select-option>
-                    <ion-select-option value="0 0 * * * *"
-                      >Every hour
-                    </ion-select-option>
-                    <ion-select-option value="0 0 */8 * * *"
-                      >Every 6 hours
-                    </ion-select-option>
-                    <ion-select-option value="0 0 */12 * * *"
-                      >Every 12 hours
-                    </ion-select-option>
-                    <ion-select-option value="0 0 0 * * *"
-                      >Every Day
-                    </ion-select-option>
-                    <ion-select-option value="0 0 0 * * 0"
-                      >Every Week
-                    </ion-select-option>
+                    <ion-select-option value="0 */15 * * * *">Every 15 min </ion-select-option>
+                    <ion-select-option value="0 */30 * * * *">Every 30 min </ion-select-option>
+                    <ion-select-option value="0 0 * * * *">Every hour </ion-select-option>
+                    <ion-select-option value="0 0 */8 * * *">Every 6 hours </ion-select-option>
+                    <ion-select-option value="0 0 */12 * * *">Every 12 hours </ion-select-option>
+                    <ion-select-option value="0 0 0 * * *">Every Day </ion-select-option>
+                    <ion-select-option value="0 0 0 * * 0">Every Week </ion-select-option>
                   </ion-select>
                 </ion-col>
               </ion-row>
@@ -319,12 +246,8 @@
                     interface="popover"
                     placeholder="Baseline"
                   >
-                    <ion-select-option [value]="baselineManual"
-                      >Manual Approval
-                    </ion-select-option>
-                    <ion-select-option [value]="baselineLatest"
-                      >Latest
-                    </ion-select-option>
+                    <ion-select-option [value]="baselineManual">Manual Approval </ion-select-option>
+                    <ion-select-option [value]="baselineLatest">Latest </ion-select-option>
                   </ion-select>
                 </ion-col>
                 <ion-col size="6">

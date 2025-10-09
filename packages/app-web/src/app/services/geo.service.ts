@@ -35,27 +35,23 @@ export class GeoService {
   constructor() {
     const supported = getCachedLocations();
     this.currentPosition = new BehaviorSubject<Nullable<NamedLatLon>>(
-      supported[Math.floor(Math.random() * supported.length + 1)],
+      supported[Math.floor(Math.random() * supported.length + 1)]
     );
-    this.getLocationFromIp().subscribe((value) =>
-      this.currentPosition.next(value),
-    );
+    this.getLocationFromIp().subscribe((value) => this.currentPosition.next(value));
   }
 
   private getLocationFromIp(): Observable<NamedLatLon> {
     // https://www.geojs.io/docs/v1/endpoints/geo/
-    return this.httpClient
-      .get<GeoJsResponse>('https://get.geojs.io/v1/ip/geo.json')
-      .pipe(
-        map<GeoJsResponse, NamedLatLon>((response) => ({
-          lat: parseFloat(response.latitude),
-          lng: parseFloat(response.longitude),
-          countryCode: response.country_code,
-          place: response.city,
-          area: response.region,
-          displayName: `${response.city}, ${response.region}`,
-        })),
-      );
+    return this.httpClient.get<GeoJsResponse>('https://get.geojs.io/v1/ip/geo.json').pipe(
+      map<GeoJsResponse, NamedLatLon>((response) => ({
+        lat: parseFloat(response.latitude),
+        lng: parseFloat(response.longitude),
+        countryCode: response.country_code,
+        place: response.city,
+        area: response.region,
+        displayName: `${response.city}, ${response.region}`,
+      }))
+    );
   }
 
   getCurrentLatLon(): Observable<NamedLatLon> {
@@ -67,10 +63,7 @@ export class GeoService {
       navigator.geolocation.getCurrentPosition(resolve, reject);
     })
       .then((response) =>
-        this.openStreetMapService.reverseSearch(
-          response.coords.latitude,
-          response.coords.longitude,
-        ),
+        this.openStreetMapService.reverseSearch(response.coords.latitude, response.coords.longitude)
       )
       .then(this.currentPosition.next);
   }

@@ -13,11 +13,7 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ScrapeService } from '../../services/scrape.service';
 import { GqlFeedlessPlugins } from '../../../generated/graphql';
-import {
-  ScrapedReadability,
-  ScrapeResponse,
-  Selectors,
-} from '../../graphql/types';
+import { ScrapedReadability, ScrapeResponse, Selectors } from '../../graphql/types';
 import { transformXpathToCssPath } from '../../components/embedded-markup/embedded-markup.component';
 import { last, uniqBy } from 'lodash-es';
 import { SessionService } from '../../services/session.service';
@@ -166,7 +162,7 @@ export class ReaderProductPage implements OnInit, OnDestroy {
         this.profile.watchColorScheme().subscribe((isDarkMode) => {
           this.isDarkMode = isDarkMode;
           this.changeRef.detectChanges();
-        }),
+        })
       );
     }
   }
@@ -243,23 +239,18 @@ export class ReaderProductPage implements OnInit, OnDestroy {
 
       const selectors: Selectors[] = uniqBy(
         feeds.genericFeeds.map((it) => it.selectors),
-        'contextXPath',
+        'contextXPath'
       );
 
-      const raw = this.scrapeResponse.outputs.find((o) => o.response.fetch)
-        .response.fetch.data;
+      const raw = this.scrapeResponse.outputs.find((o) => o.response.fetch).response.fetch.data;
 
       const document = new DOMParser().parseFromString(raw, 'text/html');
 
       return selectors
         .map((it) =>
-          Array.from(
-            document.querySelectorAll(transformXpathToCssPath(it.contextXPath)),
-          )
+          Array.from(document.querySelectorAll(transformXpathToCssPath(it.contextXPath)))
             .map<InlineContent>((context) => {
-              const linkElement = context.querySelector(
-                transformXpathToCssPath(it.linkXPath),
-              );
+              const linkElement = context.querySelector(transformXpathToCssPath(it.linkXPath));
               if (linkElement) {
                 const url = new URL(linkElement.getAttribute('href'), this.url);
                 return {
@@ -274,45 +265,31 @@ export class ReaderProductPage implements OnInit, OnDestroy {
               }
             })
             .filter(
-              (content) =>
-                content &&
-                content.contentText &&
-                content.url &&
-                content.contentTitle,
-            ),
+              (content) => content && content.contentText && content.url && content.contentTitle
+            )
         )
         .filter((group) => group.length > 0);
     }
     return [];
   }
 
-  changeOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
-    option: T,
-    value: V,
-  ) {
+  changeOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(option: T, value: V) {
     this.readerOptions[option] = value;
     this.changeRef.detectChanges();
   }
 
   changeNumOption<
-    T extends keyof Pick<
-      ReaderOptions,
-      'fontSize' | 'contentWidth' | 'lineHeight'
-    >,
+    T extends keyof Pick<ReaderOptions, 'fontSize' | 'contentWidth' | 'lineHeight'>,
     V extends ReaderOptions[T],
-  >(
-    numOption: T,
-    increment: number,
-    constraints: { min: number; max: number },
-  ) {
+  >(numOption: T, increment: number, constraints: { min: number; max: number }) {
     this.changeOption(
       numOption,
       parseFloat(
         Math.max(
           Math.min(this.readerOptions[numOption] + increment, constraints.max),
-          constraints.min,
-        ).toFixed(1),
-      ),
+          constraints.min
+        ).toFixed(1)
+      )
     );
   }
 
@@ -345,17 +322,13 @@ export class ReaderProductPage implements OnInit, OnDestroy {
     this.progress = parseFloat(
       (
         (100 * event.detail.scrollTop) /
-        (this.readerContent().nativeElement.scrollHeight -
-          document.defaultView.innerHeight)
-      ).toFixed(1),
+        (this.readerContent().nativeElement.scrollHeight - document.defaultView.innerHeight)
+      ).toFixed(1)
     );
     this.changeRef.detectChanges();
   }
 
-  ifActiveOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(
-    option: T,
-    value: V,
-  ) {
+  ifActiveOption<T extends keyof ReaderOptions, V extends ReaderOptions[T]>(option: T, value: V) {
     if (this.readerOptions[option] == value) {
       return 'primary';
     }

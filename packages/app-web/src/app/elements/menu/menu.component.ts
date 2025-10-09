@@ -1,11 +1,4 @@
-import {
-  Component,
-  inject,
-  input,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { Component, inject, input, OnInit, output, viewChild } from '@angular/core';
 import {
   IonButton,
   IonContent,
@@ -21,10 +14,7 @@ import { isFunction, isObject, isString } from 'lodash-es';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-export function labelProvider<T>(
-  value: T,
-  labelFn: keyof T | ((value: T) => string),
-): string {
+export function labelProvider<T>(value: T, labelFn: keyof T | ((value: T) => string)): string {
   if (isFunction(labelFn)) {
     return labelFn(value);
   } else {

@@ -31,10 +31,7 @@
     @if (loading) {
     <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
     } @if (!loading) { @if (viewMode === viewModeTable && repositories) {
-    <app-table
-      [columns]="['title', 'lastUpdatedAt']"
-      [rows]="repositories"
-    ></app-table>
+    <app-table [columns]="['title', 'lastUpdatedAt']" [rows]="repositories"></app-table>
     } @if (viewMode === viewModeList) {
     <ion-list style="border-radius: 8px">
       @if (repositories?.length === 0) {
@@ -46,9 +43,7 @@
         <app-bubble [color]="getHealthColorForFeed(feed)"></app-bubble>
         <ion-label>
           <h2>
-            <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge">
-              {{ feed.title }}
-            </a>
+            <a [routerLink]="'/feeds/' + feed.id" queryParamsHandling="merge"> {{ feed.title }} </a>
             @if (isPrivate(feed)) {
             <ion-chip>Private</ion-chip>
             }
@@ -57,10 +52,7 @@
           <p>Updated {{ fromNow(feed.lastUpdatedAt) }} ago</p>
         </ion-label>
         <div class="ion-margin-end" style="position: relative">
-          <app-histogram
-            [data]="feed.frequency"
-            class="ion-margin-end"
-          ></app-histogram>
+          <app-histogram [data]="feed.frequency" class="ion-margin-end"></app-histogram>
         </div>
       </ion-item>
       }

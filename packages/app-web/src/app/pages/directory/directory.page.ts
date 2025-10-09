@@ -7,10 +7,7 @@ import {
 } from '@angular/core';
 import { PublicRepository, Record } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import {
-  BubbleColor,
-  BubbleComponent,
-} from '../../components/bubble/bubble.component';
+import { BubbleColor, BubbleComponent } from '../../components/bubble/bubble.component';
 import { GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl } from '@angular/forms';

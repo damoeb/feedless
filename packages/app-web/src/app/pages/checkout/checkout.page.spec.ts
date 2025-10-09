@@ -11,11 +11,7 @@ describe('CheckoutPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        CheckoutPage,
-        AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+      imports: [CheckoutPage, AppTestModule.withDefaults(), RouterTestingModule.withRoutes([])],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

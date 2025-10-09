@@ -69,34 +69,30 @@ export class SettingsPage implements OnInit {
             let fc: FormControl;
             if (feature.value.boolVal) {
               fc = new FormControl<boolean>(feature.value.boolVal.value);
-              fc.valueChanges
-                .pipe(debounce(() => interval(800)))
-                .subscribe(async (value) => {
+              fc.valueChanges.pipe(debounce(() => interval(800))).subscribe(async (value) => {
+                await this.featureService.updateFeatureValue({
+                  id: feature.value.id,
+                  value: {
+                    boolVal: {
+                      value,
+                    },
+                  },
+                });
+                this.showSavedToast();
+              });
+            } else {
+              if (feature.value.numVal) {
+                fc = new FormControl<number>(feature.value.numVal.value);
+                fc.valueChanges.pipe(debounce(() => interval(800))).subscribe(async (value) => {
                   await this.featureService.updateFeatureValue({
                     id: feature.value.id,
                     value: {
-                      boolVal: {
+                      numVal: {
                         value,
                       },
                     },
                   });
-                  this.showSavedToast();
                 });
-            } else {
-              if (feature.value.numVal) {
-                fc = new FormControl<number>(feature.value.numVal.value);
-                fc.valueChanges
-                  .pipe(debounce(() => interval(800)))
-                  .subscribe(async (value) => {
-                    await this.featureService.updateFeatureValue({
-                      id: feature.value.id,
-                      value: {
-                        numVal: {
-                          value,
-                        },
-                      },
-                    });
-                  });
                 this.showSavedToast();
               } else {
                 throw Error(`Unsupported feature ${feature}`);
@@ -105,7 +101,7 @@ export class SettingsPage implements OnInit {
 
             return { ...feature, fc };
           }),
-          'name',
+          'name'
         );
         this.changeRef.detectChanges();
       });

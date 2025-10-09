@@ -6,10 +6,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  ConnectedApp,
-  ConnectedAppService,
-} from '../../services/connected-app.service';
+import { ConnectedApp, ConnectedAppService } from '../../services/connected-app.service';
 import {
   IonButton,
   IonButtons,
@@ -25,14 +22,7 @@ import {
   templateUrl: './connect-app.page.html',
   styleUrls: ['./connect-app.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonContent,
-    IonSpinner,
-    IonCard,
-    IonCardContent,
-    IonButtons,
-    IonButton,
-  ],
+  imports: [IonContent, IonSpinner, IonCard, IonCardContent, IonButtons, IonButton],
   standalone: true,
 })
 export class ConnectAppPage implements OnInit {
@@ -53,9 +43,7 @@ export class ConnectAppPage implements OnInit {
     this.loading = true;
     try {
       if (this.appConnectionId) {
-        this.connectedApp = await this.connectedAppService.findById(
-          this.appConnectionId,
-        );
+        this.connectedApp = await this.connectedAppService.findById(this.appConnectionId);
       } else {
         this.invalidRequest = true;
       }
@@ -68,10 +56,7 @@ export class ConnectAppPage implements OnInit {
   }
 
   async authorizeApp() {
-    await this.connectedAppService.updateConnectedApp(
-      this.appConnectionId,
-      true,
-    );
+    await this.connectedAppService.updateConnectedApp(this.appConnectionId, true);
 
     await this.showToast('Authorized');
     await this.router.navigateByUrl('/');

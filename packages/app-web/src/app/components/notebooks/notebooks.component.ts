@@ -14,13 +14,7 @@ import { chevronForwardOutline } from 'ionicons/icons';
 import { ProductHeaderComponent } from '../product-header/product-header.component';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
-import {
-  IonIcon,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-} from '@ionic/angular/standalone';
+import { IonIcon, IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-notebook-builder',
@@ -71,7 +65,7 @@ export class NotebooksComponent implements OnInit, OnDestroy {
       this.notebookService.notebooksChanges.subscribe((notebooks) => {
         this.notebooks = notebooks;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 

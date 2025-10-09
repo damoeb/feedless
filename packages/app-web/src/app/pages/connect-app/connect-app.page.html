@@ -1,8 +1,5 @@
 <ion-content>
-  <div
-    class="flex__column"
-    style="justify-content: center; align-items: center; margin-top: 200px"
-  >
+  <div class="flex__column" style="justify-content: center; align-items: center; margin-top: 200px">
     @if (loading) {
     <ion-spinner name="dots"></ion-spinner>
     } @if (!loading) {
@@ -12,24 +9,12 @@
           <h1 class="ion-margin-start">Connect Telegram</h1>
           <ion-card class="ion-margin-top">
             <ion-card-content>
-              <p>
-                Telegram want to connect to feedless, so you can receive live
-                updates.
-              </p>
+              <p> Telegram want to connect to feedless, so you can receive live updates. </p>
               <ion-buttons class="ion-margin-top">
-                <ion-button
-                  (click)="cancelAttempt()"
-                  fill="outline"
-                  style="flex: 1"
-                >
+                <ion-button (click)="cancelAttempt()" fill="outline" style="flex: 1">
                   Cancel
                 </ion-button>
-                <ion-button
-                  (click)="authorizeApp()"
-                  color="success"
-                  fill="solid"
-                  style="flex: 1"
-                >
+                <ion-button (click)="authorizeApp()" color="success" fill="solid" style="flex: 1">
                   Authorize
                 </ion-button>
               </ion-buttons>

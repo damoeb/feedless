@@ -130,29 +130,27 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   readonly selectedFeedChange = output<NativeOrGenericFeed>();
 
-  readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> =
-    new FormGroup<TypedFormControls<Selectors>>(
-      {
-        contextXPath: new FormControl<string>('', {
-          nonNullable: true,
-          validators: [Validators.required, Validators.minLength(1)],
-        }),
-        dateXPath: new FormControl<string>('', []),
-        paginationXPath: new FormControl<string>('', []),
-        linkXPath: new FormControl<string>('', {
-          nonNullable: true,
-        }),
-        dateIsStartOfEvent: new FormControl<boolean>(false, {
-          nonNullable: true,
-          validators: [Validators.required],
-        }),
-        extendContext: new FormControl<GqlExtendContentOptions>(
-          GqlExtendContentOptions.None,
-          [],
-        ),
-      },
-      { updateOn: 'change' },
-    );
+  readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
+    TypedFormControls<Selectors>
+  >(
+    {
+      contextXPath: new FormControl<string>('', {
+        nonNullable: true,
+        validators: [Validators.required, Validators.minLength(1)],
+      }),
+      dateXPath: new FormControl<string>('', []),
+      paginationXPath: new FormControl<string>('', []),
+      linkXPath: new FormControl<string>('', {
+        nonNullable: true,
+      }),
+      dateIsStartOfEvent: new FormControl<boolean>(false, {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      extendContext: new FormControl<GqlExtendContentOptions>(GqlExtendContentOptions.None, []),
+    },
+    { updateOn: 'change' }
+  );
 
   genericFeeds: GqlTransientGenericFeed[] = [];
   nativeFeeds: GqlRemoteNativeFeed[] = [];
@@ -185,9 +183,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       if (this.feed()?.genericFeed) {
         this.customizeGenericFeed(this.feed().genericFeed);
       } else {
-        this.genFeedXpathsFg.patchValue(
-          this.activatedRoute.snapshot.queryParams,
-        );
+        this.genFeedXpathsFg.patchValue(this.activatedRoute.snapshot.queryParams);
         if (this.genFeedXpathsFg.valid) {
           this.customizeGenericFeed({
             hash: '',
@@ -213,22 +209,20 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             this.shouldRefresh = state === 'DIRTY';
             this.changeRef.detectChanges();
           }),
-        this.genFeedXpathsFg.valueChanges
-          .pipe(rxDebounce(() => interval(200)))
-          .subscribe(() => {
-            this.patchCurrentUrl(this.genFeedXpathsFg.value);
-            this.emitSelectedFeed();
-          }),
+        this.genFeedXpathsFg.valueChanges.pipe(rxDebounce(() => interval(200))).subscribe(() => {
+          this.patchCurrentUrl(this.genFeedXpathsFg.value);
+          this.emitSelectedFeed();
+        }),
         this.genFeedXpathsFg.controls.contextXPath.valueChanges
           .pipe(rxDebounce(() => interval(500)))
           .subscribe((xpath) => {
             if (this.activeSegment !== 'feed') {
               this.sourceBuilder().events.showElements.next(`${xpath}`);
             }
-          }),
+          })
       );
       const elementWithFeeds = this.sourceBuilder().response.outputs.find(
-        (o) => o.response?.extract?.feeds,
+        (o) => o.response?.extract?.feeds
       );
       if (elementWithFeeds) {
         const feeds = elementWithFeeds.response.extract.feeds;
@@ -237,9 +231,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
         const scores = feeds.genericFeeds.map((gf) => gf.score);
         const maxScore = max(scores);
         const minScore = min(scores);
-        this.scaleScore = scaleLinear()
-          .domain([minScore, maxScore])
-          .range([0, 100]);
+        this.scaleScore = scaleLinear().domain([minScore, maxScore]).range([0, 100]);
       } else {
         throw new Error('not supported');
       }
@@ -282,7 +274,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
               params: {},
             },
           },
-          GqlFeedlessPlugins.OrgFeedlessFilter,
+          GqlFeedlessPlugins.OrgFeedlessFilter
         );
 
       this.emitSelectedFeed();
@@ -360,10 +352,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             contentType: 'html',
             readOnly: true,
           };
-          await this.modalService.openCodeEditorModal(
-            CodeEditorModalComponent,
-            componentProps,
-          );
+          await this.modalService.openCodeEditorModal(CodeEditorModalComponent, componentProps);
         } else {
           const toast = await this.toastCtrl.create({
             message: 'Item XPath does not return matches',
@@ -387,9 +376,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
       try {
         this.loadingFeedPreview = true;
-        const response = await this.scrapeService.scrape(
-          this.sourceBuilder().build(),
-        );
+        const response = await this.scrapeService.scrape(this.sourceBuilder().build());
         this.feedItems = last(response.outputs).response.extract.items;
         this.feedLogs = response.logs;
 
@@ -411,13 +398,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
         dateXPath: genericFeed.selectors.dateXPath,
         extendContext: genericFeed.selectors.extendContext,
       },
-      { emitEvent: false },
+      { emitEvent: false }
     );
     this.genFeedXpathsFg.markAsPristine();
 
-    this.sourceBuilder().events.showElements.next(
-      genericFeed.selectors.contextXPath,
-    );
+    this.sourceBuilder().events.showElements.next(genericFeed.selectors.contextXPath);
 
     if (this.customSelectorsFgChangeSubscription) {
       this.customSelectorsFgChangeSubscription.unsubscribe();
@@ -453,7 +438,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       },
       {
         hash: hash || this.CUSTOM_HASH,
-      },
+      }
     );
     this.selectedFeed = {
       genericFeed: this.currentGenericFeed,
@@ -471,7 +456,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
           },
         },
       },
-      GqlFeedlessPlugins.OrgFeedlessFilter,
+      GqlFeedlessPlugins.OrgFeedlessFilter
     );
 
     this.patchCurrentUrl(omit(this.currentGenericFeed.selectors, '__typename'));

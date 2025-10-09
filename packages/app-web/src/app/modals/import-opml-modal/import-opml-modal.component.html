@@ -33,11 +33,7 @@
         @for (outlineChild of outlineRoot.outlines; track outlineChild) {
           <ion-item class="ion-padding-start">
             @if (outlineChild.xmlUrl) {
-              <ion-checkbox
-                [formControl]="outlineChild.fc"
-                label-placement="end"
-                slot="start"
-              >
+              <ion-checkbox [formControl]="outlineChild.fc" label-placement="end" slot="start">
                 <p>{{ outlineChild.title }}</p>
                 <p>{{ outlineChild.xmlUrl }}</p>
               </ion-checkbox>

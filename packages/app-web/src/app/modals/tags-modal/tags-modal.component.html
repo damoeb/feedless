@@ -27,12 +27,7 @@
     @for (tag of tags; track tag) {
       <ion-item>
         #{{ tag }}
-        <ion-button
-          (click)="removeTag(tag)"
-          fill="clear"
-          slot="end"
-          title="Remove"
-        >
+        <ion-button (click)="removeTag(tag)" fill="clear" slot="end" title="Remove">
           <ion-icon color="danger" name="trash-outline"></ion-icon>
         </ion-button>
       </ion-item>

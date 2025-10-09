@@ -14,10 +14,7 @@ import { AppConfigService } from '../../../services/app-config.service';
 import { PageService, PageTags } from '../../../services/page.service';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../../services/open-street-map.service';
-import {
-  parseDateFromUrl,
-  parseLocationFromUrl,
-} from '../upcoming-product-routes';
+import { parseDateFromUrl, parseLocationFromUrl } from '../upcoming-product-routes';
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
@@ -96,7 +93,7 @@ export class EventPage implements OnInit, OnDestroy {
         try {
           this.location = await parseLocationFromUrl(
             this.activatedRoute,
-            this.openStreetMapService,
+            this.openStreetMapService
           );
           this.date = parseDateFromUrl(params);
           this.changeRef.detectChanges();
@@ -105,8 +102,7 @@ export class EventPage implements OnInit, OnDestroy {
             {
               where: {
                 repository: {
-                  id: this.appConfigService.customProperties
-                    .eventRepositoryId as any,
+                  id: this.appConfigService.customProperties.eventRepositoryId as any,
                 },
                 id: {
                   eq: params.eventId,
@@ -116,7 +112,7 @@ export class EventPage implements OnInit, OnDestroy {
                 page: 0,
               },
             },
-            'cache-first',
+            'cache-first'
           );
           this.event = event[0];
           this.loading = false;
@@ -126,7 +122,7 @@ export class EventPage implements OnInit, OnDestroy {
         } catch (e) {
           console.error(e);
         }
-      }),
+      })
     );
   }
 
@@ -145,8 +141,7 @@ export class EventPage implements OnInit, OnDestroy {
       mainEntity: {
         '@type': 'Event',
         name: this.event.title,
-        description:
-          this.event.text || `Veranstaltung in ${this.location?.displayName}`,
+        description: this.event.text || `Veranstaltung in ${this.location?.displayName}`,
         startDate: startDate.toISOString(),
         eventStatus: 'EventScheduled',
         eventAttendanceMode: 'OfflineEventAttendanceMode',
@@ -247,7 +242,7 @@ END:VCALENDAR`;
     const element = document.createElement('a');
     element.setAttribute(
       'href',
-      'data:text/calendar;charset=UTF-8,' + encodeURIComponent(calendarEntry),
+      'data:text/calendar;charset=UTF-8,' + encodeURIComponent(calendarEntry)
     );
     element.setAttribute('download', 'foo.ics');
 

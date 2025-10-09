@@ -1,10 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  GqlCursor,
-  GqlPlansQuery,
-  GqlPlansQueryVariables,
-  Plans,
-} from '../../generated/graphql';
+import { GqlCursor, GqlPlansQuery, GqlPlansQueryVariables, Plans } from '../../generated/graphql';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { ArrayElement } from '../types';
 
@@ -18,10 +13,7 @@ export class PlanService {
 
   constructor() {}
 
-  async fetchPlans(
-    cursor: GqlCursor,
-    fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Plan[]> {
+  async fetchPlans(cursor: GqlCursor, fetchPolicy: FetchPolicy = 'cache-first'): Promise<Plan[]> {
     return this.apollo
       .query<GqlPlansQuery, GqlPlansQueryVariables>({
         query: Plans,

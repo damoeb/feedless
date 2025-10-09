@@ -1,9 +1,4 @@
-<ion-button
-  [color]="color()"
-  [expand]="expand()"
-  [fill]="fill()"
-  id="open-import-modal"
->
+<ion-button [color]="color()" [expand]="expand()" [fill]="fill()" id="open-import-modal">
   <ion-label>Import</ion-label>
 </ion-button>
 
@@ -34,9 +29,7 @@
           style="display: none"
           type="file"
         />
-        <ion-item (click)="openFilePicker(jsonPicker)" [button]="true">
-          Import JSON
-        </ion-item>
+        <ion-item (click)="openFilePicker(jsonPicker)" [button]="true"> Import JSON </ion-item>
         <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
         <!--          Import Urls-->
         <!--        </ion-item>-->

@@ -1,16 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import {
-  AppTestModule,
-  mockPlugins,
-  mockRecords,
-  mockRepository,
-} from '../../app-test.module';
+import { AppTestModule, mockPlugins, mockRecords, mockRepository } from '../../app-test.module';
 import { FeedBuilderComponent } from './feed-builder.component';
-import {
-  standaloneV1WebToFeedRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+import { standaloneV1WebToFeedRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { renderPath, renderQuery } from 'typesafe-routes';
 
 describe('FeedBuilderComponent', () => {
@@ -62,9 +54,7 @@ describe('FeedBuilderComponent', () => {
       const path = renderPath(standaloneV2WebToFeedRoute.feed, input);
       const query = renderQuery(standaloneV2WebToFeedRoute.feed, input);
 
-      const output = component.parseStandaloneUrl(
-        `http://localhost/${path}?${query}`,
-      );
+      const output = component.parseStandaloneUrl(`http://localhost/${path}?${query}`);
       expect(output).toEqual(input);
     });
 
@@ -77,9 +67,7 @@ describe('FeedBuilderComponent', () => {
       const path = renderPath(standaloneV1WebToFeedRoute.feed, input);
       const query = renderQuery(standaloneV1WebToFeedRoute.feed, input);
 
-      const output = component.parseStandaloneUrl(
-        `http://localhost/${path}?${query}`,
-      );
+      const output = component.parseStandaloneUrl(`http://localhost/${path}?${query}`);
       expect(output).toEqual({
         url: 'url',
         context: 'context',

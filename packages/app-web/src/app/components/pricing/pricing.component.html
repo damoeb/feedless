@@ -1,10 +1,6 @@
 @if (!hideServiceFlavor()) {
   <div>
-    <ion-segment
-      [formControl]="serviceFlavorFc"
-      mode="ios"
-      style="max-width: 400px; height: 50px"
-    >
+    <ion-segment [formControl]="serviceFlavorFc" mode="ios" style="max-width: 400px; height: 50px">
       <ion-segment-button [value]="serviceFlavorSelf">
         <ion-label>Self-Hosting</ion-label>
       </ion-segment-button>
@@ -18,20 +14,12 @@
 <div class="ion-padding-top">
   @if (serviceFlavorFc.value === serviceFlavorSelf) {
     <div>
-      <ion-segment
-        [formControl]="targetGroupFc"
-        mode="ios"
-        style="max-width: 800px; height: 50px"
-      >
+      <ion-segment [formControl]="targetGroupFc" mode="ios" style="max-width: 800px; height: 50px">
         <ion-segment-button [value]="targetGroupOrganization">
-          <ion-label
-            ><span class="ion-hide-md-down">For</span> Organizations
-          </ion-label>
+          <ion-label><span class="ion-hide-md-down">For</span> Organizations </ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="targetGroupIndividual">
-          <ion-label
-            ><span class="ion-hide-md-down">For</span> Individuals
-          </ion-label>
+          <ion-label><span class="ion-hide-md-down">For</span> Individuals </ion-label>
         </ion-segment-button>
         <ion-segment-button [value]="targetGroupOther">
           <ion-label>Supported Categories</ion-label>
@@ -59,22 +47,20 @@
     @if (serviceFlavorFc.value !== serviceFlavorCloud) {
       @if (targetGroupFc.value === targetGroupIndividual) {
         <p>
-          Hobbyists, professionals, or casual users who seek to enhance their
-          personal experience or skills.
+          Hobbyists, professionals, or casual users who seek to enhance their personal experience or
+          skills.
         </p>
       }
       @if (targetGroupFc.value === targetGroupOrganization) {
         <p>
-          Commercial enterprises, Non-Profit Organizations, Educational
-          Institutions and Governmental Bodies who use the product as part of
-          their activities.
+          Commercial enterprises, Non-Profit Organizations, Educational Institutions and
+          Governmental Bodies who use the product as part of their activities.
         </p>
       }
       @if (targetGroupFc.value === targetGroupOther) {
         <p>
-          Students or teachers who use the product as part of their studies and
-          Open Source contributors who integrate the product into their project
-          it's free.
+          Students or teachers who use the product as part of their studies and Open Source
+          contributors who integrate the product into their project it's free.
         </p>
       }
     }
@@ -97,24 +83,14 @@
             }
           </div>
           <div planAction>
-            <ion-button expand="full" color="light" appDev
-              >Show Details</ion-button
-            >
+            <ion-button expand="full" color="light" appDev>Show Details</ion-button>
             @if (hasSubscribed(product)) {
-              <ion-button
-                (click)="cancelSubscription(product)"
-                color="danger"
-                expand="full"
-              >
+              <ion-button (click)="cancelSubscription(product)" color="danger" expand="full">
                 Cancel Subscription
               </ion-button>
               <!--              <p>Subscription Info</p>-->
             } @else {
-              <ion-button
-                (click)="checkout(product)"
-                color="primary"
-                expand="full"
-              >
+              <ion-button (click)="checkout(product)" color="primary" expand="full">
                 {{ getProductActionLabel(product) }}
               </ion-button>
             }

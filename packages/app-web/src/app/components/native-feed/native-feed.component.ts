@@ -11,12 +11,7 @@ import { GqlFeedlessPlugins } from '../../../generated/graphql';
 import { last } from 'lodash-es';
 import { Record } from '../../graphql/types';
 
-import {
-  IonItem,
-  IonLabel,
-  IonList,
-  IonSpinner,
-} from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList, IonSpinner } from '@ionic/angular/standalone';
 import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.component';
 
 @Component({

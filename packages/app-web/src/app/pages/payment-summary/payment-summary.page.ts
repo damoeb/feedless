@@ -53,7 +53,7 @@ export class PaymentSummaryPage implements OnInit, OnDestroy {
             .then((billings) => billings[0]);
           this.changeRef.detectChanges();
         }
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }

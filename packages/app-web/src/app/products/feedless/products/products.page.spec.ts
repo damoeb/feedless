@@ -11,11 +11,7 @@ describe('ProductsPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ProductsPage,
-        AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+      imports: [ProductsPage, AppTestModule.withDefaults(), RouterTestingModule.withRoutes([])],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

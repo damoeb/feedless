@@ -14,15 +14,7 @@ import { AgentsComponent } from '../../components/agents/agents.component';
   selector: 'app-agents-page',
   templateUrl: './agents.page.html',
   styleUrls: ['./agents.page.scss'],
-  imports: [
-    IonContent,
-    IonBreadcrumbs,
-    IonBreadcrumb,
-    RouterLink,
-    IonRow,
-    IonCol,
-    AgentsComponent,
-  ],
+  imports: [IonContent, IonBreadcrumbs, IonBreadcrumb, RouterLink, IonRow, IonCol, AgentsComponent],
   standalone: true,
 })
 export class AgentsPage {

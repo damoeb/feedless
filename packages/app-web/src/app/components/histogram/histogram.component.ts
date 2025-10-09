@@ -30,14 +30,9 @@ export class HistogramComponent implements OnInit {
       .map((offset) => currentDate.subtract(offset, 'days').format('YYYYMMDD'))
       .map((dateStr, index) => ({
         index,
-        count:
-          this.data().find((i) => dayjs(i.group).format('YYYYMMDD') === dateStr)
-            ?.count || 0,
+        count: this.data().find((i) => dayjs(i.group).format('YYYYMMDD') === dateStr)?.count || 0,
       }))
-      .map(
-        (v, index) =>
-          `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`,
-      );
+      .map((v, index) => `L ${3.5 * index} ${scaleCount(Math.min(v.count, maxPerDay))}`);
 
     this.path = 'M 0 0 ' + path.join(' ');
   }

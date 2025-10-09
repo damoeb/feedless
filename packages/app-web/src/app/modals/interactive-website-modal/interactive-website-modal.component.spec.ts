@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { InteractiveWebsiteModalComponent } from './interactive-website-modal.component';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../app-test.module';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../app-test.module';
 import { ServerConfigService } from '../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 
@@ -20,7 +16,7 @@ describe('InteractiveWebsiteModalComponent', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     fixture = TestBed.createComponent(InteractiveWebsiteModalComponent);

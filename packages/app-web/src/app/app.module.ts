@@ -17,10 +17,7 @@ export const isUrl = (value: string): boolean => {
     return false;
   }
   const potentialUrl = value.toLowerCase();
-  if (
-    potentialUrl.startsWith('http://') ||
-    potentialUrl.startsWith('https://')
-  ) {
+  if (potentialUrl.startsWith('http://') || potentialUrl.startsWith('https://')) {
     try {
       new URL(value);
 

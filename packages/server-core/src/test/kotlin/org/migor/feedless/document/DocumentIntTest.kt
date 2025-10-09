@@ -26,7 +26,7 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO

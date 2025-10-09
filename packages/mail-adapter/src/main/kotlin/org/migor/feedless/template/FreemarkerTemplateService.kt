@@ -18,7 +18,7 @@ class FreemarkerTemplateService(
   private val log = LoggerFactory.getLogger(FreemarkerTemplateService::class.simpleName)
 
   override fun <T> renderTemplate(
-    template: FtlTemplate<T>,
+    template: FreemarkerTemplate<T>,
   ): String {
     val templateName = template.templateName
     log.debug("renderTemplate $templateName")

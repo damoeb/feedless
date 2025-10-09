@@ -24,10 +24,7 @@ export interface KeyLabelOption<T> {
   imports: [MenuComponent],
   standalone: true,
 })
-export class SelectComponent<T>
-  extends ControlValueAccessorDirective<T>
-  implements OnInit
-{
+export class SelectComponent<T> extends ControlValueAccessorDirective<T> implements OnInit {
   readonly hideFilter = input<boolean>(false);
 
   readonly placeholder = input<string>('Empty');

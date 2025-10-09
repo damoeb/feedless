@@ -8,10 +8,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   FormControl,
   FormGroup,
@@ -352,19 +349,10 @@ export class CheckoutPage implements OnInit, OnDestroy {
   protected formFg = new FormGroup({
     email: createEmailFormControl<string>(''),
     country: new FormControl<string>('', Validators.required),
-    firstName: new FormControl<string>('', [
-      Validators.required,
-      Validators.minLength(2),
-    ]),
-    lastName: new FormControl<string>('', [
-      Validators.required,
-      Validators.minLength(2),
-    ]),
+    firstName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
+    lastName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
     acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
-    paymentMethod: new FormControl<PaymentMethod>(
-      GqlPaymentMethod.Bill,
-      Validators.required,
-    ),
+    paymentMethod: new FormControl<PaymentMethod>(GqlPaymentMethod.Bill, Validators.required),
   });
   protected products: Product[];
   protected loginWithRedirect: string;
@@ -412,7 +400,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
           });
           this.changeRef.detectChanges();
         }
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }

@@ -37,10 +37,7 @@ import {
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
   InteractiveWebsiteModalComponentProps,
@@ -226,17 +223,15 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      }),
       this.activatedRoute.queryParams.subscribe(async (params) => {
         if (params.url?.length > 0) {
           await this.receiveUrl(params.url);
         }
-      }),
+      })
     );
 
     // await this.fetchFeeds();
@@ -285,10 +280,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
           },
         });
       } else {
-        this.sourceBuilder = SourceBuilder.fromUrl(
-          this.url,
-          this.scrapeService,
-        );
+        this.sourceBuilder = SourceBuilder.fromUrl(this.url, this.scrapeService);
       }
       this.changeRef.detectChanges();
 
@@ -383,9 +375,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async showLocationPickerModal() {
-    this.geoLocation = await this.modalService.openSearchAddressModal(
-      SearchAddressModalComponent,
-    );
+    this.geoLocation = await this.modalService.openSearchAddressModal(SearchAddressModalComponent);
     console.log('this.geoLocation', this.geoLocation);
     this.changeRef.detectChanges();
   }
@@ -409,11 +399,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       '/api/legacy/w2f',
     ];
 
-    if (
-      legacyPathFragments.some(
-        (pathFragment) => this.url.indexOf(pathFragment) > -1,
-      )
-    ) {
+    if (legacyPathFragments.some((pathFragment) => this.url.indexOf(pathFragment) > -1)) {
       const convertRole = 'convert';
       const alert = await this.alertCtrl.create({
         header: 'Standalone URL detected',
@@ -453,14 +439,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     try {
       return assignIn(
         defaultParams,
-        parseQuery(standaloneV2WebToFeedRoute.feed, queryParamString),
+        parseQuery(standaloneV2WebToFeedRoute.feed, queryParamString)
       ) as StandaloneUrlParams;
     } catch (e) {
       try {
-        const parsed = parseQuery(
-          standaloneV1WebToFeedRoute.feed,
-          queryParamString,
-        );
+        const parsed = parseQuery(standaloneV1WebToFeedRoute.feed, queryParamString);
         return assignIn(defaultParams, {
           url: parsed.url,
           context: parsed.pContext,
@@ -482,17 +465,14 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         const filter = JSON.parse(params.q);
         console.log('with filter', filter);
         if (isArray(filter)) {
-          this.sourceBuilder.addOrUpdatePluginById(
-            GqlFeedlessPlugins.OrgFeedlessFilter,
-            {
-              execute: {
-                pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-                params: {
-                  org_feedless_filter: filter,
-                },
+          this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+            execute: {
+              pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+              params: {
+                org_feedless_filter: filter,
               },
             },
-          );
+          });
         }
       } catch (e) {
         // ignored
@@ -536,9 +516,8 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   getFilterPlugin() {
-    return this.sourceBuilder.findFirstByPluginsId(
-      GqlFeedlessPlugins.OrgFeedlessFilter,
-    )?.execute?.params?.org_feedless_filter;
+    return this.sourceBuilder.findFirstByPluginsId(GqlFeedlessPlugins.OrgFeedlessFilter)?.execute
+      ?.params?.org_feedless_filter;
   }
 
   onFilterChange(params: GqlItemFilterParamsInput[]) {
@@ -546,17 +525,14 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       this.sourceBuilder.removePluginById(GqlFeedlessPlugins.OrgFeedlessFilter);
     } else {
       console.log('patchFilterAction');
-      this.sourceBuilder.addOrUpdatePluginById(
-        GqlFeedlessPlugins.OrgFeedlessFilter,
-        {
-          execute: {
-            pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-            params: {
-              org_feedless_filter: params,
-            },
+      this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+        execute: {
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+          params: {
+            org_feedless_filter: params,
           },
         },
-      );
+      });
     }
   }
 
@@ -647,12 +623,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     if (this.source()) {
       const feedPlugin = first(
         this.source().flow.sequence.filter(
-          (a) => a.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed,
-        ),
+          (a) => a.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed
+        )
       )?.execute?.params?.org_feedless_feed;
-      const fetchPlugin = first(
-        this.source().flow.sequence.filter((a) => a.fetch),
-      )?.fetch;
+      const fetchPlugin = first(this.source().flow.sequence.filter((a) => a.fetch))?.fetch;
       if (feedPlugin) {
         if (feedPlugin.generic) {
           return {

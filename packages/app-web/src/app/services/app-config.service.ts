@@ -21,8 +21,7 @@ export type VerticalSpecWithRoutesAndMarkup = VerticalSpecWithRoutes & {
   localSetup: string;
   videoTeaserSnipped: string;
 };
-export type VerticalSpecWithRoutes = VerticalRoutes &
-  VerticalSpec & { imageUrl: string };
+export type VerticalSpecWithRoutes = VerticalRoutes & VerticalSpec & { imageUrl: string };
 
 export type VerticalRoutes = {
   id: VerticalId;
@@ -48,9 +47,7 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/reader/reader-product.routes').then(
-              (m) => m.READER_ROUTES,
-            ),
+            import('../products/reader/reader-product.routes').then((m) => m.READER_ROUTES),
         },
       ],
     },
@@ -60,9 +57,7 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/upcoming/upcoming-product-routes').then(
-              (m) => m.UPCOMING_ROUTES,
-            ),
+            import('../products/upcoming/upcoming-product-routes').then((m) => m.UPCOMING_ROUTES),
         },
       ],
     },
@@ -72,9 +67,9 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import(
-              '../products/change-tracker/change-tracker-product.routes'
-            ).then((m) => m.CHANGE_TRACKER_ROUTES),
+            import('../products/change-tracker/change-tracker-product.routes').then(
+              (m) => m.CHANGE_TRACKER_ROUTES
+            ),
         },
       ],
     },
@@ -89,7 +84,7 @@ export class AppConfigService {
           path: '',
           loadChildren: () =>
             import('../products/rss-builder/rss-builder-product.routes').then(
-              (m) => m.RSS_BUILDER_ROUTES,
+              (m) => m.RSS_BUILDER_ROUTES
             ),
         },
       ],
@@ -105,7 +100,7 @@ export class AppConfigService {
           path: '',
           loadChildren: () =>
             import('../products/untold-notes/untold-notes-product.routes').then(
-              (m) => m.UNTOLD_NOTES_ROUTES,
+              (m) => m.UNTOLD_NOTES_ROUTES
             ),
         },
       ],
@@ -120,9 +115,7 @@ export class AppConfigService {
         {
           path: '',
           loadChildren: () =>
-            import('../products/feedless/feedless-product.routes').then(
-              (m) => m.FEEDLESS_ROUTES,
-            ),
+            import('../products/feedless/feedless-product.routes').then((m) => m.FEEDLESS_ROUTES),
         },
       ],
     },
@@ -138,29 +131,23 @@ export class AppConfigService {
           // canMatch: [() => true],
           loadChildren: () =>
             import('../products/visual-diff/visual-diff-product-routes').then(
-              (m) => m.VISUAL_DIFF_ROUTES,
+              (m) => m.VISUAL_DIFF_ROUTES
             ),
         },
       ],
     },
   ];
 
-  private activeProductConfigSubject =
-    new ReplaySubject<VerticalSpecWithRoutes>();
+  private activeProductConfigSubject = new ReplaySubject<VerticalSpecWithRoutes>();
   public activeProductConfig!: VerticalSpecWithRoutes;
   public customProperties!: { [p: string]: number | boolean | string };
 
   async activateUserInterface(appConfig: VerticalAppConfig) {
     console.log('appConfig', appConfig);
     const product = appConfig.product;
-    const customProperties = omit(
-      appConfig,
-      'product',
-      'offlineSupport',
-      'apiUrl',
-    );
+    const customProperties = omit(appConfig, 'product', 'offlineSupport', 'apiUrl');
     console.log(
-      `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`,
+      `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`
     );
     environment.product = product;
     environment.offlineSupport = appConfig.offlineSupport === true;
@@ -178,23 +165,21 @@ export class AppConfigService {
 
   getAllAppConfigs(): Promise<VerticalSpecWithRoutesAndMarkup[]> {
     return Promise.all(
-      allVerticals.verticals.map(
-        async (meta): Promise<VerticalSpecWithRoutesAndMarkup> => {
-          const vertical = this.verticalRoutes.find((p) => meta.id === p.id)!;
-          return {
-            ...meta,
-            videoTeaserSnipped: `<lite-youtube videoid="${meta.videoUrl}"></lite-youtube>`,
-            ...vertical,
-            localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
+      allVerticals.verticals.map(async (meta): Promise<VerticalSpecWithRoutesAndMarkup> => {
+        const vertical = this.verticalRoutes.find((p) => meta.id === p.id)!;
+        return {
+          ...meta,
+          videoTeaserSnipped: `<lite-youtube videoid="${meta.videoUrl}"></lite-youtube>`,
+          ...vertical,
+          localSetup: `${await marked(meta.localSetupBeforeMarkup || '')}
 \`\`\`bash
 ${meta.localSetupBash}
 \`\`\`
 ${await marked(meta.localSetupAfterMarkup || '')}`,
-            descriptionHtml: await marked(meta.descriptionMarkdown),
-            imageUrl: `/assets/${meta.id}.jpeg`,
-          };
-        },
-      ),
+          descriptionHtml: await marked(meta.descriptionMarkdown),
+          imageUrl: `/assets/${meta.id}.jpeg`,
+        };
+      })
     );
   }
 
@@ -202,9 +187,7 @@ ${await marked(meta.localSetupAfterMarkup || '')}`,
     this.titleService.setTitle(`${title} | ${this.activeProductConfig.title}`);
   }
 
-  private async resolveAppConfig(
-    product: GqlVertical,
-  ): Promise<VerticalSpecWithRoutes> {
+  private async resolveAppConfig(product: GqlVertical): Promise<VerticalSpecWithRoutes> {
     const configs = await this.getAllAppConfigs();
     return configs.find((productConfig) => productConfig.product === product)!;
   }

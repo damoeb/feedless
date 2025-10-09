@@ -86,10 +86,7 @@ query sourcesByRepository(
   }
 }
 
-query lastHarvestsFromSourcesByRepository(
-  $repositoryId: ID!
-  $sourceId: String!
-) {
+query lastHarvestsFromSourcesByRepository($repositoryId: ID!, $sourceId: String!) {
   repository(data: { where: { id: $repositoryId } }) {
     sources(where: { id: { eq: $sourceId } }, cursor: { page: 0 }) {
       harvests {

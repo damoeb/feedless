@@ -89,9 +89,7 @@
           <!--          <ion-label class="ion-padding">Email</ion-label>-->
         </ion-col>
         <ion-col size="9">
-          <ion-button
-            (click)="saveProfile()"
-            [disabled]="!(formFg.valid && formFg.dirty)"
+          <ion-button (click)="saveProfile()" [disabled]="!(formFg.valid && formFg.dirty)"
             >Save
           </ion-button>
         </ion-col>
@@ -210,9 +208,7 @@
       <ion-item>
         <ion-label>
           Telegram
-          <ion-note class="ion-margin-start"
-            >Used for push notifications
-          </ion-note>
+          <ion-note class="ion-margin-start">Used for push notifications </ion-note>
         </ion-label>
 
         <ion-button color="dark" routerLink="/docs/telegram" size="small"
@@ -220,9 +216,7 @@
         </ion-button>
 
         @if (hasConnectedApp('Telegram')) {
-        <ion-button (click)="disconnectApp('Telegram')" color="danger">
-          Disconnect
-        </ion-button>
+        <ion-button (click)="disconnectApp('Telegram')" color="danger"> Disconnect </ion-button>
         }
       </ion-item>
     </ion-list>
@@ -258,19 +252,11 @@
         </ion-row>
         } @for (secret of secrets; track secret) { @if (secret.valueMasked) {
         <ion-row>
-          <ion-col class="ion-padding-start" size="6"
-            >{{ secret.value }}
-          </ion-col>
+          <ion-col class="ion-padding-start" size="6">{{ secret.value }} </ion-col>
           <ion-col size="2">{{ secret.lastUsed || 'never' }}</ion-col>
-          <ion-col size="2"
-            >{{ secret.validUntil | date: dateTimeFormat }}
-          </ion-col>
+          <ion-col size="2">{{ secret.validUntil | date: dateTimeFormat }} </ion-col>
           <ion-col class="ion-text-right" size="2">
-            <ion-button
-              (click)="deleteSecret(secret)"
-              color="danger"
-              fill="clear"
-              size="small"
+            <ion-button (click)="deleteSecret(secret)" color="danger" fill="clear" size="small"
               >Delete
             </ion-button>
           </ion-col>
@@ -280,13 +266,9 @@
           <ion-col class="ion-padding-start" size="8">
             <ion-input [readonly]="true" [value]="secret.value"></ion-input>
           </ion-col>
-          <ion-col size="2"
-            >{{ secret.validUntil | date: dateTimeFormat }}
-          </ion-col>
+          <ion-col size="2">{{ secret.validUntil | date: dateTimeFormat }} </ion-col>
           <ion-col class="ion-text-right" size="2">
-            <ion-button color="success" fill="outline" size="small"
-              >Copy
-            </ion-button>
+            <ion-button color="success" fill="outline" size="small">Copy </ion-button>
           </ion-col>
         </ion-row>
         } }

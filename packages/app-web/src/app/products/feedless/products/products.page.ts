@@ -9,10 +9,7 @@ import {
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../../services/app-config.service';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
@@ -63,15 +60,15 @@ export class ProductsPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         this.product = (await this.appConfigService.getAllAppConfigs()).find(
-          (p) => p.id === params.productId,
+          (p) => p.id === params.productId
         );
         if (this.product?.videoUrl) {
           this.videoUrl = this.domSanitizer.bypassSecurityTrustResourceUrl(
-            this.product.videoUrl.replace('watch?v=', 'embed/'),
+            this.product.videoUrl.replace('watch?v=', 'embed/')
           );
         }
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 

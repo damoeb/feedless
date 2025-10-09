@@ -2,15 +2,9 @@
 <ion-header>
   <ion-toolbar color="danger">
     <ion-text class="ion-padding-horizontal" style="font-size: 16px"
-      >This feed will expire in
-      <strong>{{ fromNow(repository.disabledFrom) }}</strong></ion-text
+      >This feed will expire in <strong>{{ fromNow(repository.disabledFrom) }}</strong></ion-text
     >
-    <ion-button
-      class="ion-margin-horizontal"
-      color="light"
-      shape="round"
-      slot="end"
-    >
+    <ion-button class="ion-margin-horizontal" color="light" shape="round" slot="end">
       Remove Expiry
     </ion-button>
   </ion-toolbar>
@@ -21,12 +15,7 @@
     <ion-text class="ion-padding-horizontal" style="font-size: 16px">
       Feed is archived. It will not be updated.
     </ion-text>
-    <ion-button
-      class="ion-margin-horizontal"
-      color="light"
-      shape="round"
-      slot="end"
-    >
+    <ion-button class="ion-margin-horizontal" color="light" shape="round" slot="end">
       Resume
     </ion-button>
   </ion-toolbar>
@@ -51,8 +40,7 @@
       </ion-item>
     </div>
     } @if (!busy && !errorMessage) {
-    <app-feed-details [repository]="repository" style="margin-top: 50px">
-    </app-feed-details>
+    <app-feed-details [repository]="repository" style="margin-top: 50px"> </app-feed-details>
     }
   </div>
 </ion-content>

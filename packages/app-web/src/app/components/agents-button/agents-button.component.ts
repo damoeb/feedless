@@ -42,7 +42,7 @@ export class AgentsButtonComponent implements OnInit, OnDestroy {
       this.agentService.getAgents().subscribe((agents) => {
         this.agentCount = agents.length;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 

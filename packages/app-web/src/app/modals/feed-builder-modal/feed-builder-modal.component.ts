@@ -40,9 +40,7 @@ export interface FeedBuilderModalComponentProps {
     FeedBuilderComponent,
   ],
 })
-export class FeedBuilderModalComponent
-  implements FeedBuilderModalComponentProps
-{
+export class FeedBuilderModalComponent implements FeedBuilderModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
 
   source: GqlSourceInput;

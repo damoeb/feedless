@@ -58,9 +58,7 @@ import { ToastController } from '@ionic/angular/standalone';
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
 export type Harvest = ArrayElement<
-  ArrayElement<
-    GqlLastHarvestsFromSourcesByRepositoryQuery['repository']['sources']
-  >['harvests']
+  ArrayElement<GqlLastHarvestsFromSourcesByRepositoryQuery['repository']['sources']>['harvests']
 >;
 
 @Injectable({
@@ -73,15 +71,10 @@ export class RepositoryService {
   private readonly sessionService = inject(SessionService);
   private readonly toastCtrl = inject(ToastController);
 
-  async createRepositories(
-    data: GqlRepositoryCreateInput[],
-  ): Promise<RepositoryWithFrequency[]> {
+  async createRepositories(data: GqlRepositoryCreateInput[]): Promise<RepositoryWithFrequency[]> {
     if (this.sessionService.isAuthenticated()) {
       return this.apollo
-        .mutate<
-          GqlCreateRepositoriesMutation,
-          GqlCreateRepositoriesMutationVariables
-        >({
+        .mutate<GqlCreateRepositoriesMutation, GqlCreateRepositoriesMutationVariables>({
           mutation: CreateRepositories,
           variables: {
             data,
@@ -95,10 +88,7 @@ export class RepositoryService {
 
   deleteRepository(data: GqlRepositoryUniqueWhereInput): Promise<void> {
     return this.apollo
-      .mutate<
-        GqlDeleteRepositoryMutation,
-        GqlDeleteRepositoryMutationVariables
-      >({
+      .mutate<GqlDeleteRepositoryMutation, GqlDeleteRepositoryMutationVariables>({
         mutation: DeleteRepository,
         variables: {
           data,
@@ -107,31 +97,25 @@ export class RepositoryService {
       .then();
   }
 
-  async downloadRepositories(
-    repositories: RepositoryFull[],
-    fileName: string | null = null,
-  ) {
+  async downloadRepositories(repositories: RepositoryFull[], fileName: string | null = null) {
     const a = window.document.createElement('a');
     a.href = window.URL.createObjectURL(
       new Blob(
         [
           JSON.stringify(
             await Promise.all(
-              repositories.map((it) =>
-                this.getRepositoryInputWithSourcesAndFlow(it),
-              ),
+              repositories.map((it) => this.getRepositoryInputWithSourcesAndFlow(it))
             ),
             null,
-            2,
+            2
           ),
         ],
         {
           type: 'application/json',
-        },
-      ),
+        }
+      )
     );
-    a.download =
-      fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
+    a.download = fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
 
     document.body.appendChild(a);
     a.click();
@@ -141,10 +125,7 @@ export class RepositoryService {
 
   updateRepository(data: GqlRepositoryUpdateInput): Promise<void> {
     return this.apollo
-      .mutate<
-        GqlUpdateRepositoryMutation,
-        GqlUpdateRepositoryMutationVariables
-      >({
+      .mutate<GqlUpdateRepositoryMutation, GqlUpdateRepositoryMutationVariables>({
         mutation: UpdateRepository,
         variables: {
           data,
@@ -155,7 +136,7 @@ export class RepositoryService {
 
   listRepositories(
     data: GqlRepositoriesInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<RepositoryWithFrequency[]> {
     return this.apollo
       .query<GqlListRepositoriesQuery, GqlListRepositoriesQueryVariables>({
@@ -170,13 +151,10 @@ export class RepositoryService {
 
   listPublicRepositories(
     data: GqlRepositoriesInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<PublicRepository[]> {
     return this.apollo
-      .query<
-        GqlListPublicRepositoriesQuery,
-        GqlListPublicRepositoriesQueryVariables
-      >({
+      .query<GqlListPublicRepositoriesQuery, GqlListPublicRepositoriesQueryVariables>({
         query: ListPublicRepositories,
         variables: {
           data,
@@ -188,29 +166,26 @@ export class RepositoryService {
 
   countRepositories(
     data: GqlCountRepositoriesInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Observable<number> {
     return this.authService.authorizationChange().pipe(
       switchMap((authentication) => {
         if (authentication?.loggedIn) {
           return zenToRx(
             this.apollo
-              .watchQuery<
-                GqlCountRepositoriesQuery,
-                GqlCountRepositoriesQueryVariables
-              >({
+              .watchQuery<GqlCountRepositoriesQuery, GqlCountRepositoriesQueryVariables>({
                 query: CountRepositories,
                 variables: {
                   data,
                 },
                 fetchPolicy,
               })
-              .map((response) => response.data.countRepositories),
+              .map((response) => response.data.countRepositories)
           );
         } else {
           return of(0);
         }
-      }),
+      })
     );
   }
 
@@ -218,7 +193,7 @@ export class RepositoryService {
     id: string,
     cursor: GqlCursor,
     where: GqlSourcesWhereInput,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<RepositoryFull> {
     return this.apollo
       .query<GqlRepositoryByIdQuery, GqlRepositoryByIdQueryVariables>({
@@ -242,32 +217,30 @@ export class RepositoryService {
     cursor: GqlCursor,
     where: GqlSourcesWhereInput,
     order: GqlSourceOrderByInput[],
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<Source[]> {
     return this.apollo
-      .query<GqlSourcesByRepositoryQuery, GqlSourcesByRepositoryQueryVariables>(
-        {
-          query: SourcesByRepository,
-          fetchPolicy,
-          variables: {
-            repository: {
-              where: {
-                id,
-              },
+      .query<GqlSourcesByRepositoryQuery, GqlSourcesByRepositoryQueryVariables>({
+        query: SourcesByRepository,
+        fetchPolicy,
+        variables: {
+          repository: {
+            where: {
+              id,
             },
-            where,
-            order,
-            cursor,
           },
+          where,
+          order,
+          cursor,
         },
-      )
+      })
       .then((response) => response.data.repository.sources);
   }
 
   async getLastHarvestFromSourcesByRepository(
     repositoryId: string,
     sourceId: string,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<Harvest> {
     return this.apollo
       .query<
@@ -287,13 +260,10 @@ export class RepositoryService {
   async getSourceFullByRepository(
     repositoryId: string,
     sourceId: string,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<SourceFull> {
     return this.apollo
-      .query<
-        GqlSourcesWithFlowByRepositoryQuery,
-        GqlSourcesWithFlowByRepositoryQueryVariables
-      >({
+      .query<GqlSourcesWithFlowByRepositoryQuery, GqlSourcesWithFlowByRepositoryQueryVariables>({
         query: SourcesWithFlowByRepository,
         fetchPolicy,
         variables: {
@@ -319,13 +289,10 @@ export class RepositoryService {
   async getSourcesFullByRepository(
     repositoryId: string,
     cursor: GqlCursor,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<SourceFull[]> {
     return this.apollo
-      .query<
-        GqlSourcesWithFlowByRepositoryQuery,
-        GqlSourcesWithFlowByRepositoryQueryVariables
-      >({
+      .query<GqlSourcesWithFlowByRepositoryQuery, GqlSourcesWithFlowByRepositoryQueryVariables>({
         query: SourcesWithFlowByRepository,
         fetchPolicy,
         variables: {
@@ -341,7 +308,7 @@ export class RepositoryService {
   }
 
   public async getRepositoryInputWithSourcesAndFlow(
-    repository: RepositoryFull,
+    repository: RepositoryFull
   ): Promise<GqlRepositoryCreateInput> {
     const sources: GqlSourceInput[] = [];
     for (let page = 0; ; ) {

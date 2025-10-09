@@ -23,10 +23,10 @@ export class AuthGuardService implements CanActivate {
             this.router.createUrlTree(['/login'], {
               queryParams: { redirectUrl: this.location.path() },
               queryParamsHandling: 'merge',
-            }),
+            })
           );
         }
-      }),
+      })
     );
   }
 

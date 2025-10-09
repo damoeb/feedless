@@ -8,10 +8,7 @@ import {
 } from '@angular/core';
 import { Record, RepositoryWithFrequency } from '../../graphql/types';
 import { RepositoryService } from '../../services/repository.service';
-import {
-  BubbleColor,
-  BubbleComponent,
-} from '../../components/bubble/bubble.component';
+import { BubbleColor, BubbleComponent } from '../../components/bubble/bubble.component';
 import { GqlVertical, GqlVisibility } from '../../../generated/graphql';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -91,7 +88,7 @@ export class FeedsPage implements OnInit, OnDestroy {
         if (queryParams.reload) {
           await this.fetchFeeds(0, 'network-only');
         }
-      }),
+      })
     );
 
     await this.fetchFeeds(0);
@@ -117,10 +114,7 @@ export class FeedsPage implements OnInit, OnDestroy {
     return repository.visibility === GqlVisibility.IsPrivate;
   }
 
-  protected async fetchFeeds(
-    page: number,
-    fetchPolicy: FetchPolicy = 'cache-first',
-  ) {
+  protected async fetchFeeds(page: number, fetchPolicy: FetchPolicy = 'cache-first') {
     this.loading = true;
     this.currentPage = page;
     this.changeRef.detectChanges();
@@ -135,15 +129,11 @@ export class FeedsPage implements OnInit, OnDestroy {
           },
           where: {
             product: {
-              in: [
-                GqlVertical.Feedless,
-                GqlVertical.VisualDiff,
-                GqlVertical.RssProxy,
-              ],
+              in: [GqlVertical.Feedless, GqlVertical.VisualDiff, GqlVertical.RssProxy],
             },
           },
         },
-        fetchPolicy,
+        fetchPolicy
       );
       this.isLastPage = repositories.length == 0;
       this.repositories = repositories;

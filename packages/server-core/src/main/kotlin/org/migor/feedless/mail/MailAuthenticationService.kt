@@ -77,7 +77,7 @@ class MailAuthenticationService(
   }
 
   suspend fun confirmAuthCode(codeInput: ConfirmAuthCodeInput, response: HttpServletResponse): Authentication {
-    val corrId = coroutineContext.corrId()!!
+    val corrId = coroutineContext.corrId() ?: ""
     val otpId = UUID.fromString(codeInput.otpId)
     val otp = withContext(Dispatchers.IO) {
       oneTimePasswordDAO.findById(otpId).orElseThrow()

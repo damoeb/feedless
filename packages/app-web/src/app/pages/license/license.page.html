@@ -6,9 +6,8 @@
       </ion-item>
       <ion-item>
         <p>
-          Enjoy a full-feature trial for the first two months! After that,
-          advanced features will be disabled unless you choose to purchase a
-          license.
+          Enjoy a full-feature trial for the first two months! After that, advanced features will be
+          disabled unless you choose to purchase a license.
         </p>
       </ion-item>
 
@@ -24,21 +23,15 @@
         <ion-item style="--background: transparent">
           <ion-icon name="time-outline" slot="start"></ion-icon>
           <p>
-            Trial period remaining {{ fromNow(license.trialUntil) }} (until {{
-            license.trialUntil | date: dateFormat }})
+            Trial period remaining {{ fromNow(license.trialUntil) }} (until {{ license.trialUntil |
+            date: dateFormat }})
           </p>
         </ion-item>
         }
         <ion-progress-bar
           [value]="getRelativeTrialDaysLeft()"
           color="success"
-          style="
-            height: 100%;
-            position: absolute;
-            width: 100%;
-            opacity: 0.5;
-            top: 0;
-          "
+          style="height: 100%; position: absolute; width: 100%; opacity: 0.5; top: 0"
         ></ion-progress-bar>
       </div>
       @if (!license.isLocated) { @if (!license.isValid) {
@@ -62,9 +55,8 @@
       </ion-item>
       <ion-item>
         <p>
-          You can buy a license key that is valid for the current major release,
-          so it includes all minor and patch releases. There will be at most one
-          major release per year.
+          You can buy a license key that is valid for the current major release, so it includes all
+          minor and patch releases. There will be at most one major release per year.
         </p>
       </ion-item>
       <ion-row>
@@ -79,9 +71,7 @@
         <h3>Offline Activation</h3>
       </ion-item>
       <ion-item>
-        <p>
-          Paste the license key in here and you will see an immediate response.
-        </p>
+        <p> Paste the license key in here and you will see an immediate response. </p>
       </ion-item>
       <ion-item>
         <ion-textarea

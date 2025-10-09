@@ -9,10 +9,7 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import {
-  CodeEditorComponent,
-  ContentType,
-} from '../../elements/code-editor/code-editor.component';
+import { CodeEditorComponent, ContentType } from '../../elements/code-editor/code-editor.component';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';

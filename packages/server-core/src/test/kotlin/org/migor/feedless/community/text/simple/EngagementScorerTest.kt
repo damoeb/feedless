@@ -10,7 +10,7 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.TokenizerService
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 

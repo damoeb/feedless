@@ -20,9 +20,7 @@
               labelPlacement="start"
             >
               @for (group of featureGroups; track group) {
-              <ion-select-option [value]="group">
-                {{ group.name }}
-              </ion-select-option>
+              <ion-select-option [value]="group"> {{ group.name }} </ion-select-option>
               }
             </ion-select>
           </ion-item>
@@ -30,11 +28,7 @@
           <ion-item>
             @if (feature.value.numVal) {
             <ion-label>{{ feature.name }}</ion-label>
-            <ion-input
-              [formControl]="feature.fc"
-              aria-label=""
-              type="number"
-            ></ion-input>
+            <ion-input [formControl]="feature.fc" aria-label="" type="number"></ion-input>
             } @if (feature.value.boolVal) {
             <ion-checkbox [formControl]="feature.fc" labelPlacement="start">
               {{ feature.name }}

@@ -33,7 +33,7 @@ export class RecordService {
   findAllByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-    context: DefaultContext = null,
+    context: DefaultContext = null
   ): Promise<Record[]> {
     return this.apollo
       .query<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>({
@@ -52,7 +52,7 @@ export class RecordService {
   findAllFullByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-    context: DefaultContext = null,
+    context: DefaultContext = null
   ): Promise<RecordFull[]> {
     return this.apollo
       .query<GqlFullRecordByIdsQuery, GqlFullRecordByIdsQueryVariables>({
@@ -70,10 +70,7 @@ export class RecordService {
 
   removeById(data: GqlDeleteRecordsInput) {
     return this.apollo
-      .mutate<
-        GqlDeleteRecordsByIdMutation,
-        GqlDeleteRecordsByIdMutationVariables
-      >({
+      .mutate<GqlDeleteRecordsByIdMutation, GqlDeleteRecordsByIdMutationVariables>({
         mutation: DeleteRecordsById,
         variables: {
           data,
@@ -84,11 +81,7 @@ export class RecordService {
       });
   }
 
-  createRecordFromUpload(
-    caption: string,
-    file: File,
-    dataUrl: URL | string,
-  ): Promise<Record> {
+  createRecordFromUpload(caption: string, file: File, dataUrl: URL | string): Promise<Record> {
     return Promise.resolve(undefined);
   }
 

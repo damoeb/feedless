@@ -35,10 +35,7 @@
     </ion-input>
   </ion-item>
   <div>
-    <ion-radio-group
-      [formControl]="formGroup.controls.frequency"
-      class="ion-margin-top"
-    >
+    <ion-radio-group [formControl]="formGroup.controls.frequency" class="ion-margin-top">
       <ion-item style="--background: transparent; margin-top: 30px">
         <ion-label color="medium">
           Wie oft willst du deine Veranstaltungsvorschau erhalten?
@@ -46,18 +43,12 @@
       </ion-item>
       <ion-item style="--background: transparent">
         <ion-label>
-          <ion-radio
-            labelPlacement="end"
-            justify="start"
-            [value]="reportFrequencyWeek"
+          <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyWeek"
             >Wöchentlich
           </ion-radio>
         </ion-label>
         <ion-label>
-          <ion-radio
-            labelPlacement="end"
-            justify="start"
-            [value]="reportFrequencyMonth"
+          <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyMonth"
             >Monatlich
           </ion-radio>
           <!--          <ion-note> Static tracking based on one URL</ion-note>-->
@@ -70,16 +61,12 @@
   <ion-list>
     <ion-item
       [color]="
-        formGroup.controls.acceptedTerms.invalid &&
-        !formGroup.controls.acceptedTerms.untouched
+        formGroup.controls.acceptedTerms.invalid && !formGroup.controls.acceptedTerms.untouched
           ? 'danger'
           : undefined
       "
     >
-      <ion-checkbox
-        labelPlacement="end"
-        [formControl]="formGroup.controls.acceptedTerms"
-      >
+      <ion-checkbox labelPlacement="end" [formControl]="formGroup.controls.acceptedTerms">
         <ion-label class="ion-text-wrap">
           Ich stimme den
           <a href="/agb" target="_blank" (click)="$event.stopPropagation()"
@@ -90,12 +77,7 @@
       </ion-checkbox>
     </ion-item>
     <div style="display: flex">
-      <ion-button
-        style="flex: 1"
-        color="primary"
-        expand="block"
-        (click)="createMailSubscription()"
-      >
+      <ion-button style="flex: 1" color="primary" expand="block" (click)="createMailSubscription()">
         Jetzt Abonnieren
         <ion-icon name="send-outline" slot="end"></ion-icon>
       </ion-button>

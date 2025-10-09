@@ -1,10 +1,4 @@
-import {
-  ChangeDetectorRef,
-  Component,
-  inject,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlServerSettingsQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';
@@ -38,7 +32,7 @@ export class TrialWarningComponent implements OnInit, OnDestroy {
         this.license = license;
         this.trialEndIn = dayjs(license.trialUntil).toNow(true);
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 
@@ -48,9 +42,7 @@ export class TrialWarningComponent implements OnInit, OnDestroy {
 
   isTrialPeriod() {
     return (
-      this.license &&
-      !this.license.isLocated &&
-      this.license.trialUntil > new Date().getTime()
+      this.license && !this.license.isLocated && this.license.trialUntil > new Date().getTime()
     );
   }
 }

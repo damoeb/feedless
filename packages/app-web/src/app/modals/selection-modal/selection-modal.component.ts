@@ -99,12 +99,10 @@ export class SelectionModalComponent<T>
           entityWithFormControl.formControl.setValue(selectAll);
           this.changeRef.markForCheck();
         });
-      }),
+      })
     );
     this.entitiesWithFormControl = this.selectables.map((selectable) => {
-      const formControl = new FormControl<boolean>(
-        selectable.selected ?? false,
-      );
+      const formControl = new FormControl<boolean>(selectable.selected ?? false);
       if (selectable.disabled) {
         formControl.disable();
       }
@@ -124,7 +122,7 @@ export class SelectionModalComponent<T>
     return this.modalCtrl.dismiss(
       this.entitiesWithFormControl
         .filter((ewf) => ewf.formControl.value)
-        .map((ewf) => ewf.entity.entity),
+        .map((ewf) => ewf.entity.entity)
     );
   }
 

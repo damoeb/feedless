@@ -1,10 +1,5 @@
 import { Component } from '@angular/core';
-import {
-  IonItem,
-  IonLabel,
-  IonList,
-  IonListHeader,
-} from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-reader-menu',

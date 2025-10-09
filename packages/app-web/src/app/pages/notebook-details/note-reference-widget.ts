@@ -41,14 +41,12 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
       if (note) {
         this.classNames.push('note-link--valid');
         this.widgetLink.textContent = note.title.trim() || 'Open Note';
-        this.widgetLink.addEventListener('click', () =>
-          notebookService.openNote(note),
-        );
+        this.widgetLink.addEventListener('click', () => notebookService.openNote(note));
       } else {
         this.classNames.push('note-link--invalid');
         this.widgetLink.textContent = 'Create Note';
         this.widgetLink.addEventListener('click', () =>
-          notebookService.createNote({ id: this.noteId }, true),
+          notebookService.createNote({ id: this.noteId }, true)
         );
       }
       this.widgetLink.setAttribute('class', this.classNames.join(' '));
@@ -63,7 +61,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
       from: number,
       to: number,
       match: RegExpExecArray,
-      view: EditorView,
+      view: EditorView
     ) => {
       add(
         to,
@@ -71,7 +69,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
         Decoration.widget({
           widget: new NoteLinkWidget(view.state.sliceDoc(from + 1, to - 1)),
           side: 1,
-        }),
+        })
       );
     },
   });
@@ -90,6 +88,6 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
     },
     {
       decorations: (instance) => instance.decorations,
-    },
+    }
   );
 }

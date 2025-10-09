@@ -24,15 +24,13 @@ describe('#getFirstFetch', () => {
         {
           fetch: fetchAction,
         },
-      ]),
+      ])
     ).toEqual(fetchAction);
   });
 });
 
 describe('sourceBuilder', () => {
-  function createSourceWithActions(
-    actions: GqlScrapeActionInput[],
-  ): GqlSourceInput {
+  function createSourceWithActions(actions: GqlScrapeActionInput[]): GqlSourceInput {
     return {
       id: '',
       title: '',
@@ -73,7 +71,7 @@ describe('sourceBuilder', () => {
             },
           },
         ]),
-        scrapeService,
+        scrapeService
       );
       expect(flowLength(sourceBuilder)).toBe(1);
     });
@@ -123,7 +121,7 @@ describe('sourceBuilder', () => {
             },
           },
         ]),
-        scrapeService,
+        scrapeService
       );
     });
 
@@ -152,25 +150,15 @@ describe('sourceBuilder', () => {
     });
 
     it('findFirstByPluginsId', () => {
+      expect(sourceBuilder.findFirstByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed)).toBeTruthy();
       expect(
-        sourceBuilder.findFirstByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed),
-      ).toBeTruthy();
-      expect(
-        sourceBuilder.findFirstByPluginsId(
-          GqlFeedlessPlugins.OrgFeedlessFulltext,
-        ),
+        sourceBuilder.findFirstByPluginsId(GqlFeedlessPlugins.OrgFeedlessFulltext)
       ).toBeFalsy();
     });
 
     it('findAllByPluginsId', () => {
-      expect(
-        sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed)
-          .length,
-      ).toBe(1);
-      expect(
-        sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFilter)
-          .length,
-      ).toBe(1);
+      expect(sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed).length).toBe(1);
+      expect(sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFilter).length).toBe(1);
     });
 
     describe('addOrUpdatePluginById', () => {
@@ -216,25 +204,20 @@ describe('sourceBuilder', () => {
                   params: {},
                 },
               },
-              GqlFeedlessPlugins.OrgFeedlessFilter,
+              GqlFeedlessPlugins.OrgFeedlessFilter
             );
             // expect(flowLength(sourceBuilder)).toBe(2);
             expect(sourceBuilder.build().flow.sequence.length).toBe(2);
             expect(sourceBuilder.build().flow.sequence[0].fetch).toBeDefined();
-            expect(
-              sourceBuilder.build().flow.sequence[1].execute,
-            ).toBeDefined();
+            expect(sourceBuilder.build().flow.sequence[1].execute).toBeDefined();
           });
           it('when before is present', () => {
-            sourceBuilder.addOrUpdatePluginById(
-              GqlFeedlessPlugins.OrgFeedlessFilter,
-              {
-                execute: {
-                  pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-                  params: {},
-                },
+            sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+              execute: {
+                pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+                params: {},
               },
-            );
+            });
             sourceBuilder.addOrUpdatePluginById(
               GqlFeedlessPlugins.OrgFeedlessFulltext,
               {
@@ -243,24 +226,20 @@ describe('sourceBuilder', () => {
                   params: {},
                 },
               },
-              GqlFeedlessPlugins.OrgFeedlessFilter,
+              GqlFeedlessPlugins.OrgFeedlessFilter
             );
             // expect(flowLength(sourceBuilder)).toBe(2);
             console.log(sourceBuilder.build().flow.sequence);
             expect(sourceBuilder.build().flow.sequence.length).toBe(3);
             expect(sourceBuilder.build().flow.sequence[0].fetch).toBeDefined();
-            expect(
-              sourceBuilder.build().flow.sequence[1].execute,
-            ).toBeDefined();
-            expect(
-              sourceBuilder.build().flow.sequence[1].execute.pluginId,
-            ).toEqual(GqlFeedlessPlugins.OrgFeedlessFulltext);
-            expect(
-              sourceBuilder.build().flow.sequence[2].execute,
-            ).toBeDefined();
-            expect(
-              sourceBuilder.build().flow.sequence[2].execute.pluginId,
-            ).toEqual(GqlFeedlessPlugins.OrgFeedlessFilter);
+            expect(sourceBuilder.build().flow.sequence[1].execute).toBeDefined();
+            expect(sourceBuilder.build().flow.sequence[1].execute.pluginId).toEqual(
+              GqlFeedlessPlugins.OrgFeedlessFulltext
+            );
+            expect(sourceBuilder.build().flow.sequence[2].execute).toBeDefined();
+            expect(sourceBuilder.build().flow.sequence[2].execute.pluginId).toEqual(
+              GqlFeedlessPlugins.OrgFeedlessFilter
+            );
           });
         });
 
@@ -290,15 +269,9 @@ describe('sourceBuilder', () => {
 
     it('removePluginById', () => {
       const len = flowLength(sourceBuilder);
-      expect(
-        sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed)
-          .length,
-      ).toBe(1);
+      expect(sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed).length).toBe(1);
       sourceBuilder.removePluginById(GqlFeedlessPlugins.OrgFeedlessFeed);
-      expect(
-        sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed)
-          .length,
-      ).toBe(0);
+      expect(sourceBuilder.findAllByPluginsId(GqlFeedlessPlugins.OrgFeedlessFeed).length).toBe(0);
       expect(flowLength(sourceBuilder)).toBe(len - 1);
     });
   });

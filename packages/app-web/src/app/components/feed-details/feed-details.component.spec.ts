@@ -33,7 +33,7 @@ describe('FeedDetailsComponent', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     fixture = TestBed.createComponent(FeedDetailsComponent);

@@ -18,9 +18,7 @@
                   <ion-item
                     (click)="pickNativeFeed(nativeFeed)"
                     [button]="true"
-                    [color]="
-                      currentNativeFeed === nativeFeed ? 'primary' : undefined
-                    "
+                    [color]="currentNativeFeed === nativeFeed ? 'primary' : undefined"
                     class="feed"
                   >
                     <ion-label> Native {{ nativeFeed?.title }}</ion-label>
@@ -32,14 +30,10 @@
                   <ion-item
                     (click)="pickGenericFeed(genericFeed)"
                     [button]="true"
-                    [color]="
-                      currentGenericFeed?.hash === genericFeed.hash
-                        ? 'primary'
-                        : undefined
-                    "
+                    [color]="currentGenericFeed?.hash === genericFeed.hash ? 'primary' : undefined"
                   >
                     <ion-label
-                    >Generic with {{ genericFeed.count }} items
+                      >Generic with {{ genericFeed.count }} items
                       @if (genericFeed.selectors.dateXPath) {
                         <span>+date</span>
                       }
@@ -58,11 +52,7 @@
         @if (sourceBuilder().hasFetchActionReturnedHtml()) {
           <ion-accordion toggleIconSlot="start" value="custom">
             <ion-item
-              [color]="
-                selectedFeed?.genericFeed?.hash === CUSTOM_HASH
-                  ? 'primary'
-                  : undefined
-              "
+              [color]="selectedFeed?.genericFeed?.hash === CUSTOM_HASH ? 'primary' : undefined"
               slot="header"
             >
               <ion-label><strong>Customize Feed</strong></ion-label>
@@ -102,10 +92,9 @@
               </ion-item>
               <ion-item>
                 <ion-note
-                >The URL will be used to avoid duplicate feed items. If the
-                  URL isn't available, the title will be used instead.
-                </ion-note
-                >
+                  >The URL will be used to avoid duplicate feed items. If the URL isn't available,
+                  the title will be used instead.
+                </ion-note>
               </ion-item>
               <!--        <ion-item>-->
               <!--          <ion-select-->
@@ -151,7 +140,7 @@
                     [formControl]="genFeedXpathsFg.controls.dateIsStartOfEvent"
                     labelPlacement="end"
                     name="dateIsStartOfEvent"
-                  >Item Date is Start Date (Event)
+                    >Item Date is Start Date (Event)
                   </ion-checkbox>
                 </ion-item>
               }
@@ -172,17 +161,14 @@
               </ion-item>
               <ion-item>
                 <ion-note>
-                  Links from pagination element will be followed and parsed as a
-                  feed.
+                  Links from pagination element will be followed and parsed as a feed.
                 </ion-note>
               </ion-item>
               <ion-item>
                 <ion-label class="ion-text-right" color="medium">
                   <ion-note>
-                    <a
-                      href="https://github.com/code4craft/xsoup"
-                      target="_blank"
-                    >xpath syntax reference</a
+                    <a href="https://github.com/code4craft/xsoup" target="_blank"
+                      >xpath syntax reference</a
                     >
                   </ion-note>
                 </ion-label>
@@ -195,11 +181,7 @@
     </div>
 
     <ion-list class="marked-border-top">
-      <ion-item
-        (click)="fetchFeedPreview(true)"
-        [button]="true"
-        [disabled]="!selectedFeed"
-      >
+      <ion-item (click)="fetchFeedPreview(true)" [button]="true" [disabled]="!selectedFeed">
         Preview Feed
         @if (shouldRefresh && selectedFeed) {
           <app-bubble color="red"></app-bubble>
@@ -218,28 +200,18 @@
         [sourceBuilder]="sourceBuilder()"
         style="flex: 1; display: flex"
       >
-        <ion-segment-button
-          [disabled]="!selectedFeed"
-          segmentButton
-          value="feed"
-        >
+        <ion-segment-button [disabled]="!selectedFeed" segmentButton value="feed">
           <div>
             Feed
             @if (shouldRefresh && selectedFeed && !loadingFeedPreview) {
-              <app-bubble
-                color="red"
-                style="position: absolute; top: 10px"
-              ></app-bubble>
+              <app-bubble color="red" style="position: absolute; top: 10px"></app-bubble>
             }
           </div>
         </ion-segment-button>
-        @if (selectedFeed && activeSegment === "feed") {
+        @if (selectedFeed && activeSegment === 'feed') {
           <div class="flex__column" segmentBody style="position: relative">
             @if (loadingFeedPreview) {
-              <ion-progress-bar
-                color="medium"
-                type="indeterminate"
-              ></ion-progress-bar>
+              <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
             }
             @if (shouldRefresh && !loadingFeedPreview) {
               <app-block-element>

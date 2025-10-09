@@ -97,5 +97,5 @@ export const checkboxPlugin = ViewPlugin.fromClass(
         return false;
       },
     },
-  },
+  }
 );

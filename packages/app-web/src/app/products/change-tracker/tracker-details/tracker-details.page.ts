@@ -43,7 +43,7 @@ export class TrackerDetailsPage implements OnInit, OnDestroy {
       this.activatedRoute.params.subscribe((params) => {
         if (params.trackerId) {
         }
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }

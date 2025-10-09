@@ -19,7 +19,7 @@ describe('EmbeddedMarkupComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput(
       'sourceBuilder',
-      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService))
     );
 
     fixture.detectChanges();

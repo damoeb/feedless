@@ -16,7 +16,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector

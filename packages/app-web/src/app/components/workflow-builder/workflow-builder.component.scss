@@ -3,11 +3,7 @@ ion-content::part(scroll) {
 }
 
 .controls {
-  --background: color-mix(
-    in srgb,
-    var(--app-foreground) 10%,
-    var(--app-background)
-  );
+  --background: color-mix(in srgb, var(--app-foreground) 10%, var(--app-background));
   background: var(--background);
 
   ion-item {
@@ -30,11 +26,7 @@ ion-content::part(scroll) {
       box-shadow: 0px 0px 2px 1px rgba(var(--app-foreground-rgb), 0.75);
 
       ion-item {
-        --background: color-mix(
-          in srgb,
-          var(--app-foreground) 15%,
-          var(--app-background)
-        );
+        --background: color-mix(in srgb, var(--app-foreground) 15%, var(--app-background));
       }
     }
 
@@ -42,19 +34,15 @@ ion-content::part(scroll) {
       box-shadow: 0px 0px 2px 1px rgba(var(--app-foreground-rgb), 0.25);
 
       & > ion-item {
-        --background: color-mix(
-          in srgb,
-          var(--app-foreground) 20%,
-          var(--app-background)
-        );
+        --background: color-mix(in srgb, var(--app-foreground) 20%, var(--app-background));
       }
     }
 
-    & > *[slot="header"] {
+    & > *[slot='header'] {
       font-weight: bold;
     }
 
-    & > *[slot="content"] {
+    & > *[slot='content'] {
       ion-item {
         font-size: 0.9rem;
       }

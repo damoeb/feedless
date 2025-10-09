@@ -30,7 +30,7 @@ export class DarkModeButtonComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.sessionService.watchColorScheme().subscribe((isDarkMode) => {
         this.darkMode = isDarkMode;
-      }),
+      })
     );
   }
 

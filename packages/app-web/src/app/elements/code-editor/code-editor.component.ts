@@ -45,11 +45,7 @@ import {
   startCompletion,
 } from '@codemirror/autocomplete';
 
-import {
-  markdownLanguageSupport,
-  NODE_HASHTAG,
-  NODE_LINK,
-} from './markdown.lang';
+import { markdownLanguageSupport, NODE_HASHTAG, NODE_LINK } from './markdown.lang';
 import { theme } from './theme';
 import { markdownDecorator } from './markdown.decorator';
 import { hashtagMatcher } from './hashtag.widget';
@@ -66,12 +62,7 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
-import {
-  IonButton,
-  IonButtons,
-  IonIcon,
-  IonToolbar,
-} from '@ionic/angular/standalone';
+import { IonButton, IonButtons, IonIcon, IonToolbar } from '@ionic/angular/standalone';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -122,10 +113,7 @@ export type ContentType = 'json' | 'text' | 'html' | 'markdown';
 
 //   {label: "match", apply: 'karli'},
 //   {label: "hello", info: "(World)"},
-export type AutoSuggestionsProvider = (
-  query: string,
-  type: string,
-) => Promise<Completion[]>;
+export type AutoSuggestionsProvider = (query: string, type: string) => Promise<Completion[]>;
 
 @Component({
   selector: 'app-code-editor',
@@ -176,9 +164,7 @@ export class CodeEditorComponent
 
   readonly triggerQuery = output<string>();
 
-  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() =>
-    Promise.resolve([]),
-  );
+  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() => Promise.resolve([]));
 
   private editorView: EditorView;
   ctrlPressed: boolean;
@@ -308,9 +294,7 @@ export class CodeEditorComponent
         aboveCursor: false,
         closeOnBlur: false,
         override: [
-          async (
-            context: CompletionContext,
-          ): Promise<CompletionResult | null> => {
+          async (context: CompletionContext): Promise<CompletionResult | null> => {
             const firstToken = context.matchBefore(/[^ ]*/).text[0];
             const node = syntaxTree(context.state).resolve(context.pos).node;
             const token = node.cursor(IterMode.ExcludeBuffers);
@@ -322,10 +306,7 @@ export class CodeEditorComponent
 
             if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
               const query = context.state.sliceDoc(token.from, token.to);
-              const options = await this.autoSuggestionsProvider()(
-                query,
-                node.name,
-              );
+              const options = await this.autoSuggestionsProvider()(query, node.name);
               return {
                 from: token.from,
                 filter: false,
@@ -344,10 +325,7 @@ export class CodeEditorComponent
 
                 const from = selection?.from || context.pos;
 
-                const options = await this.autoSuggestionsProvider()(
-                  resolveQuery(),
-                  node.name,
-                );
+                const options = await this.autoSuggestionsProvider()(resolveQuery(), node.name);
                 return {
                   from: firstToken === '/' ? from - 1 : from,
                   filter: false,

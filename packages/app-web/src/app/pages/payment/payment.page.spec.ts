@@ -11,11 +11,7 @@ describe('PaymentPage', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        PaymentPage,
-        AppTestModule.withDefaults(),
-        RouterTestingModule.withRoutes([]),
-      ],
+      imports: [PaymentPage, AppTestModule.withDefaults(), RouterTestingModule.withRoutes([])],
     }).compileComponents();
 
     const appConfigService = TestBed.inject(AppConfigService);

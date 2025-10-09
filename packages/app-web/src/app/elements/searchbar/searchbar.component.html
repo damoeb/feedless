@@ -26,10 +26,7 @@
         <span style="white-space: nowrap">
           {{ buttonText() }}
         </span>
-        <ion-icon
-          [slot]="buttonText() ? 'end' : ''"
-          name="chevron-forward-outline"
-        ></ion-icon>
+        <ion-icon [slot]="buttonText() ? 'end' : ''" name="chevron-forward-outline"></ion-icon>
       </ion-button>
     }
   </form>

@@ -9,14 +9,7 @@ import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { OrderService } from '../../services/order.service';
 import { Order } from '../../types';
 import { AppConfigService } from '../../services/app-config.service';
-import {
-  IonCol,
-  IonContent,
-  IonItem,
-  IonLabel,
-  IonList,
-  IonRow,
-} from '@ionic/angular/standalone';
+import { IonCol, IonContent, IonItem, IonLabel, IonList, IonRow } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-billings-page',

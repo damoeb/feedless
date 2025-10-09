@@ -12,26 +12,22 @@ export const upperCaseStringParser = param({
 export const DefaultRoutes: Routes = [
   {
     path: 'login',
-    loadChildren: () =>
-      import('../pages/login/login.routes').then((m) => m.LOGIN_ROUTES),
+    loadChildren: () => import('../pages/login/login.routes').then((m) => m.LOGIN_ROUTES),
   },
   {
     path: 'feeds/:feedId',
     loadChildren: () =>
-      import('../pages/feed-details/feed-details.routes').then(
-        (m) => m.FEED_DETAILS_ROUTES,
-      ),
+      import('../pages/feed-details/feed-details.routes').then((m) => m.FEED_DETAILS_ROUTES),
   },
   {
     path: 'feeds/:feedId/report',
-    loadChildren: () =>
-      import('../pages/report/report.routes').then((m) => m.REPORT_ROUTES),
+    loadChildren: () => import('../pages/report/report.routes').then((m) => m.REPORT_ROUTES),
   },
   {
     path: 'notebook',
     loadChildren: () =>
       import('../pages/notebook-details/notebook-details.routes').then(
-        (m) => m.NOTEBOOK_DETAILS_ROUTES,
+        (m) => m.NOTEBOOK_DETAILS_ROUTES
       ),
   },
   {
@@ -41,53 +37,39 @@ export const DefaultRoutes: Routes = [
       {
         path: 'directory',
         loadChildren: () =>
-          import('../pages/directory/directory.routes').then(
-            (m) => m.DIRECTORY_ROUTES,
-          ),
+          import('../pages/directory/directory.routes').then((m) => m.DIRECTORY_ROUTES),
       },
       {
         path: 'connect-app',
         canActivate: [AuthGuardService],
         loadChildren: () =>
-          import('../pages/connect-app/connect-app.routes').then(
-            (m) => m.CONNECT_APP_ROUTES,
-          ),
+          import('../pages/connect-app/connect-app.routes').then((m) => m.CONNECT_APP_ROUTES),
       },
       {
         path: 'pricing',
-        loadChildren: () =>
-          import('../pages/pricing/pricing.routes').then(
-            (m) => m.PRICING_ROUTES,
-          ),
+        loadChildren: () => import('../pages/pricing/pricing.routes').then((m) => m.PRICING_ROUTES),
       },
       {
         path: 'billings',
         // canActivate: [IsRootGuardService],
         loadChildren: () =>
-          import('../pages/billings/billings.routes').then(
-            (m) => m.BILLING_ROUTES,
-          ),
+          import('../pages/billings/billings.routes').then((m) => m.BILLING_ROUTES),
       },
       {
         path: 'checkout',
         loadChildren: () =>
-          import('../pages/checkout/checkout.routes').then(
-            (m) => m.CHECKOUT_ROUTES,
-          ),
+          import('../pages/checkout/checkout.routes').then((m) => m.CHECKOUT_ROUTES),
       },
       {
         path: 'payment/summary',
         loadChildren: () =>
           import('../pages/payment-summary/payment-summary.routes').then(
-            (m) => m.PAYMENT_SUMMARY_ROUTES,
+            (m) => m.PAYMENT_SUMMARY_ROUTES
           ),
       },
       {
         path: 'payment',
-        loadChildren: () =>
-          import('../pages/payment/payment.routes').then(
-            (m) => m.PAYMENT_ROUTES,
-          ),
+        loadChildren: () => import('../pages/payment/payment.routes').then((m) => m.PAYMENT_ROUTES),
       },
     ],
   },
@@ -97,74 +79,54 @@ export const DefaultRoutes: Routes = [
     children: [
       {
         path: 'agents',
-        loadChildren: () =>
-          import('../pages/agents/agents.routes').then((m) => m.AGENTS_ROUTES),
+        loadChildren: () => import('../pages/agents/agents.routes').then((m) => m.AGENTS_ROUTES),
       },
       {
         path: 'services',
         loadChildren: () =>
-          import('../pages/services/services.routes').then(
-            (m) => m.SERVICES_ROUTES,
-          ),
+          import('../pages/services/services.routes').then((m) => m.SERVICES_ROUTES),
       },
       {
         path: 'plugins',
-        loadChildren: () =>
-          import('../pages/plugins/plugins.routes').then(
-            (m) => m.PLUGINS_ROUTES,
-          ),
+        loadChildren: () => import('../pages/plugins/plugins.routes').then((m) => m.PLUGINS_ROUTES),
       },
       {
         path: 'applications',
         loadChildren: () =>
-          import('../pages/applications/applications.routes').then(
-            (m) => m.APPLICATIONS_ROUTES,
-          ),
+          import('../pages/applications/applications.routes').then((m) => m.APPLICATIONS_ROUTES),
       },
       {
         path: 'subscriptions',
         loadChildren: () =>
-          import('../pages/subscriptions/subscriptions.routes').then(
-            (m) => m.SUBSCRIPTIONS_ROUTES,
-          ),
+          import('../pages/subscriptions/subscriptions.routes').then((m) => m.SUBSCRIPTIONS_ROUTES),
       },
       {
         path: 'settings',
         loadChildren: () =>
-          import('../pages/settings/settings.routes').then(
-            (m) => m.SETTINGS_ROUTES,
-          ),
+          import('../pages/settings/settings.routes').then((m) => m.SETTINGS_ROUTES),
       },
       {
         path: 'feeds',
-        loadChildren: () =>
-          import('../pages/feeds/feeds.routes').then((m) => m.FEEDS_ROUTES),
+        loadChildren: () => import('../pages/feeds/feeds.routes').then((m) => m.FEEDS_ROUTES),
       },
       {
         path: 'profile',
-        loadChildren: () =>
-          import('../pages/profile/profile.routes').then(
-            (m) => m.PROFILE_ROUTES,
-          ),
+        loadChildren: () => import('../pages/profile/profile.routes').then((m) => m.PROFILE_ROUTES),
       },
     ],
   },
   {
     path: 'docs',
     loadChildren: () =>
-      import('../pages/documents/documents.routes').then(
-        (m) => m.DOCUMENTS_ROUTES,
-      ),
+      import('../pages/documents/documents.routes').then((m) => m.DOCUMENTS_ROUTES),
   },
   {
     path: 'privacy',
-    loadChildren: () =>
-      import('../pages/privacy/privacy.routes').then((m) => m.PRIVACY_ROUTES),
+    loadChildren: () => import('../pages/privacy/privacy.routes').then((m) => m.PRIVACY_ROUTES),
   },
   {
     path: 'license',
     // canActivate: [SelfHostingGuardService],
-    loadChildren: () =>
-      import('../pages/license/license.routes').then((m) => m.LICENSE_ROUTES),
+    loadChildren: () => import('../pages/license/license.routes').then((m) => m.LICENSE_ROUTES),
   },
 ];

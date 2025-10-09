@@ -1,13 +1,13 @@
 package org.migor.feedless.template
 
-abstract class FtlTemplate<T>(val templateName: String) {
+abstract class FreemarkerTemplate<T>(val templateName: String) {
   abstract val params: T
 }
 
 data class WelcomeMailParams(val productName: String)
 
-data class WelcomePaidMailTemplate(override val params: WelcomeMailParams) :
-  FtlTemplate<WelcomeMailParams>("mail-welcome-paid")
+data class MailTemplateWelcomePaid(override val params: WelcomeMailParams) :
+  FreemarkerTemplate<WelcomeMailParams>("mail-welcome-paid")
 
 data class AuthCodeMailParams(
   val domain: String,
@@ -17,8 +17,8 @@ data class AuthCodeMailParams(
   val corrId: String
 )
 
-data class AuthCodeMailTemplate(override val params: AuthCodeMailParams) :
-  FtlTemplate<AuthCodeMailParams>("mail-auth-code")
+data class MailTemplateAuthCode(override val params: AuthCodeMailParams) :
+  FreemarkerTemplate<AuthCodeMailParams>("mail-auth-code")
 
 data class VisualDiffChangeDetectedParams(
   val trackerTitle: String,
@@ -26,8 +26,8 @@ data class VisualDiffChangeDetectedParams(
   val inlineImages: String
 )
 
-data class VisualDiffChangeDetectedMailTemplate(override val params: VisualDiffChangeDetectedParams) :
-  FtlTemplate<VisualDiffChangeDetectedParams>("mail-visual-diff-change-detected")
+data class MailTemplateVisualDiffChange(override val params: VisualDiffChangeDetectedParams) :
+  FreemarkerTemplate<VisualDiffChangeDetectedParams>("mail-visual-diff-change-detected")
 
 data class VisualDiffWelcomeParams(
   val trackerTitle: String,
@@ -37,12 +37,13 @@ data class VisualDiffWelcomeParams(
   val info: String
 )
 
-data class VisualDiffWelcomeMailTemplate(override val params: VisualDiffWelcomeParams) :
-  FtlTemplate<VisualDiffWelcomeParams>("mail-visual-diff-welcome")
+data class MailTemplateVisualDiffWelcome(override val params: VisualDiffWelcomeParams) :
+  FreemarkerTemplate<VisualDiffWelcomeParams>("mail-visual-diff-welcome")
 
-class ChangeTrackerAuthorizedTemplate(override val params: Unit = Unit) : FtlTemplate<Unit>("page-tracker-authorized")
+class MailTemplateChangeTrackerAuthorized(override val params: Unit = Unit) :
+  FreemarkerTemplate<Unit>("page-tracker-authorized")
 
 
 interface TemplateService {
-  fun <T> renderTemplate(template: FtlTemplate<T>): String
+  fun <T> renderTemplate(template: FreemarkerTemplate<T>): String
 }

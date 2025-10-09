@@ -2,11 +2,7 @@
   <div [style]="{'--image-url': getImageUrl()}" class="product">
     <div
       style="
-        background: linear-gradient(
-          180deg,
-          transparent 50%,
-          var(--ion-background-color) 100%
-        );
+        background: linear-gradient(180deg, transparent 50%, var(--ion-background-color) 100%);
         height: 200px;
         width: 100%;
         bottom: 0;
@@ -32,9 +28,7 @@
       <div class="flex__column">
         <app-product-headline [title]="product.title"></app-product-headline>
         @if (!isReleased()) {
-        <ion-toolbar
-          class="ion-margin-top ion-padding-horizontal"
-          color="warning"
+        <ion-toolbar class="ion-margin-top ion-padding-horizontal" color="warning"
           >Self Hosting Coming Soon!
         </ion-toolbar>
         <p>Version {{ product.version.join('.') }}</p>
@@ -124,9 +118,7 @@
             Avoid the hassle and try this nerd box online for free.
           </div>
           <div class="ion-margin-bottom">
-            <ion-button color="primary" routerLink="/login" shape="round"
-              >Try now!
-            </ion-button>
+            <ion-button color="primary" routerLink="/login" shape="round">Try now! </ion-button>
           </div>
         </div>
         }

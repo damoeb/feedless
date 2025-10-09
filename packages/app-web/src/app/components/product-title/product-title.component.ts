@@ -6,10 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { RouterLink } from '@angular/router';
 
@@ -30,12 +27,10 @@ export class ProductTitleComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      })
     );
   }
 

@@ -6,14 +6,8 @@
     style="display: none"
     type="file"
   />
-  <ion-toolbar
-    style="padding-left: 5px; --background: transparent"
-    class="ion-margin-bottom"
-  >
-    <ion-searchbar
-      [formControl]="queryFc"
-      placeholder="Search url or title"
-    ></ion-searchbar>
+  <ion-toolbar style="padding-left: 5px; --background: transparent" class="ion-margin-bottom">
+    <ion-searchbar [formControl]="queryFc" placeholder="Search url or title"></ion-searchbar>
     <ion-buttons slot="end">
       <!--      <ion-button-->
       <!--        (click)="fetchCurrentPage('network-only')"-->
@@ -114,9 +108,7 @@
               [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
             >
               {{ source.lastRecordsRetrieved }} items
-              <ion-text color="medium">
-                ({{ fromNow(source.lastRefreshedAt) }})
-              </ion-text>
+              <ion-text color="medium"> ({{ fromNow(source.lastRefreshedAt) }}) </ion-text>
             </ion-text>
 
             <p>
@@ -125,9 +117,7 @@
               </ion-label>
             </p>
           } @else {
-            <ion-text class="nowrap" title="last fetch" color="">
-              Never
-            </ion-text>
+            <ion-text class="nowrap" title="last fetch" color=""> Never </ion-text>
           }
         </ion-col>
         <ion-col size="2">
@@ -141,23 +131,13 @@
                 Enable
               </ion-button>
             }
-            <ion-button
-              fill="solid"
-              color="light"
-              (click)="editOrAddSource(source)"
-            >
+            <ion-button fill="solid" color="light" (click)="editOrAddSource(source)">
               Edit
             </ion-button>
             @if (source.lastRefreshedAt !== null) {
-              <ion-button fill="solid" color="light" (click)="showLogs(source)"
-                >Logs
-              </ion-button>
+              <ion-button fill="solid" color="light" (click)="showLogs(source)">Logs </ion-button>
             }
-            <ion-button
-              fill="solid"
-              color="light"
-              (click)="showSourceOptions(source)"
-            >
+            <ion-button fill="solid" color="light" (click)="showSourceOptions(source)">
               More
             </ion-button>
           </ion-buttons>

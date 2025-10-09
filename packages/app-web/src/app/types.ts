@@ -32,9 +32,7 @@ export type DeepPartial<T> = T extends object
 
 export type NestedKeys<T, Prev extends string = ''> = {
   [K in keyof T]: T[K] extends object
-    ?
-        | `${Prev}${Extract<K, string>}`
-        | NestedKeys<T[K], `${Prev}${Extract<K, string>}.`>
+    ? `${Prev}${Extract<K, string>}` | NestedKeys<T[K], `${Prev}${Extract<K, string>}.`>
     : `${Prev}${Extract<K, string>}`;
 }[keyof T];
 

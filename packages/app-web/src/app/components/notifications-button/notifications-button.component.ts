@@ -27,7 +27,7 @@ export class NotificationsButtonComponent implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.sessionService.getSession().subscribe((session) => {
         this.notificationRepositoryId = session.user?.notificationRepositoryId;
-      }),
+      })
     );
   }
 

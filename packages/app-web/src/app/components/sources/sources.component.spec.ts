@@ -32,13 +32,9 @@ describe('SourcesComponent', () => {
 
     beforeEach(() => {
       const repositoryService = TestBed.inject(RepositoryService);
-      jest
-        .spyOn(repositoryService, 'getSourceFullByRepository')
-        .mockResolvedValue({} as any);
+      jest.spyOn(repositoryService, 'getSourceFullByRepository').mockResolvedValue({} as any);
       const modalService = TestBed.inject(ModalService);
-      openFeedBuilderSpy = jest
-        .spyOn(modalService, 'openFeedBuilder')
-        .mockResolvedValue();
+      openFeedBuilderSpy = jest.spyOn(modalService, 'openFeedBuilder').mockResolvedValue();
     });
 
     it('for add source', async () => {

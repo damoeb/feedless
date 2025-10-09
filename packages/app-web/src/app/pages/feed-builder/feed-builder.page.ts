@@ -7,10 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   RepositoryModalComponent,
   RepositoryModalComponentProps,
@@ -21,11 +18,7 @@ import {
   NativeOrGenericFeed,
 } from '../../components/feed-builder/feed-builder.component';
 import { ModalService } from '../../services/modal.service';
-import {
-  GqlFeedlessPlugins,
-  GqlSourceInput,
-  GqlVisibility,
-} from '../../../generated/graphql';
+import { GqlFeedlessPlugins, GqlSourceInput, GqlVisibility } from '../../../generated/graphql';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import { ServerConfigService } from '../../services/server-config.service';
 import { environment } from '../../../environments/environment';
@@ -63,12 +56,10 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     this.standalone = this.activatedRoute.snapshot.data?.standalone == true;
     this.appConfigService.setPageTitle('RSS Feed Builder');
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      })
     );
   }
 
@@ -103,7 +94,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           ],
         },
       },
-      true,
+      true
     );
   }
 
@@ -111,7 +102,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     console.log('handleFeed', feed);
     const { title, description } = this.getFeedData(
       feed.feed,
-      getFirstFetchUrlLiteral(feed.source.flow.sequence),
+      getFirstFetchUrlLiteral(feed.source.flow.sequence)
     );
     await this.handleSource(title, description, feed.source, feed.refine);
   }
@@ -120,7 +111,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
     title: string,
     description: string,
     source: GqlSourceInput,
-    refine: boolean,
+    refine: boolean
   ) {
     if (refine) {
       const componentProps: RepositoryModalComponentProps = {
@@ -131,10 +122,7 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
           sources: [source],
         } as any,
       };
-      await this.modalService.openRepositoryEditor(
-        RepositoryModalComponent,
-        componentProps,
-      );
+      await this.modalService.openRepositoryEditor(RepositoryModalComponent, componentProps);
     } else {
       const repositories = await this.repositoryService.createRepositories([
         {

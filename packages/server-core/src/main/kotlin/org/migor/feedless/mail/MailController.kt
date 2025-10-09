@@ -7,8 +7,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
 import org.migor.feedless.report.ReportId
 import org.migor.feedless.report.ReportService
-import org.migor.feedless.template.ChangeTrackerAuthorizedTemplate
 import org.migor.feedless.template.FreemarkerTemplateService
+import org.migor.feedless.template.MailTemplateChangeTrackerAuthorized
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
@@ -39,6 +39,6 @@ class MailController(
     reportService.updateReportById(ReportId(mailForwardId), true)
 
     ResponseEntity.ok()
-      .body(templateService.renderTemplate(ChangeTrackerAuthorizedTemplate()))
+      .body(templateService.renderTemplate(MailTemplateChangeTrackerAuthorized()))
   }
 }

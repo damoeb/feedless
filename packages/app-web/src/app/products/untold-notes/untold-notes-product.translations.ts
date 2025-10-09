@@ -1,7 +1,4 @@
-import {
-  NotebookActionId,
-  UntoldLanguages,
-} from '../../services/notebook.service';
+import { NotebookActionId, UntoldLanguages } from '../../services/notebook.service';
 
 interface UntoldNotesProductTranslations {
   actions: {
@@ -13,10 +10,7 @@ interface UntoldNotesProductTranslations {
   }[];
 }
 
-export const translations: Record<
-  UntoldLanguages,
-  UntoldNotesProductTranslations
-> = {
+export const translations: Record<UntoldLanguages, UntoldNotesProductTranslations> = {
   de: {
     actions: {
       deleteNote: 'Notiz löschen',

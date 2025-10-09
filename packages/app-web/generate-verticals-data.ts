@@ -77,13 +77,13 @@ class AppsDataGenerator {
     });
 
     streamToPromise(Readable.from(links).pipe(smStream)).then((sitemap) =>
-      this.writeFile(join(outDir, `sitemap.xml`), String(sitemap)),
+      this.writeFile(join(outDir, `sitemap.xml`), String(sitemap))
     );
   }
 
   private generateUpcomingSitemapLinks(
     domain: string,
-    lastMod: string,
+    lastMod: string
   ): Array<{
     url: string;
     changefreq: 'daily' | 'weekly' | 'monthly' | 'yearly';
@@ -160,21 +160,15 @@ class AppsDataGenerator {
       attributionHtml: 'Whoever loves discipline loves knowledge',
       offlineSupport: app.offlineSupport,
     };
-    this.writeFile(
-      join(outDir, `config.json`),
-      JSON.stringify(appConfig, null, 2),
-    );
+    this.writeFile(join(outDir, `config.json`), JSON.stringify(appConfig, null, 2));
   }
 
   private createFeedlessConfig() {
     type ProductId2AppConfig = { [k: string]: VerticalSpec };
-    const apps: ProductId2AppConfig = allVerticals.verticals.reduce(
-      (acc, app) => {
-        acc[app.id] = app;
-        return acc;
-      },
-      {} as ProductId2AppConfig,
-    );
+    const apps: ProductId2AppConfig = allVerticals.verticals.reduce((acc, app) => {
+      acc[app.id] = app;
+      return acc;
+    }, {} as ProductId2AppConfig);
 
     const config = JSON.parse(JSON.stringify(allVerticals));
     config.apps = apps;
@@ -216,9 +210,7 @@ Crawl-delay: 1`;
     } else {
       // Default robots.txt for other verticals
       const allowed = app.links.filter((link) => link.allow).map((l) => l.url);
-      const disallowed = app.links
-        .filter((link) => !link.allow)
-        .map((l) => l.url) || [''];
+      const disallowed = app.links.filter((link) => !link.allow).map((l) => l.url) || [''];
 
       robotsContent = `User-agent: *
 ${allowed.map((url) => `Allow: ${url}`).join('\n')}
@@ -246,7 +238,7 @@ Sitemap: ${domain}/sitemap.xml
         .replace('<!-- FEEDLESS_TITLE -->', app.title)
         .replace(
           '<meta name="description" content="">',
-          `<meta name="description" content="${seoConfig.description}">`,
+          `<meta name="description" content="${seoConfig.description}">`
         )
         .replace('</head>', `  ${structuredData}\n  </head>`);
     } else {
@@ -257,16 +249,14 @@ Sitemap: ${domain}/sitemap.xml
         .replace('<!-- FEEDLESS_TITLE -->', app.title)
         .replace(
           '<meta name="description" content="">',
-          `<meta name="description" content="${app.summary}">`,
+          `<meta name="description" content="${app.summary}">`
         );
     }
 
     this.writeFile(join(outDir, `index.html`), enhancedIndex);
   }
 
-  private getUpcomingSEOConfig(
-    app: VerticalSpec,
-  ): SEOConfig & { description: string } {
+  private getUpcomingSEOConfig(app: VerticalSpec): SEOConfig & { description: string } {
     return {
       description:
         'Entdecke lokale Veranstaltungen und Events in deiner Nähe. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen - finde spannende Events in der Schweiz.',
@@ -317,8 +307,7 @@ Sitemap: ${domain}/sitemap.xml
         { name: 'robots', content: 'index, follow, max-image-preview:large' },
         {
           name: 'googlebot',
-          content:
-            'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
+          content: 'index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1',
         },
         { property: 'og:locale', content: 'de_DE' },
         { property: 'og:site_name', content: 'lokale.events' },
@@ -334,7 +323,7 @@ Sitemap: ${domain}/sitemap.xml
 
   private generateUpcomingMetaTags(
     app: VerticalSpec,
-    seoConfig: SEOConfig & { description: string },
+    seoConfig: SEOConfig & { description: string }
   ): string {
     const domain = `https://${app.domain}`;
     const api = `https://api.${app.domain}`;
@@ -428,8 +417,7 @@ Sitemap: ${domain}/sitemap.xml
       mainEntity: {
         '@type': 'ItemList',
         name: 'Lokale Veranstaltungen',
-        description:
-          'Liste der aktuellen lokalen Veranstaltungen und Events in der Schweiz',
+        description: 'Liste der aktuellen lokalen Veranstaltungen und Events in der Schweiz',
         numberOfItems: 'varies',
       },
     };

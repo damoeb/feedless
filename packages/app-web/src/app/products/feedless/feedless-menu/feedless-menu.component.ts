@@ -71,7 +71,7 @@ export class FeedlessMenuComponent implements OnInit, OnDestroy {
         .subscribe((repoCount) => {
           this.trackerCount = repoCount;
           this.changeRef.detectChanges();
-        }),
+        })
     );
   }
 

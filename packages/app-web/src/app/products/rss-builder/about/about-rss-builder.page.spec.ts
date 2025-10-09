@@ -1,10 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AboutRssBuilderPage } from './about-rss-builder.page';
-import {
-  ApolloMockController,
-  AppTestModule,
-  mockServerSettings,
-} from '../../../app-test.module';
+import { ApolloMockController, AppTestModule, mockServerSettings } from '../../../app-test.module';
 import { ServerConfigService } from '../../../services/server-config.service';
 import { ApolloClient } from '@apollo/client/core';
 import { AppConfigService } from '../../../services/app-config.service';
@@ -21,7 +17,7 @@ describe('AboutRssBuilderPage', () => {
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
       TestBed.inject(ServerConfigService),
-      TestBed.inject(ApolloClient),
+      TestBed.inject(ApolloClient)
     );
 
     const appConfigService = TestBed.inject(AppConfigService);

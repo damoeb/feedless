@@ -28,9 +28,7 @@
           <div
             class="calendar-day"
             (click)="
-              $event.preventDefault();
-              $event.stopImmediatePropagation();
-              changeDate.emit(d.date)
+              $event.preventDefault(); $event.stopImmediatePropagation(); changeDate.emit(d.date)
             "
             [ngClass]="{
               past: isPast(d.date),
@@ -38,9 +36,9 @@
             }"
           >
             <div>{{ getWeekday(d.date) }}</div>
-            <h3 style="font-size: 1.5rem">{{ formatDate(d.date, "D") }}</h3>
+            <h3 style="font-size: 1.5rem">{{ formatDate(d.date, 'D') }}</h3>
             @if (i == 0 || d.date.date() === 1) {
-              <div class="nowrap">{{ formatDate(d.date, "MMM YY") }}</div>
+              <div class="nowrap">{{ formatDate(d.date, 'MMM YY') }}</div>
             }
           </div>
         </a>
@@ -49,11 +47,7 @@
     <div style="font-size: 2rem; align-content: center">
       @if (isValidOffset(4)) {
         <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
-          <ion-button
-            size="expand"
-            color="light"
-            (click)="shiftDateWindow(4, $event)"
-          >
+          <ion-button size="expand" color="light" (click)="shiftDateWindow(4, $event)">
             <ion-icon
               aria-label="Weiter im Kalender"
               name="arrow-forward-outline"
@@ -75,9 +69,7 @@
   </div>
   @if (!isDateInCalendar(now)) {
     <div style="justify-self: center">
-      <ion-button size="small" (click)="changeDate.emit(now)"
-        >Heute anzeigen
-      </ion-button>
+      <ion-button size="small" (click)="changeDate.emit(now)">Heute anzeigen </ion-button>
     </div>
   }
 </div>

@@ -12,9 +12,7 @@
       <ion-chip (click)="editRepository(['privacy'])">Public</ion-chip>
     }
     @if (repository().pushNotificationsEnabled) {
-      <ion-chip (click)="editRepository(['notifications'])"
-      >Push Notifications
-      </ion-chip>
+      <ion-chip (click)="editRepository(['notifications'])">Push Notifications </ion-chip>
     }
   </ion-row>
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -41,7 +39,7 @@
           <ion-icon name="git-branch-outline" slot="start"></ion-icon>
           <ion-label> Sources</ion-label>
           <ion-badge color="light" style="margin-left: 5px"
-          >{{ repository().sourcesCount }}
+            >{{ repository().sourcesCount }}
             @if (repository().sourcesCountWithProblems > 0) {
               <span>
                 /
@@ -75,18 +73,14 @@
         <ion-button (click)="starRepository()">
           <ion-icon name="star-outline" slot="start"></ion-icon>
           Star
-          <ion-badge color="light" style="margin-left: 5px"
-          >{{ getStartCount() }}
-          </ion-badge>
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
         </ion-button>
       }
       @if (hasCurrentUserStarred()) {
         <ion-button (click)="unstarRepository()">
           <ion-icon name="star" slot="start"></ion-icon>
           Starred
-          <ion-badge color="light" style="margin-left: 5px"
-          >{{ getStartCount() }}
-          </ion-badge>
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
         </ion-button>
       }
       <ion-button [href]="feedUrl" color="primary" fill="solid">
@@ -140,10 +134,7 @@
       </ion-popover>
     </ion-buttons>
   </ion-toolbar>
-  <div
-    [ngClass]="{ 'description--flat': !showFullDescription }"
-    class="description"
-  >
+  <div [ngClass]="{ 'description--flat': !showFullDescription }" class="description">
     <ion-row>
       <ion-col>
         <strong>Description</strong>
@@ -203,9 +194,7 @@
     </ion-row>
     <ion-row>
       <ion-button
-        (click)="
-          showFullDescription = !showFullDescription; $event.stopPropagation()
-        "
+        (click)="showFullDescription = !showFullDescription; $event.stopPropagation()"
         color="dark"
         fill="clear"
         style="margin: auto"
@@ -234,23 +223,15 @@
       </h3>
       <div style="align-content: center">
         <div style="display: flex">
-          <ion-segment
-            [formControl]="viewModeFc"
-            mode="ios"
-            style="max-width: 300px"
-          >
+          <ion-segment [formControl]="viewModeFc" mode="ios" style="max-width: 300px">
             <ion-segment-button [value]="viewModeList">List</ion-segment-button>
             <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
             @if (repository().product === GqlProductName.VisualDiff) {
-              <ion-segment-button [value]="viewModeDiff"
-              >Diff
-              </ion-segment-button>
+              <ion-segment-button [value]="viewModeDiff">Diff </ion-segment-button>
             }
           </ion-segment>
           @if (supportTable && isOwner) {
-            <ion-button size="small" (click)="openDataModal()" appDev>
-              Data
-            </ion-button>
+            <ion-button size="small" (click)="openDataModal()" appDev> Data </ion-button>
           }
         </div>
       </div>
@@ -277,10 +258,7 @@
           @if (documents.length > 1) {
             @for (pair of getDocumentPairs(); track pair) {
               <div>
-                <app-image-diff
-                  [after]="pair.b"
-                  [before]="pair.a"
-                ></app-image-diff>
+                <app-image-diff [after]="pair.b" [before]="pair.a"></app-image-diff>
               </div>
             }
           }
@@ -292,10 +270,7 @@
           @if (documents.length > 1) {
             @for (pair of getDocumentPairs(); track pair) {
               <div>
-                <app-text-diff
-                  [after]="pair.b"
-                  [before]="pair.a"
-                ></app-text-diff>
+                <app-text-diff [after]="pair.b" [before]="pair.a"></app-text-diff>
               </div>
             }
           }
@@ -306,31 +281,20 @@
           @if (isOwner) {
             <ion-toolbar style="padding-left: 15px">
               <ion-buttons slot="start">
-                <ion-checkbox
-                  [formControl]="selectAllFc"
-                  aria-label="toggle all"
-                ></ion-checkbox>
+                <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
                 <div class="ion-padding-horizontal flex">
                   @if (selectedCount === 0) {
-                    <ion-text
-                      class="ion-margin-end"
-                      style="align-content: center"
-                    >Select All
+                    <ion-text class="ion-margin-end" style="align-content: center"
+                      >Select All
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
-                    <ion-text
-                      class="ion-margin-end"
-                      style="align-content: center"
-                    >({{ selectedCount }})
+                    <ion-text class="ion-margin-end" style="align-content: center"
+                      >({{ selectedCount }})
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
-                    <ion-button
-                      (click)="deleteAllSelected()"
-                      color="danger"
-                      fill="solid"
-                    >
+                    <ion-button (click)="deleteAllSelected()" color="danger" fill="solid">
                       Delete selected
                     </ion-button>
                   }
@@ -358,7 +322,7 @@
                   <ion-toolbar style="--background: transparent">
                     <ion-buttons>
                       <ion-note
-                      >{{ fromNow(document.publishedAt) }} on
+                        >{{ fromNow(document.publishedAt) }} on
                         {{ hostname(document.url) }}
                         <!--                      https://www.openstreetmap.org/#map=14/-->
                         @if (document.latLng) {
@@ -367,9 +331,7 @@
                       </ion-note>
                       @if (document.tags.length > 0) {
                         <ion-note>
-                          <em class="ion-padding-start">{{
-                              getTags(document)
-                            }}</em>
+                          <em class="ion-padding-start">{{ getTags(document) }}</em>
                         </ion-note>
                       }
                     </ion-buttons>
@@ -384,10 +346,7 @@
                     </a>
                   </h2>
                   <p class="content">{{ getText(document) }}</p>
-                  <app-player
-                    (playback)="playAudio(document)"
-                    [document]="document"
-                  ></app-player>
+                  <app-player (playback)="playAudio(document)" [document]="document"></app-player>
                 </ion-label>
               </ion-item>
             </div>

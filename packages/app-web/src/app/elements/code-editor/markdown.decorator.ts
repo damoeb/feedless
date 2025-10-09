@@ -48,5 +48,5 @@ export const markdownDecorator = ViewPlugin.fromClass(
   },
   {
     decorations: (v) => v.decorations,
-  },
+  }
 );

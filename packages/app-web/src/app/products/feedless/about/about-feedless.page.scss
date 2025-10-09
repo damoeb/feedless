@@ -1,4 +1,4 @@
-@use "../../../../mixins";
+@use '../../../../mixins';
 
 ion-searchbar {
   @include mixins.search-form();

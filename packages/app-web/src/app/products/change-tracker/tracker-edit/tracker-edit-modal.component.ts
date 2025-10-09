@@ -8,12 +8,7 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ModalService } from '../../../services/modal.service';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-} from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   IonButton,
   IonButtons,
@@ -111,7 +106,7 @@ export class TrackerEditModalComponent
     this.subscriptions.push(
       this.formFg.controls.limit.valueChanges.subscribe(async () => {
         await this.updateFeed();
-      }),
+      })
     );
 
     this.changeRef.detectChanges();
@@ -137,7 +132,7 @@ export class TrackerEditModalComponent
           // );
           // await this.updateFeed();
         }
-      },
+      }
     );
   }
 

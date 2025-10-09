@@ -72,7 +72,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
           this.repositoryId = params.feedId;
           this.fetch();
         }
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }
@@ -92,7 +92,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
           page: 0,
           pageSize: 0,
         },
-        null,
+        null
       );
       this.appConfig.setPageTitle(this.repository.title);
       this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;

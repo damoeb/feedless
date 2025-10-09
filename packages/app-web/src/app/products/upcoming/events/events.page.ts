@@ -24,19 +24,10 @@ import {
 import { Subscription } from 'rxjs';
 import 'dayjs/locale/de';
 import { addIcons } from 'ionicons';
-import {
-  arrowBackOutline,
-  arrowForwardOutline,
-  sendOutline,
-} from 'ionicons/icons';
+import { arrowBackOutline, arrowForwardOutline, sendOutline } from 'ionicons/icons';
 import { isDefined, LatLng, NamedLatLon, Nullable } from '../../../types';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
-import {
-  IonContent,
-  IonNote,
-  IonSpinner,
-  IonText,
-} from '@ionic/angular/standalone';
+import { IonContent, IonNote, IonSpinner, IonText } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
@@ -171,24 +162,20 @@ export class EventsPage implements OnInit, OnDestroy {
         try {
           this.location = await parseLocationFromUrl(
             this.activatedRoute,
-            this.openStreetMapService,
+            this.openStreetMapService
           );
           this.saveLocation(this.location);
 
           this.latLon = this.location;
 
           const { perimeter } = parsePath(
-            upcomingBaseRoute.events.countryCode.region.place.dateTime
-              .perimeter,
-            params,
+            upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+            params
           );
 
           this.perimeter = perimeter || 10;
           const dateFromUrl = parseDateFromUrl(params);
-          if (
-            dateFromUrl.isBefore(this.minDate) ||
-            dateFromUrl.isAfter(this.maxDate)
-          ) {
+          if (dateFromUrl.isBefore(this.minDate) || dateFromUrl.isAfter(this.maxDate)) {
             await this.redirectToToday();
           } else {
             await this.changeDate(dateFromUrl);
@@ -212,18 +199,13 @@ export class EventsPage implements OnInit, OnDestroy {
           this.loading = false;
         }
         this.changeRef.detectChanges();
-      }),
+      })
     );
 
-    if (
-      !this.location &&
-      Object.keys(this.activatedRoute.snapshot.params).length === 0
-    ) {
+    if (!this.location && Object.keys(this.activatedRoute.snapshot.params).length === 0) {
       const savedLocations: NamedLatLon[] = this.getSavedLocations();
       if (savedLocations.length > 0) {
-        await this.router.navigateByUrl(
-          this.createDateUrl(dayjs(), savedLocations[0]),
-        );
+        await this.router.navigateByUrl(this.createDateUrl(dayjs(), savedLocations[0]));
       }
     }
   }
@@ -305,12 +287,7 @@ export class EventsPage implements OnInit, OnDestroy {
     this.subscriptions.forEach((s) => s.unsubscribe());
   }
 
-  private getDistanceFromLatLonInKm(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number,
-  ) {
+  private getDistanceFromLatLonInKm(lat1: number, lon1: number, lat2: number, lon2: number) {
     const R = 6371; // Radius of the earth in km
     const dLat = this.deg2rad(lat2 - lat1); // deg2rad below
     const dLon = this.deg2rad(lon2 - lon1);
@@ -328,10 +305,7 @@ export class EventsPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  fetchEventsBetweenDates(
-    minDate: Dayjs,
-    maxDate: Dayjs,
-  ): Promise<LocalizedEvent[]> {
+  fetchEventsBetweenDates(minDate: Dayjs, maxDate: Dayjs): Promise<LocalizedEvent[]> {
     return this.eventService.findAllByRepositoryId({
       cursor: {
         page: 0,
@@ -367,34 +341,28 @@ export class EventsPage implements OnInit, OnDestroy {
       const minDate = date;
       const maxDate = minDate.add(2, 'days');
 
-      const toIsoString = (date: Dayjs): string =>
-        date.startOf('day').toISOString();
+      const toIsoString = (date: Dayjs): string => date.startOf('day').toISOString();
 
-      const daysInWindow = times(maxDate.diff(minDate, 'days') + 1).map(
-        (offset) => toIsoString(minDate.add(offset, 'days')),
+      const daysInWindow = times(maxDate.diff(minDate, 'days') + 1).map((offset) =>
+        toIsoString(minDate.add(offset, 'days'))
       );
 
       const events = await this.fetchEventsBetweenDates(minDate, maxDate);
 
-      const places: NamedLatLon[] = await this.resolvePlaces(events).then(
-        (places) => places.filter((place) => isDefined(place)),
+      const places: NamedLatLon[] = await this.resolvePlaces(events).then((places) =>
+        places.filter((place) => isDefined(place))
       );
 
       const eventsPerDay = groupBy(events, (event: LocalizedEvent) =>
-        toIsoString(dayjs(event.startingAt)),
+        toIsoString(dayjs(event.startingAt))
       );
 
-      this.placesByDistancePerDay = daysInWindow.map<EventGroupsPerDay>(
-        (dateKey) => {
-          return {
-            date: dayjs(dateKey),
-            eventGroups: this.getPlacesByDistance(
-              eventsPerDay[dateKey] ?? [],
-              places,
-            ),
-          };
-        },
-      );
+      this.placesByDistancePerDay = daysInWindow.map<EventGroupsPerDay>((dateKey) => {
+        return {
+          date: dayjs(dateKey),
+          eventGroups: this.getPlacesByDistance(eventsPerDay[dateKey] ?? [], places),
+        };
+      });
 
       this.pageService.setJsonLdData(this.createWebsiteSchema());
     } catch (e) {
@@ -405,20 +373,18 @@ export class EventsPage implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
   }
 
-  private async resolvePlaces(
-    events: LocalizedEvent[],
-  ): Promise<(NamedLatLon | null)[]> {
+  private async resolvePlaces(events: LocalizedEvent[]): Promise<(NamedLatLon | null)[]> {
     return Promise.all(
       unionBy(
         events.map((e) => e.latLng),
-        (e) => `${e.lat},${e.lng}`,
+        (e) => `${e.lat},${e.lng}`
       )
         .filter((e) => e)
         .map((latLon) => {
           const namedPlace = getCachedLocations().find(
             (place) =>
               roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-              roundLatLon(place.lng) == roundLatLon(latLon.lng),
+              roundLatLon(place.lng) == roundLatLon(latLon.lng)
           );
           if (namedPlace) {
             return namedPlace;
@@ -428,14 +394,11 @@ export class EventsPage implements OnInit, OnDestroy {
               .reverseSearch(latLon.lat, latLon.lng)
               .catch((): null => null);
           }
-        }),
+        })
     );
   }
 
-  private getPlacesByDistance(
-    events: LocalizedEvent[],
-    places: NamedLatLon[],
-  ): PlaceByDistance[] {
+  private getPlacesByDistance(events: LocalizedEvent[], places: NamedLatLon[]): PlaceByDistance[] {
     const groups = events.reduce((agg, event) => {
       const distance = this.getGeoDistance(event).toFixed(0);
       if (!agg[distance]) {
@@ -453,11 +416,9 @@ export class EventsPage implements OnInit, OnDestroy {
         places: [] as string[],
         events: groups[distance],
       })),
-      (event) => parseInt(event.distance),
+      (event) => parseInt(event.distance)
     ).reduce((groupedPlaces, eventGroup: EventsByDistance) => {
-      const latLonGroups = groupBy(eventGroup.events, (e) =>
-        JSON.stringify(e.latLng),
-      );
+      const latLonGroups = groupBy(eventGroup.events, (e) => JSON.stringify(e.latLng));
       groupedPlaces.push({
         distance: parseInt(eventGroup.distance),
         places: Object.keys(latLonGroups).map((latLonGroup) => {
@@ -474,7 +435,7 @@ export class EventsPage implements OnInit, OnDestroy {
             places.find(
               (place) =>
                 roundLatLon(place.lat) == roundLatLon(latLon.lat) &&
-                roundLatLon(place.lng) == roundLatLon(latLon.lng),
+                roundLatLon(place.lng) == roundLatLon(latLon.lng)
             ) ?? fallbackPlace;
           if (!place) {
             console.warn(`Cannot resolve latlon` + JSON.stringify(latLon));
@@ -495,7 +456,7 @@ export class EventsPage implements OnInit, OnDestroy {
       event.latLng.lat,
       event.latLng.lng,
       this.latLon.lat,
-      this.latLon.lng,
+      this.latLon.lng
     );
   }
 
@@ -507,9 +468,7 @@ export class EventsPage implements OnInit, OnDestroy {
     const tags = this.getPageTags();
     const events = this.placesByDistancePerDay[0].eventGroups
       .flatMap((distanced) => distanced.places)
-      .flatMap((place) =>
-        place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
-      )
+      .flatMap((place) => place.events.map((event) => this.toSchemaOrgEvent(event, place.place)))
       .filter((event) => event);
 
     return {
@@ -544,18 +503,13 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  private toSchemaOrgEvent(
-    event: LocalizedEvent,
-    location: NamedLatLon,
-  ): SchemaEvent {
+  private toSchemaOrgEvent(event: LocalizedEvent, location: NamedLatLon): SchemaEvent {
     const startDate = dayjs(event.startingAt);
     return {
       '@type': 'Event',
       name: event.title,
       description: event.text || `Veranstaltung in ${location.displayName}`,
-      eventStatus: startDate.isBefore(dayjs())
-        ? 'EventScheduled'
-        : 'EventCancelled',
+      eventStatus: startDate.isBefore(dayjs()) ? 'EventScheduled' : 'EventCancelled',
       eventAttendanceMode: 'OfflineEventAttendanceMode',
       startDate: startDate.toISOString(),
       endDate: startDate.endOf('day').toISOString(),
@@ -583,22 +537,11 @@ export class EventsPage implements OnInit, OnDestroy {
     };
   }
 
-  createDateUrl(
-    date: Nullable<Dayjs>,
-    location: Nullable<NamedLatLon> = null,
-  ): string {
+  createDateUrl(date: Nullable<Dayjs>, location: Nullable<NamedLatLon> = null): string {
     const { countryCode, region, place } = this.getLocationOrElse(location);
     const { year, month, day } = this.getDateOrElse(date);
 
-    return renderUrl(
-      countryCode,
-      region,
-      place,
-      year,
-      month,
-      day,
-      this.perimeter,
-    );
+    return renderUrl(countryCode, region, place, year, month, day, this.perimeter);
   }
 
   createUrl(location: NamedLatLon, date: Dayjs): string {
@@ -609,26 +552,22 @@ export class EventsPage implements OnInit, OnDestroy {
       parseInt(date.format('YYYY')),
       parseInt(date.format('MM')),
       parseInt(date.format('DD')),
-      10,
+      10
     );
   }
 
   createEventUrl(event: LocalizedEvent): string {
-    const { countryCode, region, place, year, month, day } =
-      this.activatedRoute.snapshot.params;
+    const { countryCode, region, place, year, month, day } = this.activatedRoute.snapshot.params;
 
-    return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId,
-      {
-        countryCode,
-        region,
-        place,
-        year,
-        month,
-        day,
-        eventId: (event as any).id,
-      },
-    );
+    return renderPath(upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId, {
+      countryCode,
+      region,
+      place,
+      year,
+      month,
+      day,
+      eventId: (event as any).id,
+    });
   }
 
   getPlaceUrl(location: NamedLatLon): string {
@@ -636,17 +575,9 @@ export class EventsPage implements OnInit, OnDestroy {
       const { countryCode, area, place } = location;
       const { year, month, day } = parsePath(
         upcomingBaseRoute.events.countryCode.region.place.dateTime,
-        this.activatedRoute.snapshot.params,
+        this.activatedRoute.snapshot.params
       );
-      return renderUrl(
-        countryCode,
-        area,
-        place,
-        year,
-        month,
-        day,
-        this.perimeter,
-      );
+      return renderUrl(countryCode, area, place, year, month, day, this.perimeter);
     }
   }
 
@@ -678,10 +609,9 @@ export class EventsPage implements OnInit, OnDestroy {
 
   private saveLocation(location: Nullable<NamedLatLon>) {
     const savedLocations: NamedLatLon[] = this.getSavedLocations();
-    const locations = uniqBy(
-      [location, ...savedLocations],
-      (l) => `${l.lat}:${l.lng}`,
-    ).filter((_, index) => index < 4);
+    const locations = uniqBy([location, ...savedLocations], (l) => `${l.lat}:${l.lng}`).filter(
+      (_, index) => index < 4
+    );
     localStorage.setItem('savedLocations', JSON.stringify(locations));
   }
 
@@ -788,18 +718,15 @@ export function renderUrl(
   year: number,
   month: number,
   day: number,
-  perimeter: number,
+  perimeter: number
 ) {
-  return renderPath(
-    upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
-    {
-      countryCode,
-      region,
-      place,
-      year,
-      month,
-      day,
-      perimeter,
-    },
-  );
+  return renderPath(upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter, {
+    countryCode,
+    region,
+    place,
+    year,
+    month,
+    day,
+    perimeter,
+  });
 }

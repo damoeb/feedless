@@ -12,8 +12,7 @@ describe('WorkflowBuilderComponent', () => {
       imports: [
         WorkflowBuilderComponent,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockRepositories(apolloMockController),
+          configurer: (apolloMockController) => mockRepositories(apolloMockController),
         }),
       ],
     }).compileComponents();

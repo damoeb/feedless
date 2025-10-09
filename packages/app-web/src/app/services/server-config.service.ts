@@ -34,17 +34,13 @@ export class ServerConfigService {
   private version!: string;
   private license: LocalizedLicense;
 
-  private readonly systemErrorSubject = new BehaviorSubject<ConfigError | null>(
-    null,
-  );
+  private readonly systemErrorSubject = new BehaviorSubject<ConfigError | null>(null);
   public readonly systemError$: Observable<ConfigError | null> =
     this.systemErrorSubject.asObservable();
 
   async fetchConfig(): Promise<VerticalAppConfig> {
     try {
-      const config = await firstValueFrom(
-        this.httpClient.get<VerticalAppConfig>('/config.json'),
-      );
+      const config = await firstValueFrom(this.httpClient.get<VerticalAppConfig>('/config.json'));
 
       this.apiUrl = config.apiUrl;
 
@@ -64,19 +60,15 @@ export class ServerConfigService {
         console.log(`enabling product ${product}`);
         const products: GqlVertical[] = Object.keys(GqlVertical).map(
           // @ts-ignore
-          (p) => GqlVertical[p],
+          (p) => GqlVertical[p]
         );
         console.log(`Know products ${products.join(', ')}`);
         if (!products.some((otherProduct) => otherProduct == product)) {
-          const message = `Product '${product}' does not exist. Know products are ${products.join(
-            ', ',
-          )}`;
+          const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
           throwInvalidConfigError(message);
         }
       } else {
-        throwInvalidConfigError(
-          `Cannot map hostname ${location.hostname} to product`,
-        );
+        throwInvalidConfigError(`Cannot map hostname ${location.hostname} to product`);
       }
 
       return config;

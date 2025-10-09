@@ -56,9 +56,7 @@ interface Box {
   imports: [NgClass],
   standalone: true,
 })
-export class AnnotateImageComponent
-  implements AfterViewInit, OnDestroy, OnInit
-{
+export class AnnotateImageComponent implements AfterViewInit, OnDestroy, OnInit {
   private readonly changeRef = inject(ChangeDetectorRef);
 
   readonly embed = input.required<Embeddable>();
@@ -70,8 +68,7 @@ export class AnnotateImageComponent
   private pickedBoundingBox: EventEmitter<BoundingBox | null> =
     new EventEmitter<BoundingBox | null>();
 
-  private pickedPosition: EventEmitter<XyPosition | null> =
-    new EventEmitter<XyPosition | null>();
+  private pickedPosition: EventEmitter<XyPosition | null> = new EventEmitter<XyPosition | null>();
 
   readonly svgContainer = viewChild.required<ElementRef>('svgContainer');
 
@@ -202,9 +199,7 @@ export class AnnotateImageComponent
   private async drawImage() {
     const image = new Image();
     this.revokeImageUrl();
-    this.imageUrl = URL.createObjectURL(
-      this.b64toBlob(this.embed().data, this.embed().mimeType),
-    );
+    this.imageUrl = URL.createObjectURL(this.b64toBlob(this.embed().data, this.embed().mimeType));
     image.src = this.imageUrl;
 
     image.onload = () => {
@@ -221,11 +216,7 @@ export class AnnotateImageComponent
     this.changeRef.detectChanges();
   }
 
-  private b64toBlob(
-    b64Data: string,
-    contentType: string,
-    sliceSize: number = 512,
-  ) {
+  private b64toBlob(b64Data: string, contentType: string, sliceSize: number = 512) {
     const byteCharacters = atob(b64Data);
     const byteArrays: BlobPart[] = [];
 
@@ -309,7 +300,7 @@ export class AnnotateImageComponent
             this.mode = 'move';
             this.changeRef.detectChanges();
           });
-        },
+        }
       ),
       this.sourceBuilder().events.pickArea.subscribe(
         (callback: (box: Nullable<BoundingBox>) => void) => {
@@ -327,8 +318,8 @@ export class AnnotateImageComponent
             });
             this.changeRef.detectChanges();
           });
-        },
-      ),
+        }
+      )
     );
   }
 

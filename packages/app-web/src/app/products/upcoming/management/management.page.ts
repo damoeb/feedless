@@ -22,10 +22,7 @@ import { LoginButtonComponent } from '../../../components/login-button/login-but
 import { MapComponent } from '../../../components/map/map.component';
 import { LatLng, Nullable } from '../../../types';
 import { SourcesComponent } from '../../../components/sources/sources.component';
-import {
-  RepositoryService,
-  Source,
-} from '../../../services/repository.service';
+import { RepositoryService, Source } from '../../../services/repository.service';
 import { AppConfigService } from '../../../services/app-config.service';
 import { RepositoryFull } from '../../../graphql/types';
 import { GqlSourcesWhereInput } from '../../../../generated/graphql';
@@ -73,7 +70,7 @@ export class ManagementPage implements OnInit {
     this.repository = await this.repositoryService.getRepositoryById(
       this.getRepositoryId(),
       { page: 0 },
-      null,
+      null
     );
     this.showSources = this.activatedRoute.snapshot.data.sources == true;
     this.changeRef.detectChanges();

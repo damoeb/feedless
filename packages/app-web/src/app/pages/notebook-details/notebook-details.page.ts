@@ -10,15 +10,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import {
-  debounceTime,
-  firstValueFrom,
-  from,
-  map,
-  Observable,
-  Subscription,
-  zip,
-} from 'rxjs';
+import { debounceTime, firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
@@ -203,9 +195,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   treeRoots: Observable<NoteHandle[]> = from([]);
   private setSystemReady: (value: PromiseLike<void> | void) => void;
-  private waitForReady: Promise<void> = new Promise(
-    (resolve) => (this.setSystemReady = resolve),
-  );
+  private waitForReady: Promise<void> = new Promise((resolve) => (this.setSystemReady = resolve));
 
   constructor() {
     this.searchNotes = this.searchNotes.bind(this);
@@ -237,12 +227,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   private subscribeEvents() {
     this.subscriptions.push(
-      this.shortcutsFC.valueChanges.subscribe((value) =>
-        this.handleShortcutValue(value),
-      ),
-      this.activatedRoute.params.subscribe((params) =>
-        this.handleParams(params),
-      ),
+      this.shortcutsFC.valueChanges.subscribe((value) => this.handleShortcutValue(value)),
+      this.activatedRoute.params.subscribe((params) => this.handleParams(params)),
       this.notebookService.systemBusyChanges.subscribe(async (systemBusy) => {
         this.systemBusy = systemBusy;
         if (!systemBusy) {
@@ -251,12 +237,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
         this.changeRef.detectChanges();
       }),
-      this.notebookService.openNoteChanges.subscribe((note) =>
-        this.openNote(note),
-      ),
-      this.notebookService.notesChanges
-        .asObservable()
-        .subscribe(() => this.loadTree()),
+      this.notebookService.openNoteChanges.subscribe((note) => this.openNote(note)),
+      this.notebookService.notesChanges.asObservable().subscribe(() => this.loadTree())
     );
   }
 
@@ -269,11 +251,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   loadAutoSuggestions(query: string, type: string): Promise<Completion[]> {
-    return this.notebookService.suggestByType(
-      query,
-      type,
-      this.currentEditorHandle.note,
-    );
+    return this.notebookService.suggestByType(query, type, this.currentEditorHandle.note);
   }
 
   @HostListener('window:keydown.esc', ['$event'])
@@ -295,7 +273,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         header: string,
         message: string,
         redirect: () => Promise<any>,
-        actionFn: () => Promise<T>,
+        actionFn: () => Promise<T>
       ) => {
         try {
           return actionFn();
@@ -322,7 +300,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         'Notebook',
         'The requested notebook does not exist',
         () => this.router.navigateByUrl('../'),
-        () => this.notebookService.openNotebook(params.notebookId),
+        () => this.notebookService.openNotebook(params.notebookId)
       );
 
       this.appConfig.setPageTitle(`Notebook ${this.notebook.title}`);
@@ -336,7 +314,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
             const noteId = decodeURIComponent(params.noteId);
             await this.openNote(await this.notebookService.findById(noteId));
           }
-        },
+        }
       );
     }
   }
@@ -350,16 +328,14 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       // upVoteAnnotationId: upVoted?.id,
       formControl,
       subscriptions: [
-        formControl.valueChanges
-          .pipe(debounceTime(400))
-          .subscribe(async (text) => {
-            if (editor.note.text != text) {
-              editor.note.text = text;
-              await this.updateNote(note);
-            }
+        formControl.valueChanges.pipe(debounceTime(400)).subscribe(async (text) => {
+          if (editor.note.text != text) {
+            editor.note.text = text;
+            await this.updateNote(note);
+          }
 
-            formControl.markAsPristine();
-          }),
+          formControl.markAsPristine();
+        }),
       ],
     };
     // await this.refreshReferences(openNote);
@@ -479,16 +455,11 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       .filter(Boolean);
     this.suggestions = await this.notebookService
       .findAll(query, null, 5)
-      .then((notes) =>
-        notes.map((note) => this.toTypeaheadSuggestion(note, parts)),
-      );
+      .then((notes) => notes.map((note) => this.toTypeaheadSuggestion(note, parts)));
     this.changeRef.detectChanges();
   }
 
-  private toTypeaheadSuggestion(
-    note: Note,
-    queryParts: string[],
-  ): TypeaheadSuggestion {
+  private toTypeaheadSuggestion(note: Note, queryParts: string[]): TypeaheadSuggestion {
     return {
       id: note.id,
       highlightedTitle: this.highlightMatches(note.text, queryParts),
@@ -500,9 +471,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       return haystack;
     }
 
-    const escapedParts = parts.map((part) =>
-      part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-    );
+    const escapedParts = parts.map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
 
     const regex = new RegExp(`(${escapedParts.join('|')})`, 'gi');
 
@@ -558,9 +527,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
                   (noteHandle) => embeddedIds.indexOf(noteHandle.body.id),
                   (noteHandle) => noteHandle.body.createdAt,
                 ],
-                ['asc', 'asc'],
+                ['asc', 'asc']
               );
-            }),
+            })
           );
         },
       };
@@ -590,9 +559,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async changeParent() {
-    this.notebookService.moveStartChanges.next(
-      this.currentEditorHandle.note.id,
-    );
+    this.notebookService.moveStartChanges.next(this.currentEditorHandle.note.id);
   }
 
   async cloneNote() {
@@ -612,9 +579,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private async handleShortcutValue(value: NoteShortcutType) {
     const toShortcutHandle = (notes: Note[]): NoteHandle[] =>
       notes.map<NoteHandle>((note) => this.toNoteHandle(0)(note));
-    const settings = await firstValueFrom(
-      this.notebookService.getSettingsOrDefault(),
-    );
+    const settings = await firstValueFrom(this.notebookService.getSettingsOrDefault());
     switch (value) {
       case 'pinned':
         this.shortcuts$ = this.notebookService
@@ -639,9 +604,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     await this.initShortcuts();
     this.loadTree();
 
-    this.sessionService.setColorScheme(
-      await this.hasSettingsValue('general.darkMode', true),
-    );
+    this.sessionService.setColorScheme(await this.hasSettingsValue('general.darkMode', true));
 
     await this.initEditor();
   }

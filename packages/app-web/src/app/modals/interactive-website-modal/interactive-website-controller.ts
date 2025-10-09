@@ -1,11 +1,7 @@
 import { ChangeDetectorRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { FormArray, FormControl, FormGroup, Validators } from '@angular/forms';
-import {
-  GqlScrapeActionInput,
-  GqlSourceInput,
-  GqlXyPosition,
-} from '../../../generated/graphql';
+import { GqlScrapeActionInput, GqlSourceInput, GqlXyPosition } from '../../../generated/graphql';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SourceBuilder } from '../../components/interactive-website/source-builder';
 import { ScrapeService } from '../../services/scrape.service';
@@ -40,10 +36,7 @@ export abstract class InteractiveWebsiteController {
   ];
 
   initializeController() {
-    this.sourceBuilder = SourceBuilder.fromSource(
-      this.source,
-      this.scrapeService,
-    );
+    this.sourceBuilder = SourceBuilder.fromSource(this.source, this.scrapeService);
     this.sourceBuilder.patchFetch({
       forcePrerender: true,
     });
@@ -60,7 +53,7 @@ export abstract class InteractiveWebsiteController {
           this.sourceBuilder.overwriteFlow(this.getActionsRequestFragment());
           this.sourceBuilder.events.actionsChanges.emit();
         }
-      }),
+      })
     );
   }
 
@@ -70,21 +63,17 @@ export abstract class InteractiveWebsiteController {
 
   addAction() {
     if (this.actionsFg.valid) {
-      const firstExecuteOrExtractIndex = this.getActionFgs().findIndex(
-        (action) => ['execute', 'extract'].includes(action.value.type),
+      const firstExecuteOrExtractIndex = this.getActionFgs().findIndex((action) =>
+        ['execute', 'extract'].includes(action.value.type)
       );
       const insertAt =
-        firstExecuteOrExtractIndex == -1
-          ? this.getActionFgs().length
-          : firstExecuteOrExtractIndex;
+        firstExecuteOrExtractIndex == -1 ? this.getActionFgs().length : firstExecuteOrExtractIndex;
       this.actionsFg.insert(
         insertAt,
         new FormGroup<BrowserAction>({
           type: new FormControl<BrowserActionType>('click'),
-          clickParams: new FormControl<GqlXyPosition>(null, [
-            Validators.required,
-          ]),
-        }),
+          clickParams: new FormControl<GqlXyPosition>(null, [Validators.required]),
+        })
       );
     } else {
       console.log(this.actionsFg.errors);
@@ -133,14 +122,12 @@ export abstract class InteractiveWebsiteController {
   }
 
   private convertScrapeActionToActionFg(
-    action: GqlScrapeActionInput,
+    action: GqlScrapeActionInput
   ): FormGroup<BrowserAction> | undefined {
     if (action.click?.position) {
       return new FormGroup<BrowserAction>({
         type: new FormControl<BrowserActionType>(this.getActionType(action)),
-        clickParams: new FormControl<GqlXyPosition>(action.click.position, [
-          Validators.required,
-        ]),
+        clickParams: new FormControl<GqlXyPosition>(action.click.position, [Validators.required]),
       });
     } else {
       return new FormGroup<BrowserAction>({
@@ -157,7 +144,7 @@ export abstract class InteractiveWebsiteController {
           x: position.x,
           y: position.y,
         },
-      }),
+      })
     );
   }
 

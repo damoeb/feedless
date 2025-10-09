@@ -15,7 +15,10 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJsonEntity
+import org.migor.feedless.any
+import org.migor.feedless.any2
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.CreateRecordInput
@@ -39,9 +42,6 @@ import org.migor.feedless.repository.MaxAgeDaysDateField
 import org.migor.feedless.repository.RepositoryDAO
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.eq
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.RequestContext

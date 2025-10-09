@@ -7,8 +7,7 @@ import { ProfileGuardService } from '../../guards/profile-guard.service';
 export const RSS_BUILDER_ROUTES: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./rss-builder-product.page').then((m) => m.RssBuilderProductPage),
+    loadComponent: () => import('./rss-builder-product.page').then((m) => m.RssBuilderProductPage),
     children: [
       {
         path: '',
@@ -17,9 +16,7 @@ export const RSS_BUILDER_ROUTES: Routes = [
           {
             path: '',
             loadComponent: () =>
-              import('./about/about-rss-builder.page').then(
-                (m) => m.AboutRssBuilderPage,
-              ),
+              import('./about/about-rss-builder.page').then((m) => m.AboutRssBuilderPage),
           },
           {
             path: 'feed-builder',
@@ -27,16 +24,14 @@ export const RSS_BUILDER_ROUTES: Routes = [
             // canActivate: [AuthGuardService],
             loadChildren: () =>
               import('../../pages/feed-builder/feed-builder.routes').then(
-                (m) => m.FEED_BUILDER_ROUTES,
+                (m) => m.FEED_BUILDER_ROUTES
               ),
           },
           {
             path: 'agents',
             canActivate: [AuthGuardService],
             loadChildren: () =>
-              import('../../pages/agents/agents.routes').then(
-                (m) => m.AGENTS_ROUTES,
-              ),
+              import('../../pages/agents/agents.routes').then((m) => m.AGENTS_ROUTES),
           },
         ],
       },

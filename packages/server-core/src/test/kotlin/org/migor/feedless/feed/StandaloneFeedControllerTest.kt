@@ -16,10 +16,10 @@ import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.anyOrNull
-import org.migor.feedless.repository.anyOrNull2
+import org.migor.feedless.any
+import org.migor.feedless.any2
+import org.migor.feedless.anyOrNull
+import org.migor.feedless.anyOrNull2
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.mock.mockito.MockBean

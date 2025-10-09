@@ -39,8 +39,7 @@
               <p></p>
             </ion-label>
             <ion-label>
-              until {{ getNextPaymentDate(plan) | date: dateFormat }}
-              (recurring)
+              until {{ getNextPaymentDate(plan) | date: dateFormat }} (recurring)
             </ion-label>
             }
           </ion-item>
@@ -48,18 +47,13 @@
             <p>
               <strong>Features Overview</strong>
             </p>
-            @for (feature of plan.product.featureGroup.features; track
-            feature.id) {
+            @for (feature of plan.product.featureGroup.features; track feature.id) {
             <app-feature [feature]="feature"></app-feature>
             }
 
             <ion-list>
               @if (!plan.terminatedAt) {
-              <ion-item
-                color="primary"
-                [button]="true"
-                routerLink="/pricing/feedless"
-              >
+              <ion-item color="primary" [button]="true" routerLink="/pricing/feedless">
                 <ion-label> Change </ion-label>
               </ion-item>
               }

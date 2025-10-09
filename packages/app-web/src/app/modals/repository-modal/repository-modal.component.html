@@ -39,9 +39,7 @@
 <ion-content>
   <ion-list>
     <ion-row>
-      <ion-col class="ion-align-self-center ion-text-right" size="3">
-        Title
-      </ion-col>
+      <ion-col class="ion-align-self-center ion-text-right" size="3"> Title </ion-col>
       <ion-col size="9">
         <ion-input
           [formControl]="formFg.controls.title"
@@ -70,10 +68,7 @@
           placeholder="#tags, urls,..."
           rows="3"
         ></ion-textarea>
-        @for (
-          error of formFg.controls.description.errors | keyvalue;
-          track error
-        ) {
+        @for (error of formFg.controls.description.errors | keyvalue; track error) {
           <p class="errors">
             {{ error.value | json }}
           </p>
@@ -121,11 +116,7 @@
             justify="end"
             style="flex: 3"
           ></ion-checkbox>
-          <ion-label
-            class="ion-text-left"
-            id="applyFulltextPlugin__label"
-            style="flex: 9"
-          >
+          <ion-label class="ion-text-left" id="applyFulltextPlugin__label" style="flex: 9">
             Fetch Fulltext for every item
           </ion-label>
         </ion-item>
@@ -141,11 +132,7 @@
               style="flex: 3"
             ></ion-radio>
 
-            <ion-label
-              class="ion-text-left"
-              id="readability__label"
-              style="flex: 9"
-            >
+            <ion-label class="ion-text-left" id="readability__label" style="flex: 9">
               Transform to readability
             </ion-label>
           </ion-item>
@@ -158,11 +145,7 @@
               justify="end"
               style="flex: 3"
             ></ion-radio>
-            <ion-label
-              class="ion-text-left"
-              id="summary__label"
-              style="flex: 9"
-            >
+            <ion-label class="ion-text-left" id="summary__label" style="flex: 9">
               Transform to summary (opengraph, jsonld, meta...)
             </ion-label>
           </ion-item>
@@ -175,11 +158,7 @@
               justify="end"
               style="flex: 3"
             ></ion-radio>
-            <ion-label
-              class="ion-text-left"
-              id="no_transformer__label"
-              style="flex: 9"
-            >
+            <ion-label class="ion-text-left" id="no_transformer__label" style="flex: 9">
               No Transformer
             </ion-label>
           </ion-item>
@@ -194,11 +173,7 @@
             justify="end"
             style="flex: 3"
           ></ion-checkbox>
-          <ion-label
-            class="ion-text-left"
-            id="applyPrivacyPlugin__label"
-            style="flex: 9"
-          >
+          <ion-label class="ion-text-left" id="applyPrivacyPlugin__label" style="flex: 9">
             Inline Images
           </ion-label>
         </ion-item>
@@ -236,10 +211,7 @@
               fill="outline"
               placeholder="<Auto>"
             ></ion-input>
-            @for (
-              error of formFg.controls.maxAgeDays.errors | keyvalue;
-              track error
-            ) {
+            @for (error of formFg.controls.maxAgeDays.errors | keyvalue; track error) {
               <p class="errors">
                 {{ error.value | json }}
               </p>
@@ -247,9 +219,7 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col class="ion-align-self-center ion-text-right" size="3">
-            Date Field
-          </ion-col>
+          <ion-col class="ion-align-self-center ion-text-right" size="3"> Date Field </ion-col>
           <ion-col size="9">
             <ion-select
               [formControl]="formFg.controls.ageReferenceField"
@@ -269,9 +239,7 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col class="ion-align-self-center ion-text-right" size="3"
-            >Capacity
-          </ion-col>
+          <ion-col class="ion-align-self-center ion-text-right" size="3">Capacity </ion-col>
           <ion-col size="9">
             <ion-input
               [clearInput]="true"
@@ -280,10 +248,7 @@
               fill="outline"
               placeholder="<Auto>"
             ></ion-input>
-            @for (
-              error of formFg.controls.maxCapacity.errors | keyvalue;
-              track error
-            ) {
+            @for (error of formFg.controls.maxCapacity.errors | keyvalue; track error) {
               <p class="errors">
                 {{ error.value | json }}
               </p>
@@ -292,8 +257,8 @@
               <p>
                 <ion-text color="warning">
                   <em
-                    >Your setting will be overrules to
-                    {{ repositoryMaxItemsUpperLimit }} as per your plan</em
+                    >Your setting will be overrules to {{ repositoryMaxItemsUpperLimit }} as per
+                    your plan</em
                   >
                 </ion-text>
               </p>
@@ -330,8 +295,8 @@
             <ion-note> Others can find your feed.</ion-note>
             @if (formFg.value.isPublic) {
               <ion-note>
-                This enables analytics, but only ships limited content until you
-                verify source authority.
+                This enables analytics, but only ships limited content until you verify source
+                authority.
               </ion-note>
             }
           </ion-label>
@@ -339,10 +304,7 @@
         @if (formFg.controls.isPublic.errors) {
           <ion-item>
             <ion-label color="danger">
-              @for (
-                error of formFg.controls.isPublic.errors | keyvalue;
-                track error
-              ) {
+              @for (error of formFg.controls.isPublic.errors | keyvalue; track error) {
                 <p>
                   {{ error.value }}
                 </p>
@@ -377,16 +339,10 @@
             justify="end"
             style="flex: 3"
           ></ion-checkbox>
-          <ion-label
-            class="ion-text-left"
-            id="enablePushNotifications__label"
-            style="flex: 9"
-          >
+          <ion-label class="ion-text-left" id="enablePushNotifications__label" style="flex: 9">
             <h3>Push to Telegram</h3>
           </ion-label>
-          <ion-button routerLink="/docs/telegram" target="_blank">
-            Setup Instructions
-          </ion-button>
+          <ion-button routerLink="/docs/telegram" target="_blank"> Setup Instructions </ion-button>
         </ion-item>
         <!--        <ion-row>-->
         <!--          <ion-col push="3" size="8">-->
@@ -412,11 +368,7 @@
           <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
 
           <ion-row>
-            <ion-col
-              size="3"
-              style="align-content: center"
-              class="ion-text-right"
-            >
+            <ion-col size="3" style="align-content: center" class="ion-text-right">
               Conditional Tags
             </ion-col>
             <ion-col size="9">
@@ -433,11 +385,7 @@
 
           <ion-row>
             <ion-col>
-              @for (
-                conditionalTag of conditionalTags;
-                track conditionalTag;
-                let i = $index
-              ) {
+              @for (conditionalTag of conditionalTags; track conditionalTag; let i = $index) {
                 <div class="flex ion-align-items-center">
                   <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
                   <ion-input
@@ -452,15 +400,9 @@
                     interface="popover"
                     [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
                   >
-                    <ion-select-option [value]="FilterFieldLink"
-                      >link</ion-select-option
-                    >
-                    <ion-select-option [value]="FilterFieldTitle"
-                      >title
-                    </ion-select-option>
-                    <ion-select-option [value]="FilterFieldContent"
-                      >content
-                    </ion-select-option>
+                    <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
+                    <ion-select-option [value]="FilterFieldTitle">title </ion-select-option>
+                    <ion-select-option [value]="FilterFieldContent">content </ion-select-option>
                   </ion-select>
                   <ion-select
                     [formControl]="conditionalTag.controls.operator"
@@ -469,19 +411,16 @@
                     interface="popover"
                     [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
                   >
-                    <ion-select-option
-                      [value]="GqlStringFilterOperator.Contains"
+                    <ion-select-option [value]="GqlStringFilterOperator.Contains"
                       >contains
                     </ion-select-option>
                     <ion-select-option [value]="GqlStringFilterOperator.Matches"
                       >matches
                     </ion-select-option>
-                    <ion-select-option
-                      [value]="GqlStringFilterOperator.StartsWidth"
+                    <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
                       >starts with
                     </ion-select-option>
-                    <ion-select-option
-                      [value]="GqlStringFilterOperator.EndsWith"
+                    <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
                       >ends with
                     </ion-select-option>
                   </ion-select>
@@ -490,11 +429,7 @@
                     placeholder="Type a value"
                     fill="outline"
                   ></ion-input>
-                  <ion-button
-                    (click)="removeConditionalTag(i)"
-                    color="medium"
-                    fill="clear"
-                  >
+                  <ion-button (click)="removeConditionalTag(i)" color="medium" fill="clear">
                     <ion-icon name="trash-outline"></ion-icon>
                   </ion-button>
                 </div>
@@ -515,10 +450,7 @@
         Flow
       </ion-item>
     } @else {
-      <ion-item
-        [button]="true"
-        (click)="showExpertOptions = !showExpertOptions"
-      >
+      <ion-item [button]="true" (click)="showExpertOptions = !showExpertOptions">
         <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
       </ion-item>
     }

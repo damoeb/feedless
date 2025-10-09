@@ -175,34 +175,32 @@ export class SelfHostingSetupPage implements OnInit {
   }
 
   ngOnInit(): void {
-    merge(
-      ...values(this.groups).map((group) => group.control.valueChanges),
-    ).subscribe(() => this.changeRef.detectChanges());
+    merge(...values(this.groups).map((group) => group.control.valueChanges)).subscribe(() =>
+      this.changeRef.detectChanges()
+    );
 
-    this.queryFc.valueChanges
-      .pipe(map((q) => q.trim().toLowerCase()))
-      .subscribe((query) => {
-        if (query) {
-          this.filteredFeatures = sortBy(
-            this.features.filter((feature) => {
-              return (
-                feature.name.toLowerCase().indexOf(query) > -1 ||
-                (feature.description || '').toLowerCase().indexOf(query) > -1
-              );
-            }),
-            'name',
-          );
-        } else {
-          this.filteredFeatures = sortBy(this.features, 'name');
-        }
-        this.changeRef.detectChanges();
-      });
+    this.queryFc.valueChanges.pipe(map((q) => q.trim().toLowerCase())).subscribe((query) => {
+      if (query) {
+        this.filteredFeatures = sortBy(
+          this.features.filter((feature) => {
+            return (
+              feature.name.toLowerCase().indexOf(query) > -1 ||
+              (feature.description || '').toLowerCase().indexOf(query) > -1
+            );
+          }),
+          'name'
+        );
+      } else {
+        this.filteredFeatures = sortBy(this.features, 'name');
+      }
+      this.changeRef.detectChanges();
+    });
   }
 
   activeGroups(): FeatureGroup[] {
     return sortBy(
       values(this.groups).filter((group) => group.control.value),
-      'name',
+      'name'
     );
   }
 

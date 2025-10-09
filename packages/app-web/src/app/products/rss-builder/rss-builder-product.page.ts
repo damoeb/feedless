@@ -9,10 +9,7 @@ import {
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { LocalizedLicense, ScrapeResponse } from '../../graphql/types';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { ServerConfigService } from '../../services/server-config.service';
 import { dateFormat } from '../../services/session.service';
 import { LicenseService } from '../../services/license.service';
@@ -81,12 +78,10 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
 
   async ngOnInit() {
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      }),
       this.licenseService.licenseChange.subscribe((license) => {
         this.license = license;
         this.changeRef.detectChanges();
@@ -100,7 +95,7 @@ export class RssBuilderProductPage implements OnInit, OnDestroy {
           this.embedded = true;
           this.changeRef.detectChanges();
         }
-      }),
+      })
     );
   }
 

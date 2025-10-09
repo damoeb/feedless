@@ -5,13 +5,13 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.Mother.createOneTimePassword
-import org.migor.feedless.Mother.createUser
+import org.migor.feedless.Mother.randomOneTimePasswordEntity
+import org.migor.feedless.Mother.randomUserEntity
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.TokenProvider
@@ -62,8 +62,8 @@ class MailAuthenticationServiceTest {
   @Test
   fun authenticateUsingMail() = runTest {
     // given
-    val user = createUser()
-    val otp = createOneTimePassword(user)
+    val user = randomUserEntity()
+    val otp = randomOneTimePasswordEntity(user)
 
     `when`(featureService.isDisabled(any2(), Mockito.isNull())).thenReturn(false)
     `when`(oneTimePasswordService.createOTP(any2())).thenReturn(otp)
@@ -91,8 +91,8 @@ class MailAuthenticationServiceTest {
     val jwt = mock(Jwt::class.java)
     `when`(jwt.tokenValue).thenReturn(UUID.randomUUID().toString())
 
-    val user = createUser()
-    val otp = createOneTimePassword(user)
+    val user = randomUserEntity()
+    val otp = randomOneTimePasswordEntity(user)
     `when`(oneTimePasswordDAO.findById(otp.id)).thenReturn(Optional.of(otp))
     `when`(tokenProvider.createJwtForUser(any2())).thenReturn(jwt)
 

@@ -35,7 +35,7 @@ export class AgentsComponent implements OnInit, OnDestroy {
       this.agentService.getAgents().subscribe((agents) => {
         this.agents = agents;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 
@@ -46,10 +46,7 @@ export class AgentsComponent implements OnInit, OnDestroy {
   fromNow = relativeTimeOrElse;
 }
 
-export function relativeTimeOrElse(
-  futureTimestamp: number,
-  suffix: string = null,
-): string {
+export function relativeTimeOrElse(futureTimestamp: number, suffix: string = null): string {
   dayjs.extend(relativeTime);
   const now = dayjs();
   const ts = dayjs(futureTimestamp);

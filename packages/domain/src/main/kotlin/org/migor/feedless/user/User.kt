@@ -20,12 +20,12 @@ data class User(
   val shadowBanned: Boolean,
   val banned: Boolean,
   val bannedUntil: LocalDateTime?,
-  var hasAcceptedTerms: Boolean,
-  var acceptedTermsAt: LocalDateTime?,
-  var locked: Boolean,
-  var purgeScheduledFor: LocalDateTime?,
-  var dateFormat: String?, // todo make nullable=false
-  var timeFormat: String?,
-  var inboxRepositoryId: UUID?,
-  var notificationsLastViewedAt: LocalDateTime?
+  val hasAcceptedTerms: Boolean,
+  val acceptedTermsAt: LocalDateTime?,
+  val locked: Boolean,
+  val purgeScheduledFor: LocalDateTime?,
+  val dateFormat: String?, // todo make nullable=false
+  val timeFormat: String?,
+  val inboxRepositoryId: UUID?,
+  val notificationsLastViewedAt: LocalDateTime?
 )

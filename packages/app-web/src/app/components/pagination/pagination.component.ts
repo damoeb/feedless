@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  effect,
-  input,
-  output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, input, output } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -20,15 +14,7 @@ import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
   templateUrl: './pagination.component.html',
   styleUrls: ['./pagination.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonButtons,
-    IonButton,
-    ReactiveFormsModule,
-    IonRow,
-    IonCol,
-    IonSelect,
-    IonSelectOption,
-  ],
+  imports: [IonButtons, IonButton, ReactiveFormsModule, IonRow, IonCol, IonSelect, IonSelectOption],
   standalone: true,
 })
 export class PaginationComponent {

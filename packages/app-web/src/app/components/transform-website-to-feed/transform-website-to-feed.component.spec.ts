@@ -1,11 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
-import {
-  AppTestModule,
-  mockRepositories,
-  mockScrape,
-} from '../../app-test.module';
+import { AppTestModule, mockRepositories, mockScrape } from '../../app-test.module';
 import { SourceBuilder } from '../interactive-website/source-builder';
 import { ScrapeService } from '../../services/scrape.service';
 
@@ -62,7 +58,7 @@ describe('TransformWebsiteToFeedComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput(
       'sourceBuilder',
-      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService)),
+      SourceBuilder.fromUrl('', TestBed.inject(ScrapeService))
     );
     // component.scrapeResponse = feedResponse;
     fixture.detectChanges();

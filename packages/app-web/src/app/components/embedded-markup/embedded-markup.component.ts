@@ -32,8 +32,7 @@ export function transformXpathToCssPath(xpath: string): string {
 
 function makeid(length: number) {
   let result = '';
-  const characters =
-    'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = characters.length;
   for (let i = 0; i < length; i++) {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
@@ -55,9 +54,7 @@ interface IframeMessage {
   imports: [NgStyle, NgClass],
   standalone: true,
 })
-export class EmbeddedMarkupComponent
-  implements OnInit, AfterViewInit, OnDestroy
-{
+export class EmbeddedMarkupComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
 
   readonly iframeRef = viewChild<ElementRef>('iframeElement');
@@ -100,23 +97,18 @@ export class EmbeddedMarkupComponent
       this.loadedDocument = resolve;
     });
     this.subscriptions.push(
-      this.pickedXpath
-        .pipe(debounce(() => interval(100)))
-        .subscribe((xpath) => {
-          this.currentXpath = xpath;
-          this.changeRef.detectChanges();
-        }),
+      this.pickedXpath.pipe(debounce(() => interval(100))).subscribe((xpath) => {
+        this.currentXpath = xpath;
+        this.changeRef.detectChanges();
+      }),
       this.sourceBuilder().events.extractElements.subscribe((params) => {
-        const document = new DOMParser().parseFromString(
-          this.embed().data,
-          'text/html',
-        );
+        const document = new DOMParser().parseFromString(this.embed().data, 'text/html');
         const xpathResult = document.evaluate(
           params.xpath,
           document,
           null,
           XPathResult.ANY_TYPE,
-          null,
+          null
         );
         let element = xpathResult.iterateNext();
         const elements: HTMLElement[] = [];
@@ -145,7 +137,7 @@ export class EmbeddedMarkupComponent
             type: 'xpath',
             data: xpath,
           });
-        }),
+        })
     );
   }
 
@@ -186,7 +178,7 @@ export class EmbeddedMarkupComponent
 
   private postIframeMessage(message: IframeMessage) {
     return this.waitForDocument?.then(() =>
-      this.iframeRef().nativeElement.contentWindow?.postMessage(message, '*'),
+      this.iframeRef().nativeElement.contentWindow?.postMessage(message, '*')
     );
   }
 
@@ -198,8 +190,8 @@ export class EmbeddedMarkupComponent
 a, button { pointer-events: none; }
 body { cursor: pointer; }
         </style>`,
-        'text/html',
-      ).documentElement,
+        'text/html'
+      ).documentElement
     );
   }
 
@@ -305,7 +297,7 @@ window.addEventListener('message', (message) => {
 })
 
       </script>`,
-        'text/html',
+        'text/html'
       )
       .querySelector('#feedless-click-handler');
 
@@ -341,17 +333,12 @@ window.addEventListener('message', (message) => {
   private assignToIframe() {
     const document = this.embed();
     const iframe = this.iframeRef();
-    if (
-      iframe &&
-      document &&
-      document.mimeType &&
-      !document.mimeType?.startsWith('text/xml')
-    ) {
+    if (iframe && document && document.mimeType && !document.mimeType?.startsWith('text/xml')) {
       const html = this.patchHtml(this.embed().data, this.embed().url);
       this.proxyUrl = URL.createObjectURL(
         new Blob([html], {
           type: 'text/html;charset=UTF-8',
-        }),
+        })
       );
       iframe.nativeElement.src = this.proxyUrl;
       this.changeRef.detectChanges();

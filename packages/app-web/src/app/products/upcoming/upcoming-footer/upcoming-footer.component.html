@@ -7,22 +7,14 @@
           <ion-icon name="send-outline" slot="end"></ion-icon>
         </ion-button>
 
-        <ion-button
-          color="light"
-          href="mailto:markus@lokale.events?subject=Links"
-        >
+        <ion-button color="light" href="mailto:markus@lokale.events?subject=Links">
           Event-Link vorschlagen
         </ion-button>
       </div>
     }
     @if (!location()) {
       <div style="align-self: center">
-        <ion-button
-          appDev
-          color="primary"
-          shape="round"
-          (click)="useUsersPosition()"
-        >
+        <ion-button appDev color="primary" shape="round" (click)="useUsersPosition()">
           <ion-icon name="locate-outline" slot="start"></ion-icon>
           Aktueller Standort
         </ion-button>
@@ -30,15 +22,9 @@
     }
     <div style="opacity: 0.8; text-align: center">
       <ion-button fill="empty" routerLink="/ueber-uns"> Über uns</ion-button>
-      <ion-button fill="empty" href="mailto:markus@lokale.events">
-        Kontakt
-      </ion-button>
-      <ion-button (click)="showAttribution()" fill="empty">
-        Impressum
-      </ion-button>
-      <ion-button fill="empty" routerLink="/management" rel="nofollow">
-        ...
-      </ion-button>
+      <ion-button fill="empty" href="mailto:markus@lokale.events"> Kontakt </ion-button>
+      <ion-button (click)="showAttribution()" fill="empty"> Impressum </ion-button>
+      <ion-button fill="empty" routerLink="/management" rel="nofollow"> ... </ion-button>
     </div>
   </div>
 </ion-footer>

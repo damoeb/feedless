@@ -13,10 +13,7 @@ import {
 export class ReportService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
 
-  async createReport(
-    repositoryId: string,
-    segmentation: GqlSegmentInput,
-  ): Promise<void> {
+  async createReport(repositoryId: string, segmentation: GqlSegmentInput): Promise<void> {
     return this.apollo
       .mutate<GqlCreateReportMutation, GqlCreateReportMutationVariables>({
         mutation: CreateReport,

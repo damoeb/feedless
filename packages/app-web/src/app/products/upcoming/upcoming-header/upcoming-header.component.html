@@ -10,10 +10,7 @@
       "
     >
       <h1><em>Lokale</em>.Events</h1>
-      <p>
-        „Deine Region steckt voller Überraschungen – entdecke, wie viel mehr in
-        ihr steckt!“
-      </p>
+      <p> „Deine Region steckt voller Überraschungen – entdecke, wie viel mehr in ihr steckt!“ </p>
     </div>
   }
   <ion-toolbar>
@@ -89,10 +86,7 @@
       </div>
     </div>
 
-    <div
-      style="display: flex; position: absolute; right: 0; top: 10px"
-      class="ion-hide-md-down"
-    >
+    <div style="display: flex; position: absolute; right: 0; top: 10px" class="ion-hide-md-down">
       <!--      <ion-title>-->
       <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
       <!--      </ion-title>-->
@@ -111,11 +105,8 @@
       flex-direction: column;
     "
   >
-    @if (expand === "suggestions") {
-      <ion-list
-        class="ion-margin-bottom"
-        style="max-height: 20vh; overflow-y: auto"
-      >
+    @if (expand === 'suggestions') {
+      <ion-list class="ion-margin-bottom" style="max-height: 20vh; overflow-y: auto">
         <!--        <ion-item-->
         <!--          (click)="getCurrentLocation()"-->
         <!--          *ngIf="!locationNotAvailable"-->
@@ -126,19 +117,14 @@
         <!--        </ion-item>-->
         @if (locationSuggestions.length === 0) {
           <ion-item>
-            <span class="suggestion">
-              Tippe deine Ortschaft oder Postleitzahl
-            </span>
+            <span class="suggestion"> Tippe deine Ortschaft oder Postleitzahl </span>
           </ion-item>
         }
         @for (suggestion of locationSuggestions; track suggestion.url) {
           <a [routerLink]="suggestion.url">
             <ion-item [button]="true">
               <!--          <ion-icon class="ion-margin-end" name="location-outline"></ion-icon>-->
-              <span
-                class="suggestion"
-                [innerHTML]="suggestion.labelHtml"
-              ></span>
+              <span class="suggestion" [innerHTML]="suggestion.labelHtml"></span>
             </ion-item>
           </a>
         }

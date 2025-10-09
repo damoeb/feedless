@@ -20,7 +20,7 @@ export class EventService {
   findAllByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-    context: DefaultContext = null,
+    context: DefaultContext = null
   ): Promise<LocalizedEvent[]> {
     return this.apollo
       .query<GqlEventsByIdsQuery, GqlEventsByIdsQueryVariables>({

@@ -46,8 +46,7 @@ export class FeedlessProductPage implements OnInit {
 
   ngOnInit(): void {
     this.sessionService.getSession().subscribe((session) => {
-      this.needsAcceptTerms =
-        session?.isLoggedIn && !session?.user.hasAcceptedTerms;
+      this.needsAcceptTerms = session?.isLoggedIn && !session?.user.hasAcceptedTerms;
       this.changeRef.detectChanges();
     });
   }

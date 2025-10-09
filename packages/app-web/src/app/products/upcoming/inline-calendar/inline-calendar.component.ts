@@ -112,9 +112,7 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   }
 
   isDateInCalendar(date: Dayjs) {
-    return this.dateWindow.some((d) =>
-      this.isSameDate(date, d.date, ['year', 'month', 'day']),
-    );
+    return this.dateWindow.some((d) => this.isSameDate(date, d.date, ['year', 'month', 'day']));
   }
 
   shiftDateWindow(offset: number, event: MouseEvent) {

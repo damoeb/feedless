@@ -12,7 +12,7 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.mockito.InjectMocks

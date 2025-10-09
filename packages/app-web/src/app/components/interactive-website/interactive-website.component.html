@@ -1,38 +1,25 @@
-<div
-  class="ion-no-padding preview"
-  style="display: flex; flex: 1; flex-direction: column"
->
+<div class="ion-no-padding preview" style="display: flex; flex: 1; flex-direction: column">
   <ion-toolbar style="--background: transparent">
     <ion-row>
       <ion-col size="9">
         <div style="display: flex; align-items: center; column-gap: 10px">
           @if (showUrl()) {
-            <ion-input
-              [formControl]="formFg.controls.url"
-              class="ion-margin-start"
-            ></ion-input>
+            <ion-input [formControl]="formFg.controls.url" class="ion-margin-start"></ion-input>
           }
 
           <ion-segment [formControl]="viewModeFc" mode="ios">
             @if (hasScreenshot) {
-              <ion-segment-button [value]="viewModeImage"
-                >Image
-              </ion-segment-button>
+              <ion-segment-button [value]="viewModeImage">Image </ion-segment-button>
             }
             @if (hasMarkup) {
-              <ion-segment-button [value]="viewModeMarkup"
-                >Markup
-              </ion-segment-button>
+              <ion-segment-button [value]="viewModeMarkup">Markup </ion-segment-button>
             }
             <ng-content select="[segmentButton]"></ng-content>
           </ion-segment>
         </div>
       </ion-col>
       <ion-col size="3">
-        @if (
-          viewModeFc.value === viewModeMarkup ||
-          viewModeFc.value === viewModeImage
-        ) {
+        @if (viewModeFc.value === viewModeMarkup || viewModeFc.value === viewModeImage) {
           <ion-buttons>
             <ion-button (click)="zoomIn()">
               <ion-icon name="remove-outline"></ion-icon>
@@ -54,9 +41,7 @@
       </ion-col>
     </ion-row>
   </ion-toolbar>
-  <div
-    style="display: flex; flex: 1; flex-direction: column; position: relative"
-  >
+  <div style="display: flex; flex: 1; flex-direction: column; position: relative">
     @if (errorMessage) {
       <ion-toolbar color="danger">
         <ion-label class="ion-margin-horizontal"
@@ -83,25 +68,19 @@
         <div class="prerender-options">
           <div class="prerender-options__line">
             <input
-              [formControl]="
-                formFg.controls.prerenderingOptions.controls.resolutionX
-              "
+              [formControl]="formFg.controls.prerenderingOptions.controls.resolutionX"
               type="number"
             />
             <ion-text style="padding-inline: 5px">x</ion-text>
             <input
-              [formControl]="
-                formFg.controls.prerenderingOptions.controls.resolutionY
-              "
+              [formControl]="formFg.controls.prerenderingOptions.controls.resolutionY"
               type="number"
             />
           </div>
           <div class="prerender-options__line">
             <label>
               <input
-                [formControl]="
-                  formFg.controls.prerenderingOptions.controls.mobile
-                "
+                [formControl]="formFg.controls.prerenderingOptions.controls.mobile"
                 type="checkbox"
               />Mobile
             </label>
@@ -110,9 +89,7 @@
             <div class="prerender-options__line">
               <label>
                 <input
-                  [formControl]="
-                    formFg.controls.prerenderingOptions.controls.landscape
-                  "
+                  [formControl]="formFg.controls.prerenderingOptions.controls.landscape"
                   type="checkbox"
                 />Landscape
               </label>
@@ -122,14 +99,8 @@
           <div class="prerender-options__line">
             <label>
               <ion-range
-                [formControl]="
-                  formFg.controls.prerenderingOptions.controls.additionalWait
-                "
-                [label]="
-                  'Wait (' +
-                  formFg.value.prerenderingOptions.additionalWait +
-                  's)'
-                "
+                [formControl]="formFg.controls.prerenderingOptions.controls.additionalWait"
+                [label]="'Wait (' + formFg.value.prerenderingOptions.additionalWait + 's)'"
                 [max]="additionalWaitMax"
                 [min]="additionalWaitMin"
                 [pin]="true"
@@ -149,24 +120,15 @@
         style="border: none; transform-origin: top left; position: absolute"
       >
         @if (embedScreenshot && viewModeFc.value === viewModeImage) {
-          <app-embedded-image
-            [embed]="embedScreenshot"
-            [sourceBuilder]="sourceBuilder()"
-          >
+          <app-embedded-image [embed]="embedScreenshot" [sourceBuilder]="sourceBuilder()">
           </app-embedded-image>
         }
         @if (embedMarkup && viewModeFc.value === viewModeMarkup) {
-          <app-embedded-markup
-            [embed]="embedMarkup"
-            [sourceBuilder]="sourceBuilder()"
-          >
+          <app-embedded-markup [embed]="embedMarkup" [sourceBuilder]="sourceBuilder()">
           </app-embedded-markup>
         }
       </div>
-      @if (
-        viewModeFc.value === viewModeMarkup ||
-        viewModeFc.value === viewModeImage
-      ) {
+      @if (viewModeFc.value === viewModeMarkup || viewModeFc.value === viewModeImage) {
         <app-console-button [logs]="logs"></app-console-button>
       }
       <!--      <div>-->
@@ -183,9 +145,7 @@
         <ion-row>
           <ion-item color="primary" style="width: 100%">
             <ion-label> Click on your element of choice</ion-label>
-            <ion-button (click)="cancelPickMode()" color="dark" slot="end"
-              >Cancel
-            </ion-button>
+            <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel </ion-button>
           </ion-item>
         </ion-row>
       }

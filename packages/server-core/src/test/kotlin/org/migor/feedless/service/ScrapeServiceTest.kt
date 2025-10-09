@@ -20,12 +20,12 @@ import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.actions.HeaderActionEntity
 import org.migor.feedless.actions.ScrapeActionEntity
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.any
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.eq
+import org.migor.feedless.eq
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.needsPrerendering

@@ -17,7 +17,7 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.mail.OneTimePasswordService
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService

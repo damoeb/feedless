@@ -15,22 +15,14 @@ import {
   GqlConfirmCodeMutationVariables,
 } from '../../generated/graphql';
 import { ApolloClient } from '@apollo/client/core';
-import {
-  BehaviorSubject,
-  firstValueFrom,
-  map,
-  Observable,
-  Subject,
-  take,
-} from 'rxjs';
+import { BehaviorSubject, firstValueFrom, map, Observable, Subject, take } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { Nullable } from '../types';
 
-export type ConfirmCode =
-  GqlAuthUsingMailMutation['authenticateWithCodeViaMail'];
+export type ConfirmCode = GqlAuthUsingMailMutation['authenticateWithCodeViaMail'];
 
 interface RichAuthToken {
   authorities: string[];
@@ -86,16 +78,11 @@ export class AuthService {
           data,
         },
       })
-      .then((response) =>
-        this.handleAuthenticationToken(response.data!.authUser.token),
-      );
+      .then((response) => this.handleAuthenticationToken(response.data!.authUser.token));
   }
 
   sendConfirmationCode(confirmationCode: string, otpId: string) {
-    return this.apollo.mutate<
-      GqlConfirmCodeMutation,
-      GqlConfirmCodeMutationVariables
-    >({
+    return this.apollo.mutate<GqlConfirmCodeMutation, GqlConfirmCodeMutationVariables>({
       mutation: ConfirmCode,
       variables: {
         data: {
@@ -116,8 +103,8 @@ export class AuthService {
               const authentication = await this.authorizeAnonymous();
               await this.handleAuthenticationToken(authentication.token);
             }
-          }),
-        ),
+          })
+        )
     );
   }
 
@@ -131,9 +118,7 @@ export class AuthService {
   }
 
   isAuthenticated(): Observable<boolean> {
-    return this.authorizationChange().pipe(
-      map((status) => status?.loggedIn === true),
-    );
+    return this.authorizationChange().pipe(map((status) => status?.loggedIn === true));
   }
 
   changeAuthStatus(loggedIn: boolean) {

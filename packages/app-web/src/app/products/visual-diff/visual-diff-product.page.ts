@@ -9,10 +9,7 @@ import {
 import { SessionService } from '../../services/session.service';
 import { ChildActivationEnd, Router, RouterLink } from '@angular/router';
 import { has } from 'lodash-es';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { filter, map, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
 import {
@@ -64,22 +61,20 @@ export class VisualDiffProductPage implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      }),
       this.router.events
         .pipe(
           filter((e) => e instanceof ChildActivationEnd),
           map((e) => (e as ChildActivationEnd).snapshot.firstChild.data),
-          filter((data) => has(data, 'title')),
+          filter((data) => has(data, 'title'))
         )
         .subscribe((data) => {
           this.activePageTitle = data.title;
           this.changeRef.detectChanges();
-        }),
+        })
     );
   }
 

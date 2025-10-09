@@ -29,5 +29,5 @@ export const urlDecorator = ViewPlugin.fromClass(
   },
   {
     decorations: (instance) => instance.decorations,
-  },
+  }
 );

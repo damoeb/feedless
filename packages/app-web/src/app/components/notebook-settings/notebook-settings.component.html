@@ -43,20 +43,16 @@
           <ion-label> Size</ion-label>
           <div class="controls">
             <ion-text class="ion-padding-horizontal"
-              >{{ getOption("general.fontSize") | async }}
+              >{{ getOption('general.fontSize') | async }}
             </ion-text>
             <ion-button
-              (click)="
-                changeNumOption('general.fontSize', -2, { min: 16, max: 24 })
-              "
+              (click)="changeNumOption('general.fontSize', -2, { min: 16, max: 24 })"
               color="light"
               size="medium"
               >-
             </ion-button>
             <ion-button
-              (click)="
-                changeNumOption('general.fontSize', 2, { min: 16, max: 24 })
-              "
+              (click)="changeNumOption('general.fontSize', 2, { min: 16, max: 24 })"
               color="light"
               size="medium"
               >+

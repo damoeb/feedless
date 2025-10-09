@@ -1,10 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  ElementRef,
-  inject,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, viewChild } from '@angular/core';
 import { fixUrl } from '../../../app.module';
 import { Router } from '@angular/router';
 import { ServerConfigService } from '../../../services/server-config.service';
@@ -20,20 +14,14 @@ import { ProductHeadlineComponent } from '../../../components/product-headline/p
   templateUrl: './about-tracker.page.html',
   styleUrls: ['./about-tracker.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonContent,
-    ProductHeaderComponent,
-    SearchbarComponent,
-    ProductHeadlineComponent,
-  ],
+  imports: [IonContent, ProductHeaderComponent, SearchbarComponent, ProductHeadlineComponent],
   standalone: true,
 })
 export class AboutTrackerPage {
   private readonly router = inject(Router);
   readonly serverConfig = inject(ServerConfigService);
 
-  readonly opmlPickerElement =
-    viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
+  readonly opmlPickerElement = viewChild.required<ElementRef<HTMLInputElement>>('opmlPicker');
 
   protected readonly dateFormat = dateFormat;
 

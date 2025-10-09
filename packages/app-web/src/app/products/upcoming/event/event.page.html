@@ -1,9 +1,5 @@
 @if (date && location) {
-<app-upcoming-header
-  [date]="date"
-  [perimeter]="10"
-  [location]="location"
-></app-upcoming-header>
+<app-upcoming-header [date]="date" [perimeter]="10" [location]="location"></app-upcoming-header>
 }
 <ion-content>
   <div class="events">
@@ -43,9 +39,7 @@
       <header>
         <h1 itemprop="name">
           @if (event.url) {
-          <a [href]="event.url" target="_blank" rel="noopener" itemprop="url"
-            >{{ event.title }}</a
-          >
+          <a [href]="event.url" target="_blank" rel="noopener" itemprop="url">{{ event.title }}</a>
           } @else { {{ event.title }} }
         </h1>
         @if (event.url) {
@@ -61,17 +55,11 @@
             Zur Veranstaltungsseite
           </ion-button>
           <ion-note>
-            <a [href]="event.url" target="_blank" rel="noopener"
-              >{{ event.url }}</a
-            >
+            <a [href]="event.url" target="_blank" rel="noopener">{{ event.url }}</a>
           </ion-note>
         </div>
         } @if (event.tags && event.tags.length > 0) {
-        <div
-          class="event-tags"
-          itemprop="keywords"
-          [attr.content]="event.tags.join(', ')"
-        >
+        <div class="event-tags" itemprop="keywords" [attr.content]="event.tags.join(', ')">
           @for (tag of event.tags; track tag) {
           <ion-badge color="secondary">{{ tag }}</ion-badge>
           }
@@ -85,20 +73,10 @@
       @if (event?.latLng) {
       <section>
         <h2>Ort</h2>
-        <address
-          itemprop="location"
-          itemscope
-          itemtype="https://schema.org/Place"
-        >
-          <span itemprop="name"
-            >{{ location.displayName }}, {{ location.area }}</span
-          >
+        <address itemprop="location" itemscope itemtype="https://schema.org/Place">
+          <span itemprop="name">{{ location.displayName }}, {{ location.area }}</span>
           <!--          <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
-          <div
-            itemprop="geo"
-            itemscope
-            itemtype="https://schema.org/GeoCoordinates"
-          >
+          <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">
             <meta itemprop="latitude" [content]="event.latLng.lat" />
             <meta itemprop="longitude" [content]="event.latLng.lng" />
           </div>
@@ -109,8 +87,7 @@
         <h2>Datum und Uhrzeit</h2>
         <div class="event-datetime">
           <time itemprop="startDate" [attr.datetime]="event.startingAt"
-            >{{ formatDate(event.startingAt, 'dddd, DD. MMMM YYYY
-            [um]HH:mm[Uhr]') }}
+            >{{ formatDate(event.startingAt, 'dddd, DD. MMMM YYYY [um]HH:mm[Uhr]') }}
           </time>
           <ion-button (click)="downloadIcs()" class="ion-margin-start">
             <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
@@ -157,10 +134,7 @@
 
       <!-- Hidden structured data -->
       <meta itemprop="eventStatus" content="EventScheduled" />
-      <meta
-        itemprop="eventAttendanceMode"
-        content="OfflineEventAttendanceMode"
-      />
+      <meta itemprop="eventAttendanceMode" content="OfflineEventAttendanceMode" />
       @if (event.tags && event.tags.length > 0) {
       <meta itemprop="keywords" [content]="event.tags.join(', ')" />
       }
@@ -176,8 +150,5 @@
     }
   </div>
 
-  <app-upcoming-footer
-    [location]="location"
-    [perimeter]="10"
-  ></app-upcoming-footer>
+  <app-upcoming-footer [location]="location" [perimeter]="10"></app-upcoming-footer>
 </ion-content>

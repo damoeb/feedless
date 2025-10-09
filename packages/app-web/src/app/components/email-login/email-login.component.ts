@@ -2,12 +2,7 @@ import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { AuthService, ConfirmCode } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
-import {
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 import {
@@ -47,10 +42,7 @@ export class EmailLoginComponent {
   private readonly changeRef = inject(ChangeDetectorRef);
 
   mode: 'enterMail' | 'enterConfirmationCode' | 'finalized' = 'enterMail';
-  emailFc = new FormControl<string>('', [
-    Validators.email,
-    Validators.required,
-  ]);
+  emailFc = new FormControl<string>('', [Validators.email, Validators.required]);
   busy = false;
   confirmationCodeFc: FormControl<string>;
   private confirmationCodeSpec: Nullable<ConfirmCode> = null;
@@ -69,9 +61,7 @@ export class EmailLoginComponent {
       this.busy = true;
       this.changeRef.detectChanges();
 
-      const confirmCode = await this.authService.authorizeUserViaMail(
-        this.emailFc.value,
-      );
+      const confirmCode = await this.authService.authorizeUserViaMail(this.emailFc.value);
       this.confirmationCodeSpec = confirmCode;
       this.mode = 'enterConfirmationCode';
 
@@ -91,11 +81,7 @@ export class EmailLoginComponent {
 
   async sendConfirmationCode() {
     try {
-      if (
-        this.confirmationCodeFc.invalid ||
-        this.busy ||
-        !this.confirmationCodeSpec
-      ) {
+      if (this.confirmationCodeFc.invalid || this.busy || !this.confirmationCodeSpec) {
         return;
       }
 
@@ -104,7 +90,7 @@ export class EmailLoginComponent {
 
       await this.authService.sendConfirmationCode(
         this.confirmationCodeFc.value,
-        this.confirmationCodeSpec.otpId,
+        this.confirmationCodeSpec.otpId
       );
 
       await this.handleSuccess();

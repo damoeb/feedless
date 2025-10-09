@@ -13,12 +13,7 @@ import {
   viewChild,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  IonItem,
-  IonLabel,
-  IonList,
-  IonSearchbar,
-} from '@ionic/angular/standalone';
+import { IonItem, IonLabel, IonList, IonSearchbar } from '@ionic/angular/standalone';
 import { NgClass } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
@@ -32,14 +27,7 @@ export type TypeaheadSuggestion = {
   templateUrl: './typehead.component.html',
   styleUrls: ['./typehead.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonLabel,
-    IonItem,
-    IonSearchbar,
-    IonList,
-    NgClass,
-    ReactiveFormsModule,
-  ],
+  imports: [IonLabel, IonItem, IonSearchbar, IonList, NgClass, ReactiveFormsModule],
   standalone: true,
 })
 export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
@@ -64,7 +52,7 @@ export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
         this.queryChange.emit(queryString);
         // this.busy = false;
         // this.changeRef.detectChanges();
-      }),
+      })
     );
     this.queryControl.setValue(this.query());
   }

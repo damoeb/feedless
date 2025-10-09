@@ -5,11 +5,7 @@
     </ion-buttons>
 
     <div class="title">
-      <div
-        class="ion-hide-md-down ion-padding-horizontal"
-        routerLink="/"
-        style="cursor: pointer"
-      >
+      <div class="ion-hide-md-down ion-padding-horizontal" routerLink="/" style="cursor: pointer">
         reader
       </div>
       <app-searchbar
@@ -68,9 +64,7 @@
               <ion-item>
                 <ion-label> Size</ion-label>
                 <div class="controls">
-                  <ion-text class="ion-padding-horizontal"
-                    >{{ readerOptions.fontSize }}</ion-text
-                  >
+                  <ion-text class="ion-padding-horizontal">{{ readerOptions.fontSize }}</ion-text>
                   <ion-button
                     (click)="changeNumOption('fontSize', -2, {min: 16, max: 24})"
                     color="light"
@@ -210,14 +204,7 @@
     <ion-spinner name="dots"></ion-spinner>
   </div>
   } @if (!loading && !scrapeResponse) {
-  <div
-    style="
-      height: 300px;
-      align-items: center;
-      justify-content: center;
-      display: flex;
-    "
-  >
+  <div style="height: 300px; align-items: center; justify-content: center; display: flex">
     Welcome to Reader.
   </div>
   } @if (!loading && scrapeResponse) {
@@ -254,13 +241,7 @@
           </ion-col>
           <ion-col size="12">
             <h1>{{ getReadability().title }}</h1>
-            <div
-              style="
-                width: 100px;
-                height: 3px;
-                background: var(--app-foreground);
-              "
-            ></div>
+            <div style="width: 100px; height: 3px; background: var(--app-foreground)"></div>
           </ion-col>
         </ion-row>
         } @if (output === 'list') {
@@ -268,9 +249,7 @@
           @for (groupOfArticles of groupsOfArticles; track groupOfArticles) {
           <div class="ion-margin-bottom">
             @for (article of groupOfArticles; track article) {
-            <ion-item
-              style="--background: transparent; --background-hover: none"
-            >
+            <ion-item style="--background: transparent; --background-hover: none">
               <ion-label class="ion-text-wrap">
                 <p>
                   <a [href]="article.url">{{article.contentTitle}}</a>

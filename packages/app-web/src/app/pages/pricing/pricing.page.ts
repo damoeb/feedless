@@ -6,10 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Product } from '../../graphql/types';
@@ -40,12 +37,10 @@ export class PricingPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.productId) {
-          this.productConfig = productConfigs.find(
-            (p) => p.id === params.productId,
-          );
+          this.productConfig = productConfigs.find((p) => p.id === params.productId);
           this.changeRef.detectChanges();
         }
-      }),
+      })
     );
   }
 
@@ -57,7 +52,7 @@ export class PricingPage implements OnInit, OnDestroy {
     return this.router.navigateByUrl(
       this.router.createUrlTree([`/checkout/${product.id}`], {
         queryParamsHandling: 'merge',
-      }),
+      })
     );
   }
 }

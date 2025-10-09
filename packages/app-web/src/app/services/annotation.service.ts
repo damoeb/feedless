@@ -23,15 +23,10 @@ export class AnnotationService {
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
 
-  async createAnnotation(
-    data: GqlCreateAnnotationInput,
-  ): Promise<Nullable<Annotation>> {
+  async createAnnotation(data: GqlCreateAnnotationInput): Promise<Nullable<Annotation>> {
     if (this.sessionService.isAuthenticated()) {
       return this.apollo
-        .mutate<
-          GqlCreateAnnotationMutation,
-          GqlCreateAnnotationMutationVariables
-        >({
+        .mutate<GqlCreateAnnotationMutation, GqlCreateAnnotationMutationVariables>({
           mutation: CreateAnnotation,
           variables: {
             data,
@@ -45,10 +40,7 @@ export class AnnotationService {
 
   deleteAnnotation(data: GqlDeleteAnnotationInput): Promise<void> {
     return this.apollo
-      .mutate<
-        GqlDeleteAnnotationMutation,
-        GqlDeleteAnnotationMutationVariables
-      >({
+      .mutate<GqlDeleteAnnotationMutation, GqlDeleteAnnotationMutationVariables>({
         mutation: DeleteAnnotation,
         variables: {
           data,

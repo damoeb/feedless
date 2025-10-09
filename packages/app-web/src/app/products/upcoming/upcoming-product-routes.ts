@@ -2,14 +2,7 @@ import { ActivatedRoute, Params, Routes } from '@angular/router';
 import dayjs, { Dayjs } from 'dayjs';
 import { OpenStreetMapService } from '../../services/open-street-map.service';
 import { NamedLatLon } from '../../types';
-import {
-  createRoutes,
-  int,
-  param,
-  parsePath,
-  str,
-  template,
-} from 'typesafe-routes';
+import { createRoutes, int, param, parsePath, str, template } from 'typesafe-routes';
 import { upperCaseStringParser } from '../default-routes';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
@@ -19,7 +12,7 @@ export function parseDateFromUrl(params: Params): Dayjs {
   try {
     const { year, month, day } = parsePath(
       upcomingBaseRoute.events.countryCode.region.place.dateTime,
-      params,
+      params
     );
     const date = dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
     if (date?.isValid()) {
@@ -33,11 +26,11 @@ export function parseDateFromUrl(params: Params): Dayjs {
 
 export async function parseLocationFromUrl(
   activatedRoute: ActivatedRoute,
-  openStreetMapService: OpenStreetMapService,
+  openStreetMapService: OpenStreetMapService
 ): Promise<NamedLatLon> {
   const { place, region, countryCode } = parsePath(
     upcomingBaseRoute.events.countryCode.region.place,
-    activatedRoute.snapshot.params,
+    activatedRoute.snapshot.params
   );
 
   const err = Error('Cannot parse location from url');
@@ -123,8 +116,7 @@ function toPath(url: string): string {
 export const UPCOMING_ROUTES: Routes = [
   {
     path: toPath(template(upcomingBaseRoute.about)),
-    loadComponent: () =>
-      import('./about-us/about-us.page').then((m) => m.AboutUsPage),
+    loadComponent: () => import('./about-us/about-us.page').then((m) => m.AboutUsPage),
   },
   {
     path: toPath(template(upcomingBaseRoute.terms)),
@@ -132,14 +124,12 @@ export const UPCOMING_ROUTES: Routes = [
   },
   {
     path: toPath(template(upcomingBaseRoute.login)),
-    loadComponent: () =>
-      import('../../pages/login/login.page').then((m) => m.LoginPage),
+    loadComponent: () => import('../../pages/login/login.page').then((m) => m.LoginPage),
   },
   {
     path: '',
     pathMatch: 'full',
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
     path: '',
@@ -148,54 +138,37 @@ export const UPCOMING_ROUTES: Routes = [
       {
         path: toPath(template(upcomingBaseRoute.management.sources)),
         data: { sources: true },
-        loadComponent: () =>
-          import('./management/management.page').then((m) => m.ManagementPage),
+        loadComponent: () => import('./management/management.page').then((m) => m.ManagementPage),
       },
       {
         path: toPath(template(upcomingBaseRoute.management.documents)),
-        loadComponent: () =>
-          import('./management/management.page').then((m) => m.ManagementPage),
+        loadComponent: () => import('./management/management.page').then((m) => m.ManagementPage),
       },
     ],
   },
   {
     path: toPath(template(upcomingBaseRoute.events.countryCode)),
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
     path: toPath(template(upcomingBaseRoute.events.countryCode.region)),
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
     path: toPath(template(upcomingBaseRoute.events.countryCode.region.place)),
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
-    path: toPath(
-      template(upcomingBaseRoute.events.countryCode.region.place.dateTime),
-    ),
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    path: toPath(template(upcomingBaseRoute.events.countryCode.region.place.dateTime)),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
-    path: toPath(
-      template(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
-      ),
-    ),
-    loadComponent: () =>
-      import('./events/events.page').then((m) => m.EventsPage),
+    path: toPath(template(upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter)),
+    loadComponent: () => import('./events/events.page').then((m) => m.EventsPage),
   },
   {
     // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
-    path: toPath(
-      template(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId,
-      ),
-    ),
+    path: toPath(template(upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId)),
     loadComponent: () => import('./event/event.page').then((m) => m.EventPage),
   },
 ];

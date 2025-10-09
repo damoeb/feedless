@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  input,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { GqlLogStatement } from '../../../generated/graphql';
 import { ModalService } from '../../services/modal.service';
 import {
@@ -33,14 +28,9 @@ export class ConsoleButtonComponent {
       controls: false,
       text: stringifyLogStatement(this.logs()),
     };
-    return this.modalService.openCodeEditorModal(
-      CodeEditorModalComponent,
-      props,
-    );
+    return this.modalService.openCodeEditorModal(CodeEditorModalComponent, props);
   }
 }
 
 const stringifyLogStatement = (lsl: GqlLogStatement[]): string =>
-  lsl
-    .map((ls) => `${new Date(ls.time).toLocaleTimeString()}\t ${ls.message}`)
-    .join('\n');
+  lsl.map((ls) => `${new Date(ls.time).toLocaleTimeString()}\t ${ls.message}`).join('\n');

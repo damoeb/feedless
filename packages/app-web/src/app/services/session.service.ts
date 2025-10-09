@@ -101,17 +101,12 @@ export class SessionService {
       };
     }
 
-    await this.updateCurrentUser(data).then(() =>
-      this.fetchSession('network-only'),
-    );
+    await this.updateCurrentUser(data).then(() => this.fetchSession('network-only'));
   }
 
   async updateCurrentUser(data: GqlUpdateCurrentUserInput): Promise<void> {
     await this.apollo
-      .mutate<
-        GqlUpdateCurrentUserMutation,
-        GqlUpdateCurrentUserMutationVariables
-      >({
+      .mutate<GqlUpdateCurrentUserMutation, GqlUpdateCurrentUserMutationVariables>({
         mutation: UpdateCurrentUser,
         variables: {
           data,
@@ -122,10 +117,7 @@ export class SessionService {
 
   async createUserSecret(): Promise<UserSecret> {
     return this.apollo
-      .mutate<
-        GqlCreateUserSecretMutation,
-        GqlCreateUserSecretMutationVariables
-      >({
+      .mutate<GqlCreateUserSecretMutation, GqlCreateUserSecretMutationVariables>({
         mutation: CreateUserSecret,
       })
       .then((response) => response.data!.createUserSecret);
@@ -151,10 +143,7 @@ export class SessionService {
   }
 
   async deleteUserSecret(data: GqlDeleteUserSecretInput) {
-    await this.apollo.mutate<
-      GqlDeleteUserSecretMutation,
-      GqlDeleteUserSecretMutationVariables
-    >({
+    await this.apollo.mutate<GqlDeleteUserSecretMutation, GqlDeleteUserSecretMutationVariables>({
       mutation: DeleteUserSecret,
       variables: {
         data,
@@ -163,9 +152,7 @@ export class SessionService {
   }
 
   private detectColorScheme() {
-    const isDarkMode = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    ).matches;
+    const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
     this.darkModePipe.next(isDarkMode);
   }
 

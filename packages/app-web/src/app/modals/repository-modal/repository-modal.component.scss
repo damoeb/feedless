@@ -1,4 +1,4 @@
-@use "../../../mixins";
+@use '../../../mixins';
 
 .ion-list-header {
   font-weight: bold;
@@ -73,7 +73,7 @@ app-remote-feed-preview {
   display: flex;
 }
 
-*[slot="content"] {
+*[slot='content'] {
   margin-left: 1px;
   margin-right: 1px;
   border-style: solid;

@@ -20,10 +20,7 @@ import {
 import { SourceBuilder } from './source-builder';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import {
-  Embeddable,
-  AnnotateImageComponent,
-} from '../annotate-image/annotate-image.component';
+import { Embeddable, AnnotateImageComponent } from '../annotate-image/annotate-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { addIcons } from 'ionicons';
 import { addOutline, removeOutline } from 'ionicons/icons';
@@ -153,18 +150,13 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       merge(
         this.formFg.valueChanges,
         this.formFg.controls.prerenderingOptions.controls.additionalWait.valueChanges.pipe(
-          map((wait) =>
-            this.sourceBuilder().patchFetch({ additionalWaitSec: wait }),
-          ),
+          map((wait) => this.sourceBuilder().patchFetch({ additionalWaitSec: wait }))
         ),
         merge(
-          this.formFg.controls.prerenderingOptions.controls.resolutionX
-            .valueChanges,
-          this.formFg.controls.prerenderingOptions.controls.resolutionY
-            .valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.resolutionX.valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.resolutionY.valueChanges,
           this.formFg.controls.prerenderingOptions.controls.mobile.valueChanges,
-          this.formFg.controls.prerenderingOptions.controls.landscape
-            .valueChanges,
+          this.formFg.controls.prerenderingOptions.controls.landscape.valueChanges
         )
           .pipe(debounce(() => interval(100)))
           .pipe(
@@ -176,17 +168,15 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
                   isLandscape: this.formFg.value.prerenderingOptions.landscape,
                   isMobile: this.formFg.value.prerenderingOptions.mobile,
                 },
-              }),
-            ),
-          ),
+              })
+            )
+          )
       )
         .pipe(debounce(() => interval(100)))
         .subscribe(() => {
           this.sourceBuilder().events.actionsChanges.emit();
         }),
-      this.viewModeFc.valueChanges.subscribe((value) =>
-        this.segmentChange.emit(value),
-      ),
+      this.viewModeFc.valueChanges.subscribe((value) => this.segmentChange.emit(value)),
       this.sourceBuilder().events.pickPoint.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeImage);
       }),
@@ -206,7 +196,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
       this.sourceBuilder().events.cancel.subscribe(() => {
         this.pickMode = false;
         this.changeRef.detectChanges();
-      }),
+      })
     );
   }
 
@@ -234,8 +224,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.changeRef.detectChanges();
 
     try {
-      const scrapeResponse =
-        await this.sourceBuilder().fetchFeedsUsingBrowser();
+      const scrapeResponse = await this.sourceBuilder().fetchFeedsUsingBrowser();
 
       this.handleScrapeResponse(scrapeResponse);
     } catch (e: any) {
@@ -262,11 +251,9 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     if (!scrapeResponse.ok) {
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
-      const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch)
-        .response.fetch;
-      const extractAction = scrapeResponse.outputs.find(
-        (o) => o.response.extract?.fragments,
-      )?.response?.extract;
+      const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch).response.fetch;
+      const extractAction = scrapeResponse.outputs.find((o) => o.response.extract?.fragments)
+        ?.response?.extract;
 
       this.formFg.controls.prerenderingOptions.patchValue(
         {
@@ -275,7 +262,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
           resolutionY: fetchAction.debug.viewport.height,
           resolutionX: fetchAction.debug.viewport.width,
         },
-        { emitEvent: false },
+        { emitEvent: false }
       );
 
       if (extractAction) {
@@ -295,9 +282,8 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         };
       } else {
         const extractAction = first(
-          last(
-            scrapeResponse.outputs.filter((o) => o.response.extract?.fragments),
-          )?.response?.extract?.fragments,
+          last(scrapeResponse.outputs.filter((o) => o.response.extract?.fragments))?.response
+            ?.extract?.fragments
         )?.html;
 
         this.viewModeFc.patchValue('markup');

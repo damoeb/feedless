@@ -12,21 +12,12 @@ import { Subscription } from 'rxjs';
 import dayjs from 'dayjs';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { environment } from '../../../environments/environment';
-import {
-  FormControl,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { LocalizedLicense } from '../../graphql/types';
 import { AppConfigService } from '../../services/app-config.service';
 import { addIcons } from 'ionicons';
-import {
-  alertOutline,
-  checkmarkDoneOutline,
-  timeOutline,
-} from 'ionicons/icons';
+import { alertOutline, checkmarkDoneOutline, timeOutline } from 'ionicons/icons';
 import {
   IonButton,
   IonCol,
@@ -96,7 +87,7 @@ export class LicensePage implements OnInit, OnDestroy {
         this.license = license;
         this.loading = false;
         this.changeRef.detectChanges();
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }
@@ -115,9 +106,6 @@ export class LicensePage implements OnInit, OnDestroy {
   }
 
   getRelativeTrialDaysLeft(): number {
-    return (
-      dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') /
-      (28 * 2.0)
-    );
+    return dayjs(this.license.trialUntil).diff(new Date().getTime(), 'days') / (28 * 2.0);
   }
 }

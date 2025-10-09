@@ -11,7 +11,10 @@ import org.migor.feedless.actions.ExtractEmit
 import org.migor.feedless.actions.ExtractXpathActionEntity
 import org.migor.feedless.actions.ScrapeActionDAO
 import org.migor.feedless.actions.ScrapeActionEntity
+import org.migor.feedless.any2
+import org.migor.feedless.argThat
 import org.migor.feedless.document.DocumentDAO
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.DOMElementByXPathInput
 import org.migor.feedless.generated.types.DOMExtractInput
@@ -32,9 +35,6 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.any2
-import org.migor.feedless.repository.argThat
-import org.migor.feedless.repository.eq
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`

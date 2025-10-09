@@ -9,7 +9,9 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.any
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.eq
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -24,8 +26,6 @@ import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.repository.any
-import org.migor.feedless.repository.eq
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService

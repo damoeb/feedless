@@ -9,10 +9,7 @@ describe('ProductTitleComponent', () => {
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        ProductTitleComponent,
-        AppTestModule.withDefaults({ mockAppConfig: false }),
-      ],
+      imports: [ProductTitleComponent, AppTestModule.withDefaults({ mockAppConfig: false })],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProductTitleComponent);

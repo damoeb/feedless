@@ -10,7 +10,7 @@ import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.repository.HarvestService
-import org.migor.feedless.repository.any2
+import org.migor.feedless.any2
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify

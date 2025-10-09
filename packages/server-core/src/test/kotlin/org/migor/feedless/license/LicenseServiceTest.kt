@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Vertical
-import org.migor.feedless.repository.any
+import org.migor.feedless.any
 import org.migor.feedless.util.toDate
 import org.mockito.Mock
 import org.mockito.Mockito

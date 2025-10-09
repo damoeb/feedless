@@ -7,10 +7,7 @@ import {
   OnInit,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  AppConfigService,
-  VerticalSpecWithRoutes,
-} from '../../services/app-config.service';
+import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import { IonContent } from '@ionic/angular/standalone';
 import { NotebooksComponent } from '../../components/notebooks/notebooks.component';
 
@@ -33,12 +30,10 @@ export class NotebooksPage implements OnInit, OnDestroy {
   async ngOnInit() {
     this.appConfigService.setPageTitle('Notebooks');
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
+      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
+        this.productConfig = productConfig;
+        this.changeRef.detectChanges();
+      })
     );
   }
 

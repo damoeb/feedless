@@ -25,7 +25,7 @@ export class FeatureService {
   findAll(
     where: GqlFeatureGroupWhereInput,
     inherit: boolean,
-    fetchPolicy: FetchPolicy = 'cache-first',
+    fetchPolicy: FetchPolicy = 'cache-first'
   ): Promise<FeatureGroup[]> {
     return this.apollo
       .query<GqlFeatureGroupsQuery, GqlFeatureGroupsQueryVariables>({
@@ -41,10 +41,7 @@ export class FeatureService {
 
   updateFeatureValue(data: GqlUpdateFeatureValueInput) {
     return this.apollo
-      .mutate<
-        GqlUpdateFeatureValueMutation,
-        GqlUpdateFeatureValueMutationVariables
-      >({
+      .mutate<GqlUpdateFeatureValueMutation, GqlUpdateFeatureValueMutationVariables>({
         mutation: UpdateFeatureValue,
         variables: {
           data,

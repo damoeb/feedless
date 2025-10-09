@@ -12,8 +12,7 @@ describe('UntoldNotesProductPage', () => {
       imports: [
         UntoldNotesProductPage,
         AppTestModule.withDefaults({
-          configurer: (apolloMockController) =>
-            mockScrape(apolloMockController),
+          configurer: (apolloMockController) => mockScrape(apolloMockController),
         }),
         RouterTestingModule.withRoutes([]),
       ],

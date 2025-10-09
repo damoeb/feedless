@@ -17,10 +17,7 @@ import {
   GqlRecurringPaymentInterval,
   GqlVertical,
 } from '../../../generated/graphql';
-import {
-  PlanColumnComponent,
-  StringFeatureGroup,
-} from '../plan-column/plan-column.component';
+import { PlanColumnComponent, StringFeatureGroup } from '../plan-column/plan-column.component';
 import { FeatureService } from '../../services/feature.service';
 
 import {
@@ -71,9 +68,7 @@ export class PricingComponent implements OnInit {
   private readonly planService = inject(PlanService);
 
   targetGroupFc = new FormControl<TargetGroup>('individual');
-  paymentIntervalFc = new FormControl<PaymentInterval>(
-    GqlRecurringPaymentInterval.Yearly,
-  );
+  paymentIntervalFc = new FormControl<PaymentInterval>(GqlRecurringPaymentInterval.Yearly);
   serviceFlavorFc = new FormControl<ServiceFlavor>('saas');
   serviceFlavorSelf: ServiceFlavor = 'selfHosting';
   serviceFlavorCloud: ServiceFlavor = 'saas';
@@ -107,20 +102,15 @@ export class PricingComponent implements OnInit {
     this.products = await Promise.all(
       products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
         const featureGroups = p.featureGroupId
-          ? await this.featureService.findAll(
-              { id: { eq: p.featureGroupId } },
-              true,
-            )
+          ? await this.featureService.findAll({ id: { eq: p.featureGroupId } }, true)
           : [];
         return {
           ...p,
           stringifiedFeatureGroups:
-            featureGroups.length > 0
-              ? [await this.stringifyFeatureGroup(featureGroups)]
-              : [],
+            featureGroups.length > 0 ? [await this.stringifyFeatureGroup(featureGroups)] : [],
           featureGroups: featureGroups.length > 0 ? featureGroups : [],
         };
-      }),
+      })
     );
     this.changeRef.detectChanges();
   }
@@ -158,14 +148,10 @@ export class PricingComponent implements OnInit {
   filteredPrices(prices: GqlPricedProduct[]): GqlPricedProduct[] {
     return filter<GqlPricedProduct>(prices)
       .filter((price) => price.price >= 0)
-      .filter(
-        (price) => price.recurringInterval === this.paymentIntervalFc.value,
-      );
+      .filter((price) => price.recurringInterval === this.paymentIntervalFc.value);
   }
 
-  private async stringifyFeatureGroup(
-    featureGroups: FeatureGroup[],
-  ): Promise<StringFeatureGroup> {
+  private async stringifyFeatureGroup(featureGroups: FeatureGroup[]): Promise<StringFeatureGroup> {
     return {
       groupLabel: 'Features',
       features: featureGroups[0].features,
@@ -199,9 +185,7 @@ export class PricingComponent implements OnInit {
   hasSubscribed(product: ProductWithFeatureGroups): boolean {
     return (
       product.isCloud &&
-      this.subscribedPlans.some(
-        (subscribedPlan) => subscribedPlan.productId === product.id,
-      )
+      this.subscribedPlans.some((subscribedPlan) => subscribedPlan.productId === product.id)
     );
   }
 

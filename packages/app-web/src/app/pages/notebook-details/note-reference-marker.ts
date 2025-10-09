@@ -18,18 +18,16 @@ export function createNoteReferenceMarker(notebookService: NotebookService) {
       from: number,
       to: number,
       match: RegExpExecArray,
-      view: EditorView,
+      view: EditorView
     ) => {
-      const note = notebookService.existsById(
-        view.state.sliceDoc(from + 1, to - 1),
-      );
+      const note = notebookService.existsById(view.state.sliceDoc(from + 1, to - 1));
       if (note) {
         add(
           from + 1,
           to - 1,
           Decoration.mark({
             class: 'cm-note',
-          }),
+          })
         );
       } else {
         add(
@@ -37,7 +35,7 @@ export function createNoteReferenceMarker(notebookService: NotebookService) {
           to - 1,
           Decoration.mark({
             class: 'cm-note cm-note--invalid',
-          }),
+          })
         );
       }
     },
@@ -57,6 +55,6 @@ export function createNoteReferenceMarker(notebookService: NotebookService) {
     },
     {
       decorations: (instance) => instance.decorations,
-    },
+    }
   );
 }

@@ -10,18 +10,12 @@
 </ion-header>
 <ion-content>
   <ion-row class="website flex_column">
-    <app-interactive-website
-      [sourceBuilder]="sourceBuilder"
-      style="flex: 1; display: flex"
-    >
+    <app-interactive-website [sourceBuilder]="sourceBuilder" style="flex: 1; display: flex">
     </app-interactive-website>
   </ion-row>
 
   <ion-row class="actions">
-    <ion-list
-      [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }"
-      class="flex__column"
-    >
+    <ion-list [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }" class="flex__column">
       <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleActionReorder($any($event))">-->
       @for (action of getActionFgs(); track action; let i = $index) {
         <ion-item [ngClass]="{ action__raw: !!action.value.raw }">
@@ -46,7 +40,7 @@
                 {{ action.value.raw | json }}
               </div>
             }
-            @if (action.value.type === "click") {
+            @if (action.value.type === 'click') {
               <ion-button
                 (click)="pickPosition(action)"
                 [ngClass]="{ 'ng-invalid': action.invalid }"
@@ -57,7 +51,7 @@
                 {{ getPositionLabel(action) }}
               </ion-button>
             }
-            @if (action.value.type === "header") {
+            @if (action.value.type === 'header') {
               <app-input placeholder="Header Name"> </app-input>
               <app-input placeholder="Header Value"> </app-input>
             }

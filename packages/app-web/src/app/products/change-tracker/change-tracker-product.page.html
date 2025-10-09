@@ -18,11 +18,7 @@
         Documentation
       </ion-button>
       }
-      <ion-button
-        (click)="openCreateTrackerModal()"
-        color="primary"
-        fill="solid"
-      >
+      <ion-button (click)="openCreateTrackerModal()" color="primary" fill="solid">
         Create Tracker
       </ion-button>
       }
@@ -42,15 +38,12 @@
 <ion-footer>
   <div class="ion-text-right">
     <ion-chip>v.{{ serverConfig.getVersion() }}</ion-chip>
-    @if (serverConfig.isSelfHosted() && license) { @if (license.isValid &&
-    !license.isTrial) {
+    @if (serverConfig.isSelfHosted() && license) { @if (license.isValid && !license.isTrial) {
     <ion-chip>Open Source Apache 2 </ion-chip>
     } @if (license.isValid && license.isTrial && !license.isLocated) {
     <ion-chip color="primary" routerLink="/license">Trial </ion-chip>
     } @if (license.isValid && license.isLocated) {
-    <ion-chip color="dark" routerLink="/license">
-      {{ license.data.name }}
-    </ion-chip>
+    <ion-chip color="dark" routerLink="/license"> {{ license.data.name }} </ion-chip>
     } }
   </div>
 </ion-footer>

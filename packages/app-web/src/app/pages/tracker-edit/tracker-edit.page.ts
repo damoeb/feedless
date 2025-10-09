@@ -15,10 +15,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Location, NgClass } from '@angular/common';
-import {
-  BoundingBox,
-  XyPosition,
-} from '../../components/annotate-image/annotate-image.component';
+import { BoundingBox, XyPosition } from '../../components/annotate-image/annotate-image.component';
 import {
   GqlFeedlessPlugins,
   GqlRecordField,
@@ -102,10 +99,7 @@ type BaselineControl = 'manual' | 'latest';
   ],
   standalone: true,
 })
-export class TrackerEditPage
-  extends InteractiveWebsiteController
-  implements OnInit, OnDestroy
-{
+export class TrackerEditPage extends InteractiveWebsiteController implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly location = inject(Location);
@@ -129,8 +123,8 @@ export class TrackerEditPage
         Validators.minLength(10),
         Validators.pattern(
           new RegExp(
-            'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)',
-          ),
+            'https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)'
+          )
         ),
       ]),
       sinkCondition: new FormControl<number>(0, [
@@ -138,38 +132,29 @@ export class TrackerEditPage
         Validators.min(0),
         Validators.max(1),
       ]),
-      baseline: new FormControl<BaselineControl>('latest', [
-        Validators.required,
-      ]),
+      baseline: new FormControl<BaselineControl>('latest', [Validators.required]),
       email: createEmailFormControl<Email>(''),
       // compareBy: new FormControl<PageFragmentType>('page', [
       //   Validators.required,
       // ]),
       output: new FormControl<PageFragmentType>('page', [Validators.required]),
-      fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, [
-        Validators.required,
-      ]),
+      fetchFrequency: new FormControl<string>(DEFAULT_FETCH_CRON, [Validators.required]),
       subject: new FormControl<string>('', [
         Validators.required,
         Validators.minLength(3),
         Validators.maxLength(255),
       ]),
-      compareType: new FormControl<GqlRecordField>(GqlRecordField.Pixel, [
-        Validators.required,
-      ]),
+      compareType: new FormControl<GqlRecordField>(GqlRecordField.Pixel, [Validators.required]),
       outputTypes: new FormControl<GqlRecordField[]>(
         [GqlRecordField.Pixel, GqlRecordField.Markup],
-        [Validators.required],
+        [Validators.required]
       ),
-      areaBoundingBox: new FormControl<BoundingBox>(
-        { disabled: true, value: null },
-        [Validators.required],
-      ),
-      elementXpath: new FormControl<string>({ disabled: true, value: null }, [
+      areaBoundingBox: new FormControl<BoundingBox>({ disabled: true, value: null }, [
         Validators.required,
       ]),
+      elementXpath: new FormControl<string>({ disabled: true, value: null }, [Validators.required]),
     },
-    { updateOn: 'change' },
+    { updateOn: 'change' }
   );
   // errorMessage: null;
   showErrors: boolean;
@@ -195,14 +180,12 @@ export class TrackerEditPage
     this.formGroup.controls.baseline.disable();
 
     this.subscriptions.push(
-      this.actionsFg.valueChanges
-        .pipe(debounce(() => interval(800)))
-        .subscribe(() => {
-          if (this.actionsFg.valid) {
-            this.sourceBuilder.overwriteFlow(this.getActionsRequestFragment());
-            this.sourceBuilder.events.actionsChanges.next();
-          }
-        }),
+      this.actionsFg.valueChanges.pipe(debounce(() => interval(800))).subscribe(() => {
+        if (this.actionsFg.valid) {
+          this.sourceBuilder.overwriteFlow(this.getActionsRequestFragment());
+          this.sourceBuilder.events.actionsChanges.next();
+        }
+      }),
 
       this.formGroup.controls.url.valueChanges.subscribe((url) => {
         if (this.formGroup.controls.url.valid) {
@@ -221,36 +204,32 @@ export class TrackerEditPage
         }
       }),
       // this.formGroup.controls.compareBy.valueChanges.subscribe(
-      this.formGroup.controls.output.valueChanges.subscribe(
-        (pageFragmentType) => {
-          console.log('compareBy', pageFragmentType);
+      this.formGroup.controls.output.valueChanges.subscribe((pageFragmentType) => {
+        console.log('compareBy', pageFragmentType);
+        this.formGroup.controls.elementXpath.disable();
+        this.formGroup.controls.areaBoundingBox.disable();
+
+        if (pageFragmentType === 'area') {
+          this.formGroup.controls.areaBoundingBox.enable();
+        }
+        if (pageFragmentType === 'element') {
+          this.formGroup.controls.elementXpath.enable();
+        }
+
+        this.changeRef.detectChanges();
+      }),
+      this.formGroup.controls.compareType.valueChanges.subscribe((compareType) => {
+        if (compareType === 'pixel') {
+          // this.formGroup.controls.compareBy.enable();
+          this.formGroup.controls.output.enable();
           this.formGroup.controls.elementXpath.disable();
-          this.formGroup.controls.areaBoundingBox.disable();
-
-          if (pageFragmentType === 'area') {
-            this.formGroup.controls.areaBoundingBox.enable();
-          }
-          if (pageFragmentType === 'element') {
-            this.formGroup.controls.elementXpath.enable();
-          }
-
-          this.changeRef.detectChanges();
-        },
-      ),
-      this.formGroup.controls.compareType.valueChanges.subscribe(
-        (compareType) => {
-          if (compareType === 'pixel') {
-            // this.formGroup.controls.compareBy.enable();
-            this.formGroup.controls.output.enable();
-            this.formGroup.controls.elementXpath.disable();
-          } else {
-            // this.formGroup.controls.compareBy.disable();
-            this.formGroup.controls.output.disable();
-            this.formGroup.controls.elementXpath.enable();
-          }
-          this.changeRef.detectChanges();
-        },
-      ),
+        } else {
+          // this.formGroup.controls.compareBy.disable();
+          this.formGroup.controls.output.disable();
+          this.formGroup.controls.elementXpath.enable();
+        }
+        this.changeRef.detectChanges();
+      })
     );
 
     this.changeRef.detectChanges();
@@ -307,9 +286,7 @@ export class TrackerEditPage
     }
   }
 
-  getBoundingBoxLabel(
-    action: FormControl<BoundingBox | null>,
-  ): Nullable<string> {
+  getBoundingBoxLabel(action: FormControl<BoundingBox | null>): Nullable<string> {
     const boundingBox = action.value;
     if (boundingBox) {
       return `(${boundingBox.x}, ${boundingBox.y}; ${boundingBox.w}, ${boundingBox.h})`;
