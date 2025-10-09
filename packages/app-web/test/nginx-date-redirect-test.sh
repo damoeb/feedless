@@ -10,6 +10,18 @@ CONTAINER_NAME="feedless-app-web-test"
 PORT="8080"
 BASE_URL="http://localhost:${PORT}"
 
+get_date_days_ago() {
+  local days="$1"
+  local format="$2"
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    date -v-${days}d +"$format"
+  else
+    # Linux and other Unix-like systems
+    date -d "${days} days ago" +"$format"
+  fi
+}
+
 echo "Starting nginx date redirect system test..."
 
 # Function to cleanup
@@ -19,15 +31,12 @@ cleanup() {
     docker rm $CONTAINER_NAME 2>/dev/null || true
 }
 
-# Trap to ensure cleanup on exit
 trap cleanup EXIT
 
 
-# Start the container
 echo "Starting container..."
 docker run -d --name $CONTAINER_NAME -p $PORT:80 damoeb/feedless:app-latest
 
-# Wait for container to be ready
 echo "Waiting for container to be ready..."
 sleep 5
 
@@ -40,7 +49,6 @@ fi
 
 echo "Container is running"
 
-# Test function
 test_redirect() {
     local url="$1"
     local expected_status="$2"
@@ -67,20 +75,18 @@ test_redirect() {
     fi
 }
 
-# Test cases
 echo "Running test cases..."
 
-# Get today's date for comparison
 TODAY=$(date +%Y/%m/%d)
 TODAY_YEAR=$(date +%Y)
 TODAY_MONTH=$(date +%-m)
 TODAY_DAY=$(date +%-d)
 
 # Calculate date 8 days ago (older than 1 week)
-OLD_DATE=$(date -d "8 days ago" +%Y/%m/%d)
-OLD_YEAR=$(date -d "8 days ago" +%Y)
-OLD_MONTH=$(date -d "8 days ago" +%-m)
-OLD_DAY=$(date -d "8 days ago" +%-d)
+OLD_DATE=$(get_date_days_ago 8 "%Y/%m/%d")
+OLD_YEAR=$(get_date_days_ago 8 "%Y")
+OLD_MONTH=$(get_date_days_ago 8 "%-m")
+OLD_DAY=$(get_date_days_ago 8 "%-d")
 
 
 echo "Today's date: $TODAY"
