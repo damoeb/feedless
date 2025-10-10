@@ -1,0 +1,14 @@
+management:
+  endpoint:
+    shutdown:
+      enabled: false
+    prometheus:
+      enabled: true
+    web:
+      exposure:
+        include: health,info,prometheus
+    metrics:
+      enabled: true
+management.endpoints.web.exposure.include: health,info,prometheus
+#management.endpoint.health.show-details: always
+#management.metrics.export.prometheus.enabled: true

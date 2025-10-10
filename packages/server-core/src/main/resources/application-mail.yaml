@@ -1,0 +1,17 @@
+# mailpit (docker compose up -d mailpit)
+app:
+  mail:
+    sender: feedless-sender@localhost
+spring:
+  mail:
+    host: localhost
+    port: 1025
+    username:
+    password:
+    test-connection: true
+  properties:
+    mail:
+      smtp:
+        auth: false
+        starttls:
+          enable: false

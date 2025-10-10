@@ -1,0 +1,51 @@
+spring:
+  devtools:
+    add-properties: false
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: ${APP_DATABASE_URL}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    hikari:
+      connection-init-sql: >
+        CREATE EXTENSION IF NOT EXISTS postgis SCHEMA public; SET TIME ZONE '${app.timezone}'
+      connectionTimeout: 6000
+      maximumPoolSize: 30
+      minimum-idle: 5
+    # sql:
+    #   init:
+    #     mode: always
+    #     platform: postgres
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        # physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 20
+        # show_sql: true
+        # format_sql: true
+        # generate_statistics: true
+        # order_inserts: true
+        # order_updates: true
+        dialect: # org.migor.rich.rss.config.CustomSQLDialect (uncomment if needed)
+    # database-platform: org.migor.rich.rss.config.CustomSQLDialect
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 1
+    target: 76
+
+hibernate:
+  cache:
+    use_second_level_cache: true
+    region:
+      factory_class: org.hibernate.cache.ehcache.EhCacheRegionFactory
+
+  metadata_builder_contributor: org.migor.rich.rss.config.CustomSQLFunctions

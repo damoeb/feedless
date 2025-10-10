@@ -1,0 +1,58 @@
+spring:
+  jpa:
+    open-in-view: false
+  web:
+    resources:
+      static-locations: file:./static
+  main:
+    banner-mode: off
+  profiles:
+    group:
+      selfHosted: secrets,properties,license,security,session,features,document,attachment,user,repository,plan,source,legacy,agent,feed,seed,cache,throttle,scrape,telegram,schedulerLayer,securityLayer,apiLayer,serviceLayer
+      saas: secrets,report,properties,license,security,session,features,document,annotation,attachment,user,metrics,repository,plan,source,legacy,analytics,sso,agent,feed,seed,cache,throttle,scrape,database,telegram,schedulerLayer,securityLayer,apiLayer,serviceLayer,repositoryLayer
+
+  task:
+    scheduling:
+      pool:
+        size: 6
+
+APP_VERSION: dev
+APP_GIT_HASH: ""
+
+app:
+  dateFormat: dd-MM-yyyy
+  timeFormat: HH:mm
+  timezone: UTC
+  webToFeedVersion: 0.1
+  defaultLocale: en
+  cors:
+    allowedOrigins: http://localhost:4200
+
+default:
+  auth:
+    token:
+      anonymous:
+        validForDays: 28
+
+auth:
+  token:
+    anonymous:
+      validForDays: 28
+
+logging:
+  config: classpath:logback.xml
+  level:
+    root: ERROR
+    com.netflix: ERROR
+    # org.springframework.security: DEBUG
+    # org.springframework.web: DEBUG
+
+# graphql:
+#   servlet:
+#     enabled: true
+#     mapping: /graphql
+
+# server:
+#   error:
+#     whitelabel:
+#       enabled: false

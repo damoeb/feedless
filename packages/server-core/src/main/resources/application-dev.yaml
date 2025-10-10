@@ -1,0 +1,81 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        use_sql_comments: true
+        # generate_statistics: true
+        # naming:
+        #   physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        #   physical-strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+  datasource:
+    url: jdbc:postgresql://localhost:5433/feedless
+    # url: jdbc:postgresql://localhost:5433/feedless_migration
+    username: postgres
+    password: admin
+    hikari:
+      connectionTimeout: 20000
+      maximumPoolSize: 5
+      register-mbeans: true
+      # connection-init-sql: SET TIME ZONE '${app.timezone}; '
+  flyway:
+    enabled: true
+    baseline-version: 0
+    # target: 1
+  task:
+    scheduling:
+      pool:
+        size: 1
+  profiles:
+    group:
+      dev: links
+  security:
+    oauth2:
+      client:
+        registration:
+          github:
+            clientId: Iv1.3fc36e6644b030c3
+            clientSecret: 065e8db8cf782ce1d2a416b8dfaaca0b74c8d982
+          # google:
+          #   clientId: 343423943511-t83rkoi6ul369b2e2p2it8dt5554i9cu.apps.googleusercontent.com
+          #   clientSecret: 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
+
+logging:
+  level:
+    root: info
+    org:
+      hibernate: INFO
+      flyway: debug
+      springframework:
+        security:
+          web:
+            csrf: off
+        # security: DEBUG
+        # web: DEBUG
+    ch:
+      qos:
+        logback: off
+    com:
+      linecorp:
+        kotlinjdsl: INFO
+    # WebToFeedTransformer: DEBUG
+    # org:
+    #   hibernate:
+    #     SQL: DEBUG
+    #     stat: DEBUG
+  config: classpath:logback.xml
+
+app:
+  rootEmail: admin@localhost
+  jwtSecret: 60ae393744191ee58869f700c1d27647b0b64d42
+  rootSecretKey: QDWSM3OYBPGTEVSPB5FKVDM3CSNCWHVK
+  actuatorPassword: password
+  whitelistedHosts: 127.0.0.1
+  apiGatewayUrl: http://localhost:8080
+  # appHost: http://localhost:4200
+  appHost: https://feedless.org
+  analytics:
+    plausibleUrl: http://localhost:8000
+    plausibleSite: localhost

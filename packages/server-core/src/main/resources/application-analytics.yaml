@@ -1,0 +1,5 @@
+app:
+  analytics:
+    plausibleUrl: ${APP_PLAUSIBLE_URL}
+    plausibleSite: feedless.org
+    plausible-api-key: ${APP_PLAUSIBLE_API_KEY}

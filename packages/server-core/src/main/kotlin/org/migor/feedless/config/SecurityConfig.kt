@@ -44,11 +44,10 @@ import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 
 
-@Suppress("DEPRECATION")
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
-@PropertySource("classpath:application.properties")
+@PropertySource("classpath:application.yaml")
 @Profile(AppLayer.security)
 class SecurityConfig {
 
