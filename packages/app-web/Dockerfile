@@ -8,6 +8,6 @@ RUN if [ $(ls -l /usr/share/nginx/html | wc -l) -gt 30 ]; \
     else echo "webapp files are not copied"; false; \
     fi
 ARG APP_VERSION
-ARG APP_GIT_HASH
+ARG APP_GIT_COMMIT
 ENV APP_VERSION=$APP_VERSION \
-    APP_GIT_HASH=$APP_GIT_HASH
+    APP_GIT_COMMIT=$APP_GIT_COMMIT

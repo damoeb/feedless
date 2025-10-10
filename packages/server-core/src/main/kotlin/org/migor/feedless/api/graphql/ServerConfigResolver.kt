@@ -11,7 +11,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
-import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.BuildInfo
 import org.migor.feedless.generated.types.ProfileName
@@ -35,16 +34,13 @@ class ServerConfigResolver {
 
   private val log = LoggerFactory.getLogger(ServerConfigResolver::class.simpleName)
 
-  @Value("\${APP_GIT_HASH}")
+  @Value("\${APP_GIT_COMMIT}")
   private lateinit var commit: String
 
   @Autowired
   private lateinit var environment: Environment
 
-  @Autowired
-  private lateinit var featureService: FeatureService
-
-  @Value("\${APP_VERSION}")
+  @Value("\${app.version}")
   private lateinit var version: String
 
   @Autowired

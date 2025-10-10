@@ -32,7 +32,7 @@ class LinceseResolver {
 
   private val log = LoggerFactory.getLogger(LinceseResolver::class.simpleName)
 
-  @Value("\${APP_VERSION}")
+  @Value("\${app.version}")
   lateinit var version: String
 
   @Autowired

@@ -257,7 +257,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   commandLine(
     podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
     "-t", "$baseTag:core-latest",

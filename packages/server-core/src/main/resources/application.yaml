@@ -16,10 +16,11 @@ spring:
       pool:
         size: 6
 
-APP_VERSION: dev
-APP_GIT_HASH: ""
-
 app:
+  version: dev
+  git:
+    commit:
+
   dateFormat: dd-MM-yyyy
   timeFormat: HH:mm
   timezone: UTC

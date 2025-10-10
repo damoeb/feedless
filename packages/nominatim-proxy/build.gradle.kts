@@ -65,7 +65,7 @@ tasks.register("bundle", Exec::class) {
   commandLine(
     "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "-t", "nominatim-proxy-latest",
     "-t", "nominatim-proxy-$gitHash",
     "."

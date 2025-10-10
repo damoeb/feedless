@@ -100,7 +100,7 @@ tasks.register("bundle", Exec::class) {
   commandLine(
     podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "-t", "$baseTag:agent-latest",
     "-t", "$baseTag:agent-$gitHash",
     "."

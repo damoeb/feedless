@@ -1,7 +1,7 @@
-ARG APP_GIT_HASH
-FROM damoeb/feedless:app-$APP_GIT_HASH as app
+ARG APP_GIT_COMMIT
+FROM damoeb/feedless:app-$APP_GIT_COMMIT as app
 
-FROM damoeb/feedless:core-$APP_GIT_HASH
+FROM damoeb/feedless:core-$APP_GIT_COMMIT
 ARG APP_BUILD_TIMESTAMP
 ARG APP_VERSION
 ENV APP_AUTHENTICATION=root \
@@ -19,6 +19,6 @@ ENV APP_AUTHENTICATION=root \
     APP_LOG_LEVEL="error" \
     APP_BUILD_TIMESTAMP=$APP_BUILD_TIMESTAMP \
     APP_VERSION=$APP_VERSION \
-    APP_GIT_HASH=$APP_GIT_HASH
+    APP_GIT_COMMIT=$APP_GIT_COMMIT
 
 COPY --from=app /usr/share/nginx/html/ ./public/

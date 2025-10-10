@@ -28,7 +28,7 @@ val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
   commandLine(
     podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",
@@ -68,7 +68,7 @@ val buildDockerAioChromium = tasks.register("buildDockerAioChromium", Exec::clas
   commandLine(
     podmanOrDocker(), "build",
     "--build-arg", "APP_VERSION=$semver",
-    "--build-arg", "APP_GIT_HASH=$gitHash",
+    "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
     "--platform=linux/amd64",
 //    "--platform=linux/arm64v8",

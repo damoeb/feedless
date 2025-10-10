@@ -15,10 +15,10 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
 
-  @Value("\${APP_VERSION}")
+  @Value("\${app.version}")
   lateinit var version: String
 
-  @Value("\${APP_GIT_HASH}")
+  @Value("\${app.git.commit}")
   lateinit var commit: String
 
   @Value("\${app.timezone}")

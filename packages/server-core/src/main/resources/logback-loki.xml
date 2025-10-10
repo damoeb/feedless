@@ -6,7 +6,7 @@
 
   <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
     <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-      <customFields>{"version": "${APP_VERSION:-}", "commit": "${APP_GIT_HASH:-1}", "app":"feedless-core"}
+      <customFields>{"version": "${APP_VERSION:-}", "commit": "${APP_GIT_COMMIT:-1}", "app":"feedless-core"}
       </customFields>
       <includeMdcKeyName>version</includeMdcKeyName>
     </encoder>

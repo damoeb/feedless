@@ -9,7 +9,7 @@ function createJsonLogger() {
   return WinstonModule.createLogger({
     defaultMeta: {
       '@version': process.env.APP_VERSION || '1',
-      commit: process.env.APP_GIT_HASH || '',
+      commit: process.env.APP_GIT_COMMIT || '',
       app: 'agent',
     },
     transports: [
