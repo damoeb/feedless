@@ -12,6 +12,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableMailConfiguration
+import org.migor.feedless.any2
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
@@ -21,7 +22,6 @@ import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.report.ReportService
-import org.migor.feedless.any2
 import org.migor.feedless.session.PermissionService
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
@@ -109,7 +109,7 @@ class MailAuthResolverIntTest {
   }
 
   @Test
-  fun authConfirmCode() = runTest {
+  fun confirmAuthCode() = runTest {
     val authentication = Authentication(
       corrId = UUID.randomUUID().toString(),
       token = UUID.randomUUID().toString()

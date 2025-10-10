@@ -1,5 +1,6 @@
 query serverSettings($data: ServerSettingsContextInput!) {
   serverSettings(data: $data) {
+    auth
     profiles
     build {
       commit

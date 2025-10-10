@@ -42,11 +42,11 @@ class MailAuthResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.AuthConfirmCode)
-  suspend fun authConfirmCode(
+  suspend fun confirmAuthCode(
     @InputArgument(DgsConstants.MUTATION.AUTHCONFIRMCODE_INPUT_ARGUMENT.Data) data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
   ): Authentication = coroutineScope {
-    log.debug("authConfirmCode")
+    log.debug("confirmAuthCode")
     mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
   }
 

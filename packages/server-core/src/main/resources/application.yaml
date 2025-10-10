@@ -17,6 +17,18 @@ spring:
         size: 6
 
 app:
+  auth:
+    products:
+      untold:
+        oauth: true
+        mailToken: true
+      feedless:
+        oauth: true
+      upcoming:
+        oauth: true
+      visual-diff:
+        mailToken: true
+        oauth: true
   version: dev
   git:
     commit:

@@ -8,15 +8,19 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.Vertical
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.AuthType
 import org.migor.feedless.generated.types.BuildInfo
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
+import org.migor.feedless.session.ProductAuthProperties
+import org.migor.feedless.session.ProductsAuthProperties
 import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -49,6 +53,9 @@ class ServerConfigResolver {
   @Autowired
   private lateinit var analyticsService: AnalyticsService
 
+  @Autowired
+  private lateinit var productsAuthProperties: ProductsAuthProperties
+
   @DgsQuery(field = DgsConstants.QUERY.ServerSettings)
   @Cacheable(
     value = [CacheNames.SERVER_SETTINGS],
@@ -72,18 +79,40 @@ class ServerConfigResolver {
     ServerSettings(
       version = version,
       build = BuildInfo(
-        date = licenseService.buildFrom(),
+        date = licenseService.getBuildDate(),
         commit = commit
       ),
+      auth = getProductAuthProperties(product),
       profiles = environment.activeProfiles.map {
         when (it) {
-          AppProfiles.mail -> ProfileName.authMail
-          AppProfiles.oauth -> ProfileName.authSSO
           AppProfiles.selfHosted -> ProfileName.selfHosted
           AppProfiles.DEV_ONLY -> ProfileName.dev
           else -> null
         }
       }.filterNotNull(),
     )
+  }
+
+  private fun getProductAuthProperties(product: Vertical): List<AuthType> {
+    val props = when (product) {
+      Vertical.feedless -> productsAuthProperties.feedless
+      Vertical.untoldNotes -> productsAuthProperties.untold
+      Vertical.upcoming -> productsAuthProperties.upcoming
+      Vertical.visualDiff -> productsAuthProperties.visualDiff
+      else -> ProductAuthProperties()
+    }
+
+    val resolve: (Boolean, AuthType) -> AuthType? = { enabled, authType ->
+      if (enabled) {
+        authType
+      } else {
+        null
+      }
+    }
+
+    return listOf(
+      resolve(props.oauth, AuthType.oauth),
+      resolve(props.mailToken, AuthType.mailToken),
+    ).filterNotNull()
   }
 }

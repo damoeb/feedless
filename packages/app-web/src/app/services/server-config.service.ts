@@ -1,5 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import {
+  GqlAuthType,
   GqlProfileName,
   GqlServerSettingsQuery,
   GqlServerSettingsQueryVariables,
@@ -30,6 +31,7 @@ export class ServerConfigService {
 
   apiUrl!: string;
   private profiles!: GqlProfileName[];
+  private authTypes!: GqlAuthType[];
   private build!: BuildInfo;
   private version!: string;
   private license: LocalizedLicense;
@@ -97,6 +99,7 @@ export class ServerConfigService {
         })
         .then((response) => response.data.serverSettings);
       this.profiles = response.profiles;
+      this.authTypes = response.auth;
       this.version = response.version;
       this.build = response.build;
       this.license = response.license;
@@ -121,6 +124,10 @@ export class ServerConfigService {
 
   hasProfile(profile: GqlProfileName) {
     return this.profiles?.indexOf(profile) > -1;
+  }
+
+  hasAuthType(authType: GqlAuthType) {
+    return this.authTypes?.indexOf(authType) > -1;
   }
 
   isSelfHosted() {

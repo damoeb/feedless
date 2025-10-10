@@ -7,7 +7,6 @@ import {
   OnInit,
 } from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
-import { GqlProfileName } from '../../../generated/graphql';
 import { AuthService } from '../../services/auth.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
@@ -29,6 +28,7 @@ import {
 
 import { FormsModule } from '@angular/forms';
 import { EmailLoginComponent } from '../../components/email-login/email-login.component';
+import { GqlAuthType, GqlProfileName } from '../../../generated/graphql';
 
 @Component({
   selector: 'app-login-page',
@@ -59,8 +59,8 @@ export class LoginPage implements OnInit, OnDestroy {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
 
-  showMailLogin: boolean;
-  showSSO: boolean;
+  showMailTokenForm: boolean;
+  showOauth: boolean;
   loginUrl: string;
   showNoSignupBanner: boolean;
   showUserPasswordLogin: boolean;
@@ -105,8 +105,8 @@ export class LoginPage implements OnInit, OnDestroy {
             const url = this.router.createUrlTree([redirectUrl || '/'], {});
             await this.router.navigateByUrl(url);
           } else {
-            this.showSSO = this.serverConfig.hasProfile(GqlProfileName.AuthSso);
-            this.showMailLogin = this.serverConfig.hasProfile(GqlProfileName.AuthMail);
+            this.showOauth = this.serverConfig.hasAuthType(GqlAuthType.Oauth);
+            this.showMailTokenForm = this.serverConfig.hasAuthType(GqlAuthType.MailToken);
             this.loading = false;
             this.changeRef.detectChanges();
           }

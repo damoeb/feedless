@@ -2,6 +2,7 @@ package org.migor.feedless.mail
 
 import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -18,7 +19,6 @@ import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
-import org.migor.feedless.user.corrId
 import org.migor.feedless.user.toDomain
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
+import kotlin.random.Random
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -62,6 +62,8 @@ class MailAuthenticationService(
       t
     }
 
+    delay(1000)
+
     return ConfirmCode(
       length = otp.password.length,
       otpId = otp.id.toString()
@@ -77,17 +79,28 @@ class MailAuthenticationService(
   }
 
   suspend fun confirmAuthCode(codeInput: ConfirmAuthCodeInput, response: HttpServletResponse): Authentication {
-    val corrId = coroutineContext.corrId() ?: ""
+    delay(Random.nextLong(600, 701))
     val otpId = UUID.fromString(codeInput.otpId)
+    val error = PermissionDeniedException("Please retry")
     val otp = withContext(Dispatchers.IO) {
-      oneTimePasswordDAO.findById(otpId).orElseThrow()
+      oneTimePasswordDAO.findById(otpId).orElseThrow { error }
     }
 
     if (isOtpExpired(otp)) {
-      throw PermissionDeniedException("code expired. Please restart authentication ($corrId)")
+      throw error
     }
+
+    if (otp.attemptsLeft < 1) {
+      throw error
+    }
+
+    otp.attemptsLeft -= 1
+    withContext(Dispatchers.IO) {
+      oneTimePasswordDAO.save(otp)
+    }
+
     if (otp.password != codeInput.code) {
-      throw PermissionDeniedException("invalid code ($corrId)")
+      throw error
     }
 
     withContext(Dispatchers.IO) {
@@ -99,7 +112,7 @@ class MailAuthenticationService(
     response.addCookie(cookieProvider.createTokenCookie(jwt))
 
     return Authentication(
-      corrId = corrId,
+      corrId = "",
       token = jwt.tokenValue
     )
   }

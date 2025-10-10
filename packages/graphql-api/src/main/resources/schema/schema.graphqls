@@ -924,7 +924,20 @@ type ServerSettings {
   build: BuildInfo!
   version: String!
   profiles: [ProfileName!]!
+  auth: [AuthType!]!
   license: LocalizedLicense
+}
+
+enum AuthType {
+  mailToken,
+  oauth,
+  password
+}
+
+enum ProfileName {
+  dev
+  selfHosted
+  saas
 }
 
 type BuildInfo {
@@ -1078,12 +1091,6 @@ enum ExtendContentOptions {
   PREVIOUS_AND_NEXT
 }
 
-enum ProfileName {
-  dev
-  authSSO
-  authMail
-  selfHosted
-}
 enum FeatureName {
   canActivatePlan
   canJoinPlanWaitList

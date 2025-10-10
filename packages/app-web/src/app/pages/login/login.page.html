@@ -12,95 +12,99 @@
 <ion-content>
   <div class="flex__column" style="justify-content: center; align-items: center; margin-top: 200px">
     @if (loading) {
-    <ion-spinner name="dots"></ion-spinner>
-    } @if (!loading) {
-    <div style="width: 400px">
-      @if (showUserPasswordLogin) {
-      <form (ngSubmit)="loginWithUserPassword(email.value, password.value)">
-        <h1 class="ion-margin-start">Login</h1>
-        <ion-card-content>
-          <ion-list>
-            <ion-item>
-              <ion-input #email class="cy-email" label="Email" labelPlacement="start"></ion-input>
-            </ion-item>
-            <ion-item>
-              <ion-input
-                #password
-                class="cy-password"
-                label="Password"
-                labelPlacement="start"
-                type="password"
-              ></ion-input>
-            </ion-item>
-            <ion-item
-              (click)="loginWithUserPassword(email.value, password.value)"
-              [button]="true"
-              class="ion-margin-top cy-login-button"
-              color="primary"
-            >
-              Login
-            </ion-item>
-            @if (errorMessage) {
-            <ion-item>
-              <ion-label color="danger">{{ errorMessage }}</ion-label>
-            </ion-item>
-            }
-          </ion-list>
-        </ion-card-content>
-      </form>
-      } @if (!showUserPasswordLogin) {
-      <div>
-        <!--        <div-->
-        <!--          class="ion-margin-horizontal ion-margin-bottom"-->
-        <!--          *ngIf="hasWaitList && !canSignUp"-->
-        <!--        >-->
-        <!--          <app-newsletter-->
-        <!--            headerText="Private Beta"-->
-        <!--            bodyText="I haven't opened public signup yet, you can request to join the public beta tough."-->
-        <!--            buttonText="Request Access"-->
-        <!--          >-->
-        <!--            Join us on-->
-        <!--            <a-->
-        <!--              href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"-->
-        <!--              target="_blank"-->
-        <!--              referrerpolicy="no-referrer"-->
-        <!--            >-->
-        <!--              slack</a-->
-        <!--            >.-->
-        <!--          </app-newsletter>-->
-        <!--        </div>-->
-        <div class="ion-margin-top">
-          <div>
+      <ion-spinner name="dots"></ion-spinner>
+    }
+    @if (!loading) {
+      <div style="width: 400px">
+        @if (showUserPasswordLogin) {
+          <form (ngSubmit)="loginWithUserPassword(email.value, password.value)">
             <h1 class="ion-margin-start">Login</h1>
-            @if (showMailLogin) {
-            <app-email-login></app-email-login>
-            } @if (showSSO) {
-            <div>
-              @if (showMailLogin) {
-              <h3 class="ion-margin ion-text-center">or</h3>
-              }
-              <ion-card class="ion-margin-top">
-                <ion-card-content>
-                  <ion-button [href]="loginUrl+'github'" rel="nofollow" color="dark" size="block">
-                    <ion-icon name="logo-github" slot="start"></ion-icon>
-                    Sign-In with Github
-                  </ion-button>
-                </ion-card-content>
-              </ion-card>
+            <ion-card-content>
+              <ion-list>
+                <ion-item>
+                  <ion-input #email class="cy-email" label="Email" labelPlacement="start"></ion-input>
+                </ion-item>
+                <ion-item>
+                  <ion-input
+                    #password
+                    class="cy-password"
+                    label="Password"
+                    labelPlacement="start"
+                    type="password"
+                  ></ion-input>
+                </ion-item>
+                <ion-item
+                  (click)="loginWithUserPassword(email.value, password.value)"
+                  [button]="true"
+                  class="ion-margin-top cy-login-button"
+                  color="primary"
+                >
+                  Login
+                </ion-item>
+                @if (errorMessage) {
+                  <ion-item>
+                    <ion-label color="danger">{{ errorMessage }}</ion-label>
+                  </ion-item>
+                }
+              </ion-list>
+            </ion-card-content>
+          </form>
+        }
+        @if (!showUserPasswordLogin) {
+          <div>
+            <!--        <div-->
+            <!--          class="ion-margin-horizontal ion-margin-bottom"-->
+            <!--          *ngIf="hasWaitList && !canSignUp"-->
+            <!--        >-->
+            <!--          <app-newsletter-->
+            <!--            headerText="Private Beta"-->
+            <!--            bodyText="I haven't opened public signup yet, you can request to join the public beta tough."-->
+            <!--            buttonText="Request Access"-->
+            <!--          >-->
+            <!--            Join us on-->
+            <!--            <a-->
+            <!--              href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"-->
+            <!--              target="_blank"-->
+            <!--              referrerpolicy="no-referrer"-->
+            <!--            >-->
+            <!--              slack</a-->
+            <!--            >.-->
+            <!--          </app-newsletter>-->
+            <!--        </div>-->
+            <div class="ion-margin-top">
+              <div>
+                <h1 class="ion-margin-start">Login</h1>
+                @if (showMailTokenForm) {
+                  <app-email-login></app-email-login>
+                }
+                @if (showOauth) {
+                  <div>
+                    @if (showMailTokenForm) {
+                      <h3 class="ion-margin ion-text-center">or</h3>
+                    }
+                    <ion-card class="ion-margin-top">
+                      <ion-card-content>
+                        <ion-button [href]="loginUrl+'github'" rel="nofollow" color="dark" size="block">
+                          <ion-icon name="logo-github" slot="start"></ion-icon>
+                          Sign-In with Github
+                        </ion-button>
+                      </ion-card-content>
+                    </ion-card>
+                  </div>
+                }
+              </div>
             </div>
-            }
           </div>
-        </div>
+        }
+        @if (serverConfig.isSelfHosted()) {
+          <ion-item class="ion-margin" color="dark">
+            <ion-label>
+              <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and
+              <code>APP_ROOT_SECRET_KEY</code> to log in.
+            </ion-label>
+          </ion-item>
+        }
       </div>
-      } @if (serverConfig.isSelfHosted()) {
-      <ion-item class="ion-margin" color="dark">
-        <ion-label>
-          <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and
-          <code>APP_ROOT_SECRET_KEY</code> to log in.
-        </ion-label>
-      </ion-item>
-      }
-    </div>
     }
   </div>
 </ion-content>

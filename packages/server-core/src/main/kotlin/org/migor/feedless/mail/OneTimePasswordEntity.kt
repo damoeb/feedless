@@ -40,6 +40,9 @@ open class OneTimePasswordEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.userId, nullable = false)
   open lateinit var userId: UUID
 
+  @Column(name = "attempts_left", nullable = false)
+  open var attemptsLeft: Int = 3
+
 }
 
 fun OneTimePasswordEntity.toDomain(): OneTimePassword {

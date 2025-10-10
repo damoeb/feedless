@@ -269,7 +269,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
     return license
   }
 
-  fun buildFrom(): Long {
+  fun getBuildDate(): Long {
     return buildTimestamp!!.toLong()
   }
 
@@ -279,7 +279,7 @@ class LicenseService : ApplicationListener<ApplicationReadyEvent> {
 
   fun isLicenseNotNeeded(): Boolean {
     val now = LocalDateTime.now()
-    val buildAge = now.minus(Duration.of(buildFrom(), ChronoUnit.MILLIS))
+    val buildAge = now.minus(Duration.of(getBuildDate(), ChronoUnit.MILLIS))
     val licensePeriodExceeded = buildAge > now.plusDays(365 * 2)
     val enforcePeriodReached = !isTrial()
     return if (enforcePeriodReached) {
