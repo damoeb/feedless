@@ -4,6 +4,7 @@ import jakarta.mail.internet.MimeMessage
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.mail.gateway.NativeMailGateway
 import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
@@ -20,7 +21,7 @@ import java.time.LocalDateTime
 import java.util.*
 
 @ExtendWith(MockitoExtension::class)
-class NativeMailServiceTest {
+class NativeMailGatewayTest {
 
   @Mock
   lateinit var templateService: TemplateService
@@ -29,7 +30,7 @@ class NativeMailServiceTest {
   lateinit var javaMailSender: JavaMailSender
 
   @InjectMocks
-  lateinit var mailService: NativeMailService
+  lateinit var mailService: NativeMailGateway
 
   @Test
   fun sendAuthCode() = runTest {

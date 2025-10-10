@@ -74,7 +74,11 @@ export class EmailLoginComponent {
 
   async initiateSession() {
     try {
-      if (this.emailFc.invalid || this.busy) {
+      if (
+        this.emailFc.invalid ||
+        this.busy ||
+        this.botChallengeFc.value !== this.botChallengeNumber
+      ) {
         return;
       }
       this.errorMessage = null;
@@ -102,12 +106,7 @@ export class EmailLoginComponent {
 
   async sendConfirmationCode() {
     try {
-      if (
-        this.confirmationCodeFc.invalid ||
-        this.busy ||
-        !this.confirmationCodeSpec ||
-        this.botChallengeFc.value !== this.botChallengeNumber
-      ) {
+      if (this.confirmationCodeFc.invalid || this.busy || !this.confirmationCodeSpec) {
         return;
       }
 

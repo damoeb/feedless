@@ -5,9 +5,9 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.mailForwardingAllow
+import org.migor.feedless.mail.template.FreemarkerTemplateService
 import org.migor.feedless.report.ReportId
 import org.migor.feedless.report.ReportService
-import org.migor.feedless.template.FreemarkerTemplateService
 import org.migor.feedless.template.MailTemplateChangeTrackerAuthorized
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

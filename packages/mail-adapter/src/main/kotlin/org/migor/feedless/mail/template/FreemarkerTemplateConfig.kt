@@ -1,4 +1,4 @@
-package org.migor.feedless.template
+package org.migor.feedless.mail.template
 
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration

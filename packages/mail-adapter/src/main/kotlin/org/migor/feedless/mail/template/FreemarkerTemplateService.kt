@@ -1,7 +1,9 @@
-package org.migor.feedless.template
+package org.migor.feedless.mail.template
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.template.FreemarkerTemplate
+import org.migor.feedless.template.TemplateService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
