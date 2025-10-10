@@ -104,7 +104,6 @@ class FreemarkerTemplateServiceTest {
   @Test
   fun testTemplateAuthCodeMail() {
     val params = AuthCodeMailParams(
-      domain = "domain",
       codeValidUntil = "codeValidUntil",
       code = "code",
       description = "description",
@@ -114,22 +113,47 @@ class FreemarkerTemplateServiceTest {
       """<!DOCTYPE html>
   <html>
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <style>
-      html, body {
-        font-family: "Arial";
-      }
-    </style>
+  <meta charset="UTF-8">
+  <title>Authentication Code</title>
+  <style>
+  body {
+  font-family: Arial, sans-serif;
+  background-color: #f7f7f7;
+  padding: 20px;
+  }
+
+  .container {
+  background-color: #ffffff;
+  max-width: 400px;
+  margin: auto;
+  padding: 20px;
+  border-radius: 5px;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .code {
+  font-size: 24px;
+  font-weight: bold;
+  color: #333;
+  margin: 20px 0;
+  letter-spacing: 4px;
+  }
+
+  .footer {
+  font-size: 12px;
+  color: #888;
+  margin-top: 20px;
+  }
+  </style>
   </head>
   <body>
-  <p>Hi,</p>
-  <p>you request access to domain. Please enter the following code (valid until codeValidUntil minutes).</p>
-
-  <div style="margin: 15px; font-size: 16px;">
-    code
+  <div class="container">
+  <h2>Your Authentication Code</h2>
+  <p>Please use the code below to complete your sign-in.</p>
+  <div class="code">code</div>
+  <p class="footer">This code will expire after codeValidUntil.</p>
   </div>
-
-  <div>(description, CorrelationId: corrId)</div>
   </body>
   </html>""".trimAllIndents()
     )

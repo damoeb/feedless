@@ -25,5 +25,6 @@ mutation authUsingMail($data: AuthViaMailInput!) {
 mutation confirmCode($data: ConfirmAuthCodeInput!) {
   authConfirmCode(data: $data) {
     corrId
+    token
   }
 }

@@ -25,7 +25,7 @@ import { RepositoriesButtonComponent } from '../../components/repositories-butto
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
 
-import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { ProfileButtonComponent } from '../../components/profile-button/profile-button.component';
 
 @Component({
   selector: 'app-visual-diff-product-page',
@@ -42,7 +42,7 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     IonContent,
     IonRouterOutlet,
   ],

@@ -30,7 +30,6 @@ import {
   IonMenu,
   IonMenuButton,
   IonRouterOutlet,
-  IonSpinner,
   IonSplitPane,
   IonToolbar,
   MenuController,
@@ -69,7 +68,6 @@ import dayjs from 'dayjs';
     IonItem,
     RouterLink,
     IonLabel,
-    IonSpinner,
     IonCard,
     IonCardHeader,
     IonCardTitle,
@@ -181,7 +179,6 @@ export class AppComponent implements OnDestroy, OnInit {
   }
 
   async logout() {
-    await this.sessionService.logout();
-    location.reload();
+    return this.sessionService.logout();
   }
 }

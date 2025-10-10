@@ -13,7 +13,7 @@
         <!--          <ion-select-option value="">Create Notebook</ion-select-option>-->
         <!--        </ion-select>-->
         <ion-buttons slot="start">
-          <ion-button routerLink="/notebooks"> <strong>feed</strong><em>less</em> </ion-button>
+          <ion-button routerLink="/notebooks"><strong>feed</strong><em>less</em></ion-button>
         </ion-buttons>
 
         <ion-buttons slot="end" appDev>
@@ -70,191 +70,194 @@
         <ion-buttons slot="end">
           <app-notebook-settings></app-notebook-settings>
           <app-dark-mode-button></app-dark-mode-button>
-          <app-login-button></app-login-button>
+          <app-profile-button></app-profile-button>
         </ion-buttons>
       </ion-toolbar>
     </ion-header>
     <ion-content class="main-content">
       @if (systemBusy) {
-      <ion-spinner name="dots"></ion-spinner>
+        <ion-spinner name="dots"></ion-spinner>
       } @else {
-      <div class="flex__column" style="column-gap: 10px">
-        <div class="flex__column" style="flex: 2">
-          <div>
-            <app-typeahead
-              #searchbar
-              (queryChange)="searchNotes($event)"
-              [suggestions]="suggestions"
-              (pick)="pickSuggestionOrQuery($event)"
-            ></app-typeahead>
-          </div>
-
-          <div class="ion-padding-bottom ion-margin-horizontal">
-            <ion-segment [formControl]="shortcutsFC" mode="ios" style="width: 300px; float: right">
-              <ion-segment-button [value]="shortcutValueRecent">
-                <ion-label>Recent</ion-label>
-              </ion-segment-button>
-              <ion-segment-button [value]="shortcutValuePinned">
-                <ion-label>Pinned</ion-label>
-              </ion-segment-button>
-              <ion-segment-button [value]="shortcutValueOff">
-                <ion-label>Off</ion-label>
-              </ion-segment-button>
-            </ion-segment>
-          </div>
-
-          <div style="margin-left: 34px" class="ion-margin-bottom shortcuts">
-            @if (shortcutsFC.value === shortcutValuePinned || shortcutsFC.value ===
-            shortcutValueRecent) { @for (shortcut of shortcuts$ | async; track shortcut.body.id) {
-            @if (shortcut.body.isUpVoted) {
-            <app-bubble color="blue"></app-bubble>
-            }
-            <app-note-details [handle]="shortcut"></app-note-details>
-            } } @if (shortcutsFC.value !== shortcutValueOff) {
-            <div class="zigzag"></div>
-            }
-          </div>
-
-          <div class="note-tree">
-            <div style="flex: 1; position: relative; overflow-y: auto">
-              <!--            <ion-toolbar style="&#45;&#45;background: transparent">-->
-              <!--              <ion-buttons>-->
-              <!--                <ion-checkbox labelPlacement="end">-->
-              <!--                  Action-->
-              <!--                </ion-checkbox>-->
-              <!--                <ion-button>-->
-              <!--                  <ion-icon name="swap-vertical-outline" slot="start"></ion-icon>-->
-              <!--                  Date Changed-->
-              <!--                </ion-button>-->
-              <!--              </ion-buttons>-->
-              <!--            </ion-toolbar>-->
-              <div style="position: absolute; width: 100%">
-                <cdk-tree
-                  [dataSource]="treeRoots"
-                  [trackBy]="trackByFn"
-                  [childrenAccessor]="childrenAccessor"
-                >
-                  <cdk-nested-tree-node *cdkTreeNodeDef="let node;">
-                    <div class="branch">
-                      <div
-                        class="line"
-                        (click)="node.expanded = !node.expanded"
-                        [ngClass]="{'line--collapsed': node.collapsed}"
-                      ></div>
-                      <div style="display: flex; flex: 1; flex-direction: column">
-                        <div class="leaf" [ngStyle]="{'--level': node.level}">
-                          <div
-                            class="tree-node"
-                            [ngClass]="{'tree-node--collapsed': !node.expanded}"
-                            style="margin-left: 20px"
-                          >
-                            @if (node.body.isUpVoted) {
-                            <app-bubble color="blue"></app-bubble>
-                            }
-                            <app-note-details [handle]="node"></app-note-details>
-                          </div>
-                        </div>
-
-                        @if (node.expanded) {
-                        <div class="children">
-                          <ng-container cdkTreeNodeOutlet></ng-container>
-                        </div>
-                        } @else {
-                        <div class="zigzag"></div>
-                        }
-                      </div>
-                    </div>
-                  </cdk-nested-tree-node>
-                </cdk-tree>
-              </div>
+        <div class="flex__column" style="column-gap: 10px">
+          <div class="flex__column" style="flex: 2">
+            <div>
+              <app-typeahead
+                #searchbar
+                (queryChange)="searchNotes($event)"
+                [suggestions]="suggestions"
+                (pick)="pickSuggestionOrQuery($event)"
+              ></app-typeahead>
             </div>
-          </div>
-        </div>
-        <div style="position: absolute; bottom: 0; right: 0">
-          <div class="footer-toolbar">
-            @if (currentEditorHandle) {
-            <div class="note-editor">
-              <div style="display: flex">
-                <div style="flex: 1; display: flex; align-items: center">
-                  <ion-button
-                    (click)="currentEditorHandle.noteHandle.toggleUpvote()"
-                    fill="clear"
-                    size="small"
+
+            <div class="ion-padding-bottom ion-margin-horizontal">
+              <ion-segment [formControl]="shortcutsFC" mode="ios" style="width: 300px; float: right">
+                <ion-segment-button [value]="shortcutValueRecent">
+                  <ion-label>Recent</ion-label>
+                </ion-segment-button>
+                <ion-segment-button [value]="shortcutValuePinned">
+                  <ion-label>Pinned</ion-label>
+                </ion-segment-button>
+                <ion-segment-button [value]="shortcutValueOff">
+                  <ion-label>Off</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+
+            <div style="margin-left: 34px" class="ion-margin-bottom shortcuts">
+              @if (shortcutsFC.value === shortcutValuePinned || shortcutsFC.value ===
+              shortcutValueRecent) {
+                @for (shortcut of shortcuts$ | async; track shortcut.body.id) {
+                  @if (shortcut.body.isUpVoted) {
+                    <app-bubble color="blue"></app-bubble>
+                  }
+                  <app-note-details [handle]="shortcut"></app-note-details>
+                }
+              }
+              @if (shortcutsFC.value !== shortcutValueOff) {
+                <div class="zigzag"></div>
+              }
+            </div>
+
+            <div class="note-tree">
+              <div style="flex: 1; position: relative; overflow-y: auto">
+                <!--            <ion-toolbar style="&#45;&#45;background: transparent">-->
+                <!--              <ion-buttons>-->
+                <!--                <ion-checkbox labelPlacement="end">-->
+                <!--                  Action-->
+                <!--                </ion-checkbox>-->
+                <!--                <ion-button>-->
+                <!--                  <ion-icon name="swap-vertical-outline" slot="start"></ion-icon>-->
+                <!--                  Date Changed-->
+                <!--                </ion-button>-->
+                <!--              </ion-buttons>-->
+                <!--            </ion-toolbar>-->
+                <div style="position: absolute; width: 100%">
+                  <cdk-tree
+                    [dataSource]="treeRoots"
+                    [trackBy]="trackByFn"
+                    [childrenAccessor]="childrenAccessor"
                   >
-                    @if (currentEditorHandle.note.isUpVoted) {
-                    <ion-icon
-                      name="ellipse"
-                      style="color: var(--ion-color-primary)"
-                      slot="icon-only"
-                    ></ion-icon>
-                    } @else {
-                    <ion-icon name="ellipse-outline" slot="icon-only"></ion-icon>
-                    }
-                  </ion-button>
-                  <ion-text>
-                    <strong> {{ currentEditorHandle.note.title }} </strong>
-                  </ion-text>
+                    <cdk-nested-tree-node *cdkTreeNodeDef="let node;">
+                      <div class="branch">
+                        <div
+                          class="line"
+                          (click)="node.expanded = !node.expanded"
+                          [ngClass]="{'line--collapsed': node.collapsed}"
+                        ></div>
+                        <div style="display: flex; flex: 1; flex-direction: column">
+                          <div class="leaf" [ngStyle]="{'--level': node.level}">
+                            <div
+                              class="tree-node"
+                              [ngClass]="{'tree-node--collapsed': !node.expanded}"
+                              style="margin-left: 20px"
+                            >
+                              @if (node.body.isUpVoted) {
+                                <app-bubble color="blue"></app-bubble>
+                              }
+                              <app-note-details [handle]="node"></app-note-details>
+                            </div>
+                          </div>
+
+                          @if (node.expanded) {
+                            <div class="children">
+                              <ng-container cdkTreeNodeOutlet></ng-container>
+                            </div>
+                          } @else {
+                            <div class="zigzag"></div>
+                          }
+                        </div>
+                      </div>
+                    </cdk-nested-tree-node>
+                  </cdk-tree>
                 </div>
-                <ion-buttons>
-                  <ion-button (click)="closeNote()" size="small">
-                    <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
-              </div>
-              <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
-              <ion-toolbar style="--background: transparent">
-                <ion-buttons>
-                  <ion-button>
-                    <ion-icon name="attach-outline" slot="start"></ion-icon>
-                    Attach
-                  </ion-button>
-                  <ion-button (click)="changeParent()"> Move</ion-button>
-                  <ion-button (click)="cloneNote()">
-                    <ion-icon name="copy-outline" slot="start"></ion-icon>
-                    Clone
-                  </ion-button>
-                </ion-buttons>
-              </ion-toolbar>
-
-              <app-code-editor
-                [autoSuggestionsProvider]="loadAutoSuggestions"
-                [formControl]="currentEditorHandle.formControl"
-                [extensions]="extensions"
-                [lineNumbers]="false"
-              ></app-code-editor>
-              <div style="display: flex; align-self: flex-end">
-                <ion-buttons>
-                  <!--                      <div style="display: flex; align-items: center; column-gap: 10px;">-->
-                  <!--                        <ion-checkbox labelPlacement="end" [formControl]="autosafe" color="medium">-->
-                  <!--                          Autosafe-->
-                  <!--                        </ion-checkbox>-->
-                  <!--                        @if (autosafe.value !== true) {-->
-                  <!--                          <ion-button>-->
-                  <!--                            Save-->
-                  <!--                          </ion-button>-->
-                  <!--                        }-->
-                  <!--                      </div>-->
-                  <ion-button (click)="createFollowUpNote()" fill="solid" color="primary">
-                    <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
-                    Follow-up
-                  </ion-button>
-
-                  <ion-button (click)="deleteNote()" size="small">
-                    <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                  </ion-button>
-                </ion-buttons>
               </div>
             </div>
-            } @else {
-            <ion-button color="primary" (click)="createNoteByParent()"> Create Note </ion-button>
-            }
+          </div>
+          <div style="position: absolute; bottom: 0; right: 0">
+            <div class="footer-toolbar">
+              @if (currentEditorHandle) {
+                <div class="note-editor">
+                  <div style="display: flex">
+                    <div style="flex: 1; display: flex; align-items: center">
+                      <ion-button
+                        (click)="currentEditorHandle.noteHandle.toggleUpvote()"
+                        fill="clear"
+                        size="small"
+                      >
+                        @if (currentEditorHandle.note.isUpVoted) {
+                          <ion-icon
+                            name="ellipse"
+                            style="color: var(--ion-color-primary)"
+                            slot="icon-only"
+                          ></ion-icon>
+                        } @else {
+                          <ion-icon name="ellipse-outline" slot="icon-only"></ion-icon>
+                        }
+                      </ion-button>
+                      <ion-text>
+                        <strong> {{ currentEditorHandle.note.title }} </strong>
+                      </ion-text>
+                    </div>
+                    <ion-buttons>
+                      <ion-button (click)="closeNote()" size="small">
+                        <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+                      </ion-button>
+                    </ion-buttons>
+                  </div>
+                  <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
+                  <ion-toolbar style="--background: transparent">
+                    <ion-buttons>
+                      <ion-button>
+                        <ion-icon name="attach-outline" slot="start"></ion-icon>
+                        Attach
+                      </ion-button>
+                      <ion-button (click)="changeParent()"> Move</ion-button>
+                      <ion-button (click)="cloneNote()">
+                        <ion-icon name="copy-outline" slot="start"></ion-icon>
+                        Clone
+                      </ion-button>
+                    </ion-buttons>
+                  </ion-toolbar>
+
+                  <app-code-editor
+                    [autoSuggestionsProvider]="loadAutoSuggestions"
+                    [formControl]="currentEditorHandle.formControl"
+                    [extensions]="extensions"
+                    [lineNumbers]="false"
+                  ></app-code-editor>
+                  <div style="display: flex; align-self: flex-end">
+                    <ion-buttons>
+                      <!--                      <div style="display: flex; align-items: center; column-gap: 10px;">-->
+                      <!--                        <ion-checkbox labelPlacement="end" [formControl]="autosafe" color="medium">-->
+                      <!--                          Autosafe-->
+                      <!--                        </ion-checkbox>-->
+                      <!--                        @if (autosafe.value !== true) {-->
+                      <!--                          <ion-button>-->
+                      <!--                            Save-->
+                      <!--                          </ion-button>-->
+                      <!--                        }-->
+                      <!--                      </div>-->
+                      <ion-button (click)="createFollowUpNote()" fill="solid" color="primary">
+                        <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
+                        Follow-up
+                      </ion-button>
+
+                      <ion-button (click)="deleteNote()" size="small">
+                        <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                      </ion-button>
+                    </ion-buttons>
+                  </div>
+                </div>
+              } @else {
+                <ion-button color="primary" (click)="createNoteByParent()"> Create Note</ion-button>
+              }
+            </div>
           </div>
         </div>
-      </div>
       }
     </ion-content>
   </div>
 </ion-split-pane>
 @if (systemBusy) {
-<ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
+  <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
 }

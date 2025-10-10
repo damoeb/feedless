@@ -29,7 +29,7 @@ import { TrialWarningComponent } from '../../components/trial-warning/trial-warn
 import { RepositoriesButtonComponent } from '../../components/repositories-button/repositories-button.component';
 import { AgentsButtonComponent } from '../../components/agents-button/agents-button.component';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { ProfileButtonComponent } from '../../components/profile-button/profile-button.component';
 import { PromotionHeaderComponent } from '../../components/promotion-header/promotion-header.component';
 import { SelfHostingSetupPage } from './self-hosting-setup/self-hosting-setup.page';
 
@@ -48,7 +48,7 @@ import { SelfHostingSetupPage } from './self-hosting-setup/self-hosting-setup.pa
     RepositoriesButtonComponent,
     AgentsButtonComponent,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     IonContent,
     IonRouterOutlet,
     PromotionHeaderComponent,

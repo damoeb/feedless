@@ -81,16 +81,18 @@ export class AuthService {
       .then((response) => this.handleAuthenticationToken(response.data!.authUser.token));
   }
 
-  sendConfirmationCode(confirmationCode: string, otpId: string) {
-    return this.apollo.mutate<GqlConfirmCodeMutation, GqlConfirmCodeMutationVariables>({
-      mutation: ConfirmCode,
-      variables: {
-        data: {
-          code: confirmationCode,
-          otpId,
+  sendConfirmationCode(confirmationCode: string, otpId: string): Promise<void> {
+    return this.apollo
+      .mutate<GqlConfirmCodeMutation, GqlConfirmCodeMutationVariables>({
+        mutation: ConfirmCode,
+        variables: {
+          data: {
+            code: confirmationCode,
+            otpId,
+          },
         },
-      },
-    });
+      })
+      .then((response) => this.handleAuthenticationToken(response.data!.authConfirmCode.token));
   }
 
   async requireAnyAuthToken(): Promise<void> {

@@ -10,7 +10,6 @@ data class MailTemplateWelcomePaid(override val params: WelcomeMailParams) :
   FreemarkerTemplate<WelcomeMailParams>("mail-welcome-paid")
 
 data class AuthCodeMailParams(
-  val domain: String,
   val codeValidUntil: String,
   val code: String,
   val description: String,

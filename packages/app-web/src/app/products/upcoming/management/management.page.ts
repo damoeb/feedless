@@ -6,8 +6,6 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import { PageService } from '../../../services/page.service';
-import dayjs from 'dayjs';
 import {
   IonButton,
   IonButtons,
@@ -18,7 +16,7 @@ import {
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../../../components/login-button/login-button.component';
+import { ProfileButtonComponent } from '../../../components/profile-button/profile-button.component';
 import { MapComponent } from '../../../components/map/map.component';
 import { LatLng, Nullable } from '../../../types';
 import { SourcesComponent } from '../../../components/sources/sources.component';
@@ -41,7 +39,7 @@ import { marker } from 'leaflet';
     IonButton,
     IonButtons,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     MapComponent,
     SourcesComponent,
     IonSpinner,

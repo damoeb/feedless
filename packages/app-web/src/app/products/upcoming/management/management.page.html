@@ -1,14 +1,14 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
-      <ion-button routerLink="/"> <strong>lokale</strong><em>.events</em> </ion-button>
+      <ion-button routerLink="/"><strong>lokale</strong><em>.events</em></ion-button>
     </ion-buttons>
 
     <ion-buttons slot="end">
       <ion-button routerLink="/management/sources"> Sources</ion-button>
       <ion-button routerLink="/management/documents"> Documents</ion-button>
       <app-dark-mode-button></app-dark-mode-button>
-      <app-login-button></app-login-button>
+      <app-profile-button></app-profile-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -25,17 +25,21 @@
     ></app-map>
 
     <div>
-      @if (repository) { @if (showSources) {
-      <h1 class="ion-margin">All Sources</h1>
+      @if (repository) {
+        @if (showSources) {
+          <h1 class="ion-margin">All Sources</h1>
 
-      <app-sources
-        [repository]="repository"
-        (sourceChange)="onSourceChange($event)"
-        [sourcesFilter]="sourcesFilter"
-      >
-      </app-sources>
-      } @else { documents } } @else {
-      <ion-spinner name="dots"></ion-spinner>
+          <app-sources
+            [repository]="repository"
+            (sourceChange)="onSourceChange($event)"
+            [sourcesFilter]="sourcesFilter"
+          >
+          </app-sources>
+        } @else {
+          documents
+        }
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
       }
     </div>
   </div>

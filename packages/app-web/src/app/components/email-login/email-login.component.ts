@@ -16,6 +16,9 @@ import {
   IonSpinner,
 } from '@ionic/angular/standalone';
 import { Nullable } from '../../types';
+import { min } from 'lodash-es';
+
+type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
 
 @Component({
   selector: 'app-email-login',
@@ -41,8 +44,17 @@ export class EmailLoginComponent {
   private readonly sessionService = inject(SessionService);
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  mode: 'enterMail' | 'enterConfirmationCode' | 'finalized' = 'enterMail';
+  mode: StepMode = 'enterMail';
+  modeEnterMail: StepMode = 'enterMail';
+  modeConfirmCode: StepMode = 'enterConfirmationCode';
   emailFc = new FormControl<string>('', [Validators.email, Validators.required]);
+  private botChallengeNumber: number = 100;
+  botChallengeFc = new FormControl<number>(null, [
+    Validators.required,
+    Validators.min(0),
+    Validators.max(100),
+  ]);
+  botChallengeLabel: string = '';
   busy = false;
   confirmationCodeFc: FormControl<string>;
   private confirmationCodeSpec: Nullable<ConfirmCode> = null;
@@ -50,6 +62,14 @@ export class EmailLoginComponent {
 
   constructor() {
     addIcons({ arrowForwardOutline });
+    this.initBotChallenge();
+  }
+
+  private initBotChallenge() {
+    const randomNumbers = Array.from({ length: 3 }, () => Math.floor(Math.random() * 101));
+
+    this.botChallengeNumber = min(randomNumbers);
+    this.botChallengeLabel = `Whats the smallest number of ${randomNumbers.join(', ')}`;
   }
 
   async initiateSession() {
@@ -74,6 +94,7 @@ export class EmailLoginComponent {
       this.changeRef.detectChanges();
     } catch (e) {
       console.error(e);
+    } finally {
       this.busy = false;
       this.changeRef.detectChanges();
     }
@@ -81,7 +102,12 @@ export class EmailLoginComponent {
 
   async sendConfirmationCode() {
     try {
-      if (this.confirmationCodeFc.invalid || this.busy || !this.confirmationCodeSpec) {
+      if (
+        this.confirmationCodeFc.invalid ||
+        this.busy ||
+        !this.confirmationCodeSpec ||
+        this.botChallengeFc.value !== this.botChallengeNumber
+      ) {
         return;
       }
 

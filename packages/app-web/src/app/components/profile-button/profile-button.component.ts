@@ -9,24 +9,24 @@ import {
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { Authentication, AuthService } from '../../services/auth.service';
+import { ServerConfigService } from '../../services/server-config.service';
 
 import { IonButton, IonIcon } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
-import { logOutOutline } from 'ionicons/icons';
-import { SessionService } from '../../services/session.service';
+import { personOutline } from 'ionicons/icons';
 
 @Component({
-  selector: 'app-login-button',
-  templateUrl: './login-button.component.html',
-  styleUrls: ['./login-button.component.scss'],
+  selector: 'app-profile-button',
+  templateUrl: './profile-button.component.html',
+  styleUrls: ['./profile-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [IonButton, RouterLink, IonIcon],
   standalone: true,
 })
-export class LoginButtonComponent implements OnInit, OnDestroy {
+export class ProfileButtonComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
-  protected readonly sessionService = inject(SessionService);
+  protected readonly serverConfig = inject(ServerConfigService);
   private readonly changeRef = inject(ChangeDetectorRef);
 
   authorization: Authentication;
@@ -37,7 +37,7 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   readonly color = input<string>();
 
   constructor() {
-    addIcons({ logOutOutline });
+    addIcons({ personOutline });
   }
 
   async ngOnInit(): Promise<void> {
@@ -51,9 +51,5 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  logout() {
-    return this.sessionService.logout();
   }
 }

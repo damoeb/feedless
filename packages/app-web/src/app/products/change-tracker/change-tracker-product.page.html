@@ -12,21 +12,22 @@
     </div>
 
     <ion-buttons slot="end">
-      @if (serverConfig.isSelfHosted()) { @if (serverConfig.isSelfHosted()) {
-      <ion-button href="https://gihub.com/damoeb/rss-proxy" target="_blank">
-        <ion-icon name="logo-github" slot="start"></ion-icon>
-        Documentation
-      </ion-button>
-      }
-      <ion-button (click)="openCreateTrackerModal()" color="primary" fill="solid">
-        Create Tracker
-      </ion-button>
+      @if (serverConfig.isSelfHosted()) {
+        @if (serverConfig.isSelfHosted()) {
+          <ion-button href="https://gihub.com/damoeb/rss-proxy" target="_blank">
+            <ion-icon name="logo-github" slot="start"></ion-icon>
+            Documentation
+          </ion-button>
+        }
+        <ion-button (click)="openCreateTrackerModal()" color="primary" fill="solid">
+          Create Tracker
+        </ion-button>
       }
       <app-dark-mode-button></app-dark-mode-button>
       @if (!serverConfig.isSelfHosted()) {
-      <ion-button routerLink="/plans"> Pricing </ion-button>
+        <ion-button routerLink="/plans"> Pricing</ion-button>
       }
-      <app-login-button></app-login-button>
+      <app-profile-button></app-profile-button>
     </ion-buttons>
   </ion-toolbar>
 </ion-header>
@@ -38,12 +39,16 @@
 <ion-footer>
   <div class="ion-text-right">
     <ion-chip>v.{{ serverConfig.getVersion() }}</ion-chip>
-    @if (serverConfig.isSelfHosted() && license) { @if (license.isValid && !license.isTrial) {
-    <ion-chip>Open Source Apache 2 </ion-chip>
-    } @if (license.isValid && license.isTrial && !license.isLocated) {
-    <ion-chip color="primary" routerLink="/license">Trial </ion-chip>
-    } @if (license.isValid && license.isLocated) {
-    <ion-chip color="dark" routerLink="/license"> {{ license.data.name }} </ion-chip>
-    } }
+    @if (serverConfig.isSelfHosted() && license) {
+      @if (license.isValid && !license.isTrial) {
+        <ion-chip>Open Source Apache 2</ion-chip>
+      }
+      @if (license.isValid && license.isTrial && !license.isLocated) {
+        <ion-chip color="primary" routerLink="/license">Trial</ion-chip>
+      }
+      @if (license.isValid && license.isLocated) {
+        <ion-chip color="dark" routerLink="/license"> {{ license.data.name }}</ion-chip>
+      }
+    }
   </div>
 </ion-footer>

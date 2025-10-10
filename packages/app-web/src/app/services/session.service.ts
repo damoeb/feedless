@@ -130,7 +130,7 @@ export class SessionService {
       })
       .then(() => new Promise((resolve) => setTimeout(resolve, 200)))
       .then(() => this.apollo.clearStore())
-      .then(() => this.fetchSession('network-only'));
+      .then(() => location.reload());
   }
 
   getUserId(): Nullable<string> {

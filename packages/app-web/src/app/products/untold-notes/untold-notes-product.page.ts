@@ -33,9 +33,9 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonMenuButton,
     RouterLink,
     DarkModeButtonComponent,
-    LoginButtonComponent,
     IonContent,
     IonRouterOutlet,
+    LoginButtonComponent,
   ],
   standalone: true,
 })

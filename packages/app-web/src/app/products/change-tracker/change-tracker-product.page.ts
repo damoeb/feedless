@@ -35,7 +35,7 @@ import {
 import { TrialWarningComponent } from '../../components/trial-warning/trial-warning.component';
 
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { ProfileButtonComponent } from '../../components/profile-button/profile-button.component';
 
 @Component({
   selector: 'app-change-tracker-product-page',
@@ -52,7 +52,7 @@ import { LoginButtonComponent } from '../../components/login-button/login-button
     IonButton,
     IonIcon,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     IonContent,
     IonRouterOutlet,
     IonFooter,

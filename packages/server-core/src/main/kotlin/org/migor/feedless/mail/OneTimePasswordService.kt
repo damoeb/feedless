@@ -35,7 +35,7 @@ class OneTimePasswordService(
     withContext(Dispatchers.IO) {
       oneTimePasswordDAO.findFirstByUserIdOrderByCreatedAtDesc(user.id)?.let {
         val now = LocalDateTime.now()
-        if (it.createdAt.isAfter(now.minusMinutes(2))) {
+        if (it.createdAt.isAfter(now.minusSeconds(30))) {
           throw ResumableHarvestException("Token cooldown", Duration.between(it.createdAt, now))
         }
       }

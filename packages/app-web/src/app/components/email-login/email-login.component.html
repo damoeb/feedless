@@ -5,7 +5,7 @@
         <ion-item>
           <ion-input
             [formControl]="emailFc"
-            [readonly]="mode === 'enterConfirmationCode'"
+            [readonly]="mode === modeConfirmCode"
             label="Email"
             labelPlacement="stacked"
             name="email"
@@ -13,6 +13,19 @@
             type="email"
           ></ion-input>
         </ion-item>
+
+        <ion-item>
+          <ion-input
+            [formControl]="botChallengeFc"
+            [label]="botChallengeLabel"
+            [readonly]="mode === modeConfirmCode"
+            labelPlacement="floating"
+            name="botChallenge"
+            placeholder="Type here"
+            type="number"
+          ></ion-input>
+        </ion-item>
+
         @if (errorMessage) {
           <ion-item>
             <ion-label color="danger">
@@ -20,7 +33,7 @@
             </ion-label>
           </ion-item>
         }
-        @if (mode === 'enterMail') {
+        @if (mode === modeEnterMail) {
           <ion-item
             (click)="initiateSession()"
             [button]="true"
@@ -28,7 +41,7 @@
             class="ion-margin-top"
             type="submit"
           >
-            Send Auth Code
+            Send Code to Mail
             @if (!busy) {
               <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
             }
@@ -38,7 +51,7 @@
           </ion-item>
         }
       </form>
-      @if (mode === 'enterConfirmationCode') {
+      @if (mode === modeConfirmCode) {
         <form (ngSubmit)="sendConfirmationCode()">
           <ion-item>
             <ion-input
@@ -56,12 +69,7 @@
             color="primary"
           >
             Authenticate
-            @if (!busy) {
-              <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
-            }
-            @if (busy) {
-              <ion-spinner name="dots" slot="end"></ion-spinner>
-            }
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
           </ion-item>
         </form>
       }

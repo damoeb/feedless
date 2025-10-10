@@ -1,5 +1,6 @@
 package org.migor.feedless.mail
 
+import jakarta.mail.internet.MimeMessage
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -14,7 +15,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
-import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
 import java.time.LocalDateTime
 import java.util.*
@@ -36,7 +36,7 @@ class NativeMailServiceTest {
     val user = mock(User::class.java)
     `when`(user.email).thenReturn("email@example.com")
     `when`(templateService.renderTemplate(any(FreemarkerTemplate::class.java))).thenReturn("rendered template")
-
+    `when`(javaMailSender.createMimeMessage()).thenReturn(mock(MimeMessage::class.java))
 
     val otp = mock(OneTimePassword::class.java)
     `when`(otp.validUntil).thenReturn(LocalDateTime.now())
@@ -44,7 +44,7 @@ class NativeMailServiceTest {
 
     mailService.sendAuthCode(user, otp, "")
 
-    verify(javaMailSender).send(any(SimpleMailMessage::class.java))
+    verify(javaMailSender).send(any(MimeMessage::class.java))
   }
 }
 

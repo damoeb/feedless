@@ -1,5 +1,6 @@
 package org.migor.feedless.mail
 
+import jakarta.mail.internet.MimeMessage
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -9,23 +10,22 @@ import org.migor.feedless.template.MailTemplateAuthCode
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Profile
-import org.springframework.mail.SimpleMailMessage
 import org.springframework.mail.javamail.JavaMailSender
+import org.springframework.mail.javamail.MimeMessageHelper
 import org.springframework.stereotype.Service
 import java.time.format.DateTimeFormatter
 
+
 @Service
 @Profile("${AppProfiles.mail} & ${AppLayer.service}")
-class NativeMailService : MailService {
+@ConditionalOnMissingBean
+class NativeMailService(
+  private val javaMailSender: JavaMailSender,
+  private val templateService: TemplateService
+) : MailService {
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
-
-  @Autowired
-  private lateinit var javaMailSender: JavaMailSender
-
-  @Autowired
-  private lateinit var templateService: TemplateService
 
   override suspend fun sendAuthCode(user: User, otp: OneTimePassword, description: String) {
     val corrId = "corrId"
@@ -34,12 +34,10 @@ class NativeMailService : MailService {
     }
     log.info("send auth mail ${user.email}")
 
-    val domain = ""
-    val subject = "$domain: Access Code"
+    val subject = "Confirm your login with this code"
     val dtf = DateTimeFormatter.ofPattern("HH:mm")
 
     val params = AuthCodeMailParams(
-      domain = domain,
       codeValidUntil = otp.validUntil.format(dtf),
       code = otp.password,
       description = description,
@@ -49,7 +47,7 @@ class NativeMailService : MailService {
     send(
       from = "no-reply@localhost",
       to = arrayOf(user.email),
-      text = templateService.renderTemplate(MailTemplateAuthCode(params)),
+      htmlContent = templateService.renderTemplate(MailTemplateAuthCode(params)),
       subject = subject,
     )
   }
@@ -58,14 +56,16 @@ class NativeMailService : MailService {
 
   }
 
-  private suspend fun send(from: String, to: Array<String>, text: String, subject: String) {
-    val mailMessage = SimpleMailMessage()
-    mailMessage.from = from
-    mailMessage.setTo(*to)
-    mailMessage.text = text
-    mailMessage.subject = subject
+  private suspend fun send(from: String, to: Array<String>, htmlContent: String, subject: String) {
+    val message: MimeMessage = javaMailSender.createMimeMessage()
+    val helper = MimeMessageHelper(message, true) // true = multipart
 
-    javaMailSender.send(mailMessage)
+    helper.setFrom(from)
+    helper.setTo(to)
+    helper.setSubject(subject)
+    helper.setText(htmlContent, true)
+
+    javaMailSender.send(message)
   }
 
 //  override suspend fun send(from: String, to: Array<String>, mailData: MailData) {

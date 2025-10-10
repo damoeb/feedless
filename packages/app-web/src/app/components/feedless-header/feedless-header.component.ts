@@ -20,7 +20,7 @@ import {
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { RepositoriesButtonComponent } from '../repositories-button/repositories-button.component';
 import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../login-button/login-button.component';
+import { ProfileButtonComponent } from '../profile-button/profile-button.component';
 import { addIcons } from 'ionicons';
 import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
@@ -39,7 +39,7 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
     RouterLink,
     RepositoriesButtonComponent,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     IonIcon,
     RouterLinkActive,
     RemoveIfProdDirective,

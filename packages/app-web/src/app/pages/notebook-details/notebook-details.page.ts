@@ -69,7 +69,7 @@ import {
 } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { LoginButtonComponent } from '../../components/login-button/login-button.component';
+import { ProfileButtonComponent } from '../../components/profile-button/profile-button.component';
 import {
   TypeaheadSuggestion,
   TypeheadComponent,
@@ -78,13 +78,7 @@ import { NoteDetailsComponent } from '../../components/note-details/note-details
 import { AsyncPipe, NgClass, NgStyle } from '@angular/common';
 import { Completion } from '@codemirror/autocomplete';
 import { NestedKeys, Nullable, TypeAtPath } from '../../types';
-import {
-  CdkNestedTreeNode,
-  CdkTree,
-  CdkTreeNodeDef,
-  CdkTreeNodeOutlet,
-  FlatTreeControl,
-} from '@angular/cdk/tree';
+import { CdkNestedTreeNode, CdkTree, CdkTreeNodeDef, CdkTreeNodeOutlet } from '@angular/cdk/tree';
 import { BubbleComponent } from '../../components/bubble/bubble.component';
 import { SessionService } from '../../services/session.service';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
@@ -132,7 +126,7 @@ export type NoteHandle = {
     IonContent,
     ReactiveFormsModule,
     DarkModeButtonComponent,
-    LoginButtonComponent,
+    ProfileButtonComponent,
     IonProgressBar,
     TypeheadComponent,
     NoteDetailsComponent,
