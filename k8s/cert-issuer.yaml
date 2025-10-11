@@ -37,6 +37,9 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
+  privateKey:
+    algorithm: ECDSA
+    rotationPolicy: Always
 
 
 ---
@@ -47,8 +50,6 @@ metadata:
   name: upcoming-tls
 spec:
   secretName: upcoming-tls
-  duration: 2160h  # 90d
-  renewBefore: 360h  # 15d
   dnsNames:
     - api.lokale.events
     - www.lokale.events
@@ -56,6 +57,9 @@ spec:
   issuerRef:
     name: letsencrypt
     kind: ClusterIssuer
+  privateKey:
+    algorithm: ECDSA
+    rotationPolicy: Always
 
 ---
 
@@ -65,10 +69,6 @@ metadata:
   name: rssproxy-migor-org-tls
 spec:
   secretName: rssproxy-migor-org-tls
-  duration: 2160h  # 90d
-  renewBefore: 360h  # 15d
-  privateKey:
-    rotationPolicy: Never
   issuerRef:
     name: letsencrypt
     kind: Issuer
@@ -77,3 +77,6 @@ spec:
     - rssproxy.migor.org
     - api.rssproxy-v1.migor.org
     - rssproxy-v1.migor.org
+  privateKey:
+    algorithm: ECDSA
+    rotationPolicy: Always
