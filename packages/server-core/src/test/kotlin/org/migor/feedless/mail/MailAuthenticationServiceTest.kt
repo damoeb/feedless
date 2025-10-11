@@ -7,11 +7,13 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomOneTimePasswordEntity
 import org.migor.feedless.Mother.randomUserEntity
+import org.migor.feedless.any2
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.any2
+import org.migor.feedless.secrets.OneTimePasswordDAO
+import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.TokenProvider

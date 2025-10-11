@@ -4,13 +4,13 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.any2
 import org.migor.feedless.common.CleanupExecutor
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.repository.HarvestService
-import org.migor.feedless.any2
+import org.migor.feedless.secrets.OneTimePasswordService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify

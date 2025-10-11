@@ -18,10 +18,10 @@ import org.migor.feedless.agent.AgentEntity
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.generated.types.User
-import org.migor.feedless.mail.OneTimePasswordEntity
 import org.migor.feedless.plan.OrderEntity
 import org.migor.feedless.plan.PlanEntity
 import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.util.toMillis
 import java.time.LocalDateTime

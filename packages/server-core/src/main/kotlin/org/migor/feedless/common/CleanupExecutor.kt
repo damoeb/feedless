@@ -2,10 +2,10 @@ package org.migor.feedless.common
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.mail.OneTimePasswordService
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.repository.HarvestService
+import org.migor.feedless.secrets.OneTimePasswordService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled

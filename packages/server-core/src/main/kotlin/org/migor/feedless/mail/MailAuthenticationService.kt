@@ -14,6 +14,10 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
+import org.migor.feedless.secrets.OneTimePasswordDAO
+import org.migor.feedless.secrets.OneTimePasswordEntity
+import org.migor.feedless.secrets.OneTimePasswordService
+import org.migor.feedless.secrets.toDomain
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO

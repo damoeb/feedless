@@ -11,13 +11,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
+import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.mail.OneTimePasswordService
-import org.migor.feedless.any2
+import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService

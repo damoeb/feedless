@@ -1,4 +1,4 @@
-package org.migor.feedless.mail
+package org.migor.feedless.secrets
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
