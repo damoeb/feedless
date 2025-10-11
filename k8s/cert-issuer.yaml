@@ -27,8 +27,6 @@ spec:
     - grafana.feedless.org
     - feedless.org
     - api.feedless.org
-    - staging.feedless.org
-    - api.staging.feedless.org
     - plausible.feedless.org
     - api.rssproxy.feedless.org
     - rssproxy.feedless.org
@@ -52,8 +50,6 @@ spec:
   duration: 2160h  # 90d
   renewBefore: 360h  # 15d
   dnsNames:
-    - api.develop.lokale.events
-    - develop.lokale.events
     - api.lokale.events
     - www.lokale.events
     - lokale.events
@@ -77,22 +73,7 @@ spec:
     name: letsencrypt
     kind: Issuer
   dnsNames:
+    - api.rssproxy.migor.org
     - rssproxy.migor.org
-
----
-
-apiVersion: cert-manager.io/v1
-kind: Certificate
-metadata:
-  name: rssproxy-v1-migor-org-tls
-spec:
-  secretName: rssproxy-v1-migor-org-tls
-  duration: 2160h  # 90d
-  renewBefore: 360h  # 15d
-  privateKey:
-    rotationPolicy: Never
-  issuerRef:
-    name: letsencrypt
-    kind: Issuer
-  dnsNames:
+    - api.rssproxy-v1.migor.org
     - rssproxy-v1.migor.org

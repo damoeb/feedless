@@ -7,13 +7,3 @@ data:
   tls.crt: 'fullchain.pem'
   tls.key: 'privkey.pem'
 
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  name: rssproxy-v1-migor-org-tls
-type: kubernetes.io/tls
-data:
-  tls.crt: 'fullchain.pem'
-  tls.key: 'privkey.pem'

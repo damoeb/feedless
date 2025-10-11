@@ -80,8 +80,6 @@ spec:
   ingressClassName: traefik
   tls:
     - hosts:
-        - api.develop.lokale.events
-        - develop.lokale.events
         - api.lokale.events
         - lokale.events
       secretName: upcoming-tls
