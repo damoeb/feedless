@@ -1,15 +1,15 @@
 package org.migor.feedless.config
 
 import io.micrometer.core.instrument.MeterRegistry
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.BadRequestException
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.TokenProvider
@@ -29,6 +29,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
@@ -42,6 +43,7 @@ import org.springframework.web.context.request.RequestContextListener
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import java.net.URI
 
 
 @Configuration
@@ -62,9 +64,6 @@ class SecurityConfig {
 
   @Autowired
   private lateinit var jwtRequestFilter: JwtRequestFilter
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
 
   @Autowired
   private lateinit var tokenProvider: TokenProvider
@@ -150,37 +149,48 @@ class SecurityConfig {
       http
         .addFilterAfter(jwtRequestFilter, OAuth2LoginAuthenticationFilter::class.java)
         .oauth2Login {
-          it.successHandler { _, response, authentication ->
-            runBlocking {
-              coroutineScope {
-                val authenticationToken = authentication as OAuth2AuthenticationToken
-                val user = when (authenticationToken.authorizedClientRegistrationId) {
-                  "github" -> handleGithubAuthResponse(authenticationToken)
-                  else -> throw BadRequestException("authorizedClientRegistrationId ${authenticationToken.authorizedClientRegistrationId} not supported")
-                }
-                log.info("jwt from user ${user.id}")
-                val jwt = tokenProvider.createJwtForUser(user)
-                response.addCookie(cookieProvider.createTokenCookie(jwt))
-                response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
-//
-                if (environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))) {
-                  response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
-                } else {
-                  response.sendRedirect(propertyService.appHost)
-//            request.getRequestDispatcher("/").forward(request, response)
-                }
-              }
-            }
+          it.successHandler { request, response, authentication ->
+            handleSuccess(request, response, authentication)
           }
-          it.failureHandler { _, response, exception ->
+          it.failureHandler { request, response, exception ->
             log.error("conditionalOauth failed: ${exception.message}", exception)
-            response.sendRedirect(propertyService.appHost + "/login?error=${exception.message}")
+            response.sendRedirect(getFrontendUrl(request) + "/login?error=${exception.message}")
           }
         }
 
     } else {
       http
     }
+  }
+
+  private fun handleSuccess(
+    request: HttpServletRequest,
+    response: HttpServletResponse,
+    authentication: Authentication?
+  ) {
+    runBlocking {
+      coroutineScope {
+        val authenticationToken = authentication as OAuth2AuthenticationToken
+        val user = handleGithubAuthResponse(authenticationToken)
+
+        log.info("jwt from user ${user.id}")
+        val jwt = tokenProvider.createJwtForUser(user)
+        response.addCookie(cookieProvider.createTokenCookie(jwt))
+        response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
+        //
+        if (environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))) {
+          response.sendRedirect("http://localhost:4200/?token=${jwt.tokenValue}")
+        } else {
+          response.sendRedirect(getFrontendUrl(request))
+        }
+      }
+    }
+  }
+
+  private fun getFrontendUrl(request: HttpServletRequest): String {
+    log.debug("getFrontendUrl ${request.requestURL}")
+    val url = URI(request.requestURI).toURL()
+    return url.protocol + "://" + url.host.replace("api.", "")
   }
 
   private suspend fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {

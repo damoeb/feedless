@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: untold-secrets
+type: Opaque
+stringData:
+  # github
+  oauthProviderClientId: ""
+  oauthProviderClientSecret: ""
+  oauthProviderRedirectUri: "https://notes.feedless.org/login/oauth2/code/github"

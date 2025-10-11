@@ -29,6 +29,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { EmailLoginComponent } from '../../components/email-login/email-login.component';
 import { GqlAuthType, GqlProfileName } from '../../../generated/graphql';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-login-page',
@@ -71,7 +72,12 @@ export class LoginPage implements OnInit, OnDestroy {
   constructor() {
     const serverConfig = this.serverConfig;
 
-    this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/';
+    // one sso provider for dev, per-product on prod
+    if (environment.production) {
+      this.loginUrl = `${serverConfig.apiUrl}/oauth2/authorization/${this.appConfig.activeProductConfig.id}`;
+    } else {
+      this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/github';
+    }
     addIcons({ logoGithub });
   }
 

@@ -1,4 +1,17 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: upcoming-secrets
+type: Opaque
+stringData:
+  # github
+  oauthProviderClientId: ""
+  oauthProviderClientSecret: ""
+  oauthProviderRedirectUri: "https://api.lokale.events/login/oauth2/code/github"
+
+---
+
+apiVersion: v1
 kind: ConfigMap
 metadata:
   name: upcoming-config-json

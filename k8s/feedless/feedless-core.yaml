@@ -61,11 +61,6 @@ spec:
                 configMapKeyRef:
                   name: feedless-config
                   key: app.cors.allowedOrigins
-            - name: APP_PLAUSIBLE_URL
-              valueFrom:
-                configMapKeyRef:
-                  name: feedless-config
-                  key: APP_PLAUSIBLE_URL
             - name: APP_PEM_FILE
               valueFrom:
                 configMapKeyRef:
@@ -86,20 +81,72 @@ spec:
                 secretKeyRef:
                   name: feedless-secrets
                   key: APP_JWT_SECRET
-            - name: SSO_GITHUB_CLIENT_ID
+            # --
+            # oAuth Upcoming
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UPCOMING_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: upcoming-secrets
+                  key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UPCOMING_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: upcoming-secrets
+                  key: oauthProviderClientSecret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UPCOMING_REDIRECTURI
+              valueFrom:
+                secretKeyRef:
+                  name: upcoming-secrets
+                  key: oauthProviderRedirectUri
+            # --
+            # oAuth feedless
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FEEDLESS_CLIENTID
               valueFrom:
                 secretKeyRef:
                   name: feedless-secrets
-                  key: SSO_GITHUB_CLIENT_ID
-            - name: SSO_GITHUB_CLIENT_SECRET
+                  key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FEEDLESS_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
                   name: feedless-secrets
-                  key: SSO_GITHUB_CLIENT_SECRET
-            - name: APP_ANALYTICS_PLAUSIBLEURL
-              value: "http://plausible.default.svc.cluster.local:8000"
+                  key: oauthProviderClientSecret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FEEDLESS_REDIRECTURI
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: oauthProviderRedirectUri
+            # --
+            # oAuth untold
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UNTOLD_CLIENTID
+              valueFrom:
+                secretKeyRef:
+                  name: untold-secrets
+                  key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UNTOLD_CLIENTSECRET
+              valueFrom:
+                secretKeyRef:
+                  name: untold-secrets
+                  key: oauthProviderClientSecret
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UNTOLD_REDIRECTURI
+              valueFrom:
+                secretKeyRef:
+                  name: untold-secrets
+                  key: oauthProviderRedirectUri
+            # --
+            # plausible
+            - name: APP_PLAUSIBLEURL
+              valueFrom:
+                configMapKeyRef:
+                  name: feedless-config
+                  key: APP_PLAUSIBLE_URL
             - name: APP_ANALYTICS_PLAUSIBLESITE
               value: "feedless.org"
+            - name: APP_PLAUSIBLE_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: APP_PLAUSIBLE_API_KEY
+            # --
             - name: APP_API_GATEWAY_URL
               valueFrom:
                 configMapKeyRef:
@@ -115,11 +162,6 @@ spec:
                 secretKeyRef:
                   name: feedless-secrets
                   key: APP_ACTUATOR_PASSWORD
-            - name: APP_PLAUSIBLE_API_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: feedless-secrets
-                  key: APP_PLAUSIBLE_API_KEY
             - name: APP_TELEGRAM_TOKEN
               valueFrom:
                 secretKeyRef:

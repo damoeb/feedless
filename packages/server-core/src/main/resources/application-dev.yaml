@@ -38,9 +38,7 @@ spring:
           github:
             clientId: Iv1.3fc36e6644b030c3
             clientSecret: 065e8db8cf782ce1d2a416b8dfaaca0b74c8d982
-          # google:
-          #   clientId: 343423943511-t83rkoi6ul369b2e2p2it8dt5554i9cu.apps.googleusercontent.com
-          #   clientSecret: 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
+            redirect-uri: ${app.apiGatewayUrl}/login/oauth2/code/github
 
 logging:
   level:

@@ -9,8 +9,11 @@ stringData:
   APP_ACTUATOR_PASSWORD: "password"
   APP_JWT_SECRET: "60ae393744191ee58869f700c1d27647b0b64d42"
   feedless.pem: ""
-  SSO_GITHUB_CLIENT_ID: ""
-  SSO_GITHUB_CLIENT_SECRET: ""
+
+  # github
+  oauthProviderClientId: ""
+  oauthProviderClientSecret: ""
+  oauthProviderRedirectUri: "https://api.feedless.org/login/oauth2/code/github"
 
 ---
 
@@ -26,7 +29,7 @@ data:
   APP_WHITELISTED_HOSTS: "feedless-core.default.svc.cluster.local,172.26.0.1"
   AUTH_TOKEN_ANONYMOUS_VALIDFORDAYS: "3"
   app.cors.allowedOrigins: "https://feedless.org,https://staging.feedless.org,https://rss-proxy.staging.migor.org,https://rss-proxy.migor.org,https://lokale.events"
-  APP_PLAUSIBLE_URL: "http://plausible-service.default.svc.cluster.local"
+  APP_PLAUSIBLE_URL: "http://plausible.default.svc.cluster.local:8000"
   APP_AUTHENTICATION: "sso"
 
   APP_ROOT_EMAIL: "admin@localhost"
