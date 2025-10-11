@@ -91,27 +91,27 @@ class UserResolver(
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
   suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): User? = coroutineScope {
-    val session: Session = dfe.getSource()!!
+    val session: Session = dfe.getSourceOrThrow()
     session.userId?.let { userService.findById(UserId(it)).orElseThrow().toDTO() }
   }
 
 
   @DgsData(field = DgsConstants.USER.ConnectedApps, parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun getConnectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedApp> = coroutineScope {
-    val user: User = dfe.getSource()!!
+    val user: User = dfe.getSourceOrThrow()
     connectedAppService.findAllByUserId(UserId(user.id)).filterIsInstance<TelegramConnectionEntity>()
       .map { it.toDto() }
   }
 
   @DgsData(field = DgsConstants.USER.Features, parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
-    val user: User = dfe.getSource()!!
+    val user: User = dfe.getSourceOrThrow()
     featureService.findAllByProductAndUserId(Vertical.feedless, UserId(user.id))
   }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)
   suspend fun userForOrder(dfe: DgsDataFetchingEnvironment): User = coroutineScope {
-    val order: Order = dfe.getSource()!!
+    val order: Order = dfe.getSourceOrThrow()
     userService.findById(UserId(order.userId)).orElseThrow().toDTO()
   }
 }

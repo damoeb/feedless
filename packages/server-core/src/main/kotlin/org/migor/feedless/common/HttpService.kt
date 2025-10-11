@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.MalformedURLException
+import java.net.URI
 import java.net.URL
 import java.net.UnknownHostException
 import java.time.Duration
@@ -61,11 +62,11 @@ class HttpService(
 
   private val cache: MutableMap<String, Bucket> = ConcurrentHashMap()
 
-  val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)
+  private val client: AsyncHttpClient = Dsl.asyncHttpClient(builderConfig)
 
   @PostConstruct
   fun postConstruct() {
-    gatewayHost = URL(apiGatewayUrl).host
+    gatewayHost = URI(apiGatewayUrl).toURL().host
   }
 
   suspend fun prepareGet(url: String): BoundRequestBuilder {

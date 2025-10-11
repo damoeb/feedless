@@ -210,7 +210,6 @@ class RepositoryHarvester(
       source.lastRecordsRetrieved = 0
       source.lastRefreshedAt = LocalDateTime.now()
 
-      val maxErrorCount = 3
       source.errorsInSuccession += 1
       logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
       log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")

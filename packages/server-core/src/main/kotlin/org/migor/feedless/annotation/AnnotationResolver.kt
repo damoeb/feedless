@@ -83,7 +83,7 @@ class AnnotationResolver(
   suspend fun annotations(
     dfe: DgsDataFetchingEnvironment
   ): Annotations = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSourceOrThrow()
 
     val repositoryId = RepositoryId(UUID.fromString(repository.id))
     DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId

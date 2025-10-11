@@ -35,7 +35,7 @@ class SecretsResolver(
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
   suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
-    val user: User = dfe.getSource()!!
+    val user: User = dfe.getSourceOrThrow()
     userSecretService.findAllByOwnerId(UserId(user.id)).map { it.toDto() }
   }
 

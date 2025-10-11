@@ -145,7 +145,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Order) order: List<SourceOrderByInput>?,
     dfe: DgsDataFetchingEnvironment,
   ): List<Source> = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSourceOrThrow()
     if (repository.currentUserIsOwner) {
       val pageable = cursor.toPageable(10)
       if (pageable.pageSize == 0) {
@@ -164,7 +164,7 @@ class RepositoryResolver(
   suspend fun sourcesCount(
     dfe: DgsDataFetchingEnvironment,
   ): Long = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSourceOrThrow()
     if (repository.currentUserIsOwner) {
       sourceService.countAllByRepositoryId(RepositoryId(repository.id))
     } else {
@@ -176,7 +176,7 @@ class RepositoryResolver(
   suspend fun recordCountForSources(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
-    val source: Source = dfe.getSource()
+    val source: Source = dfe.getSourceOrThrow()
     sourceService.countDocumentsBySourceId(SourceId(source.id))
   }
 
@@ -184,7 +184,7 @@ class RepositoryResolver(
   suspend fun harvests(
     dfe: DgsDataFetchingEnvironment,
   ): List<Harvest> = coroutineScope {
-    val source: Source = dfe.getSource()
+    val source: Source = dfe.getSourceOrThrow()
     harvestService.lastHarvests(UUID.fromString(source.id)).map { it.toDto() }
   }
 
@@ -192,13 +192,13 @@ class RepositoryResolver(
   suspend fun sourcesCountWithProblems(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSourceOrThrow()
     sourceService.countProblematicSourcesByRepositoryId(RepositoryId(repository.id))
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
-    val repository: Repository = dfe.getSource()
+    val repository: Repository = dfe.getSourceOrThrow()
     sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageRequest.of(0, 10))
       .mapNotNull { it.tags?.asList() }
       .flatten()

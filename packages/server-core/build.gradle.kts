@@ -14,6 +14,7 @@ plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
   alias(libs.plugins.kapt)
+  id("com.github.ben-manes.versions")
 }
 
 apply(plugin = "io.spring.dependency-management")
@@ -196,6 +197,7 @@ dependencies {
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+  duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   this.archiveFileName.set("app.${archiveExtension.get()}")
 }
 

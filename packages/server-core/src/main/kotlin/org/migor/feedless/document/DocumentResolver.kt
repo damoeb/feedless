@@ -103,7 +103,7 @@ class DocumentResolver(
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
-    val repository: Repository = dfe.getSource()!!
+    val repository: Repository = dfe.getSourceOrThrow()
     documentService.countByRepositoryId(RepositoryId(repository.id))
   }
 
@@ -153,7 +153,7 @@ class DocumentResolver(
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
   ): List<RecordFrequency> = coroutineScope {
-    val repository: Repository = dfe.getSource()!!
+    val repository: Repository = dfe.getSourceOrThrow()
     documentService.getRecordFrequency(
       RecordsWhereInput(
         repository = RepositoryUniqueWhereInput(id = repository.id),

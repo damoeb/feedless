@@ -68,7 +68,7 @@ class OrderResolver {
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
   suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
     val order: Order = dfe.getRoot()
-    val dataLoader: DataLoader<String, Product> = dfe.getDataLoader("product")
+    val dataLoader: DataLoader<String, Product> = dfe.getDataLoader<String, Product>("product")!!
     dataLoader.load(order.productId).await()
   }
 

@@ -42,19 +42,19 @@ class ProductResolver(
 
 //  @DgsData(parentType = DgsConstants.CLOUDSUBSCRIPTION.TYPE_NAME)
 //  suspend fun product(dfe: DgsDataFetchingEnvironment): Product = coroutineScope {
-//    val cloudsubscription: Plan = dfe.getSource()!!
+//    val cloudsubscription: Plan = dfe.getSourceOrThrow()
 //    productDAO.findById(UUID.fromString(cloudsubscription.productId)).orElseThrow().toDTO()
 //  }
 
   @DgsData(parentType = DgsConstants.PRODUCT.TYPE_NAME, field = DgsConstants.PRODUCT.Prices)
   suspend fun getPrices(dfe: DgsDataFetchingEnvironment): List<PricedProduct> = coroutineScope {
-    val product: Product = dfe.getSource()!!
+    val product: Product = dfe.getSourceOrThrow()
     productService.findAllByProductId(ProductId(product.id)).map { it.toDto() }
   }
 
   @DgsData(parentType = DgsConstants.PRODUCT.TYPE_NAME, field = DgsConstants.PRODUCT.FeatureGroup)
   suspend fun getFeatureGroup(dfe: DgsDataFetchingEnvironment): FeatureGroup? = coroutineScope {
-    val product: Product = dfe.getSource()!!
+    val product: Product = dfe.getSourceOrThrow()
     product.featureGroupId?.let { featureGroupId ->
       FeatureGroup(
         id = featureGroupId,

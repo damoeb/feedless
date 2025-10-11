@@ -24,7 +24,7 @@ class GroupResolver(
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignment> = coroutineScope {
-    val user: User = dfe.getSource()
+    val user: User = dfe.getSourceOrThrow()
     groupService.findAllByUserId(UserId(user.id))
       .map {
         GroupAssignment(
