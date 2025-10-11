@@ -25,6 +25,8 @@ else
   # -Dorg.gradle.caching.debug=true
   docker run -u "$UID:$GID" \
     --workdir /opt/feedless \
+     --cpus=1.5 \
+     --memory="2g" \
     -v "${PWD}:/opt/feedless" \
     -v "${PWD}/build-cache:/opt/feedless/build-cache" \
     -it amazoncorretto:24 cd /opt/feedless && ./gradlew --no-daemon bundle && \
