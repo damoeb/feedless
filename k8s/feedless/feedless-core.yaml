@@ -88,6 +88,11 @@ spec:
                 secretKeyRef:
                   name: upcoming-secrets
                   key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UPCOMING_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: upcoming-secrets
+                  key: oauthProvider
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UPCOMING_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
@@ -105,6 +110,11 @@ spec:
                 secretKeyRef:
                   name: feedless-secrets
                   key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FEEDLESS_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: feedless-secrets
+                  key: oauthProvider
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_FEEDLESS_CLIENTSECRET
               valueFrom:
                 secretKeyRef:
@@ -122,6 +132,11 @@ spec:
                 secretKeyRef:
                   name: untold-secrets
                   key: oauthProviderClientId
+            - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UNTOLD_PROVIDER
+              valueFrom:
+                secretKeyRef:
+                  name: untold-secrets
+                  key: oauthProvider
             - name: SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_UNTOLD_CLIENTSECRET
               valueFrom:
                 secretKeyRef:

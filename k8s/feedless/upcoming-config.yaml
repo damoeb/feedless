@@ -5,6 +5,7 @@ metadata:
 type: Opaque
 stringData:
   # github
+  oauthProvider: "github"
   oauthProviderClientId: ""
   oauthProviderClientSecret: ""
   oauthProviderRedirectUri: "https://api.lokale.events/login/oauth2/code/github"

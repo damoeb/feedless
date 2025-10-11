@@ -5,6 +5,7 @@ metadata:
 type: Opaque
 stringData:
   # github
+  oauthProvider: "github"
   oauthProviderClientId: ""
   oauthProviderClientSecret: ""
   oauthProviderRedirectUri: "https://notes.feedless.org/login/oauth2/code/github"

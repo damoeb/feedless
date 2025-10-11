@@ -11,6 +11,7 @@ stringData:
   feedless.pem: ""
 
   # github
+  oauthProvider: "github"
   oauthProviderClientId: ""
   oauthProviderClientSecret: ""
   oauthProviderRedirectUri: "https://api.feedless.org/login/oauth2/code/github"
