@@ -10,7 +10,7 @@ plugins {
   alias(libs.plugins.grgit)
   alias(libs.plugins.jacoco)
   alias(libs.plugins.javacc)
-  alias(libs.plugins.dgs.codegen)
+//  alias(libs.plugins.dgs.codegen) apply false
 
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
@@ -111,6 +111,8 @@ dependencies {
   implementation(libs.dgs.scalars)
   implementation(libs.dgs.subscriptions)
   implementation(libs.dgs.subscriptions.autoconfigure)
+  testImplementation(libs.dgs.starter)
+  testImplementation(libs.dgs.codegen.test)
   testImplementation(libs.spring.graphql.test)
 
   // cache

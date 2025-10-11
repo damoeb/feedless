@@ -1,7 +1,7 @@
 [versions]
 kotlin = "1.9.21"
 spring-boot = "3.2.5"
-dgs-codegen = "6.3.0"
+dgs-codegen = "8.1.1"
 dgs = "8.7.1"
 test-logger = "4.0.0"
 javacc = "4.0.1"
@@ -72,6 +72,7 @@ commons-text = { module = "org.apache.commons:commons-text", version.ref = "comm
 dgs-platform = { module = "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies", version.ref = "dgs" }
 dgs-scalars = { module = "com.netflix.graphql.dgs:graphql-dgs-extended-scalars", version.ref = "dgs" }
 dgs-starter = { module = "com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter", version.ref = "dgs" }
+dgs-codegen-test = { module = "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core", version.ref = "dgs-codegen" }
 dgs-subscriptions = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets", version.ref = "dgs" }
 dgs-subscriptions-autoconfigure = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure", version.ref = "dgs" }
 
