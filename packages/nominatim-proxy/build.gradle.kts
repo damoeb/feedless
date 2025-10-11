@@ -1,7 +1,7 @@
 import com.github.gradle.node.yarn.task.YarnTask
 
 plugins {
-  id("com.github.node-gradle.node")
+  alias(libs.plugins.node)
   id("org.ajoberstar.grgit")
 }
 

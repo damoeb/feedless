@@ -10,7 +10,6 @@ plugins {
   alias(libs.plugins.grgit)
   alias(libs.plugins.jacoco)
   alias(libs.plugins.javacc)
-//  alias(libs.plugins.dgs.codegen) apply false
 
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
@@ -180,9 +179,6 @@ dependencies {
   implementation(libs.xsoup)
   implementation(libs.gson)
 
-  // https://github.com/shyiko/skedule
-//  implementation("com.github.shyiko.skedule:skedule:0.4.0")
-
   testImplementation(libs.spring.boot.test)
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
@@ -203,13 +199,6 @@ tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar
   this.archiveFileName.set("app.${archiveExtension.get()}")
 }
 
-tasks.withType<KotlinCompile> {
-  kotlinOptions {
-//    freeCompilerArgs = listOf("-Xjsr305=strict")
-//    jvmTarget = "17"
-  }
-}
-
 tasks.withType<Test> {
   useJUnitPlatform {
     val tags = arrayOf("unstable", "nlp")
@@ -228,21 +217,23 @@ tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> {
   dependsOn(compilejj)
 }
 
+tasks.withType<KotlinCompile>().configureEach {
+  dependsOn(compilejj)
+}
+
+//tasks.withType<KotlinCompile> {
+//  kotlinOptions {
+//    freeCompilerArgs = listOf("-Xjsr305=strict")
+//    jvmTarget = "17"
+//  }
+//}
 
 tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
   systemProperty("APP_BUILD_TIMESTAMP", Date().time)
   args("--spring.profiles.active=dev ")
 }
 
-val lintTask = tasks.register("lint") {
-//  todo mag
-//  dependsOn("lintDockerImage")
-}
-tasks.register("start") {
-  dependsOn("bootRun")
-}
-
-val buildTask = tasks.findByPath("build")!!.dependsOn(lintTask, "test", "bootJar")
+val buildTask = tasks.findByPath("build")!!.dependsOn("test", "bootJar")
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(buildTask)

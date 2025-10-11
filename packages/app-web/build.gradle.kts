@@ -1,7 +1,7 @@
 import com.github.gradle.node.yarn.task.YarnTask
 
 plugins {
-  id("com.github.node-gradle.node")
+  alias(libs.plugins.node)
   id("org.ajoberstar.grgit")
 }
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
@@ -13,6 +13,7 @@ node {
   } else {
     throw IllegalStateException(".nvmrc file not found")
   }
+  println("nodeVersion: $nodeVersion")
   version.set(nodeVersion)
   download.set(true)
 }

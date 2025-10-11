@@ -13,8 +13,6 @@ buildscript {
     gradlePluginPortal()
   }
   dependencies {
-    val gradleNodePluginVersion = "5.0.0"
-    classpath("com.github.node-gradle:gradle-node-plugin:$gradleNodePluginVersion")
     classpath("org.ajoberstar.grgit:grgit-gradle:5.0.0")
   }
 }
