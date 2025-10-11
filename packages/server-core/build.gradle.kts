@@ -255,7 +255,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   inputs.property("semver", semver)
 
   commandLine(
-    podmanOrDocker(), "build",
+    "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
@@ -268,12 +268,4 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
 
 tasks.register("bundle") {
   dependsOn(dockerAmdBuild)
-}
-
-fun podmanOrDocker(): String {
-  val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "docker"
-
-  println("Using DOCKER_BIN $podmanOrDocker")
-  return podmanOrDocker
 }

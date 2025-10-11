@@ -98,7 +98,7 @@ tasks.register("bundle", Exec::class) {
   inputs.property("semver", semver)
 
   commandLine(
-    podmanOrDocker(), "build",
+    "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "-t", "$baseTag:agent-latest",
@@ -111,12 +111,4 @@ tasks.register("bundle", Exec::class) {
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
   dependsOn(prepareTask)
-}
-
-fun podmanOrDocker(): String {
-  val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "docker"
-
-  println("Using DOCKER_BIN $podmanOrDocker")
-  return podmanOrDocker
 }

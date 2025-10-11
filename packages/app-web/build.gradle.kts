@@ -107,7 +107,7 @@ tasks.register("bundle", Exec::class) {
   inputs.property("gitHash", gitHash)
 
   commandLine(
-    podmanOrDocker(), "build",
+    "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "-t", "$baseTag:app-latest",
@@ -127,12 +127,4 @@ val cleanTask = tasks.register<YarnTask>("clean") {
 tasks.register<YarnTask>("start") {
   args.set(listOf("start:dev"))
   dependsOn(yarnInstallTask, codegenTask)
-}
-
-fun podmanOrDocker(): String {
-  val env = "DOCKER_BIN"
-  val podmanOrDocker = System.getenv(env) ?: "docker"
-
-  println("Using DOCKER_BIN $podmanOrDocker")
-  return podmanOrDocker
 }
