@@ -144,6 +144,10 @@ export const UPCOMING_ROUTES: Routes = [
         path: toPath(template(upcomingBaseRoute.management.documents)),
         loadComponent: () => import('./management/management.page').then((m) => m.ManagementPage),
       },
+      {
+        path: toPath(template(upcomingBaseRoute.management)),
+        redirectTo: template(upcomingBaseRoute.management.sources),
+      },
     ],
   },
   {
