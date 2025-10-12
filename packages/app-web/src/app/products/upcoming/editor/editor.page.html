@@ -1,6 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
       <ion-button routerLink="/"><strong>lokale</strong><em>.events</em></ion-button>
     </ion-buttons>
 
@@ -15,14 +16,14 @@
 <ion-content>
   <div class="sources">
     <!--    <ion-searchbar></ion-searchbar>-->
-    <app-map
-      #map
-      style="border-radius: 8px"
-      (boundingBoxChange)="onMapChange($event)"
-      [minZoom]="10"
-      [maxZoom]="15"
-      [position]="mapPosition"
-    ></app-map>
+    <!--    <app-map-->
+    <!--      #map-->
+    <!--      style="border-radius: 8px"-->
+    <!--      (boundingBoxChange)="onMapChange($event)"-->
+    <!--      [minZoom]="10"-->
+    <!--      [maxZoom]="15"-->
+    <!--      [position]="mapPosition"-->
+    <!--    ></app-map>-->
 
     <div>
       @if (repository) {

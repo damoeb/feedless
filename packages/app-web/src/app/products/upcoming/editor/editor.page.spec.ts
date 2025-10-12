@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AppTestModule, mockRepository } from '../../../app-test.module';
-import { ManagementPage } from './management.page';
+import { EditorPage } from './editor.page';
 import { AppConfigService } from '../../../services/app-config.service';
 import { PageService } from '../../../services/page.service';
 
 describe('ManagementPage', () => {
-  let component: ManagementPage;
-  let fixture: ComponentFixture<ManagementPage>;
+  let component: EditorPage;
+  let fixture: ComponentFixture<EditorPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        ManagementPage,
+        EditorPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockRepository(apolloMockController);
@@ -31,7 +31,7 @@ describe('ManagementPage', () => {
     const appConfigService = TestBed.inject(AppConfigService);
     appConfigService.customProperties = { eventRepositoryId: 'foo' };
 
-    fixture = TestBed.createComponent(ManagementPage);
+    fixture = TestBed.createComponent(EditorPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

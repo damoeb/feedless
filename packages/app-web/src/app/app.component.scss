@@ -31,9 +31,10 @@ ion-menu::part(container) {
 }
 
 .version {
-  text-align: right;
-  font-size: small;
-  a {
-    color: var(--ion-color-medium);
-  }
+  display: none;
+  //text-align: right;
+  //font-size: small;
+  //a {
+  //  color: var(--ion-color-medium);
+  //}
 }

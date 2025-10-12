@@ -11,6 +11,7 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
+  IonMenuButton,
   IonSpinner,
   IonToolbar,
 } from '@ionic/angular/standalone';
@@ -28,8 +29,8 @@ import { marker } from 'leaflet';
 
 @Component({
   selector: 'app-management-page',
-  templateUrl: './management.page.html',
-  styleUrls: ['./management.page.scss'],
+  templateUrl: './editor.page.html',
+  styleUrls: ['./editor.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonHeader,
@@ -40,13 +41,13 @@ import { marker } from 'leaflet';
     IonButtons,
     DarkModeButtonComponent,
     ProfileButtonComponent,
-    MapComponent,
     SourcesComponent,
     IonSpinner,
+    IonMenuButton,
   ],
   standalone: true,
 })
-export class ManagementPage implements OnInit {
+export class EditorPage implements OnInit {
   readonly map = viewChild.required<MapComponent>('map');
 
   private readonly repositoryService = inject(RepositoryService);

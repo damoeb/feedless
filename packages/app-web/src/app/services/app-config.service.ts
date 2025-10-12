@@ -53,6 +53,10 @@ export class AppConfigService {
     },
     {
       id: 'upcoming',
+      sideMenu: {
+        width: 200,
+        breakpoint: 'xs',
+      },
       routes: [
         {
           path: '',

@@ -5,6 +5,7 @@ import { NamedLatLon } from '../../types';
 import { createRoutes, int, param, parsePath, str, template } from 'typesafe-routes';
 import { upperCaseStringParser } from '../default-routes';
 import { AuthGuardService } from '../../guards/auth-guard.service';
+import { FeedlessMenuComponent } from '../feedless/feedless-menu/feedless-menu.component';
 
 export const perimeterUnit = 'Km';
 
@@ -115,6 +116,11 @@ function toPath(url: string): string {
 
 export const UPCOMING_ROUTES: Routes = [
   {
+    path: '',
+    outlet: 'sidemenu',
+    component: FeedlessMenuComponent,
+  },
+  {
     path: toPath(template(upcomingBaseRoute.about)),
     loadComponent: () => import('./about-us/about-us.page').then((m) => m.AboutUsPage),
   },
@@ -138,11 +144,11 @@ export const UPCOMING_ROUTES: Routes = [
       {
         path: toPath(template(upcomingBaseRoute.management.sources)),
         data: { sources: true },
-        loadComponent: () => import('./management/management.page').then((m) => m.ManagementPage),
+        loadComponent: () => import('./editor/editor.page').then((m) => m.EditorPage),
       },
       {
         path: toPath(template(upcomingBaseRoute.management.documents)),
-        loadComponent: () => import('./management/management.page').then((m) => m.ManagementPage),
+        loadComponent: () => import('./editor/editor.page').then((m) => m.EditorPage),
       },
       {
         path: toPath(template(upcomingBaseRoute.management)),

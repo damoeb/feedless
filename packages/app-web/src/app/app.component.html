@@ -40,7 +40,7 @@
           </ion-content>
           <ion-footer>
             <ion-list>
-              <div class="version ion-padding">
+              <div class="version">
                 version
                 <a
                   [href]="
@@ -64,9 +64,6 @@
               <!--                About-->
               <!--              </ion-item>-->
               @if (sessionService.isAuthenticated()) {
-                <p class="ion-margin">
-                  <strong>You are logged in.</strong>
-                </p>
                 <ion-item (click)="logout()" [button]="true" color="danger">
                   <!--                <ion-icon name="exit-outline" slot="start"></ion-icon>-->
                   Logout
