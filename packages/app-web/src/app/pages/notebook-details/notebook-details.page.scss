@@ -98,19 +98,18 @@ app-tree-view {
   }
 }
 
-.footer-toolbar {
+.note-editors {
   display: flex;
   justify-content: center;
 
   .note-editor {
+    --editor-width: 600px;
     background: var(--background);
     //padding-right: 15px;
     //padding-bottom: 15px;
     display: flex;
     flex-direction: column;
-    width: 600px;
     overflow: auto;
-    min-height: 500px;
     box-shadow: 0px -2px 2px 0px rgb(208, 208, 208);
     border-top: 1px solid rgba(var(--app-foreground-rgb), 0.4);
     border-top-left-radius: 10px;
@@ -119,6 +118,31 @@ app-tree-view {
     app-code-editor {
       display: flex;
       flex: 1;
+    }
+  }
+}
+
+// mobile
+@media (max-width: 600px) {
+  .note-editors {
+    .note-editor {
+      width: 100%;
+      height: 50vh;
+      border-radius: unset;
+    }
+  }
+}
+
+// desktop
+@media (min-width: 600px) {
+  .note-editors {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+
+    .note-editor {
+      width: var(--editor-width);
+      min-height: 500px;
     }
   }
 }
@@ -173,14 +197,12 @@ ion-accordion.accordion-expanded {
   background: var(--line-color);
   height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
   //width: 100%;
-  --_g: var(--s) repeat-x
-    conic-gradient(
+  --_g: var(--s) repeat-x conic-gradient(
       from calc(var(--a) / -2) at bottom,
       #0000,
       #000 1deg calc(var(--a) - 1deg),
       #0000 var(--a)
-    );
-  mask:
-    50% calc(-1 * var(--b)) / var(--_g) exclude,
-    50% / var(--_g);
+  );
+  mask: 50% calc(-1 * var(--b)) / var(--_g) exclude,
+  50% / var(--_g);
 }

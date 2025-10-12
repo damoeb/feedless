@@ -1,6 +1,5 @@
 import { inject, Injectable } from '@angular/core';
 import {
-  catchError,
   firstValueFrom,
   forkJoin,
   map,
@@ -751,7 +750,7 @@ export class NotebookService {
     if (note) {
       this.openNote(note);
     } else {
-      await this.showToast('No note with ID index found.', 'warning');
+      await this.showToast(`No note with ID ${noteId} found.`, 'warning');
     }
   }
 

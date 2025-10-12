@@ -32,7 +32,11 @@ export class ServerConfigService {
   apiUrl!: string;
   private profiles!: GqlProfileName[];
   private authTypes!: GqlAuthType[];
-  private build!: BuildInfo;
+  private connected: boolean = false;
+  private build: BuildInfo = {
+    commit: 'unknown',
+    date: new Date(),
+  };
   private version!: string;
   private license: LocalizedLicense;
 
@@ -85,6 +89,10 @@ export class ServerConfigService {
     }
   }
 
+  isConnected(): boolean {
+    return this.connected;
+  }
+
   async fetchServerSettings(): Promise<void> {
     try {
       const response = await this.createApolloClient()
@@ -98,6 +106,8 @@ export class ServerConfigService {
           },
         })
         .then((response) => response.data.serverSettings);
+
+      this.connected = true;
       this.profiles = response.profiles;
       this.authTypes = response.auth;
       this.version = response.version;
