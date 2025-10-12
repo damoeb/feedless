@@ -78,7 +78,7 @@ class Seeder(
   }
 
   private fun seedGroups(root: UserEntity) {
-    val adminGroup = resolveGroup("")
+    val adminGroup = resolveGroup("", root)
 
     val ugLink = userGroupAssignmentDAO.findByUserIdAndGroupId(root.id, adminGroup.id) ?: UserGroupAssignmentEntity()
     ugLink.groupId = adminGroup.id
@@ -88,13 +88,14 @@ class Seeder(
     userGroupAssignmentDAO.save(ugLink)
   }
 
-  private fun resolveGroup(groupName: String): GroupEntity {
-    return groupDAO.findByName(groupName) ?: createGroup(groupName)
+  private fun resolveGroup(groupName: String, owner: UserEntity): GroupEntity {
+    return groupDAO.findByName(groupName) ?: createGroup(groupName, owner)
   }
 
-  private fun createGroup(groupName: String): GroupEntity {
+  private fun createGroup(groupName: String, owner: UserEntity): GroupEntity {
     val adminGroup = GroupEntity()
     adminGroup.name = groupName
+    adminGroup.ownerId = owner.id
     return groupDAO.save(adminGroup)
   }
 
