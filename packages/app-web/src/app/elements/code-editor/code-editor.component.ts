@@ -52,7 +52,6 @@ import { hashtagMatcher } from './hashtag.widget';
 import { urlDecorator } from './url.decorator';
 import { lintKeymap } from '@codemirror/lint';
 import { inlineImagePlugin } from './inline-image.widget';
-import { checkboxPlugin } from './checkbox.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
 import { html } from '@codemirror/lang-html';
@@ -63,6 +62,7 @@ import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
 import { IonButton, IonButtons, IonIcon, IonToolbar } from '@ionic/angular/standalone';
+import { checkboxDecorator } from './checkbox.decorator';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -284,7 +284,7 @@ export class CodeEditorComponent
       }),
       theme,
       history({ minDepth: 100 }),
-      checkboxPlugin.extension,
+      checkboxDecorator,
       markdownDecorator,
       urlDecorator,
       inlineImagePlugin,

@@ -43,6 +43,7 @@
   .cm-editor .cm-selectionBackground,
   ::selection {
     background: var(--ion-color-primary) !important;
+    opacity: 0.3;
   }
 
   .cm-editor {

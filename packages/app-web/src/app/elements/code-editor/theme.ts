@@ -38,6 +38,11 @@ export const theme = EditorView.theme({
     padding: '0',
     border: '1px solid var(--ion-color-primary)',
   },
+  '.cm-checkbox': {
+    padding: '0',
+
+    border: '1px solid var(--ion-color-primary)',
+  },
   '.cm-tooltip-cursor:hover': { opacity: '1' },
   '.cm-url': { color: 'var(--ion-color-primary)' },
   '.cm-cursor': { borderRight: '2px solid var(--app-foreground)' },
