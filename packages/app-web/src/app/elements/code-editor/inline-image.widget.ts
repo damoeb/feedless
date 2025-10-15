@@ -62,23 +62,12 @@ export const inlineImagePlugin = ViewPlugin.fromClass(
     }
 
     update(update: ViewUpdate) {
-      if (update.docChanged || update.viewportChanged) {
+      if (update.docChanged) {
         this.decorations = inlineImages(update.view);
       }
     }
   },
   {
     decorations: (v) => v.decorations,
-
-    // eventHandlers: {
-    //   mousedown: (e, view) => {
-    //     let target = e.target as HTMLElement
-    //     if (target.nodeName == "INPUT" &&
-    //       target.parentElement!.classList.contains("cm-boolean-toggle")) {
-    //       return toggleBoolean(view, view.posAtDOM(target))
-    //     }
-    //     return false
-    //   }
-    // }
   }
 );

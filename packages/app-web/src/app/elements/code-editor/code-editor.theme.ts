@@ -1,8 +1,8 @@
 import { EditorView } from '@codemirror/view';
 
-export const theme = EditorView.theme({
+export const codeEditorTheme = EditorView.theme({
   '.cm-atx-heading-1, .cm-setext-heading-1': { fontSize: '1.7em' },
-  '.cm-atx-heading-2, .cm-setext-heading-2': { fontSize: '1.5em' },
+  '.cm-atx-heading-2, .cm-setext-heading-2': { fontSize: '1.5em', marginBottom: '1.5rem' },
   '.cm-atx-heading-3': { fontSize: '1.17em' },
   '.cm-atx-heading-4': { fontWeight: 'bold' },
   '.cm-atx-heading-5': { fontSize: '0.83em', fontWeight: 'bold' },
@@ -10,10 +10,14 @@ export const theme = EditorView.theme({
   '.cm-activeLine': {
     backgroundColor: 'rgba(var(--ion-color-primary-rgb), 0.05)',
   },
-  '.cm-line:has(.cm-blockquote)': {
-    backgroundColor: 'transparent',
-    paddingTop: '3px',
-    paddingBottom: '3px',
+  '.cm-blockquote': {
+    borderLeft: '1px solid rgba(var(--app-foreground-rgb), 0.4)',
+  },
+  '.cm-op': {
+    opacity: '0.3',
+  },
+  '.cm-empty-line-span': {
+    fontSize: 'small',
   },
   '.cm-tooltip': {
     backgroundColor: 'rgba(var(--ion-color-medium-rgb), 0.9)',
@@ -40,8 +44,7 @@ export const theme = EditorView.theme({
   },
   '.cm-checkbox': {
     padding: '0',
-
-    border: '1px solid var(--ion-color-primary)',
+    borderBottom: '1px solid var(--ion-color-primary)',
   },
   '.cm-tooltip-cursor:hover': { opacity: '1' },
   '.cm-url': { color: 'var(--ion-color-primary)' },

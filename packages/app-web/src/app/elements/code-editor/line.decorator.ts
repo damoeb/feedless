@@ -16,8 +16,6 @@ export const lineHighlightField = StateField.define({
     for (let e of tr.effects) {
       if (e.is(addLineHighlight)) {
         lines = lines.update({ add: [lineHighlightMark.range(e.value)] });
-        // } else {
-        //   lines = Decoration.none;
       }
     }
     return lines;

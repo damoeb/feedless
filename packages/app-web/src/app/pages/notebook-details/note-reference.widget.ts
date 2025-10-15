@@ -8,14 +8,15 @@ import {
   ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { NotebookService } from '../../services/notebook.service';
+import { Note, NotebookService } from '../../services/notebook.service';
+import { firstValueFrom } from 'rxjs';
 
 export function createNoteReferenceWidget(notebookService: NotebookService) {
   class NoteLinkWidget extends WidgetType {
     private readonly widgetLink: HTMLElement;
     private classNames: string[] = [];
 
-    constructor(private readonly noteId: string) {
+    constructor(private readonly customId: string) {
       super();
 
       this.widgetLink = document.createElement('a');
@@ -25,7 +26,7 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
     }
 
     override eq(other: NoteLinkWidget) {
-      return other.noteId == this.noteId;
+      return other.customId == this.customId;
     }
 
     override toDOM() {
@@ -37,16 +38,17 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
     }
 
     private async init() {
-      const note = await notebookService.findById(this.noteId);
+      const notes = await firstValueFrom(notebookService.findByCustomId(this.customId));
+      const note: Note = notes.length > 0 ? notes[0] : null;
       if (note) {
-        this.classNames.push('note-link--valid');
-        this.widgetLink.textContent = note.title.trim() || 'Open Note';
+        this.classNames.push('note-link note-link--valid');
+        this.widgetLink.textContent = note.title.trim() || 'Open';
         this.widgetLink.addEventListener('click', () => notebookService.openNote(note));
       } else {
-        this.classNames.push('note-link--invalid');
-        this.widgetLink.textContent = 'Create Note';
+        this.classNames.push('note-link note-link--invalid');
+        this.widgetLink.textContent = 'Create';
         this.widgetLink.addEventListener('click', () =>
-          notebookService.createNote({ id: this.noteId }, true)
+          notebookService.createNote({ customId: this.customId }, true)
         );
       }
       this.widgetLink.setAttribute('class', this.classNames.join(' '));
@@ -56,18 +58,23 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
   const noteWidget = new MatchDecorator({
     regexp: /(\[[^\]]{5,}\])/g,
     // boundary: /(\[[^\]]+\])/g,
-    decorate: (
+    decorate: async (
       add: (from: number, to: number, decoration: Decoration) => void,
       from: number,
       to: number,
       match: RegExpExecArray,
       view: EditorView
     ) => {
+      const customId = view.state.sliceDoc(from + 1, to - 1);
+      add(from, from + 1, Decoration.mark({ class: 'cm-op' }));
+      add(from + 1, to - 1, Decoration.mark({ class: 'cm-note' }));
+      add(to - 1, to, Decoration.mark({ class: 'cm-op' }));
+
       add(
         to,
         to,
         Decoration.widget({
-          widget: new NoteLinkWidget(view.state.sliceDoc(from + 1, to - 1)),
+          widget: new NoteLinkWidget(customId),
           side: 1,
         })
       );

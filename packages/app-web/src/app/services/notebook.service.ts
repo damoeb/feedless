@@ -34,7 +34,7 @@ import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
 
-export type CreateNoteParams = Partial<Pick<Note, 'title' | 'id' | 'text' | 'parent'>>;
+export type CreateNoteParams = Partial<Pick<Note, 'title' | 'customId' | 'text' | 'parent'>>;
 
 export type Notebook = ArrayElement<GqlCreateRepositoriesMutation['createRepositories']> & {
   lastSyncedAt: Date;
@@ -162,7 +162,7 @@ export const defaultSettings: NotebookSettings = {
     language: 'en',
   },
   editor: {
-    noteIdDatePattern: 'YYYYMMDDHHMM',
+    noteIdDatePattern: 'YYYYMMDDHHmm',
     useDefaultTemplates: true,
     customNoteTemplates: {},
     style: 'one-document',
@@ -185,8 +185,6 @@ export enum ChangeModifier {
 }
 
 export type Tuple<A, B> = { a: A; b: B };
-
-export type NoteIndex = 'id' | 'note:parent';
 
 @Injectable({
   providedIn: 'root',
@@ -277,11 +275,10 @@ export class NotebookService {
     return [...internalSuggestions, ...noteSuggestion];
   }
 
-  async findAll(query: string, index: NoteIndex[] = [], limit: number = 200): Promise<Note[]> {
+  async findAll(query: string, limit: number = 200): Promise<Note[]> {
     try {
       const results = this.index.search(query, {
         limit: 10,
-        index: index,
         suggest: true,
         highlight: '<b>$1</b>',
       });
@@ -318,7 +315,7 @@ export class NotebookService {
     const technicalId = uuidv4();
     const note: Note = {
       id: technicalId,
-      customId: params.id ?? (await this.createNoteId()),
+      customId: params.customId ?? (await this.createNoteId()),
       title: title,
       text: `# ${title}\n\n${params.text ?? ''}`.trim(),
       references: {
@@ -590,7 +587,7 @@ export class NotebookService {
           notebookRepository.notes.get(id.toString()).then((note) => {
             if (note) {
               return {
-                apply: `[${note.id}]`,
+                apply: `[${note.customId}]`,
                 // @ts-ignore
                 label: `${note.title}: ${note[perField.field]}`,
                 // label: `${note.title}: ${this.getHint(perField.field, query, note)}`
@@ -946,6 +943,18 @@ export class NotebookService {
 
   private isEmptyNote(note: Note) {
     return note.text.replace(/[ \n\t#]+/g, '').length === 0;
+  }
+
+  findByCustomId(customId: string) {
+    return convertToRx<Note[]>(
+      liveQuery(() =>
+        notebookRepository.notes
+          .where('repositoryId')
+          .equals(this.currentRepositoryId)
+          .filter((note) => note.customId === customId)
+          .toArray()
+      )
+    );
   }
 }
 

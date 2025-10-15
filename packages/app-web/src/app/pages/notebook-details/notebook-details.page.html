@@ -152,7 +152,6 @@
                           <div class="leaf" [ngStyle]="{'--level': node.level}">
                             <div
                               class="tree-node"
-                              [ngClass]="{'tree-node--collapsed': !node.expanded}"
                               style="margin-left: 20px"
                             >
                               @if (node.body.isUpVoted) {
@@ -197,30 +196,31 @@
                         <ion-icon name="ellipse-outline" slot="icon-only"></ion-icon>
                       }
                     </ion-button>
-                    <ion-text>
+                    <ion-text style="white-space: nowrap;
+    overflow: hidden;
+    max-width: 150px;
+    text-overflow: ellipsis;">
                       <strong> {{ currentEditorHandle.note.title }} </strong>
                     </ion-text>
                   </div>
                   <ion-buttons>
+                    <!--                    <ion-button>-->
+                    <!--                      <ion-icon name="attach-outline" slot="start"></ion-icon>-->
+                    <!--                      Attach-->
+                    <!--                    </ion-button>-->
+                    <!--                    <ion-input [value]="currentEditorHandle.note.customId"></ion-input>-->
+                    <ion-button (click)="changeParent()"> Move</ion-button>
+                    <ion-button (click)="cloneNote()">
+                      <ion-icon name="copy-outline" slot="start"></ion-icon>
+                      Clone
+                    </ion-button>
+
                     <ion-button (click)="closeNote()" size="small">
                       <ion-icon slot="icon-only" name="close-outline"></ion-icon>
                     </ion-button>
                   </ion-buttons>
                 </div>
                 <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
-                <ion-toolbar style="--background: transparent" class="ion-hide-sm-down">
-                  <ion-buttons>
-                    <ion-button>
-                      <ion-icon name="attach-outline" slot="start"></ion-icon>
-                      Attach
-                    </ion-button>
-                    <ion-button (click)="changeParent()"> Move</ion-button>
-                    <ion-button (click)="cloneNote()">
-                      <ion-icon name="copy-outline" slot="start"></ion-icon>
-                      Clone
-                    </ion-button>
-                  </ion-buttons>
-                </ion-toolbar>
 
                 <app-code-editor
                   [autoSuggestionsProvider]="loadAutoSuggestions"

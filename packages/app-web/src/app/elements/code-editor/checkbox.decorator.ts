@@ -11,7 +11,7 @@ import {
 const urlDecoration = Decoration.mark({ class: 'cm-checkbox', inclusive: true });
 
 const checkboxMatchDecorator = new MatchDecorator({
-  regexp: /\[(x| )\]/g,
+  regexp: /\[(x| )\]( ("[^"]+")| ([^ ]+))?/g,
   decoration: urlDecoration,
 });
 

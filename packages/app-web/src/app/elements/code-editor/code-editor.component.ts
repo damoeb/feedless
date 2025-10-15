@@ -44,25 +44,21 @@ import {
   CompletionResult,
   startCompletion,
 } from '@codemirror/autocomplete';
-
-import { markdownLanguageSupport, NODE_HASHTAG, NODE_LINK } from './markdown.lang';
-import { theme } from './theme';
-import { markdownDecorator } from './markdown.decorator';
+import { codeEditorTheme } from './code-editor.theme';
 import { hashtagMatcher } from './hashtag.widget';
 import { urlDecorator } from './url.decorator';
-import { lintKeymap } from '@codemirror/lint';
 import { inlineImagePlugin } from './inline-image.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
-import { html } from '@codemirror/lang-html';
-import { json } from '@codemirror/lang-json';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
-import { IonButton, IonButtons, IonIcon, IonToolbar } from '@ionic/angular/standalone';
 import { checkboxDecorator } from './checkbox.decorator';
+import { decorateFirstLine } from './headline.decorator';
+import { decorateBlockquote } from './blockquote.decorator';
+import { decorateEmptyActiveLine } from './empty-active-line.decorator';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
   return [];
@@ -127,7 +123,7 @@ export type AutoSuggestionsProvider = (query: string, type: string) => Promise<C
       multi: true,
     },
   ],
-  imports: [IonToolbar, IonButtons, IonButton, IonIcon, NgClass],
+  imports: [NgClass],
   standalone: true,
 })
 export class CodeEditorComponent
@@ -141,8 +137,6 @@ export class CodeEditorComponent
   readonly contentType = input<ContentType>();
 
   readonly readOnly = input<boolean>(false);
-
-  readonly markdownControls = input<boolean>(false);
 
   readonly autofocus = input<boolean>(false);
 
@@ -186,18 +180,6 @@ export class CodeEditorComponent
     });
   }
 
-  private getLanguageSupportForMimeType() {
-    switch (this.contentType()) {
-      case 'html':
-        return html().extension;
-      case 'json':
-        return json().extension;
-      case 'markdown':
-      default:
-        return markdownLanguageSupport;
-    }
-  }
-
   private getExtensions() {
     const textChangeHook = this.textChange;
 
@@ -216,6 +198,9 @@ export class CodeEditorComponent
       highlightSpecialChars(),
       foldGutter(),
       lineHighlightField,
+      decorateFirstLine,
+      decorateBlockquote,
+      decorateEmptyActiveLine,
       drawSelection(),
       EditorState.allowMultipleSelections.of(false),
       indentOnInput(),
@@ -233,11 +218,10 @@ export class CodeEditorComponent
         ...historyKeymap,
         ...foldKeymap,
         ...completionKeymap,
-        ...lintKeymap,
       ] as any),
       // defaultHighlightStyle,
       cursorTooltipField.extension,
-      // todo fix this this.getLanguageSupportForMimeType(),
+      // markdown(),
       // EditorView.updateListener.of((v) => {
       //   // console.log(v.transactions)
       //   // if (v.docChanged) {
@@ -245,6 +229,7 @@ export class CodeEditorComponent
       //   // }
       // }),
       EditorView.domEventHandlers({
+        keyup: (event, view) => {},
         click: (event, editorView) => {
           if (!event.ctrlKey) {
             return;
@@ -256,11 +241,11 @@ export class CodeEditorComponent
           const range = ranges[ranges.length - 1];
           if (range.from === range.to) {
             const node = syntaxTree(editorView.state).resolve(range.to).node;
-            if ([NODE_HASHTAG, NODE_LINK].includes(node.name)) {
-              const token = node.cursor(IterMode.ExcludeBuffers);
-              const query = editorView.state.sliceDoc(token.from, token.to);
-              this.triggerQuery.emit(query);
-            }
+            // todo if ([NODE_HASHTAG, NODE_LINK].includes(node.name)) {
+            //   const token = node.cursor(IterMode.ExcludeBuffers);
+            //   const query = editorView.state.sliceDoc(token.from, token.to);
+            //   this.triggerQuery.emit(query);
+            // }
           }
         },
       }),
@@ -282,10 +267,10 @@ export class CodeEditorComponent
           }
         },
       }),
-      theme,
+      codeEditorTheme,
       history({ minDepth: 100 }),
       checkboxDecorator,
-      markdownDecorator,
+      // markdownDecorator,
       urlDecorator,
       inlineImagePlugin,
       autocompletion({
@@ -295,44 +280,41 @@ export class CodeEditorComponent
         closeOnBlur: false,
         override: [
           async (context: CompletionContext): Promise<CompletionResult | null> => {
-            const firstToken = context.matchBefore(/[^ ]*/).text[0];
+            const token = context.matchBefore(/[^ ]*/).text[0];
             const node = syntaxTree(context.state).resolve(context.pos).node;
-            const token = node.cursor(IterMode.ExcludeBuffers);
-            console.log('autocomplete');
+            const cursor = node.cursor(IterMode.ExcludeBuffers);
+            // console.log('autocomplete', node);
+            const opToken = '@';
 
-            // if (true) {
-            //   return null;
-            // }
+            // if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
+            //   const query = context.state.sliceDoc(cursor.from, cursor.to);
+            //   const options = await this.autoSuggestionsProvider()(query, node.name);
+            //   return {
+            //     from: cursor.from,
+            //     filter: false,
+            //     options,
+            //   };
+            // } else {
+            if (token === opToken) {
+              const selection = context.state.wordAt(context.pos);
+              const resolveQuery = () => {
+                if (selection) {
+                  return context.state.sliceDoc(selection.from, selection.to);
+                } else {
+                  return '';
+                }
+              };
 
-            if ([NODE_HASHTAG, 'Link'].includes(node.name)) {
-              const query = context.state.sliceDoc(token.from, token.to);
-              const options = await this.autoSuggestionsProvider()(query, node.name);
+              const from = selection?.from || context.pos;
+
+              const options = await this.autoSuggestionsProvider()(resolveQuery(), node.name);
               return {
-                from: token.from,
+                from: from - 1,
                 filter: false,
                 options,
               };
-            } else {
-              if (firstToken === '/') {
-                const selection = context.state.wordAt(context.pos);
-                const resolveQuery = () => {
-                  if (selection) {
-                    return context.state.sliceDoc(selection.from, selection.to);
-                  } else {
-                    return '';
-                  }
-                };
-
-                const from = selection?.from || context.pos;
-
-                const options = await this.autoSuggestionsProvider()(resolveQuery(), node.name);
-                return {
-                  from: firstToken === '/' ? from - 1 : from,
-                  filter: false,
-                  options,
-                };
-              }
             }
+            // }
           },
         ],
       }),

@@ -95,6 +95,11 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
     event.stopPropagation();
   }
 
+  toggleExpanded(event: Event) {
+    this.handle().expanded = !this.handle().expanded;
+    event.stopPropagation();
+  }
+
   note(): Note {
     return this.handle().body;
   }

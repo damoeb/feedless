@@ -30,6 +30,7 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonMenu,
@@ -44,8 +45,6 @@ import {
 } from '@ionic/angular/standalone';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Extension } from '@codemirror/state';
-import { createNoteReferenceMarker } from './note-reference-marker';
-import { createNoteReferenceWidget } from './note-reference-widget';
 import { CodeEditorComponent } from '../../elements/code-editor/code-editor.component';
 import { UploadService } from '../../services/upload.service';
 import { AppConfigService } from '../../services/app-config.service';
@@ -83,6 +82,7 @@ import { BubbleComponent } from '../../components/bubble/bubble.component';
 import { SessionService } from '../../services/session.service';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
+import { createNoteReferenceWidget } from './note-reference.widget';
 
 export type EditorHandle = {
   note: Note;
@@ -151,6 +151,7 @@ export type NoteHandle = {
     NotebookSettingsComponent,
     IonMenuButton,
     CdkTreeNodeDef,
+    IonInput,
   ],
   standalone: true,
 })
@@ -174,10 +175,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   readonly searchbarElement = viewChild<TypeheadComponent>('searchbar');
   readonly codeEditorComponents = viewChildren(CodeEditorComponent);
 
-  extensions: Extension[] = [
-    createNoteReferenceMarker(this.notebookService),
-    createNoteReferenceWidget(this.notebookService),
-  ];
+  extensions: Extension[] = [createNoteReferenceWidget(this.notebookService)];
   protected notebook: Notebook;
   protected suggestions: TypeaheadSuggestion[] = [];
   protected autosafe = new FormControl<boolean>(true);
@@ -322,7 +320,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       // upVoteAnnotationId: upVoted?.id,
       formControl,
       subscriptions: [
-        formControl.valueChanges.pipe(debounceTime(400)).subscribe(async (text) => {
+        formControl.valueChanges.pipe(debounceTime(4000)).subscribe(async (text) => {
           if (editor.note.text != text) {
             editor.note.text = text;
             await this.updateNote(note);
@@ -448,7 +446,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       .map((part) => part.trim())
       .filter(Boolean);
     this.suggestions = await this.notebookService
-      .findAll(query, null, 5)
+      .findAll(query, 5)
       .then((notes) => notes.map((note) => this.toTypeaheadSuggestion(note, parts)));
     this.changeRef.detectChanges();
   }
