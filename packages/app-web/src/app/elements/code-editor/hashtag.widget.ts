@@ -11,7 +11,7 @@ import {
 const hashtagMatchDecoration = Decoration.mark({
   class: 'cm-hashtag',
   inclusive: true,
-  tagName: 'hashtag',
+  tagName: 'span',
 });
 
 const hashtagMatchDecorator = new MatchDecorator({

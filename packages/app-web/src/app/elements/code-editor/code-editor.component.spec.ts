@@ -9,15 +9,54 @@ describe('CodeEditorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AppTestModule.withDefaults(), CodeEditorComponent],
+      imports: [CodeEditorComponent, AppTestModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CodeEditorComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  function getRenderedContent(text: string) {
+    fixture.componentRef.setInput('text', text);
+    fixture.detectChanges();
+
+    const compiled = fixture.nativeElement as HTMLElement;
+    return compiled.querySelector('.cm-activeLine').innerHTML.trim();
+  }
+
+  it('renders checkbox', () => {
+    expect(getRenderedContent('[ ]')).toEqual(`<span class="cm-checkbox">[ ]</span>`);
   });
+
+  it('renders blockquote', () => {
+    expect(getRenderedContent('> blockquote')).toEqual(`<span class="cm-checkbox">[ ]</span>`);
+  });
+
+  it('renders hashtag', () => {
+    expect(getRenderedContent('#tag')).toEqual(`<span class="cm-hashtag">#tag</span>`);
+  });
+
+  it('renders transclude note', () => {
+    expect(getRenderedContent('actual note content ![other-note-id]')).toEqual(
+      `<span class="cm-hashtag">#tag</span>`
+    );
+  });
+
+  it('renders embed image', () => {
+    expect(getRenderedContent('!(Isolated.png "Title")')).toEqual(
+      `<span class="cm-hashtag">#tag</span>`
+    );
+  });
+
+  it('renders annotation', () => {
+    // expect(getRenderedContent('#tag')).toEqual(`<span class="cm-hashtag">#tag</span>`);
+  });
+
+  it('renders url', () => {
+    expect(getRenderedContent('http://example.com')).toEqual(
+      `<span class="cm-url">http://example.com</span>`
+    );
+  });
+
+  describe('markdown', () => {});
 });

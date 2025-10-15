@@ -10,7 +10,6 @@ import {
   output,
   SimpleChanges,
   viewChild,
-  ViewEncapsulation,
 } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
@@ -61,7 +60,6 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
-import { IonButton, IonButtons, IonIcon, IonToolbar } from '@ionic/angular/standalone';
 import { checkboxDecorator } from './checkbox.decorator';
 
 function getCursorTooltips(state: EditorState): readonly Tooltip[] {
@@ -119,7 +117,7 @@ export type AutoSuggestionsProvider = (query: string, type: string) => Promise<C
   selector: 'app-code-editor',
   templateUrl: './code-editor.component.html',
   styleUrls: ['./code-editor.component.scss'],
-  encapsulation: ViewEncapsulation.ShadowDom,
+  // encapsulation: ViewEncapsulation.ShadowDom,
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,
@@ -127,7 +125,7 @@ export type AutoSuggestionsProvider = (query: string, type: string) => Promise<C
       multi: true,
     },
   ],
-  imports: [IonToolbar, IonButtons, IonButton, IonIcon, NgClass],
+  imports: [NgClass],
   standalone: true,
 })
 export class CodeEditorComponent
@@ -141,8 +139,6 @@ export class CodeEditorComponent
   readonly contentType = input<ContentType>();
 
   readonly readOnly = input<boolean>(false);
-
-  readonly markdownControls = input<boolean>(false);
 
   readonly autofocus = input<boolean>(false);
 

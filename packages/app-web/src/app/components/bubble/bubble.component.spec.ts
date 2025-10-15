@@ -18,6 +18,9 @@ describe('BubbleComponent', () => {
   });
 
   it('should create', () => {
-    expect(component).toBeTruthy();
+    const compiled = fixture.nativeElement as HTMLElement;
+    expect(compiled.innerHTML.trim()).toEqual(
+      `<span class="bubble-wrapper"><span class="bubble blue"></span></span>`
+    );
   });
 });
