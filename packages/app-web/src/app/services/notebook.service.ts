@@ -33,6 +33,7 @@ import { isNullish } from '@apollo/client/cache/inmemory/helpers';
 import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
+import { ServerConfigService } from './server-config.service';
 
 export type CreateNoteParams = Partial<Pick<Note, 'title' | 'customId' | 'text' | 'parent'>>;
 
@@ -196,6 +197,7 @@ export class NotebookService {
   private readonly authGuard = inject(AuthGuardService);
   private readonly router = inject(Router);
   private readonly toastCtrl = inject(ToastController);
+  private readonly serverConfig = inject(ServerConfigService);
 
   private actions: AppAction[] = [
     {
@@ -228,22 +230,51 @@ export class NotebookService {
     this.filterInternalNotes = this.filterInternalNotes.bind(this);
   }
 
+  private async withOnline<T>(
+    online: () => Promise<T>,
+    offline: () => Promise<T>
+  ): Promise<T> {
+    try {
+      if (this.serverConfig.isConnected()) {
+        return await online();
+      }
+    } catch (e) {
+      // fall through to offline
+      console.warn('Online call failed, falling back to offline handler', e);
+    }
+    return offline();
+  }
+
   async createNotebook(name: string) {
     // await this.authGuard.assertLoggedIn();
     console.log('createNotebook');
 
-    const repository = (
-      await this.repositoryService.createRepositories([
-        {
+    const repository = await this.withOnline(
+      () =>
+        this.repositoryService
+          .createRepositories([
+            {
+              title: name,
+              description: '',
+              product: GqlVertical.UntoldNotes,
+              sources: [],
+              withShareKey: false,
+              visibility: GqlVisibility.IsPrivate,
+            },
+          ])
+          .then((r) => r[0]),
+      async () =>
+        ({
+          id: uuidv4(),
           title: name,
           description: '',
           product: GqlVertical.UntoldNotes,
           sources: [],
           withShareKey: false,
           visibility: GqlVisibility.IsPrivate,
-        },
-      ])
-    )[0];
+          lastUpdatedAt: new Date(0),
+        } as any)
+    );
     const notebook: Notebook = { ...repository, lastSyncedAt: new Date() };
 
     notebookRepository.notebooks.add(notebook);
@@ -631,7 +662,7 @@ export class NotebookService {
                 apply: template.templateValue,
               }));
             } else {
-              return [];
+              return [] as Completion[];
             }
           })
         )
@@ -685,16 +716,24 @@ export class NotebookService {
   private async init() {
     this.notebooks = await notebookRepository.notebooks.toArray();
     await this.authGuard.assertLoggedIn();
-    const remoteNotebooks = await this.repositoryService.listRepositories({
-      where: {
-        product: {
-          eq: GqlVertical.UntoldNotes,
-        },
-      },
-      cursor: {
-        page: 0,
-      },
-    });
+    const remoteNotebooks = await this.withOnline<
+      ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]
+    >(
+      () =>
+        this.repositoryService.listRepositories({
+          where: {
+            product: {
+              eq: GqlVertical.UntoldNotes,
+            },
+          },
+          cursor: {
+            page: 0,
+          },
+        }),
+      async (): Promise<
+        ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]
+      > => []
+    );
     console.log('remoteNotebooks', remoteNotebooks);
 
     const newRepositories = remoteNotebooks.filter(
