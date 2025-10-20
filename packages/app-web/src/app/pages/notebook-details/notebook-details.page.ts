@@ -10,7 +10,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { debounceTime, firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
+import { BehaviorSubject, debounceTime, firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
@@ -185,7 +185,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   shortcutValuePinned: NoteShortcutType = 'pinned';
   shortcutValueOff: NoteShortcutType = 'off';
 
-  treeRoots: Observable<NoteHandle[]> = from([]);
+  private treeRootsSubject = new BehaviorSubject<NoteHandle[]>([]);
+  treeRoots: Observable<NoteHandle[]> = this.treeRootsSubject.asObservable();
   private setSystemReady: (value: PromiseLike<void> | void) => void;
   private waitForReady: Promise<void> = new Promise((resolve) => (this.setSystemReady = resolve));
 
@@ -236,6 +237,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   ngOnDestroy(): void {
     this.unsubscribeEvents();
+    this.treeRootsSubject.complete();
   }
 
   private unsubscribeEvents(): void {
@@ -484,10 +486,14 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   private loadTree() {
     console.log('loadTree');
-    this.treeRoots = this.notebookService
+    const subscription = this.notebookService
       .findAllRoots()
-      .pipe(map((roots) => roots.map(this.toNoteHandle(0))));
-    this.changeRef.detectChanges();
+      .pipe(map((roots) => roots.map(this.toNoteHandle(0))))
+      .subscribe((roots) => {
+        this.treeRootsSubject.next(roots);
+        this.changeRef.detectChanges();
+      });
+    this.subscriptions.push(subscription);
   }
 
   private toNoteHandle(level: number): (note: Note) => NoteHandle {
