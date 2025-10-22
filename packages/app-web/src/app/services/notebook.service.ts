@@ -59,6 +59,7 @@ export type NotebookAction = {
 
 export type NoteHandle = {
   body: Note;
+  body$: () => Observable<Note>;
   expanded: boolean;
   disabled: boolean;
   level: number;
@@ -181,6 +182,8 @@ export const defaultSettings: NotebookSettings = {
     style: 'one-document',
   },
 };
+
+type NoteHandleProvider = (note: Note) => NoteHandle;
 
 export type NoteId = string;
 
@@ -380,11 +383,6 @@ export class NotebookService {
     this.notesChanges.next({ a: note.id, b: ChangeModifier.create });
     await this.recordService.createRecords([this.covertNoteToRecord(note)]);
 
-    if (params.parent) {
-      const parentNote = await this.findById(params.parent);
-      await this.updateNote(parentNote, true);
-    }
-
     // this.findAllAsync(title);
     if (triggerOpen) {
       this.openNote(this.toNoteHandle(0)(note));
@@ -560,7 +558,7 @@ export class NotebookService {
   }
 
   async updateNote(noteHandle: NoteHandle, syncOnly: boolean = false) {
-    this.updateNoteInternal(noteHandle.body, syncOnly);
+    return this.updateNoteInternal(noteHandle.body, syncOnly);
   }
 
   private async updateNoteInternal(note: Note, syncOnly: boolean = false) {
@@ -572,14 +570,14 @@ export class NotebookService {
     const reLink = /\[([^\]]+)\]/g;
     const reHashtag = /(#[^ \n\t]+)/g;
 
-    function extractByRegExp(re: RegExp): string[] {
+    const extractByRegExp = (re: RegExp): string[] => {
       let m: RegExpExecArray | null;
       const matches = [];
       while ((m = re.exec(note.text))) {
         matches.push(m[1]);
       }
       return matches;
-    }
+    };
 
     if (!syncOnly) {
       note.updatedAt = new Date();
@@ -761,6 +759,16 @@ export class NotebookService {
       this.notebooks = await notebookRepository.notebooks.toArray();
     }
 
+    // notebookRepository.notes.toArray().then((notes) => {
+    //   notes.forEach((note) => {
+    //     convertToRx(
+    //       liveQuery(() => {
+    //         return notebookRepository.notes.get(note.id);
+    //       })
+    //     ).subscribe((note) => console.log('changed', note.title));
+    //   });
+    // });
+
     this.notebooksChanges.next(this.notebooks);
     this.initActions();
   }
@@ -851,10 +859,11 @@ export class NotebookService {
     }, 100);
   };
 
-  private toNoteHandle(level: number): (note: Note) => NoteHandle {
+  private toNoteHandle(level: number): NoteHandleProvider {
     return (note: Note): NoteHandle => {
       return {
         body: note,
+        body$: () => convertToRx(liveQuery(() => notebookRepository.notes.get(note.id))),
         expanded: true,
         disabled: false,
         level,
@@ -868,7 +877,10 @@ export class NotebookService {
           this.updateNoteInternal(note);
         },
         children: () => {
-          return zip([this.findAllChildren(note.id), from(this.findByIdInternal(note.id))]).pipe(
+          return zip([
+            this.findAllChildren(note.id, note.title),
+            from(this.findByIdInternal(note.id)),
+          ]).pipe(
             map(([notes, note]) => {
               const embeddedIds = note.references.links;
               return orderBy(
@@ -911,22 +923,23 @@ export class NotebookService {
     };
   }
 
-  findAllChildren(id: string): Observable<Note[]> {
-    const children$ = this.findAllChildrenById(id);
+  findAllChildren(id: string, title: string = null): Observable<Note[]> {
+    const children$ = this.findAllChildrenById(id, title);
     return children$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
   }
 
-  private findAllChildrenById(id: string): Observable<Note[]> {
-    return convertToRx<Note[]>(
-      liveQuery(() =>
-        notebookRepository.notes
-          .where('parent')
-          .equals(id)
-          .filter((note) => note.repositoryId === this.currentRepositoryId)
-          .limit(100)
-          .toArray()
-      )
+  private findAllChildrenById(id: string, title: string = null): Observable<Note[]> {
+    const findAllChildrenById = liveQuery(() =>
+      notebookRepository.notes
+        .where('parent')
+        .equals(id)
+        .filter((note) => note.repositoryId === this.currentRepositoryId)
+        .toArray()
     );
+    findAllChildrenById.subscribe((notes) =>
+      console.log(`${id} ${title} findAllChildrenById`, notes)
+    );
+    return convertToRx<Note[]>(findAllChildrenById);
   }
 
   countChildren(id: string): Observable<number> {

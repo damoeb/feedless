@@ -309,7 +309,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
       // upVoteAnnotationId: upVoted?.id,
       formControl,
       subscriptions: [
-        formControl.valueChanges.pipe(debounceTime(4000)).subscribe(async (text) => {
+        formControl.valueChanges.pipe(debounceTime(100)).subscribe(async (text) => {
           if (editor.note.text != text) {
             editor.note.text = text;
             await this.notebookService.updateNote(noteHandle);

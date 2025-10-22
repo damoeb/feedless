@@ -2,23 +2,24 @@ import {
   ChangeDetectionStrategy,
   ChangeDetectorRef,
   Component,
+  computed,
   inject,
   input,
   OnDestroy,
   OnInit,
 } from '@angular/core';
 import { Note, NotebookService, NoteHandle, NoteId } from '../../services/notebook.service';
-import { NgClass } from '@angular/common';
+import { AsyncPipe, NgClass } from '@angular/common';
 import { createNoteHandleId } from '../../pages/notebook-details/notebook-details.page';
 import { relativeTimeOrElse } from '../agents/agents.component';
-import { Subscription } from 'rxjs';
+import { map, Observable, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-note-details',
   templateUrl: './note-details.component.html',
   styleUrls: ['./note-details.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [NgClass],
+  imports: [NgClass, AsyncPipe],
   standalone: true,
 })
 export class NoteDetailsComponent implements OnInit, OnDestroy {
@@ -30,6 +31,11 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   isMove: boolean = false;
   private subscriptions: Subscription[] = [];
   private noteIdMoved: NoteId;
+  readonly title = computed(() =>
+    this.handle()
+      .body$()
+      .pipe(map((note) => note.title))
+  );
 
   constructor() {}
 
@@ -102,6 +108,10 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
 
   note(): Note {
     return this.handle().body;
+  }
+
+  note$(): Observable<Note> {
+    return this.handle().body$();
   }
 
   changeAgo() {
