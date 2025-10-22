@@ -8,9 +8,8 @@ import {
   ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { NotebookService } from '../../services/notebook.service';
+import { NotebookService, NoteHandle } from '../../services/notebook.service';
 import { firstValueFrom } from 'rxjs';
-import { NoteHandle } from './notebook-details.page';
 
 export function createNoteReferenceWidget(notebookService: NotebookService) {
   class NoteLinkWidget extends WidgetType {

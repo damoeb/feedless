@@ -7,9 +7,9 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Note, NotebookService, NoteId } from '../../services/notebook.service';
+import { Note, NotebookService, NoteHandle, NoteId } from '../../services/notebook.service';
 import { NgClass } from '@angular/common';
-import { createNoteHandleId, NoteHandle } from '../../pages/notebook-details/notebook-details.page';
+import { createNoteHandleId } from '../../pages/notebook-details/notebook-details.page';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { Subscription } from 'rxjs';
 

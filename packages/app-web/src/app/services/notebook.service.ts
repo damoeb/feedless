@@ -35,7 +35,7 @@ import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
 import { ServerConfigService } from './server-config.service';
-import { createNoteHandleId, NoteHandle } from '../pages/notebook-details/notebook-details.page';
+import { createNoteHandleId } from '../pages/notebook-details/notebook-details.page';
 
 export type CreateNoteParams = Partial<Pick<Note, 'title' | 'customId' | 'text' | 'parent'>>;
 
@@ -55,6 +55,17 @@ export enum NotebookActionId {
 export type NotebookAction = {
   id: NotebookActionId;
   label: string;
+};
+
+export type NoteHandle = {
+  body: Note;
+  expanded: boolean;
+  disabled: boolean;
+  level: number;
+  childrenCount: () => Observable<number>;
+  scrollTo: (event: MouseEvent) => void;
+  children: () => Observable<NoteHandle[]>;
+  toggleUpvote: () => void;
 };
 
 export type Hashtag = string;

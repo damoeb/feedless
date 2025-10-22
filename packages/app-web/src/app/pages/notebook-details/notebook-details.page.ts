@@ -17,6 +17,7 @@ import {
   Notebook,
   NotebookService,
   NotebookSettings,
+  NoteHandle,
   NoteShortcutType,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
@@ -94,17 +95,6 @@ enum Focussable {
   editor,
   searchbar,
 }
-
-export type NoteHandle = {
-  body: Note;
-  expanded: boolean;
-  disabled: boolean;
-  level: number;
-  childrenCount: () => Observable<number>;
-  scrollTo: (event: MouseEvent) => void;
-  children: () => Observable<NoteHandle[]>;
-  toggleUpvote: () => void;
-};
 
 @Component({
   selector: 'app-notebook-details-page',
@@ -434,7 +424,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   async searchNotes(query: string) {
     await this.waitForReady;
-    console.log('?', query);
     const parts = query
       .split(' ')
       .map((part) => part.trim())
