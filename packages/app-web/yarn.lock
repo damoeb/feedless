@@ -5994,12 +5994,10 @@ dexie-observable@^4.0.1-beta.13:
   resolved "https://registry.yarnpkg.com/dexie-observable/-/dexie-observable-4.0.1-beta.13.tgz#6b311222ad9ec612140c119f4f660a93d46a8c43"
   integrity sha512-axmgPk7yjoPwj+0DdQIE5s1MBXi+6XcIFIjBKdQAmSGpsLQSth/LHvMOQ3q3Wj6pwIE5hqIxg2GL75sVqQbhEw==
 
-dexie@^3.2.5:
-  version "3.2.5"
-  resolved "https://registry.yarnpkg.com/dexie/-/dexie-3.2.5.tgz#f68e34b98e0e5e3412cf86b540a2cc6cbf9b0266"
-  integrity sha512-MA7vYQvXxWN2+G50D0GLS4FqdYUyRYQsN0FikZIVebOmRoNCSCL9+eUbIF80dqrfns3kmY+83+hE2GN9CnAGyA==
-  dependencies:
-    karma-safari-launcher "^1.0.0"
+dexie@^4.2.1:
+  version "4.2.1"
+  resolved "https://registry.yarnpkg.com/dexie/-/dexie-4.2.1.tgz#70d111ae8d2dabf53f424fca79f6f918c407e6db"
+  integrity sha512-Ckej0NS6jxQ4Po3OrSQBFddayRhTCic2DoCAG5zacOfOVB9P2Q5Xc5uL/nVa7ZVs+HdMnvUPzLFCB/JwpB6Csg==
 
 diff-sequences@^29.6.3:
   version "29.6.3"
@@ -8974,11 +8972,6 @@ jwt-decode@4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/jwt-decode/-/jwt-decode-4.0.0.tgz#2270352425fd413785b2faf11f6e755c5151bd4b"
   integrity sha512-+KJGIyHgkGuIq3IEBNftfhW/LfWhXUIY6OmyVWjliu5KH1y0fw7VQ8YndE2O4qZdMSd9SqbnC8GOcZEy0Om7sA==
-
-karma-safari-launcher@^1.0.0:
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/karma-safari-launcher/-/karma-safari-launcher-1.0.0.tgz#96982a2cc47d066aae71c553babb28319115a2ce"
-  integrity sha512-qmypLWd6F2qrDJfAETvXDfxHvKDk+nyIjpH9xIeI3/hENr0U3nuqkxaftq73PfXZ4aOuOChA6SnLW4m4AxfRjQ==
 
 keyv@^4.5.4:
   version "4.5.4"

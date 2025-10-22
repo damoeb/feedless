@@ -10,7 +10,7 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { BehaviorSubject, debounceTime, firstValueFrom, from, map, Observable, Subscription, zip } from 'rxjs';
+import { debounceTime, firstValueFrom, from, Observable, Subscription } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
@@ -20,7 +20,7 @@ import {
   NoteShortcutType,
 } from '../../services/notebook.service';
 import { ActivatedRoute, Params, Router, RouterLink } from '@angular/router';
-import { isString, orderBy } from 'lodash-es';
+import { isString } from 'lodash-es';
 import {
   AlertController,
   IonAccordion,
@@ -30,7 +30,6 @@ import {
   IonContent,
   IonHeader,
   IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
   IonMenu,
@@ -151,7 +150,6 @@ export type NoteHandle = {
     NotebookSettingsComponent,
     IonMenuButton,
     CdkTreeNodeDef,
-    IonInput,
   ],
   standalone: true,
 })
@@ -185,15 +183,13 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   shortcutValuePinned: NoteShortcutType = 'pinned';
   shortcutValueOff: NoteShortcutType = 'off';
 
-  private treeRootsSubject = new BehaviorSubject<NoteHandle[]>([]);
-  treeRoots: Observable<NoteHandle[]> = this.treeRootsSubject.asObservable();
+  treeRoots$: Observable<NoteHandle[]>;
   private setSystemReady: (value: PromiseLike<void> | void) => void;
   private waitForReady: Promise<void> = new Promise((resolve) => (this.setSystemReady = resolve));
 
   constructor() {
     this.searchNotes = this.searchNotes.bind(this);
     this.childrenAccessor = this.childrenAccessor.bind(this);
-    this.toNoteHandle = this.toNoteHandle.bind(this);
     this.loadAutoSuggestions = this.loadAutoSuggestions.bind(this);
     this.trackByFn = this.trackByFn.bind(this);
     addIcons({
@@ -230,14 +226,14 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
         this.changeRef.detectChanges();
       }),
-      this.notebookService.openNoteChanges.subscribe((note) => this.openNote(note)),
-      this.notebookService.notesChanges.asObservable().subscribe(() => this.loadTree())
+      this.notebookService.openNoteChanges.subscribe((note) => this.openNote(note))
+      // this.notebookService.notesChanges.asObservable().subscribe(() => this.loadTree())
     );
   }
 
   ngOnDestroy(): void {
     this.unsubscribeEvents();
-    this.treeRootsSubject.complete();
+    // this.treeRootsSubject.complete();
   }
 
   private unsubscribeEvents(): void {
@@ -313,19 +309,20 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     }
   }
 
-  async openNote(note: Note) {
+  async openNote(noteHandle: NoteHandle) {
+    const note: Note = noteHandle.body;
     console.log('openNote', note.title);
     const formControl = new FormControl(note.text);
     const editor: EditorHandle = {
       note,
-      noteHandle: this.toNoteHandle(0)(note),
+      noteHandle,
       // upVoteAnnotationId: upVoted?.id,
       formControl,
       subscriptions: [
         formControl.valueChanges.pipe(debounceTime(4000)).subscribe(async (text) => {
           if (editor.note.text != text) {
             editor.note.text = text;
-            await this.updateNote(note);
+            await this.notebookService.updateNote(noteHandle);
           }
 
           formControl.markAsPristine();
@@ -369,8 +366,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   async createNoteByParent(parent: Nullable<string> = null) {
-    const note = await this.notebookService.createNote({ parent }, true);
-    return this.openNote(note);
+    await this.notebookService.createNote({ parent }, true);
   }
 
   // deleteCurrentNote() {
@@ -436,10 +432,6 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   //   await this.updateNote(note);
   // }
 
-  private async updateNote(note: Note) {
-    await this.notebookService.updateNote(note);
-  }
-
   async searchNotes(query: string) {
     await this.waitForReady;
     console.log('?', query);
@@ -481,58 +473,20 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   trackByFn(index: number, item: NoteHandle) {
-    return item.body.id;
+    return item.body.id + Math.random();
   }
 
-  private loadTree() {
-    console.log('loadTree');
-    const subscription = this.notebookService
-      .findAllRoots()
-      .pipe(map((roots) => roots.map(this.toNoteHandle(0))))
-      .subscribe((roots) => {
-        this.treeRootsSubject.next(roots);
-        this.changeRef.detectChanges();
-      });
-    this.subscriptions.push(subscription);
-  }
-
-  private toNoteHandle(level: number): (note: Note) => NoteHandle {
-    return (note: Note): NoteHandle => {
-      return {
-        body: note,
-        expanded: true,
-        disabled: false,
-        level,
-        scrollTo: (event) => {
-          this.scrollTo(note);
-          event.stopPropagation();
-        },
-        childrenCount: () => this.notebookService.countChildren(note.id),
-        toggleUpvote: () => {
-          note.isUpVoted = !note.isUpVoted;
-          this.notebookService.updateNote(note);
-        },
-        children: () => {
-          return zip([
-            this.notebookService.findAllChildren(note.id),
-            from(this.notebookService.findById(note.id)),
-          ]).pipe(
-            map(([notes, note]) => {
-              const embeddedIds = note.references.links;
-              return orderBy(
-                notes.map(this.toNoteHandle(level + 1)),
-                [
-                  (noteHandle) => embeddedIds.indexOf(noteHandle.body.id),
-                  (noteHandle) => noteHandle.body.createdAt,
-                ],
-                ['asc', 'asc']
-              );
-            })
-          );
-        },
-      };
-    };
-  }
+  // private loadTree() {
+  //   console.log('loadTree');
+  //   const subscription = this.notebookService
+  //     .findAllRoots()
+  //     .pipe(map((roots) => roots.map(this.toNoteHandle(0))))
+  //     .subscribe((roots) => {
+  //       this.treeRootsSubject.next(roots);
+  //       this.changeRef.detectChanges();
+  //     });
+  //   this.subscriptions.push(subscription);
+  // }
 
   childrenAccessor(node: NoteHandle): Observable<NoteHandle[]> {
     return node.children();
@@ -575,19 +529,13 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   }
 
   private async handleShortcutValue(value: NoteShortcutType) {
-    const toShortcutHandle = (notes: Note[]): NoteHandle[] =>
-      notes.map<NoteHandle>((note) => this.toNoteHandle(0)(note));
     const settings = await firstValueFrom(this.notebookService.getSettingsOrDefault());
     switch (value) {
       case 'pinned':
-        this.shortcuts$ = this.notebookService
-          .findAllPinned(settings.shortcuts.limit)
-          .pipe(map(toShortcutHandle));
+        this.shortcuts$ = this.notebookService.findAllPinned(settings.shortcuts.limit);
         break;
       case 'recent':
-        this.shortcuts$ = this.notebookService
-          .findAllRecent(settings.shortcuts.limit)
-          .pipe(map(toShortcutHandle));
+        this.shortcuts$ = this.notebookService.findAllRecent(settings.shortcuts.limit);
         break;
     }
   }
@@ -600,7 +548,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private async onReady() {
     this.setSystemReady();
     await this.initShortcuts();
-    this.loadTree();
+    this.treeRoots$ = this.notebookService.findAllRoots();
 
     this.sessionService.setColorScheme(await this.hasSettingsValue('general.darkMode', true));
 

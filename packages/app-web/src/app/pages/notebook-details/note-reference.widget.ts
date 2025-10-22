@@ -8,8 +8,9 @@ import {
   ViewUpdate,
   WidgetType,
 } from '@codemirror/view';
-import { Note, NotebookService } from '../../services/notebook.service';
+import { NotebookService } from '../../services/notebook.service';
 import { firstValueFrom } from 'rxjs';
+import { NoteHandle } from './notebook-details.page';
 
 export function createNoteReferenceWidget(notebookService: NotebookService) {
   class NoteLinkWidget extends WidgetType {
@@ -38,12 +39,12 @@ export function createNoteReferenceWidget(notebookService: NotebookService) {
     }
 
     private async init() {
-      const notes = await firstValueFrom(notebookService.findByCustomId(this.customId));
-      const note: Note = notes.length > 0 ? notes[0] : null;
-      if (note) {
+      const noteHandles = await firstValueFrom(notebookService.findByCustomId(this.customId));
+      const noteHandle: NoteHandle = noteHandles.length > 0 ? noteHandles[0] : null;
+      if (noteHandle) {
         this.classNames.push('note-link note-link--valid');
-        this.widgetLink.textContent = note.title.trim() || 'Open';
-        this.widgetLink.addEventListener('click', () => notebookService.openNote(note));
+        this.widgetLink.textContent = noteHandle.body.title.trim() || 'Open';
+        this.widgetLink.addEventListener('click', () => notebookService.openNote(noteHandle));
       } else {
         this.classNames.push('note-link note-link--invalid');
         this.widgetLink.textContent = 'Create';

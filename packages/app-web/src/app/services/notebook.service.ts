@@ -2,6 +2,7 @@ import { inject, Injectable } from '@angular/core';
 import {
   firstValueFrom,
   forkJoin,
+  from,
   map,
   Observable,
   of,
@@ -12,7 +13,7 @@ import {
 } from 'rxjs';
 import { Document } from 'flexsearch';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
-import { get, map as mapObj, slice, uniq } from 'lodash-es';
+import { get, map as mapObj, orderBy, slice, uniq } from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { Router } from '@angular/router';
 import { Completion } from '@codemirror/autocomplete';
@@ -34,6 +35,7 @@ import { liveQuery, Observable as DexieObservable } from 'dexie';
 import { EditorView } from '@codemirror/view';
 import { translations } from '../products/untold-notes/untold-notes-product.translations';
 import { ServerConfigService } from './server-config.service';
+import { createNoteHandleId, NoteHandle } from '../pages/notebook-details/notebook-details.page';
 
 export type CreateNoteParams = Partial<Pick<Note, 'title' | 'customId' | 'text' | 'parent'>>;
 
@@ -62,7 +64,6 @@ export type Note = ArrayElement<GqlFullRecordByIdsQuery['records']> & {
     hashtags: Hashtag[];
     links: string[];
   };
-  childrenCount?: number;
   pos?: number; // todo allow sorting
   parent?: string | undefined;
   customId: string;
@@ -217,7 +218,7 @@ export class NotebookService {
   moveStartChanges = new ReplaySubject<NoteId>(1);
   moveEndChanges = new ReplaySubject<NoteId>(1);
   notebooksChanges = new ReplaySubject<Notebook[]>(1);
-  openNoteChanges = new ReplaySubject<Note>(1);
+  openNoteChanges = new ReplaySubject<NoteHandle>(1);
   closeNoteChanges = new ReplaySubject<Note>(1);
   notesChanges = new ReplaySubject<Tuple<NoteId, ChangeModifier>>(1);
   systemBusyChanges = new ReplaySubject<boolean>(1);
@@ -230,10 +231,7 @@ export class NotebookService {
     this.filterInternalNotes = this.filterInternalNotes.bind(this);
   }
 
-  private async withOnline<T>(
-    online: () => Promise<T>,
-    offline: () => Promise<T>
-  ): Promise<T> {
+  private async withOnline<T>(online: () => Promise<T>, offline: () => Promise<T>): Promise<T> {
     try {
       if (this.serverConfig.isConnected()) {
         return await online();
@@ -273,7 +271,7 @@ export class NotebookService {
           withShareKey: false,
           visibility: GqlVisibility.IsPrivate,
           lastUpdatedAt: new Date(0),
-        } as any)
+        }) as any
     );
     const notebook: Notebook = { ...repository, lastSyncedAt: new Date() };
 
@@ -378,7 +376,7 @@ export class NotebookService {
 
     // this.findAllAsync(title);
     if (triggerOpen) {
-      this.openNote(note);
+      this.openNote(this.toNoteHandle(0)(note));
     }
     return note;
   }
@@ -399,7 +397,7 @@ export class NotebookService {
     return switchMap((notes: Note[]) =>
       forkJoin(
         notes.map((note) => {
-          return of({ ...note, childrenCount: 0 });
+          return of(note);
           // return this.findAllChildrenById(note.id).pipe(
           //   map((children) => ({
           //     ...note,
@@ -450,7 +448,7 @@ export class NotebookService {
       );
 
       const upSyncChanged = notes.filter((note) => note.updatedAt > notebook.lastSyncedAt);
-      await Promise.all(upSyncChanged.map((note) => this.updateNote(note)));
+      await Promise.all(upSyncChanged.map((note) => this.updateNoteInternal(note)));
 
       // sync down
       try {
@@ -550,7 +548,11 @@ export class NotebookService {
     // });
   }
 
-  async updateNote(note: Note, syncOnly: boolean = false) {
+  async updateNote(noteHandle: NoteHandle, syncOnly: boolean = false) {
+    this.updateNoteInternal(noteHandle.body, syncOnly);
+  }
+
+  private async updateNoteInternal(note: Note, syncOnly: boolean = false) {
     note.title =
       note.text
         .trimStart()
@@ -730,9 +732,7 @@ export class NotebookService {
             page: 0,
           },
         }),
-      async (): Promise<
-        ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]
-      > => []
+      async (): Promise<ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]> => []
     );
     console.log('remoteNotebooks', remoteNotebooks);
 
@@ -765,7 +765,11 @@ export class NotebookService {
     );
   }
 
-  findById(noteId: string): Promise<Note> {
+  findById(noteId: string): Promise<NoteHandle> {
+    return this.findByIdInternal(noteId).then((note) => this.toNoteHandle(0)(note));
+  }
+
+  private findByIdInternal(noteId: string): Promise<Note> {
     const resultGroups = this.index.search({
       query: noteId,
       index: ['id'],
@@ -773,18 +777,14 @@ export class NotebookService {
     });
 
     if (resultGroups.length > 0) {
-      return this.getById(`${resultGroups[0].result[0]}`);
+      return notebookRepository.notes.get(noteId);
     }
-  }
-
-  getById(noteId: string) {
-    return notebookRepository.notes.get(noteId);
   }
 
   async openNoteById(noteId: string) {
     const note = await notebookRepository.notes.get(`${noteId}`);
     if (note) {
-      this.openNote(note);
+      this.openNote(this.toNoteHandle(0)(note));
     } else {
       await this.showToast(`No note with ID ${noteId} found.`, 'warning');
     }
@@ -801,8 +801,8 @@ export class NotebookService {
     await toast.present();
   }
 
-  openNote(note: Note) {
-    this.openNoteChanges.next(note);
+  openNote(noteHandle: NoteHandle) {
+    this.openNoteChanges.next(noteHandle);
   }
 
   async deleteById(id: string) {
@@ -825,7 +825,7 @@ export class NotebookService {
 
     if (note.parent) {
       const parent = await notebookRepository.notes.get(note.parent);
-      await this.updateNote(parent);
+      await this.updateNoteInternal(parent);
     }
   }
 
@@ -833,7 +833,49 @@ export class NotebookService {
     notebookRepository.notes.clear();
   }
 
-  findAllRoots(): Observable<Note[]> {
+  private scrollTo = (note: Note) => {
+    setTimeout(() => {
+      const noteHandle = document.getElementById(createNoteHandleId(note));
+      noteHandle?.scrollIntoView({ behavior: 'smooth' });
+    }, 100);
+  };
+
+  private toNoteHandle(level: number): (note: Note) => NoteHandle {
+    return (note: Note): NoteHandle => {
+      return {
+        body: note,
+        expanded: true,
+        disabled: false,
+        level,
+        scrollTo: (event) => {
+          this.scrollTo(note);
+          event.stopPropagation();
+        },
+        childrenCount: () => this.countChildren(note.id),
+        toggleUpvote: () => {
+          note.isUpVoted = !note.isUpVoted;
+          this.updateNoteInternal(note);
+        },
+        children: () => {
+          return zip([this.findAllChildren(note.id), from(this.findByIdInternal(note.id))]).pipe(
+            map(([notes, note]) => {
+              const embeddedIds = note.references.links;
+              return orderBy(
+                notes.map(this.toNoteHandle(level + 1)),
+                [
+                  (noteHandle) => embeddedIds.indexOf(noteHandle.body.id),
+                  (noteHandle) => noteHandle.body.createdAt,
+                ],
+                ['asc', 'asc']
+              );
+            })
+          );
+        },
+      };
+    };
+  }
+
+  findAllRoots(): Observable<NoteHandle[]> {
     const roots$ = convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
@@ -844,7 +886,10 @@ export class NotebookService {
       )
     );
 
-    return roots$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
+    return roots$
+      .pipe(this.filterInternalNotes$())
+      .pipe(this.attachChildCount$())
+      .pipe(map((roots) => roots.map(this.toNoteHandle(0))));
   }
 
   private toIndexDocument(note: Note): NoteDocument {
@@ -856,7 +901,6 @@ export class NotebookService {
   }
 
   findAllChildren(id: string): Observable<Note[]> {
-    console.log('findAllChildren', id);
     const children$ = this.findAllChildrenById(id);
     return children$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
   }
@@ -921,7 +965,7 @@ export class NotebookService {
     );
   }
 
-  findAllRecent(limit: number): Observable<Note[]> {
+  findAllRecent(limit: number): Observable<NoteHandle[]> {
     return convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
@@ -932,10 +976,10 @@ export class NotebookService {
             slice(notes.filter((note) => note.title !== this.notebookJsonName).reverse(), 0, limit)
           )
       )
-    );
+    ).pipe(map((roots) => roots.map(this.toNoteHandle(0))));
   }
 
-  findAllPinned(limit: number): Observable<Note[]> {
+  findAllPinned(limit: number): Observable<NoteHandle[]> {
     return convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
@@ -944,7 +988,7 @@ export class NotebookService {
           .sortBy('updatedAt')
           .then((notes) => slice(notes.filter((note) => note.isUpVoted).reverse(), 0, limit))
       )
-    );
+    ).pipe(map((roots) => roots.map(this.toNoteHandle(0))));
   }
 
   private createNoteId(): Promise<string> {
@@ -970,13 +1014,10 @@ export class NotebookService {
   }
 
   async changeParentById(noteId: string, parentId: string) {
-    const note = await this.findById(noteId);
-    const parentBefore = await this.findById(note.parent);
+    const noteHandle = await this.findById(noteId);
+    const note = noteHandle.body;
     note.parent = parentId;
-    await this.updateNote(note);
-    await this.updateNote(parentBefore, true);
-    const parentAfter = await this.findById(parentId);
-    await this.updateNote(parentAfter, true);
+    await this.updateNoteInternal(note);
     this.moveEndChanges.next(noteId);
   }
 
@@ -984,7 +1025,7 @@ export class NotebookService {
     return note.text.replace(/[ \n\t#]+/g, '').length === 0;
   }
 
-  findByCustomId(customId: string) {
+  findByCustomId(customId: string): Observable<NoteHandle[]> {
     return convertToRx<Note[]>(
       liveQuery(() =>
         notebookRepository.notes
@@ -993,7 +1034,7 @@ export class NotebookService {
           .filter((note) => note.customId === customId)
           .toArray()
       )
-    );
+    ).pipe(map((roots) => roots.map(this.toNoteHandle(0))));
   }
 }
 
