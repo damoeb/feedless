@@ -2,7 +2,6 @@ import { inject, Injectable } from '@angular/core';
 import {
   firstValueFrom,
   forkJoin,
-  from,
   map,
   Observable,
   of,
@@ -784,20 +783,12 @@ export class NotebookService {
     );
   }
 
-  findById(noteId: string): Promise<NoteHandle> {
-    return this.findByIdInternal(noteId).then((note) => this.toNoteHandle(0)(note));
+  findById(noteId: string): Observable<NoteHandle> {
+    return this.findByIdInternal(noteId).pipe(map((note) => this.toNoteHandle(0)(note)));
   }
 
-  private findByIdInternal(noteId: string): Promise<Note> {
-    const resultGroups = this.index.search({
-      query: noteId,
-      index: ['id'],
-      limit: 1,
-    });
-
-    if (resultGroups.length > 0) {
-      return notebookRepository.notes.get(noteId);
-    }
+  private findByIdInternal(noteId: string): Observable<Note> {
+    return convertToRx(liveQuery(() => notebookRepository.notes.get(noteId)));
   }
 
   async openNoteById(noteId: string) {
@@ -879,7 +870,7 @@ export class NotebookService {
         children: () => {
           return zip([
             this.findAllChildren(note.id, note.title),
-            from(this.findByIdInternal(note.id)),
+            this.findByIdInternal(note.id),
           ]).pipe(
             map(([notes, note]) => {
               const embeddedIds = note.references.links;
@@ -1038,7 +1029,7 @@ export class NotebookService {
   }
 
   async changeParentById(noteId: string, parentId: string) {
-    const noteHandle = await this.findById(noteId);
+    const noteHandle = await firstValueFrom(this.findById(noteId));
     const note = noteHandle.body;
     note.parent = parentId;
     await this.updateNoteInternal(note);

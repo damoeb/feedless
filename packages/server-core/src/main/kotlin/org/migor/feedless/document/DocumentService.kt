@@ -62,10 +62,6 @@ import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 
-data class DocumentId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
-
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.document} & ${AppLayer.service}")

@@ -161,6 +161,9 @@ type Mutation {
   createAnnotation(data: CreateAnnotationInput!): Annotation!
   deleteAnnotation(data: DeleteAnnotationInput!): Boolean!
 
+  createAttachment(data: CreateAttachmentInput!): Attachment!
+  deleteAttachment(data: DeleteAttachmentInput!): Boolean!
+
   updateConnectedApp(id: String!, authorize: Boolean!): Boolean
   deleteConnectedApp(id: String!): Boolean
 
@@ -307,6 +310,10 @@ input DeleteAnnotationInput {
   where: AnnotationWhereUniqueInput!
 }
 
+input DeleteAttachmentInput {
+  where: AttachmentWhereUniqueInput!
+}
+
 input AnnotationWhereUniqueInput {
   id: String!
 }
@@ -314,6 +321,16 @@ input AnnotationWhereUniqueInput {
 input CreateAnnotationInput {
   where: AnnotationWhereInput!
   annotation: OneOfAnnotationInput!
+}
+
+input CreateAttachmentInput {
+  where: RecordUniqueWhereInput!
+  attachment: CreateAttachmentFieldsInput!
+}
+
+input CreateAttachmentFieldsInput {
+  data: Upload!
+  name: String!
 }
 
 input AnnotationWhereInput {
@@ -1487,6 +1504,10 @@ input VisibilityUpdateOperationsInput {
 }
 
 input RecordUniqueWhereInput {
+  id: ID!
+}
+
+input AttachmentWhereUniqueInput {
   id: ID!
 }
 

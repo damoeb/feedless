@@ -292,7 +292,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         async () => {
           if (params.noteId) {
             const noteId = decodeURIComponent(params.noteId);
-            await this.openNote(await this.notebookService.findById(noteId));
+            let noteHandle = await firstValueFrom(this.notebookService.findById(noteId));
+            await this.openNote(noteHandle);
           }
         }
       );
@@ -456,7 +457,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   async pickSuggestionOrQuery(suggestionOrQuery: TypeaheadSuggestion | string) {
     if (isString(suggestionOrQuery)) {
     } else {
-      const note = await this.notebookService.findById(suggestionOrQuery.id);
+      const note = await firstValueFrom(this.notebookService.findById(suggestionOrQuery.id));
       await this.openNote(note);
     }
   }
