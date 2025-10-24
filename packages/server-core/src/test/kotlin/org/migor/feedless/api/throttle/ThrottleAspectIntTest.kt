@@ -64,7 +64,7 @@ import kotlin.time.Duration.Companion.seconds
   ]
 )
 @Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)
-class ThrottleAspectTest {
+class ThrottleAspectIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
 

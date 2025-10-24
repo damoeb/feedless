@@ -63,7 +63,7 @@ import java.util.*
   DisableDatabaseConfiguration::class,
   DisableWebSocketsConfiguration::class
 )
-class DocumentControllerTest {
+class DocumentControllerIntTest {
 
   private lateinit var document: DocumentEntity
   private var actualDocumentUrl: String = "https://some-document-url.test"

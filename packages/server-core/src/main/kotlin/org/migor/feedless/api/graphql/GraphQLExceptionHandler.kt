@@ -52,7 +52,7 @@ class GraphQLExceptionHandler : DataFetcherExceptionHandler {
     val debugInfo: MutableMap<String, Any> = HashMap()
 //    debugInfo["corrId"] = corrId ?: ""
     val graphqlError: GraphQLError = TypedGraphQLError.newInternalErrorBuilder()
-      .message(handlerParameters.exception.message)
+      .message(handlerParameters.exception.message ?: "Unknown error")
       .debugInfo(debugInfo)
       .errorType(errorType)
       .path(handlerParameters.path)

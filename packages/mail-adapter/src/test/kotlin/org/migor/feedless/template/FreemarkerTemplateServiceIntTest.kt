@@ -12,7 +12,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(classes = [FreemarkerTemplateService::class, FreemarkerTemplateConfig::class])
 @ActiveProfiles(AppProfiles.mail, AppLayer.service)
-class FreemarkerTemplateServiceTest {
+class FreemarkerTemplateServiceIntTest {
 
   @Autowired
   lateinit var templateService: FreemarkerTemplateService
