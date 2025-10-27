@@ -50,6 +50,7 @@ input ConfirmCodeInput {
 }
 
 type Attachment {
+  id: ID!
   duration: Long
   size: Long
   type: String!

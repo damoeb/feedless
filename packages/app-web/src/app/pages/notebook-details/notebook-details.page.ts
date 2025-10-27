@@ -41,6 +41,7 @@ import {
   IonSpinner,
   IonSplitPane,
   IonText,
+  IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -83,6 +84,7 @@ import { SessionService } from '../../services/session.service';
 import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
 import { createNoteReferenceWidget } from './note-reference.widget';
+import { NotificationsButtonComponent } from '../../components/notifications-button/notifications-button.component';
 
 export type EditorHandle = {
   note: Note;
@@ -140,6 +142,8 @@ enum Focussable {
     NotebookSettingsComponent,
     IonMenuButton,
     CdkTreeNodeDef,
+    NotificationsButtonComponent,
+    IonTitle,
   ],
   standalone: true,
 })
@@ -559,6 +563,8 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   onDrop(event: CdkDragDrop<any, any>) {
     console.log(event);
   }
+
+  openVirtualNote(noteName: string) {}
 }
 
 export function createNoteHandleId(note: Note): string {

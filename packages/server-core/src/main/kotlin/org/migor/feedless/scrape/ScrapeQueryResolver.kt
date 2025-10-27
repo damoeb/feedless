@@ -31,6 +31,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
+import java.util.*
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -111,4 +112,5 @@ private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Attachme
   size = length,
   type = type,
   url = url,
+  id = UUID.randomUUID().toString()
 )

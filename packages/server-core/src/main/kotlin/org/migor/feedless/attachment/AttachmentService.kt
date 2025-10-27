@@ -32,7 +32,13 @@ class AttachmentService(
   suspend fun createAttachment(documentId: DocumentId, attachment: Attachment): Attachment {
     return withContext(Dispatchers.IO) {
       val entity = AttachmentEntity()
-      TODO("Not yet implemented")
+      entity.documentId = documentId.value
+      entity.name = attachment.name
+      entity.mimeType = "application/octet-stream" // Default MIME type
+      entity.hasData = false
+      entity.remoteDataUrl = null
+      entity.size = null
+      entity.duration = null
       attachmentDAO.save(entity).toDomain()
     }
   }
@@ -40,7 +46,7 @@ class AttachmentService(
   @Transactional
   suspend fun deleteAttachment(attachmentId: AttachmentId) {
     withContext(Dispatchers.IO) {
-      attachmentDAO.deleteById(attachmentId.value)
+      attachmentDAO.deleteById(attachmentId.uuid)
     }
   }
 }

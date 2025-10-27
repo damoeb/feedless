@@ -255,13 +255,15 @@ fun DocumentEntity.toDto(propertyService: PropertyService): Record {
       )
     },
     tags = (tags?.asList() ?: emptyList()).plus(
-      addListenableTag(attachments.filter { it.mimeType.startsWith("audio/") && it.duration != null }
+      addListenableTag(
+        attachments.filter { it.mimeType.startsWith("audio/") && it.duration != null }
         .map { classifyDuration(it.duration!!) }.distinct()
       )
     ),
 
     attachments = (attachments.map {
       Attachment(
+        id = it.id.toString(),
         url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
         type = it.mimeType,
         duration = it.duration,

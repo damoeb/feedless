@@ -27,6 +27,7 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   private readonly notebookService = inject(NotebookService);
 
   readonly handle = input.required<NoteHandle>();
+  readonly createScrollId = input<boolean>(true);
   isOpen: boolean = false;
   isMove: boolean = false;
   private subscriptions: Subscription[] = [];
@@ -123,6 +124,6 @@ export class NoteDetailsComponent implements OnInit, OnDestroy {
   }
 
   getId() {
-    return createNoteHandleId(this.note());
+    return this.createScrollId() ? createNoteHandleId(this.note()) : undefined;
   }
 }

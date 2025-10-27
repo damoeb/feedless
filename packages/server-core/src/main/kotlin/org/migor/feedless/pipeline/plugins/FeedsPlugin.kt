@@ -173,6 +173,7 @@ private fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
 }
 
 private fun JsonAttachment.toDto(): Attachment = Attachment(
+  id = UUID.randomUUID().toString(),
   url = url,
   type = type,
   size = length,

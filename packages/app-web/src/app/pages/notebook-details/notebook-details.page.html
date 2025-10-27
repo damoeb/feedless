@@ -64,10 +64,12 @@
       <ion-toolbar style="--background: transparent">
         <ion-buttons slot="start">
           <ion-menu-button></ion-menu-button>
-          <ion-button routerLink="/"> {{ notebook?.title }} Notes</ion-button>
+          <ion-title>{{ notebook?.title }}</ion-title>
+          <ion-button routerLink="/" fill="outline" shape="round" color="medium">Change Notbook</ion-button>
         </ion-buttons>
 
         <ion-buttons slot="end">
+          <app-notifications-button (click)="openVirtualNote('notifications')"></app-notifications-button>
           <app-notebook-settings></app-notebook-settings>
           <app-dark-mode-button></app-dark-mode-button>
           <app-profile-button></app-profile-button>
@@ -126,7 +128,7 @@
                           @if (shortcut.body.isUpVoted) {
                             <app-bubble color="blue"></app-bubble>
                           }
-                          <app-note-details [handle]="shortcut"></app-note-details>
+                          <app-note-details [handle]="shortcut" [createScrollId]="false"></app-note-details>
                         }
                       }
                       @if (shortcutsFC.value !== shortcutValueOff) {

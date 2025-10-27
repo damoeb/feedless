@@ -9,12 +9,17 @@ import java.util.*
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)
 interface AttachmentMapper {
 
-  @Mapping(source = "id", ignore = true)
+  @Mapping(target = "id", source = "id", qualifiedByName = ["uuidToAttachmentId"])
   fun toDomain(entity: AttachmentEntity): Attachment
+
+  @Mapping(target = "id", source = "id", qualifiedByName = ["attachmentIdToUuid"])
   fun toEntity(domain: Attachment): AttachmentEntity
 
-  fun uuidToDomain(uuid: UUID): AttachmentId = AttachmentId(uuid)
-  fun domainToUUid(id: AttachmentId): UUID = id.uuid
+  @org.mapstruct.Named("uuidToAttachmentId")
+  fun uuidToAttachmentId(uuid: UUID): AttachmentId = AttachmentId(uuid)
+
+  @org.mapstruct.Named("attachmentIdToUuid")
+  fun attachmentIdToUuid(id: AttachmentId): UUID = id.uuid
 
   companion object {
     val INSTANCE: AttachmentMapper = Mappers.getMapper(AttachmentMapper::class.java)

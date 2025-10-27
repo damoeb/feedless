@@ -21,6 +21,7 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
+import java.util.*
 import org.migor.feedless.generated.types.Attachment as AttachmentDto
 
 
@@ -42,8 +43,8 @@ class AttachmentResolver(
   ): AttachmentDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createAttachment $data")
     val file: MultipartFile = dfe.getArgument("input")
-    file.bytes
-    attachmentService.createAttachment(DocumentId(data.where.id), data.attachment.toDomain()).toDto()
+    val attachment = data.attachment.toDomain(file)
+    attachmentService.createAttachment(DocumentId(data.where.id), attachment).toDto()
   }
 
   @Throttled
@@ -57,14 +58,21 @@ class AttachmentResolver(
     attachmentService.deleteAttachment(AttachmentId(data.where.id))
     true
   }
-
-  // todo attachments
 }
 
-private fun CreateAttachmentFieldsInput.toDomain(): Attachment {
-  TODO("Not yet implemented")
+private fun CreateAttachmentFieldsInput.toDomain(file: MultipartFile): Attachment {
+  return Attachment(
+    id = AttachmentId(UUID.randomUUID()),
+    name = name.ifBlank { file.originalFilename ?: "unknown" }
+  )
 }
 
 private fun Attachment.toDto(): AttachmentDto {
-  TODO("Not yet implemented")
+  return AttachmentDto(
+    id = id.uuid.toString(),
+    type = "application/octet-stream", // Default MIME type, should be set from file
+    url = "", // Should be generated URL
+    size = null,
+    duration = null
+  )
 }
