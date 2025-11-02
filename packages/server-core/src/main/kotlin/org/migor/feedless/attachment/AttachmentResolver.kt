@@ -36,7 +36,7 @@ class AttachmentResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateAttachment)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun createAttachment(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAttachmentInput
@@ -49,7 +49,7 @@ class AttachmentResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteAttachment)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun deleteAttachment(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAttachmentInput,

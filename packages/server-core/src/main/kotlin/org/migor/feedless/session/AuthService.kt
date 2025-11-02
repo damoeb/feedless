@@ -22,7 +22,10 @@ object JwtParameterNames {
   const val EXP = "exp"
   const val ID = "id"
   const val IAT = "iat"
+
+  @Deprecated("will be removed")
   const val USER_ID = "user_id"
+  const val CAPABILITIES = "capabilities"
   const val TYPE = "token_type"
 }
 
@@ -30,12 +33,12 @@ enum class AuthTokenType(val value: String) {
   ANONYMOUS("ANON"),
   USER("USER"),
   API("API"),
-  AGENT("AGENT"),
+  SERVICE("AGENT"),
 }
 
 @Service
 abstract class AuthService {
-  abstract suspend fun decodeToken(token: String): Jwt?
+  abstract suspend fun verifyTokenSignature(token: String): Jwt?
   abstract suspend fun assertToken(request: HttpServletRequest)
   abstract fun isWhitelisted(request: HttpServletRequest): Boolean
   abstract suspend fun interceptToken(request: HttpServletRequest): Jwt

@@ -43,7 +43,7 @@ class UserResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateCurrentUser)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun updateCurrentUser(
     dfe: DataFetchingEnvironment,
     @InputArgument data: UpdateCurrentUserInput,
@@ -55,7 +55,7 @@ class UserResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateConnectedApp)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun updateConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
@@ -68,7 +68,7 @@ class UserResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteConnectedApp)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun deleteConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
@@ -80,7 +80,7 @@ class UserResolver(
 
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.ConnectedApp)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun getConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,

@@ -14,11 +14,13 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.Session
+import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -36,7 +38,7 @@ class SessionResolver {
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
 
   @Autowired
-  private lateinit var tokenProvider: TokenProvider
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Autowired
   private lateinit var propertyService: PropertyService
@@ -89,7 +91,7 @@ class SessionResolver {
     log.debug("authUser")
     try {
       val user = authService.authenticateUser(data.email, data.secretKey)
-      val jwt = tokenProvider.createJwtForUser(user, emptyList())
+      val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(UserId(user.id))))
       addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       Authentication(
         token = jwt.tokenValue,
@@ -102,7 +104,7 @@ class SessionResolver {
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.Logout)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun logout(
     dfe: DataFetchingEnvironment,
   ): Boolean = coroutineScope {

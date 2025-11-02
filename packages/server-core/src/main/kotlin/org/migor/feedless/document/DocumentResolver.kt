@@ -108,7 +108,7 @@ class DocumentResolver(
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.DeleteRecords)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
@@ -122,7 +122,7 @@ class DocumentResolver(
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.CreateRecords)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
@@ -131,7 +131,7 @@ class DocumentResolver(
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun updateRecord(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,

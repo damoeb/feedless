@@ -42,7 +42,7 @@ class SecretsResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateUserSecret)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun createUserSecret(
     dfe: DataFetchingEnvironment,
   ): UserSecret = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
@@ -52,7 +52,7 @@ class SecretsResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteUserSecret)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   suspend fun deleteUserSecret(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEUSERSECRET_INPUT_ARGUMENT.Data) data: DeleteUserSecretInput,

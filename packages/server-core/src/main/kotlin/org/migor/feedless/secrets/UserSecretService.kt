@@ -6,7 +6,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.AuthTokenType
-import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
@@ -23,19 +23,19 @@ import kotlin.time.toJavaDuration
 @Profile("${AppProfiles.secrets} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserSecretService(
   private val userSecretDAO: UserSecretDAO,
-  private val tokenProvider: TokenProvider
+  private val jwtTokenIssuer: JwtTokenIssuer
 ) {
 
   private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
 
   @Transactional
   suspend fun createUserSecret(user: UserEntity): UserSecretEntity {
-    val token = tokenProvider.createJwtForApi(user)
+    val token = jwtTokenIssuer.createJwtForApi(user)
     val k = UserSecretEntity()
     k.ownerId = user.id
     k.value = token.tokenValue
     k.type = UserSecretType.SecretKey
-    k.validUntil = LocalDateTime.now().plus(tokenProvider.getExpiration(AuthTokenType.USER).toJavaDuration())
+    k.validUntil = LocalDateTime.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER).toJavaDuration())
 
     return withContext(Dispatchers.IO) {
       userSecretDAO.save(k)

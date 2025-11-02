@@ -35,7 +35,7 @@ class PlanResolver {
   @Autowired
   private lateinit var planService: PlanService
 
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("hasCapability('user')")
   @DgsQuery(field = DgsConstants.QUERY.Plans)
   suspend fun plan(dfe: DgsDataFetchingEnvironment,
                    @InputArgument(DgsConstants.QUERY.PLANS_INPUT_ARGUMENT.Cursor) cursor: Cursor): List<Plan> = withContext(

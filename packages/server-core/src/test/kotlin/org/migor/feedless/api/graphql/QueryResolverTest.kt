@@ -19,6 +19,7 @@ import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 
@@ -42,6 +43,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     UserSecretService::class,
     UserSecretDAO::class,
     PermissionService::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @Import(

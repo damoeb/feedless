@@ -28,6 +28,7 @@ import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
@@ -56,6 +57,7 @@ import java.util.*
     OneTimePasswordDAO::class,
     ReportService::class,
     MailService::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @Import(

@@ -15,8 +15,8 @@ import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.mockito.InjectMocks
@@ -35,7 +35,7 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class MailAuthenticationServiceTest {
   @Mock
-  lateinit var tokenProvider: TokenProvider
+  lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Mock
   lateinit var cookieProvider: CookieProvider
@@ -96,7 +96,7 @@ class MailAuthenticationServiceTest {
     val user = randomUserEntity()
     val otp = randomOneTimePasswordEntity(user)
     `when`(oneTimePasswordDAO.findById(otp.id)).thenReturn(Optional.of(otp))
-    `when`(tokenProvider.createJwtForUser(any2(), any2())).thenReturn(jwt)
+    `when`(jwtTokenIssuer.createJwtForCapabilities(any2())).thenReturn(jwt)
 
     val data = ConfirmAuthCodeInput(
       code = otp.password,

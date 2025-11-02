@@ -26,7 +26,7 @@ class StatelessAuthService : AuthService() {
   private val root = UserEntity()
   private val key = UserSecretEntity()
 
-  override suspend fun decodeToken(token: String): Jwt? = null
+  override suspend fun verifyTokenSignature(token: String): Jwt? = null
   override suspend fun assertToken(request: HttpServletRequest) {
 
   }

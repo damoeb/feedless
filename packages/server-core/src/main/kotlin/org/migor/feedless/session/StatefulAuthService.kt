@@ -4,7 +4,6 @@ import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.stereotype.Service
@@ -73,23 +71,15 @@ class StatefulAuthService : AuthService() {
     resolveWhitelistedHosts()
   }
 
-  @Transactional(readOnly = true)
-  override suspend fun decodeToken(token: String): Jwt {
-    val jwt = NimbusJwtDecoder
+  override suspend fun verifyTokenSignature(token: String): Jwt {
+    return NimbusJwtDecoder
       .withSecretKey(getSecretKey())
       .build()
       .decode(token)
-
-    val userId = jwt.claims[JwtParameterNames.USER_ID] as String
-    if (StringUtils.isNotBlank(userId) && !userDAO.existsById(UUID.fromString(userId))) {
-      throw AccessDeniedException("user does not exist")
-    }
-    return jwt
   }
 
-  @Transactional(readOnly = true)
   override suspend fun interceptToken(request: HttpServletRequest): Jwt {
-    return decodeToken(interceptTokenRaw(request))
+    return verifyTokenSignature(interceptTokenRaw(request))
   }
 
   @Transactional(readOnly = true)

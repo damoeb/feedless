@@ -17,6 +17,7 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
 
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.gson)
   testImplementation(libs.kotlinx.coroutines.test)
 }
 

@@ -18,9 +18,9 @@ import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.eq
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -30,6 +30,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -48,9 +49,10 @@ import java.util.*
     UserService::class,
     SessionService::class,
     PropertyService::class,
-    TokenProvider::class,
+    JwtTokenIssuer::class,
     CookieProvider::class,
     PermissionService::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @ActiveProfiles(

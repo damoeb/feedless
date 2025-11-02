@@ -29,7 +29,7 @@ class AuthAnonymousResolver {
   private val log = LoggerFactory.getLogger(AuthAnonymousResolver::class.simpleName)
 
   @Autowired
-  private lateinit var tokenProvider: TokenProvider
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Autowired
   private lateinit var cookieProvider: CookieProvider
@@ -40,7 +40,7 @@ class AuthAnonymousResolver {
     dfe: DataFetchingEnvironment,
   ): AuthenticationDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("authAnonymous")
-    val jwt = tokenProvider.createJwtForAnonymous()
+    val jwt = jwtTokenIssuer.createJwtForAnonymous()
     addCookie(dfe, cookieProvider.createTokenCookie(jwt))
     AuthenticationDto(
       token = jwt.tokenValue,
