@@ -43,10 +43,9 @@ import org.migor.feedless.user.UserService
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.migor.feedless.generated.types.Vertical as VerticalDto
 
 @SpringBootTest
@@ -62,33 +61,35 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
   AppLayer.repository,
   AppLayer.service,
 )
-@MockBeans(
-  MockBean(ProductDAO::class),
-  MockBean(DocumentDAO::class),
-  MockBean(DocumentService::class),
-  MockBean(ProductService::class),
-  MockBean(PropertyService::class),
-  MockBean(InboxService::class),
-//  MockBean(SourceService::class),
-  MockBean(AgentService::class),
+@MockitoBean(
+  types = [
+    ProductDAO::class,
+    DocumentDAO::class,
+    DocumentService::class,
+    ProductService::class,
+    PropertyService::class,
+    InboxService::class,
+//  SourceService::class
+    AgentService::class,
+  ]
 )
 class RepositoryServiceIntTest {
   @Autowired
   private lateinit var repositoryService: RepositoryService
 
-  @MockBean
+  @MockitoBean
   private lateinit var featureService: FeatureService
 
   @Autowired
   private lateinit var scrapeActionDAO: ScrapeActionDAO
 
-  @MockBean
+  @MockitoBean
   private lateinit var sessionService: SessionService
 
   @Autowired
   private lateinit var userService: UserService
 
-  @MockBean
+  @MockitoBean
   private lateinit var planConstraintsService: PlanConstraintsService
 
   private lateinit var user: UserEntity

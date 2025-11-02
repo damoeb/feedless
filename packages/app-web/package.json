@@ -38,7 +38,6 @@
     "@angular/core": "20.3.3",
     "@angular/forms": "20.3.3",
     "@angular/platform-browser": "20.3.3",
-    "@angular/platform-browser-dynamic": "20.3.3",
     "@angular/router": "20.3.3",
     "@angular/service-worker": "20.3.3",
     "@apollo/client": "3.11.9",

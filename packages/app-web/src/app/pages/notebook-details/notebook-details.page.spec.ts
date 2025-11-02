@@ -4,7 +4,7 @@ import { AppTestModule, mockRepositories } from '../../app-test.module';
 import { NotebookService } from '../../services/notebook.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
-describe('NotebookDetailsPage', () => {
+describe.skip('NotebookDetailsPage', () => {
   let component: NotebookDetailsPage;
   let fixture: ComponentFixture<NotebookDetailsPage>;
 

@@ -34,21 +34,22 @@ import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.security.authentication.TestingAuthenticationToken
 import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.util.ResourceUtils
 import java.nio.file.Files
 
 @SpringBootTest
-@MockBeans(
-  MockBean(ServerConfigResolver::class),
-  MockBean(AgentService::class),
-  MockBean(AttachmentDAO::class),
+@MockitoBean(
+  types = [
+    ServerConfigResolver::class,
+    AgentService::class,
+    AttachmentDAO::class,
+  ]
 )
 @ActiveProfiles(
   "test",
@@ -66,7 +67,7 @@ class ScrapeQueryResolverTest {
   @Autowired
   lateinit var dgsQueryExecutor: DgsQueryExecutor
 
-  @MockBean
+  @MockitoBean
   lateinit var httpServiceMock: HttpService
 
   val url = "http://www.foo.bar/something"

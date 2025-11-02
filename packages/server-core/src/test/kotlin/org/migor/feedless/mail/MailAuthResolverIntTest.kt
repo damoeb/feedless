@@ -26,11 +26,10 @@ import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.migor.feedless.session.PermissionService
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
 import java.util.*
 
@@ -50,12 +49,14 @@ import java.util.*
   AppProfiles.mail,
   AppProfiles.session,
 )
-@MockBeans(
-  MockBean(ServerConfigResolver::class),
-  MockBean(PermissionService::class),
-  MockBean(OneTimePasswordDAO::class),
-  MockBean(ReportService::class),
-  MockBean(MailService::class),
+@MockitoBean(
+  types = [
+    ServerConfigResolver::class,
+    PermissionService::class,
+    OneTimePasswordDAO::class,
+    ReportService::class,
+    MailService::class,
+  ]
 )
 @Import(
   DisableDatabaseConfiguration::class,
@@ -68,7 +69,7 @@ class MailAuthResolverIntTest {
   @LocalServerPort
   private var port: Int = 0
 
-  @MockBean
+  @MockitoBean
   lateinit var mailAuthenticationService: MailAuthenticationService
 
   @BeforeEach

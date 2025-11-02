@@ -1,3 +1,3 @@
-package org.migor.feedless.storage
+package org.migor.feedless.connector.git
 
 data class GitConnectionCapability(val connectionConfig: GitConnectionConfig)

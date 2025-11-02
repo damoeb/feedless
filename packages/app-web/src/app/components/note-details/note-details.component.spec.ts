@@ -1,9 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NoteDetailsComponent } from './note-details.component';
 import { AppTestModule } from '../../app-test.module';
-import { NoteHandle } from '../../pages/notebook-details/notebook-details.page';
 import { from, of } from 'rxjs';
-import { NotebookService } from '../../services/notebook.service';
+import { NotebookService, NoteHandle } from '../../services/notebook.service';
 import { AuthGuardService } from '../../guards/auth-guard.service';
 
 describe('NoteDetailsComponent', () => {
@@ -38,6 +37,7 @@ describe('NoteDetailsComponent', () => {
     const componentRef = fixture.componentRef;
     const handle: NoteHandle = {
       body: {} as any,
+      body$: () => of(),
       expanded: false,
       disabled: false,
       level: 0,

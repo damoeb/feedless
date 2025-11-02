@@ -11,22 +11,21 @@ import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.PropertiesConfiguration
 import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.any2
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.time.LocalDateTime
 
 @SpringBootTest
@@ -36,9 +35,11 @@ import java.time.LocalDateTime
   AppProfiles.scrape,
   AppLayer.service,
 )
-@MockBeans(
-  MockBean(AttachmentDAO::class),
-  MockBean(AgentService::class),
+@MockitoBean(
+  types = [
+    AttachmentDAO::class,
+    AgentService::class,
+  ]
 )
 @Import(
   PropertiesConfiguration::class,
@@ -49,10 +50,10 @@ class FeedsPluginTest {
   @Autowired
   lateinit var feedsPlugin: FeedsPlugin
 
-  @MockBean
+  @MockitoBean
   lateinit var feedParserService: FeedParserService
 
-  @MockBean
+  @MockitoBean
   lateinit var genericFeedLocator: GenericFeedLocator
 
   val logCollector = LogCollector()

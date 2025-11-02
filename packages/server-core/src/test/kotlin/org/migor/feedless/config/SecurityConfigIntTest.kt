@@ -18,13 +18,12 @@ import org.migor.feedless.session.SessionResolver
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 
@@ -35,15 +34,17 @@ const val actuatorPassword = "password"
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
   properties = ["app.actuatorPassword=$actuatorPassword"],
 )
-@MockBeans(
-  MockBean(ServerConfigResolver::class),
-  MockBean(UserDAO::class),
-  MockBean(UserSecretDAO::class),
-  MockBean(UserService::class),
-  MockBean(SessionResolver::class),
-  MockBean(DocumentController::class),
-  MockBean(PermissionService::class),
-  MockBean(OneTimePasswordService::class),
+@MockitoBean(
+  types = [
+    ServerConfigResolver::class,
+    UserDAO::class,
+    UserSecretDAO::class,
+    UserService::class,
+    SessionResolver::class,
+    DocumentController::class,
+    PermissionService::class,
+    OneTimePasswordService::class,
+  ]
 )
 @ActiveProfiles(
   "test",

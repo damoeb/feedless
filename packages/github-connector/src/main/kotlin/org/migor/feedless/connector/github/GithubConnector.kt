@@ -1,12 +1,12 @@
 package org.migor.feedless.connector.github
 
 import org.migor.feedless.capability.Capability
-import org.migor.feedless.storage.AnonymousGitConnectionConfig
-import org.migor.feedless.storage.GitConnectionCapability
-import org.migor.feedless.storage.GitConnectionConfig
-import org.migor.feedless.storage.GitConnectionHandle
-import org.migor.feedless.storage.GitConnector
-import org.migor.feedless.storage.GitRepository
+import org.migor.feedless.connector.git.AnonymousGitConnectionConfig
+import org.migor.feedless.connector.git.GitConnectionCapability
+import org.migor.feedless.connector.git.GitConnectionConfig
+import org.migor.feedless.connector.git.GitConnectionHandle
+import org.migor.feedless.connector.git.GitConnector
+import org.migor.feedless.connector.git.GitRepository
 import org.springframework.stereotype.Service
 
 @Service

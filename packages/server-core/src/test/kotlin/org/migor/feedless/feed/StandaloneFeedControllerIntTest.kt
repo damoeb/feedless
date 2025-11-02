@@ -13,17 +13,15 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.analytics.AnalyticsService
-import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.graphql.ServerConfigResolver
-import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyOrNull
 import org.migor.feedless.anyOrNull2
+import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.api.graphql.ServerConfigResolver
+import org.migor.feedless.feed.parser.json.JsonFeed
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
@@ -34,6 +32,7 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
 import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import org.springframework.web.socket.WebSocketHandler
 import java.time.LocalDateTime
@@ -44,10 +43,12 @@ const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
-@MockBeans(
-  MockBean(ServerConfigResolver::class),
-  MockBean(WebSocketHandler::class),
-  MockBean(FeedParserService::class),
+@MockitoBean(
+  types = [
+    ServerConfigResolver::class,
+    WebSocketHandler::class,
+    FeedParserService::class,
+  ]
 )
 @ActiveProfiles(
   "test",
@@ -67,10 +68,10 @@ class StandaloneFeedControllerTest {
   @LocalServerPort
   var port = 0
 
-  @MockBean
+  @MockitoBean
   lateinit var standaloneFeedService: StandaloneFeedService
 
-  @MockBean
+  @MockitoBean
   lateinit var analyticsService: AnalyticsService
 
   lateinit var mockFeed: JsonFeed

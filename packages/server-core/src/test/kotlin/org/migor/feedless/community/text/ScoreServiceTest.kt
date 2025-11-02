@@ -12,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.any2
 import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.ScoreService
@@ -25,15 +26,13 @@ import org.migor.feedless.community.text.simple.EngagementScorer
 import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.plan.ProductService
-import org.migor.feedless.any2
 import org.migor.feedless.secrets.UserSecretService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 import kotlin.math.pow
 
@@ -41,11 +40,13 @@ import kotlin.math.pow
 @ExtendWith(SpringExtension::class)
 @SpringBootTest
 @ActiveProfiles("test", AppProfiles.community, AppLayer.service)
-@MockBeans(
-  MockBean(UserSecretService::class),
-  MockBean(LicenseService::class),
-  MockBean(ProductService::class),
-  MockBean(KotlinJdslJpqlExecutor::class),
+@MockitoBean(
+  types = [
+    UserSecretService::class,
+    LicenseService::class,
+    ProductService::class,
+    KotlinJdslJpqlExecutor::class,
+  ]
 )
 @Tag("nlp")
 class ScoreServiceTest {
@@ -59,7 +60,7 @@ class ScoreServiceTest {
   @Autowired
   lateinit var relevanceScorer: RelevanceScorer
 
-  @MockBean
+  @MockitoBean
   lateinit var spellingScorer: SpellingScorer
 
   @BeforeEach

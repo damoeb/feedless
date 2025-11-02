@@ -10,6 +10,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
+import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
@@ -26,7 +27,6 @@ import org.migor.feedless.repository.RepositoryEntity
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.any2
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
@@ -37,11 +37,10 @@ import org.migor.feedless.util.JtsUtil
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.data.domain.PageRequest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 
@@ -57,20 +56,22 @@ import java.time.LocalDateTime
   AppLayer.repository,
   AppLayer.service,
 )
-@MockBeans(
-  MockBean(SessionService::class),
-  MockBean(ProductDAO::class),
-  MockBean(RepositoryService::class),
-  MockBean(HttpService::class),
-  MockBean(DocumentPipelineJobDAO::class),
-  MockBean(PluginService::class),
-  MockBean(FeatureService::class),
-  MockBean(ProductService::class),
-  MockBean(PropertyService::class),
-  MockBean(RepositoryHarvester::class),
-  MockBean(AttachmentDAO::class),
-  MockBean(GroupService::class),
-  MockBean(PermissionService::class),
+@MockitoBean(
+  types = [
+    SessionService::class,
+    ProductDAO::class,
+    RepositoryService::class,
+    HttpService::class,
+    DocumentPipelineJobDAO::class,
+    PluginService::class,
+    FeatureService::class,
+    ProductService::class,
+    PropertyService::class,
+    RepositoryHarvester::class,
+    AttachmentDAO::class,
+    GroupService::class,
+    PermissionService::class,
+  ]
 )
 @Testcontainers
 class DocumentIntTest {
@@ -89,7 +90,7 @@ class DocumentIntTest {
   @Autowired
   lateinit var documentDAO: DocumentDAO
 
-  @MockBean
+  @MockitoBean
   lateinit var planConstraintsService: PlanConstraintsService
 
   val past = LocalDateTime.now().minusDays(1)

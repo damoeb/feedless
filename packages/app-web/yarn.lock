@@ -435,13 +435,6 @@
   resolved "https://registry.yarnpkg.com/@angular/language-service/-/language-service-20.3.2.tgz#3c61f40e92047c5780835bf4ac6f60c3b1aceebe"
   integrity sha512-a4/GTOo95rzTvOWXujLgQ+LDoApb5gwwbdoQZlC5xRDSnmyH3XFZYrlDWXB26wtdjo2JnGMWVWNhekxsAJImVw==
 
-"@angular/platform-browser-dynamic@20.3.3":
-  version "20.3.3"
-  resolved "https://registry.yarnpkg.com/@angular/platform-browser-dynamic/-/platform-browser-dynamic-20.3.3.tgz#6874fe5b43bc15ee394352bfc397a2dc2353e2f1"
-  integrity sha512-QzJUeHgzUWpNrPF4tgqwO3jzmDGlM8aLwbA7BJBp2BOJZKg34BF4CzTngK5Z6LWcZ4gofTSzDOw9TIrk8U8g6Q==
-  dependencies:
-    tslib "^2.3.0"
-
 "@angular/platform-browser@20.3.3":
   version "20.3.3"
   resolved "https://registry.yarnpkg.com/@angular/platform-browser/-/platform-browser-20.3.3.tgz#53a7e30b417dae065ec1c68cb0de6d0040d3d86e"

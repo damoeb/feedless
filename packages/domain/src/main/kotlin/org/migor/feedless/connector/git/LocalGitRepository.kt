@@ -1,4 +1,4 @@
-package org.migor.feedless.storage
+package org.migor.feedless.connector.git
 
 import org.migor.feedless.capability.CapabilityProvider
 

@@ -38,10 +38,9 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 @SpringBootTest
 @ActiveProfiles(
@@ -49,10 +48,12 @@ import org.springframework.test.context.ActiveProfiles
   AppProfiles.scrape,
   AppLayer.service,
 )
-@MockBeans(
-  MockBean(PropertyService::class),
-  MockBean(AgentService::class),
-  MockBean(AttachmentDAO::class),
+@MockitoBean(
+  types = [
+    PropertyService::class,
+    AgentService::class,
+    AttachmentDAO::class,
+  ]
 )
 @Import(DisableDatabaseConfiguration::class)
 class ScrapeServiceTest {
@@ -62,7 +63,7 @@ class ScrapeServiceTest {
   @Autowired
   lateinit var scrapeService: ScrapeService
 
-  @MockBean
+  @MockitoBean
   lateinit var httpService: HttpService
 
   lateinit var fetchAction: FetchActionEntity

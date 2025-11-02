@@ -1,9 +1,9 @@
 package org.migor.feedless.connector.github
 
 import org.migor.feedless.capability.Capability
-import org.migor.feedless.storage.LocalGitRepository
-import org.migor.feedless.storage.LocalGitRepositoryCapability
-import org.migor.feedless.storage.LocalGitRepositoryFile
+import org.migor.feedless.connector.git.LocalGitRepository
+import org.migor.feedless.connector.git.LocalGitRepositoryCapability
+import org.migor.feedless.connector.git.LocalGitRepositoryFile
 import java.io.File
 
 class LocalGitRepositoryImpl(repoUrl: String) : LocalGitRepository {

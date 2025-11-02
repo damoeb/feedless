@@ -22,11 +22,10 @@ import org.migor.feedless.user.UserService
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
 
 
@@ -51,9 +50,11 @@ const val rootSecretKey = "barBarBarKey"
   AppProfiles.authRoot,
   AppProfiles.session,
 )
-@MockBeans(
-  MockBean(ServerConfigResolver::class),
-  MockBean(PermissionService::class),
+@MockitoBean(
+  types = [
+    ServerConfigResolver::class,
+    PermissionService::class,
+  ]
 )
 @Import(DisableDatabaseConfiguration::class)
 class AuthenticationTest {
@@ -63,10 +64,10 @@ class AuthenticationTest {
   @LocalServerPort
   private var port: Int = 0
 
-  @MockBean
+  @MockitoBean
   lateinit var userService: UserService
 
-  @MockBean
+  @MockitoBean
   lateinit var userSecretService: UserSecretService
 
   @BeforeEach

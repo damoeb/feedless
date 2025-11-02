@@ -21,10 +21,9 @@ import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.session.SessionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import java.util.*
 
 @SpringBootTest
@@ -37,10 +36,12 @@ import java.util.*
   AppLayer.repository,
   AppLayer.service,
 )
-@MockBeans(
-  MockBean(SessionService::class),
-  MockBean(ProductDAO::class),
-  MockBean(PlanDAO::class),
+@MockitoBean(
+  types = [
+    SessionService::class,
+    ProductDAO::class,
+    PlanDAO::class,
+  ]
 )
 class FeatureServiceTest {
 

@@ -1,7 +1,7 @@
 package org.migor.feedless.connector.github
 
-import org.migor.feedless.storage.GitRepository
-import org.migor.feedless.storage.LocalGitRepository
+import org.migor.feedless.connector.git.GitRepository
+import org.migor.feedless.connector.git.LocalGitRepository
 import java.net.URI
 
 class GithubRepository(uri: URI) : GitRepository {

@@ -52,8 +52,9 @@ class UrlValidatorDirective : SchemaDirectiveWiring {
   override fun onField(env: SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition>): GraphQLFieldDefinition {
     val fieldsContainer = env.fieldsContainer
     val fieldDefinition = env.fieldDefinition
+    val coordinates = graphql.schema.FieldCoordinates.coordinates(fieldsContainer.name, fieldDefinition.name)
 
-    val originalDataFetcher = env.codeRegistry.getDataFetcher(fieldsContainer, fieldDefinition)
+    val originalDataFetcher = env.codeRegistry.getDataFetcher(coordinates, fieldDefinition)
     val dataFetcher = DataFetcherFactories.wrapDataFetcher(
       originalDataFetcher
     ) { _: DataFetchingEnvironment?, value: Any? ->
@@ -76,7 +77,7 @@ class UrlValidatorDirective : SchemaDirectiveWiring {
       value
     }
 
-    env.codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, dataFetcher)
+    env.codeRegistry.dataFetcher(coordinates, dataFetcher)
 
     return fieldDefinition
   }
@@ -88,8 +89,9 @@ class XPathValidatorDirective : SchemaDirectiveWiring {
   override fun onField(env: SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition>): GraphQLFieldDefinition {
     val fieldsContainer = env.fieldsContainer
     val fieldDefinition = env.fieldDefinition
+    val coordinates = graphql.schema.FieldCoordinates.coordinates(fieldsContainer.name, fieldDefinition.name)
 
-    val originalDataFetcher = env.codeRegistry.getDataFetcher(fieldsContainer, fieldDefinition)
+    val originalDataFetcher = env.codeRegistry.getDataFetcher(coordinates, fieldDefinition)
     val dataFetcher = DataFetcherFactories.wrapDataFetcher(
       originalDataFetcher
     ) { _: DataFetchingEnvironment?, value: Any? ->
@@ -106,7 +108,7 @@ class XPathValidatorDirective : SchemaDirectiveWiring {
       value
     }
 
-    env.codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, dataFetcher)
+    env.codeRegistry.dataFetcher(coordinates, dataFetcher)
 
     return fieldDefinition
   }
@@ -118,8 +120,9 @@ class EmailValidatorDirective : SchemaDirectiveWiring {
   override fun onField(env: SchemaDirectiveWiringEnvironment<GraphQLFieldDefinition>): GraphQLFieldDefinition {
     val fieldsContainer = env.fieldsContainer
     val fieldDefinition = env.fieldDefinition
+    val coordinates = graphql.schema.FieldCoordinates.coordinates(fieldsContainer.name, fieldDefinition.name)
 
-    val originalDataFetcher = env.codeRegistry.getDataFetcher(fieldsContainer, fieldDefinition)
+    val originalDataFetcher = env.codeRegistry.getDataFetcher(coordinates, fieldDefinition)
     val dataFetcher = DataFetcherFactories.wrapDataFetcher(
       originalDataFetcher
     ) { _: DataFetchingEnvironment?, value: Any? ->
@@ -130,7 +133,7 @@ class EmailValidatorDirective : SchemaDirectiveWiring {
       value
     }
 
-    env.codeRegistry.dataFetcher(fieldsContainer, fieldDefinition, dataFetcher)
+    env.codeRegistry.dataFetcher(coordinates, dataFetcher)
 
     return fieldDefinition
   }

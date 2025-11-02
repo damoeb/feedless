@@ -26,10 +26,9 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.util.ResourceUtils
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
@@ -44,9 +43,11 @@ import java.util.*
   AppLayer.service,
   AppProfiles.properties,
 )
-@MockBeans(
-  MockBean(AgentService::class),
-  MockBean(AttachmentDAO::class),
+@MockitoBean(
+  types = [
+    AgentService::class,
+    AttachmentDAO::class,
+  ]
 )
 @Import(
   DisableDatabaseConfiguration::class,

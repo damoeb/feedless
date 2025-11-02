@@ -18,10 +18,9 @@ import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.context.annotation.Import
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 
 // see https://netflix.github.io/dgs/query-execution-testing/
 
@@ -34,14 +33,16 @@ import org.springframework.test.context.ActiveProfiles
   AppProfiles.session,
   AppProfiles.properties,
 )
-@MockBeans(
-  MockBean(HttpService::class),
-  MockBean(UserService::class),
-  MockBean(UserDAO::class),
-  MockBean(ServerConfigResolver::class),
-  MockBean(UserSecretService::class),
-  MockBean(UserSecretDAO::class),
-  MockBean(PermissionService::class),
+@MockitoBean(
+  types = [
+    HttpService::class,
+    UserService::class,
+    UserDAO::class,
+    ServerConfigResolver::class,
+    UserSecretService::class,
+    UserSecretDAO::class,
+    PermissionService::class,
+  ]
 )
 @Import(
   DisableDatabaseConfiguration::class,

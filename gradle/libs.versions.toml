@@ -1,6 +1,6 @@
 [versions]
-kotlin = "1.9.21"
-spring-boot = "3.2.5"
+kotlin = "2.2.21"
+spring-boot = "3.4.11"
 dgs-codegen = "8.1.1"
 dgs = "9.2.2"
 test-logger = "4.0.0"

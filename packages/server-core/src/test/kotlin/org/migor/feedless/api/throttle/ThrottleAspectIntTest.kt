@@ -27,12 +27,11 @@ import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.mock.mockito.MockBean
-import org.springframework.boot.test.mock.mockito.MockBeans
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.context.ActiveProfiles
+import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -50,17 +49,17 @@ import kotlin.time.Duration.Companion.seconds
     AppProfiles.throttle,
   ]
 )
-@MockBeans(
-  value = [
-    MockBean(LicenseService::class),
-    MockBean(UserService::class),
-    MockBean(DocumentService::class),
-    MockBean(HttpService::class),
-    MockBean(PropertyService::class),
-    MockBean(PermissionService::class),
-    MockBean(UserSecretService::class),
-    MockBean(UserDAO::class),
-    MockBean(OneTimePasswordService::class),
+@MockitoBean(
+  types = [
+    LicenseService::class,
+    UserService::class,
+    DocumentService::class,
+    HttpService::class,
+    PropertyService::class,
+    PermissionService::class,
+    UserSecretService::class,
+    UserDAO::class,
+    OneTimePasswordService::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)
@@ -68,10 +67,10 @@ class ThrottleAspectIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
 
-  @MockBean
+  @MockitoBean
   lateinit var authService: AuthService
 
-  @MockBean
+  @MockitoBean
   lateinit var tokenProvider: TokenProvider
 
   @LocalServerPort

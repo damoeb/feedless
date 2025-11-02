@@ -42,7 +42,7 @@ class AttachmentResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAttachmentInput
   ): AttachmentDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createAttachment $data")
-    val file: MultipartFile = dfe.getArgument("input")
+    val file: MultipartFile = dfe.getArgument<MultipartFile>("input")!!
     val attachment = data.attachment.toDomain(file)
     attachmentService.createAttachment(DocumentId(data.where.id), attachment).toDto()
   }

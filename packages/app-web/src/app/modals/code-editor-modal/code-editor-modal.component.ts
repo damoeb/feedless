@@ -13,7 +13,6 @@ import { CodeEditorComponent, ContentType } from '../../elements/code-editor/cod
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export interface CodeEditorModalComponentProps {
@@ -57,7 +56,6 @@ export class CodeEditorModalComponent implements CodeEditorModalComponentProps {
   title: string;
   contentType: ContentType;
   readOnly: boolean;
-  controls: boolean;
 
   constructor() {
     addIcons({ closeOutline });
