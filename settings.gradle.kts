@@ -7,6 +7,7 @@ include("packages:nominatim-proxy")
 include("packages:mail-adapter")
 include("packages:domain")
 include("packages:graphql-api")
+include("packages:github-connector")
 
 pluginManagement {
   plugins {
@@ -28,6 +29,5 @@ buildscript {
 buildCache {
   local {
     directory = File(rootDir, "build-cache")
-    removeUnusedEntriesAfterDays = 30
   }
 }

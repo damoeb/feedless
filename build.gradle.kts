@@ -14,7 +14,7 @@ plugins {
 }
 
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
-  dependsOn(appWebDockerImageTask(), serverCoreDockerImageTask(), agentDockerImageTask())
+  dependsOn(appWebDockerImagePath(), serverCoreDockerImagePath(), agentDockerImagePath())
 
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
@@ -47,9 +47,9 @@ val validateAgentServerCanConnect = tasks.register("validateAgentServerCanConnec
 val buildImages = tasks.register("buildImages") {
 // todo enable finalizedBy(validateAgentServerCanConnect)
   dependsOn(
-    appWebDockerImageTask(),
-    serverCoreDockerImageTask(),
-    agentDockerImageTask(),
+    appWebDockerImagePath(),
+    serverCoreDockerImagePath(),
+    agentDockerImagePath(),
   )
 }
 
@@ -88,9 +88,9 @@ subprojects {
   }
 }
 
-fun appWebDockerImageTask() = tasks.findByPath("packages:app-web:bundle")
-fun serverCoreDockerImageTask() = tasks.findByPath("packages:server-core:bundle")
-fun agentDockerImageTask() = tasks.findByPath("packages:agent:bundle")
+fun appWebDockerImagePath() = "packages:app-web:bundle"
+fun serverCoreDockerImagePath() = "packages:server-core:bundle"
+fun agentDockerImagePath() = "packages:agent:bundle"
 
 fun podmanOrDocker(): String {
   val env = "DOCKER_BIN"
