@@ -111,7 +111,7 @@ class MailAuthenticationService(
       oneTimePasswordDAO.deleteById(otpId)
     }
 
-    val jwt = tokenProvider.createJwtForUser(otp.user!!)
+    val jwt = tokenProvider.createJwtForUser(otp.user!!, emptyList())
 
     response.addCookie(cookieProvider.createTokenCookie(jwt))
 

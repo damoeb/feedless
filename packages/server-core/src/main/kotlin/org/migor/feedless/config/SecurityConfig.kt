@@ -10,6 +10,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.TokenProvider
@@ -171,10 +172,11 @@ class SecurityConfig {
     runBlocking {
       coroutineScope {
         val authenticationToken = authentication as OAuth2AuthenticationToken
-        val user = handleGithubAuthResponse(authenticationToken)
+        val user = resolveUser(authenticationToken)
 
         log.info("jwt from user ${user.id}")
-        val jwt = tokenProvider.createJwtForUser(user)
+        val capabilities = createGithubCapability(authentication)
+        val jwt = tokenProvider.createJwtForUser(user, listOf(capabilities))
         response.addCookie(cookieProvider.createTokenCookie(jwt))
         response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
         //
@@ -187,13 +189,17 @@ class SecurityConfig {
     }
   }
 
+  private fun createGithubCapability(authentication: OAuth2AuthenticationToken): GithubCapability {
+    return GithubCapability("the-github-token")
+  }
+
   private fun getFrontendUrl(request: HttpServletRequest): String {
     log.debug("getFrontendUrl ${request.requestURL}")
     val url = URI(request.requestURI).toURL()
     return url.protocol + "://" + url.host.replace("api.", "")
   }
 
-  private suspend fun handleGithubAuthResponse(authentication: OAuth2AuthenticationToken): UserEntity {
+  private suspend fun resolveUser(authentication: OAuth2AuthenticationToken): UserEntity {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()

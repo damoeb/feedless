@@ -96,6 +96,7 @@ dependencies {
   implementation(libs.webp.imageio.sejda)
 
   implementation(project(":packages:domain"))
+  implementation(project(":packages:github-connector"))
   api(project(":packages:graphql-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")

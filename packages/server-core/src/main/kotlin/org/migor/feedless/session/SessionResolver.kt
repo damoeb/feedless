@@ -89,7 +89,7 @@ class SessionResolver {
     log.debug("authUser")
     try {
       val user = authService.authenticateUser(data.email, data.secretKey)
-      val jwt = tokenProvider.createJwtForUser(user)
+      val jwt = tokenProvider.createJwtForUser(user, emptyList())
       addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       Authentication(
         token = jwt.tokenValue,

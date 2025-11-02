@@ -96,7 +96,7 @@ class MailAuthenticationServiceTest {
     val user = randomUserEntity()
     val otp = randomOneTimePasswordEntity(user)
     `when`(oneTimePasswordDAO.findById(otp.id)).thenReturn(Optional.of(otp))
-    `when`(tokenProvider.createJwtForUser(any2())).thenReturn(jwt)
+    `when`(tokenProvider.createJwtForUser(any2(), any2())).thenReturn(jwt)
 
     val data = ConfirmAuthCodeInput(
       code = otp.password,

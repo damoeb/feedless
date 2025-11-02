@@ -49,7 +49,7 @@ class TestingEndpoint {
         userDAO.save(user)
       }
     }
-    response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user)))
+    response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user, emptyList())))
   }
 
   @GetMapping("/testing/file/{file}")

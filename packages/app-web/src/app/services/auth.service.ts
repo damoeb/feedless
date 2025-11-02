@@ -21,6 +21,7 @@ import { ActualAuthentication } from '../graphql/types';
 import { environment } from '../../environments/environment';
 import { Router } from '@angular/router';
 import { Nullable } from '../types';
+import { ServerConfigService } from './server-config.service';
 
 export type ConfirmCode = GqlAuthUsingMailMutation['authenticateWithCodeViaMail'];
 
@@ -43,6 +44,7 @@ export interface Authentication {
 export class AuthService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly router = inject(Router);
+  private readonly serverConfigService = inject(ServerConfigService);
 
   private readonly authStatus: Subject<Nullable<Authentication>>;
 

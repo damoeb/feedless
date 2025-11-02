@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import com.google.gson.Gson
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
@@ -8,6 +9,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
 import org.migor.feedless.util.toMillis
@@ -49,7 +51,7 @@ class TokenProvider(
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
 
-  private val attrAuthorities = "authorities"
+  private val attrCapabilities = "authorities"
 
   @PostConstruct
   fun postConstruct() {
@@ -68,25 +70,22 @@ class TokenProvider(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
         JwtParameterNames.USER_ID to "",
-        attrAuthorities to toAuthorities(listOf(Authority.ANONYMOUS)),
+        attrCapabilities to toAuthorities(listOf(Authority.ANONYMOUS)),
       ),
       getExpiration(AuthTokenType.ANONYMOUS)
     )
   }
 
-  suspend fun createJwtForUser(user: UserEntity): Jwt {
+  suspend fun createJwtForUser(user: UserEntity, capabilities: List<GithubCapability>): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")
     return encodeJwt(
       mapOf(
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
-        attrAuthorities to toAuthorities(
-          listOf(
-            Authority.ANONYMOUS,
-            Authority.USER
-          )
-        ),
+        attrCapabilities to capabilities.associate {
+          it.capabilityId to Gson().toJson(it.capabilityPayload)
+        },
       ),
       getExpiration(AuthTokenType.USER)
     )
@@ -99,7 +98,7 @@ class TokenProvider(
       mapOf(
         JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.API.value,
-        attrAuthorities to toAuthorities(
+        attrCapabilities to toAuthorities(
           listOf(
             Authority.ANONYMOUS
           )
@@ -116,7 +115,7 @@ class TokenProvider(
       mapOf(
         JwtParameterNames.USER_ID to securityKey.ownerId.toString(),
         JwtParameterNames.TYPE to AuthTokenType.AGENT.value,
-        attrAuthorities to toAuthorities(
+        attrCapabilities to toAuthorities(
           listOf(
             Authority.AGENT
           )
