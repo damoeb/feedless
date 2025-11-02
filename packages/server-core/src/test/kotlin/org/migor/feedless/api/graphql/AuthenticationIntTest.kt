@@ -24,6 +24,7 @@ import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
@@ -69,6 +70,9 @@ class AuthenticationTest {
 
   @MockitoBean
   lateinit var userSecretService: UserSecretService
+
+  @MockitoBean
+  lateinit var authorizedClientService: OAuth2AuthorizedClientService
 
   @BeforeEach
   fun setUp() {

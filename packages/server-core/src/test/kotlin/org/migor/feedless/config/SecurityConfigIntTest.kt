@@ -22,6 +22,7 @@ import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpStatus
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
@@ -44,6 +45,7 @@ const val actuatorPassword = "password"
     DocumentController::class,
     PermissionService::class,
     OneTimePasswordService::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @ActiveProfiles(

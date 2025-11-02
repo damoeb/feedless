@@ -10,11 +10,14 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.capability.GroupCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
-import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -35,6 +38,8 @@ import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
@@ -67,7 +72,10 @@ class SecurityConfig {
   private lateinit var jwtRequestFilter: JwtRequestFilter
 
   @Autowired
-  private lateinit var tokenProvider: TokenProvider
+  private lateinit var authorizedClientService: OAuth2AuthorizedClientService
+
+  @Autowired
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Autowired
   private lateinit var cookieProvider: CookieProvider
@@ -171,12 +179,20 @@ class SecurityConfig {
   ) {
     runBlocking {
       coroutineScope {
-        val authenticationToken = authentication as OAuth2AuthenticationToken
-        val user = resolveUser(authenticationToken)
+        val oauthToken = authentication as OAuth2AuthenticationToken
+        val user = resolveUser(oauthToken)
 
         log.info("jwt from user ${user.id}")
-        val capabilities = createGithubCapability(authentication)
-        val jwt = tokenProvider.createJwtForUser(user, listOf(capabilities))
+        val client: OAuth2AuthorizedClient = authorizedClientService.loadAuthorizedClient(
+          oauthToken.getAuthorizedClientRegistrationId(),
+          oauthToken.getName()
+        )
+
+        val accessToken: String = client.getAccessToken().getTokenValue()
+        val githubCapability = createGithubCapability(accessToken)
+        val userCapability = createUserCapability(user)
+        val groupCapability = createGroupCapability(user)
+        val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(githubCapability, userCapability, groupCapability))
         response.addCookie(cookieProvider.createTokenCookie(jwt))
         response.addCookie(cookieProvider.createExpiredSessionCookie("JSESSION"))
         //
@@ -189,8 +205,16 @@ class SecurityConfig {
     }
   }
 
-  private fun createGithubCapability(authentication: OAuth2AuthenticationToken): GithubCapability {
-    return GithubCapability("the-github-token")
+  private fun createUserCapability(user: UserEntity): UserCapability {
+    return UserCapability(UserId(user.id));
+  }
+
+  private fun createGroupCapability(user: UserEntity): GroupCapability {
+    return GroupCapability(emptyList());
+  }
+
+  private fun createGithubCapability(authToken: String): GithubCapability {
+    return GithubCapability(authToken)
   }
 
   private fun getFrontendUrl(request: HttpServletRequest): String {

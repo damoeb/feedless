@@ -21,8 +21,8 @@ import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.session.AuthService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.toDto
 import org.migor.feedless.user.UserId
@@ -57,7 +57,7 @@ class AgentResponse(private val scrapeResponse: String) : Serializable {
 @Profile("${AppProfiles.agent} & ${AppLayer.service}")
 class AgentService(
   private val authService: AuthService,
-  private val tokenProvider: TokenProvider,
+  private val jwtTokenIssuer: JwtTokenIssuer,
   private val agentRegistry: AgentRegistry,
   private val meterRegistry: MeterRegistry,
   private val context: ApplicationContext
@@ -105,7 +105,7 @@ class AgentService(
                   corrId = "corrId",
                   callbackId = "none",
                   authentication = AgentAuthentication(
-                    token = tokenProvider.createJwtForAgent(securityKey).tokenValue
+                    token = jwtTokenIssuer.createJwtForService(securityKey).tokenValue
                   )
                 )
               )

@@ -6,9 +6,11 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.session.CookieProvider
-import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserDAO
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -28,7 +30,7 @@ class TestingEndpoint {
   private val log = LoggerFactory.getLogger(TestingEndpoint::class.simpleName)
 
   @Autowired
-  private lateinit var tokenProvider: TokenProvider
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Autowired
   private lateinit var userDAO: UserDAO
@@ -49,7 +51,17 @@ class TestingEndpoint {
         userDAO.save(user)
       }
     }
-    response.addCookie(cookieProvider.createTokenCookie(tokenProvider.createJwtForUser(user, emptyList())))
+    response.addCookie(
+      cookieProvider.createTokenCookie(
+        jwtTokenIssuer.createJwtForCapabilities(
+          listOf(
+            UserCapability(
+              UserId(user.id)
+            )
+          )
+        )
+      )
+    )
   }
 
   @GetMapping("/testing/file/{file}")

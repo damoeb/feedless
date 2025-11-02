@@ -44,7 +44,7 @@ class AnnotationResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateAnnotation)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun createAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
@@ -55,7 +55,7 @@ class AnnotationResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteAnnotation)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun deleteAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,

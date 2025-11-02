@@ -5,15 +5,16 @@ import io.github.bucket4j.Bucket
 import io.github.bucket4j.Refill
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.runBlocking
-import org.apache.commons.lang3.StringUtils
 import org.aspectj.lang.ProceedingJoinPoint
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.HostOverloadingException
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
+import org.migor.feedless.session.capabilities
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -39,8 +40,9 @@ class IpThrottleService(
 
   fun resolveTokenBucket(jwt: Jwt): Bucket {
     val userId =
-      StringUtils.trimToNull(jwt.getClaim(JwtParameterNames.USER_ID)) ?: throw BadRequestException("invalid jwt)")
-    return ip2BucketCache.computeIfAbsent(userId) {
+      jwt.capabilities().find { it.authority == UserCapability.ID }
+        ?.let { UserCapability.fromString(it.payload).userId } ?: throw BadRequestException("invalid jwt)")
+    return ip2BucketCache.computeIfAbsent(userId.value.toString()) {
       Bucket.builder()
         .addLimit(resolveRateLimitFromApiKey(jwt))
         .build()
@@ -81,7 +83,7 @@ class IpThrottleService(
 
   fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
     return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
-      AuthTokenType.AGENT -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
+      AuthTokenType.SERVICE -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
       AuthTokenType.USER -> Bandwidth.classic(300, Refill.intervally(300, Duration.ofMinutes(1)))
       AuthTokenType.API -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
       AuthTokenType.ANONYMOUS -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))
@@ -103,4 +105,8 @@ class IpThrottleService(
       }
     }
   }
+}
+
+private fun Jwt.getUserCapability(): UserCapability? {
+  return this.capabilities().find { it.authority == UserCapability.ID }?.let { UserCapability.fromString(it.payload) }
 }

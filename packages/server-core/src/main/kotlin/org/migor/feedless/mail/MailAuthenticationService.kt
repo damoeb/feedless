@@ -8,6 +8,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
@@ -19,9 +20,10 @@ import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.toDomain
 import org.migor.feedless.session.CookieProvider
-import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.toDomain
 import org.slf4j.LoggerFactory
@@ -37,7 +39,7 @@ import kotlin.random.Random
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.mail} & ${AppProfiles.session} & ${AppLayer.service}")
 class MailAuthenticationService(
-  private val tokenProvider: TokenProvider,
+  private val jwtTokenIssuer: JwtTokenIssuer,
   private val cookieProvider: CookieProvider,
   private val oneTimePasswordDAO: OneTimePasswordDAO,
   private val userService: UserService,
@@ -111,7 +113,7 @@ class MailAuthenticationService(
       oneTimePasswordDAO.deleteById(otpId)
     }
 
-    val jwt = tokenProvider.createJwtForUser(otp.user!!, emptyList())
+    val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(UserId(otp.userId))))
 
     response.addCookie(cookieProvider.createTokenCookie(jwt))
 

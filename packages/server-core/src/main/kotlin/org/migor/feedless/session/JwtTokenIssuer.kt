@@ -8,10 +8,13 @@ import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.AgentCapability
+import org.migor.feedless.capability.Capability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.secrets.UserSecretEntity
 import org.migor.feedless.user.UserEntity
+import org.migor.feedless.user.UserId
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -22,9 +25,8 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -37,9 +39,8 @@ import kotlin.time.toJavaDuration
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-class TokenProvider(
+class JwtTokenIssuer(
   val propertyService: PropertyService,
   val meterRegistry: MeterRegistry,
   @Value("\${auth.token.anonymous.validForDays}")
@@ -47,11 +48,9 @@ class TokenProvider(
   @Value("\${default.auth.token.anonymous.validForDays}")
   val defaultTokenAnonymousValidForDays: String
 ) {
-  private val log = LoggerFactory.getLogger(TokenProvider::class.simpleName)
+  private val log = LoggerFactory.getLogger(JwtTokenIssuer::class.simpleName)
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
-
-  private val attrCapabilities = "authorities"
 
   @PostConstruct
   fun postConstruct() {
@@ -59,31 +58,25 @@ class TokenProvider(
     log.info("tokenAnonymousValidFor=${tokenAnonymousValidFor}")
   }
 
-  private fun parseDuration(actual: String, fallback: String) = runCatching {
-    actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
-  }.getOrElse { fallback.toLong() }
-
-  suspend fun createJwtForAnonymous(): Jwt {
+  fun createJwtForAnonymous(): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "anonymous"))).increment()
     log.debug("signedToken for anonymous")
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
-        JwtParameterNames.USER_ID to "",
-        attrCapabilities to toAuthorities(listOf(Authority.ANONYMOUS)),
+        JwtParameterNames.CAPABILITIES to toAuthorities(listOf(UserCapability(UserId(UUID.randomUUID())))),
       ),
       getExpiration(AuthTokenType.ANONYMOUS)
     )
   }
 
-  suspend fun createJwtForUser(user: UserEntity, capabilities: List<GithubCapability>): Jwt {
+  fun createJwtForCapabilities(capabilities: List<Capability<out Any>>): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")
     return encodeJwt(
       mapOf(
-        JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
-        attrCapabilities to capabilities.associate {
+        JwtParameterNames.CAPABILITIES to capabilities.associate {
           it.capabilityId to Gson().toJson(it.capabilityPayload)
         },
       ),
@@ -91,41 +84,46 @@ class TokenProvider(
     )
   }
 
-  suspend fun createJwtForApi(user: UserEntity): Jwt {
+  fun createJwtForApi(user: UserEntity): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
-    log.debug("signedToken for api")
+    log.debug("signedToken for service")
+    val capabilities: List<Capability<out Any>> = listOf(UserCapability(UserId(user.id)));
     return encodeJwt(
       mapOf(
-        JwtParameterNames.USER_ID to user.id.toString(),
         JwtParameterNames.TYPE to AuthTokenType.API.value,
-        attrCapabilities to toAuthorities(
-          listOf(
-            Authority.ANONYMOUS
-          )
-        ),
+        JwtParameterNames.CAPABILITIES to toAuthorities(capabilities),
       ),
-      getExpiration(AuthTokenType.ANONYMOUS)
+      getExpiration(AuthTokenType.SERVICE)
     )
   }
 
-  suspend fun createJwtForAgent(securityKey: UserSecretEntity): Jwt {
+  fun createJwtForService(securityKey: UserSecretEntity): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
+    val capabilities: List<Capability<out Any>> = listOf(
+      AgentCapability(""),
+      UserCapability(UserId(securityKey.ownerId))
+    );
     return encodeJwt(
       mapOf(
-        JwtParameterNames.USER_ID to securityKey.ownerId.toString(),
-        JwtParameterNames.TYPE to AuthTokenType.AGENT.value,
-        attrCapabilities to toAuthorities(
-          listOf(
-            Authority.AGENT
-          )
-        ),
+        JwtParameterNames.TYPE to AuthTokenType.SERVICE.value,
+        JwtParameterNames.CAPABILITIES to toAuthorities(capabilities),
       ),
-      getExpiration(AuthTokenType.AGENT)
+      getExpiration(AuthTokenType.SERVICE)
     )
   }
 
-  private suspend fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
+  fun getExpiration(authority: AuthTokenType): Duration {
+    // todo from properties
+    return when (authority) {
+      AuthTokenType.ANONYMOUS -> 1.days
+      AuthTokenType.USER -> 48.hours
+      AuthTokenType.SERVICE -> 356.days
+      AuthTokenType.API -> 48.hours
+    }
+  }
+
+  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     val claimsSet = JwtClaimsSet.builder()
@@ -142,23 +140,18 @@ class TokenProvider(
       .encode(params)
   }
 
-  suspend fun getExpiration(authority: AuthTokenType): Duration {
-    // todo from properties
-    return when (authority) {
-      AuthTokenType.ANONYMOUS -> 1.days
-      AuthTokenType.USER -> 48.hours
-      AuthTokenType.AGENT -> 356.days
-      AuthTokenType.API -> 48.hours
-    }
-  }
-
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }
 
-  private fun toAuthorities(authorities: List<Authority>): List<String> {
-    return authorities.map { it.name }
+  private fun toAuthorities(capabilities: List<Capability<out Any>>): Map<String, String> {
+    return capabilities.associate {
+      it.capabilityId to Gson().toJson(it.capabilityPayload)
+    }
   }
 
+  private fun parseDuration(actual: String, fallback: String) = runCatching {
+    actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
+  }.getOrElse { fallback.toLong() }
 
 }

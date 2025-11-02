@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import com.google.gson.JsonSyntaxException
 import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
@@ -16,11 +17,11 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.springframework.security.oauth2.core.user.OAuth2User
-import org.springframework.security.oauth2.core.user.OAuth2UserAuthority
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 import org.springframework.web.context.request.RequestAttributes
@@ -40,8 +41,9 @@ class JwtRequestFilter : Filter {
     if (request is HttpServletRequest && response is HttpServletResponse) {
       runBlocking {
         runCatching {
-          SecurityContextHolder.getContext().authentication = toAuthenticationToken(authService.interceptToken(request))
-        }
+          SecurityContextHolder.getContext().authentication =
+            toOAuth2AuthenticationToken(authService.interceptToken(request))
+        }.onFailure { log.error(it.message, it) }
       }
       val attributes = ServletRequestAttributes(request)
       val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()
@@ -56,14 +58,11 @@ class JwtRequestFilter : Filter {
   }
 
 
-  private fun toAuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
-    val userId = jwtToken.claims[JwtParameterNames.USER_ID] as String
-    val attributes = mapOf(
-      JwtParameterNames.USER_ID to userId
-    )
-    val authorities: List<OAuth2UserAuthority> = getAuthorities(jwtToken).map { OAuth2UserAuthority(it, attributes) }
-    val nameAttributeKey = JwtParameterNames.USER_ID
-    val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, nameAttributeKey)
+  private fun toOAuth2AuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
+    val attributes = mapOf("dummy" to "wef")
+    var authorities: List<GrantedAuthority> = jwtToken.capabilities()
+
+    val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
     val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
     return OAuth2AuthenticationToken(
       principal,
@@ -71,8 +70,18 @@ class JwtRequestFilter : Filter {
       authorizedClientRegistrationId
     )
   }
+}
 
-  private fun getAuthorities(jwt: Jwt): List<String> {
-    return jwt.getClaim("authorities") as List<String>
+fun Jwt.capabilities(): List<LazyGrantedAuthority> {
+  val capabilitiesMaybe = claims[JwtParameterNames.CAPABILITIES]
+  if (capabilitiesMaybe is Map<*, *>) {
+    try {
+      return capabilitiesMaybe.entries.map {
+        LazyGrantedAuthority(it.key as String, it.value as String)
+      }
+    } catch (_: IllegalArgumentException) {
+    } catch (_: JsonSyntaxException) {
+    }
   }
+  return emptyList()
 }

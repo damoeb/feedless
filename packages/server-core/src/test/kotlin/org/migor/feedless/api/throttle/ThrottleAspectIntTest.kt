@@ -20,8 +20,8 @@ import org.migor.feedless.license.LicenseService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.session.TokenProvider
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock
@@ -71,7 +71,7 @@ class ThrottleAspectIntTest {
   lateinit var authService: AuthService
 
   @MockitoBean
-  lateinit var tokenProvider: TokenProvider
+  lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @LocalServerPort
   private var port: Int = 0
@@ -83,8 +83,8 @@ class ThrottleAspectIntTest {
       val jwt = mock(Jwt::class.java)
       `when`(jwt.tokenValue).thenReturn("jwt")
       `when`(jwt.expiresAt).thenReturn(LocalDateTime.now().toInstant(ZoneOffset.UTC))
-      `when`(tokenProvider.createJwtForAnonymous()).thenReturn(jwt)
-      `when`(tokenProvider.getExpiration(any2())).thenReturn(2.hours)
+      `when`(jwtTokenIssuer.createJwtForAnonymous()).thenReturn(jwt)
+      `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.hours)
       `when`(authService.isWhitelisted(any2())).thenReturn(false)
     }
     val webClient = WebClient.create("http://localhost:$port/graphql")

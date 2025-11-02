@@ -6,7 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
-import org.migor.feedless.session.TokenProvider
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -18,7 +18,7 @@ import kotlin.time.Duration.Companion.seconds
 class UserSecretServiceTest {
 
   private lateinit var userSecretDAO: UserSecretDAO
-  private lateinit var tokenProvider: TokenProvider
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
   private lateinit var userSecretService: UserSecretService
   private lateinit var currentUserId: UUID
   private lateinit var currentUser: UserEntity
@@ -32,13 +32,13 @@ class UserSecretServiceTest {
     `when`(userSecretDAO.save(any2())).thenAnswer { it.arguments[0] }
 
 
-    tokenProvider = mock(TokenProvider::class.java)
+    jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
     val jwt = mock(Jwt::class.java)
     `when`(jwt.tokenValue).thenReturn("jwt")
-    `when`(tokenProvider.createJwtForApi(any2())).thenReturn(jwt)
-    `when`(tokenProvider.getExpiration(any2())).thenReturn(2.seconds)
+    `when`(jwtTokenIssuer.createJwtForApi(any2())).thenReturn(jwt)
+    `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.seconds)
 
-    userSecretService = UserSecretService(userSecretDAO, tokenProvider)
+    userSecretService = UserSecretService(userSecretDAO, jwtTokenIssuer)
 
   }
 

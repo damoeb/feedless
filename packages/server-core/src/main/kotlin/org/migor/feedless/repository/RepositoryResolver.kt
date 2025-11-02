@@ -104,7 +104,7 @@ class RepositoryResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateRepositories)
-  @PreAuthorize("hasAuthority('ANONYMOUS')")
+  @PreAuthorize("hasToken()")
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
@@ -115,7 +115,7 @@ class RepositoryResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRepository)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun updateRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
@@ -127,7 +127,7 @@ class RepositoryResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.DeleteRepository)
-  @PreAuthorize("hasAuthority('USER')")
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun deleteRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUniqueWhereInput,

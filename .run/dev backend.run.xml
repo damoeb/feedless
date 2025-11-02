@@ -3,6 +3,7 @@
     <option name="ACTIVE_PROFILES" value="saas,dev" />
     <envs>
       <env name="APP_BUILD_TIMESTAMP" value="0" />
+      <env name="APP_GIT_COMMIT" value="" />
     </envs>
     <option name="FRAME_DEACTIVATION_UPDATE_POLICY" value="UpdateClassesAndResources" />
     <module name="feedless.packages.server-core.main" />
