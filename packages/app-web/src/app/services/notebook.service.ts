@@ -66,6 +66,8 @@ export type NoteHandle = {
   scrollTo: (event: MouseEvent) => void;
   children: () => Observable<NoteHandle[]>;
   toggleUpvote: () => void;
+  incomingLinks$: () => Observable<NoteHandle[]>;
+  outgoingLinks$: () => Observable<NoteHandle[]>;
 };
 
 export type Hashtag = string;
@@ -855,6 +857,8 @@ export class NotebookService {
       return {
         body: note,
         body$: () => convertToRx(liveQuery(() => notebookRepository.notes.get(note.id))),
+        incomingLinks$: () => of([]),
+        outgoingLinks$: () => of([]),
         expanded: true,
         disabled: false,
         level,

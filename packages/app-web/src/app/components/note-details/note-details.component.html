@@ -1,44 +1,63 @@
-<div
-  class="note"
-  [id]="getId()"
-  [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }"
->
-  <div class="note-header" (click)="toggle()">
-    <div class="flex ion-nowrap">
-      {{ title() | async }}
+<div [id]="getId()">
+  @if (isOpen) {
+    <div class="references">
+      <ul>
+        @for (outLink of handle().incomingLinks$() | async; track outLink) {
+          <li>{{ outLink }}</li>
+        }
+      </ul>
     </div>
-
-    <div style="opacity: 0.4">
-      {{ changeAgo() }}
-    </div>
-
-    @if (isMove) {
-      <div class="note-actions">Move here</div>
-    } @else {
-      <div class="note-actions">
-        <ng-content></ng-content>
-        <div>
-          <a (click)="toggleExpanded($event)" href="javascript:void(0)">
-            @if (handle().expanded) {
-              Collapse
-            } @else {
-              Expand
-            }
-          </a>
-        </div>
-        <div>
-          <a (click)="toggleUpvote($event)" href="javascript:void(0)">
-            @if (note().isUpVoted) {
-              Unpin
-            } @else {
-              Pin
-            }
-          </a>
-        </div>
-        <!--        <div>-->
-        <!--          <a (click)="extendNote($event)" href="javascript:void(0)"> Extend </a>-->
-        <!--        </div>-->
+  }
+  <div
+    class="note"
+    [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }"
+  >
+    <div class="note-header" (click)="toggle()">
+      <div class="flex ion-nowrap">
+        {{ title() | async }}
       </div>
-    }
+
+      <div style="opacity: 0.4">
+        {{ changeAgo() }}
+      </div>
+
+      @if (isMove) {
+        <div class="note-actions">Move here</div>
+      } @else {
+        <div class="note-actions">
+          <ng-content></ng-content>
+          <div>
+            <a (click)="toggleExpanded($event)" href="javascript:void(0)">
+              @if (handle().expanded) {
+                Collapse
+              } @else {
+                Expand
+              }
+            </a>
+          </div>
+          <div>
+            <a (click)="toggleUpvote($event)" href="javascript:void(0)">
+              @if (note().isUpVoted) {
+                Unpin
+              } @else {
+                Pin
+              }
+            </a>
+          </div>
+          <!--        <div>-->
+          <!--          <a (click)="extendNote($event)" href="javascript:void(0)"> Extend </a>-->
+          <!--        </div>-->
+        </div>
+      }
+    </div>
   </div>
+  @if (isOpen) {
+    <div class="references">
+      <ul>
+        @for (outLink of handle().outgoingLinks$() | async; track outLink) {
+          <li>{{ outLink }}</li>
+        }
+      </ul>
+    </div>
+  }
 </div>
