@@ -2,4 +2,4 @@ package org.migor.feedless.connector.git
 
 import java.io.File
 
-data class LocalGitRepositoryCapability(val directory: File)
+data class LocalGitRepositoryCapability(val directory: File, val gitConnectionCapability: GitConnectionCapability)
