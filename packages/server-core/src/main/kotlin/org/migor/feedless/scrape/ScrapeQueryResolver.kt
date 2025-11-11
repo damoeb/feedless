@@ -45,7 +45,7 @@ class ScrapeQueryResolver {
 
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.Scrape)
-  @PreAuthorize("hasToken()")
+  @PreAuthorize("@capabilityService.hasToken()")
   suspend fun scrape(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.SCRAPE_INPUT_ARGUMENT.Data) data: SourceInput,

@@ -104,7 +104,7 @@ class RepositoryResolver(
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.CreateRepositories)
-  @PreAuthorize("hasToken()")
+  @PreAuthorize("@capabilityService.hasToken()")
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,

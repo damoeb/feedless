@@ -43,7 +43,7 @@ class JwtRequestFilter : Filter {
         runCatching {
           SecurityContextHolder.getContext().authentication =
             toOAuth2AuthenticationToken(authService.interceptToken(request))
-        }.onFailure { log.error(it.message, it) }
+        }.onFailure { log.debug(it.message) }
       }
       val attributes = ServletRequestAttributes(request)
       val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()

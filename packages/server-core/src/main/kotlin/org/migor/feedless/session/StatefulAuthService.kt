@@ -133,8 +133,7 @@ class StatefulAuthService : AuthService() {
   private fun resolveWhitelistedHosts() {
     this.whitelistedIps = whitelistedHostsParam
       .trim()
-      .split(" ", ",")
-      .map {
+      .split(" ", ",").mapNotNull {
         try {
           InetAddress.getByName(it.trim()).hostAddress
         } catch (e: Exception) {
@@ -142,7 +141,6 @@ class StatefulAuthService : AuthService() {
           null
         }
       }
-      .filterNotNull()
       .plus(
         listOf(
           InetAddress.getLocalHost().hostAddress,
