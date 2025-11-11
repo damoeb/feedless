@@ -98,6 +98,20 @@ app-tree-view {
   }
 }
 
+.tree_and_editors {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  column-gap: 10px;
+}
+
+// big desktop
+@media (min-width: 1000px) {
+  .tree_and_editors {
+    flex-direction: row;
+  }
+}
+
 .note-editors {
   display: flex;
   justify-content: center;
@@ -133,7 +147,7 @@ app-tree-view {
   }
 }
 
-// desktop
+// small desktop
 @media (min-width: 600px) {
   .note-editors {
     position: absolute;
@@ -142,8 +156,17 @@ app-tree-view {
 
     .note-editor {
       width: var(--editor-width);
-      min-height: 500px;
+      height: 500px;
     }
+  }
+}
+
+// big desktop
+@media (min-width: 1000px) {
+  .note-editors {
+    position: inherit;
+    bottom: 0;
+    right: 0;
   }
 }
 
@@ -197,14 +220,12 @@ ion-accordion.accordion-expanded {
   background: var(--line-color);
   height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
   //width: 100%;
-  --_g: var(--s) repeat-x
-    conic-gradient(
+  --_g: var(--s) repeat-x conic-gradient(
       from calc(var(--a) / -2) at bottom,
       #0000,
       #000 1deg calc(var(--a) - 1deg),
       #0000 var(--a)
-    );
-  mask:
-    50% calc(-1 * var(--b)) / var(--_g) exclude,
-    50% / var(--_g);
+  );
+  mask: 50% calc(-1 * var(--b)) / var(--_g) exclude,
+  50% / var(--_g);
 }

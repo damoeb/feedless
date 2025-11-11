@@ -72,6 +72,10 @@
         </ion-buttons>
 
         <ion-buttons slot="end">
+          <ion-button color="primary"
+                      fill="solid"
+                      (click)="createNoteByParent()"> New Note
+          </ion-button>
           <app-notifications-button
             (click)="openVirtualNote('notifications')"
           ></app-notifications-button>
@@ -85,7 +89,7 @@
       @if (systemBusy) {
         <ion-spinner name="dots"></ion-spinner>
       } @else {
-        <div class="flex__column" style="column-gap: 10px">
+        <div class="tree_and_editors">
           <div class="flex__column" style="flex: 2">
             <div>
               <app-typeahead
@@ -256,7 +260,7 @@
                     <!--                      </div>-->
                     <ion-button (click)="createFollowUpNote()" fill="solid" color="primary">
                       <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
-                      Follow-up
+                      Extend
                     </ion-button>
 
                     <ion-button (click)="deleteNote()" size="small">
@@ -265,8 +269,6 @@
                   </ion-buttons>
                 </div>
               </div>
-            } @else {
-              <ion-button color="primary" (click)="createNoteByParent()"> Create Note</ion-button>
             }
           </div>
         </div>

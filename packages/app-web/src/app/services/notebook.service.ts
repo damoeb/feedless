@@ -858,7 +858,12 @@ export class NotebookService {
         body: note,
         body$: () => convertToRx(liveQuery(() => notebookRepository.notes.get(note.id))),
         incomingLinks$: () => of([]),
-        outgoingLinks$: () => of([]),
+        outgoingLinks$: () =>
+          this.findOutgoingNotes(note.id).pipe(
+            map((notes) => {
+              return notes.map(this.toNoteHandle(level + 1));
+            })
+          ),
         expanded: true,
         disabled: false,
         level,
@@ -921,6 +926,20 @@ export class NotebookService {
   findAllChildren(id: string, title: string = null): Observable<Note[]> {
     const children$ = this.findAllChildrenById(id, title);
     return children$.pipe(this.filterInternalNotes$()).pipe(this.attachChildCount$());
+  }
+
+  private findOutgoingNotes(id: string): Observable<Note[]> {
+    return this.findByIdInternal(id).pipe(
+      switchMap((note) => {
+        const outgoingIds = note.references.links;
+        if (outgoingIds.length === 0) {
+          return of([]);
+        } else {
+          const notes$ = outgoingIds.map((id) => this.findByIdInternal(id));
+          return forkJoin(notes$);
+        }
+      })
+    );
   }
 
   private findAllChildrenById(id: string, title: string = null): Observable<Note[]> {
