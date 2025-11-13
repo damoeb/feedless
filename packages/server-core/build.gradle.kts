@@ -97,6 +97,7 @@ dependencies {
 
   implementation(project(":packages:domain"))
   implementation(project(":packages:github-connector"))
+  implementation(project(":packages:stripe-payments"))
   api(project(":packages:graphql-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")
@@ -193,9 +194,6 @@ dependencies {
   // Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
   testImplementation(libs.jqwik)
   implementation(libs.telegrambots.spring.boot.starter)
-
-  // payments
-  implementation("com.stripe:stripe-java:29.1.0")
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

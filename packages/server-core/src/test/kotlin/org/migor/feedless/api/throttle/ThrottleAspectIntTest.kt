@@ -16,7 +16,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.license.JwtLicenseService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
@@ -51,7 +51,7 @@ import kotlin.time.Duration.Companion.seconds
 )
 @MockitoBean(
   types = [
-    LicenseService::class,
+    JwtLicenseService::class,
     UserService::class,
     DocumentService::class,
     HttpService::class,

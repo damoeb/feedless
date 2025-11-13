@@ -29,7 +29,7 @@ import java.util.*
 @Tag("unstable")
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LicenseServiceTest {
+class JwtLicenseServiceTest {
 
   private lateinit var licensePayload: LicensePayload
   private lateinit var thisKeyPair: RSAKey
@@ -38,14 +38,14 @@ class LicenseServiceTest {
   @Mock
   lateinit var environment: Environment
 
-  lateinit var service: LicenseService
+  lateinit var service: JwtLicenseService
 
   private val keyID = "test"
 
   @BeforeEach
   fun setup() {
     Mockito.`when`(environment.acceptsProfiles(any(Profiles::class.java))).thenReturn(false)
-    service = LicenseService()
+    service = JwtLicenseService()
     service.environment = environment
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))

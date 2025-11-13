@@ -13,7 +13,6 @@ import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
-import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserEntity
@@ -33,10 +32,6 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
-data class OrderId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
-
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
@@ -49,9 +44,6 @@ class OrderService {
 
   @Autowired
   private lateinit var sessionService: SessionService
-
-  @Autowired
-  private lateinit var licenseService: LicenseService
 
   @Autowired
   private lateinit var productService: ProductService
@@ -157,29 +149,6 @@ class OrderService {
       }
 
       orderDAO.save(order)
-    }
-  }
-
-  @Transactional
-  suspend fun handlePaymentCallback(orderId: String): OrderEntity {
-    return withContext(Dispatchers.IO) {
-      val order = orderDAO.findById(UUID.fromString(orderId)).orElseThrow()
-
-      order.isPaid = true
-      order.paidAt = LocalDateTime.now()
-      orderDAO.save(order)
-
-      val product = order.product!!
-      if (product.saas) {
-        productService.enableSaasProduct(product, order.user!!, order)
-      } else {
-        order.licenses = mutableListOf(licenseService.createLicenseForProduct(product, order))
-        orderDAO.save(order)
-      }
-
-      // todo send email
-
-      order
     }
   }
 }

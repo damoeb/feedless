@@ -21,8 +21,8 @@ import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.UpsertOrderInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.license.LicenseEntity
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.license.JwtLicenseService
+import org.migor.feedless.payment.OrderId
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -44,7 +44,7 @@ class OrderResolver {
   lateinit var orderService: OrderService
 
   @Autowired
-  lateinit var licenseService: LicenseService
+  lateinit var licenseService: JwtLicenseService
 
   @DgsQuery(field = DgsConstants.QUERY.Orders)
   suspend fun orders(
@@ -80,7 +80,7 @@ class OrderResolver {
 
 }
 
-private fun LicenseEntity.toDTO(): License {
+private fun org.migor.feedless.license.License.toDTO(): License {
   // todo decode license and fill
   return License(
     name = "",
