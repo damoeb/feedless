@@ -13,7 +13,6 @@ repositories {
 dependencies {
   implementation(platform(libs.spring.boot.bom))
   implementation(project(":packages:domain"))
-  implementation(project(":packages:template-adapter"))
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
@@ -21,8 +20,7 @@ dependencies {
 
   implementation(libs.kotlinx.coroutines.core)
   testImplementation(libs.kotlinx.coroutines.test)
-  implementation(libs.spring.boot.mail)
-  implementation(libs.mailgun.java)
+  implementation(libs.spring.boot.freemarker)
   implementation(libs.spring.boot.web)
   testImplementation(libs.spring.boot.test)
   implementation(libs.commons.lang3)

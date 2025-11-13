@@ -18,6 +18,7 @@
             <option value="$PROJECT_DIR$/packages/mail-adapter" />
             <option value="$PROJECT_DIR$/packages/nominatim-proxy" />
             <option value="$PROJECT_DIR$/packages/server-core" />
+            <option value="$PROJECT_DIR$/packages/template-adapter" />
           </set>
         </option>
       </GradleProjectSettings>
