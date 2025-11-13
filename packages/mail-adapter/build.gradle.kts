@@ -17,6 +17,7 @@ dependencies {
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
+  testImplementation(project(":packages:domain", "testOutput"))
   implementation("org.jetbrains.kotlin:kotlin-reflect")
 
   implementation(libs.kotlinx.coroutines.core)
@@ -25,6 +26,7 @@ dependencies {
   implementation(libs.mailgun.java)
   implementation(libs.spring.boot.web)
   testImplementation(libs.spring.boot.test)
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   implementation(libs.commons.lang3)
 }
 

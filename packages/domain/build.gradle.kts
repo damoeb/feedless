@@ -25,3 +25,17 @@ tasks.test {
   useJUnitPlatform()
 //  failOnNoDiscoveredTests = false
 }
+
+// Expose test classes
+configurations {
+  create("testOutput")
+}
+
+tasks.register<Jar>("testJar") {
+  from(sourceSets.test.get().output)
+  archiveClassifier.set("test")
+}
+
+artifacts {
+  add("testOutput", tasks.named<Jar>("testJar"))
+}

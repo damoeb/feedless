@@ -3,4 +3,11 @@
   <component name="CompilerConfiguration">
     <bytecodeTargetLevel target="21" />
   </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="feedless.packages.server-core" options="-parameters -proc:none" />
+      <module name="feedless.packages.server-core.main" options="-parameters -proc:none" />
+      <module name="feedless.packages.server-core.test" options="-parameters -proc:none" />
+    </option>
+  </component>
 </project>

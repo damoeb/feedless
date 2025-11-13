@@ -1,5 +1,6 @@
 package org.migor.feedless
 
+import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.user.User
 import java.time.LocalDateTime
 import java.time.ZoneOffset
@@ -49,7 +50,13 @@ object Mother {
     }
   }
 
-  fun randomLocalDateTime(): LocalDateTime = LocalDateTime.ofEpochSecond(random.nextLong(), 0, ZoneOffset.UTC)
+  fun randomLocalDateTime(): LocalDateTime {
+    val minEpoch = LocalDateTime.of(2020, 1, 1, 0, 0).toEpochSecond(ZoneOffset.UTC)
+    val maxEpoch = LocalDateTime.of(2030, 12, 31, 23, 59).toEpochSecond(ZoneOffset.UTC)
+    val randomEpoch = minEpoch + (random.nextDouble() * (maxEpoch - minEpoch)).toLong()
+    return LocalDateTime.ofEpochSecond(randomEpoch, 0, ZoneOffset.UTC)
+  }
+
   fun randomNullableLocalDateTime(): LocalDateTime? {
     return if (randomBoolean()) {
       randomLocalDateTime()
@@ -61,5 +68,14 @@ object Mother {
   fun randomBoolean() = random.nextBoolean()
   fun randomString() = randomUUID().toString()
   fun randomNullableString() = randomUUID().toString()
+
+  fun randomOneTimePassword(userId: UUID? = null): OneTimePassword {
+    return OneTimePassword(
+      id = randomUUID(),
+      password = randomString().substring(0, 6),
+      validUntil = LocalDateTime.now().plusMinutes(10),
+      userId = userId ?: randomUUID()
+    )
+  }
 
 }
