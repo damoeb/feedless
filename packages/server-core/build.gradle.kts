@@ -125,7 +125,7 @@ dependencies {
 
   // mail
   implementation(project(":packages:mail-adapter"))
-  implementation(project(":packages:template-adapter"))
+  implementation(project(":packages:freemarker-templates"))
   // https://github.com/micrometer-metrics/micrometer
   implementation("io.micrometer:micrometer-registry-prometheus")
 //  implementation("com.github.loki4j:loki-logback-appender:1.3.2")

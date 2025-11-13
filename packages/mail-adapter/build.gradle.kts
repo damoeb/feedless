@@ -13,7 +13,7 @@ repositories {
 dependencies {
   implementation(platform(libs.spring.boot.bom))
   implementation(project(":packages:domain"))
-  implementation(project(":packages:template-adapter"))
+  implementation(project(":packages:freemarker-templates"))
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
