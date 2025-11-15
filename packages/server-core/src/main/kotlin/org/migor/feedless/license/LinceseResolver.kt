@@ -11,7 +11,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.enums.toDto
+import org.migor.feedless.api.toDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.LocalizedLicense
 import org.migor.feedless.generated.types.UpdateLicenseInput

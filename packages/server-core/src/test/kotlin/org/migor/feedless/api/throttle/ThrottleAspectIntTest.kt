@@ -16,7 +16,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.generated.DgsClient
-import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretService

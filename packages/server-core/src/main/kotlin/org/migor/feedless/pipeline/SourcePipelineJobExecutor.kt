@@ -9,7 +9,7 @@ import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobEntity
+import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceId

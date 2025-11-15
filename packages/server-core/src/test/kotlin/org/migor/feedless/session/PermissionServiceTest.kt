@@ -8,11 +8,11 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.eq
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock

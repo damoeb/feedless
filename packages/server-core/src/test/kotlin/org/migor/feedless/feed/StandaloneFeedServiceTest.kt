@@ -12,15 +12,17 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.plugins.CompositeFilterPluginParams
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.scrape.HttpFetchOutput
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
@@ -76,7 +78,6 @@ class StandaloneFeedServiceTest {
       sourceService,
       documentService,
       filterPlugin,
-      environment
     )
   }
 
@@ -96,7 +97,14 @@ class StandaloneFeedServiceTest {
   @Test
   fun `webToFeed will filter`() = runTest {
     // given
-    `when`(filterPlugin.filterEntity(any2(), any2(), any(Int::class.java), any2())).thenReturn(true)
+    `when`(
+      filterPlugin.filterEntity(
+        any(JsonItem::class.java),
+        any(CompositeFilterPluginParams::class.java),
+        any(Int::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(true)
     val feed = createJsonFeed()
     `when`(webToFeedTransformer.getFeedBySelectors(any2(), any2(), any2(), any2())).thenReturn(feed)
 
@@ -127,7 +135,12 @@ class StandaloneFeedServiceTest {
     )
 
     // then
-    verify(filterPlugin, times(2)).filterEntity(any2(), any2(), any(Int::class.java), any2())
+    verify(filterPlugin, times(2)).filterEntity(
+      any2(),
+      any(CompositeFilterPluginParams::class.java),
+      any(Int::class.java),
+      any2()
+    )
   }
 
   @Test
@@ -180,13 +193,31 @@ class StandaloneFeedServiceTest {
     // given
     val feed = createJsonFeed()
     `when`(feedParserService.parseFeedFromUrl(any2())).thenReturn(feed)
-    `when`(filterPlugin.filterEntity(any2(), any2(), any(Int::class.java), any2())).thenReturn(true)
+    `when`(
+      filterPlugin.filterEntity(
+        any2(),
+        any(CompositeFilterPluginParams::class.java),
+        any(Int::class.java),
+        any2()
+      )
+    ).thenReturn(true)
+
+    `when`(
+      filterPlugin.fromJson(
+        any(String::class.java),
+      )
+    ).thenReturn(mock(CompositeFilterPluginParams::class.java))
 
     // when
     standaloneFeedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl")
 
     // then
-    verify(filterPlugin, times(2)).filterEntity(any2(), any2(), any(Int::class.java), any2())
+    verify(filterPlugin, times(2)).filterEntity(
+      any2(),
+      any(CompositeFilterPluginParams::class.java),
+      any(Int::class.java),
+      any2()
+    )
   }
 
   private fun createJsonFeed(): JsonFeed {

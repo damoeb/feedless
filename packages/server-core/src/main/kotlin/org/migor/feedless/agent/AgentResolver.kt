@@ -13,12 +13,12 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Agent
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
-import org.migor.feedless.jpa.agent.AgentEntity
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toMillis

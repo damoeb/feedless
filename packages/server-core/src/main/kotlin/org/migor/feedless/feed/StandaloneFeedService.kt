@@ -11,18 +11,16 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.generated.types.ItemFilterParamsInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
@@ -37,7 +35,6 @@ import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
-import org.springframework.core.env.Environment
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
@@ -66,7 +63,6 @@ class StandaloneFeedService(
   private val sourceService: SourceService,
   private val documentService: DocumentService,
   private val filterPlugin: CompositeFilterPlugin,
-  private val environment: Environment
 ) {
 
   private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
@@ -138,11 +134,10 @@ class StandaloneFeedService(
 
       try {
         filter?.let {
-          val params = convertFilterStringToPluginParams(it)
           feed.items = feed.items.filterIndexed { index, jsonItem ->
             filterPlugin.filterEntity(
               jsonItem,
-              params.toEntity(),
+              convertFilterStringToPluginParams(it),
               index,
               LogCollector()
             )
@@ -158,18 +153,16 @@ class StandaloneFeedService(
     }
   }
 
-  private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): PluginExecutionParamsInput {
-    return PluginExecutionParamsInput(
-      org_feedless_filter = try {
-        stringToArray(jsonOrExpressionFilter, Array<ItemFilterParamsInput>::class.java)
-      } catch (e: Exception) {
-        listOf(
-          ItemFilterParamsInput(
-            expression = jsonOrExpressionFilter,
-          )
+  private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): List<ItemFilterParams> {
+    return try {
+      stringToArray(jsonOrExpressionFilter, Array<ItemFilterParams>::class.java)
+    } catch (e: Exception) {
+      listOf(
+        ItemFilterParams(
+          expression = jsonOrExpressionFilter,
         )
-      }
-    )
+      )
+    }
   }
 
   private fun <T> stringToArray(s: String, clazz: Class<Array<T>>): List<T> {
@@ -187,11 +180,10 @@ class StandaloneFeedService(
     return if (standaloneSupport(ts)) {
       val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
       filter?.let {
-        val params = convertFilterStringToPluginParams(filter)
         feed.items = feed.items.filterIndexed { index, jsonItem ->
           filterPlugin.filterEntity(
             jsonItem,
-            params.toEntity(),
+            filterPlugin.fromJson(filter),
             index,
             LogCollector()
           )

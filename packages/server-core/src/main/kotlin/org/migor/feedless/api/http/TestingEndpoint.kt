@@ -7,7 +7,7 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserId

@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import com.google.gson.Gson
 import jakarta.persistence.EntityManager
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.lang3.StringUtils
@@ -16,35 +17,34 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any
 import org.migor.feedless.any2
+import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
+import org.migor.feedless.data.jpa.document.DocumentDAO
+import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
+import org.migor.feedless.data.jpa.repository.MaxAgeDaysDateField
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.eq
-import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
-import org.migor.feedless.generated.types.CompositeFilterParamsInput
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.FulltextPluginParamsInput
-import org.migor.feedless.generated.types.ItemFilterParamsInput
-import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.generated.types.StringFilterInput
-import org.migor.feedless.generated.types.StringFilterOperator
-import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.jpa.document.DocumentDAO
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobDAO
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobEntity
-import org.migor.feedless.jpa.repository.MaxAgeDaysDateField
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
-import org.migor.feedless.jpa.user.TelegramConnectionEntity
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.plugins.CompositeFieldFilterParams
+import org.migor.feedless.pipeline.plugins.CompositeFilterParams
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.FulltextPlugin
+import org.migor.feedless.pipeline.plugins.FulltextPluginParams
+import org.migor.feedless.pipeline.plugins.ItemFilterParams
+import org.migor.feedless.pipeline.plugins.StringFilter
+import org.migor.feedless.pipeline.plugins.StringFilterOperator
+import org.migor.feedless.pipeline.plugins.StringFilterParams
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
@@ -146,13 +146,15 @@ class DocumentServiceTest {
     val filterJob = DocumentPipelineJobEntity()
     filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
     filterJob.executorParams = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            exclude = CompositeFieldFilterParamsInput(
-              title = StringFilterParamsInput(
-                operator = StringFilterOperator.contains,
-                value = "foo"
+      paramsJsonString = Gson().toJson(
+        listOf(
+          ItemFilterParams(
+            composite = CompositeFilterParams(
+              exclude = CompositeFieldFilterParams(
+                title = StringFilterParams(
+                  operator = StringFilterOperator.contains,
+                  value = "foo"
+                )
               )
             )
           )
@@ -175,13 +177,15 @@ class DocumentServiceTest {
     val filterJob = DocumentPipelineJobEntity()
     filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
     filterJob.executorParams = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            exclude = CompositeFieldFilterParamsInput(
-              title = StringFilterParamsInput(
-                operator = StringFilterOperator.contains,
-                value = "foo2"
+      paramsJsonString = Gson().toJson(
+        listOf(
+          ItemFilterParams(
+            composite = CompositeFilterParams(
+              exclude = CompositeFieldFilterParams(
+                title = StringFilterParams(
+                  operator = StringFilterOperator.contains,
+                  value = "foo2"
+                )
               )
             )
           )
@@ -201,17 +205,20 @@ class DocumentServiceTest {
     val mapJob = DocumentPipelineJobEntity()
     mapJob.pluginId = FeedlessPlugins.org_feedless_fulltext.name
     mapJob.executorParams = PluginExecutionJsonEntity(
-      org_feedless_fulltext = FulltextPluginParamsInput(
-        summary = true,
-        readability = true,
-        inheritParams = false
+      paramsJsonString = Gson().toJson(
+        FulltextPluginParams(
+          summary = true,
+          readability = true,
+          inheritParams = false
+        )
       )
     )
+
     `when`(
       fulltextPlugin.mapEntity(
         eq(document),
         any2(),
-        any2(),
+        any(String::class.java),
         any2(),
       )
     ).thenAnswer {
@@ -286,7 +293,7 @@ class DocumentServiceTest {
         fulltextPlugin.mapEntity(
           any(DocumentEntity::class.java),
           any(RepositoryEntity::class.java),
-          any(PluginExecutionJsonEntity::class.java),
+          any(FulltextPluginParams::class.java),
           any(LogCollector::class.java),
         )
       ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
@@ -407,7 +414,7 @@ class DocumentServiceTest {
         mockRepository(repositoryId, ownerId = randomUserId())
 
         val data = RecordUpdateInput()
-        val where = RecordUniqueWhereInput(id = documentId.value.toString())
+        val where = DocumentId(documentId.value)
         documentService.updateDocument(data, where)
       }
     }
@@ -424,7 +431,7 @@ class DocumentServiceTest {
     `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
 
     val data = RecordUpdateInput()
-    val where = RecordUniqueWhereInput(id = documentId.value.toString())
+    val where = DocumentId(documentId.value)
     documentService.updateDocument(data, where)
 
     verify(documentDAO).save(eq(document))
@@ -442,7 +449,7 @@ class DocumentServiceTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest {
-        documentService.deleteDocuments(currentUser, repositoryId, StringFilterInput())
+        documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
       }
     }
   }

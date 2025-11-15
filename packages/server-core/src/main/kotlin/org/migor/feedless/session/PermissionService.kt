@@ -7,10 +7,10 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.user.UserDAO
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

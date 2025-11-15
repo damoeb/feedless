@@ -2,8 +2,8 @@ package org.migor.feedless.session
 
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.jpa.user.UserEntity
-import org.migor.feedless.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.UserId
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt

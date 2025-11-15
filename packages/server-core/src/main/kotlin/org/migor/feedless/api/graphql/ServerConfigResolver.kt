@@ -10,8 +10,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.analytics.AnalyticsService
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthType
 import org.migor.feedless.generated.types.BuildInfo

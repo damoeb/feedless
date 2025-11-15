@@ -23,8 +23,8 @@ import org.apache.commons.text.WordUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
-import org.migor.feedless.jpa.license.LicenseDAO
-import org.migor.feedless.jpa.license.LicenseEntity
+import org.migor.feedless.data.jpa.license.LicenseDAO
+import org.migor.feedless.data.jpa.license.LicenseEntity
 import org.migor.feedless.payment.Order
 import org.migor.feedless.payment.OrderId
 import org.migor.feedless.product.Product

@@ -1,18 +1,19 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
 import org.migor.feedless.generated.types.SelectorsInput
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.mockito.InjectMocks
@@ -58,14 +59,16 @@ class FeedPluginTest {
     val action = mock(ExecuteActionEntity::class.java)
     `when`(action.executorParams).thenReturn(
       PluginExecutionJsonEntity(
-        org_feedless_feed = FeedParamsInput(
-          generic = SelectorsInput(
-            contextXPath = "",
-            dateIsStartOfEvent = false,
-            dateXPath = "",
-            paginationXPath = "",
-            extendContext = ExtendContentOptions.NONE,
-            linkXPath = ""
+        paramsJsonString = Gson().toJson(
+          FeedParamsInput(
+            generic = SelectorsInput(
+              contextXPath = "",
+              dateIsStartOfEvent = false,
+              dateXPath = "",
+              paginationXPath = "",
+              extendContext = ExtendContentOptions.NONE,
+              linkXPath = ""
+            )
           )
         )
       )
@@ -104,7 +107,7 @@ class FeedPluginTest {
   @Test
   fun `extracts native feed`() = runTest {
     val action = mock(ExecuteActionEntity::class.java)
-    `when`(action.executorParams).thenReturn(PluginExecutionJsonEntity(org_feedless_feed = FeedParamsInput()))
+    `when`(action.executorParams).thenReturn(PluginExecutionJsonEntity(paramsJsonString = ""))
     `when`(feedParserService.parseFeed(any2())).thenReturn(jsonFeed)
     val httpResponse = HttpResponse(
       contentType = "application/rss+xml",

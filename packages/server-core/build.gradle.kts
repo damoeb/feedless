@@ -98,6 +98,7 @@ dependencies {
   implementation(project(":packages:domain"))
   implementation(project(":packages:github-connector"))
   implementation(project(":packages:stripe-payments"))
+  implementation(project(":packages:jpa-data"))
   api(project(":packages:graphql-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")

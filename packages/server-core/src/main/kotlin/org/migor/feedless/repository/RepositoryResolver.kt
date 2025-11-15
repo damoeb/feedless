@@ -12,9 +12,10 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.api.toDto
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
@@ -28,8 +29,6 @@ import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.Source
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
-import org.migor.feedless.jpa.repository.toDto
-import org.migor.feedless.jpa.source.toDto
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService

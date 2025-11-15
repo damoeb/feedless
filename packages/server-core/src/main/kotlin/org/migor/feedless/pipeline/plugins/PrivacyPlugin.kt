@@ -9,13 +9,11 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.attachment.AttachmentEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.jpa.attachment.AttachmentEntity
-import org.migor.feedless.jpa.attachment.createAttachmentUrl
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
@@ -39,7 +37,7 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class PrivacyPlugin : MapEntityPlugin {
+class PrivacyPlugin : MapEntityPlugin<Unit> {
 
   private val log = LoggerFactory.getLogger(PrivacyPlugin::class.simpleName)
 
@@ -59,14 +57,13 @@ class PrivacyPlugin : MapEntityPlugin {
 
   override fun id(): String = FeedlessPlugins.org_feedless_privacy.name
 
-  //  override fun description(): String = "Replaces links to images by base64 inlined images for enhanced privacy and longevity"
   override fun name(): String = "Privacy & Robustness"
   override fun listed() = true
 
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionJsonEntity,
+    params: Unit,
     logCollector: LogCollector
   ): DocumentEntity {
     log.debug("mapEntity ${document.url}")
@@ -85,6 +82,18 @@ class PrivacyPlugin : MapEntityPlugin {
 //    }
 
     return document
+  }
+
+  override suspend fun mapEntity(
+    document: DocumentEntity,
+    repository: RepositoryEntity,
+    paramsJson: String?,
+    logCollector: LogCollector
+  ): DocumentEntity {
+    return mapEntity(document, repository, null, logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?) {
   }
 
   suspend fun extractAttachments(
@@ -239,3 +248,6 @@ private fun Document.links(): List<Element> {
     .filter { imageElement -> imageElement.attr("href").startsWith("http") }
 }
 
+
+fun createAttachmentUrl(propertyService: PropertyService, id: UUID): String =
+  "${propertyService.apiGatewayUrl}/attachment/${id}"

@@ -1,21 +1,22 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
+import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractBoundingBoxActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractXpathActionEntity
-import org.migor.feedless.jpa.source.actions.FetchActionEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
-import org.migor.feedless.jpa.source.actions.ScrapeActionEntity
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
@@ -35,10 +36,17 @@ import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import kotlin.coroutines.coroutineContext
 
+data class FulltextPluginParams(
+  @SerializedName("readability") val readability: Boolean,
+  @SerializedName("summary") val summary: Boolean,
+  @SerializedName("inheritParams") val inheritParams: Boolean,
+  @SerializedName("onErrorRemove") val onErrorRemove: Boolean? = null,
+)
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
+class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransformerPlugin {
 
   private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
@@ -56,7 +64,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionJsonEntity,
+    params: FulltextPluginParams,
     logCollector: LogCollector
   ): DocumentEntity {
     val corrId = coroutineContext.corrId()
@@ -71,8 +79,8 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       val fetchAction = FetchActionEntity()
       fetchAction.url = document.url
 
-      val prerender = document.source?.let { source -> needsPrerendering(source, 0) } ?: false
-      if (BooleanUtils.isTrue(params.org_feedless_fulltext!!.inheritParams) && prerender) {
+      val prerender = document.source?.let { source -> needsPrerendering(source, 0) } == true
+      if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
         logCollector.log("[$corrId] inheritParams from source")
         request.actions = mergeWithSourceActions(fetchAction, document.source!!.actions).toMutableList()
       } else {
@@ -85,12 +93,12 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
         if (scrapeOutput.outputs.isNotEmpty()) {
           val lastOutput = scrapeOutput.outputs.last()
           val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-          if (params.org_feedless_fulltext.readability || params.org_feedless_fulltext.summary) {
+          if (params.readability || params.summary) {
             logCollector.log("[$corrId] convert to readability/summary")
             val readability = webToArticleTransformer.fromHtml(
               html,
               document.url.replace(Regex("#[^/]+$"), ""),
-              params.org_feedless_fulltext.summary
+              params.summary
             )
             document.html = readability.html
             document.text = StringUtils.trimToEmpty(readability.text)
@@ -109,6 +117,19 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
       }
       document
     }
+  }
+
+  override suspend fun mapEntity(
+    document: DocumentEntity,
+    repository: RepositoryEntity,
+    paramsJson: String?,
+    logCollector: LogCollector
+  ): DocumentEntity {
+    return mapEntity(document, repository, fromJson(paramsJson), logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?): FulltextPluginParams {
+    return Gson().fromJson(jsonParams, FulltextPluginParams::class.java)
   }
 
   suspend fun mergeWithSourceActions(
@@ -136,7 +157,7 @@ class FulltextPlugin : MapEntityPlugin, FragmentTransformerPlugin {
     return FragmentOutput(
       fragmentName = "fulltext",
       items = listOf(
-        webToArticleTransformer.fromHtml(markup, data.url, action.executorParams!!.org_feedless_fulltext!!.summary)
+        webToArticleTransformer.fromHtml(markup, data.url, fromJson(action.executorParams!!.paramsJsonString).summary)
       ),
     )
   }

@@ -6,6 +6,11 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.api.toDTO
+import org.migor.feedless.data.jpa.order.OrderDAO
+import org.migor.feedless.data.jpa.order.OrderEntity
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.OrderCreateInput
 import org.migor.feedless.generated.types.OrderUpdateInput
@@ -13,11 +18,7 @@ import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
-import org.migor.feedless.jpa.order.OrderDAO
-import org.migor.feedless.jpa.order.OrderEntity
-import org.migor.feedless.jpa.product.toDTO
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId

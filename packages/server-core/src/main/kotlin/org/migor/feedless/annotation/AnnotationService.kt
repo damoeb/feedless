@@ -5,14 +5,14 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.data.jpa.annotation.AnnotationDAO
+import org.migor.feedless.data.jpa.annotation.AnnotationEntity
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
-import org.migor.feedless.jpa.annotation.AnnotationDAO
-import org.migor.feedless.jpa.annotation.AnnotationEntity
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile

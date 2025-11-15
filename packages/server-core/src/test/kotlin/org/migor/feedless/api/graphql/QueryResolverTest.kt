@@ -11,8 +11,8 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.userSecret.UserSecretDAO
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserService

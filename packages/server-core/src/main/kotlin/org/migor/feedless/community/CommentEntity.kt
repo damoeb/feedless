@@ -3,7 +3,7 @@ package org.migor.feedless.community
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue
 import jakarta.persistence.Entity
-import org.migor.feedless.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
 
 @Entity
 @DiscriminatorValue("comment")

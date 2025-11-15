@@ -7,7 +7,7 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
-import org.migor.feedless.jpa.annotation.AnnotationEntity
+import org.migor.feedless.data.jpa.annotation.AnnotationEntity
 
 @Entity
 @Table(name = "t_annotation_vote")

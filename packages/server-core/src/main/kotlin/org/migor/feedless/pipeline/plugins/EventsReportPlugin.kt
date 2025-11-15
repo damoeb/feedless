@@ -4,9 +4,9 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.report.ReportEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.report.ReportEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId

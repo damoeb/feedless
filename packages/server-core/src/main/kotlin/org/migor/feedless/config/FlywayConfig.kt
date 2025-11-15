@@ -9,7 +9,7 @@
 //import org.migor.feedless.generated.types.PluginExecutionParamsInput
 //import org.migor.feedless.notification.NotificationService
 //import org.migor.feedless.pipeline.plugins.FeedPlugin
-//import org.migor.feedless.jpa.repsitory.RepositoryDAO
+//import org.migor.feedless.data.jpa.repsitory.RepositoryDAO
 //import org.migor.feedless.repository.RepositoryEntity
 //import org.migor.feedless.util.CryptUtil.newCorrId
 //import org.migor.feedless.util.JsonUtil

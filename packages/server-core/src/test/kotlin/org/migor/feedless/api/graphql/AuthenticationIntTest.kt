@@ -14,8 +14,8 @@ import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
-import org.migor.feedless.jpa.user.UserEntity
-import org.migor.feedless.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserService

@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class PluginService(
-  private val entityPlugins: List<MapEntityPlugin>,
+  private val entityPlugins: List<MapEntityPlugin<*>>,
   private val transformerPlugins: List<FragmentTransformerPlugin>,
   @Lazy val plugins: List<FeedlessPlugin>
 ) {

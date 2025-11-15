@@ -13,7 +13,7 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer

@@ -5,9 +5,12 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.jpa.group.GroupEntity
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.group.GroupEntity
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.userGroup.RoleInGroup
+import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
+import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory

@@ -1,7 +1,7 @@
 package org.migor.feedless.agent
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.jpa.agent.AgentEntity
+import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

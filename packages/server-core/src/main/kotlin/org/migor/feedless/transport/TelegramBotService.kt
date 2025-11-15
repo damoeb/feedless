@@ -9,14 +9,14 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.attachment.AttachmentEntity
+import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
+import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.systemSettings.SystemSettingsDAO
+import org.migor.feedless.data.jpa.systemSettings.SystemSettingsEntity
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.jpa.attachment.AttachmentEntity
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.systemSettings.SystemSettingsDAO
-import org.migor.feedless.jpa.systemSettings.SystemSettingsEntity
-import org.migor.feedless.jpa.user.TelegramConnectionDAO
-import org.migor.feedless.jpa.user.TelegramConnectionEntity
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.user.UserId
@@ -218,7 +218,8 @@ class TelegramBotService(
       supported = true
     }
     if (update.message.hasPhoto()) {
-      doc.attachments = update.message.photo.mapNotNull { getTelegramFile(it.fileId, "image/png") }.toMutableList()
+      doc.attachments =
+        update.message.photo.mapNotNull { getTelegramFile(it.fileId, "image/png") }.toMutableList()
       supported = true
     }
 

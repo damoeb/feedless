@@ -15,22 +15,22 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.data.jpa.attachment.AttachmentEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.harvest.HarvestEntity
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
+import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
+import org.migor.feedless.data.jpa.repository.PluginExecution
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.source.SourceEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
-import org.migor.feedless.jpa.attachment.AttachmentEntity
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.document.DocumentEntity.Companion.LEN_URL
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobEntity
-import org.migor.feedless.jpa.repository.HarvestEntity
-import org.migor.feedless.jpa.repository.PluginExecution
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipeline.plugins.images
@@ -433,7 +433,8 @@ class RepositoryHarvester(
     val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
-        val pageUrls = next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(SourceId(source.id), url) }
+        val pageUrls =
+          next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(SourceId(source.id), url) }
         log.info("[$corrId] Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
         sourcePipelineService.saveAll(
           pageUrls
@@ -464,7 +465,14 @@ class RepositoryHarvester(
             true
           } else {
             val corrId = coroutineContext.corrId()!!
-            log.warn("[$corrId] document ${StringUtils.substring(document.second.url, 100)} invalid: $validation")
+            log.warn(
+              "[$corrId] document ${
+                StringUtils.substring(
+                  document.second.url,
+                  100
+                )
+              } invalid: $validation"
+            )
             false
           }
         }

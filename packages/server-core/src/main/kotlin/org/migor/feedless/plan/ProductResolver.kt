@@ -9,6 +9,8 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.api.toDTO
+import org.migor.feedless.api.toDto
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.DgsConstants
@@ -16,8 +18,6 @@ import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.PricedProduct
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductsWhereInput
-import org.migor.feedless.jpa.pricedProduct.toDto
-import org.migor.feedless.jpa.product.toDTO
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation

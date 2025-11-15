@@ -6,21 +6,19 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.any2
-import org.migor.feedless.generated.types.FulltextPluginParamsInput
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.source.actions.ClickPositionActionEntity
-import org.migor.feedless.jpa.source.actions.ClickXpathActionEntity
-import org.migor.feedless.jpa.source.actions.DomActionEntity
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractBoundingBoxActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractXpathActionEntity
-import org.migor.feedless.jpa.source.actions.FetchActionEntity
-import org.migor.feedless.jpa.source.actions.HeaderActionEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
-import org.migor.feedless.jpa.source.actions.ScrapeActionEntity
-import org.migor.feedless.jpa.source.actions.WaitActionEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.actions.ClickPositionActionEntity
+import org.migor.feedless.data.jpa.source.actions.ClickXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.DomActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
+import org.migor.feedless.data.jpa.source.actions.HeaderActionEntity
+import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
+import org.migor.feedless.data.jpa.source.actions.WaitActionEntity
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
@@ -58,14 +56,11 @@ class FulltextPluginTest {
     val repository = mock(RepositoryEntity::class.java)
     `when`(repository.sources).thenReturn(mutableListOf(source))
 
-    val params = PluginExecutionJsonEntity(
-      org_feedless_fulltext = FulltextPluginParamsInput(
-        readability = true,
-        summary = false,
-        inheritParams = true
-      )
+    val params = FulltextPluginParams(
+      readability = true,
+      summary = false,
+      inheritParams = true
     )
-
     `when`(
       scrapeService.scrape(
         any2(),

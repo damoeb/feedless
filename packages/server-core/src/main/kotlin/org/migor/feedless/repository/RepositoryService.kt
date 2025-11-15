@@ -1,5 +1,6 @@
 package org.migor.feedless.repository
 
+import com.google.gson.Gson
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -11,11 +12,19 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
+import org.migor.feedless.api.createDocumentUrl
+import org.migor.feedless.api.fromDto
+import org.migor.feedless.api.toDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
+import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.repository.PluginExecution
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -30,15 +39,7 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.Visibility
-import org.migor.feedless.jpa.attachment.createAttachmentUrl
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.document.createDocumentUrl
-import org.migor.feedless.jpa.repository.PluginExecution
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.repository.toDto
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
-import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.pipeline.plugins.createAttachmentUrl
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceId
@@ -424,7 +425,8 @@ class RepositoryService(
   private suspend fun getActualUserOrDefaultUser(): UserEntity {
     return coroutineContext.userIdOptional()?.let {
       sessionService.user()
-    } ?: userService.getAnonymousUser().also { log.debug("[${coroutineContext.corrId()}] fallback to user anonymous") }
+    } ?: userService.getAnonymousUser()
+      .also { log.debug("[${coroutineContext.corrId()}] fallback to user anonymous") }
   }
 
   private suspend fun createRepository(
@@ -559,13 +561,18 @@ fun PluginExecutionInput.fromDto(): PluginExecution {
 }
 
 fun PluginExecutionParamsInput.toEntity(): PluginExecutionJsonEntity {
+  val data = listOfNotNull(
+    org_feedless_filter,
+    org_feedless_feed,
+    org_feedless_diff_records,
+    jsonData,
+    org_feedless_conditional_tag,
+    org_feedless_fulltext
+  )
+    .firstOrNull()
+
   return PluginExecutionJsonEntity(
-    org_feedless_filter = org_feedless_filter,
-    org_feedless_feed = org_feedless_feed,
-    org_feedless_diff_records = org_feedless_diff_records,
-    jsonData = jsonData,
-    org_feedless_conditional_tag = org_feedless_conditional_tag,
-    org_feedless_fulltext = org_feedless_fulltext
+    paramsJsonString = data?.let { Gson().toJson(it) },
   )
 }
 

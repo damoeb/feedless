@@ -4,7 +4,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapedFeeds
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.scrape.LogCollector
 
 data class FragmentOutput(

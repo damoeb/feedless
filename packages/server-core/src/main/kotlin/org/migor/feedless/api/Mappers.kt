@@ -4,25 +4,26 @@ import com.google.gson.Gson
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.data.jpa.enums.EntityVisibility
+import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.actions.ClickPositionActionEntity
+import org.migor.feedless.data.jpa.source.actions.ClickXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.DomActionEntity
+import org.migor.feedless.data.jpa.source.actions.DomEventType
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
+import org.migor.feedless.data.jpa.source.actions.HeaderActionEntity
+import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
+import org.migor.feedless.data.jpa.source.actions.WaitActionEntity
+import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.generated.types.*
-import org.migor.feedless.jpa.source.SourceEntity
-import org.migor.feedless.jpa.source.actions.ClickPositionActionEntity
-import org.migor.feedless.jpa.source.actions.ClickXpathActionEntity
-import org.migor.feedless.jpa.source.actions.DomActionEntity
-import org.migor.feedless.jpa.source.actions.DomEventType
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractBoundingBoxActionEntity
-import org.migor.feedless.jpa.source.actions.ExtractXpathActionEntity
-import org.migor.feedless.jpa.source.actions.FetchActionEntity
-import org.migor.feedless.jpa.source.actions.HeaderActionEntity
-import org.migor.feedless.jpa.source.actions.ScrapeActionEntity
-import org.migor.feedless.jpa.source.actions.WaitActionEntity
-import org.migor.feedless.jpa.source.actions.fromDto
 import org.migor.feedless.repository.toEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.GenericFeedSelectors
+import org.migor.feedless.userSecret.UserSecretType
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toMillis
@@ -302,3 +303,21 @@ private fun ExtendContext.toDto(): ExtendContentOptions {
 }
 
 fun isHtml(rawMimeType: String?): Boolean = rawMimeType?.lowercase()?.startsWith("text/html") == true
+
+
+fun UserSecretEntity.toDto(mask: Boolean = true): UserSecret {
+  return UserSecret(
+    id = id.toString(),
+    type = type.toDto(),
+    value = if (mask) value.substring(0..4) + "****" else value,
+    valueMasked = mask,
+    validUntil = validUntil.toMillis(),
+    lastUsed = lastUsedAt?.toMillis(),
+  )
+}
+
+fun org.migor.feedless.userSecret.UserSecretType.toDto(): org.migor.feedless.generated.types.UserSecretType =
+  when (this) {
+    org.migor.feedless.userSecret.UserSecretType.JWT -> org.migor.feedless.generated.types.UserSecretType.Jwt
+    UserSecretType.SecretKey -> org.migor.feedless.generated.types.UserSecretType.SecretKey
+  }

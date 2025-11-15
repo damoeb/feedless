@@ -15,6 +15,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.api.toDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
@@ -29,8 +30,9 @@ import org.migor.feedless.generated.types.RecordsInput
 import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.UpdateRecordInput
-import org.migor.feedless.jpa.document.toDto
+import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageable
@@ -117,9 +119,16 @@ class DocumentResolver(
     documentService.deleteDocuments(
       sessionService.user(),
       RepositoryId(data.where.repository.id),
-      data.where.id!!
+      data.where.id!!.toDomain()
     )
     true
+  }
+
+  private fun StringFilterInput.toDomain(): StringFilter {
+    return StringFilter(
+      eq = eq,
+      `in` = `in`
+    )
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.CreateRecords)
@@ -137,7 +146,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-    documentService.updateDocument(data.data, data.where).toDto(propertyService)
+    documentService.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
     true
   }
 

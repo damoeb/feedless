@@ -8,11 +8,11 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.toDTO
+import org.migor.feedless.data.jpa.plan.PlanEntity
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.Plan
-import org.migor.feedless.jpa.plan.PlanEntity
-import org.migor.feedless.jpa.product.toDTO
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toMillis

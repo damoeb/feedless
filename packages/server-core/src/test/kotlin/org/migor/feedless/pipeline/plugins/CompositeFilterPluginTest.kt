@@ -7,14 +7,6 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
-import org.migor.feedless.generated.types.CompositeFilterParamsInput
-import org.migor.feedless.generated.types.ItemFilterParamsInput
-import org.migor.feedless.generated.types.NumberFilterOperator
-import org.migor.feedless.generated.types.NumericalFilterParamsInput
-import org.migor.feedless.generated.types.StringFilterOperator
-import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.scrape.LogCollector
 
 class CompositeFilterPluginTest {
@@ -33,20 +25,16 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `given no filters are present, it passes`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf()
-    )
+    val filter = listOf<ItemFilterParams>()
     val keep = service.filterEntity(item, filter, 0, LogCollector())
     assertThat(keep).isTrue()
   }
 
   @Test
   fun `given a filter expression is true, result is true`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          expression = "and(true, true)"
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        expression = "and(true, true)"
       )
     )
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isTrue()
@@ -54,11 +42,9 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `given a filter expression is false, result is false`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          expression = "and(false, true)"
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        expression = "and(false, true)"
       )
     )
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isFalse()
@@ -66,14 +52,12 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `when mixing filters, given both are true, result is true`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            include = compositeFieldFilterParamsInput()
-          ),
-          expression = "and(true, true)"
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          include = compositeFieldFilterParamsInput()
+        ),
+        expression = "and(true, true)"
       )
     )
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isTrue()
@@ -81,14 +65,12 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `when mixing filters, given expression is false, result is false`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            include = compositeFieldFilterParamsInput()
-          ),
-          expression = "and(true, false)"
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          include = compositeFieldFilterParamsInput()
+        ),
+        expression = "and(true, false)"
       )
     )
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isFalse()
@@ -96,14 +78,12 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `when mixing filters, given composite is false, result is false`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            exclude = compositeFieldFilterParamsInput()
-          ),
-          expression = "and(true, true)"
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          exclude = compositeFieldFilterParamsInput()
+        ),
+        expression = "and(true, true)"
       )
     )
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isFalse()
@@ -111,15 +91,13 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `given a number filter is provided, it works`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            include = CompositeFieldFilterParamsInput(
-              index = NumericalFilterParamsInput(
-                operator = NumberFilterOperator.eq,
-                value = 0
-              )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          include = CompositeFieldFilterParams(
+            index = NumericalFilterParams(
+              operator = NumberFilterOperator.eq,
+              value = 0
             )
           )
         )
@@ -131,15 +109,12 @@ class CompositeFilterPluginTest {
 
   @Test
   fun `given a string filter is provided, it works`() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            include = compositeFieldFilterParamsInput()
-          )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          include = compositeFieldFilterParamsInput()
         )
       )
-
     )
 
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isTrue()
@@ -147,12 +122,10 @@ class CompositeFilterPluginTest {
 
   @Test
   fun excludeStringFilterWorks() = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          composite = CompositeFilterParamsInput(
-            exclude = compositeFieldFilterParamsInput()
-          )
+    val filter = listOf(
+      ItemFilterParams(
+        composite = CompositeFilterParams(
+          exclude = compositeFieldFilterParamsInput()
         )
       )
     )
@@ -176,29 +149,25 @@ class CompositeFilterPluginTest {
     delimiterString = ";;"
   )
   fun `supports legacy filter expression`(expr: String, expected: Boolean) = runTest {
-    val filter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          expression = expr
-        )
+    val filter = listOf(
+      ItemFilterParams(
+        expression = expr
       )
     )
 
     assertThat(service.filterEntity(item, filter, 0, LogCollector())).isEqualTo(expected)
 
-    val negativeFilter = PluginExecutionJsonEntity(
-      org_feedless_filter = listOf(
-        ItemFilterParamsInput(
-          expression = "not(${expr})"
-        )
+    val negativeFilter = listOf(
+      ItemFilterParams(
+        expression = "not(${expr})"
       )
     )
 
     assertThat(service.filterEntity(item, negativeFilter, 0, LogCollector())).isEqualTo(!expected)
   }
 
-  private fun compositeFieldFilterParamsInput() = CompositeFieldFilterParamsInput(
-    title = StringFilterParamsInput(
+  private fun compositeFieldFilterParamsInput() = CompositeFieldFilterParams(
+    title = StringFilterParams(
       operator = StringFilterOperator.startsWidth,
       value = "foo"
     )

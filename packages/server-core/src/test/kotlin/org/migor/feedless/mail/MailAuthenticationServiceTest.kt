@@ -8,12 +8,12 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomOneTimePasswordEntity
 import org.migor.feedless.Mother.randomUserEntity
 import org.migor.feedless.any2
+import org.migor.feedless.data.jpa.oneTimePassword.OneTimePasswordDAO
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.jpa.oneTimePassword.OneTimePasswordDAO
-import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer

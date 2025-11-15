@@ -11,10 +11,13 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.data.jpa.group.GroupEntity
+import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.userGroup.RoleInGroup
+import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
+import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
 import org.migor.feedless.eq
-import org.migor.feedless.jpa.group.GroupEntity
-import org.migor.feedless.jpa.user.UserDAO
-import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock

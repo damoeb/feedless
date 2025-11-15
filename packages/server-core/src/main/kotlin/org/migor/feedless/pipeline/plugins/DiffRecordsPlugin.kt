@@ -1,14 +1,14 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.RecordField
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
@@ -28,7 +28,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
 import javax.imageio.ImageIO
-import kotlin.collections.firstOrNull
 import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 
@@ -45,9 +44,35 @@ suspend fun getLastReleasedDocumentByRepositoryId(
   ).firstOrNull()
 }
 
+data class DiffRecordsParams(
+  @SerializedName("nextItemMinIncrement")
+  val nextItemMinIncrement: Double,
+  @SerializedName("compareBy")
+  val compareBy: CompareBy,
+  @SerializedName("inlineDiffImage")
+  val inlineDiffImage: Boolean? = null,
+  @SerializedName("inlineLatestImage")
+  val inlineLatestImage: Boolean? = null,
+  @SerializedName("inlinePreviousImage")
+  val inlinePreviousImage: Boolean? = null,
+)
+
+data class CompareBy(
+  @SerializedName("fragmentNameRef")
+  val fragmentNameRef: String? = null,
+  @SerializedName("field")
+  val `field`: RecordField,
+)
+
+enum class RecordField {
+  pixel,
+  text,
+  markup,
+}
+
 @Service
 @Profile(AppProfiles.document)
-class DiffRecordsPlugin : FilterEntityPlugin {
+class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 
   private val log = LoggerFactory.getLogger(DiffRecordsPlugin::class.simpleName)
 
@@ -70,20 +95,20 @@ class DiffRecordsPlugin : FilterEntityPlugin {
 
   override suspend fun filterEntity(
     item: JsonItem,
-    params: PluginExecutionJsonEntity,
+    params: DiffRecordsParams,
     index: Int,
     logCollector: LogCollector
   ): Boolean {
     val corrId = coroutineContext.corrId()!!
     log.debug("[$corrId] filter ${item.url}")
 
-    val increment = params.org_feedless_diff_records!!.nextItemMinIncrement.coerceAtLeast(0.01)
+    val increment = params.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
     val previous = getLastReleasedDocumentByRepositoryId(documentService, item.repositoryId!!)
 
     return previous?.let {
-      val compareBy = params.org_feedless_diff_records.compareBy
+      val compareBy = params.compareBy
       compareBy.fragmentNameRef?.let {
         log.warn("[$corrId] resolving named fragment '${compareBy.fragmentNameRef}' not yet supported. Falling back to document")
       }
@@ -109,7 +134,20 @@ class DiffRecordsPlugin : FilterEntityPlugin {
           increment
         )
       }
-    } ?: true
+    } != false
+  }
+
+  override suspend fun filterEntity(
+    item: JsonItem,
+    jsonParams: String?,
+    index: Int,
+    logCollector: LogCollector
+  ): Boolean {
+    return filterEntity(item, fromJson(jsonParams), index, logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?): DiffRecordsParams {
+    return Gson().fromJson(jsonParams!!, DiffRecordsParams::class.java)
   }
 
 //  override fun provideWelcomeMail(

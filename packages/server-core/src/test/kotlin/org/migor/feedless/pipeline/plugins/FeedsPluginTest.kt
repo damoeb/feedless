@@ -12,11 +12,11 @@ import org.migor.feedless.PropertiesConfiguration
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.jpa.attachment.AttachmentDAO
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector

@@ -6,6 +6,7 @@ import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.userGroup.RoleInGroup
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.GroupAssignment
 import org.migor.feedless.generated.types.Role

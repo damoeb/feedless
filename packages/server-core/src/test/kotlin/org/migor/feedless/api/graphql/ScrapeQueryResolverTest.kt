@@ -12,6 +12,7 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
@@ -26,7 +27,6 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
-import org.migor.feedless.jpa.attachment.AttachmentDAO
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString

@@ -14,6 +14,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.config.DgsCustomContext
+import org.migor.feedless.data.jpa.annotation.AnnotationEntity
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Annotation
 import org.migor.feedless.generated.types.Annotations
@@ -22,7 +23,6 @@ import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.TextAnnotation
-import org.migor.feedless.jpa.annotation.AnnotationEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser

@@ -1,6 +1,6 @@
 package org.migor.feedless.agent
 
-import org.migor.feedless.jpa.agent.AgentEntity
+import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.springframework.stereotype.Service
 import java.util.*
 

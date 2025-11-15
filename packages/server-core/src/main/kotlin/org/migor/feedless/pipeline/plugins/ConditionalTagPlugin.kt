@@ -1,15 +1,16 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
@@ -23,10 +24,24 @@ import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
+data class ConditionalTag(
+  @SerializedName("tag") val tag: String,
+  @SerializedName("filter") val filter: CompositeFieldFilterParams,
+)
+
+data class CompositeFieldFilterParams(
+  @SerializedName("index") val index: NumericalFilterParams? = null,
+  @SerializedName("title") val title: StringFilterParams? = null,
+  @SerializedName("content") val content: StringFilterParams? = null,
+  @SerializedName("link") val link: StringFilterParams? = null,
+)
+
+typealias ConditionalTagPluginParams = List<ConditionalTag>
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class ConditionalTagPlugin : MapEntityPlugin {
+class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
 
   private val log = LoggerFactory.getLogger(ConditionalTagPlugin::class.simpleName)
 
@@ -41,12 +56,12 @@ class ConditionalTagPlugin : MapEntityPlugin {
   override suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionJsonEntity,
+    params: ConditionalTagPluginParams,
     logCollector: LogCollector
   ): DocumentEntity {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] mapEntity ${document.url}")
-    val newTags = params.org_feedless_conditional_tag!!.filter {
+    val newTags = params.filter {
       filterPlugin.matches(document.asJsonItem(), it.filter, 0)
     }.map { it.tag }.toMutableSet()
 
@@ -56,6 +71,19 @@ class ConditionalTagPlugin : MapEntityPlugin {
     }
 
     return document
+  }
+
+  override suspend fun mapEntity(
+    document: DocumentEntity,
+    repository: RepositoryEntity,
+    paramsJson: String?,
+    logCollector: LogCollector
+  ): DocumentEntity {
+    return mapEntity(document, repository, fromJson(paramsJson), logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?): ConditionalTagPluginParams {
+    return Gson().fromJson(jsonParams, ConditionalTagPluginParams::class.java)
   }
 }
 

@@ -4,8 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.jpa.user.GithubConnectionDAO
-import org.migor.feedless.jpa.user.GithubConnectionEntity
+import org.migor.feedless.data.jpa.connectedApp.GithubConnectionDAO
+import org.migor.feedless.data.jpa.connectedApp.GithubConnectionEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation

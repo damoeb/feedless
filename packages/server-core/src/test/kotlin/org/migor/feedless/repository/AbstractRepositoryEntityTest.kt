@@ -3,7 +3,7 @@ package org.migor.feedless.repository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.jpa.repository.extractHashTags
+import org.migor.feedless.data.jpa.repository.extractHashTags
 
 class AbstractRepositoryEntityTest {
 

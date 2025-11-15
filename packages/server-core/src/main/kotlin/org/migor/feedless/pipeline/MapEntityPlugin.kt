@@ -1,17 +1,24 @@
 package org.migor.feedless.pipeline
 
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
+import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.scrape.LogCollector
 
-interface MapEntityPlugin : FeedlessPlugin {
+interface MapEntityPlugin<T> : FeedlessPlugin {
 
   suspend fun mapEntity(
     document: DocumentEntity,
     repository: RepositoryEntity,
-    params: PluginExecutionJsonEntity,
+    params: T,
     logCollector: LogCollector
   ): DocumentEntity
 
+  suspend fun mapEntity(
+    document: DocumentEntity,
+    repository: RepositoryEntity,
+    paramsJson: String?,
+    logCollector: LogCollector
+  ): DocumentEntity
+
+  suspend fun fromJson(jsonParams: String?): T
 }

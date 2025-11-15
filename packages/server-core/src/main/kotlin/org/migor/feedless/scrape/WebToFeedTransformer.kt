@@ -14,6 +14,7 @@ import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.ScrapeEmit
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractResponse
+import org.migor.feedless.source.PuppeteerWaitUntil
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.migor.feedless.util.toLocalDateTime
@@ -102,14 +103,6 @@ data class GenericFeedParserOptions(
   val minLinkGroupSize: Int = 2,
   val minWordCountOfLink: Int = 1,
 )
-
-enum class PuppeteerWaitUntil {
-  networkidle0,
-  networkidle2,
-  load,
-  domcontentloaded
-
-}
 
 @JsonIgnoreProperties
 data class GenericFeedSelectors(

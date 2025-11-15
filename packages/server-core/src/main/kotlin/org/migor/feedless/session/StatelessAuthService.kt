@@ -1,8 +1,8 @@
 package org.migor.feedless.session
 
 import jakarta.servlet.http.HttpServletRequest
-import org.migor.feedless.jpa.user.UserEntity
-import org.migor.feedless.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.UserId
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean

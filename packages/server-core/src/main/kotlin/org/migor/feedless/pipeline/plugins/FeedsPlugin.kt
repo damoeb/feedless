@@ -18,7 +18,7 @@ import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedFeeds
-import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.scrape.GenericFeedParserOptions

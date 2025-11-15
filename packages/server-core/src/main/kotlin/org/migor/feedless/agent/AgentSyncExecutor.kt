@@ -2,7 +2,7 @@ package org.migor.feedless.agent
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.jpa.agent.AgentDAO
+import org.migor.feedless.data.jpa.agent.AgentDAO
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service

@@ -14,9 +14,12 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.any2
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.fromDto
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.HttpFetchInput
@@ -31,9 +34,6 @@ import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService

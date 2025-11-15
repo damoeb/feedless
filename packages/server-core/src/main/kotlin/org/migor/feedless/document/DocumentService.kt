@@ -14,31 +14,30 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.data.jpa.document.DocumentDAO
+import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
+import org.migor.feedless.data.jpa.pipelineJob.PipelineJobStatus
+import org.migor.feedless.data.jpa.repository.MaxAgeDaysDateField
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.RecordOrderByInput
-import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.generated.types.RecordsWhereInput
-import org.migor.feedless.generated.types.StringFilterInput
-import org.migor.feedless.jpa.document.DocumentDAO
-import org.migor.feedless.jpa.document.DocumentEntity
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobDAO
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobEntity
-import org.migor.feedless.jpa.repository.MaxAgeDaysDateField
-import org.migor.feedless.jpa.repository.RepositoryDAO
-import org.migor.feedless.jpa.repository.RepositoryEntity
-import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
-import org.migor.feedless.pipeline.PipelineJobStatus
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
+import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryId
@@ -254,7 +253,7 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteDocuments(user: UserEntity, repositoryId: RepositoryId, documentIds: StringFilterInput) {
+  suspend fun deleteDocuments(user: UserEntity, repositoryId: RepositoryId, documentIds: StringFilter) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
 
     withContext(Dispatchers.IO) {
@@ -266,7 +265,7 @@ class DocumentService(
       val documents = documentDAO
         .findAllByRepositoryIdAndIdIn(
           repositoryId.value, if (documentIds.`in` != null) {
-            documentIds.`in`!!.map { UUID.fromString(it) }
+            documentIds.`in`.map { UUID.fromString(it) }
           } else {
             if (documentIds.eq != null) {
               listOf(UUID.fromString(documentIds.eq))
@@ -336,9 +335,9 @@ class DocumentService(
         jobs.takeWhile { job ->
           try {
             when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
-              is FilterEntityPlugin -> if (!plugin.filterEntity(
+              is FilterEntityPlugin<*> -> if (!plugin.filterEntity(
                   document.asJsonItem(),
-                  job.executorParams,
+                  job.executorParams.paramsJsonString,
                   0,
                   logCollector
                 )
@@ -346,7 +345,13 @@ class DocumentService(
                 throw FilterMismatchException()
               }
 
-              is MapEntityPlugin -> plugin.mapEntity(document, repository, job.executorParams, logCollector)
+              is MapEntityPlugin<*> -> plugin.mapEntity(
+                document,
+                repository,
+                job.executorParams.paramsJsonString,
+                logCollector
+              )
+
               is ReportPlugin -> log.info("[$corrId] ignoring ${plugin.id()} plugin")
               else -> {
                 if (plugin == null) {
@@ -490,9 +495,9 @@ class DocumentService(
   }
 
   @Transactional
-  suspend fun updateDocument(data: RecordUpdateInput, where: RecordUniqueWhereInput): DocumentEntity {
+  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): DocumentEntity {
     val document = withContext(Dispatchers.IO) {
-      documentDAO.findById(UUID.fromString(where.id)).orElseThrow()
+      documentDAO.findById(id.value).orElseThrow()
     }
     permissionService.canWrite(document)
     data.url?.let {

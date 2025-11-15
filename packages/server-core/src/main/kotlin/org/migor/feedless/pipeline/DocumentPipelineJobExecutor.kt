@@ -10,9 +10,9 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId

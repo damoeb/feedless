@@ -1,17 +1,14 @@
 package org.migor.feedless.pipeline.plugins
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.filter.generated.FilterByExpression
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.NumberFilterOperator
-import org.migor.feedless.generated.types.NumericalFilterParamsInput
-import org.migor.feedless.generated.types.StringFilterOperator
-import org.migor.feedless.generated.types.StringFilterParamsInput
-import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
@@ -22,10 +19,22 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import kotlin.coroutines.coroutineContext
 
+data class ItemFilterParams(
+  @SerializedName("composite") val composite: CompositeFilterParams? = null,
+  @SerializedName("expression") val expression: String? = null,
+)
+
+data class CompositeFilterParams(
+  @SerializedName("exclude") val exclude: CompositeFieldFilterParams? = null,
+  @SerializedName("include") val include: CompositeFieldFilterParams? = null,
+)
+
+typealias CompositeFilterPluginParams = List<ItemFilterParams>
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class CompositeFilterPlugin : FilterEntityPlugin {
+class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
 
@@ -35,23 +44,21 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   override suspend fun filterEntity(
     item: JsonItem,
-    params: PluginExecutionJsonEntity,
+    params: CompositeFilterPluginParams?,
     index: Int,
     logCollector: LogCollector,
   ): Boolean {
-    val corrId = coroutineContext.corrId()
     logCollector.log("applying filters to item #$index url=${item.url}")
-    val keep = params.org_feedless_filter?.let { plugins ->
+    val keep = params?.let { plugins ->
       plugins.all { plugin ->
         plugin.composite?.let {
-          it.exclude?.let { !matches(item, it, index) } ?: true
-            && it.include?.let { matches(item, it, index) } ?: true
-        } ?: true
+          it.exclude?.let { !matches(item, it, index) } != false
+            && it.include?.let { matches(item, it, index) } != false
+        } != false
           &&
           matchesExpression(plugin.expression, item)
-
       }
-    } ?: true
+    } != false
 
     if (keep) {
       logCollector.log("keeping item #$index")
@@ -60,6 +67,22 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     }
 
     return keep
+  }
+
+  override suspend fun filterEntity(
+    item: JsonItem,
+    jsonParams: String?,
+    index: Int,
+    logCollector: LogCollector
+  ): Boolean {
+    return this.filterEntity(item, fromJson(jsonParams), index, logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?): CompositeFilterPluginParams? {
+    return jsonParams?.let {
+      val listType = object : TypeToken<List<ItemFilterParams>>() {}.type
+      Gson().fromJson(jsonParams, listType)
+    }
   }
 
   private suspend fun matchesExpression(expression: String?, item: JsonItem): Boolean {
@@ -73,7 +96,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
         log.warn("[$corrId] matchesExpression failed for expression '${q}'")
         false
       }
-    } ?: true
+    } != false
   }
 
   private suspend fun tryConvertFromLegacy(legacyExpression: String): String {
@@ -101,7 +124,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
 
   fun matches(
     item: JsonItem,
-    filterParams: CompositeFieldFilterParamsInput,
+    filterParams: CompositeFieldFilterParams,
     index: Int
   ): Boolean {
     return arrayOf(
@@ -113,7 +136,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
       .all { it }
   }
 
-  private fun applyNumberOperation(index: Int, filterParams: NumericalFilterParamsInput): Boolean {
+  private fun applyNumberOperation(index: Int, filterParams: NumericalFilterParams): Boolean {
     return when (filterParams.operator) {
       NumberFilterOperator.eq -> index == filterParams.value
       NumberFilterOperator.gt -> index > filterParams.value
@@ -121,7 +144,7 @@ class CompositeFilterPlugin : FilterEntityPlugin {
     }
   }
 
-  private fun applyStringOperation(fieldValue: String, filterParams: StringFilterParamsInput): Boolean {
+  private fun applyStringOperation(fieldValue: String, filterParams: StringFilterParams): Boolean {
     val value = filterParams.value
     return when (filterParams.operator) {
       StringFilterOperator.startsWidth -> fieldValue.startsWith(value, true)

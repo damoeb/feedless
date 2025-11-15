@@ -11,12 +11,12 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
+import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
+import org.migor.feedless.data.jpa.systemSettings.SystemSettingsDAO
+import org.migor.feedless.data.jpa.systemSettings.SystemSettingsEntity
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.jpa.systemSettings.SystemSettingsDAO
-import org.migor.feedless.jpa.systemSettings.SystemSettingsEntity
-import org.migor.feedless.jpa.user.TelegramConnectionDAO
-import org.migor.feedless.jpa.user.TelegramConnectionEntity
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
 import org.mockito.Mockito.mock
