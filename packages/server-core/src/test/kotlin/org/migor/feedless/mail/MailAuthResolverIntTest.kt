@@ -21,8 +21,8 @@ import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Vertical
+import org.migor.feedless.jpa.oneTimePassword.OneTimePasswordDAO
 import org.migor.feedless.report.ReportService
-import org.migor.feedless.secrets.OneTimePasswordDAO
 import org.migor.feedless.session.PermissionService
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest

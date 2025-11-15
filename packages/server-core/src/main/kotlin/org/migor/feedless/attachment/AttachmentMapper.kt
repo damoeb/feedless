@@ -4,6 +4,7 @@ import org.mapstruct.Mapper
 import org.mapstruct.Mapping
 import org.mapstruct.ReportingPolicy
 import org.mapstruct.factory.Mappers
+import org.migor.feedless.jpa.attachment.AttachmentEntity
 import java.util.*
 
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE)

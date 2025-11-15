@@ -10,7 +10,7 @@ include("packages:domain")
 include("packages:graphql-api")
 include("packages:github-connector")
 include("packages:stripe-payments")
-include("packages:jwt-license-adapter")
+include("packages:jpa-repositories")
 
 pluginManagement {
   plugins {

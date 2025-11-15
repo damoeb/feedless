@@ -13,7 +13,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.enums.toDto
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.License
 import org.migor.feedless.generated.types.LocalizedLicense
 import org.migor.feedless.generated.types.UpdateLicenseInput
 import org.migor.feedless.session.injectCurrentUser
@@ -63,7 +62,7 @@ class LinceseResolver {
       isLocated = payload != null,
       trialUntil = licenseService.getTrialUntil(),
       data = payload?.let {
-        License(
+        org.migor.feedless.generated.types.License(
           name = payload.name,
           email = payload.email,
           createdAt = payload.createdAt.toMillis(),

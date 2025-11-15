@@ -11,10 +11,10 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.secrets.UserSecretDAO
+import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.user.UserDAO
 import org.migor.feedless.user.UserService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

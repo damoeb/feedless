@@ -22,6 +22,10 @@ import org.migor.feedless.generated.types.Order
 import org.migor.feedless.generated.types.Session
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.generated.types.User
+import org.migor.feedless.jpa.connectedApp.ConnectedAppEntity
+import org.migor.feedless.jpa.user.GithubConnectionEntity
+import org.migor.feedless.jpa.user.TelegramConnectionEntity
+import org.migor.feedless.jpa.user.toDTO
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory

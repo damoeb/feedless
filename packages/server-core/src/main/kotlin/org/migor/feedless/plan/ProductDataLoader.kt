@@ -5,6 +5,8 @@ import org.dataloader.MappedBatchLoader
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.Product
+import org.migor.feedless.jpa.product.ProductDAO
+import org.migor.feedless.jpa.product.toDTO
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import java.util.*

@@ -2,11 +2,11 @@ package org.migor.feedless
 
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.jpa.oneTimePassword.OneTimePasswordEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.secrets.OneTimePasswordEntity
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.user.ConnectedAppId
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.mockito.ArgumentMatcher
 import org.mockito.ArgumentMatchers

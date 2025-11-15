@@ -14,7 +14,8 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.jpa.group.GroupEntity
+import org.migor.feedless.jpa.user.UserEntity
 import java.util.*
 
 @Entity

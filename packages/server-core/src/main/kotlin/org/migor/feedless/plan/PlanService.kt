@@ -4,8 +4,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.feature.FeatureGroupDAO
-import org.migor.feedless.feature.FeatureGroupEntity
+import org.migor.feedless.jpa.featureGroup.FeatureGroupDAO
+import org.migor.feedless.jpa.featureGroup.FeatureGroupEntity
+import org.migor.feedless.jpa.plan.PlanDAO
+import org.migor.feedless.jpa.plan.PlanEntity
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

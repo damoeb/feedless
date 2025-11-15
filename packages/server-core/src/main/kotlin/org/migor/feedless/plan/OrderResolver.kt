@@ -21,7 +21,7 @@ import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.UpsertOrderInput
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.license.JwtLicenseService
+import org.migor.feedless.license.LicenseService
 import org.migor.feedless.payment.OrderId
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
@@ -44,7 +44,7 @@ class OrderResolver {
   lateinit var orderService: OrderService
 
   @Autowired
-  lateinit var licenseService: JwtLicenseService
+  lateinit var licenseService: LicenseService
 
   @DgsQuery(field = DgsConstants.QUERY.Orders)
   suspend fun orders(

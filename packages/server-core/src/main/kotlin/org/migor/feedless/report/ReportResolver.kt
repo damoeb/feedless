@@ -12,6 +12,7 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Report
 import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.jpa.report.ReportEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser

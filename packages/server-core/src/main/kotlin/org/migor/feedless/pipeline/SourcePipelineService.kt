@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobDAO
+import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

@@ -10,8 +10,10 @@ import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
+import org.migor.feedless.jpa.annotation.AnnotationDAO
+import org.migor.feedless.jpa.annotation.AnnotationEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

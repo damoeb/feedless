@@ -16,7 +16,7 @@
             <option value="$PROJECT_DIR$/packages/freemarker-templates" />
             <option value="$PROJECT_DIR$/packages/github-connector" />
             <option value="$PROJECT_DIR$/packages/graphql-api" />
-            <option value="$PROJECT_DIR$/packages/jwt-license-adapter" />
+            <option value="$PROJECT_DIR$/packages/jpa-repositories" />
             <option value="$PROJECT_DIR$/packages/mail-adapter" />
             <option value="$PROJECT_DIR$/packages/nominatim-proxy" />
             <option value="$PROJECT_DIR$/packages/server-core" />

@@ -16,6 +16,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.eq
+import org.migor.feedless.jpa.document.DocumentEntity
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer

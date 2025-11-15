@@ -13,9 +13,12 @@ import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
+import org.migor.feedless.jpa.order.OrderDAO
+import org.migor.feedless.jpa.order.OrderEntity
+import org.migor.feedless.jpa.product.toDTO
+import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.user.UserDAO
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.toMillis

@@ -5,9 +5,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.jpa.userSecret.UserSecretDAO
+import org.migor.feedless.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

@@ -5,7 +5,9 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.jpa.oneTimePassword.OneTimePasswordDAO
+import org.migor.feedless.jpa.oneTimePassword.OneTimePasswordEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

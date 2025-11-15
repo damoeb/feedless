@@ -9,7 +9,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.config.DgsCustomContext
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId

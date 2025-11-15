@@ -4,7 +4,6 @@ import org.apache.commons.lang3.BooleanUtils
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.toDto
 import org.migor.feedless.common.HttpResponse
@@ -19,6 +18,7 @@ import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.RemoteNativeFeed
 import org.migor.feedless.generated.types.ScrapedFeeds
+import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.scrape.GenericFeedParserOptions

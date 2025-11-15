@@ -11,7 +11,8 @@ import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.migor.feedless.document.DocumentEntity
+import org.migor.feedless.jpa.annotation.AnnotationEntity
+import org.migor.feedless.jpa.document.DocumentEntity
 import java.util.*
 
 @Entity(name = "t_annotation_text")

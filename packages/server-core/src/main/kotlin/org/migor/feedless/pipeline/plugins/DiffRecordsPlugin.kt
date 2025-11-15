@@ -2,13 +2,13 @@ package org.migor.feedless.pipeline.plugins
 
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.RecordField
+import org.migor.feedless.jpa.document.DocumentEntity
+import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
@@ -28,6 +28,7 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
 import javax.imageio.ImageIO
+import kotlin.collections.firstOrNull
 import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 

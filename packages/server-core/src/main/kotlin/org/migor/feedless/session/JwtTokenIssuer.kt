@@ -12,8 +12,8 @@ import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.secrets.UserSecretEntity
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory

@@ -4,6 +4,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.jpa.agent.AgentDAO
+import org.migor.feedless.jpa.agent.AgentEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -15,7 +17,7 @@ import java.util.*
 @Profile("${AppProfiles.agent} & ${AppLayer.repository} & ${AppLayer.service}")
 class StatefulAgentRegistry(
   private val agentDAO: AgentDAO
-): AgentRegistry {
+) : AgentRegistry {
 
   @Transactional(readOnly = true)
   override suspend fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UUID?): List<AgentEntity> {

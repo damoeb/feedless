@@ -8,7 +8,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.actions.FetchActionEntity
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
@@ -17,6 +16,8 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.ItemFilterParamsInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
+import org.migor.feedless.jpa.source.SourceEntity
+import org.migor.feedless.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.RepositoryId
@@ -27,7 +28,6 @@ import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserService

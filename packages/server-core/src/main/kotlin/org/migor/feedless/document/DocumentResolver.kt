@@ -30,6 +30,7 @@ import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.generated.types.UpdateRecordInput
+import org.migor.feedless.jpa.document.toDto
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageable

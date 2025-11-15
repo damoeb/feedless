@@ -28,10 +28,11 @@ import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.Source
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
+import org.migor.feedless.jpa.repository.toDto
+import org.migor.feedless.jpa.source.toDto
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.source.toDto
 import org.migor.feedless.user.userId
 import org.migor.feedless.user.userIdOptional
 import org.slf4j.LoggerFactory

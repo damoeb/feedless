@@ -3,7 +3,6 @@ package org.migor.feedless.pipeline.plugins
 import com.google.gson.Gson
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.actions.ExecuteActionEntity
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -11,6 +10,7 @@ import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.SelectorsInput
+import org.migor.feedless.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.scrape.ExtendContext

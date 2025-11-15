@@ -6,7 +6,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.CompositeFieldFilterParamsInput
 import org.migor.feedless.generated.types.CompositeFilterParamsInput
@@ -15,6 +14,7 @@ import org.migor.feedless.generated.types.NumberFilterOperator
 import org.migor.feedless.generated.types.NumericalFilterParamsInput
 import org.migor.feedless.generated.types.StringFilterOperator
 import org.migor.feedless.generated.types.StringFilterParamsInput
+import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.scrape.LogCollector
 
 class CompositeFilterPluginTest {

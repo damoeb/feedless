@@ -13,10 +13,10 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.slf4j.LoggerFactory

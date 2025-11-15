@@ -9,10 +9,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.secrets.UserSecretDAO
-import org.migor.feedless.secrets.UserSecretEntity
-import org.migor.feedless.user.UserDAO
-import org.migor.feedless.user.UserEntity
+import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.jpa.userSecret.UserSecretDAO
+import org.migor.feedless.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

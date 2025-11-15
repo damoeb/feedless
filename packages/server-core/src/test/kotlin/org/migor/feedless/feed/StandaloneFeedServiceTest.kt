@@ -16,6 +16,8 @@ import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.jpa.source.SourceEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.scrape.HttpFetchOutput
@@ -23,10 +25,8 @@ import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times

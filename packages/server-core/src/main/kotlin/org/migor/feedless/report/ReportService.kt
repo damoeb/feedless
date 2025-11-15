@@ -10,10 +10,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.GeoPointInput
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.jpa.report.ReportDAO
+import org.migor.feedless.jpa.report.ReportEntity
+import org.migor.feedless.jpa.report.SegmentationEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.fromDto
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.migor.feedless.util.JtsUtil

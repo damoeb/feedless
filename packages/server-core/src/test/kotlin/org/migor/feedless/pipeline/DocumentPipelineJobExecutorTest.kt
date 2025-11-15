@@ -4,10 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.feedless.document.DocumentEntity
-import org.migor.feedless.document.DocumentService
-import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.any
+import org.migor.feedless.document.DocumentService
+import org.migor.feedless.jpa.document.DocumentEntity
+import org.migor.feedless.jpa.documentPipelineJob.DocumentPipelineJobEntity
+import org.migor.feedless.repository.RepositoryService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled

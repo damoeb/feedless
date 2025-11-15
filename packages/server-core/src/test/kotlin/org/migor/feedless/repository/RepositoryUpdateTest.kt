@@ -25,6 +25,8 @@ import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
+import org.migor.feedless.jpa.repository.RepositoryDAO
+import org.migor.feedless.jpa.repository.RepositoryEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService

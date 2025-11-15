@@ -16,6 +16,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
+import org.migor.feedless.jpa.userSecret.toDto
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.user.UserId

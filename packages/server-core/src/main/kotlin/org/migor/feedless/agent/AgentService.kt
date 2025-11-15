@@ -20,11 +20,12 @@ import org.migor.feedless.generated.types.OsInfo
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.ScrapeResponseInput
+import org.migor.feedless.jpa.agent.AgentEntity
+import org.migor.feedless.jpa.source.SourceEntity
+import org.migor.feedless.jpa.source.toDto
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.source.SourceEntity
-import org.migor.feedless.source.toDto
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.reactivestreams.Publisher

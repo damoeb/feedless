@@ -23,10 +23,13 @@ import org.migor.feedless.generated.types.SegmentRecordsWhereInput
 import org.migor.feedless.generated.types.SegmentReportInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
-import org.migor.feedless.repository.RepositoryEntity
+import org.migor.feedless.jpa.report.ReportDAO
+import org.migor.feedless.jpa.report.ReportEntity
+import org.migor.feedless.jpa.report.SegmentationEntity
+import org.migor.feedless.jpa.repository.RepositoryEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock

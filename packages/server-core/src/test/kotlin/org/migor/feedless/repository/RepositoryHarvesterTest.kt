@@ -12,13 +12,11 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
-import org.migor.feedless.actions.PluginExecutionJsonEntity
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
 import org.migor.feedless.argThat
 import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.document.DocumentEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -28,9 +26,14 @@ import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.TextData
+import org.migor.feedless.jpa.document.DocumentEntity
+import org.migor.feedless.jpa.repository.PluginExecution
+import org.migor.feedless.jpa.repository.RepositoryEntity
+import org.migor.feedless.jpa.source.SourceEntity
+import org.migor.feedless.jpa.source.actions.PluginExecutionJsonEntity
+import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.FragmentOutput
-import org.migor.feedless.pipeline.SourcePipelineJobEntity
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
@@ -38,7 +41,6 @@ import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.source.SourceEntity
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserId

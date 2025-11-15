@@ -12,9 +12,10 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.eq
+import org.migor.feedless.jpa.group.GroupEntity
+import org.migor.feedless.jpa.user.UserDAO
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.user.UserDAO
-import org.migor.feedless.user.UserEntity
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify

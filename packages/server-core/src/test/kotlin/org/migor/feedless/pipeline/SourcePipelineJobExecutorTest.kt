@@ -4,8 +4,9 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
-import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.any
+import org.migor.feedless.jpa.sourcePipelineJob.SourcePipelineJobEntity
+import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`

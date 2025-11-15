@@ -5,6 +5,8 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.DocumentId
+import org.migor.feedless.jpa.attachment.AttachmentDAO
+import org.migor.feedless.jpa.attachment.AttachmentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

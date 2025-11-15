@@ -22,6 +22,7 @@ import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.TextAnnotation
+import org.migor.feedless.jpa.annotation.AnnotationEntity
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser

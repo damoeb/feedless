@@ -14,9 +14,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
-import org.migor.feedless.attachment.AttachmentDAO
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.jpa.attachment.AttachmentDAO
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.WebExtractService
 import org.migor.feedless.scrape.WebToFeedTransformer

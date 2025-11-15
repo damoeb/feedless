@@ -6,8 +6,10 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
+import org.migor.feedless.jpa.user.UserEntity
+import org.migor.feedless.jpa.userSecret.UserSecretDAO
+import org.migor.feedless.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`

@@ -20,8 +20,10 @@ import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.jpa.annotation.AnnotationDAO
+import org.migor.feedless.jpa.annotation.AnnotationEntity
+import org.migor.feedless.jpa.user.UserEntity
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.user.UserEntity
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
