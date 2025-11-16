@@ -25,7 +25,7 @@ import org.migor.feedless.community.text.complex.RelevanceWeights
 import org.migor.feedless.community.text.simple.EngagementScorer
 import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.plan.ProductService
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.secrets.UserSecretService
 import org.mockito.Mockito
 import org.mockito.Mockito.mock

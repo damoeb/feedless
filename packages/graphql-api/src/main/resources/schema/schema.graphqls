@@ -255,11 +255,11 @@ type Order {
 }
 
 enum PaymentMethod {
-  Bill
-  PayPal
+  #  Bill
+  #  PayPal
   CreditCard
-  Bitcoin
-  Ethereum
+  #  Bitcoin
+  #  Ethereum
 }
 
 input ProductsUniqueWhereInput {

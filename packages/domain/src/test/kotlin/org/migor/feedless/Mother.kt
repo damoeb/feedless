@@ -1,7 +1,9 @@
 package org.migor.feedless
 
 import org.migor.feedless.otp.OneTimePassword
+import org.migor.feedless.payment.OrderId
 import org.migor.feedless.user.User
+import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.*
@@ -48,6 +50,14 @@ object Mother {
     } else {
       null
     }
+  }
+
+  fun randomOrderID(): OrderId {
+    return OrderId(randomUUID())
+  }
+
+  fun randomUserID(): UserId {
+    return UserId(randomUUID())
   }
 
   fun randomLocalDateTime(): LocalDateTime {

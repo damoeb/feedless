@@ -1,4 +1,4 @@
-package org.migor.feedless.plan
+package org.migor.feedless.product
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
@@ -9,8 +9,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.api.toDTO
-import org.migor.feedless.api.toDto
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.DgsConstants

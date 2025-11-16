@@ -34,7 +34,7 @@ import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.plan.ProductService
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.ExtractEmit

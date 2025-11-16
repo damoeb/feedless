@@ -20,7 +20,7 @@ import org.migor.feedless.generated.types.FeatureBooleanValueInput
 import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.FeatureGroupWhereInput
 import org.migor.feedless.generated.types.FeatureIntValueInput
-import org.migor.feedless.plan.ProductId
+import org.migor.feedless.product.ProductId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory

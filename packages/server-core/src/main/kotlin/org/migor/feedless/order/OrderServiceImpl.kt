@@ -1,4 +1,4 @@
-package org.migor.feedless.plan
+package org.migor.feedless.order
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -18,7 +18,10 @@ import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
+import org.migor.feedless.payment.OrderId
 import org.migor.feedless.payment.PaymentMethod
+import org.migor.feedless.product.ProductId
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
@@ -39,9 +42,9 @@ import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-class OrderService {
+class OrderServiceImpl : OrderService {
 
-  private val log = LoggerFactory.getLogger(OrderService::class.simpleName)
+  private val log = LoggerFactory.getLogger(OrderServiceImpl::class.simpleName)
 
   @Autowired
   private lateinit var orderDAO: OrderDAO
@@ -155,15 +158,15 @@ class OrderService {
       orderDAO.save(order)
     }
   }
+
+  override fun findById(orderID: OrderId): org.migor.feedless.payment.Order {
+    return orderDAO.findById(orderID.value).map { }
+  }
 }
 
 private fun PaymentMethodDto.fromDTO(): PaymentMethod {
   return when (this) {
-    PaymentMethodDto.Bill -> PaymentMethod.Bill
     PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
-    PaymentMethodDto.Bitcoin -> PaymentMethod.Bitcoin
-    PaymentMethodDto.Ethereum -> PaymentMethod.Ethereum
-    PaymentMethodDto.PayPal -> PaymentMethod.PayPal
   }
 }
 

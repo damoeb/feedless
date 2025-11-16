@@ -1,12 +1,21 @@
 package org.migor.feedless.payment.stripe
 
 import kotlinx.coroutines.coroutineScope
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.order.OrderService
+import org.migor.feedless.payment.OrderId
 import org.migor.feedless.payment.PaymentService
 import org.migor.feedless.payment.PaymentStatus
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RequestHeader
@@ -14,8 +23,8 @@ import org.springframework.web.bind.annotation.RequestHeader
 /**
  * Controller for handling Stripe webhook events
  */
-//@Controller
-//@Profile("${AppProfiles.plan} & ${AppLayer.api}")
+@Controller
+@Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class StripeWebhookController {
 
   private val log = LoggerFactory.getLogger(StripeWebhookController::class.simpleName)
@@ -23,26 +32,48 @@ class StripeWebhookController {
   @Autowired
   lateinit var paymentService: PaymentService
 
-//  todo use
-//  @GetMapping(
-//    "/payment/{billingId}/callback",
-//  )
-//  suspend fun paymentCallback(
-//    @PathVariable("billingId") billingId: String,
-//  ): ResponseEntity<String> = coroutineScope {
-//    log.info("paymentCallback $billingId")
-//    val headers = HttpHeaders()
+  @Autowired
+  lateinit var orderService: OrderService
+
+  @GetMapping(
+    "/aspi/payment/{orderId}/checkout",
+  )
+  suspend fun paymentCallback(
+    @PathVariable("orderId") orderId: String,
+  ): ResponseEntity<String> = coroutineScope {
+    log.info("paymentCallback $orderId")
+    val headers = HttpHeaders()
 //    val queryParams = try {
-//      orderService.handlePaymentCallback(billingId)
+//      paymentService.handlePaymentCallback(OrderId(orderId))
 //      "success=true"
 //    } catch (ex: Exception) {
 //      log.error("Payment callback failed with ${ex.message}", ex)
 //      "success=false&message=${ex.message}"
 //    }
-//    headers.add(HttpHeaders.LOCATION, "${propertyService.appHost}/payment/summary/${billingId}?$queryParams")
-//    ResponseEntity<String>(headers, HttpStatus.FOUND)
-//  }
 
+//    val order = orderService.findById(OrderId(orderId))
+//    val product = productService.findById(ProductId(orderId))
+//
+//    val successUrl = "${propertyService.appHost}/payment/${order.id}/success"
+//    val cancelUrl = "${propertyService.appHost}/payment/${order.id}/cancel"
+//
+//    val session = paymentService.createPaymentSession(
+//      productId = stripeProductId,
+//      priceId = stripePriceId,
+//      userId = order.userId,
+//      orderId = order.id,
+//      successUrl = successUrl,
+//      cancelUrl = cancelUrl,
+//      metadata = mapOf(
+//        "productName" to (order.product?.name ?: "Unknown"),
+//        "invoiceRecipientEmail" to order.invoiceRecipientEmail,
+//        "invoiceRecipientName" to order.invoiceRecipientName
+//      )
+//    )
+//
+//    headers.add(HttpHeaders.LOCATION, "${propertyService.appHost}/payment/summary/${orderId}?$queryParams")
+    ResponseEntity<String>(headers, HttpStatus.FOUND)
+  }
 
   /**
    * Handles Stripe webhook events
@@ -70,11 +101,11 @@ class StripeWebhookController {
 
       log.info("Processed webhook event: ${webhookEvent.eventType} (${webhookEvent.eventId})")
 
-      val orderId = webhookEvent.orderId
-
-      if (orderId == null) {
-        throw IllegalArgumentException("Order Id Must not be null")
+      if (webhookEvent.orderId == null) {
+        throw IllegalArgumentException("webhookEvent must provide an OrderId")
       }
+
+      val orderId = OrderId(webhookEvent.orderId!!)
 
       // Handle successful payment events
       when (webhookEvent.status) {

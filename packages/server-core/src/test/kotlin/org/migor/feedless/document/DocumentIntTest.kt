@@ -27,7 +27,7 @@ import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.GroupService
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.plan.ProductService
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService

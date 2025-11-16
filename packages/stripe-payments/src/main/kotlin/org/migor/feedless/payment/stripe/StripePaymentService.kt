@@ -8,11 +8,13 @@ import com.stripe.net.Webhook
 import com.stripe.param.checkout.SessionCreateParams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.migor.feedless.payment.OrderId
 import org.migor.feedless.payment.PaymentService
 import org.migor.feedless.payment.PaymentSession
 import org.migor.feedless.payment.PaymentStatus
 import org.migor.feedless.payment.PaymentTransaction
 import org.migor.feedless.payment.WebhookEvent
+import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import java.util.*
@@ -40,8 +42,8 @@ class StripeService(
   override suspend fun createPaymentSession(
     productId: String,
     priceId: String,
-    userId: UUID,
-    orderId: UUID,
+    userId: UserId,
+    orderId: OrderId,
     successUrl: String,
     cancelUrl: String,
     metadata: Map<String, String>
@@ -51,8 +53,8 @@ class StripeService(
 
       // Build metadata including system IDs
       val sessionMetadata = mutableMapOf(
-        "userId" to userId.toString(),
-        "orderId" to orderId.toString(),
+        "userId" to userId.value.toString(),
+        "orderId" to orderId.value.toString(),
         "productId" to productId
       )
       sessionMetadata.putAll(metadata)
@@ -148,7 +150,7 @@ class StripeService(
    * Retrieves payment transactions by order ID
    * Note: This queries Stripe for sessions matching the order metadata
    */
-  override suspend fun getPaymentsByOrderId(orderId: UUID): List<PaymentTransaction> = withContext(Dispatchers.IO) {
+  override suspend fun getPaymentsByOrderId(orderId: OrderId): List<PaymentTransaction> = withContext(Dispatchers.IO) {
     try {
       log.debug("Retrieving payments for order: $orderId")
 
@@ -162,7 +164,7 @@ class StripeService(
       sessions.map { session ->
         PaymentTransaction(
           transactionId = session.id,
-          orderId = orderId,
+          orderId = orderId.value,
           userId = UUID.fromString(
             session.metadata["userId"] ?: throw IllegalStateException("userId not found in metadata")
           ),
@@ -180,15 +182,15 @@ class StripeService(
     }
   }
 
-  override suspend fun handlePaymentCallback(orderId: UUID) {
+  override suspend fun handlePaymentCallback(orderId: OrderId) {
     TODO("Not yet implemented")
   }
 
-  override suspend fun handlePaymentFailureCallback(orderId: UUID) {
+  override suspend fun handlePaymentFailureCallback(orderId: OrderId) {
     TODO("Not yet implemented")
   }
 
-  override suspend fun handlePaymentCancelCallback(orderId: UUID) {
+  override suspend fun handlePaymentCancelCallback(orderId: OrderId) {
     TODO("Not yet implemented")
   }
 

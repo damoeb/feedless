@@ -27,7 +27,7 @@ import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.plan.ProductService
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory

@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.featureValue.FeatureValueDAO
 import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.data.jpa.plan.PlanDAO
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId

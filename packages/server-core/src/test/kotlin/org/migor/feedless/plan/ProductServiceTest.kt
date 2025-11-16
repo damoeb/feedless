@@ -13,6 +13,8 @@ import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.data.jpa.product.ProductEntity
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.product.ProductService
+import org.migor.feedless.product.ProductServiceImpl
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -35,7 +37,7 @@ class ProductServiceTest {
     userDAO = mock(UserDAO::class.java)
     planDAO = mock(PlanDAO::class.java)
     pricedProductDAO = mock(PricedProductDAO::class.java)
-    service = ProductService(
+    service = ProductServiceImpl(
       productDAO,
       userDAO,
       planDAO,

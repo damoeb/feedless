@@ -1,4 +1,4 @@
-package org.migor.feedless.plan
+package org.migor.feedless.product
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -27,21 +27,17 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
-data class ProductId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
-
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-class ProductService(
+class ProductServiceImpl(
   private var productDAO: ProductDAO,
   private var userDAO: UserDAO,
   private var planDAO: PlanDAO,
   private var pricedProductDAO: PricedProductDAO
-) {
+) : ProductService {
 
-  private val log = LoggerFactory.getLogger(ProductService::class.simpleName)
+  private val log = LoggerFactory.getLogger(ProductServiceImpl::class.simpleName)
 
   @Transactional(readOnly = true)
   suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
@@ -57,7 +53,7 @@ class ProductService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun resolvePriceForProduct(productId: ProductId, existingUserId: UserId?): Double {
+  override suspend fun resolvePriceForProduct(productId: ProductId, existingUserId: UserId?): Double {
     val product = withContext(Dispatchers.IO) {
       productDAO.findById(productId.value).orElseThrow()
     }
@@ -76,7 +72,7 @@ class ProductService(
   // todo thats bad transactional code
   suspend fun enableSaasProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
 
-    log.error("enableSaasProduct WAAAAAAAAAAAAAAAAAAAAAAAAAA")
+    log.error("enableSaasProduct")
     val prices = withContext(Dispatchers.IO) {
       pricedProductDAO.findAllByProductId(product.id)
     }
@@ -110,7 +106,7 @@ class ProductService(
   }
 
   @Transactional
-  suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) {
+  override suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) {
     val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
     val user = withContext(Dispatchers.IO) { userDAO.findById(userId.value).orElseThrow() }
 

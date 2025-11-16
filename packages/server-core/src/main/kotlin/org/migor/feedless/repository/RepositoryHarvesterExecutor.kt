@@ -27,7 +27,7 @@ class RepositoryHarvesterExecutor internal constructor(
   private val repositoryService: RepositoryService
 ) {
 
-  private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(RepositoryHarvesterExecutor::class.simpleName)
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   fun refreshSubscriptions() {
@@ -54,7 +54,7 @@ class RepositoryHarvesterExecutor internal constructor(
             }
             log.info("[$corrId] done")
           }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}")
+            log.error("[$corrId] batch refresh done: ${it.message}", it)
           }
         }
       }

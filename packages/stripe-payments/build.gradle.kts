@@ -13,6 +13,7 @@ repositories {
 dependencies {
   implementation(platform(libs.spring.boot.bom))
   implementation(project(":packages:domain"))
+  testImplementation(project(":packages:domain", "testOutput"))
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))

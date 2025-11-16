@@ -38,6 +38,7 @@ import java.sql.Types
 import java.time.LocalDateTime
 import java.util.*
 
+//@JsonIgnoreProperties(ignoreUnknown = true)
 data class PluginExecution(val id: String, val params: PluginExecutionJsonEntity)
 
 enum class MaxAgeDaysDateField {

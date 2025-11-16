@@ -30,7 +30,7 @@ import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.plan.ProductService
+import org.migor.feedless.product.ProductService
 import org.migor.feedless.transport.TelegramBotService
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.mock

@@ -1,12 +1,15 @@
 package org.migor.feedless.payment.stripe
 
 import kotlinx.coroutines.test.runTest
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertNotNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
+import org.migor.feedless.Mother.randomOrderID
+import org.migor.feedless.Mother.randomUserID
 import org.migor.feedless.payment.PaymentStatus
-import java.util.*
 
 /**
  * Unit tests for StripeService
@@ -53,8 +56,8 @@ class StripeServiceTest {
         invalidService.createPaymentSession(
           productId = "prod_test",
           priceId = "price_test",
-          userId = UUID.randomUUID(),
-          orderId = UUID.randomUUID(),
+          userId = randomUserID(),
+          orderId = randomOrderID(),
           successUrl = "https://example.com/success",
           cancelUrl = "https://example.com/cancel"
         )
@@ -75,8 +78,8 @@ class StripeServiceTest {
     val testProductId = System.getenv("STRIPE_TEST_PRODUCT_ID") ?: "prod_test"
     val testPriceId = System.getenv("STRIPE_TEST_PRICE_ID") ?: "price_test"
 
-    val userId = UUID.randomUUID()
-    val orderId = UUID.randomUUID()
+    val userId = randomUserID()
+    val orderId = randomOrderID()
 
     val session = stripeService.createPaymentSession(
       productId = testProductId,
@@ -128,7 +131,7 @@ class StripeServiceTest {
       return@runTest
     }
 
-    val nonExistentOrderId = UUID.randomUUID()
+    val nonExistentOrderId = randomOrderID()
     val payments = stripeService.getPaymentsByOrderId(nonExistentOrderId)
 
     assertNotNull(payments)
@@ -145,8 +148,8 @@ class StripeServiceTest {
     val testProductId = System.getenv("STRIPE_TEST_PRODUCT_ID") ?: return@runTest
     val testPriceId = System.getenv("STRIPE_TEST_PRICE_ID") ?: return@runTest
 
-    val userId = UUID.randomUUID()
-    val orderId = UUID.randomUUID()
+    val userId = randomUserID()
+    val orderId = randomOrderID()
     val customMetadata = mapOf(
       "customerName" to "Test User",
       "orderNumber" to "ORD-12345"

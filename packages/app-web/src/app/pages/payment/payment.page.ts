@@ -33,9 +33,9 @@ export class PaymentPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         if (params.billingId) {
-          setTimeout(() => {
-            location.href = `${this.serverConfig.apiUrl}/payment/${params.billingId}/callback`;
-          }, 3000);
+          // setTimeout(() => {
+          //   location.href = `${this.serverConfig.apiUrl}/payment/${params.billingId}/callback`;
+          // }, 3000);
         }
       })
     );

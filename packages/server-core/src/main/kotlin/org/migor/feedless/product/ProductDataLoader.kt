@@ -1,4 +1,4 @@
-package org.migor.feedless.plan
+package org.migor.feedless.product
 
 import com.netflix.graphql.dgs.DgsDataLoader
 import org.dataloader.MappedBatchLoader

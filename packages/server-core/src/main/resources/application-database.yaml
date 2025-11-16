@@ -40,7 +40,7 @@ spring:
     enabled: true
     baseline-on-migrate: true
     baseline-version: 1
-    target: 78
+    target: 79
 
 hibernate:
   cache:

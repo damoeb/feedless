@@ -424,19 +424,19 @@ export class CheckoutPage implements OnInit, OnDestroy {
     }
     try {
       this.loading = true;
-      const billing = await this.orderService.upsertOrder({
+      const order = await this.orderService.upsertOrder({
         isOffer: false,
         overwritePrice: 0,
         invoiceRecipientName: `${this.formFg.value.firstName} ${this.formFg.value.lastName}`,
         invoiceRecipientEmail: this.formFg.value.email,
         targetGroup: GqlProductTargetGroup.Individual,
         paymentMethod: this.formFg.value.paymentMethod,
-        callbackUrl: this.activatedRoute.snapshot.queryParams.callbackUrl,
+        callbackUrl: this.activatedRoute.snapshot.queryParams.callbackUrl, // todo makes no sense
         productId: this.productId,
         user: this.getUserInput(),
       });
 
-      await this.router.navigateByUrl(`/payment/${billing.id}`);
+      await this.router.navigateByUrl(`/payment/${order.id}`);
     } catch (e) {
       this.loading = false;
       this.changeRef.detectChanges();

@@ -1,4 +1,4 @@
-package org.migor.feedless.plan
+package org.migor.feedless.order
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsData
@@ -31,7 +31,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
