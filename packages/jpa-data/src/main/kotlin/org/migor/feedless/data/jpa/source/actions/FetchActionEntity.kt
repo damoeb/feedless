@@ -67,3 +67,7 @@ open class FetchActionEntity : ScrapeActionEntity() {
   @Column(name = "additional_wait_sec")
   open var additionalWaitSec: Int? = null
 }
+
+fun FetchActionEntity.toDomain(): org.migor.feedless.actions.FetchAction {
+  return FetchActionMapper.Companion.INSTANCE.toDomain(this)
+}

@@ -29,3 +29,7 @@ open class HeaderActionEntity : ScrapeActionEntity() {
   @Column(name = "value", nullable = false)
   open lateinit var value: String
 }
+
+fun HeaderActionEntity.toDomain(): org.migor.feedless.actions.HeaderAction {
+  return HeaderActionMapper.Companion.INSTANCE.toDomain(this)
+}

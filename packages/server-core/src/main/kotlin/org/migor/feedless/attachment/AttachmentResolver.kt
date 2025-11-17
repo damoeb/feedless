@@ -63,16 +63,24 @@ class AttachmentResolver(
 private fun CreateAttachmentFieldsInput.toDomain(file: MultipartFile): Attachment {
   return Attachment(
     id = AttachmentId(UUID.randomUUID()),
-    name = name.ifBlank { file.originalFilename ?: "unknown" }
+    name = name.ifBlank { file.originalFilename ?: "unknown" },
+    hasData = true,
+    remoteDataUrl = null,
+    mimeType = file.contentType ?: "application/octet-stream",
+    originalUrl = null,
+    size = file.size,
+    duration = null,
+    documentId = DocumentId(UUID.randomUUID()),
+    createdAt = java.time.LocalDateTime.now()
   )
 }
 
 private fun Attachment.toDto(): AttachmentDto {
   return AttachmentDto(
     id = id.uuid.toString(),
-    type = "application/octet-stream", // Default MIME type, should be set from file
-    url = "", // Should be generated URL
-    size = null,
-    duration = null
+    type = mimeType,
+    url = remoteDataUrl ?: "",
+    size = size,
+    duration = duration
   )
 }

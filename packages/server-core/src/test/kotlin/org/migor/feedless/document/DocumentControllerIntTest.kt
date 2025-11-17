@@ -10,13 +10,13 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
-import org.migor.feedless.eq
 import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.eq
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer

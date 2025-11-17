@@ -13,11 +13,10 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.UserId
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserService
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -34,8 +33,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity
 import org.springframework.security.config.http.SessionCreationPolicy
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient
@@ -50,6 +47,8 @@ import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
 import java.net.URI
+import org.springframework.security.core.userdetails.User as BasicAuthUser
+import org.springframework.security.core.userdetails.UserDetails as BasicAuthUserDetails
 
 
 @Configuration
@@ -205,11 +204,11 @@ class SecurityConfig {
     }
   }
 
-  private fun createUserCapability(user: UserEntity): UserCapability {
-    return UserCapability(UserId(user.id));
+  private fun createUserCapability(user: User): UserCapability {
+    return UserCapability(user.id);
   }
 
-  private fun createGroupCapability(user: UserEntity): GroupCapability {
+  private fun createGroupCapability(user: User): GroupCapability {
     return GroupCapability(emptyList());
   }
 
@@ -223,7 +222,7 @@ class SecurityConfig {
     return url.protocol + "://" + url.host.replace("api.", "")
   }
 
-  private suspend fun resolveUser(authentication: OAuth2AuthenticationToken): UserEntity {
+  private suspend fun resolveUser(authentication: OAuth2AuthenticationToken): User {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
@@ -234,7 +233,7 @@ class SecurityConfig {
       )
   }
 
-  private suspend fun resolveUserByGithubId(githubId: String): UserEntity? {
+  private suspend fun resolveUserByGithubId(githubId: String): User? {
     return userService!!.findByGithubId(githubId)
       .also {
         it?.let {
@@ -245,7 +244,7 @@ class SecurityConfig {
 
   @Bean
   fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {
-    val user: UserDetails = User
+    val user: BasicAuthUserDetails = BasicAuthUser
       .withUsername("actuator")
       .password(passwordEncoder().encode(actuatorPassword))
       .roles(metricRole)

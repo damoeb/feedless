@@ -104,3 +104,7 @@ open class FeatureValueEntity : EntityWithUUID() {
   )
   open var feature: FeatureEntity? = null
 }
+
+fun FeatureValueEntity.toDomain(): org.migor.feedless.feature.FeatureValue {
+  return FeatureValueMapper.Companion.INSTANCE.toDomain(this)
+}

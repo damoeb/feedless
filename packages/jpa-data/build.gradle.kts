@@ -2,6 +2,7 @@ plugins {
 //  alias(libs.plugins.test.logger)
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
+  alias(libs.plugins.kapt)
 }
 
 repositories {
@@ -28,6 +29,9 @@ dependencies {
   implementation(libs.kotlin.jdsl.jpql.render)
   implementation(libs.kotlin.jdsl.spring.support)
   implementation(libs.spring.boot.jpa)
+
+  implementation("org.mapstruct:mapstruct:1.6.3")
+  kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
   implementation(libs.jsoup)
   implementation(libs.xsoup)

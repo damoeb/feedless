@@ -11,11 +11,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
-data class ConnectedAppId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)

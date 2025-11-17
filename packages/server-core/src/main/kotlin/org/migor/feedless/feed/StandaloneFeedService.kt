@@ -7,10 +7,10 @@ import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.source.SourceEntity
 import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.document.DocumentService
@@ -19,7 +19,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
-import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
@@ -211,7 +210,7 @@ class StandaloneFeedService(
     repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
       val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
       val documents = documentService.findAllByRepositoryId(
-        RepositoryId(repo.id),
+        repo.id,
         status = ReleaseStatus.released,
         pageable = pageable,
       )

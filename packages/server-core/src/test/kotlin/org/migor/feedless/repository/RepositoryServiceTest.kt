@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomSourceId
 import org.migor.feedless.Mother.randomUserId
@@ -16,7 +17,6 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.user.UserEntity

@@ -18,6 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
 import org.migor.feedless.data.jpa.pricedProduct.PricedProductEntity
+import org.migor.feedless.product.Product
 import java.util.*
 
 @Entity
@@ -77,4 +78,8 @@ open class ProductEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var prices: MutableList<PricedProductEntity> = mutableListOf()
 
+}
+
+fun ProductEntity.toDomain(): Product {
+  return ProductMapper.Companion.INSTANCE.toDomain(this)
 }

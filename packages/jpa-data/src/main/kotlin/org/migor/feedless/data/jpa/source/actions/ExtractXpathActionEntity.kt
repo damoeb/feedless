@@ -13,6 +13,7 @@ import jakarta.persistence.Table
 import jakarta.persistence.Transient
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
+import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.source.ExtractEmit
 import java.sql.Types
@@ -62,4 +63,8 @@ open class ExtractXpathActionEntity : ScrapeActionEntity() {
       emitRaw.contains(uniqueBy.name),
       { "uniqueBy '${uniqueBy}' must be part of emit types [${emitRaw.joinToString(", ")}]" })
   }
+}
+
+fun ExtractXpathActionEntity.toDomain(): ExtractXpathAction {
+  return ExtractXpathActionMapper.Companion.INSTANCE.toDomain(this)
 }

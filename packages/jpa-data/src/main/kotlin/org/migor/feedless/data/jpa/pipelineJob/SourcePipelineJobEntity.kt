@@ -44,3 +44,7 @@ open class SourcePipelineJobEntity : PipelineJobEntity() {
     updateStatus()
   }
 }
+
+fun SourcePipelineJobEntity.toDomain(): org.migor.feedless.pipelineJob.SourcePipelineJob {
+  return SourcePipelineJobMapper.Companion.INSTANCE.toDomain(this)
+}

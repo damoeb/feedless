@@ -108,3 +108,7 @@ open class OrderEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var invoices: MutableList<InvoiceEntity> = mutableListOf()
 }
+
+fun OrderEntity.toDomain(): org.migor.feedless.order.Order {
+  return OrderMapper.Companion.INSTANCE.toDomain(this)
+}

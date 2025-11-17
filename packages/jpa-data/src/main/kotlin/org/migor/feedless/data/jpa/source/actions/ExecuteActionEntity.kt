@@ -10,6 +10,7 @@ import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.type.SqlTypes
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 
 @Entity
@@ -29,5 +30,9 @@ open class ExecuteActionEntity : ScrapeActionEntity() {
   @Basic(fetch = FetchType.EAGER)
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(columnDefinition = "jsonb", name = "executor_params", nullable = false)
-  open var executorParams: PluginExecutionJsonEntity? = null
+  open var executorParams: PluginExecutionJson? = null
+}
+
+fun ExecuteActionEntity.toDomain(): org.migor.feedless.actions.ExecuteAction {
+  return ExecuteActionMapper.Companion.INSTANCE.toDomain(this)
 }

@@ -10,3 +10,7 @@ open class GithubConnectionEntity : ConnectedAppEntity() {
   @Column(name = "github_id")
   open var githubId: String? = null
 }
+
+fun GithubConnectionEntity.toDomain(): org.migor.feedless.connectedApp.GithubConnection {
+  return GithubConnectionMapper.Companion.INSTANCE.toDomain(this)
+}

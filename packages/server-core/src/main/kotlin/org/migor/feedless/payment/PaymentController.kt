@@ -4,6 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.order.OrderId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile

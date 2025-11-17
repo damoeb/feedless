@@ -11,9 +11,13 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.user.toDomain
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.data.jpa.userSecret.toDomain
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userSecret.UserSecret
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -83,9 +87,9 @@ class StatefulAuthService : AuthService() {
   }
 
   @Transactional(readOnly = true)
-  override fun authenticateUser(email: String, secretKey: String): UserEntity {
+  override fun authenticateUser(email: String, secretKey: String): User {
     log.debug("authRoot")
-    val root = userDAO.findByEmail(email) ?: throw NotFoundException("user not found")
+    val root = userDAO.findByEmail(email)?.toDomain() ?: throw NotFoundException("user not found")
     if (!root.admin) {
       throw PermissionDeniedException("account is not root")
     }
@@ -95,16 +99,16 @@ class StatefulAuthService : AuthService() {
   }
 
   @Transactional(readOnly = true)
-  override suspend fun findUserById(userId: UserId): UserEntity? {
+  override suspend fun findUserById(userId: UserId): User? {
     return withContext(Dispatchers.IO) {
-      userDAO.findById(userId.value).getOrNull()
+      userDAO.findById(userId.value).map { it.toDomain() }.getOrNull()
     }
   }
 
   @Transactional(readOnly = true)
-  override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecretEntity? {
+  override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret? {
     return withContext(Dispatchers.IO) {
-      userSecretDAO.findBySecretKeyValue(secretKey, email)
+      userSecretDAO.findBySecretKeyValue(secretKey, email)?.toDomain()
     }
   }
 

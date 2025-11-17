@@ -15,8 +15,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
+import org.migor.feedless.agent.Agent
 import org.migor.feedless.data.jpa.agent.AgentEntity
+import org.migor.feedless.data.jpa.agent.AgentMapper
+import org.migor.feedless.data.jpa.agent.toDomain
 import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.SourceMapper
+import org.migor.feedless.source.Source
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -124,7 +129,7 @@ class AgentService(
   suspend fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
   //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
-  suspend fun prerender(source: SourceEntity): AgentResponse {
+  suspend fun prerender(source: Source): AgentResponse {
     val corrId = coroutineContext.corrId()
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
@@ -151,8 +156,9 @@ class AgentService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByUserId(userId: UserId?): List<AgentEntity> {
+  suspend fun findAllByUserId(userId: UserId?): List<Agent> {
     return agentRegistry.findAllByOwnerIdOrOpenInstanceIsTrue(userId?.value)
+      .map { it.toDomain() }
   }
 
   @Transactional(propagation = Propagation.SUPPORTS)
@@ -161,7 +167,7 @@ class AgentService(
   }
 
   private suspend fun prerenderWithAgent(
-    source: SourceEntity,
+    source: Source,
     agentRef: AgentRef
   ): Mono<AgentResponse> {
     val corrId = coroutineContext.corrId()

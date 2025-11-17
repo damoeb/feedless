@@ -82,7 +82,7 @@ class SourcePipelineJobExecutor internal constructor(
   private suspend fun getOwnerIdForSourceId(sourceId: SourceId): UserId {
     val repo =
       repositoryService.findBySourceId(sourceId) ?: throw sourcePipelineService.failAfterCleaningJobsForSource(sourceId)
-    return UserId(repo.ownerId)
+    return repo.ownerId
   }
 
   private suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJobEntity>) {

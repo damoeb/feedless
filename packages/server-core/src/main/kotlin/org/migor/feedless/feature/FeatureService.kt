@@ -32,14 +32,6 @@ import java.time.LocalDateTime
 import java.util.*
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
-data class FeatureGroupId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
-
-data class FeatureValueId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
-
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
@@ -57,7 +49,7 @@ class FeatureService(
   @Transactional(readOnly = true)
   suspend fun isDisabled(featureName: FeatureName, featureGroupIdOptional: FeatureGroupId? = null): Boolean {
     return withContext(Dispatchers.IO) {
-      val featureGroupId = featureGroupIdOptional?.value ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
+      val featureGroupId = featureGroupIdOptional?.uuid ?: featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id
 
       featureValueDAO.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)?.let { feature ->
         run {
@@ -103,7 +95,7 @@ class FeatureService(
     }
 
     withContext(Dispatchers.IO) {
-      val feature = featureValueDAO.findById(id.value).orElseThrow()
+      val feature = featureValueDAO.findById(id.uuid).orElseThrow()
 
       if (feature.valueType == FeatureValueType.bool) {
         feature.valueBoolean = boolValue!!.value
@@ -181,9 +173,9 @@ class FeatureService(
     return withContext(Dispatchers.IO) {
       toDTO(
         if (inherit) {
-          featureValueDAO.resolveAllByFeatureGroupId(featureGroupId.value)
+          featureValueDAO.resolveAllByFeatureGroupId(featureGroupId.uuid)
         } else {
-          featureValueDAO.findAllByFeatureGroupId(featureGroupId.value)
+          featureValueDAO.findAllByFeatureGroupId(featureGroupId.uuid)
         }
       )
     }

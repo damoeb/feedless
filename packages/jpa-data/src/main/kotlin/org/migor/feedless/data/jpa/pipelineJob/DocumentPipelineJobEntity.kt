@@ -13,9 +13,9 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
 import org.jetbrains.annotations.NotNull
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
 import java.util.*
 
 @Entity
@@ -29,7 +29,7 @@ open class DocumentPipelineJobEntity : PipelineJobEntity() {
   @NotNull
   @JdbcTypeCode(SqlTypes.JSON)
   @Column(name = "executor_params", columnDefinition = "jsonb")
-  open lateinit var executorParams: PluginExecutionJsonEntity
+  open lateinit var executorParams: PluginExecutionJson
 
   @NotNull
   @Column(name = StandardJpaFields.documentId, nullable = true)
@@ -50,4 +50,8 @@ open class DocumentPipelineJobEntity : PipelineJobEntity() {
   fun prePersist() {
     updateStatus()
   }
+}
+
+fun DocumentPipelineJobEntity.toDomain(): org.migor.feedless.pipelineJob.DocumentPipelineJob {
+  return DocumentPipelineJobMapper.Companion.INSTANCE.toDomain(this)
 }

@@ -7,13 +7,18 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.data.jpa.annotation.AnnotationDAO
 import org.migor.feedless.data.jpa.annotation.AnnotationEntity
+import org.migor.feedless.data.jpa.annotation.TextAnnotationDAO
+import org.migor.feedless.data.jpa.annotation.TextAnnotationEntity
+import org.migor.feedless.data.jpa.annotation.VoteDAO
+import org.migor.feedless.data.jpa.annotation.VoteEntity
+import org.migor.feedless.data.jpa.annotation.toDomain
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -31,7 +36,7 @@ class AnnotationService(
 ) {
 
   @Transactional
-  suspend fun createAnnotation(data: CreateAnnotationInput, user: UserEntity): AnnotationEntity {
+  suspend fun createAnnotation(data: CreateAnnotationInput, user: User): Annotation {
     return data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set, user = user) }
       ?: data.annotation.text?.let { createTextAnnotation(data.where, it, user) }
       ?: data.annotation.upVote?.let { createBoolAnnotation(data.where, upvote = it.set, user = user) }
@@ -40,7 +45,7 @@ class AnnotationService(
   }
 
   @Transactional
-  suspend fun deleteAnnotation(data: DeleteAnnotationInput, currentUser: UserEntity) {
+  suspend fun deleteAnnotation(data: DeleteAnnotationInput, currentUser: User) {
     withContext(Dispatchers.IO) {
       val vote = annotationDAO.findById(UUID.fromString(data.where.id)).orElseThrow()
       if (currentUser.admin || currentUser.id == vote.ownerId) {
@@ -56,13 +61,13 @@ class AnnotationService(
     flag: Boolean = false,
     upvote: Boolean = false,
     downvote: Boolean = false,
-    user: UserEntity
-  ): AnnotationEntity {
+    user: User
+  ): Annotation {
     val v = VoteEntity()
     v.flag = flag
     v.upVote = upvote
     v.downVote = downvote
-    v.ownerId = user.id
+    v.ownerId = user.id.value
 
     val (documentId, repositoyId) = resolveReferences(where)
     linkDocumentOrRepository(v, documentId, repositoyId)
@@ -71,27 +76,27 @@ class AnnotationService(
         flag,
         upvote,
         downvote,
-        user.id,
+        user.id.value,
         documentId?.value,
-        repositoyId?.value
+        repositoyId?.uuid
       )
     ) {
       throw IllegalArgumentException("duplicate")
     }
 
-    return voteDAO.save(v)
+    return voteDAO.save(v).toDomain()
   }
 
   private fun createTextAnnotation(
     where: AnnotationWhereInput,
     i: TextAnnotationInput,
-    user: UserEntity
-  ): AnnotationEntity {
+    user: User
+  ): Annotation {
     val t = TextAnnotationEntity()
     t.fromChar = i.fromChar
     t.toChar = i.toChar
     // todo extract actual text
-    t.ownerId = user.id
+    t.ownerId = user.id.value
 
     val (documentId, repositoyId) = resolveReferences(where)
     linkDocumentOrRepository(t, documentId, repositoyId)
@@ -99,15 +104,15 @@ class AnnotationService(
     if (textAnnotationDAO.existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(
         i.fromChar,
         i.toChar,
-        user.id,
+        user.id.value,
         documentId?.value,
-        repositoyId?.value
+        repositoyId?.uuid
       )
     ) {
       throw IllegalArgumentException("duplicate")
     }
 
-    return textAnnotationDAO.save(t)
+    return textAnnotationDAO.save(t).toDomain()
   }
 
   private fun linkDocumentOrRepository(
@@ -121,7 +126,7 @@ class AnnotationService(
         a.documentId = documentId.value
       }
     } else {
-      a.repositoryId = repositoryId.value
+      a.repositoryId = repositoryId.uuid
     }
   }
 
@@ -136,28 +141,28 @@ class AnnotationService(
   @Transactional(readOnly = true)
   suspend fun countUpVotesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
-      voteDAO.countUpVotesIsTrueByRepositoryId(repositoryId.value)
+      voteDAO.countUpVotesIsTrueByRepositoryId(repositoryId.uuid)
     }
   }
 
   @Transactional(readOnly = true)
   suspend fun countDownVotesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
-      voteDAO.countDownVoteIsTrueByRepositoryId(repositoryId.value)
+      voteDAO.countDownVoteIsTrueByRepositoryId(repositoryId.uuid)
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllVotesByUserIdAndRepositoryId(userId: UserId, repositoryId: RepositoryId): List<VoteEntity> {
+  suspend fun findAllVotesByUserIdAndRepositoryId(userId: UserId, repositoryId: RepositoryId): List<Vote> {
     return withContext(Dispatchers.IO) {
-      voteDAO.findAllByOwnerIdAndRepositoryId(userId.value, repositoryId.value)
+      voteDAO.findAllByOwnerIdAndRepositoryId(userId.value, repositoryId.uuid).map { it.toDomain() }
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllVotesByUserIdAndDocumentId(userId: UserId, documentId: DocumentId): List<VoteEntity> {
+  suspend fun findAllVotesByUserIdAndDocumentId(userId: UserId, documentId: DocumentId): List<Vote> {
     return withContext(Dispatchers.IO) {
-      voteDAO.findAllByOwnerIdAndDocumentId(userId.value, documentId.value)
+      voteDAO.findAllByOwnerIdAndDocumentId(userId.value, documentId.value).map { it.toDomain() }
     }
   }
 

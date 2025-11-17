@@ -30,6 +30,19 @@ class AttachmentService(
     }
   }
 
+  @Transactional(readOnly = true)
+  suspend fun findByIdWithData(attachmentId: String): Pair<Optional<Attachment>, ByteArray?> {
+    return withContext(Dispatchers.IO) {
+      val entityOpt = attachmentDAO.findById(UUID.fromString(attachmentId))
+      if (entityOpt.isPresent) {
+        val entity = entityOpt.get()
+        Pair(Optional.of(entity.toDomain()), entity.data)
+      } else {
+        Pair(Optional.empty(), null)
+      }
+    }
+  }
+
   @Transactional
   suspend fun createAttachment(documentId: DocumentId, attachment: Attachment): Attachment {
     return withContext(Dispatchers.IO) {
@@ -51,9 +64,5 @@ class AttachmentService(
       attachmentDAO.deleteById(attachmentId.uuid)
     }
   }
-}
-
-fun AttachmentEntity.toDomain(): Attachment {
-  return AttachmentMapper.INSTANCE.toDomain(this)
 }
 

@@ -49,3 +49,7 @@ open class InvoiceEntity : EntityWithUUID() {
   )
   open var order: OrderEntity? = null
 }
+
+fun InvoiceEntity.toDomain(): org.migor.feedless.invoice.Invoice {
+  return InvoiceMapper.Companion.INSTANCE.toDomain(this)
+}

@@ -9,6 +9,8 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.api.toDTO
+import org.migor.feedless.api.toDto
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.DgsConstants
@@ -25,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 class ProductResolver(
-  val productService: ProductService,
+  val productService: ProductServiceImpl,
   val featureService: FeatureService
 ) {
 

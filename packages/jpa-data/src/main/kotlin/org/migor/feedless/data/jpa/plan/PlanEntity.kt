@@ -59,3 +59,7 @@ open class PlanEntity : EntityWithUUID() {
 
 
 }
+
+fun PlanEntity.toDomain(): org.migor.feedless.plan.Plan {
+  return PlanMapper.Companion.INSTANCE.toDomain(this)
+}

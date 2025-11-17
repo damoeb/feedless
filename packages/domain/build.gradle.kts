@@ -18,6 +18,7 @@ dependencies {
 
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.gson)
+  implementation(libs.hibernate.spatial) // For JTS Point type
   testImplementation(libs.kotlinx.coroutines.test)
 }
 

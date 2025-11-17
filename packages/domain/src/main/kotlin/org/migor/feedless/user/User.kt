@@ -1,10 +1,10 @@
 package org.migor.feedless.user
 
+import org.migor.feedless.repository.RepositoryId
 import java.time.LocalDateTime
-import java.util.*
 
 data class User(
-  val id: UUID,
+  val id: UserId,
   val email: String,
   val firstName: String?,
   val lastName: String?,
@@ -26,6 +26,6 @@ data class User(
   val purgeScheduledFor: LocalDateTime?,
   val dateFormat: String?, // todo make nullable=false
   val timeFormat: String?,
-  val inboxRepositoryId: UUID?,
+  val inboxRepositoryId: RepositoryId?,
   val notificationsLastViewedAt: LocalDateTime?
 )

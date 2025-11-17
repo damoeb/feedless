@@ -7,19 +7,19 @@ import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.generated.types.GeoPointInput
-import org.migor.feedless.generated.types.IntervalUnit
-import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.report.ReportDAO
 import org.migor.feedless.data.jpa.report.ReportEntity
 import org.migor.feedless.data.jpa.report.SegmentationEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.generated.types.GeoPointInput
+import org.migor.feedless.generated.types.IntervalUnit
+import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.fromDto
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
-import org.migor.feedless.util.JtsUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.ApplicationContext
@@ -31,11 +31,7 @@ import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
-import java.util.*
 
-data class ReportId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -77,7 +73,7 @@ class ReportService(
 
     val segmentation = SegmentationEntity()
     segmentation.size = 200
-    segmentation.repositoryId = repositoryId.value
+    segmentation.repositoryId = repositoryId.uuid
     val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
     segmentation.timeSegmentStartingAt = startingAt
     segment.what.latLng?.let {

@@ -5,6 +5,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
+import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.feed.parser.CalendarFeedParser
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
@@ -14,7 +15,6 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

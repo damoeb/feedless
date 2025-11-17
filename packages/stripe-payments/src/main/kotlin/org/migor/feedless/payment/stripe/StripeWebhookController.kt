@@ -4,7 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.order.OrderService
-import org.migor.feedless.payment.OrderId
+import org.migor.feedless.order.OrderId
 import org.migor.feedless.payment.PaymentService
 import org.migor.feedless.payment.PaymentStatus
 import org.slf4j.LoggerFactory

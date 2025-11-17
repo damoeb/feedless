@@ -1,7 +1,12 @@
 package org.migor.feedless.license
 
-import java.util.*
+import org.migor.feedless.order.OrderId
+import java.time.LocalDateTime
 
 data class License(
-  val payload: String, val orderId: UUID
+  val id: LicenseId,
+  val payload: String,
+  val orderId: OrderId?,
+  val createdAt: LocalDateTime
 )
+

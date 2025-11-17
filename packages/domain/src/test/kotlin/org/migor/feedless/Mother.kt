@@ -1,7 +1,9 @@
 package org.migor.feedless
 
 import org.migor.feedless.otp.OneTimePassword
-import org.migor.feedless.payment.OrderId
+import org.migor.feedless.otp.OneTimePasswordId
+import org.migor.feedless.order.OrderId
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
@@ -14,7 +16,7 @@ object Mother {
 
   fun randomUser(): User {
     val user = User(
-      id = randomUUID(),
+      id = UserId(randomUUID()),
       email = randomString(),
       firstName = randomNullableString(),
       lastName = randomNullableString(),
@@ -36,7 +38,7 @@ object Mother {
       purgeScheduledFor = randomNullableLocalDateTime(),
       dateFormat = randomNullableString(),
       timeFormat = randomNullableString(),
-      inboxRepositoryId = randomNullableUUID(),
+      inboxRepositoryId = randomNullableRepositoryId(),
       notificationsLastViewedAt = randomNullableLocalDateTime()
     )
 
@@ -47,6 +49,14 @@ object Mother {
   fun randomNullableUUID(): UUID? {
     return if (randomBoolean()) {
       randomUUID()
+    } else {
+      null
+    }
+  }
+
+  fun randomNullableRepositoryId(): RepositoryId? {
+    return if (randomBoolean()) {
+      RepositoryId(randomUUID())
     } else {
       null
     }
@@ -79,12 +89,12 @@ object Mother {
   fun randomString() = randomUUID().toString()
   fun randomNullableString() = randomUUID().toString()
 
-  fun randomOneTimePassword(userId: UUID? = null): OneTimePassword {
+  fun randomOneTimePassword(userId: UserId? = null): OneTimePassword {
     return OneTimePassword(
-      id = randomUUID(),
+      id = OneTimePasswordId(randomUUID()),
       password = randomString().substring(0, 6),
       validUntil = LocalDateTime.now().plusMinutes(10),
-      userId = userId ?: randomUUID()
+      userId = userId ?: UserId(randomUUID())
     )
   }
 

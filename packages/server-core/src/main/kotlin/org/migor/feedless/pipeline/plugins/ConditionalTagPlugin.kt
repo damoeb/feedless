@@ -7,11 +7,13 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.document.Document
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
@@ -54,11 +56,11 @@ class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
 
   override fun listed() = true
   override suspend fun mapEntity(
-    document: DocumentEntity,
-    repository: RepositoryEntity,
+    document: Document,
+    repository: Repository,
     params: ConditionalTagPluginParams,
     logCollector: LogCollector
-  ): DocumentEntity {
+  ): Document {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] mapEntity ${document.url}")
     val newTags = params.filter {
@@ -74,11 +76,11 @@ class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
   }
 
   override suspend fun mapEntity(
-    document: DocumentEntity,
-    repository: RepositoryEntity,
+    document: Document,
+    repository: Repository,
     paramsJson: String?,
     logCollector: LogCollector
-  ): DocumentEntity {
+  ): Document {
     return mapEntity(document, repository, fromJson(paramsJson), logCollector)
   }
 
@@ -87,7 +89,7 @@ class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
   }
 }
 
-fun DocumentEntity.asJsonItem(repository: RepositoryEntity? = null): JsonItem {
+fun Document.asJsonItem(repository: Repository? = null): JsonItem {
   val item = JsonItem()
   item.id = id.toString()
   latLon?.let {

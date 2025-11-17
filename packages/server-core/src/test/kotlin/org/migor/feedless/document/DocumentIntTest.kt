@@ -9,14 +9,15 @@ import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
 import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
@@ -35,7 +36,6 @@ import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.migor.feedless.util.JtsUtil
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest

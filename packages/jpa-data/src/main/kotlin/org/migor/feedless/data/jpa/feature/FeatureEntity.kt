@@ -29,3 +29,7 @@ open class FeatureEntity : EntityWithUUID() {
   @Column(nullable = false, name = StandardJpaFields.name, length = 50)
   open lateinit var name: String
 }
+
+fun FeatureEntity.toDomain(): org.migor.feedless.feature.Feature {
+  return FeatureMapper.Companion.INSTANCE.toDomain(this)
+}

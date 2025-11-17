@@ -15,14 +15,16 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.annotation.AnnotationEntity
+import org.migor.feedless.data.jpa.annotation.TextAnnotationEntity
+import org.migor.feedless.data.jpa.annotation.VoteEntity
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.Annotation
-import org.migor.feedless.generated.types.Annotations
-import org.migor.feedless.generated.types.BoolAnnotation
+import org.migor.feedless.generated.types.Annotation as AnnotationDto
+import org.migor.feedless.generated.types.Annotations as AnnotationsDto
+import org.migor.feedless.generated.types.BoolAnnotation as BoolAnnotationDto
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
-import org.migor.feedless.generated.types.Repository
-import org.migor.feedless.generated.types.TextAnnotation
+import org.migor.feedless.generated.types.Repository as RepositoryDto
+import org.migor.feedless.generated.types.TextAnnotation as TextAnnotationDto
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
@@ -49,7 +51,7 @@ class AnnotationResolver(
   suspend fun createAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
-  ): Annotation = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): AnnotationDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
     log.debug("createAnnotation $data")
     annotationService.createAnnotation(data, sessionService.user()).toDto()
   }
@@ -69,7 +71,7 @@ class AnnotationResolver(
   @DgsData(parentType = DgsConstants.ANNOTATIONS.TYPE_NAME, field = DgsConstants.ANNOTATIONS.Votes)
   suspend fun votes(
     dfe: DgsDataFetchingEnvironment
-  ): List<Annotation> = coroutineScope {
+  ): List<AnnotationDto> = coroutineScope {
     val context = DgsContext.getCustomContext<DgsCustomContext>(dfe)
     val userId = context.userId
     userId?.let {
@@ -83,45 +85,45 @@ class AnnotationResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
   suspend fun annotations(
     dfe: DgsDataFetchingEnvironment
-  ): Annotations = coroutineScope {
-    val repository: Repository = dfe.getSourceOrThrow()
+  ): AnnotationsDto = coroutineScope {
+    val repository: RepositoryDto = dfe.getSourceOrThrow()
 
     val repositoryId = RepositoryId(UUID.fromString(repository.id))
     DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
-    Annotations(
+    AnnotationsDto(
       upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
       downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
     )
   }
 }
 
-private fun AnnotationEntity.toDto(): Annotation {
+private fun Annotation.toDto(): AnnotationDto {
   return if (this is TextAnnotationEntity) {
-    Annotation(
+    AnnotationDto(
       id = id.toString(),
-      text = TextAnnotation(
+      text = TextAnnotationDto(
         fromChar = fromChar,
         toChar = toChar,
       )
     )
   } else {
-    if (this is VoteEntity) {
+    if (this is Vote) {
       val toBoolAnnotation = { value: Boolean ->
         if (value) {
-          BoolAnnotation(value)
+          BoolAnnotationDto(value)
         } else {
           null
         }
       }
 
-      Annotation(
+      AnnotationDto(
         id = id.toString(),
         flag = toBoolAnnotation(flag),
         upVote = toBoolAnnotation(upVote),
         downVote = toBoolAnnotation(downVote),
       )
     } else {
-      Annotation(id = id.toString())
+      AnnotationDto(id = id.toString())
     }
   }
 }

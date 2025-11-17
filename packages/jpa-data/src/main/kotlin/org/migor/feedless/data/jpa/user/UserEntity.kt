@@ -143,3 +143,7 @@ open class UserEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var orders: MutableList<OrderEntity> = mutableListOf()
 }
+
+fun UserEntity.toDomain(): org.migor.feedless.user.User {
+  return UserMapper.Companion.INSTANCE.toDomain(this)
+}

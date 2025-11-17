@@ -86,7 +86,7 @@ class DocumentResolver(
     val repositoryId = RepositoryId(data.where.repository.id)
 
     val repository =
-      repositoryService.findById(repositoryId).orElseThrow { NotFoundException("repository ${repositoryId} not found") }
+      repositoryService.findById(repositoryId).orElseThrow { NotFoundException("repository $repositoryId not found") }
     val pageable = data.cursor.toPageable()
     if (pageable.pageSize == 0) {
       emptyList()

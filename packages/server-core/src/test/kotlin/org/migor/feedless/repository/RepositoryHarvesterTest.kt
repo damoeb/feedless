@@ -10,19 +10,19 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
 import org.migor.feedless.argThat
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.data.jpa.repository.PluginExecution
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.SourceEntity
-import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -389,7 +389,7 @@ class RepositoryHarvesterTest {
     }
 
   private fun createPlugin(): PluginExecution {
-    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionJsonEntity())
+    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionJson())
   }
 
   @Test

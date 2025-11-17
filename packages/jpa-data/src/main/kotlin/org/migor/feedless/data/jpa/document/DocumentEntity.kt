@@ -23,11 +23,11 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.locationtech.jts.geom.Point
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.annotation.AnnotationEntity
 import org.migor.feedless.data.jpa.attachment.AttachmentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.SourceEntity
@@ -201,4 +201,8 @@ open class DocumentEntity : EntityWithUUID() {
 //  )
 //  open var tags: List<TagEntity> = mutableListOf()
 
+}
+
+fun DocumentEntity.toDomain(): org.migor.feedless.document.Document {
+  return DocumentMapper.Companion.INSTANCE.toDomain(this)
 }

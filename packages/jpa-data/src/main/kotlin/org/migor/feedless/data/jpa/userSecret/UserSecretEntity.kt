@@ -56,3 +56,7 @@ open class UserSecretEntity : EntityWithUUID() {
   open var agents: MutableList<AgentEntity> = mutableListOf()
 
 }
+
+fun UserSecretEntity.toDomain(): org.migor.feedless.userSecret.UserSecret {
+  return UserSecretMapper.Companion.INSTANCE.toDomain(this)
+}

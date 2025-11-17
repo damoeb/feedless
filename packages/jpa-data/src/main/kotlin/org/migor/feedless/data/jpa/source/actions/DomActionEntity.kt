@@ -8,6 +8,7 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
+import org.migor.feedless.actions.DomEventType
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 
 @Entity
@@ -34,8 +35,6 @@ open class DomActionEntity : ScrapeActionEntity() {
   open var data: String? = null
 }
 
-enum class DomEventType {
-  purge,
-  type,
-  select,
+fun DomActionEntity.toDomain(): org.migor.feedless.actions.DomAction {
+  return DomActionMapper.Companion.INSTANCE.toDomain(this)
 }

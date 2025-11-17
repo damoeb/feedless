@@ -10,6 +10,7 @@ import org.migor.feedless.Vertical
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -79,7 +80,7 @@ class SessionService {
   suspend fun isUser(): Boolean = StringUtils.isNotBlank(coroutineContext[RequestContext]!!.userId?.toString())
 
   @Transactional(readOnly = true)
-  suspend fun user(): UserEntity {
+  suspend fun user(): User {
     val notFoundException = IllegalArgumentException("user not found")
     return coroutineContext.userIdOptional()
       ?.let { authService.findUserById(it) ?: throw notFoundException }

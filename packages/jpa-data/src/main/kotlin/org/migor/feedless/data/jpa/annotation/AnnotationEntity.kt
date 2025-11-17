@@ -71,3 +71,7 @@ open class AnnotationEntity : EntityWithUUID() {
   )
   open var owner: UserEntity? = null
 }
+
+fun AnnotationEntity.toDomain(): org.migor.feedless.annotation.Annotation {
+  return AnnotationMapper.Companion.INSTANCE.toDomain(this)
+}

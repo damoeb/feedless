@@ -13,10 +13,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.generated.types.Agent
-import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.session.injectCurrentUser
@@ -28,6 +25,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import org.migor.feedless.generated.types.Agent as AgentDto
+import org.migor.feedless.generated.types.AgentEvent as AgentEventDto
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -39,7 +38,7 @@ class AgentResolver(
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
   @DgsSubscription
-  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
+  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEventDto> {
     log.info("registerAgent ${data.secretKey.email}")
     return runBlocking {
       coroutineScope {
@@ -61,7 +60,7 @@ class AgentResolver(
   @DgsQuery
   suspend fun agents(
     dfe: DataFetchingEnvironment,
-  ): List<Agent> {
+  ): List<AgentDto> {
     log.debug("agents")
     return withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
       agentService.findAllByUserId(coroutineContext.userId()).map { it.toDto() }
@@ -69,8 +68,8 @@ class AgentResolver(
   }
 }
 
-private fun AgentEntity.toDto(): Agent {
-  return Agent(
+private fun Agent.toDto(): AgentDto {
+  return AgentDto(
     ownerId = ownerId.toString(),
     name = name,
     addedAt = createdAt.toMillis(),

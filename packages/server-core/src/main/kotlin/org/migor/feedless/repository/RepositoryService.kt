@@ -9,21 +9,23 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.Vertical
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.toDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.repository.PluginExecution
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
+import org.migor.feedless.data.jpa.repository.RepositoryMapper
+import org.migor.feedless.data.jpa.repository.toDomain
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
@@ -35,7 +37,6 @@ import org.migor.feedless.generated.types.PluginExecutionParamsInput
 import org.migor.feedless.generated.types.RecordOrderByInput
 import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.RepositoriesWhereInput
-import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.Visibility
@@ -72,11 +73,6 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   val fixedPage = (page ?: 0).coerceAtLeast(0)
   val fixedPageSize = (pageSize ?: 0).coerceAtLeast(0).coerceAtMost(20)
   return PageRequest.of(fixedPage, fixedPageSize)
-}
-
-
-data class RepositoryId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
 }
 
 @Service
@@ -181,7 +177,7 @@ class RepositoryService(
     pageable: Pageable,
     where: RepositoriesWhereInput?,
     userId: UserId?
-  ): List<RepositoryEntity> {
+  ): List<Repository> {
     log.debug("userId=$userId")
 
     return withContext(Dispatchers.IO) {
@@ -275,13 +271,13 @@ class RepositoryService(
           path(RepositoryEntity::lastUpdatedAt).desc()
         )
       }
-    }.toList().filterNotNull()
+    }.toList().filterNotNull().map { it.toDomain() }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(repositoryId: RepositoryId): Optional<RepositoryEntity> {
+  suspend fun findById(repositoryId: RepositoryId): Optional<Repository> {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findById(repositoryId.value)
+      repositoryDAO.findById(repositoryId.value).map { it.toDomain() }
     }
   }
 
@@ -333,8 +329,10 @@ class RepositoryService(
   }
 
   suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
-    val repository = context.getBean(RepositoryService::class.java).findById(id)
-      .orElseThrow { NotFoundException("Repository $id not found") }
+    // Fetch entity for mutation
+    val repository = withContext(Dispatchers.IO) {
+      repositoryDAO.findById(id.value).orElseThrow { NotFoundException("Repository $id not found") }
+    }
     val corrId = coroutineContext.corrId()
     if (repository.ownerId != coroutineContext.userId().value) {
       throw PermissionDeniedException("not authorized")
@@ -393,16 +391,18 @@ class RepositoryService(
 
     data.sources?.let {
       it.add?.let {
-        sourceService.createSources(UserId(repository.ownerId), it, repository)
+        sourceService.createSources(UserId(repository.ownerId), it, RepositoryId(repository.id))
       }
       it.update?.let {
-        sourceService.updateSources(repository, it)
+        sourceService.updateSources(RepositoryId(repository.id), it)
       }
       it.remove?.let {
         sourceService.deleteAllById(RepositoryId(repository.id), it.map { SourceId(it) })
       }
     }
-    context.getBean(RepositoryService::class.java).save(repository)
+    withContext(Dispatchers.IO) {
+      repositoryDAO.save(repository)
+    }
   }
 
   @Transactional(readOnly = true)
@@ -413,9 +413,9 @@ class RepositoryService(
   }
 
   @Transactional
-  suspend fun updatePullsFromAnalytics(repositoryId: UUID, pulls: Int) {
+  suspend fun updatePullsFromAnalytics(repositoryId: RepositoryId, pulls: Int) {
     withContext(Dispatchers.IO) {
-      val repository = repositoryDAO.findById(repositoryId).orElseThrow()
+      val repository = repositoryDAO.findById(repositoryId.uuid).orElseThrow()
       repository.pullsPerMonth = pulls
       repository.lastPullSync = LocalDateTime.now()
       repositoryDAO.save(repository)
@@ -474,7 +474,7 @@ class RepositoryService(
       repositoryDAO.save(repo)
     }
 
-    sourceService.createSources(ownerId, repoInput.sources, repo)
+    sourceService.createSources(ownerId, repoInput.sources, RepositoryId(repo.id))
 
 
 //    repoInput.additionalSinks?.let { sink ->
@@ -507,9 +507,9 @@ class RepositoryService(
 //  }
 
   @Transactional
-  suspend fun findBySourceId(sourceId: SourceId): RepositoryEntity? {
+  suspend fun findBySourceId(sourceId: SourceId): Repository? {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findBySourceId(sourceId.value)
+      repositoryDAO.findBySourceId(sourceId.value)?.toDomain()
     }
   }
 
@@ -518,33 +518,36 @@ class RepositoryService(
     visibility: EntityVisibility,
     now: LocalDateTime,
     pageable: PageRequest
-  ): List<RepositoryEntity> {
+  ): List<Repository> {
     return repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable)
+      .map { it.toDomain() }
   }
 
   @Transactional(readOnly = true)
-  fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageRequest): List<RepositoryEntity> {
+  fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageRequest): List<Repository> {
     return repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable)
+      .map { it.toDomain() }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findByDocumentId(documentId: UUID): RepositoryEntity? {
+  suspend fun findByDocumentId(documentId: UUID): Repository? {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findByDocumentId(documentId)
+      repositoryDAO.findByDocumentId(documentId)?.toDomain()
     }
   }
 
   @Transactional
-  suspend fun save(repository: RepositoryEntity): RepositoryEntity {
+  suspend fun save(repository: Repository): Repository {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.save(repository)
+      val entity = RepositoryMapper.INSTANCE.toEntity(repository)
+      repositoryDAO.save(entity).toDomain()
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findByTitleAndOwnerId(title: String, ownerId: UUID): RepositoryEntity? {
+  suspend fun findByTitleAndOwnerId(title: String, ownerId: UUID): Repository? {
     return withContext(Dispatchers.IO) {
-      repositoryDAO.findByTitleAndOwnerId(title, ownerId)
+      repositoryDAO.findByTitleAndOwnerId(title, ownerId)?.toDomain()
     }
   }
 }
@@ -560,7 +563,7 @@ fun PluginExecutionInput.fromDto(): PluginExecution {
   return PluginExecution(id = pluginId, params = params.toEntity())
 }
 
-fun PluginExecutionParamsInput.toEntity(): PluginExecutionJsonEntity {
+fun PluginExecutionParamsInput.toEntity(): PluginExecutionJson {
   val data = listOfNotNull(
     org_feedless_filter,
     org_feedless_feed,
@@ -571,7 +574,7 @@ fun PluginExecutionParamsInput.toEntity(): PluginExecutionJsonEntity {
   )
     .firstOrNull()
 
-  return PluginExecutionJsonEntity(
+  return PluginExecutionJson(
     paramsJsonString = data?.let { Gson().toJson(it) },
   )
 }

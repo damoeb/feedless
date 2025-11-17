@@ -57,3 +57,7 @@ open class HarvestEntity : EntityWithUUID() {
   open var source: SourceEntity? = null
 }
 
+fun HarvestEntity.toDomain(): org.migor.feedless.harvest.Harvest {
+  return HarvestMapper.Companion.INSTANCE.toDomain(this)
+}
+

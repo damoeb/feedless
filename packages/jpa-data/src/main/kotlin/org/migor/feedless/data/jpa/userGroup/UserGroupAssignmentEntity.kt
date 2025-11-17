@@ -16,6 +16,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.group.GroupEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.userGroup.RoleInGroup
 import java.util.*
 
 @Entity
@@ -62,8 +63,6 @@ open class UserGroupAssignmentEntity : EntityWithUUID() {
   open var group: GroupEntity? = null
 }
 
-enum class RoleInGroup {
-  owner,
-  viewer,
-  editor
+fun UserGroupAssignmentEntity.toDomain(): org.migor.feedless.userGroup.UserGroupAssignment {
+  return UserGroupAssignmentMapper.Companion.INSTANCE.toDomain(this)
 }

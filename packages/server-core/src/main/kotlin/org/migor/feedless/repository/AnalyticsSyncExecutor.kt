@@ -7,10 +7,9 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.analytics.AnalyticsService
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -53,10 +52,10 @@ class AnalyticsSyncExecutor internal constructor(
           runCatching {
             coroutineScope {
               repos.map { repo ->
-                async(RequestContext(userId = UserId(repo.ownerId))) {
+                async(RequestContext(userId = repo.ownerId)) {
                   semaphore.acquire()
                   try {
-                    val views = analyticsService.getUniquePageViewsForRepository(RepositoryId(repo.id))
+                    val views = analyticsService.getUniquePageViewsForRepository(repo.id)
                     repositoryService.updatePullsFromAnalytics(repo.id, views)
                   } finally {
                     semaphore.release()

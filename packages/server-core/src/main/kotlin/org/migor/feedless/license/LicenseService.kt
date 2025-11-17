@@ -25,8 +25,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.data.jpa.license.LicenseDAO
 import org.migor.feedless.data.jpa.license.LicenseEntity
-import org.migor.feedless.payment.Order
-import org.migor.feedless.payment.OrderId
+import org.migor.feedless.data.jpa.license.toDomain
+import org.migor.feedless.order.Order
+import org.migor.feedless.order.OrderId
 import org.migor.feedless.product.Product
 import org.migor.feedless.util.toLocalDateTime
 import org.migor.feedless.util.toMillis
@@ -341,7 +342,7 @@ class LicenseService {
 
     val singedAndEncoded = createLicense(payload, feedlessPrivateKey!!)
     license.payload = singedAndEncoded
-    license.orderId = order.orderId.value
+    license.orderId = order.id.value
 
     return withContext(Dispatchers.IO) {
       licenseDAO.save(license).toDomain()
@@ -375,8 +376,4 @@ fun String.addHeaders(header: String): String {
 $this
 -----END ${HEADER}-----
   """.trimIndent().trim()
-}
-
-fun LicenseEntity.toDomain(): License {
-  return LicenseMapper.INSTANCE.toDomain(this)
 }

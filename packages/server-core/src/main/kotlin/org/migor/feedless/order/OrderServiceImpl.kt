@@ -9,16 +9,16 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.toDTO
 import org.migor.feedless.data.jpa.order.OrderDAO
 import org.migor.feedless.data.jpa.order.OrderEntity
+import org.migor.feedless.data.jpa.order.toDomain
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
-import org.migor.feedless.generated.types.Order
+import org.migor.feedless.generated.types.Order as OrderDto
 import org.migor.feedless.generated.types.OrderCreateInput
 import org.migor.feedless.generated.types.OrderUpdateInput
 import org.migor.feedless.generated.types.OrderWhereUniqueInput
 import org.migor.feedless.generated.types.OrdersInput
 import org.migor.feedless.generated.types.ProductTargetGroup
 import org.migor.feedless.generated.types.UserCreateInput
-import org.migor.feedless.payment.OrderId
 import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductService
@@ -59,7 +59,7 @@ class OrderServiceImpl : OrderService {
   private lateinit var userDAO: UserDAO
 
   @Transactional(readOnly = true)
-  suspend fun findAll(data: OrdersInput): List<OrderEntity> {
+  suspend fun findAll(data: OrdersInput): List<Order> {
     val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
     val currentUser = sessionService.user()
     return withContext(Dispatchers.IO) {
@@ -69,9 +69,9 @@ class OrderServiceImpl : OrderService {
 //      } ?:
         orderDAO.findAll(pageable).toList()
       } else {
-        orderDAO.findAllByUserId(currentUser.id, pageable).toList()
+        orderDAO.findAllByUserId(currentUser.id.value, pageable).toList()
       }
-    }
+    }.map { it.toDomain() }
   }
 
   @Transactional
@@ -159,8 +159,10 @@ class OrderServiceImpl : OrderService {
     }
   }
 
-  override fun findById(orderID: OrderId): org.migor.feedless.payment.Order {
-    return orderDAO.findById(orderID.value).map { }
+  override fun findById(orderID: OrderId): org.migor.feedless.order.Order {
+    return orderDAO.findById(orderID.value)
+      .map { OrderMapper.INSTANCE.toDomain(it) }
+      .orElseThrow { IllegalArgumentException("Order not found: ${orderID.value}") }
   }
 }
 
@@ -170,9 +172,9 @@ private fun PaymentMethodDto.fromDTO(): PaymentMethod {
   }
 }
 
-fun OrderEntity.toDTO(): Order {
-  return Order(
-    id = id.toString(),
+fun Order.toDTO(): OrderDto {
+  return OrderDto(
+    id = id.value.toString(),
     createdAt = createdAt.toMillis(),
     userId = userId.toString(),
     productId = productId.toString(),

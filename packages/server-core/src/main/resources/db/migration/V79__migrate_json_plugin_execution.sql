@@ -29,3 +29,5 @@ set plugins = (SELECT jsonb_agg(
                         )
                       )
                FROM jsonb_array_elements(plugins) AS elem);
+
+PluginExecutionJson

@@ -1,5 +1,6 @@
 package org.migor.feedless.payment
 
+import org.migor.feedless.order.OrderId
 import org.migor.feedless.user.UserId
 import java.util.*
 

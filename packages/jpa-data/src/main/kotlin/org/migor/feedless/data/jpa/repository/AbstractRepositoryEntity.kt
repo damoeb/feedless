@@ -23,29 +23,21 @@ import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.hibernate.type.SqlTypes
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_STR_DEFAULT
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.group.GroupEntity
 import org.migor.feedless.data.jpa.source.SourceEntity
-import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
+import org.migor.feedless.pipelineJob.PluginExecution
 import org.springframework.context.annotation.Lazy
 import java.sql.Types
 import java.time.LocalDateTime
 import java.util.*
-
-//@JsonIgnoreProperties(ignoreUnknown = true)
-data class PluginExecution(val id: String, val params: PluginExecutionJsonEntity)
-
-enum class MaxAgeDaysDateField {
-  createdAt,
-  startingAt,
-  publishedAt
-}
 
 
 @Entity

@@ -11,14 +11,8 @@ import jakarta.persistence.InheritanceType
 import jakarta.persistence.Lob
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.pipelineJob.PipelineJobStatus
 import java.time.LocalDateTime
-
-enum class PipelineJobStatus {
-  PENDING,
-  IN_PROGRESS,
-  FAILED,
-  SUCCEEDED
-}
 
 @Entity
 @Table(
@@ -60,4 +54,8 @@ open class PipelineJobEntity : EntityWithUUID() {
       terminated = true
     }
   }
+}
+
+fun PipelineJobEntity.toDomain(): org.migor.feedless.pipelineJob.PipelineJob {
+  return PipelineJobMapper.Companion.INSTANCE.toDomain(this)
 }

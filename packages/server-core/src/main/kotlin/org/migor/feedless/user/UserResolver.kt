@@ -15,6 +15,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.api.toDTO
+import org.migor.feedless.connectedApp.ConnectedAppId
 import org.migor.feedless.data.jpa.connectedApp.ConnectedAppEntity
 import org.migor.feedless.data.jpa.connectedApp.GithubConnectionEntity
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity

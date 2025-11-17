@@ -13,20 +13,20 @@ import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.data.jpa.repository.MaxAgeDaysDateField
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.source.actions.PluginExecutionJsonEntity
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.eq
@@ -145,7 +145,7 @@ class DocumentServiceTest {
   fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJobEntity()
     filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionJsonEntity(
+    filterJob.executorParams = PluginExecutionJson(
       paramsJsonString = Gson().toJson(
         listOf(
           ItemFilterParams(
@@ -176,7 +176,7 @@ class DocumentServiceTest {
   fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJobEntity()
     filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionJsonEntity(
+    filterJob.executorParams = PluginExecutionJson(
       paramsJsonString = Gson().toJson(
         listOf(
           ItemFilterParams(
@@ -204,7 +204,7 @@ class DocumentServiceTest {
   fun `processDocumentPlugins will map document`() = runTest {
     val mapJob = DocumentPipelineJobEntity()
     mapJob.pluginId = FeedlessPlugins.org_feedless_fulltext.name
-    mapJob.executorParams = PluginExecutionJsonEntity(
+    mapJob.executorParams = PluginExecutionJson(
       paramsJsonString = Gson().toJson(
         FulltextPluginParams(
           summary = true,
@@ -288,7 +288,7 @@ class DocumentServiceTest {
     runTest(context = RequestContext(userId = currentUserId)) {
       val job = mock(DocumentPipelineJobEntity::class.java)
       `when`(job.pluginId).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
-      `when`(job.executorParams).thenReturn(PluginExecutionJsonEntity())
+      `when`(job.executorParams).thenReturn(PluginExecutionJson())
       `when`(
         fulltextPlugin.mapEntity(
           any(DocumentEntity::class.java),

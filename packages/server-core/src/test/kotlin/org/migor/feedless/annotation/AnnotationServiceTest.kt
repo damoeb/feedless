@@ -13,6 +13,9 @@ import org.migor.feedless.anyOrNull
 import org.migor.feedless.argThat
 import org.migor.feedless.data.jpa.annotation.AnnotationDAO
 import org.migor.feedless.data.jpa.annotation.AnnotationEntity
+import org.migor.feedless.data.jpa.annotation.TextAnnotationDAO
+import org.migor.feedless.data.jpa.annotation.VoteDAO
+import org.migor.feedless.data.jpa.annotation.VoteEntity
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.AnnotationWhereInput
 import org.migor.feedless.generated.types.AnnotationWhereUniqueInput

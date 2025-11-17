@@ -14,13 +14,14 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.pipelineJob.PipelineJobStatus
 import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobDAO
 import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.SourceDAO
 import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.SourceMapper
 import org.migor.feedless.data.jpa.source.actions.ClickPositionActionEntity
 import org.migor.feedless.data.jpa.source.actions.ClickXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.DomActionEntity
@@ -32,6 +33,7 @@ import org.migor.feedless.data.jpa.source.actions.HeaderActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
 import org.migor.feedless.data.jpa.source.actions.WaitActionEntity
+import org.migor.feedless.data.jpa.source.toDomain
 import org.migor.feedless.generated.types.SortOrder
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceOrderByInput
@@ -43,7 +45,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
-import org.migor.feedless.util.JtsUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.BeanUtils
 import org.springframework.context.annotation.Lazy
@@ -56,9 +57,6 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
-data class SourceId(val value: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
-}
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -145,7 +143,7 @@ class SourceService(
   suspend fun countProblematicSourcesByRepositoryId(repositoryId: RepositoryId): Int {
     return withContext(Dispatchers.IO) {
 //      sourceDAO.countByRepositoryIdAndDisabledTrue(repositoryId)
-      sourceDAO.countByRepositoryIdAndLastRecordsRetrieved(repositoryId.value, 0)
+      sourceDAO.countByRepositoryIdAndLastRecordsRetrieved(repositoryId.uuid, 0)
     }
   }
 
@@ -164,16 +162,17 @@ class SourceService(
   }
 
   @Transactional
-  suspend fun save(source: SourceEntity): SourceEntity {
+  suspend fun save(source: Source): Source {
     return withContext(Dispatchers.IO) {
-      sourceDAO.save(source)
+      val entity = SourceMapper.INSTANCE.toEntity(source)
+      sourceDAO.save(entity).toDomain()
     }
   }
 
   @Transactional(readOnly = true)
   suspend fun countAllByRepositoryId(id: RepositoryId): Long {
     return withContext(Dispatchers.IO) {
-      sourceDAO.countByRepositoryId(id.value)
+      sourceDAO.countByRepositoryId(id.uuid)
     }
   }
 
@@ -183,7 +182,7 @@ class SourceService(
     pageable: Pageable,
     where: SourcesWhereInput? = null,
     orders: List<SourceOrderByInput>? = null
-  ): List<SourceEntity> {
+  ): List<Source> {
     val whereStatements = mutableListOf<Predicatable>()
     val sortableStatements = mutableListOf<Sortable>()
     val query = jpql {
@@ -262,7 +261,7 @@ class SourceService(
           join(FetchActionEntity::class).on(path(FetchActionEntity::sourceId).eq(path(SourceEntity::id)))
         )
         .whereAnd(
-          path(SourceEntity::repositoryId).eq(repositoryId.value),
+          path(SourceEntity::repositoryId).eq(repositoryId.uuid),
           *whereStatements.toTypedArray(),
         )
         .orderBy(
@@ -278,11 +277,12 @@ class SourceService(
       q.setMaxResults(pageable.pageSize)
       q.setFirstResult(pageable.pageSize * pageable.pageNumber)
       sourceDAO.findAllWithActionsByIdIn(q.resultList).sortedBy { it.lastRecordsRetrieved }
+        .map { it.toDomain() }
     }
   }
 
   @Transactional
-  suspend fun createSources(ownerId: UserId, sourceInputs: List<SourceInput>, repository: RepositoryEntity) {
+  suspend fun createSources(ownerId: UserId, sourceInputs: List<SourceInput>, repositoryId: RepositoryId) {
     log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
 
     withContext(Dispatchers.IO) {
@@ -302,7 +302,7 @@ class SourceService(
             throw IllegalArgumentException("invalid actions $invalidActions")
           }
 
-          source.repositoryId = repository.id
+          source.repositoryId = repositoryId.uuid
 
           if (validator.validate(source).isNotEmpty()) {
             throw IllegalArgumentException("invalid source")
@@ -326,7 +326,7 @@ class SourceService(
   }
 
   @Transactional
-  suspend fun updateSources(repository: RepositoryEntity, updateInputs: List<SourceUpdateInput>) {
+  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<SourceUpdateInput>) {
     log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
 
     // todo check owner
@@ -338,7 +338,7 @@ class SourceService(
 
       updateInputs.map { sourceUpdate ->
         val source = sourceDAO.findById(UUID.fromString(sourceUpdate.where.id)).orElseThrow()
-        if (source.repositoryId != repository.id) {
+        if (source.repositoryId != repositoryId.uuid) {
           throw IllegalArgumentException("source does not belong to repository")
         }
 
@@ -398,15 +398,15 @@ class SourceService(
   suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) {
     log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
     withContext(Dispatchers.IO) {
-      val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId.value, sourceIds.map { it.value })
+      val sources = sourceDAO.findAllByRepositoryIdAndIdIn(repositoryId.uuid, sourceIds.map { it.value })
       sourceDAO.deleteAllById(sources.map { it.id })
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(sourceId: SourceId): Optional<SourceEntity> {
+  suspend fun findById(sourceId: SourceId): Optional<Source> {
     return withContext(Dispatchers.IO) {
-      sourceDAO.findById(sourceId.value)
+      sourceDAO.findById(sourceId.value).map { it.toDomain() }
     }
   }
 

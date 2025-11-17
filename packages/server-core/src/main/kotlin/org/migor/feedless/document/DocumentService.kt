@@ -13,17 +13,18 @@ import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.data.jpa.document.DocumentMapper
+import org.migor.feedless.data.jpa.document.toDomain
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
 import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.data.jpa.pipelineJob.PipelineJobStatus
 import org.migor.feedless.data.jpa.repository.MaxAgeDaysDateField
 import org.migor.feedless.data.jpa.repository.RepositoryDAO
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.RecordDateField
@@ -39,12 +40,15 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.asJsonItem
+import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.transport.TelegramBotService
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
@@ -81,9 +85,9 @@ class DocumentService(
   private val log = LoggerFactory.getLogger(DocumentService::class.simpleName)
 
   @Transactional(readOnly = true)
-  suspend fun findById(id: DocumentId): DocumentEntity? {
+  suspend fun findById(id: DocumentId): Document? {
     return withContext(Dispatchers.IO) {
-      documentDAO.findById(id.value).getOrNull()
+      documentDAO.findById(id.value).getOrNull()?.toDomain()
     }
   }
 
@@ -95,7 +99,7 @@ class DocumentService(
     status: ReleaseStatus = ReleaseStatus.released,
     tags: List<String> = emptyList(),
     pageable: Pageable,
-  ): List<DocumentEntity> {
+  ): List<Document> {
     val query = jpql {
       val whereStatements = prepareWhereStatements(where, tags)
 
@@ -105,7 +109,7 @@ class DocumentService(
         entity(DocumentEntity::class),
       )
         .whereAnd(
-          path(DocumentEntity::repositoryId).eq(repositoryId.value),
+          path(DocumentEntity::repositoryId).eq(repositoryId.uuid),
           path(DocumentEntity::status).`in`(status),
           path(DocumentEntity::publishedAt).lt(LocalDateTime.now()),
           *whereStatements.toTypedArray()
@@ -122,7 +126,7 @@ class DocumentService(
       val q = entityManager.createQuery(query, context)
       q.setMaxResults(pageable.pageSize)
       q.setFirstResult(pageable.pageSize * pageable.pageNumber)
-      documentDAO.findAllWithAttachmentsByIdIn(q.resultList)
+      documentDAO.findAllWithAttachmentsByIdIn(q.resultList).map { it.toDomain() }
     }
   }
 
@@ -209,7 +213,7 @@ class DocumentService(
   @Transactional
   suspend fun applyRetentionStrategy(repositoryId: RepositoryId) {
     val repository = withContext(Dispatchers.IO) {
-      repositoryDAO.findById(repositoryId.value).orElseThrow()
+      repositoryDAO.findById(repositoryId.uuid).orElseThrow()
     }
 
     val corrId = coroutineContext.corrId()
@@ -253,18 +257,18 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteDocuments(user: UserEntity, repositoryId: RepositoryId, documentIds: StringFilter) {
+  suspend fun deleteDocuments(user: User, repositoryId: RepositoryId, documentIds: StringFilter) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
 
     withContext(Dispatchers.IO) {
-      val repository = repositoryDAO.findById(repositoryId.value).orElseThrow()
-      if (repository.ownerId != user.id) {
+      val repository = repositoryDAO.findById(repositoryId.uuid).orElseThrow()
+      if (repository.ownerId != user.id.value) {
         throw PermissionDeniedException("current user ist not owner")
       }
 
       val documents = documentDAO
         .findAllByRepositoryIdAndIdIn(
-          repositoryId.value, if (documentIds.`in` != null) {
+          repositoryId.uuid, if (documentIds.`in` != null) {
             documentIds.`in`.map { UUID.fromString(it) }
           } else {
             if (documentIds.eq != null) {
@@ -317,7 +321,7 @@ class DocumentService(
   }
 
   @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJobEntity>): DocumentEntity? {
+  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJobEntity>): Document? {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
     val document = withContext(Dispatchers.IO) {
@@ -391,7 +395,7 @@ class DocumentService(
 
         if (!withError) {
           releaseDocument(document, repository)
-          document
+          document.toDomain()
         } else {
           null
         }
@@ -401,7 +405,7 @@ class DocumentService(
         deleteDocument(document)
         null
       }
-    }
+    }?.let { it }
   }
 
   private suspend fun releaseDocument(
@@ -420,8 +424,8 @@ class DocumentService(
   }
 
   suspend fun triggerPostReleaseEffects(
-    documents: List<DocumentEntity>,
-    repository: RepositoryEntity,
+    documents: List<Document>,
+    repository: Repository,
   ) {
     if (repository.pushNotificationsEnabled) {
       telegramBotServiceMaybe.getOrNull()?.let { telegramBot ->
@@ -437,17 +441,17 @@ class DocumentService(
     }
   }
 
-  private suspend fun deleteDocument(document: DocumentEntity) {
+  private suspend fun deleteDocument(document: Document) {
     log.info("[${coroutineContext.corrId()}] delete document ${document.id}")
     withContext(Dispatchers.IO) {
-      documentDAO.delete(document)
+      documentDAO.deleteById(document.id.value)
     }
   }
 
   private suspend fun delayJob(
-    job: DocumentPipelineJobEntity,
+    job: DocumentPipelineJob,
     e: Exception,
-    document: DocumentEntity,
+    document: Document,
   ) {
     log.info("[${coroutineContext.corrId()}] delaying ${job.documentId} (${job.pluginId})")
 
@@ -467,12 +471,12 @@ class DocumentService(
   @Transactional(readOnly = true)
   suspend fun countByRepositoryId(repositoryId: RepositoryId): Long {
     return withContext(Dispatchers.IO) {
-      documentDAO.countByRepositoryId(repositoryId.value)
+      documentDAO.countByRepositoryId(repositoryId.uuid)
     }
   }
 
   @Transactional
-  suspend fun createDocument(data: CreateRecordInput): DocumentEntity {
+  suspend fun createDocument(data: CreateRecordInput): Document {
     val repositoryId = UUID.fromString(data.repositoryId.id)
 
     val repository = withContext(Dispatchers.IO) {
@@ -490,12 +494,12 @@ class DocumentService(
     document.contentHash = CryptUtil.sha1(data.rawBase64 ?: document.id.toString())
 
     return withContext(Dispatchers.IO) {
-      documentDAO.save(document)
+      documentDAO.save(document).toDomain()
     }
   }
 
   @Transactional
-  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): DocumentEntity {
+  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document {
     val document = withContext(Dispatchers.IO) {
       documentDAO.findById(id.value).orElseThrow()
     }
@@ -511,7 +515,7 @@ class DocumentService(
     }
     document.updatedAt = LocalDateTime.now()
     return withContext(Dispatchers.IO) {
-      documentDAO.save(document)
+      documentDAO.save(document).toDomain()
     }
   }
 
@@ -529,21 +533,22 @@ class DocumentService(
     repositoryId: RepositoryId
   ): DocumentEntity? {
     return withContext(Dispatchers.IO) {
-      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId.value)
+      documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId.uuid)
     }
   }
 
   @Transactional
-  suspend fun saveAll(documents: List<DocumentEntity>): List<DocumentEntity> {
+  suspend fun saveAll(documents: List<Document>): List<Document> {
     return withContext(Dispatchers.IO) {
-      documentDAO.saveAll(documents)
+      val entities = documents.map { DocumentMapper.INSTANCE.toEntity(it) }
+      documentDAO.saveAll(entities).map { it.toDomain() }
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllBySourceId(sourceId: SourceId, pageable: PageRequest): List<DocumentEntity> {
+  suspend fun findAllBySourceId(sourceId: SourceId, pageable: PageRequest): List<Document> {
     return withContext(Dispatchers.IO) {
-      documentDAO.findAllBySourceId(sourceId.value, pageable)
+      documentDAO.findAllBySourceId(sourceId.value, pageable).map { it.toDomain() }
     }
   }
 

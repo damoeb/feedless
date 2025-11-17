@@ -37,3 +37,7 @@ open class LicenseEntity : EntityWithUUID() {
   )
   open var order: OrderEntity? = null
 }
+
+fun LicenseEntity.toDomain(): org.migor.feedless.license.License {
+  return LicenseMapper.Companion.INSTANCE.toDomain(this)
+}

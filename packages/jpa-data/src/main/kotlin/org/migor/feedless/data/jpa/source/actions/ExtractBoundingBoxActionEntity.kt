@@ -44,3 +44,7 @@ open class ExtractBoundingBoxActionEntity : ScrapeActionEntity() {
   @Max(10000)
   open var h: Int = 0
 }
+
+fun ExtractBoundingBoxActionEntity.toDomain(): org.migor.feedless.actions.ExtractBoundingBoxAction {
+  return ExtractBoundingBoxActionMapper.Companion.INSTANCE.toDomain(this)
+}

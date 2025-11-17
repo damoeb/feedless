@@ -4,11 +4,12 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.data.jpa.user.toDomain
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -81,12 +82,12 @@ class InboxService {
   ) {
     try {
       withContext(Dispatchers.IO) {
-        val user = userDAO.findById(ownerId).orElseThrow()
+        val user = userDAO.findById(ownerId).orElseThrow().toDomain()
 
         document.status = ReleaseStatus.released
         val repositoryId = user.inboxRepositoryId ?: userService.createInboxRepository(user).id
         log.info("appending inbox message to $repositoryId")
-        document.repositoryId = repositoryId
+        document.repositoryId = repositoryId.uuid
         val attachments = document.attachments
         document.attachments = mutableListOf()
         documentDAO.save(document)

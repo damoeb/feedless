@@ -6,18 +6,16 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.api.fromDto
-import org.migor.feedless.data.jpa.order.OrderEntity
 import org.migor.feedless.data.jpa.plan.PlanDAO
 import org.migor.feedless.data.jpa.plan.PlanEntity
 import org.migor.feedless.data.jpa.pricedProduct.PricedProductDAO
-import org.migor.feedless.data.jpa.pricedProduct.PricedProductEntity
 import org.migor.feedless.data.jpa.product.ProductDAO
-import org.migor.feedless.data.jpa.product.ProductEntity
+import org.migor.feedless.data.jpa.product.toDomain
 import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.user.toDomain
 import org.migor.feedless.generated.types.ProductsWhereInput
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -25,7 +23,6 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
@@ -40,15 +37,16 @@ class ProductServiceImpl(
   private val log = LoggerFactory.getLogger(ProductServiceImpl::class.simpleName)
 
   @Transactional(readOnly = true)
-  suspend fun findAll(data: ProductsWhereInput): List<ProductEntity> {
+  suspend fun findAll(data: ProductsWhereInput): List<Product> {
     return withContext(Dispatchers.IO) {
-      data.id?.eq?.let {
+      val products = data.id?.eq?.let {
         listOf(productDAO.findById(UUID.fromString(it)).orElseThrow())
       } ?: data.id?.`in`?.let { ids ->
         productDAO.findAllByIdIn(ids.map { UUID.fromString(it) })
       } ?: data.vertical?.let {
         productDAO.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical!!.fromDto())
       } ?: throw IllegalArgumentException("Insufficient filter params")
+      products.map { it.toDomain() }
     }
   }
 
@@ -70,11 +68,15 @@ class ProductServiceImpl(
 
   @Transactional
   // todo thats bad transactional code
-  suspend fun enableSaasProduct(product: ProductEntity, user: UserEntity, order: OrderEntity? = null) {
+  override suspend fun enableSaasProduct(
+    product: Product,
+    user: User,
+    order: org.migor.feedless.order.Order?
+  ) {
 
     log.error("enableSaasProduct")
     val prices = withContext(Dispatchers.IO) {
-      pricedProductDAO.findAllByProductId(product.id)
+      pricedProductDAO.findAllByProductId(product.id.value)
     }
     val isFree = { prices.any { it.price == 0.0 } }
     val isBought = { order?.isPaid == true }
@@ -84,19 +86,19 @@ class ProductServiceImpl(
       // terminate existing plan
       val now = LocalDateTime.now()
       val existingPlan = withContext(Dispatchers.IO) {
-        planDAO.findActiveByUserAndProductIn(user.id, listOf(product.partOf!!), now)
+        planDAO.findActiveByUserAndProductIn(user.id.value, listOf(product.partOf!!), now)
       }
 
       existingPlan?.let {
-        log.info("[${coroutineContext.corrId()}] terminate existing plan")
+        log.info("terminate existing plan")
         it.terminatedAt = now
         planDAO.save(it)
       }
 
-      log.info("[${coroutineContext.corrId()}] enabling plan for product ${product.name} for user ${user.id}")
+      log.info("enabling plan for product ${product.name} for user ${user.id}")
       val plan = PlanEntity()
-      plan.productId = product.id
-      plan.userId = user.id
+      plan.productId = product.id.value
+      plan.userId = user.id.value
       plan.startedAt = now
 
       withContext(Dispatchers.IO) {
@@ -110,13 +112,14 @@ class ProductServiceImpl(
     val product = withContext(Dispatchers.IO) { productDAO.findByPartOfAndBaseProductIsTrue(vertical)!! }
     val user = withContext(Dispatchers.IO) { userDAO.findById(userId.value).orElseThrow() }
 
-    enableSaasProduct(product, user)
+    enableSaasProduct(product.toDomain(), user.toDomain())
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAllByProductId(productId: ProductId): List<PricedProductEntity> {
+  override suspend fun findAllByProductId(productId: ProductId): List<PricedProduct> {
     return withContext(Dispatchers.IO) {
       pricedProductDAO.findAllByProductId(productId.value)
+        .map { PricedProductMapper.INSTANCE.toDomain(it) }
     }
   }
 }

@@ -46,3 +46,7 @@ open class GroupEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.NO_ACTION)
   open var memberships: MutableList<UserGroupAssignmentEntity> = mutableListOf()
 }
+
+fun GroupEntity.toDomain(): org.migor.feedless.group.Group {
+  return GroupMapper.Companion.INSTANCE.toDomain(this)
+}

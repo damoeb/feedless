@@ -14,17 +14,15 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.data.jpa.attachment.AttachmentEntity
-import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.harvest.HarvestEntity
-import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.data.jpa.repository.PluginExecution
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.source.SourceEntity
+import org.migor.feedless.data.jpa.source.toEntity
+import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -38,9 +36,9 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
+import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
@@ -111,14 +109,17 @@ class RepositoryHarvester(
 
       val scheduledNextAt = repositoryService.calculateScheduledNextAt(
         repository.sourcesSyncCron,
-        UserId(repository.ownerId),
+        repository.ownerId,
         repository.product,
         LocalDateTime.now()
       )
       log.debug("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
-      repository.triggerScheduledNextAt = scheduledNextAt
-      repository.lastUpdatedAt = LocalDateTime.now()
-      repositoryService.save(repository)
+      repositoryService.save(
+        repository.copy(
+          triggerScheduledNextAt = scheduledNextAt,
+          lastUpdatedAt = LocalDateTime.now()
+        )
+      )
 
     }.onFailure {
       log.error("[$corrId] handleRepository failed: ${it.message}", it)
@@ -129,12 +130,13 @@ class RepositoryHarvester(
     repositoryId: RepositoryId,
   ) {
     val corrId = coroutineContext.corrId()
-    var sources: List<SourceEntity>
+    var sources: List<Source>
     var currentPage = 0
     do {
       sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
+        .map { it.toEntity() }
       log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
 
       sources
@@ -142,20 +144,23 @@ class RepositoryHarvester(
           run {
             val logCollector = LogCollector()
             val harvest = HarvestEntity()
-            harvest.sourceId = source.id
+            harvest.sourceId = source.id.value
             harvest.startedAt = LocalDateTime.now()
 
             try {
               log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
               val retrieved = scrapeSource(source, logCollector)
 
-              if (source.errorsInSuccession > 0) {
-                source.errorsInSuccession = 0
-              }
-              source.lastErrorMessage = null
-              source.lastRecordsRetrieved = retrieved
-              source.lastRefreshedAt = LocalDateTime.now()
-              sourceService.save(source)
+              val updatedSource = if (source.errorsInSuccession > 0) {
+                source.copy(errorsInSuccession = 0)
+              } else {
+                source
+              }.copy(
+                lastErrorMessage = null,
+                lastRecordsRetrieved = retrieved,
+                lastRefreshedAt = LocalDateTime.now()
+              )
+              sourceService.save(updatedSource)
 
             } catch (e: Throwable) {
               handleScrapeException(e, source, logCollector)
@@ -199,47 +204,51 @@ class RepositoryHarvester(
 
   private suspend fun handleScrapeException(
     e: Throwable?,
-    source: SourceEntity,
+    source: Source,
     logCollector: LogCollector
   ) {
     val corrId = coroutineContext.corrId()
     log.error("[$corrId] scrape failed ${e?.message}")
     logCollector.log("[$corrId] scrape failed ${e?.message}")
 
-    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
-      logCollector.log("[$corrId] scrape error '${e?.message}'")
-      meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
+    val updatedSource =
+      if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
+        logCollector.log("[$corrId] scrape error '${e?.message}'")
+        logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
+        log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
+
+        meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
-      source.lastRecordsRetrieved = 0
-      source.lastRefreshedAt = LocalDateTime.now()
-
-      source.errorsInSuccession += 1
-      logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
-      log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
-      source.disabled = false
-      source.lastErrorMessage = e?.message
-
-      if (source.disabled) {
-        logCollector.log("[$corrId] disabled source")
-        log.info("source ${source.id} disabled")
+        source.copy(
+          lastRecordsRetrieved = 0,
+          lastRefreshedAt = LocalDateTime.now(),
+          errorsInSuccession = source.errorsInSuccession + 1,
+          disabled = false,
+          lastErrorMessage = e?.message
+        )
+//      if (source.disabled) {
+//        logCollector.log("[$corrId] disabled source")
+//        log.info("source ${source.id} disabled")
+//      }
+      } else {
+        source.copy(
+          errorsInSuccession = 0,
+          lastErrorMessage = e.message,
+          lastRefreshedAt = LocalDateTime.now()
+        )
       }
-    } else {
-      source.errorsInSuccession = 0
-      source.lastErrorMessage = e.message
-      source.lastRefreshedAt = LocalDateTime.now()
-    }
-    sourceService.save(source)
+    sourceService.save(updatedSource)
   }
 
-  suspend fun scrapeSource(source: SourceEntity, logCollector: LogCollector): Int {
+  suspend fun scrapeSource(source: Source, logCollector: LogCollector): Int {
     val output = scrapeService.scrape(source, logCollector)
-    return importElement(output, RepositoryId(source.repositoryId), source, logCollector)
+    return importElement(output, source.repositoryId, source, logCollector)
   }
 
   private suspend fun importElement(
     output: ScrapeOutput,
     repositoryId: RepositoryId,
-    source: SourceEntity,
+    source: Source,
     logCollector: LogCollector
   ): Int {
     val corrId = coroutineContext.corrId()
@@ -280,15 +289,15 @@ class RepositoryHarvester(
   }
 
   private suspend fun triggerPostReleaseEffects(
-    repository: RepositoryEntity,
-    documents: List<Pair<Boolean, DocumentEntity>>
+    repository: Repository,
+    documents: List<Pair<Boolean, Document>>
   ) {
     documentService.triggerPostReleaseEffects(documents.map { it.second }, repository)
   }
 
   private suspend fun triggerPlugins(
-    repository: RepositoryEntity,
-    documents: List<Pair<Boolean, DocumentEntity>>
+    repository: Repository,
+    documents: List<Pair<Boolean, Document>>
   ) {
     val corrId = coroutineContext.corrId()!!
     if (repository.plugins.isNotEmpty()) {
@@ -313,21 +322,21 @@ class RepositoryHarvester(
   }
 
   private suspend fun importFragment(
-    repository: RepositoryEntity,
+    repository: Repository,
     fragment: ScrapeExtractFragment,
-    source: SourceEntity,
+    source: Source,
     logCollector: LogCollector
-  ): List<Pair<Boolean, DocumentEntity>> {
+  ): List<Pair<Boolean, Document>> {
     val corrId = coroutineContext.corrId()!!
 
     log.info("[${corrId}] importImageElement")
 
-    val updated = fragment.asEntity(repository.id, source)
+    val updated = fragment.createDocument(repository.id, source)
     val existing =
       documentService.findFirstByContentHashOrUrlAndRepositoryId(
         updated.contentHash,
         updated.url,
-        RepositoryId(repository.id)
+        repository.id
       )
 
     val validNewOrUpdatedDocuments =
@@ -342,7 +351,7 @@ class RepositoryHarvester(
 //    corrId: String,
 //    scrapedData: ScrapedBySelector,
 //    repositoryId: UUID,
-//    source: SourceEntity
+//    source: Source
 //  ) {
 //    log.debug("[$corrId] importSelectorElement")
 //    scrapedData.fields?.let { fields ->
@@ -365,10 +374,10 @@ class RepositoryHarvester(
 //    corrId: String,
 //    scrapedData: ScrapedBySelector,
 //    repositoryId: UUID,
-//    source: SourceEntity
+//    source: Source
 //  ) {
 //    log.info("[$corrId] importScrapedData")
-//    val document = scrapedData.asEntity(repositoryId, source.tags)
+//    val document = scrapedData.as(repositoryId, source.tags)
 //
 //    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
 //
@@ -381,12 +390,12 @@ class RepositoryHarvester(
 //  }
 
   private suspend fun importItems(
-    repository: RepositoryEntity,
+    repository: Repository,
     items: List<JsonItem>,
     next: List<String>?,
-    source: SourceEntity,
+    source: Source,
     logCollector: LogCollector
-  ): List<Pair<Boolean, DocumentEntity>> {
+  ): List<Pair<Boolean, Document>> {
     val corrId = coroutineContext.corrId()!!
     if (items.isEmpty()) {
       throw NoItemsRetrievedException()
@@ -401,7 +410,7 @@ class RepositoryHarvester(
 
     val start = Instant.now()
     val newOrUpdatedDocuments = items
-      .map { it.asEntity(repository.id, ReleaseStatus.released, source) }
+      .map { it.createDocument(repository.id, ReleaseStatus.released, source) }
       .distinctBy { it.contentHash }
       .filterIndexed { index, _ -> index < 300 }
       .mapNotNull { updated ->
@@ -410,7 +419,7 @@ class RepositoryHarvester(
             documentService.findFirstByContentHashOrUrlAndRepositoryId(
               updated.contentHash,
               updated.url,
-              RepositoryId(repository.id)
+              repository.id
             )
           updated.imageUrl = detectMainImageUrl(updated.html)
           createOrUpdate(updated, existing, repository, logCollector)
@@ -455,8 +464,8 @@ class RepositoryHarvester(
   }
 
   private suspend fun filterInvalidDocuments(
-    newOrUpdatedDocuments: List<Pair<Boolean, DocumentEntity>>,
-  ): List<DocumentEntity> {
+    newOrUpdatedDocuments: List<Pair<Boolean, Document>>,
+  ): List<Document> {
     val validator = Validation.buildDefaultValidatorFactory().validator
     val validNewOrUpdatedDocuments = newOrUpdatedDocuments
       .filter { document ->
@@ -508,35 +517,38 @@ class RepositoryHarvester(
   }
 
   private suspend fun createOrUpdate(
-    document: DocumentEntity,
-    existing: DocumentEntity?,
-    repository: RepositoryEntity,
+    document: Document,
+    existing: Document?,
+    repository: Repository,
     logCollector: LogCollector
-  ): Pair<Boolean, DocumentEntity>? {
+  ): Pair<Boolean, Document>? {
     val corrId = coroutineContext.corrId()
     return try {
       if (existing == null) {
         meterRegistry.counter(AppMetrics.createDocument).increment()
 
-        document.status = if (repository.plugins.isEmpty()) {
-          logCollector.log("[$corrId] released ${document.url}")
-          ReleaseStatus.released
-        } else {
-          logCollector.log("[$corrId] queued for post-processing ${document.url}")
-          ReleaseStatus.unreleased
-        }
-
-        Pair(true, document)
+        Pair(
+          true, if (repository.plugins.isEmpty()) {
+            logCollector.log("[$corrId] released ${document.url}")
+            document.copy(status = org.migor.feedless.document.ReleaseStatus.released)
+          } else {
+            logCollector.log("[$corrId] queued for post-processing ${document.url}")
+            document.copy(status = org.migor.feedless.document.ReleaseStatus.unreleased)
+          }
+        )
       } else {
         if (repository.plugins.isEmpty()) {
-          existing.title = document.title
-          existing.text = document.text
-          existing.contentHash = document.contentHash
-          existing.latLon = document.latLon
-          existing.tags = document.tags
-          existing.startingAt = document.startingAt
           logCollector.log("[$corrId] updated item ${document.url}")
-          Pair(false, existing)
+          Pair(
+            false, document.copy(
+              title = document.title,
+              text = document.text,
+              contentHash = document.contentHash,
+              latLon = document.latLon,
+              tags = document.tags,
+              startingAt = document.startingAt
+            )
+          )
         } else {
 //          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
 //            existing.status = ReleaseStatus.unreleased
@@ -561,10 +573,10 @@ class RepositoryHarvester(
 
   private fun toDocumentPipelineJob(
     plugin: PluginExecution,
-    document: DocumentEntity,
+    document: Document,
     index: Int
-  ): DocumentPipelineJobEntity {
-    val job = DocumentPipelineJobEntity()
+  ): DocumentPipelineJob {
+    val job = DocumentPipelineJob()
     job.sequenceId = index
     job.documentId = document.id
     job.pluginId = plugin.id
@@ -573,29 +585,39 @@ class RepositoryHarvester(
   }
 }
 
-private fun ScrapeExtractFragment.asEntity(repositoryId: UUID, source: SourceEntity): DocumentEntity {
-  val d = DocumentEntity()
-  d.title = LocalDateTime.now().toString()
-  d.sourceId = source.id
-  d.repositoryId = repositoryId
-  if (data?.data != null) {
-    d.raw = Base64.getDecoder().decode(data!!.data)
-    d.rawMimeType = data!!.mimeType
-  }
-  d.tags = source.tags
-  d.contentHash = CryptUtil.sha1(
-    when (uniqueBy) {
-      ScrapeExtractFragmentPart.html -> html?.data
-      ScrapeExtractFragmentPart.text -> text?.data
-      ScrapeExtractFragmentPart.data -> data?.data
-    }!!
+private fun ScrapeExtractFragment.createDocument(repositoryId: RepositoryId, source: Source): Document {
+  val now = LocalDateTime.now()
+  val d = Document(
+    id = DocumentId(UUID.randomUUID()),
+    title = now.toString(),
+    sourceId = source.id,
+    repositoryId = repositoryId,
+    tags = source.tags,
+    contentHash = CryptUtil.sha1(
+      when (uniqueBy) {
+        ScrapeExtractFragmentPart.html -> html?.data
+        ScrapeExtractFragmentPart.text -> text?.data
+        ScrapeExtractFragmentPart.data -> data?.data
+      }!!
+    ),
+    html = html?.data,
+    imageUrl = "",
+    text = StringUtils.trimToEmpty(text?.data),
+    status = org.migor.feedless.document.ReleaseStatus.released,
+    url = "https://does-not-exist",
+    createdAt = now,
+    publishedAt = now,
+    updatedAt = now,
   )
-  d.html = html?.data
-  d.imageUrl = ""
-  d.text = StringUtils.trimToEmpty(text?.data)
-  d.status = ReleaseStatus.released
-  d.url = "https://does-not-exist"
-  return d
+
+  return if (data?.data == null) {
+    d
+  } else {
+    d.copy(
+      raw = Base64.getDecoder().decode(data!!.data),
+      rawMimeType = data!!.mimeType
+    )
+  }
 }
 
 //inline fun <reified T : FeedlessPlugin> List<PluginExecution>.mapToPluginInstance(pluginService: PluginService): List<Pair<T, PluginExecutionParamsInput>> {
@@ -609,11 +631,15 @@ private fun ScrapeExtractFragment.asEntity(repositoryId: UUID, source: SourceEnt
 //    }
 //}
 
-private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source: SourceEntity): DocumentEntity {
-  val d = DocumentEntity()
+private fun JsonItem.createDocument(
+  repositoryId: RepositoryId,
+  status: ReleaseStatus,
+  source: Source
+): Document {
+  val d = Document()
   d.title = title
   d.sourceId = source.id
-  d.repositoryId = repositoryId
+  d.repositoryId = repositoryId.uuid
   if (StringUtils.isNotBlank(rawBase64)) {
     val tika = Tika()
     val rawBytes = rawBase64!!.toByteArray()
@@ -646,8 +672,8 @@ private fun JsonItem.asEntity(repositoryId: UUID, status: ReleaseStatus, source:
   return d
 }
 
-private fun JsonAttachment.toAttachment(document: DocumentEntity): AttachmentEntity {
-  val a = AttachmentEntity()
+private fun JsonAttachment.toAttachment(document: Document): Attachment {
+  val a = Attachment()
   a.mimeType = type
   a.remoteDataUrl = url
   a.originalUrl = url

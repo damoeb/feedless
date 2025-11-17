@@ -57,3 +57,7 @@ open class PricedProductEntity : EntityWithUUID() {
   )
   open var product: ProductEntity? = null
 }
+
+fun PricedProductEntity.toDomain(): org.migor.feedless.product.PricedProduct {
+  return PricedProductMapper.Companion.INSTANCE.toDomain(this)
+}

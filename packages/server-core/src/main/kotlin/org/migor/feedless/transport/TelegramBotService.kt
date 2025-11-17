@@ -9,11 +9,11 @@ import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.data.jpa.attachment.AttachmentEntity
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.systemSettings.SystemSettingsDAO
 import org.migor.feedless.data.jpa.systemSettings.SystemSettingsEntity
 import org.migor.feedless.feed.parser.json.JsonItem

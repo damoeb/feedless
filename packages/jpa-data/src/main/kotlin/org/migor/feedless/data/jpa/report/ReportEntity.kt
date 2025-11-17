@@ -82,3 +82,7 @@ open class ReportEntity : EntityWithUUID() {
   )
   open var user: UserEntity? = null
 }
+
+fun ReportEntity.toDomain(): org.migor.feedless.report.Report {
+  return ReportMapper.Companion.INSTANCE.toDomain(this)
+}

@@ -22,3 +22,7 @@ open class ClickXpathActionEntity : ScrapeActionEntity() {
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 }
+
+fun ClickXpathActionEntity.toDomain(): org.migor.feedless.actions.ClickXpathAction {
+  return ClickXpathActionMapper.Companion.INSTANCE.toDomain(this)
+}

@@ -60,3 +60,7 @@ open class FeatureGroupEntity : EntityWithUUID() {
   @OnDelete(action = OnDeleteAction.CASCADE)
   open var products: MutableList<ProductEntity> = mutableListOf()
 }
+
+fun FeatureGroupEntity.toDomain(): org.migor.feedless.feature.FeatureGroup {
+  return FeatureGroupMapper.Companion.INSTANCE.toDomain(this)
+}

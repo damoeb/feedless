@@ -4,7 +4,9 @@ import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userSecret.UserSecret
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
@@ -42,7 +44,7 @@ abstract class AuthService {
   abstract suspend fun assertToken(request: HttpServletRequest)
   abstract fun isWhitelisted(request: HttpServletRequest): Boolean
   abstract suspend fun interceptToken(request: HttpServletRequest): Jwt
-  abstract fun authenticateUser(email: String, secretKey: String): UserEntity
+  abstract fun authenticateUser(email: String, secretKey: String): User
 
   @Throws(AccessDeniedException::class)
   protected fun interceptTokenRaw(request: HttpServletRequest): String {
@@ -58,7 +60,7 @@ abstract class AuthService {
     throw AccessDeniedException("token not present")
   }
 
-  abstract suspend fun findUserById(userId: UserId): UserEntity?
-  abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecretEntity?
+  abstract suspend fun findUserById(userId: UserId): User?
+  abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret?
   suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {}
 }

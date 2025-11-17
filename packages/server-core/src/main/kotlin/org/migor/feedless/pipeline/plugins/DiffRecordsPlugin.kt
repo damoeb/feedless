@@ -4,8 +4,8 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
+import org.migor.feedless.ReleaseStatus
+import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -35,7 +35,7 @@ import kotlin.math.abs
 suspend fun getLastReleasedDocumentByRepositoryId(
   documentService: DocumentService,
   repositoryId: RepositoryId
-): DocumentEntity? {
+): Document? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
   return documentService.findAllByRepositoryId(
     repositoryId,
@@ -175,7 +175,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 
 //  override fun provideDocumentMail(
 //    corrId: String,
-//    document: DocumentEntity,
+//    document: Document,
 //    repository: RepositoryEntity,
 //    params: PluginExecutionParamsInput
 //  ): MailData {
@@ -248,7 +248,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 //    return mailData
 //  }
 
-  private fun toImage(record: DocumentEntity): BufferedImage {
+  private fun toImage(record: Document): BufferedImage {
     return ImageIO.read(ByteArrayInputStream(record.raw))
   }
 
@@ -259,7 +259,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
   private fun compareByPixel(
     corrId: String,
     left: JsonItem,
-    right: DocumentEntity,
+    right: Document,
     minIncrement: Double
   ): Boolean {
     val img1 = toImage(left)
@@ -293,7 +293,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
     return ratio > minIncrement
   }
 
-  private fun createDiffImage(oldDocument: DocumentEntity, newDocument: DocumentEntity): ByteArray {
+  private fun createDiffImage(oldDocument: Document, newDocument: Document): ByteArray {
     val oldImage = toImage(oldDocument)
     val newImage = toImage(newDocument)
 

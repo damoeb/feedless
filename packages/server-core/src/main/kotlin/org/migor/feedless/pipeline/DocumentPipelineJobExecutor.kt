@@ -84,7 +84,7 @@ class DocumentPipelineJobExecutor internal constructor(
     val repo = withContext(Dispatchers.IO) {
       repositoryService.findByDocumentId(documentId.value)
     } ?: throw documentPipelineService.failAfterCleaningJobsForDocument(documentId)
-    return UserId(repo.ownerId)
+    return repo.ownerId
   }
 
   private suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJobEntity>) {

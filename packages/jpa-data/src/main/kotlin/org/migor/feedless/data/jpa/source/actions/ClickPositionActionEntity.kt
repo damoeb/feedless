@@ -28,3 +28,7 @@ open class ClickPositionActionEntity : ScrapeActionEntity() {
   @Max(10000)
   open var y: Int = 0
 }
+
+fun ClickPositionActionEntity.toDomain(): org.migor.feedless.actions.ClickPositionAction {
+  return ClickPositionActionMapper.Companion.INSTANCE.toDomain(this)
+}

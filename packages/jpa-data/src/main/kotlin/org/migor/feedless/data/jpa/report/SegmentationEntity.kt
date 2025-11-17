@@ -16,8 +16,8 @@ import org.hibernate.type.SqlTypes
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.repository.PluginExecution
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
+import org.migor.feedless.pipelineJob.PluginExecution
 import org.springframework.context.annotation.Lazy
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -65,6 +65,10 @@ open class SegmentationEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_segmentation__to__repository")
   )
   open var repository: RepositoryEntity? = null
+}
+
+fun SegmentationEntity.toDomain(): org.migor.feedless.report.Segmentation {
+  return SegmentationMapper.Companion.INSTANCE.toDomain(this)
 }
 
 //private fun ChronoUnit.toDto(): IntervalUnit {

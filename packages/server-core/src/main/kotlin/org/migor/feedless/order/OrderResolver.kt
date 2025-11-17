@@ -22,7 +22,6 @@ import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.UpsertOrderInput
 import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.license.LicenseService
-import org.migor.feedless.payment.OrderId
 import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -40,7 +39,7 @@ class OrderResolver {
   private val log = LoggerFactory.getLogger(OrderResolver::class.simpleName)
 
   @Autowired
-  lateinit var orderService: OrderService
+  lateinit var orderService: OrderServiceImpl
 
   @Autowired
   lateinit var licenseService: LicenseService

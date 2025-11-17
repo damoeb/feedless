@@ -4,12 +4,12 @@ import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
+import org.migor.feedless.EntityVisibility
+import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.Vertical
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.enums.EntityVisibility
-import org.migor.feedless.data.jpa.enums.ReleaseStatus
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
 import org.migor.feedless.data.jpa.featureValue.FeatureName

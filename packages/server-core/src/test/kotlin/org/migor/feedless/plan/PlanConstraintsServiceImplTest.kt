@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
 import org.migor.feedless.data.jpa.featureValue.FeatureName
@@ -22,9 +22,9 @@ import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.data.jpa.plan.PlanDAO
 import org.migor.feedless.data.jpa.plan.PlanEntity
 import org.migor.feedless.data.jpa.product.ProductEntity
-import org.migor.feedless.eq
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.mockito.InjectMocks

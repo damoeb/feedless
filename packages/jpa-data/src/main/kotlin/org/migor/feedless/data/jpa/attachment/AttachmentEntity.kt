@@ -80,3 +80,7 @@ open class AttachmentEntity : EntityWithUUID() {
 
 }
 
+fun AttachmentEntity.toDomain(): org.migor.feedless.attachment.Attachment {
+  return AttachmentMapper.Companion.INSTANCE.toDomain(this)
+}
+

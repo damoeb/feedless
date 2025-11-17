@@ -23,6 +23,7 @@ import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.data.jpa.source.actions.HeaderActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
+import org.migor.feedless.data.jpa.source.toDomain
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
 import org.migor.feedless.generated.types.LogStatement
@@ -38,6 +39,7 @@ import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.ExtractEmit
+import org.migor.feedless.source.Source
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.toMillis
@@ -79,7 +81,7 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun scrape(source: SourceEntity, logCollector: LogCollector): ScrapeOutput {
+  suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
       val corrId = kotlin.coroutines.coroutineContext.corrId()
       try {
@@ -291,7 +293,7 @@ class ScrapeService {
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("[$corrId] send to agent")
-      val response = agentService.prerender(source).get()
+      val response = agentService.prerender(source.toDomain()).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("[$corrId] outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)

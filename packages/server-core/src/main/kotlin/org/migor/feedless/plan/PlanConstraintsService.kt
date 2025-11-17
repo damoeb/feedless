@@ -5,8 +5,8 @@ import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
-import org.migor.feedless.data.jpa.enums.EntityVisibility
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.featureValue.FeatureValueDAO

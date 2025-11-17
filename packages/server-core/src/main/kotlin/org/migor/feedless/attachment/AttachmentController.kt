@@ -36,13 +36,13 @@ class AttachmentController(
     @PathVariable("attachmentId") attachmentId: String,
   ): ResponseEntity<ByteArray> = coroutineScope {
     analyticsService.track()
-    val attachment = attachmentService.findById(attachmentId)
+    val (attachment, data) = attachmentService.findByIdWithData(attachmentId)
 
-    if (attachment.isPresent) {
+    if (attachment.isPresent && data != null) {
       val a = attachment.get()
       ResponseEntity.ok()
         .header(HttpHeaders.CONTENT_TYPE, a.mimeType)
-        .body(a.data)
+        .body(data)
     } else {
       ResponseEntity.notFound().build()
     }

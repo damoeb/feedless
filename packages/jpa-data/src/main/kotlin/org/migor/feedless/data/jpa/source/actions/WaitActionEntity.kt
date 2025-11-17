@@ -23,3 +23,7 @@ open class WaitActionEntity : ScrapeActionEntity() {
   @Column(name = "xpath", nullable = false)
   open lateinit var xpath: String
 }
+
+fun WaitActionEntity.toDomain(): org.migor.feedless.actions.WaitAction {
+  return WaitActionMapper.Companion.INSTANCE.toDomain(this)
+}

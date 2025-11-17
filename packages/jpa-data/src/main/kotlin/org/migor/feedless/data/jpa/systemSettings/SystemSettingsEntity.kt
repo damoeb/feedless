@@ -23,3 +23,7 @@ open class SystemSettingsEntity : EntityWithUUID() {
   open var valueString: String? = null
 
 }
+
+fun SystemSettingsEntity.toDomain(): org.migor.feedless.systemSettings.SystemSettings {
+  return SystemSettingsMapper.Companion.INSTANCE.toDomain(this)
+}

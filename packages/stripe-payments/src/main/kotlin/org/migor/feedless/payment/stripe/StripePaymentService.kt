@@ -8,7 +8,7 @@ import com.stripe.net.Webhook
 import com.stripe.param.checkout.SessionCreateParams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.migor.feedless.payment.OrderId
+import org.migor.feedless.order.OrderId
 import org.migor.feedless.payment.PaymentService
 import org.migor.feedless.payment.PaymentSession
 import org.migor.feedless.payment.PaymentStatus

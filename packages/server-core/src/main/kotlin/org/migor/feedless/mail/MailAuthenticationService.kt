@@ -14,7 +14,7 @@ import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.oneTimePassword.OneTimePasswordDAO
 import org.migor.feedless.data.jpa.oneTimePassword.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.data.jpa.user.toDomain
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
@@ -23,6 +23,7 @@ import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.slf4j.LoggerFactory
@@ -63,7 +64,7 @@ class MailAuthenticationService(
       oneTimePasswordService.createOTP()
     } else {
       val t = oneTimePasswordService.createOTP(user)
-      mailService.sendAuthCode(user.toDomain(), t.toDomain(), data.osInfo)
+      mailService.sendAuthCode(user, t.toDomain(), data.osInfo)
       t
     }
 
@@ -75,8 +76,8 @@ class MailAuthenticationService(
     )
   }
 
-  private suspend fun resolveUserByMail(data: AuthViaMailInput): UserEntity? {
-    return withContext(Dispatchers.IO) { userDAO.findByEmail(data.email) } ?: if (data.allowCreate) {
+  private suspend fun resolveUserByMail(data: AuthViaMailInput): User? {
+    return withContext(Dispatchers.IO) { userDAO.findByEmail(data.email)?.toDomain() } ?: if (data.allowCreate) {
       userService.createUser(data.email)
     } else {
       null

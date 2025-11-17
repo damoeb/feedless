@@ -8,7 +8,6 @@ import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -42,10 +41,10 @@ class RepositoryHarvesterExecutor internal constructor(
           runCatching {
             coroutineScope {
               reposDue.map {
-                async(RequestContext(userId = UserId(it.ownerId))) {
+                async(RequestContext(userId = it.ownerId)) {
                   semaphore.acquire()
                   try {
-                    repositoryHarvester.handleRepository(RepositoryId(it.id))
+                    repositoryHarvester.handleRepository(it.id)
                   } finally {
                     semaphore.release()
                   }

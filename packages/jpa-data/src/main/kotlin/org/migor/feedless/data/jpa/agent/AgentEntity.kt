@@ -63,3 +63,7 @@ open class AgentEntity : EntityWithUUID() {
   )
   open var owner: UserEntity? = null
 }
+
+fun AgentEntity.toDomain(): org.migor.feedless.agent.Agent {
+  return AgentMapper.Companion.INSTANCE.toDomain(this)
+}

@@ -9,3 +9,7 @@ import jakarta.persistence.InheritanceType
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorValue("repository")
 open class RepositoryEntity : AbstractRepositoryEntity()
+
+fun RepositoryEntity.toDomain(): org.migor.feedless.repository.Repository {
+  return RepositoryMapper.Companion.INSTANCE.toDomain(this)
+}

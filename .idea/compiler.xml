@@ -5,6 +5,9 @@
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="feedless.packages.jpa-data" options="-proc:none" />
+      <module name="feedless.packages.jpa-data.main" options="-proc:none" />
+      <module name="feedless.packages.jpa-data.test" options="-proc:none" />
       <module name="feedless.packages.server-core" options="-parameters -proc:none" />
       <module name="feedless.packages.server-core.main" options="-parameters -proc:none" />
       <module name="feedless.packages.server-core.test" options="-parameters -proc:none" />
