@@ -9,12 +9,10 @@ import org.migor.feedless.order.Order
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface OrderMapper {
 
-  fun toDomain(entity: OrderEntity): Order
-  fun toEntity(domain: Order): OrderEntity
+    fun toDomain(entity: OrderEntity): Order
+    fun toEntity(domain: Order): OrderEntity
 
-  companion object {
-    val INSTANCE: OrderMapper = Mappers.getMapper(OrderMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: OrderMapper = Mappers.getMapper(OrderMapper::class.java)
+    }
 }
-
-

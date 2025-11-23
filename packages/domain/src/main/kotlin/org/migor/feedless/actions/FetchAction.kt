@@ -3,22 +3,23 @@ package org.migor.feedless.actions
 import org.migor.feedless.source.PuppeteerWaitUntil
 import org.migor.feedless.source.SourceId
 import java.time.LocalDateTime
+import java.util.*
 
 data class FetchAction(
-  override val id: ScrapeActionId,
-  override val pos: Int?,
-  override val sourceId: SourceId,
-  val timeout: Int?,
-  val url: String,
-  val language: String?,
-  val forcePrerender: Boolean,
-  val isVariable: Boolean,
-  val viewportWidth: Int,
-  val viewportHeight: Int,
-  val isMobile: Boolean,
-  val isLandscape: Boolean,
-  val waitUntil: PuppeteerWaitUntil?,
-  val additionalWaitSec: Int?,
-  override val createdAt: LocalDateTime
+    override val id: ScrapeActionId = ScrapeActionId(UUID.randomUUID()),
+    override val pos: Int? = null,
+    override val sourceId: SourceId,
+    val timeout: Int? = null,
+    val url: String,
+    val language: String? = null,
+    val forcePrerender: Boolean = false,
+    val isVariable: Boolean = false,
+    val viewportWidth: Int? = null,
+    val viewportHeight: Int? = null,
+    val isMobile: Boolean = false,
+    val isLandscape: Boolean = false,
+    val waitUntil: PuppeteerWaitUntil? = null,
+    val additionalWaitSec: Int? = null,
+    override val createdAt: LocalDateTime = LocalDateTime.now()
 ) : ScrapeAction(id, pos, sourceId, createdAt)
 

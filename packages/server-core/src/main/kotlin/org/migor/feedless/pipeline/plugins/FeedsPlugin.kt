@@ -4,6 +4,7 @@ import org.apache.commons.lang3.BooleanUtils
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.ExecuteAction
 import org.migor.feedless.api.isHtml
 import org.migor.feedless.api.toDto
 import org.migor.feedless.common.HttpResponse
@@ -44,138 +45,138 @@ import kotlin.coroutines.coroutineContext
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedsPlugin : FragmentTransformerPlugin {
 
-  private val log = LoggerFactory.getLogger(FeedsPlugin::class.simpleName)
+    private val log = LoggerFactory.getLogger(FeedsPlugin::class.simpleName)
 
-  @Autowired
-  private lateinit var nativeFeedLocator: NativeFeedLocator
+    @Autowired
+    private lateinit var nativeFeedLocator: NativeFeedLocator
 
-  @Autowired
-  private lateinit var genericFeedLocator: GenericFeedLocator
+    @Autowired
+    private lateinit var genericFeedLocator: GenericFeedLocator
 
-  @Autowired
-  @Lazy
-  private lateinit var feedParserService: FeedParserService
+    @Autowired
+    @Lazy
+    private lateinit var feedParserService: FeedParserService
 
-  override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
-  override fun listed() = false
-  override suspend fun transformFragment(
-    action: ExecuteActionEntity,
-    data: HttpResponse,
-    logger: LogCollector,
-  ): FragmentOutput {
-    val corrId = coroutineContext.corrId()
-    log.debug("[$corrId] transformFragment")
+    override fun id(): String = FeedlessPlugins.org_feedless_feeds.name
+    override fun listed() = false
+    override suspend fun transformFragment(
+        action: ExecuteAction,
+        data: HttpResponse,
+        logger: LogCollector,
+    ): FragmentOutput {
+        val corrId = coroutineContext.corrId()
+        log.debug("[$corrId] transformFragment")
 
-    val mimeType = data.contentType.lowercase()
-    logger.log("Found mimeType=$mimeType")
-    return if (FeedUtil.isFeed(mimeType)) {
-      logger.log("Parsing native feed")
-      val jsonFeed = feedParserService.parseFeed(data)
-      FragmentOutput(
-        fragmentName = "native",
-        feeds = ScrapedFeeds(
-          genericFeeds = emptyList(),
-          nativeFeeds = listOf(jsonFeed.asRemoteNativeFeed())
-        )
-      )
-    } else {
-      if (mimeType.contains("text/html")) {
-        logger.log("extracting feeds")
-        val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
-        log.debug("[$corrId] extracting feeds")
-        extractFeeds(document, data.url, logger)
-      } else {
-        logger.log("unsupported mimeType")
-        log.warn("[$corrId] unsupported mimeType $mimeType")
-        FragmentOutput(
-          fragmentName = "generic",
-          feeds = ScrapedFeeds(
-            genericFeeds = emptyList(),
-            nativeFeeds = emptyList()
-          )
-        )
-      }
+        val mimeType = data.contentType.lowercase()
+        logger.log("Found mimeType=$mimeType")
+        return if (FeedUtil.isFeed(mimeType)) {
+            logger.log("Parsing native feed")
+            val jsonFeed = feedParserService.parseFeed(data)
+            FragmentOutput(
+                fragmentName = "native",
+                feeds = ScrapedFeeds(
+                    genericFeeds = emptyList(),
+                    nativeFeeds = listOf(jsonFeed.asRemoteNativeFeed())
+                )
+            )
+        } else {
+            if (mimeType.contains("text/html")) {
+                logger.log("extracting feeds")
+                val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
+                log.debug("[$corrId] extracting feeds")
+                extractFeeds(document, data.url, logger)
+            } else {
+                logger.log("unsupported mimeType")
+                log.warn("[$corrId] unsupported mimeType $mimeType")
+                FragmentOutput(
+                    fragmentName = "generic",
+                    feeds = ScrapedFeeds(
+                        genericFeeds = emptyList(),
+                        nativeFeeds = emptyList()
+                    )
+                )
+            }
+        }
     }
-  }
 
-  override fun name(): String = "Feeds"
+    override fun name(): String = "Feeds"
 
-  private suspend fun extractFeeds(
-    document: Document,
-    url: String,
-    logger: LogCollector,
-  ): FragmentOutput {
-    val parserOptions = GenericFeedParserOptions()
-    val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
-    logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
-    val genericFeeds = genericFeedLocator.locateInDocument(document, url, parserOptions)
-    logger.log("found ${genericFeeds.size} generic feeds")
-    val corrId = coroutineContext.corrId()
-    log.debug("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
+    private suspend fun extractFeeds(
+        document: Document,
+        url: String,
+        logger: LogCollector,
+    ): FragmentOutput {
+        val parserOptions = GenericFeedParserOptions()
+        val nativeFeeds = nativeFeedLocator.locateInDocument(document, url)
+        logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
+        val genericFeeds = genericFeedLocator.locateInDocument(document, url, parserOptions)
+        logger.log("found ${genericFeeds.size} generic feeds")
+        val corrId = coroutineContext.corrId()
+        log.debug("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
-    return FragmentOutput(
-      fragmentName = "feeds",
-      feeds = ScrapedFeeds(
-        genericFeeds = genericFeeds.map { it.toDto() },
-        nativeFeeds = nativeFeeds.map { it.toDto() }
-      )
-    )
-  }
+        return FragmentOutput(
+            fragmentName = "feeds",
+            feeds = ScrapedFeeds(
+                genericFeeds = genericFeeds.map { it.toDto() },
+                nativeFeeds = nativeFeeds.map { it.toDto() }
+            )
+        )
+    }
 }
 
 private fun JsonFeed.asRemoteNativeFeed(): RemoteNativeFeed {
 
-  return RemoteNativeFeed(
-    description = description,
-    title = title,
-    feedUrl = feedUrl,
-    websiteUrl = websiteUrl,
-    language = language,
-    publishedAt = publishedAt.toMillis(),
-    tags = tags,
-    nextPageUrls = links,
-    expired = BooleanUtils.isTrue(expired),
-    items = items.map {
-      var html: String? = null
-      var rawBase64: String? = null
-      var rawMimeType: String? = null
-      if (isHtml(it.rawMimeType)) {
-        try {
-          html = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
-        } catch (e: Exception) {
-          html = it.rawBase64
-        }
-      } else {
-        rawBase64 = it.rawBase64
-        rawMimeType = it.rawMimeType
-      }
+    return RemoteNativeFeed(
+        description = description,
+        title = title,
+        feedUrl = feedUrl,
+        websiteUrl = websiteUrl,
+        language = language,
+        publishedAt = publishedAt.toMillis(),
+        tags = tags,
+        nextPageUrls = links,
+        expired = BooleanUtils.isTrue(expired),
+        items = items.map {
+            var html: String? = null
+            var rawBase64: String? = null
+            var rawMimeType: String? = null
+            if (isHtml(it.rawMimeType)) {
+                try {
+                    html = Base64.getDecoder().decode(it.rawBase64).toString(StandardCharsets.UTF_8)
+                } catch (e: Exception) {
+                    html = it.rawBase64
+                }
+            } else {
+                rawBase64 = it.rawBase64
+                rawMimeType = it.rawMimeType
+            }
 
-      Record(
-        id = it.url,
-        tags = it.tags,
-        title = it.title,
-        text = it.text,
-        publishedAt = it.publishedAt.toMillis(),
-        updatedAt = it.publishedAt.toMillis(),
-        startingAt = it.startingAt?.toMillis(),
-        latLng = it.latLng?.let { GeoPoint(lat = it.x, lng = it.y) },
-        createdAt = LocalDateTime.now().toMillis(),
-        url = it.url,
-        attachments = it.attachments.map { it.toDto() },
-        imageUrl = it.imageUrl,
-        html = html,
-        rawMimeType = rawMimeType,
-        rawBase64 = rawBase64,
-      )
-    }
-  )
+            Record(
+                id = it.url,
+                tags = it.tags,
+                title = it.title,
+                text = it.text,
+                publishedAt = it.publishedAt.toMillis(),
+                updatedAt = it.publishedAt.toMillis(),
+                startingAt = it.startingAt?.toMillis(),
+                latLng = it.latLng?.let { GeoPoint(lat = it.x, lng = it.y) },
+                createdAt = LocalDateTime.now().toMillis(),
+                url = it.url,
+                attachments = it.attachments.map { it.toDto() },
+                imageUrl = it.imageUrl,
+                html = html,
+                rawMimeType = rawMimeType,
+                rawBase64 = rawBase64,
+            )
+        }
+    )
 
 }
 
 private fun JsonAttachment.toDto(): Attachment = Attachment(
-  id = UUID.randomUUID().toString(),
-  url = url,
-  type = type,
-  size = length,
-  duration = duration,
+    id = UUID.randomUUID().toString(),
+    url = url,
+    type = type,
+    size = length,
+    duration = duration,
 )

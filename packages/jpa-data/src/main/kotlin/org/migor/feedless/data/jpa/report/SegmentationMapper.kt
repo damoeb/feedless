@@ -12,15 +12,13 @@ import org.migor.feedless.report.Segmentation
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface SegmentationMapper {
 
-  fun toDomain(entity: SegmentationEntity): Segmentation
-  fun toEntity(domain: Segmentation): SegmentationEntity
+    fun toDomain(entity: SegmentationEntity): Segmentation
+    fun toEntity(domain: Segmentation): SegmentationEntity
 
-  fun toDomain(value: LatLonPoint?): Point? = value?.let { JtsUtil.createPoint(value.latitude, value.longitude) }
-  fun toEntity(value: Point?): LatLonPoint? = value?.let { LatLonPoint(value.x, value.y) }
+    fun toDomain(value: LatLonPoint?): Point? = value?.let { JtsUtil.createPoint(value.latitude, value.longitude) }
+    fun toEntity(value: Point?): LatLonPoint? = value?.let { LatLonPoint(value.x, value.y) }
 
-  companion object {
-    val INSTANCE: SegmentationMapper = Mappers.getMapper(SegmentationMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: SegmentationMapper = Mappers.getMapper(SegmentationMapper::class.java)
+    }
 }
-
-

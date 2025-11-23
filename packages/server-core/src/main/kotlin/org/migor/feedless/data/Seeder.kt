@@ -5,7 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.ReleaseStatus
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.Vertical
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.document.DocumentDAO
@@ -24,7 +24,6 @@ import org.migor.feedless.data.jpa.repository.RepositoryDAO
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.user.UserEntity
-import org.migor.feedless.data.jpa.userGroup.RoleInGroup
 import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
 import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
@@ -32,6 +31,7 @@ import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.feed.StandaloneFeedService
+import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecretType
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory

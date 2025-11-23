@@ -5,10 +5,10 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.actions.ExecuteAction
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ExtendContentOptions
@@ -42,31 +42,31 @@ import java.time.LocalDateTime
 @MockitoSettings(strictness = Strictness.LENIENT)
 class FeedPluginTest {
 
-  private lateinit var jsonFeed: JsonFeed
+    private lateinit var jsonFeed: JsonFeed
 
-  @Mock
-  lateinit var feedParserService: FeedParserService
+    @Mock
+    lateinit var feedParserService: FeedParserService
 
-  @Mock
-  lateinit var webToFeedTransformer: WebToFeedTransformer
+    @Mock
+    lateinit var webToFeedTransformer: WebToFeedTransformer
 
-  @InjectMocks
-  lateinit var feedPlugin: FeedPlugin
+    @InjectMocks
+    lateinit var feedPlugin: FeedPlugin
 
-  val logCollector = LogCollector()
+    val logCollector = LogCollector()
 
-  @BeforeEach
-  fun setUp() {
-    jsonFeed = JsonFeed()
-    jsonFeed.id = ""
-    jsonFeed.title = ""
-    jsonFeed.feedUrl = "https://example.org"
-    jsonFeed.publishedAt = LocalDateTime.now()
-    jsonFeed.items = emptyList()
-  }
+    @BeforeEach
+    fun setUp() {
+        jsonFeed = JsonFeed()
+        jsonFeed.id = ""
+        jsonFeed.title = ""
+        jsonFeed.feedUrl = "https://example.org"
+        jsonFeed.publishedAt = LocalDateTime.now()
+        jsonFeed.items = emptyList()
+    }
 
-  @Test
-  fun `extracts generic feed`() = runTest {
+    @Test
+    fun `extracts generic feed`() = runTest {
 
 //    val s = Gson().toJson(
 //      PluginExecutionJsonEntity2(
@@ -83,78 +83,78 @@ class FeedPluginTest {
 //      )
 //    )
 
-    val action = mock(ExecuteActionEntity::class.java)
-    `when`(action.executorParams).thenReturn(
-      PluginExecutionJson(
-        paramsJsonString = Gson().toJson(
-          FeedParamsInput(
-            generic = SelectorsInput(
-              contextXPath = "",
-              dateIsStartOfEvent = false,
-              dateXPath = "",
-              paginationXPath = "",
-              extendContext = ExtendContentOptions.NONE,
-              linkXPath = ""
+        val action = mock(ExecuteAction::class.java)
+        `when`(action.executorParams).thenReturn(
+            PluginExecutionJson(
+                paramsJsonString = Gson().toJson(
+                    FeedParamsInput(
+                        generic = SelectorsInput(
+                            contextXPath = "",
+                            dateIsStartOfEvent = false,
+                            dateXPath = "",
+                            paginationXPath = "",
+                            extendContext = ExtendContentOptions.NONE,
+                            linkXPath = ""
+                        )
+                    )
+                )
             )
-          )
         )
-      )
-    )
-    `when`(
-      webToFeedTransformer.getFeedBySelectors(
-        any2(),
-        any2(),
-        any2(),
-        any2(),
-      )
-    ).thenReturn(jsonFeed)
-    val httpResponse = HttpResponse(
-      contentType = "text/html",
-      url = "https://example.org",
-      statusCode = 200,
-      responseBody = "html".toByteArray()
-    )
+        `when`(
+            webToFeedTransformer.getFeedBySelectors(
+                any2(),
+                any2(),
+                any2(),
+                any2(),
+            )
+        ).thenReturn(jsonFeed)
+        val httpResponse = HttpResponse(
+            contentType = "text/html",
+            url = "https://example.org",
+            statusCode = 200,
+            responseBody = "html".toByteArray()
+        )
 
 
-    // when
-    feedPlugin.transformFragment(action, httpResponse, logCollector)
+        // when
+        feedPlugin.transformFragment(action, httpResponse, logCollector)
 
-    // then
-    verify(feedParserService, times(0))
-      .parseFeed(any2())
-    verify(webToFeedTransformer, times(1))
-      .getFeedBySelectors(
-        any2(),
-        any2(),
-        any2(),
-        any2()
-      )
-  }
+        // then
+        verify(feedParserService, times(0))
+            .parseFeed(any2())
+        verify(webToFeedTransformer, times(1))
+            .getFeedBySelectors(
+                any2(),
+                any2(),
+                any2(),
+                any2()
+            )
+    }
 
-  @Test
-  fun `extracts native feed`() = runTest {
-    val action = mock(ExecuteActionEntity::class.java)
-    `when`(action.executorParams).thenReturn(PluginExecutionJson(paramsJsonString = ""))
-    `when`(feedParserService.parseFeed(any2())).thenReturn(jsonFeed)
-    val httpResponse = HttpResponse(
-      contentType = "application/rss+xml",
-      url = "https://example.org",
-      statusCode = 200,
-      responseBody = "html".toByteArray()
-    )
+    @Test
+    fun `extracts native feed`() = runTest {
+        val action = mock(ExecuteAction::class.java)
+        `when`(action.executorParams).thenReturn(PluginExecutionJson(paramsJsonString = ""))
+        `when`(feedParserService.parseFeed(any2())).thenReturn(jsonFeed)
+        val httpResponse = HttpResponse(
+            contentType = "application/rss+xml",
+            url = "https://example.org",
+            statusCode = 200,
+            responseBody = "html".toByteArray()
+        )
 
-    // when
-    feedPlugin.transformFragment(action, httpResponse, logCollector)
+        // when
+        feedPlugin.transformFragment(action, httpResponse, logCollector)
 
-    // then
-    verify(feedParserService, times(1))
-      .parseFeed(any2())
-    verify(webToFeedTransformer, times(0))
-      .getFeedBySelectors(
-        any2(),
-        any2(),
-        any2(),
-        any2()
-      )
-  }
+        // then
+        verify(feedParserService, times(1))
+            .parseFeed(any2())
+        verify(webToFeedTransformer, times(0))
+            .getFeedBySelectors(
+                any2(),
+                any2(),
+                any2(),
+                any2()
+            )
+    }
 }

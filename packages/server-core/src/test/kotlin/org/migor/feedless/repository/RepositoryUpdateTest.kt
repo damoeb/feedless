@@ -1,9 +1,11 @@
 package org.migor.feedless.repository
 
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.NotFoundException
@@ -11,6 +13,8 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.repository.RepositoryDAO
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
@@ -25,15 +29,13 @@ import org.migor.feedless.generated.types.SourcesUpdateInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
-import org.migor.feedless.data.jpa.repository.RepositoryDAO
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
-import org.mockito.Mockito.doReturn
+import org.mockito.ArgumentCaptor
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -83,10 +85,15 @@ class RepositoryUpdateTest {
 
         repositoryId = randomRepositoryId()
         ownerId = randomUserId()
-        repository = mock(RepositoryEntity::class.java)
-        `when`(repository.id).thenReturn(repositoryId.value)
-        `when`(repository.ownerId).thenReturn(ownerId.value)
-        `when`(repository.lastUpdatedAt).thenReturn(LocalDateTime.now())
+        repository = RepositoryEntity().apply {
+            id = repositoryId.uuid
+            ownerId = this@RepositoryUpdateTest.ownerId.uuid
+            lastUpdatedAt = LocalDateTime.now()
+            title = "old-title"
+            description = "old-description"
+            sourcesSyncCron = "0 0 * * * *"
+            product = Vertical.rssProxy
+        }
         data = RepositoryUpdateDataInput(
             description = NullableStringUpdateOperationsInput(set = "new-description"),
             refreshCron = NullableStringUpdateOperationsInput(set = "* * * * * *"),
@@ -123,7 +130,7 @@ class RepositoryUpdateTest {
     fun `given current user has insuffieient priveleges, update will fail`() {
         assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
             runTest(context = RequestContext(userId = randomUserId())) {
-                doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
+                `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
                 repositoryService.updateRepository(repositoryId, data)
             }
         }
@@ -143,31 +150,40 @@ class RepositoryUpdateTest {
                     any2(),
                 )
             ).thenReturn(LocalDateTime.now())
+            `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
+                it.arguments[0] ?: EntityVisibility.isPrivate
+            }
             mockActiveProductFromRequest()
             `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
             mockRepositorySave()
 
             repositoryService.updateRepository(repositoryId, data)
 
-            verify(repository).title = "new-title"
-            verify(repository).description = "new-description"
-            verify(repository).sourcesSyncCron = "* * * * * *"
-//    verify(repository).pushNotificationsMuted = true
-//    verify(repository).visibility = EntityVisibility.isPrivate
-//    verify(repository).plugins = emptyList()
-//    verify(repository).triggerScheduledNextAt = any(LocalDateTime::class.java)
-//    verify(repository).retentionMaxCapacity = 0
-//    verify(repository).retentionMaxAgeDays = 0
-//    verify(repository).retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.startingAt
-//    verify(repository).sources = mutableListOf()
-//
-            verify(repositoryDAO).save(any2())
+            // Verify the repository was saved with updated values
+            val captor = ArgumentCaptor.forClass(RepositoryEntity::class.java)
+            verify(repositoryDAO).save(captor.capture())
+            val savedRepo = captor.value
+            assertThat(savedRepo.title).isEqualTo("new-title")
+            assertThat(savedRepo.description).isEqualTo("new-description")
+            assertThat(savedRepo.sourcesSyncCron).isEqualTo("* * * * * *")
         }
 
     @Test
     fun `given a valid update request, sources can be added`() = runTest(context = RequestContext(userId = ownerId)) {
         // given
-        doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
+        `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
+        `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+        `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
+            it.arguments[0] ?: EntityVisibility.isPrivate
+        }
+        `when`(
+            planConstraintsService.coerceMinScheduledNextAt(
+                any2(),
+                any2(),
+                any2(),
+                any2()
+            )
+        ).thenReturn(LocalDateTime.now())
         mockActiveProductFromRequest()
         mockRepositorySave()
 
@@ -181,7 +197,19 @@ class RepositoryUpdateTest {
     @Test
     fun `given a valid update request, sources can be updated`() = runTest(context = RequestContext(userId = ownerId)) {
         // given
-        doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
+        `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
+        `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+        `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
+            it.arguments[0] ?: EntityVisibility.isPrivate
+        }
+        `when`(
+            planConstraintsService.coerceMinScheduledNextAt(
+                any2(),
+                any2(),
+                any2(),
+                any2()
+            )
+        ).thenReturn(LocalDateTime.now())
         mockActiveProductFromRequest()
         mockRepositorySave()
 
@@ -195,7 +223,19 @@ class RepositoryUpdateTest {
     @Test
     fun `given a valid update request, sources can be removed`() = runTest(context = RequestContext(userId = ownerId)) {
         // given
-        doReturn(Optional.of(repository)).`when`(repositoryService).findById(any2())
+        `when`(repositoryDAO.findById(any2())).thenReturn(Optional.of(repository))
+        `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+        `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
+            it.arguments[0] ?: EntityVisibility.isPrivate
+        }
+        `when`(
+            planConstraintsService.coerceMinScheduledNextAt(
+                any2(),
+                any2(),
+                any2(),
+                any2()
+            )
+        ).thenReturn(LocalDateTime.now())
         mockActiveProductFromRequest()
         mockRepositorySave()
 

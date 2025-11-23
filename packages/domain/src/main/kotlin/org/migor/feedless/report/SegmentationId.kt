@@ -3,9 +3,7 @@ package org.migor.feedless.report
 import java.util.*
 
 data class SegmentationId(val uuid: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
+    constructor(value: String) : this(UUID.fromString(value))
 
-  constructor() : this(UUID.randomUUID())
+    constructor() : this(UUID.randomUUID())
 }
-
-

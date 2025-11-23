@@ -12,27 +12,27 @@ import java.time.LocalDateTime
 @Service
 @Profile("${AppProfiles.agent} & ${AppLayer.scheduler}")
 class AgentSyncExecutor(
-  private val agentService: AgentService,
-  private val agentDAO: AgentDAO
+    private val agentService: AgentService,
+    private val agentDAO: AgentDAO
 ) {
 
-  @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
-  @Transactional
-  fun executeSync() {
-    agentDAO.saveAll(
-      agentService.agentRefs().mapNotNull {
-        agentDAO.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
-      }.map {
-        it.lastSyncedAt = LocalDateTime.now()
-        it
-      })
-  }
+    @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
+    @Transactional
+    fun executeSync() {
+        agentDAO.saveAll(
+            agentService.agentRefs().mapNotNull {
+                agentDAO.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId.uuid)
+            }.map {
+                it.lastSyncedAt = LocalDateTime.now()
+                it
+            })
+    }
 
-  @Scheduled(fixedDelay = 3 * 60 * 1000, initialDelay = 5000)
-  @Transactional
-  fun executeCleanup() {
-    agentDAO.deleteAllByLastSyncedAtBefore(
-      LocalDateTime.now().minusMinutes(2)
-    )
-  }
+    @Scheduled(fixedDelay = 3 * 60 * 1000, initialDelay = 5000)
+    @Transactional
+    fun executeCleanup() {
+        agentDAO.deleteAllByLastSyncedAtBefore(
+            LocalDateTime.now().minusMinutes(2)
+        )
+    }
 }

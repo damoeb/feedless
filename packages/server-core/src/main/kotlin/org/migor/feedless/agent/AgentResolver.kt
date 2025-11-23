@@ -32,49 +32,49 @@ import org.migor.feedless.generated.types.AgentEvent as AgentEventDto
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.api}")
 class AgentResolver(
-  private val agentService: AgentService
+    private val agentService: AgentService
 ) {
 
-  private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
+    private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
-  @DgsSubscription
-  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEventDto> {
-    log.info("registerAgent ${data.secretKey.email}")
-    return runBlocking {
-      coroutineScope {
-        data.secretKey.let { agentService.registerAgent(data) }
-      }
+    @DgsSubscription
+    fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEventDto> {
+        log.info("registerAgent ${data.secretKey.email}")
+        return runBlocking {
+            coroutineScope {
+                data.secretKey.let { agentService.registerAgent(data) }
+            }
+        }
     }
-  }
 
-  @Throttled
-  @DgsMutation(field = DgsConstants.MUTATION.SubmitAgentData)
-  @PreAuthorize("@capabilityService.hasCapability('agent')")
-  suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
-    log.info("[${data.corrId}] submitAgentData")
-    agentService.handleScrapeResponse(data.callbackId, data.scrapeResponse)
-    true
-  }
-
-  @Throttled
-  @DgsQuery
-  suspend fun agents(
-    dfe: DataFetchingEnvironment,
-  ): List<AgentDto> {
-    log.debug("agents")
-    return withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-      agentService.findAllByUserId(coroutineContext.userId()).map { it.toDto() }
+    @Throttled
+    @DgsMutation(field = DgsConstants.MUTATION.SubmitAgentData)
+    @PreAuthorize("@capabilityService.hasCapability('agent')")
+    suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
+        log.info("[${data.corrId}] submitAgentData")
+        agentService.handleScrapeResponse(data.callbackId, data.scrapeResponse)
+        true
     }
-  }
+
+    @Throttled
+    @DgsQuery
+    suspend fun agents(
+        dfe: DataFetchingEnvironment,
+    ): List<AgentDto> {
+        log.debug("agents")
+        return withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+            agentService.findAllByUserId(coroutineContext.userId()).map { it.toDto() }
+        }
+    }
 }
 
-private fun Agent.toDto(): AgentDto {
-  return AgentDto(
-    ownerId = ownerId.toString(),
-    name = name,
-    addedAt = createdAt.toMillis(),
-    version = version,
-    openInstance = openInstance,
-    secretKeyId = secretKeyId.toString(),
-  )
+internal fun Agent.toDto(): AgentDto {
+    return AgentDto(
+        ownerId = ownerId.toString(),
+        name = name,
+        addedAt = createdAt.toMillis(),
+        version = version,
+        openInstance = openInstance,
+        secretKeyId = secretKeyId.toString(),
+    )
 }

@@ -9,12 +9,10 @@ import org.migor.feedless.product.PricedProduct
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface PricedProductMapper {
 
-  fun toDomain(entity: PricedProductEntity): PricedProduct
-  fun toEntity(domain: PricedProduct): PricedProductEntity
+    fun toDomain(entity: PricedProductEntity): PricedProduct
+    fun toEntity(domain: PricedProduct): PricedProductEntity
 
-  companion object {
-    val INSTANCE: PricedProductMapper = Mappers.getMapper(PricedProductMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: PricedProductMapper = Mappers.getMapper(PricedProductMapper::class.java)
+    }
 }
-
-

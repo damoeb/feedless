@@ -2,12 +2,9 @@ package org.migor.feedless.pipeline.plugins
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.Document
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.report.ReportEntity
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.document.Document
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.report.Report
 import org.migor.feedless.repository.Repository
@@ -25,25 +22,25 @@ import kotlin.coroutines.coroutineContext
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.scrape} & ${AppLayer.service}")
 class EventsReportPlugin : ReportPlugin {
 
-  private val log = LoggerFactory.getLogger(EventsReportPlugin::class.simpleName)
+    private val log = LoggerFactory.getLogger(EventsReportPlugin::class.simpleName)
 
-  override fun id(): String = FeedlessPlugins.org_feedless_event_report.name
-  override fun name(): String = ""
-  override fun listed() = false
+    override fun id(): String = FeedlessPlugins.org_feedless_event_report.name
+    override fun name(): String = ""
+    override fun listed() = false
 
-  override suspend fun report(
-    documents: List<Document>,
-    repository: Repository,
-    params: PluginExecutionParamsInput,
-    logCollector: LogCollector
-  ) {
-    val corrId = coroutineContext.corrId()
-    logCollector.log("[$corrId] report ${documents.size}")
+    override suspend fun report(
+        documents: List<Document>,
+        repository: Repository,
+        params: PluginExecutionParamsInput,
+        logCollector: LogCollector
+    ) {
+        val corrId = coroutineContext.corrId()
+        logCollector.log("[$corrId] report ${documents.size}")
 
-  }
+    }
 
-  override suspend fun askForAuthorization(report: Report): Report {
-    TODO("Not yet implemented")
-  }
+    override suspend fun askForAuthorization(report: Report): Report {
+        TODO("implement")
+    }
 
 }

@@ -47,7 +47,3 @@ open class ConnectedAppEntity : EntityWithUUID() {
   )
   open var user: UserEntity? = null
 }
-
-fun ConnectedAppEntity.toDomain(): org.migor.feedless.connectedApp.ConnectedApp {
-  return ConnectedAppMapper.Companion.INSTANCE.toDomain(this)
-}

@@ -92,7 +92,7 @@ class DocumentResolver(
       emptyList()
     } else {
       documentService.findAllByRepositoryId(
-        RepositoryId(repository.id),
+        repository.id,
         data.where,
         data.orderBy,
         pageable = pageable

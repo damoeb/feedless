@@ -3,11 +3,11 @@ package org.migor.feedless.connectedApp
 import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 
-data class ConnectedApp(
-  val id: ConnectedAppId,
-  val authorized: Boolean,
-  val authorizedAt: LocalDateTime?,
-  val userId: UserId?,
-  val createdAt: LocalDateTime
+sealed class ConnectedApp(
+    open val id: ConnectedAppId = ConnectedAppId(),
+    open val authorized: Boolean,
+    open val authorizedAt: LocalDateTime? = null,
+    open val userId: UserId?,
+    open val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

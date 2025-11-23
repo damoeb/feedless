@@ -1,5 +1,6 @@
 package org.migor.feedless.jobs
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -24,64 +25,64 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class CleanupExecutorTest {
 
-  private lateinit var oneTimePasswordService: OneTimePasswordService
-  private lateinit var sourcePipelineService: SourcePipelineService
-  private lateinit var documentService: DocumentService
-  private lateinit var documentPipelineService: DocumentPipelineService
-  private lateinit var cleanupExecutor: CleanupExecutor
-  private lateinit var harvestService: HarvestService
+    private lateinit var oneTimePasswordService: OneTimePasswordService
+    private lateinit var sourcePipelineService: SourcePipelineService
+    private lateinit var documentService: DocumentService
+    private lateinit var documentPipelineService: DocumentPipelineService
+    private lateinit var cleanupExecutor: CleanupExecutor
+    private lateinit var harvestService: HarvestService
 
-  @BeforeEach
-  fun setUp() {
+    @BeforeEach
+    fun setUp() {
 
-    oneTimePasswordService = mock(OneTimePasswordService::class.java)
-    sourcePipelineService = mock(SourcePipelineService::class.java)
-    documentService = mock(DocumentService::class.java)
-    documentPipelineService = mock(DocumentPipelineService::class.java)
-    harvestService = mock(HarvestService::class.java)
-    cleanupExecutor = CleanupExecutor(
-      Optional.of(oneTimePasswordService),
-      sourcePipelineService,
-      documentService,
-      documentPipelineService,
-      harvestService
-    )
-  }
+        oneTimePasswordService = mock(OneTimePasswordService::class.java)
+        sourcePipelineService = mock(SourcePipelineService::class.java)
+        documentService = mock(DocumentService::class.java)
+        documentPipelineService = mock(DocumentPipelineService::class.java)
+        harvestService = mock(HarvestService::class.java)
+        cleanupExecutor = CleanupExecutor(
+            Optional.of(oneTimePasswordService),
+            sourcePipelineService,
+            documentService,
+            documentPipelineService,
+            harvestService
+        )
+    }
 
-  @Test
-  fun `verify executeCleanup is annotated with scheduled`() {
-    val method = CleanupExecutor::class.java.declaredMethods.first { it.name == "executeCleanup" }
-    assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
-  }
+    @Test
+    fun `verify executeCleanup is annotated with scheduled`() {
+        val method = CleanupExecutor::class.java.declaredMethods.first { it.name == "executeCleanup" }
+        assertThat(method.getAnnotation(Scheduled::class.java)).isNotNull()
+    }
 
-  @Test
-  fun `executeCleanup removes oneTimePassword`() {
-    cleanupExecutor.executeCleanup()
-    verify(oneTimePasswordService, times(1)).deleteAllByValidUntilBefore(any2())
-  }
+    @Test
+    fun `executeCleanup removes oneTimePassword`() {
+        cleanupExecutor.executeCleanup()
+        verify(oneTimePasswordService, times(1)).deleteAllByValidUntilBefore(any2())
+    }
 
-  @Test
-  fun `executeCleanup removes sourcePipelineJobs`() {
-    cleanupExecutor.executeCleanup()
-    verify(sourcePipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
-  }
+    @Test
+    fun `executeCleanup removes sourcePipelineJobs`() {
+        cleanupExecutor.executeCleanup()
+        verify(sourcePipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
+    }
 
-  @Test
-  fun `executeCleanup removes documentPipelineJobs`() {
-    cleanupExecutor.executeCleanup()
-    verify(documentPipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
-  }
+    @Test
+    fun `executeCleanup removes documentPipelineJobs`() {
+        cleanupExecutor.executeCleanup()
+        verify(documentPipelineService, times(1)).deleteAllByCreatedAtBefore(any2())
+    }
 
-  @Test
-  fun `executeCleanup applies RetentionStrategy by capacity`() {
-    cleanupExecutor.executeCleanup()
-    verify(documentService).applyRetentionStrategyByCapacity()
-  }
+    @Test
+    fun `executeCleanup applies RetentionStrategy by capacity`() = runTest {
+        cleanupExecutor.executeCleanup()
+        verify(documentService).applyRetentionStrategyByCapacity()
+    }
 
-  @Test
-  fun `executeCleanup removes harvests`() {
-    cleanupExecutor.executeCleanup()
-    verify(harvestService).deleteAllTailing()
-  }
+    @Test
+    fun `executeCleanup removes harvests`() {
+        cleanupExecutor.executeCleanup()
+        verify(harvestService).deleteAllTailing()
+    }
 
 }

@@ -7,6 +7,7 @@ import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretId
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
@@ -62,5 +63,5 @@ abstract class AuthService {
 
   abstract suspend fun findUserById(userId: UserId): User?
   abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret?
-  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {}
+  suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {}
 }

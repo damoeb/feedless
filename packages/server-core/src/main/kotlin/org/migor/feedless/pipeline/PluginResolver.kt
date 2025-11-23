@@ -22,33 +22,33 @@ import org.springframework.transaction.annotation.Transactional
 @Profile("${AppProfiles.scrape} & ${AppLayer.api}")
 class PluginResolver {
 
-  private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
+    private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
 
-  @Autowired
-  private lateinit var pluginsService: PluginService
+    @Autowired
+    private lateinit var pluginsService: PluginService
 
-  @Throttled
-  @DgsQuery
-  suspend fun plugins(
-    dfe: DataFetchingEnvironment,
-  ): List<Plugin> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-    log.debug("plugins")
-    pluginsService.findAll().map { it.toDto() }
-  }
+    @Throttled
+    @DgsQuery
+    suspend fun plugins(
+        dfe: DataFetchingEnvironment,
+    ): List<Plugin> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+        log.debug("plugins")
+        pluginsService.findAll().map { it.toDto() }
+    }
 }
 
 
-private fun FeedlessPlugin.toDto(): Plugin {
-  return Plugin(
-    id = id(),
-    name = name(),
-    listed = listed(),
-    type =
-    if (this is FragmentTransformerPlugin) {
-      PluginType.fragment
-    } else {
-      PluginType.entity
-    }
+internal fun FeedlessPlugin.toDto(): Plugin {
+    return Plugin(
+        id = id(),
+        name = name(),
+        listed = listed(),
+        type =
+            if (this is FragmentTransformerPlugin) {
+                PluginType.fragment
+            } else {
+                PluginType.entity
+            }
 
-  )
+    )
 }

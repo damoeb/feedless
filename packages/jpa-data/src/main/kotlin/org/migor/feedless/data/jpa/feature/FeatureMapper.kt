@@ -9,12 +9,10 @@ import org.migor.feedless.feature.Feature
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface FeatureMapper {
 
-  fun toDomain(entity: FeatureEntity): Feature
-  fun toEntity(domain: Feature): FeatureEntity
+    fun toDomain(entity: FeatureEntity): Feature
+    fun toEntity(domain: Feature): FeatureEntity
 
-  companion object {
-    val INSTANCE: FeatureMapper = Mappers.getMapper(FeatureMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: FeatureMapper = Mappers.getMapper(FeatureMapper::class.java)
+    }
 }
-
-

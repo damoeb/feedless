@@ -9,12 +9,10 @@ import org.migor.feedless.feature.FeatureGroup
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface FeatureGroupMapper {
 
-  fun toDomain(entity: FeatureGroupEntity): FeatureGroup
-  fun toEntity(domain: FeatureGroup): FeatureGroupEntity
+    fun toDomain(entity: FeatureGroupEntity): FeatureGroup
+    fun toEntity(domain: FeatureGroup): FeatureGroupEntity
 
-  companion object {
-    val INSTANCE: FeatureGroupMapper = Mappers.getMapper(FeatureGroupMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: FeatureGroupMapper = Mappers.getMapper(FeatureGroupMapper::class.java)
+    }
 }
-
-

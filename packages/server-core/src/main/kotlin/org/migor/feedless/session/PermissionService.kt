@@ -1,16 +1,14 @@
 package org.migor.feedless.session
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.repository.RepositoryDAO
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.user.UserDAO
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.user.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -22,10 +20,10 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class PermissionService(
-  private val userDAO: UserDAO,
-  private val repositoryDAO: RepositoryDAO
+    private val userDAO: UserRepository,
+    private val repositoryDAO: RepositoryRepository
 ) {
-  private val log = LoggerFactory.getLogger(PermissionService::class.simpleName)
+    private val log = LoggerFactory.getLogger(PermissionService::class.simpleName)
 
 //  @Autowired
 //  private lateinit var userGroupAssignmentDAO: UserGroupAssignmentDAO
@@ -33,24 +31,20 @@ class PermissionService(
 //  @Autowired
 //  private lateinit var documentDAO: DocumentDAO
 
-  suspend fun canWrite(document: DocumentEntity) {
-    withContext(Dispatchers.IO) {
-      val repository = repositoryDAO.findById(document.repositoryId).orElseThrow()
-      canWrite(repository)
+    suspend fun canWrite(document: Document) {
+        val repository = repositoryDAO.findById(document.repositoryId)!!
+        canWrite(repository)
     }
-  }
 
-  suspend fun canWrite(repository: RepositoryEntity) {
-    val currentUserId = currentCoroutineContext()[RequestContext]!!.userId!!
-    withContext(Dispatchers.IO) {
-      val currentUser = userDAO.findById(currentUserId.value).orElseThrow()
-      if (!(currentUser.admin || currentUser.id == repository.ownerId)) {
-        throw PermissionDeniedException("Must be owner")
-      }
+    suspend fun canWrite(repository: Repository) {
+        val currentUserId = currentCoroutineContext()[RequestContext]!!.userId!!
+        val currentUser = userDAO.findById(currentUserId)!!
+        if (!(currentUser.admin || currentUser.id == repository.ownerId)) {
+            throw PermissionDeniedException("Must be owner")
+        }
     }
-  }
 
-  fun canReadDocument(documentId: DocumentId) {
+    fun canReadDocument(documentId: DocumentId) {
 
-  }
+    }
 }

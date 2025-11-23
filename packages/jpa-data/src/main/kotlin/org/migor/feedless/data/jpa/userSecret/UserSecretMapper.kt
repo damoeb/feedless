@@ -9,12 +9,10 @@ import org.migor.feedless.userSecret.UserSecret
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface UserSecretMapper {
 
-  fun toDomain(entity: UserSecretEntity): UserSecret
-  fun toEntity(domain: UserSecret): UserSecretEntity
+    fun toDomain(entity: UserSecretEntity): UserSecret
+    fun toEntity(domain: UserSecret): UserSecretEntity
 
-  companion object {
-    val INSTANCE: UserSecretMapper = Mappers.getMapper(UserSecretMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: UserSecretMapper = Mappers.getMapper(UserSecretMapper::class.java)
+    }
 }
-
-

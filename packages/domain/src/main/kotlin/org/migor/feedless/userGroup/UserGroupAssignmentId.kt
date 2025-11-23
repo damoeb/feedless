@@ -3,9 +3,7 @@ package org.migor.feedless.userGroup
 import java.util.*
 
 data class UserGroupAssignmentId(val uuid: UUID) {
-  constructor(value: String) : this(UUID.fromString(value))
+    constructor(value: String) : this(UUID.fromString(value))
 
-  constructor() : this(UUID.randomUUID())
+    constructor() : this(UUID.randomUUID())
 }
-
-

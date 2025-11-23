@@ -27,6 +27,7 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.source.SourceService
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.ArgumentMatchers.anyString
@@ -45,146 +46,149 @@ import java.nio.file.Files
 
 @SpringBootTest
 @MockitoBean(
-  types = [
-    ServerConfigResolver::class,
-    AgentService::class,
-    AttachmentDAO::class,
-  ]
+    types = [
+        ServerConfigResolver::class,
+        AgentService::class,
+        AttachmentDAO::class,
+    ]
 )
 @ActiveProfiles(
-  "test",
-  AppProfiles.properties,
-  AppLayer.api,
-  AppLayer.service,
-  AppProfiles.scrape,
+    "test",
+    AppProfiles.properties,
+    AppLayer.api,
+    AppLayer.service,
+    AppProfiles.scrape,
 )
 @Import(
-  DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class
+    DisableDatabaseConfiguration::class,
+    DisableWebSocketsConfiguration::class
 )
 class ScrapeQueryResolverTest {
 
-  @Autowired
-  lateinit var dgsQueryExecutor: DgsQueryExecutor
+    @Autowired
+    lateinit var dgsQueryExecutor: DgsQueryExecutor
 
-  @MockitoBean
-  lateinit var httpServiceMock: HttpService
+    @MockitoBean
+    lateinit var httpServiceMock: HttpService
 
-  val url = "http://www.foo.bar/something"
+    @MockitoBean
+    lateinit var sourceService: SourceService
 
-  @BeforeEach
-  fun setUp() {
-    mockSecurityContext()
-  }
+    val url = "http://www.foo.bar/something"
 
-  @Test
-  fun `scrape native feed`() = runTest {
-
-    // given
-    val url = "http://www.foo.bar/feed.xml"
-    val feed = Files.readString(ResourceUtils.getFile("classpath:transform/medium-rss.in.xml").toPath())
-    val httpResponse = HttpResponse("application/xml", url, 200, feed.toByteArray())
-    `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
-      .thenReturn(httpResponse)
-
-    // when
-    val scrapeResponse = scrapeFeed(PluginExecutionParamsInput())
-
-    // then
-    executeFeedAssertions(scrapeResponse)
-  }
-
-  @Test
-  fun `scrape generic feed`() = runTest {
-    // given
-    val feed = Files.readString(ResourceUtils.getFile("classpath:raw-websites/06-jon-bo-posts.input.html").toPath())
-    val httpResponse = HttpResponse("text/html", url, 200, feed.toByteArray())
-    `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
-      .thenReturn(httpResponse)
-    val params = PluginExecutionParamsInput(
-      org_feedless_feed = FeedParamsInput(
-        generic = SelectorsInput(
-          contextXPath = "//div[1]/div[1]/div[1]/div",
-          linkXPath = "./h1[1]/a[1]",
-          paginationXPath = "",
-          dateXPath = "",
-          dateIsStartOfEvent = false,
-          extendContext = ExtendContentOptions.NONE
-        )
-      )
-    )
-
-    // when
-    val scrapeResponse = scrapeFeed(params)
-
-    // then
-    executeFeedAssertions(scrapeResponse)
-  }
-
-  private fun scrapeFeed(params: PluginExecutionParamsInput): ScrapeResponse {
-    val graphQLQuery = DgsClient.buildQuery {
-      scrape(
-        data = SourceInput(
-          title = "",
-          flow = ScrapeFlowInput(
-            sequence = listOf(
-              ScrapeActionInput(
-                fetch = HttpFetchInput(
-                  get = HttpGetRequestInput(
-                    url = StringLiteralOrVariableInput(
-                      literal = url
-                    )
-                  )
-                )
-              ),
-              ScrapeActionInput(
-                execute = PluginExecutionInput(
-                  pluginId = FeedlessPlugins.org_feedless_feed.name,
-                  params = params
-                )
-              )
-            )
-          )
-        )
-      ) {
-        ok
-        logs {
-          time
-          message
-        }
-        outputs {
-          index
-          response {
-            extract {
-              fragmentName
-              items {
-                publishedAt
-                url
-                createdAt
-                id
-              }
-            }
-          }
-        }
-      }
+    @BeforeEach
+    fun setUp() {
+        mockSecurityContext()
     }
 
-    return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
-      graphQLQuery,
-      "data.scrape",
-      ScrapeResponse::class.java,
-    )
-  }
+    @Test
+    fun `scrape native feed`() = runTest {
 
-  private fun executeFeedAssertions(scrapeResponse: ScrapeResponse) {
-    val items = scrapeResponse.outputs.find { it.response.extract != null }!!.response.extract!!.items!!
-    assertThat(items.size).isGreaterThan(0)
-  }
+        // given
+        val url = "http://www.foo.bar/feed.xml"
+        val feed = Files.readString(ResourceUtils.getFile("classpath:transform/medium-rss.in.xml").toPath())
+        val httpResponse = HttpResponse("application/xml", url, 200, feed.toByteArray())
+        `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
+            .thenReturn(httpResponse)
 
-  private fun mockSecurityContext() {
-    val authentication = TestingAuthenticationToken("", "", "WRITE")
-    val securityContext: SecurityContext = Mockito.mock(SecurityContext::class.java)
-    `when`(securityContext.authentication).thenReturn(authentication)
-    SecurityContextHolder.setContext(securityContext)
-  }
+        // when
+        val scrapeResponse = scrapeFeed(PluginExecutionParamsInput())
+
+        // then
+        executeFeedAssertions(scrapeResponse)
+    }
+
+    @Test
+    fun `scrape generic feed`() = runTest {
+        // given
+        val feed = Files.readString(ResourceUtils.getFile("classpath:raw-websites/06-jon-bo-posts.input.html").toPath())
+        val httpResponse = HttpResponse("text/html", url, 200, feed.toByteArray())
+        `when`(httpServiceMock.httpGetCaching(anyString(), anyInt(), any<Map<String, String>>()))
+            .thenReturn(httpResponse)
+        val params = PluginExecutionParamsInput(
+            org_feedless_feed = FeedParamsInput(
+                generic = SelectorsInput(
+                    contextXPath = "//div[1]/div[1]/div[1]/div",
+                    linkXPath = "./h1[1]/a[1]",
+                    paginationXPath = "",
+                    dateXPath = "",
+                    dateIsStartOfEvent = false,
+                    extendContext = ExtendContentOptions.NONE
+                )
+            )
+        )
+
+        // when
+        val scrapeResponse = scrapeFeed(params)
+
+        // then
+        executeFeedAssertions(scrapeResponse)
+    }
+
+    private fun scrapeFeed(params: PluginExecutionParamsInput): ScrapeResponse {
+        val graphQLQuery = DgsClient.buildQuery {
+            scrape(
+                data = SourceInput(
+                    title = "",
+                    flow = ScrapeFlowInput(
+                        sequence = listOf(
+                            ScrapeActionInput(
+                                fetch = HttpFetchInput(
+                                    get = HttpGetRequestInput(
+                                        url = StringLiteralOrVariableInput(
+                                            literal = url
+                                        )
+                                    )
+                                )
+                            ),
+                            ScrapeActionInput(
+                                execute = PluginExecutionInput(
+                                    pluginId = FeedlessPlugins.org_feedless_feed.name,
+                                    params = params
+                                )
+                            )
+                        )
+                    )
+                )
+            ) {
+                ok
+                logs {
+                    time
+                    message
+                }
+                outputs {
+                    index
+                    response {
+                        extract {
+                            fragmentName
+                            items {
+                                publishedAt
+                                url
+                                createdAt
+                                id
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        return dgsQueryExecutor.executeAndExtractJsonPathAsObject(
+            graphQLQuery,
+            "data.scrape",
+            ScrapeResponse::class.java,
+        )
+    }
+
+    private fun executeFeedAssertions(scrapeResponse: ScrapeResponse) {
+        val items = scrapeResponse.outputs.find { it.response.extract != null }!!.response.extract!!.items!!
+        assertThat(items.size).isGreaterThan(0)
+    }
+
+    private fun mockSecurityContext() {
+        val authentication = TestingAuthenticationToken("", "", "WRITE")
+        val securityContext: SecurityContext = Mockito.mock(SecurityContext::class.java)
+        `when`(securityContext.authentication).thenReturn(authentication)
+        SecurityContextHolder.setContext(securityContext)
+    }
 }

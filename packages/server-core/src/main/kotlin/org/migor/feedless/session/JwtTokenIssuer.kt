@@ -12,9 +12,9 @@ import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.user.UserEntity
-import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -84,10 +84,10 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForApi(user: UserEntity): Jwt {
+  fun createJwtForApi(user: User): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for service")
-    val capabilities: List<Capability<out Any>> = listOf(UserCapability(UserId(user.id)));
+    val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id));
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.API.value,
@@ -97,12 +97,12 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForService(securityKey: UserSecretEntity): Jwt {
+  fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
     val capabilities: List<Capability<out Any>> = listOf(
       AgentCapability(""),
-      UserCapability(UserId(securityKey.ownerId))
+      UserCapability(securityKey.ownerId)
     );
     return encodeJwt(
       mapOf(

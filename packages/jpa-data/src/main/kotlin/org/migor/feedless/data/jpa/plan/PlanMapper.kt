@@ -9,12 +9,10 @@ import org.migor.feedless.plan.Plan
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface PlanMapper {
 
-  fun toDomain(entity: PlanEntity): Plan
-  fun toEntity(domain: Plan): PlanEntity
+    fun toDomain(entity: PlanEntity): Plan
+    fun toEntity(domain: Plan): PlanEntity
 
-  companion object {
-    val INSTANCE: PlanMapper = Mappers.getMapper(PlanMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: PlanMapper = Mappers.getMapper(PlanMapper::class.java)
+    }
 }
-
-

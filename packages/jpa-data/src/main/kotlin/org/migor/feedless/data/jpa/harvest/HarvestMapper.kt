@@ -9,12 +9,10 @@ import org.migor.feedless.harvest.Harvest
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface HarvestMapper {
 
-  fun toDomain(entity: HarvestEntity): Harvest
-  fun toEntity(domain: Harvest): HarvestEntity
+    fun toDomain(entity: HarvestEntity): Harvest
+    fun toEntity(domain: Harvest): HarvestEntity
 
-  companion object {
-    val INSTANCE: HarvestMapper = Mappers.getMapper(HarvestMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: HarvestMapper = Mappers.getMapper(HarvestMapper::class.java)
+    }
 }
-
-

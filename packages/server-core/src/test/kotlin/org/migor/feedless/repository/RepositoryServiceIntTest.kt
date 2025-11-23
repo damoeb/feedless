@@ -18,7 +18,6 @@ import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureService
@@ -38,6 +37,7 @@ import org.migor.feedless.product.ProductService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.ExtractEmit
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.mockito.Mockito.`when`
@@ -52,108 +52,114 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
 @ActiveProfiles(
-  "test",
-  "database",
-  AppProfiles.repository,
-  AppProfiles.source,
-  AppProfiles.user,
-  AppProfiles.scrape,
-  AppLayer.repository,
-  AppLayer.service,
+    "test",
+    "database",
+    AppProfiles.repository,
+    AppProfiles.source,
+    AppProfiles.user,
+    AppProfiles.scrape,
+    AppLayer.repository,
+    AppLayer.service,
 )
 @MockitoBean(
-  types = [
-    ProductDAO::class,
-    DocumentDAO::class,
-    DocumentService::class,
-    ProductService::class,
-    PropertyService::class,
-    InboxService::class,
+    types = [
+        ProductDAO::class,
+        DocumentDAO::class,
+        DocumentService::class,
+        ProductService::class,
+        PropertyService::class,
+        InboxService::class,
 //  SourceService::class
-    AgentService::class,
-  ]
+        AgentService::class,
+    ]
 )
 class RepositoryServiceIntTest {
-  @Autowired
-  private lateinit var repositoryService: RepositoryService
+    @Autowired
+    private lateinit var repositoryService: RepositoryService
 
-  @MockitoBean
-  private lateinit var featureService: FeatureService
+    @MockitoBean
+    private lateinit var featureService: FeatureService
 
-  @Autowired
-  private lateinit var scrapeActionDAO: ScrapeActionDAO
+    @Autowired
+    private lateinit var scrapeActionDAO: ScrapeActionDAO
 
-  @MockitoBean
-  private lateinit var sessionService: SessionService
+    @MockitoBean
+    private lateinit var sessionService: SessionService
 
-  @Autowired
-  private lateinit var userService: UserService
+    @Autowired
+    private lateinit var userService: UserService
 
-  @MockitoBean
-  private lateinit var planConstraintsService: PlanConstraintsService
+    @MockitoBean
+    private lateinit var planConstraintsService: PlanConstraintsService
 
-  private lateinit var user: UserEntity
+    private lateinit var user: User
 
 
-  @BeforeEach
-  fun setup() = runTest {
-    `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
+    @BeforeEach
+    fun setup() = runTest {
+        `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    user = userService.createUser("foo@bar.com")
-  }
+        user = userService.createUser("foo@bar.com")
+    }
 
-  @Test
-  fun `create repos`() = runTest(context = RequestContext(userId = UserId(user.id))) {
+    @Test
+    fun `create repos`() = runTest(context = RequestContext(userId = user.id)) {
 
-    `when`(sessionService.user())
-      .thenReturn(user)
-    `when`(sessionService.activeProductFromRequest())
-      .thenReturn(Vertical.feedless)
-    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UserId::class.java)))
-      .thenReturn(false)
-    `when`(planConstraintsService.coerceVisibility(eq(null)))
-      .thenReturn(EntityVisibility.isPublic)
+        `when`(sessionService.user())
+            .thenReturn(user)
+        `when`(sessionService.activeProductFromRequest())
+            .thenReturn(Vertical.feedless)
+        `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UserId::class.java)))
+            .thenReturn(false)
+        `when`(planConstraintsService.coerceVisibility(eq(null)))
+            .thenReturn(EntityVisibility.isPublic)
 
-    repositoryService.create(
-      listOf(
-        RepositoryCreateInput(
-          product = VerticalDto.rssProxy,
-          sources = listOf(
-            SourceInput(
-              title = "wef",
-              flow = ScrapeFlowInput(
-                sequence = listOf(
-                  ScrapeActionInput(
-                    fetch = HttpFetchInput(get = HttpGetRequestInput(url = StringLiteralOrVariableInput(literal = "")))
-                  ),
-                  ScrapeActionInput(
-                    extract = ScrapeExtractInput(
-                      fragmentName = "foo",
-                      selectorBased = DOMExtractInput(
-                        fragmentName = "foo",
-                        emit = listOf(ScrapeEmit.text, ScrapeEmit.pixel),
-                        xpath = DOMElementByXPathInput("//bar"),
-                        uniqueBy = ScrapeEmit.text
-                      )
-                    )
-                  )
+        repositoryService.create(
+            listOf(
+                RepositoryCreateInput(
+                    product = VerticalDto.rssProxy,
+                    sources = listOf(
+                        SourceInput(
+                            title = "wef",
+                            flow = ScrapeFlowInput(
+                                sequence = listOf(
+                                    ScrapeActionInput(
+                                        fetch = HttpFetchInput(
+                                            get = HttpGetRequestInput(
+                                                url = StringLiteralOrVariableInput(
+                                                    literal = ""
+                                                )
+                                            )
+                                        )
+                                    ),
+                                    ScrapeActionInput(
+                                        extract = ScrapeExtractInput(
+                                            fragmentName = "foo",
+                                            selectorBased = DOMExtractInput(
+                                                fragmentName = "foo",
+                                                emit = listOf(ScrapeEmit.text, ScrapeEmit.pixel),
+                                                xpath = DOMElementByXPathInput("//bar"),
+                                                uniqueBy = ScrapeEmit.text
+                                            )
+                                        )
+                                    )
+                                )
+                            ),
+                        )
+                    ),
+                    title = "foo",
+                    description = "bar",
+                    refreshCron = "",
+                    withShareKey = true
                 )
-              ),
             )
-          ),
-          title = "foo",
-          description = "bar",
-          refreshCron = "",
-          withShareKey = true
         )
-      )
-    )
 
-    val actions = scrapeActionDAO.findAll()
-    assertThat(actions).hasSize(2)
+        val actions = scrapeActionDAO.findAll()
+        assertThat(actions).hasSize(2)
 
-    val extractAction = actions.get(1) as ExtractXpathActionEntity
-    assertThat(extractAction.emitRaw).isEqualTo(arrayOf(ExtractEmit.text.name, ExtractEmit.pixel.name))
-  }
+        val extractAction = actions.get(1) as ExtractXpathActionEntity
+        assertThat(extractAction.emitRaw).isEqualTo(arrayOf(ExtractEmit.text.name, ExtractEmit.pixel.name))
+    }
 
 }

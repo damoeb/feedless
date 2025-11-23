@@ -24,54 +24,63 @@ import java.util.*
 @Table(name = "t_annotation")
 @Inheritance(strategy = InheritanceType.JOINED)
 @DiscriminatorColumn(
-  name = "type",
-  discriminatorType = DiscriminatorType.STRING
+    name = "type",
+    discriminatorType = DiscriminatorType.STRING
 )
 open class AnnotationEntity : EntityWithUUID() {
 
-  @Column(name = "repository_id", nullable = false)
-  open lateinit var repositoryId: UUID
+    @Column(name = "repository_id", nullable = true, unique = true)
+    open var repositoryId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.SET_NULL)
-  @JoinColumn(
-    name = "repository_id",
-    referencedColumnName = "id",
-    insertable = false,
-    updatable = false,
-    foreignKey = ForeignKey(name = "fk_annotation__to__repository")
-  )
-  open var repository: RepositoryEntity? = null
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(
+        name = "repository_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+        foreignKey = ForeignKey(name = "fk_annotation__to__repository")
+    )
+    open var repository: RepositoryEntity? = null
 
-  @Column(name = "document_id", nullable = false)
-  open lateinit var documentId: UUID
+    @Column(name = "document_id", nullable = true)
+    open var documentId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.SET_NULL)
-  @JoinColumn(
-    name = "document_id",
-    referencedColumnName = "id",
-    insertable = false,
-    updatable = false,
-    foreignKey = ForeignKey(name = "fk_annotation__to__document")
-  )
-  open var document: DocumentEntity? = null
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(
+        name = "document_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+        foreignKey = ForeignKey(name = "fk_annotation__to__document")
+    )
+    open var document: DocumentEntity? = null
 
-  @Column(name = StandardJpaFields.ownerId, nullable = false)
-  open lateinit var ownerId: UUID
+    @Column(name = StandardJpaFields.ownerId, nullable = false)
+    open lateinit var ownerId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(
-    name = StandardJpaFields.ownerId,
-    referencedColumnName = "id",
-    insertable = false,
-    updatable = false,
-    foreignKey = ForeignKey(name = "fk_annotation__to__user")
-  )
-  open var owner: UserEntity? = null
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(
+        name = StandardJpaFields.ownerId,
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+        foreignKey = ForeignKey(name = "fk_annotation__to__user")
+    )
+    open var owner: UserEntity? = null
 }
 
 fun AnnotationEntity.toDomain(): org.migor.feedless.annotation.Annotation {
-  return AnnotationMapper.Companion.INSTANCE.toDomain(this)
+    return when (this) {
+        is VoteEntity -> VoteMapper.INSTANCE.toDomain(this)
+        is TextAnnotationEntity -> {
+            // TextAnnotation domain class doesn't exist yet, just map to Vote for now
+            // or throw an exception
+            throw NotImplementedError("TextAnnotation mapping not implemented yet")
+        }
+
+        else -> throw IllegalArgumentException("Unknown AnnotationEntity type: ${this.javaClass}")
+    }
 }

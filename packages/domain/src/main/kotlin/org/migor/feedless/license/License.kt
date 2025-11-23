@@ -4,9 +4,9 @@ import org.migor.feedless.order.OrderId
 import java.time.LocalDateTime
 
 data class License(
-  val id: LicenseId,
-  val payload: String,
-  val orderId: OrderId?,
-  val createdAt: LocalDateTime
+    val id: LicenseId = LicenseId(),
+    val payload: String,
+    val orderId: OrderId?,
+    val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

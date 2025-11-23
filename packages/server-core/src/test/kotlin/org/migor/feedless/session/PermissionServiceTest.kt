@@ -7,83 +7,82 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.document.Document
 import org.migor.feedless.eq
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.repository.RepositoryDAO
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import java.util.*
 
 class PermissionServiceTest {
 
-  private lateinit var permissionService: PermissionService
-  private lateinit var userDAO: UserDAO
-  private lateinit var repositoryDAO: RepositoryDAO
-  private val currentUserId = randomUserId()
-  private val repositoryId = randomRepositoryId()
+    private lateinit var permissionService: PermissionService
+    private lateinit var userDAO: UserRepository
+    private lateinit var repositoryDAO: RepositoryRepository
+    private val currentUserId = randomUserId()
+    private val repositoryId = randomRepositoryId()
 
-  @BeforeEach
-  fun setUp() {
-    userDAO = mock(UserDAO::class.java)
-    repositoryDAO = mock(RepositoryDAO::class.java)
-    permissionService = PermissionService(userDAO, repositoryDAO)
+    @BeforeEach
+    fun setUp() = runTest {
+        userDAO = mock(UserRepository::class.java)
+        repositoryDAO = mock(RepositoryRepository::class.java)
+        permissionService = PermissionService(userDAO, repositoryDAO)
 
-    mockUser(currentUserId)
-  }
+        mockUser(currentUserId)
+    }
 
-  @Test
-  fun `canWrite document for owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val document = mock(DocumentEntity::class.java)
-    `when`(document.repositoryId).thenReturn(repositoryId.value)
-    mockRepository(repositoryId, ownerId = currentUserId)
-    permissionService.canWrite(document)
-  }
-
-  @Test
-  fun `canWrite document for non-owner fails`() {
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
-        val document = mock(DocumentEntity::class.java)
-        `when`(document.repositoryId).thenReturn(repositoryId.value)
-        mockRepository(repositoryId, ownerId = randomUserId())
+    @Test
+    fun `canWrite document for owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val document = mock(Document::class.java)
+        `when`(document.repositoryId).thenReturn(repositoryId)
+        mockRepository(repositoryId, ownerId = currentUserId)
         permissionService.canWrite(document)
-      }
     }
-  }
 
-  @Test
-  fun `canWrite repository for owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repository = mockRepository(repositoryId, ownerId = currentUserId)
-    permissionService.canWrite(repository)
-  }
+    @Test
+    fun `canWrite document for non-owner fails`() {
+        assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+            runTest(context = RequestContext(userId = currentUserId)) {
+                val document = mock(Document::class.java)
+                `when`(document.repositoryId).thenReturn(repositoryId)
+                mockRepository(repositoryId, ownerId = randomUserId())
+                permissionService.canWrite(document)
+            }
+        }
+    }
 
-  @Test
-  fun `canWrite repository for non-owner fails`() {
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
-        val repository = mockRepository(repositoryId, ownerId = randomUserId())
+    @Test
+    fun `canWrite repository for owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val repository = mockRepository(repositoryId, ownerId = currentUserId)
         permissionService.canWrite(repository)
-      }
     }
-  }
 
-  private fun mockRepository(repositoryId: RepositoryId, ownerId: UserId): RepositoryEntity {
-    val repository = mock(RepositoryEntity::class.java)
-    `when`(repository.id).thenReturn(repositoryId.value)
-    `when`(repository.ownerId).thenReturn(ownerId.value)
-    `when`(repositoryDAO.findById(eq(repositoryId.value))).thenReturn(Optional.of(repository))
-    return repository
-  }
+    @Test
+    fun `canWrite repository for non-owner fails`() {
+        assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+            runTest(context = RequestContext(userId = currentUserId)) {
+                val repository = mockRepository(repositoryId, ownerId = randomUserId())
+                permissionService.canWrite(repository)
+            }
+        }
+    }
 
-  private fun mockUser(userId: UserId): UserEntity {
-    val user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId.value)
-    `when`(userDAO.findById(eq(userId.value))).thenReturn(Optional.of(user))
-    return user
-  }
+    private suspend fun mockRepository(repositoryId: RepositoryId, ownerId: UserId): Repository {
+        val repository = mock(Repository::class.java)
+        `when`(repository.id).thenReturn(repositoryId)
+        `when`(repository.ownerId).thenReturn(ownerId)
+        `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(repository)
+        return repository
+    }
+
+    private suspend fun mockUser(userId: UserId): User {
+        val user = mock(User::class.java)
+        `when`(user.id).thenReturn(userId)
+        `when`(userDAO.findById(eq(userId))).thenReturn(user)
+        return user
+    }
 }

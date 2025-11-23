@@ -9,12 +9,10 @@ import org.migor.feedless.userGroup.UserGroupAssignment
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface UserGroupAssignmentMapper {
 
-  fun toDomain(entity: UserGroupAssignmentEntity): UserGroupAssignment
-  fun toEntity(domain: UserGroupAssignment): UserGroupAssignmentEntity
+    fun toDomain(entity: UserGroupAssignmentEntity): UserGroupAssignment
+    fun toEntity(domain: UserGroupAssignment): UserGroupAssignmentEntity
 
-  companion object {
-    val INSTANCE: UserGroupAssignmentMapper = Mappers.getMapper(UserGroupAssignmentMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: UserGroupAssignmentMapper = Mappers.getMapper(UserGroupAssignmentMapper::class.java)
+    }
 }
-
-

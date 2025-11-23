@@ -3,32 +3,24 @@ package org.migor.feedless.document
 import com.google.gson.Gson
 import jakarta.persistence.EntityManager
 import kotlinx.coroutines.test.runTest
-import org.apache.commons.lang3.StringUtils
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.ReleaseStatus
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
+import org.migor.feedless.argThat
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
-import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobDAO
-import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
-import org.migor.feedless.data.jpa.repository.MaxAgeDaysDateField
-import org.migor.feedless.data.jpa.repository.RepositoryDAO
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -45,13 +37,22 @@ import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.StringFilterOperator
 import org.migor.feedless.pipeline.plugins.StringFilterParams
+import org.migor.feedless.pipelineJob.DocumentPipelineJob
+import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
+import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
+import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
@@ -68,443 +69,553 @@ import java.util.*
 @MockitoSettings(strictness = Strictness.LENIENT)
 class DocumentServiceTest {
 
-  private lateinit var repository: RepositoryEntity
-  private lateinit var documentDAO: DocumentDAO
-  private lateinit var repositoryDAO: RepositoryDAO
-  private lateinit var userDAO: UserDAO
+    private lateinit var repository: Repository
+    private lateinit var documentRepository: DocumentRepository
+    private lateinit var repositoryRepository: RepositoryRepository
+    private lateinit var userRepository: UserRepository
 
-  private lateinit var documentService: DocumentService
+    private lateinit var documentService: DocumentService
+    private lateinit var propertyService: PropertyService
 
-  private lateinit var currentUser: UserEntity
-  private lateinit var permissionService: PermissionService
-  private lateinit var planConstraintsService: PlanConstraintsService
-  private lateinit var pluginService: PluginService
-  private lateinit var filterPlugin: CompositeFilterPlugin
-  private lateinit var fulltextPlugin: FulltextPlugin
-  private lateinit var documentPipelineJobDAO: DocumentPipelineJobDAO
-  private lateinit var telegranBotService: TelegramBotService
-  private lateinit var messageService: MessageService
-  private lateinit var documentId: DocumentId
-  private lateinit var document: DocumentEntity
+    private lateinit var currentUser: User
+    private lateinit var permissionService: PermissionService
+    private lateinit var planConstraintsService: PlanConstraintsService
+    private lateinit var pluginService: PluginService
+    private lateinit var filterPlugin: CompositeFilterPlugin
+    private lateinit var fulltextPlugin: FulltextPlugin
+    private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
+    private lateinit var telegramBotService: TelegramBotService
+    private lateinit var messageService: MessageService
+    private lateinit var documentId: DocumentId
+    private lateinit var repositoryId: RepositoryId
+    private lateinit var document: Document
 
-  private val currentUserId = randomUserId()
+    private val currentUserId = randomUserId()
 
-  @BeforeEach
-  fun setUp() {
-    currentUser = mock(UserEntity::class.java)
-    `when`(currentUser.id).thenReturn(UUID.randomUUID())
+    @BeforeEach
+    fun setUp() = runTest {
+        currentUser = mock(User::class.java)
+        `when`(currentUser.id).thenReturn(randomUserId())
 
-    userDAO = mock(UserDAO::class.java)
-    repositoryDAO = mock(RepositoryDAO::class.java)
-    documentDAO = mock(DocumentDAO::class.java)
-    permissionService = PermissionService(userDAO, repositoryDAO)
-    planConstraintsService = mock(PlanConstraintsService::class.java)
-    telegranBotService = mock(TelegramBotService::class.java)
-    messageService = mock(MessageService::class.java)
+        userRepository = mock(UserRepository::class.java)
+        repositoryRepository = mock(RepositoryRepository::class.java)
+        documentRepository = mock(DocumentRepository::class.java)
+        permissionService = PermissionService(userRepository, repositoryRepository)
+        planConstraintsService = mock(PlanConstraintsService::class.java)
+        telegramBotService = mock(TelegramBotService::class.java)
+        messageService = mock(MessageService::class.java)
+        propertyService = mock(PropertyService::class.java)
 
-    filterPlugin = spy(CompositeFilterPlugin())
-    fulltextPlugin = mock(FulltextPlugin::class.java)
-    `when`(fulltextPlugin.id()).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
-    pluginService = PluginService(
-      entityPlugins = emptyList(),
-      transformerPlugins = emptyList(),
-      plugins = listOf(filterPlugin, fulltextPlugin)
-    )
+        filterPlugin = spy(CompositeFilterPlugin())
+        fulltextPlugin = mock(FulltextPlugin::class.java)
+        `when`(fulltextPlugin.id()).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
+        pluginService = PluginService(
+            entityPlugins = emptyList(),
+            transformerPlugins = emptyList(),
+            plugins = listOf(filterPlugin, fulltextPlugin)
+        )
 //    `when`(pluginService.resolveById<FilterEntityPlugin>(eq(FeedlessPlugins.org_feedless_filter.name))).thenReturn(filterPlugin)
-    documentPipelineJobDAO = mock(DocumentPipelineJobDAO::class.java)
+        documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
 
-    documentService = DocumentService(
-      documentDAO,
-      mock(EntityManager::class.java),
-      repositoryDAO,
-      planConstraintsService,
-      documentPipelineJobDAO,
-      pluginService,
-      permissionService,
-      Optional.of(telegranBotService),
-      messageService
-    )
-
-    documentId = randomDocumentId()
-    val repositoryId = UUID.randomUUID()
-    document = mock(DocumentEntity::class.java)
-    `when`(document.id).thenReturn(documentId.value)
-    `when`(document.url).thenReturn("http://localhost")
-    `when`(document.title).thenReturn("foo bar")
-    `when`(document.status).thenReturn(ReleaseStatus.unreleased)
-    `when`(document.publishedAt).thenReturn(LocalDateTime.now())
-    `when`(document.repositoryId).thenReturn(repositoryId)
-    `when`(documentDAO.findByIdWithSource(eq(documentId.value))).thenReturn(document)
-
-    repository = mock(RepositoryEntity::class.java)
-    `when`(repository.ownerId).thenReturn(UUID.randomUUID())
-    `when`(repositoryDAO.findById(eq(repositoryId))).thenReturn(Optional.of(repository))
-  }
-
-  @Test
-  fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
-    val filterJob = DocumentPipelineJobEntity()
-    filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionJson(
-      paramsJsonString = Gson().toJson(
-        listOf(
-          ItemFilterParams(
-            composite = CompositeFilterParams(
-              exclude = CompositeFieldFilterParams(
-                title = StringFilterParams(
-                  operator = StringFilterOperator.contains,
-                  value = "foo"
-                )
-              )
-            )
-          )
+        documentService = DocumentService(
+            documentRepository,
+            mock(EntityManager::class.java),
+            repositoryRepository,
+            planConstraintsService,
+            documentPipelineJobRepository,
+            pluginService,
+            permissionService,
+            Optional.of(telegramBotService),
+            messageService,
+            propertyService,
         )
-      )
-    )
-    documentService.processDocumentPlugins(
-      documentId, listOf(
-        filterJob
-      )
-    )
-    verify(filterPlugin).matches(
-      any2(), any2(), any(Int::class.java)
-    )
-    verify(documentDAO).delete(eq(document))
-  }
 
-  @Test
-  fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
-    val filterJob = DocumentPipelineJobEntity()
-    filterJob.pluginId = FeedlessPlugins.org_feedless_filter.name
-    filterJob.executorParams = PluginExecutionJson(
-      paramsJsonString = Gson().toJson(
-        listOf(
-          ItemFilterParams(
-            composite = CompositeFilterParams(
-              exclude = CompositeFieldFilterParams(
-                title = StringFilterParams(
-                  operator = StringFilterOperator.contains,
-                  value = "foo2"
-                )
-              )
-            )
-          )
+        documentId = randomDocumentId()
+        repositoryId = RepositoryId()
+        document = Document(
+            id = documentId,
+            url = "http://localhost",
+            title = "foo",
+            text = "foo bar",
+            status = ReleaseStatus.unreleased,
+            publishedAt = LocalDateTime.now(),
+            repositoryId = repositoryId,
+            contentHash = ""
         )
-      )
-    )
-    documentService.processDocumentPlugins(
-      documentId, listOf(
-        filterJob
-      )
-    )
-    verify(documentDAO).save(eq(document))
-  }
 
-  @Test
-  fun `processDocumentPlugins will map document`() = runTest {
-    val mapJob = DocumentPipelineJobEntity()
-    mapJob.pluginId = FeedlessPlugins.org_feedless_fulltext.name
-    mapJob.executorParams = PluginExecutionJson(
-      paramsJsonString = Gson().toJson(
-        FulltextPluginParams(
-          summary = true,
-          readability = true,
-          inheritParams = false
+        `when`(propertyService.apiGatewayUrl).thenReturn("http://foo.bar")
+
+        assertThat(document.toJsonItem(propertyService, EntityVisibility.isPublic)).isNotNull();
+
+        repository = Repository(
+            id = repositoryId,
+            title = "",
+            ownerId = UserId(),
+            visibility = EntityVisibility.isPublic,
+            lastUpdatedAt = LocalDateTime.now(),
+            retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.publishedAt,
         )
-      )
-    )
-
-    `when`(
-      fulltextPlugin.mapEntity(
-        eq(document),
-        any2(),
-        any(String::class.java),
-        any2(),
-      )
-    ).thenAnswer {
-      val d = it.arguments[0] as DocumentEntity
-      d.title = StringUtils.reverse(d.title)
-      d
     }
 
-    documentService.processDocumentPlugins(
-      documentId, listOf(
-        mapJob
-      )
-    )
-    verify(document).title = "rab oof"
-    verify(documentDAO).save(eq(document))
-  }
-
-  @Test
-  fun `released document will be forwarded to telegram, if repository allow notifications`() = runTest {
-    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
-    `when`(repository.pushNotificationsEnabled).thenReturn(true)
-
-    val telegramConnection = mock(TelegramConnectionEntity::class.java)
-    `when`(telegramConnection.chatId).thenReturn(12345)
-    `when`(telegranBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
-
-    // when
-    documentService.processDocumentPlugins(
-      documentId, listOf()
-    )
-
-    verify(document).status = ReleaseStatus.released
-    verify(messageService).publishMessage(any2(), any2())
-  }
-
-  @Test
-  fun `released document won't be forwarded to telegram, if repository disabled notifications`() = runTest {
-    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
-    `when`(repository.pushNotificationsEnabled).thenReturn(false)
-
-    val telegramConnection = mock(TelegramConnectionEntity::class.java)
-    `when`(telegramConnection.chatId).thenReturn(12345)
-    `when`(telegranBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
-
-    // when
-    documentService.processDocumentPlugins(
-      documentId, listOf()
-    )
-
-    verify(document).status = ReleaseStatus.released
-    verify(messageService, times(0)).publishMessage(any2(), any2())
-  }
-
-
-  @Test
-  fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
-    assertThat(document.status).isEqualTo(ReleaseStatus.unreleased)
-    documentService.processDocumentPlugins(
-      documentId, listOf()
-    )
-    verify(document).status = ReleaseStatus.released
-    verify(documentDAO).save(eq(document))
-  }
-
-  @Test
-  fun `processDocumentPlugins will save document when execution gets delayed`() =
-    runTest(context = RequestContext(userId = currentUserId)) {
-      val job = mock(DocumentPipelineJobEntity::class.java)
-      `when`(job.pluginId).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
-      `when`(job.executorParams).thenReturn(PluginExecutionJson())
-      `when`(
-        fulltextPlugin.mapEntity(
-          any(DocumentEntity::class.java),
-          any(RepositoryEntity::class.java),
-          any(FulltextPluginParams::class.java),
-          any(LogCollector::class.java),
-        )
-      ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
-      assertThat(job.coolDownUntil).isNull()
-
-      // when
-      documentService.processDocumentPlugins(
-        documentId, listOf(job)
-      )
-
-      // then
-      verify(job).coolDownUntil != null
-      documentPipelineJobDAO.save(job)
-      documentDAO.save(document)
+    private suspend fun mockDocumentFindById(id: DocumentId, document: Document) {
+        `when`(documentRepository.findByIdWithSource(eq(id))).thenReturn(document)
     }
 
-  @Test
-  fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
+    private suspend fun mockRepositoryFindById(id: RepositoryId, repository: Repository) {
+        `when`(repositoryRepository.findById(eq(id))).thenReturn(repository)
+    }
 
-    // when
-    documentService.applyRetentionStrategy(repositoryId)
+    @Test
+    fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
+        val filterJob = DocumentPipelineJob(
+            pluginId = FeedlessPlugins.org_feedless_filter.name,
+            sequenceId = 1,
+            documentId = DocumentId(),
+            executorParams = PluginExecutionJson(
+                paramsJsonString = Gson().toJson(
+                    listOf(
+                        ItemFilterParams(
+                            composite = CompositeFilterParams(
+                                exclude = CompositeFieldFilterParams(
+                                    title = StringFilterParams(
+                                        operator = StringFilterOperator.contains,
+                                        value = "foo"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
 
-    // then
-    verify(documentDAO).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
-      eq(repositoryId.value), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
-      )
-    )
-  }
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
 
-  @Test
-  fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf(
+                filterJob
+            )
+        )
 
-    // when
-    documentService.applyRetentionStrategy(repositoryId)
+        // then
+        verify(filterPlugin).matches(
+            any2(), any2(), any(Int::class.java)
+        )
+        verify(documentRepository).deleteById(eq(documentId))
+    }
 
-    // then
-    verify(documentDAO).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
-      eq(repositoryId.value), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
-      )
-    )
-  }
+    @Test
+    fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
+        val filterJob = DocumentPipelineJob(
+            pluginId = FeedlessPlugins.org_feedless_filter.name,
+            sequenceId = 1,
+            documentId = DocumentId(),
+            executorParams = PluginExecutionJson(
+                paramsJsonString = Gson().toJson(
+                    listOf(
+                        ItemFilterParams(
+                            composite = CompositeFilterParams(
+                                exclude = CompositeFieldFilterParams(
+                                    title = StringFilterParams(
+                                        operator = StringFilterOperator.contains,
+                                        value = "foo2"
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            )
+        )
 
-  @Test
-  fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
 
-    // when
-    documentService.applyRetentionStrategy(repositoryId)
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf(
+                filterJob
+            )
+        )
 
-    // then
-    verify(documentDAO).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
-      eq(repositoryId.value), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
-      )
-    )
-  }
+        // then
+        verify(documentRepository).save(argThat { it.id == documentId })
+    }
 
-  @Test
-  fun `create document without permissions fails`() {
-    val documentId = randomDocumentId()
-    val repositoryId = randomRepositoryId()
+    @Test
+    fun `processDocumentPlugins will map document`() = runTest {
+        val mapJob = DocumentPipelineJob(
+            pluginId = FeedlessPlugins.org_feedless_fulltext.name,
+            sequenceId = 1,
+            documentId = DocumentId(),
+            executorParams = PluginExecutionJson(
+                paramsJsonString = Gson().toJson(
+                    FulltextPluginParams(
+                        summary = true,
+                        readability = true,
+                        inheritParams = false
+                    )
+                )
+            )
+        )
 
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+        `when`(
+            fulltextPlugin.mapEntity(
+                any(Document::class.java),
+                any(Repository::class.java),
+                any(String::class.java),
+                any(LogCollector::class.java),
+            )
+        ).thenAnswer {
+            val d = it.arguments[0] as Document
+            d.copy(title = "mapped to a different title")
+        }
+
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
+
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf(
+                mapJob
+            )
+        )
+
+        // then
+        verify(documentRepository).save(argThat { it.id == document.id })
+        verify(documentRepository).save(argThat { it.title == "mapped to a different title" })
+    }
+
+    @Test
+    fun `released document will be forwarded to telegram, if repository allow notifications`() = runTest {
+        mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+        mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
+
+        val telegramConnection = mock(TelegramConnectionEntity::class.java)
+        `when`(telegramConnection.chatId).thenReturn(12345)
+        `when`(telegramBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
+
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf()
+        )
+
+        // then
+        verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+        verify(documentRepository).save(argThat { it.id == documentId.uuid })
+        verify(messageService).publishMessage(any2(), any2())
+    }
+
+    @Test
+    fun `released document won't be forwarded to telegram, if repository disabled notifications`() = runTest {
+        mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+        mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = false))
+
+        val telegramConnection = mock(TelegramConnectionEntity::class.java)
+        `when`(telegramConnection.chatId).thenReturn(12345)
+        `when`(telegramBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
+
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf()
+        )
+
+        // then
+        verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+
+        verify(messageService, times(0)).publishMessage(any2(), any2())
+    }
+
+
+    @Test
+    fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
+        // given
+        mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+        mockRepositoryFindById(repositoryId, repository)
+
+        // when
+        documentService.processDocumentPlugins(
+            documentId, listOf()
+        )
+
+        // then
+        verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+        verify(documentRepository).save(argThat { it.id == documentId.uuid })
+    }
+
+    @Test
+    fun `processDocumentPlugins will save document when execution gets delayed`() =
+        runTest(context = RequestContext(userId = currentUserId)) {
+            val jobId = PipelineJobId()
+            val job = DocumentPipelineJob(
+                id = jobId,
+                sequenceId = 1,
+                documentId = documentId,
+                pluginId = FeedlessPlugins.org_feedless_fulltext.name,
+                executorParams = PluginExecutionJson()
+            )
+            assertThat(job.coolDownUntil).isNull()
+
+            `when`(
+                fulltextPlugin.mapEntity(
+                    any(Document::class.java),
+                    any(Repository::class.java),
+                    any(FulltextPluginParams::class.java),
+                    any(LogCollector::class.java),
+                )
+            ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
+
+            mockDocumentFindById(documentId, document)
+            mockRepositoryFindById(repositoryId, repository)
+
+            // when
+            documentService.processDocumentPlugins(
+                documentId, listOf(job)
+            )
+
+            // then
+//            verify(job).coolDownUntil != null
+            verify(documentPipelineJobRepository).save(argThat {
+                assertThat(it.id).isEqualTo(jobId.uuid)
+                true
+            })
+            verify(documentRepository).save(argThat { it.id == documentId.uuid })
+        }
+
+    @Test
+    fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val repositoryId = randomRepositoryId()
+        val repository =
+            mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
+
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
+
+        // when
+        documentService.applyRetentionStrategy(repositoryId)
+
+        // then
+        verify(documentRepository).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+            eq(repositoryId), any(LocalDateTime::class.java), any(
+                ReleaseStatus::class.java
+            )
+        )
+    }
+
+    @Test
+    fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val repositoryId = randomRepositoryId()
+        val repository =
+            mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
+
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
+
+        // when
+        documentService.applyRetentionStrategy(repositoryId)
+
+        // then
+        verify(documentRepository).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+            eq(repositoryId), any(LocalDateTime::class.java), any(
+                ReleaseStatus::class.java
+            )
+        )
+    }
+
+    @Test
+    fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val repositoryId = randomRepositoryId()
+        val repository =
+            mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
+
+        // when
+        documentService.applyRetentionStrategy(repositoryId)
+
+        // then
+        verify(documentRepository).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+            eq(repositoryId), any(LocalDateTime::class.java), any(
+                ReleaseStatus::class.java
+            )
+        )
+    }
+
+    @Test
+    fun `create document without permissions fails`() {
+        val documentId = randomDocumentId()
+        val repositoryId = randomRepositoryId()
+
+        assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+            runTest(context = RequestContext(userId = currentUserId)) {
+                mockUser(currentUserId)
+                mockDocument(documentId = documentId, repositoryId = repositoryId)
+                mockRepository(repositoryId, ownerId = randomUserId())
+
+                mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+                mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
+
+                val data = CreateRecordInput(
+                    title = "foo",
+                    publishedAt = Date().time,
+                    url = "",
+                    text = "",
+                    repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
+                )
+                documentService.createDocument(data)
+            }
+        }
+    }
+
+    @Test
+    fun `create document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+        val repositoryId = randomRepositoryId()
+
         mockUser(currentUserId)
-        mockDocument(documentId = documentId, repositoryId = repositoryId)
-        mockRepository(repositoryId, ownerId = randomUserId())
+        `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+        mockRepository(repositoryId, ownerId = currentUserId)
 
         val data = CreateRecordInput(
-          title = "foo",
-          publishedAt = Date().time,
-          url = "",
-          text = "",
-          repositoryId = RepositoryUniqueWhereInput(id = repositoryId.value.toString()),
+            title = "foo",
+            publishedAt = Date().time,
+            url = "",
+            text = "",
+            repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
         )
         documentService.createDocument(data)
-      }
+
+        verify(documentRepository).save(any(Document::class.java))
     }
-  }
 
-  @Test
-  fun `create document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
+    @Test
+    fun `update document without permissions fails`() = runTest {
+        val documentId = randomDocumentId()
+        val repositoryId = randomRepositoryId()
 
-    mockUser(currentUserId)
-    `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
-    mockRepository(repositoryId, ownerId = currentUserId)
+        mockUser(currentUserId)
+        mockDocument(documentId = documentId, repositoryId = repositoryId)
 
-    val data = CreateRecordInput(
-      title = "foo",
-      publishedAt = Date().time,
-      url = "",
-      text = "",
-      repositoryId = RepositoryUniqueWhereInput(id = repositoryId.value.toString()),
-    )
-    documentService.createDocument(data)
+        assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+            runTest(context = RequestContext(userId = currentUserId)) {
+                mockRepository(repositoryId, ownerId = randomUserId())
 
-    verify(documentDAO).save(any(DocumentEntity::class.java))
-  }
+                val data = RecordUpdateInput()
+                val where = DocumentId(documentId.uuid)
+                documentService.updateDocument(data, where)
+            }
+        }
+    }
 
-  @Test
-  fun `update document without permissions fails`() {
-    val documentId = randomDocumentId()
-    val repositoryId = randomRepositoryId()
+    @Test
+    fun `update document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
+        // given
+        val documentId = randomDocumentId()
+        val repositoryId = randomRepositoryId()
 
-    mockUser(currentUserId)
-    mockDocument(documentId = documentId, repositoryId = repositoryId)
+        mockUser(currentUserId)
+        val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
+        val repository = mockRepository(repositoryId, ownerId = currentUserId)
+        `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
 
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
-        mockRepository(repositoryId, ownerId = randomUserId())
+        mockDocumentFindById(documentId, document)
+        mockRepositoryFindById(repositoryId, repository)
+
 
         val data = RecordUpdateInput()
-        val where = DocumentId(documentId.value)
+        val where = DocumentId(documentId.uuid)
+
+        // when
         documentService.updateDocument(data, where)
-      }
+
+        // then
+
+//        val captor = ArgumentCaptor.forClass(Document::class.java)
+        verify(documentRepository).save(any2())
+//        val savedDocument = captor.value
+//        assertThat(savedDocument.id).isEqualTo(documentId)
+//        assertThat(savedDocument.description).isEqualTo("new-description")
+//        assertThat(savedDocument.sourcesSyncCron).isEqualTo("* * * * * *")
     }
-  }
-
-  @Test
-  fun `update document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val documentId = randomDocumentId()
-    val repositoryId = randomRepositoryId()
-
-    mockUser(currentUserId)
-    val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
-    mockRepository(repositoryId, ownerId = currentUserId)
-    `when`(documentDAO.save(any(DocumentEntity::class.java))).thenAnswer { it.arguments[0] }
-
-    val data = RecordUpdateInput()
-    val where = DocumentId(documentId.value)
-    documentService.updateDocument(data, where)
-
-    verify(documentDAO).save(eq(document))
-  }
 
 
-  @Test
-  fun `given deleteDocuments is executed not by the owner, it fails`() {
-    val repository = mock(RepositoryEntity::class.java)
-    val repositoryId = randomRepositoryId()
-    `when`(repository.id).thenReturn(repositoryId.value)
+    @Test
+    fun `given deleteDocuments is executed not by the owner, it fails`() {
+        val repository = mock(Repository::class.java)
+        val repositoryId = randomRepositoryId()
+        `when`(repository.id).thenReturn(repositoryId)
 
-    `when`(repository.ownerId).thenReturn(UUID.randomUUID())
-    `when`(repositoryDAO.findById(any(UUID::class.java))).thenReturn(Optional.of(repository))
+        `when`(repository.ownerId).thenReturn(UserId())
 
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest {
-        documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
-      }
+        assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+            runTest {
+                `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+                documentService.deleteDocuments(currentUser, repositoryId, StringFilter())
+            }
+        }
     }
-  }
 
-  private fun mockUser(userId: UserId): UserEntity {
-    val user = mock(UserEntity::class.java)
-    `when`(user.id).thenReturn(userId.value)
-    `when`(userDAO.findById(eq(userId.value))).thenReturn(Optional.of(user))
-    return user
-  }
-
-  private fun mockDocument(documentId: DocumentId, repositoryId: RepositoryId): DocumentEntity {
-    val document = mock(DocumentEntity::class.java)
-    `when`(document.id).thenReturn(documentId.value)
-    `when`(document.repositoryId).thenReturn(repositoryId.value)
-    `when`(documentDAO.findById(eq(documentId.value))).thenReturn(Optional.of(document))
-    return document
-  }
-
-  private suspend fun mockRepository(
-    repositoryId: RepositoryId,
-    ownerId: UserId,
-    maxAgeDaysDateField: MaxAgeDaysDateField? = null,
-    retentionMaxCapacity: Int? = null
-  ): RepositoryEntity {
-    val repository = mock(RepositoryEntity::class.java)
-    `when`(repository.id).thenReturn(repositoryId.value)
-    `when`(repository.ownerId).thenReturn(ownerId.value)
-    maxAgeDaysDateField?.let {
-      `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
+    private suspend fun mockUser(userId: UserId): User {
+        val user = mock(User::class.java)
+        `when`(user.id).thenReturn(userId)
+        `when`(userRepository.findById(eq(userId))).thenReturn(user)
+        return user
     }
-    retentionMaxCapacity?.let {
-      `when`(repository.retentionMaxCapacity).thenReturn(it)
+
+    private suspend fun mockDocument(documentId: DocumentId, repositoryId: RepositoryId): Document {
+        val document = Document(
+            id = documentId,
+            url = "http://localhost",
+            title = "foo",
+            text = "foo bar",
+            status = ReleaseStatus.unreleased,
+            publishedAt = LocalDateTime.now(),
+            repositoryId = repositoryId,
+            contentHash = ""
+        )
+
+        `when`(documentRepository.findById(eq(documentId))).thenReturn(document)
+
+        return document
     }
-    `when`(repository.retentionMaxAgeDays).thenReturn(20)
-    `when`(repository.id).thenReturn(repositoryId.value)
-    `when`(repository.product).thenReturn(Vertical.feedless)
-    `when`(repositoryDAO.findById(eq(repositoryId.value))).thenReturn(Optional.of(repository))
 
-    `when`(
-      planConstraintsService.coerceRetentionMaxAgeDays(
-        repository.retentionMaxAgeDays,
-        UserId(repository.ownerId),
-        repository.product
-      )
-    ).thenReturn(20)
+    private suspend fun mockRepository(
+        repositoryId: RepositoryId,
+        ownerId: UserId,
+        maxAgeDaysDateField: MaxAgeDaysDateField? = null,
+        retentionMaxCapacity: Int? = null
+    ): Repository {
+        val repository = mock(Repository::class.java)
+        `when`(repository.id).thenReturn(repositoryId)
+        `when`(repository.ownerId).thenReturn(ownerId)
+        maxAgeDaysDateField?.let {
+            `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
+        }
+        retentionMaxCapacity?.let {
+            `when`(repository.retentionMaxCapacity).thenReturn(it)
+        }
+        `when`(repository.retentionMaxAgeDays).thenReturn(20)
+        `when`(repository.id).thenReturn(repositoryId)
+        `when`(repository.product).thenReturn(Vertical.feedless)
+        `when`(repositoryRepository.findById(eq(repositoryId))).thenReturn(repository)
 
-    `when`(
-      planConstraintsService.coerceRetentionMaxCapacity(
-        repository.retentionMaxCapacity,
-        UserId(repository.ownerId),
-        repository.product
-      )
-    ).thenReturn(retentionMaxCapacity)
+        `when`(
+            planConstraintsService.coerceRetentionMaxAgeDays(
+                repository.retentionMaxAgeDays,
+                repository.ownerId,
+                repository.product
+            )
+        ).thenReturn(20)
 
-    return repository
-  }
+        `when`(
+            planConstraintsService.coerceRetentionMaxCapacity(
+                repository.retentionMaxCapacity,
+                repository.ownerId,
+                repository.product
+            )
+        ).thenReturn(retentionMaxCapacity)
+
+        return repository
+    }
 }

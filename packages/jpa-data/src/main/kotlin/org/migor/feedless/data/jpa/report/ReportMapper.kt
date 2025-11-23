@@ -9,12 +9,10 @@ import org.migor.feedless.report.Report
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface ReportMapper {
 
-  fun toDomain(entity: ReportEntity): Report
-  fun toEntity(domain: Report): ReportEntity
+    fun toDomain(entity: ReportEntity): Report
+    fun toEntity(domain: Report): ReportEntity
 
-  companion object {
-    val INSTANCE: ReportMapper = Mappers.getMapper(ReportMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: ReportMapper = Mappers.getMapper(ReportMapper::class.java)
+    }
 }
-
-

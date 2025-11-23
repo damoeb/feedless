@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.otp.OneTimePassword
 import java.time.LocalDateTime
 import java.util.*
 
@@ -19,28 +20,35 @@ import java.util.*
 @Table(name = "t_otp")
 open class OneTimePasswordEntity : EntityWithUUID() {
 
-  @Column(nullable = false, name = "password")
-  open lateinit var password: String
+    @Column(nullable = false, name = "password")
+    open lateinit var password: String
 
-  @Column(nullable = false, name = "valid_until")
-  open lateinit var validUntil: LocalDateTime
+    @Column(nullable = false, name = "valid_until")
+    open lateinit var validUntil: LocalDateTime
 
-  @OneToOne(fetch = FetchType.LAZY)
-  @OnDelete(action = OnDeleteAction.CASCADE)
-  @JoinColumn(
-    name = StandardJpaFields.userId,
-    referencedColumnName = "id",
-    insertable = false,
-    updatable = false,
-    foreignKey = ForeignKey(name = "fk_otp__to__user")
-  )
-  open var user: UserEntity? = null
+    @OneToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    @JoinColumn(
+        name = StandardJpaFields.userId,
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+        foreignKey = ForeignKey(name = "fk_otp__to__user")
+    )
+    open var user: UserEntity? = null
 
-  @Column(name = StandardJpaFields.userId, nullable = false)
-  open lateinit var userId: UUID
+    @Column(name = StandardJpaFields.userId, nullable = false)
+    open lateinit var userId: UUID
 
-  @Column(name = "attempts_left", nullable = false)
-  open var attemptsLeft: Int = 3
+    @Column(name = "attempts_left", nullable = false)
+    open var attemptsLeft: Int = 3
 
 }
 
+fun OneTimePasswordEntity.toDomain(): OneTimePassword {
+    return OneTimePasswordMapper.Companion.INSTANCE.toDomain(this)
+}
+
+fun OneTimePassword.toEntity(): OneTimePasswordEntity {
+    return OneTimePasswordMapper.Companion.INSTANCE.toEntity(this)
+}

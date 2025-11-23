@@ -4,12 +4,14 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -22,13 +24,13 @@ class UserSecretServiceTest {
     private lateinit var userSecretDAO: UserSecretDAO
     private lateinit var jwtTokenIssuer: JwtTokenIssuer
     private lateinit var userSecretService: UserSecretService
-    private lateinit var currentUserId: UUID
-    private lateinit var currentUser: UserEntity
+    private lateinit var currentUserId: UserId
+    private lateinit var currentUser: User
 
     @BeforeEach
     fun setUp() = runTest {
-        currentUser = mock(UserEntity::class.java)
-        currentUserId = UUID.randomUUID()
+        currentUser = mock(User::class.java)
+        currentUserId = randomUserId()
         `when`(currentUser.id).thenReturn(currentUserId)
         userSecretDAO = mock(UserSecretDAO::class.java)
         `when`(userSecretDAO.save(any2())).thenAnswer { it.arguments[0] }

@@ -13,7 +13,9 @@
       <option name="SPACES_WITHIN_IMPORTS" value="true" />
     </JSCodeStyleSettings>
     <JavaCodeStyleSettings>
+      <option name="CLASS_NAMES_IN_JAVADOC" value="2" />
       <option name="CLASS_COUNT_TO_USE_IMPORT_ON_DEMAND" value="500" />
+      <option name="NAMES_COUNT_TO_USE_IMPORT_ON_DEMAND" value="100" />
     </JavaCodeStyleSettings>
     <JetCodeStyleSettings>
       <option name="NAME_COUNT_TO_USE_STAR_IMPORT" value="31" />
@@ -35,6 +37,9 @@
       <option name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER" value="false" />
       <option name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER" value="false" />
     </VueCodeStyleSettings>
+    <editorconfig>
+      <option name="ENABLED" value="false" />
+    </editorconfig>
     <codeStyleSettings language="HTML">
       <option name="SOFT_MARGINS" value="80" />
       <indentOptions>

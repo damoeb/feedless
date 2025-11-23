@@ -4,7 +4,7 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.ReleaseStatus
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.feed.parser.json.JsonItem

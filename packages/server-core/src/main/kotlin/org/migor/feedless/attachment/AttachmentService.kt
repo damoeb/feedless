@@ -6,6 +6,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.attachment.AttachmentEntity
+import org.migor.feedless.data.jpa.attachment.toDomain
 import org.migor.feedless.document.DocumentId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -18,51 +19,51 @@ import java.util.*
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.attachment} & ${AppLayer.service}")
 class AttachmentService(
-  private val attachmentDAO: AttachmentDAO
+    private val attachmentDAO: AttachmentDAO
 ) {
 
-  private val log = LoggerFactory.getLogger(AttachmentService::class.simpleName)
+    private val log = LoggerFactory.getLogger(AttachmentService::class.simpleName)
 
-  @Transactional(readOnly = true)
-  suspend fun findById(attachmentId: String): Optional<Attachment> {
-    return withContext(Dispatchers.IO) {
-      attachmentDAO.findById(UUID.fromString(attachmentId)).map { it.toDomain() }
+    @Transactional(readOnly = true)
+    suspend fun findById(attachmentId: String): Optional<Attachment> {
+        return withContext(Dispatchers.IO) {
+            attachmentDAO.findById(UUID.fromString(attachmentId)).map { it.toDomain() }
+        }
     }
-  }
 
-  @Transactional(readOnly = true)
-  suspend fun findByIdWithData(attachmentId: String): Pair<Optional<Attachment>, ByteArray?> {
-    return withContext(Dispatchers.IO) {
-      val entityOpt = attachmentDAO.findById(UUID.fromString(attachmentId))
-      if (entityOpt.isPresent) {
-        val entity = entityOpt.get()
-        Pair(Optional.of(entity.toDomain()), entity.data)
-      } else {
-        Pair(Optional.empty(), null)
-      }
+    @Transactional(readOnly = true)
+    suspend fun findByIdWithData(attachmentId: String): Pair<Optional<Attachment>, ByteArray?> {
+        return withContext(Dispatchers.IO) {
+            val entityOpt = attachmentDAO.findById(UUID.fromString(attachmentId))
+            if (entityOpt.isPresent) {
+                val entity = entityOpt.get()
+                Pair(Optional.of(entity.toDomain()), entity.data)
+            } else {
+                Pair(Optional.empty(), null)
+            }
+        }
     }
-  }
 
-  @Transactional
-  suspend fun createAttachment(documentId: DocumentId, attachment: Attachment): Attachment {
-    return withContext(Dispatchers.IO) {
-      val entity = AttachmentEntity()
-      entity.documentId = documentId.value
-      entity.name = attachment.name
-      entity.mimeType = "application/octet-stream" // Default MIME type
-      entity.hasData = false
-      entity.remoteDataUrl = null
-      entity.size = null
-      entity.duration = null
-      attachmentDAO.save(entity).toDomain()
+    @Transactional
+    suspend fun createAttachment(documentId: DocumentId, attachment: Attachment): Attachment {
+        return withContext(Dispatchers.IO) {
+            val entity = AttachmentEntity()
+            entity.documentId = documentId.uuid
+            entity.name = attachment.name
+            entity.mimeType = "application/octet-stream" // Default MIME type
+            entity.hasData = false
+            entity.remoteDataUrl = null
+            entity.size = null
+            entity.duration = null
+            attachmentDAO.save(entity).toDomain()
+        }
     }
-  }
 
-  @Transactional
-  suspend fun deleteAttachment(attachmentId: AttachmentId) {
-    withContext(Dispatchers.IO) {
-      attachmentDAO.deleteById(attachmentId.uuid)
+    @Transactional
+    suspend fun deleteAttachment(attachmentId: AttachmentId) {
+        withContext(Dispatchers.IO) {
+            attachmentDAO.deleteById(attachmentId.uuid)
+        }
     }
-  }
 }
 

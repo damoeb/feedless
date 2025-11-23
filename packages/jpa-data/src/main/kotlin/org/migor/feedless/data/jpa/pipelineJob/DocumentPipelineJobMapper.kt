@@ -9,12 +9,10 @@ import org.migor.feedless.pipelineJob.DocumentPipelineJob
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface DocumentPipelineJobMapper {
 
-  fun toDomain(entity: DocumentPipelineJobEntity): DocumentPipelineJob
-  fun toEntity(domain: DocumentPipelineJob): DocumentPipelineJobEntity
+    fun toDomain(entity: DocumentPipelineJobEntity): DocumentPipelineJob
+    fun toEntity(domain: DocumentPipelineJob): DocumentPipelineJobEntity
 
-  companion object {
-    val INSTANCE: DocumentPipelineJobMapper = Mappers.getMapper(DocumentPipelineJobMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: DocumentPipelineJobMapper = Mappers.getMapper(DocumentPipelineJobMapper::class.java)
+    }
 }
-
-

@@ -9,12 +9,10 @@ import org.migor.feedless.systemSettings.SystemSettings
 @Mapper(unmappedTargetPolicy = ReportingPolicy.IGNORE, uses = [IdMappers::class])
 interface SystemSettingsMapper {
 
-  fun toDomain(entity: SystemSettingsEntity): SystemSettings
-  fun toEntity(domain: SystemSettings): SystemSettingsEntity
+    fun toDomain(entity: SystemSettingsEntity): SystemSettings
+    fun toEntity(domain: SystemSettings): SystemSettingsEntity
 
-  companion object {
-    val INSTANCE: SystemSettingsMapper = Mappers.getMapper(SystemSettingsMapper::class.java)
-  }
+    companion object {
+        val INSTANCE: SystemSettingsMapper = Mappers.getMapper(SystemSettingsMapper::class.java)
+    }
 }
-
-

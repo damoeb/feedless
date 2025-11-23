@@ -4,7 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.ReleaseStatus
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.document.DocumentDAO
 import org.migor.feedless.data.jpa.document.DocumentEntity

@@ -4,11 +4,17 @@ import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 
 data class GithubConnection(
-  val id: ConnectedAppId,
-  val authorized: Boolean,
-  val authorizedAt: LocalDateTime?,
-  val userId: UserId?,
+  override val id: ConnectedAppId,
+  override val authorized: Boolean,
+  override val authorizedAt: LocalDateTime?,
+  override val userId: UserId?,
   val githubId: String?,
-  val createdAt: LocalDateTime
+  override val createdAt: LocalDateTime
+) : ConnectedApp(
+  id = id,
+  authorized = authorized,
+  authorizedAt = authorizedAt,
+  userId = userId,
+  createdAt = createdAt
 )
 

@@ -29,58 +29,58 @@ import org.migor.feedless.generated.types.Attachment as AttachmentDto
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.attachment} & ${AppLayer.api}")
 class AttachmentResolver(
-  private val attachmentService: AttachmentService,
+    private val attachmentService: AttachmentService,
 ) {
 
-  private val log = LoggerFactory.getLogger(AttachmentResolver::class.simpleName)
+    private val log = LoggerFactory.getLogger(AttachmentResolver::class.simpleName)
 
-  @Throttled
-  @DgsMutation(field = DgsConstants.MUTATION.CreateAttachment)
-  @PreAuthorize("@capabilityService.hasCapability('user')")
-  suspend fun createAttachment(
-    dfe: DataFetchingEnvironment,
-    @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAttachmentInput
-  ): AttachmentDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-    log.debug("createAttachment $data")
-    val file: MultipartFile = dfe.getArgument<MultipartFile>("input")!!
-    val attachment = data.attachment.toDomain(file)
-    attachmentService.createAttachment(DocumentId(data.where.id), attachment).toDto()
-  }
+    @Throttled
+    @DgsMutation(field = DgsConstants.MUTATION.CreateAttachment)
+    @PreAuthorize("@capabilityService.hasCapability('user')")
+    suspend fun createAttachment(
+        dfe: DataFetchingEnvironment,
+        @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAttachmentInput
+    ): AttachmentDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+        log.debug("createAttachment $data")
+        val file: MultipartFile = dfe.getArgument<MultipartFile>("input")!!
+        val attachment = data.attachment.toDomain(file)
+        attachmentService.createAttachment(DocumentId(data.where.id), attachment).toDto()
+    }
 
-  @Throttled
-  @DgsMutation(field = DgsConstants.MUTATION.DeleteAttachment)
-  @PreAuthorize("@capabilityService.hasCapability('user')")
-  suspend fun deleteAttachment(
-    dfe: DataFetchingEnvironment,
-    @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAttachmentInput,
-  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-    log.debug("deleteAttachment $data")
-    attachmentService.deleteAttachment(AttachmentId(data.where.id))
-    true
-  }
+    @Throttled
+    @DgsMutation(field = DgsConstants.MUTATION.DeleteAttachment)
+    @PreAuthorize("@capabilityService.hasCapability('user')")
+    suspend fun deleteAttachment(
+        dfe: DataFetchingEnvironment,
+        @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAttachmentInput,
+    ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+        log.debug("deleteAttachment $data")
+        attachmentService.deleteAttachment(AttachmentId(data.where.id))
+        true
+    }
 }
 
 private fun CreateAttachmentFieldsInput.toDomain(file: MultipartFile): Attachment {
-  return Attachment(
-    id = AttachmentId(UUID.randomUUID()),
-    name = name.ifBlank { file.originalFilename ?: "unknown" },
-    hasData = true,
-    remoteDataUrl = null,
-    mimeType = file.contentType ?: "application/octet-stream",
-    originalUrl = null,
-    size = file.size,
-    duration = null,
-    documentId = DocumentId(UUID.randomUUID()),
-    createdAt = java.time.LocalDateTime.now()
-  )
+    return Attachment(
+        id = AttachmentId(UUID.randomUUID()),
+        name = name.ifBlank { file.originalFilename ?: "unknown" },
+        hasData = true,
+        remoteDataUrl = null,
+        mimeType = file.contentType ?: "application/octet-stream",
+        originalUrl = null,
+        size = file.size,
+        duration = null,
+        documentId = DocumentId(),
+        data = file.bytes,
+    )
 }
 
-private fun Attachment.toDto(): AttachmentDto {
-  return AttachmentDto(
-    id = id.uuid.toString(),
-    type = mimeType,
-    url = remoteDataUrl ?: "",
-    size = size,
-    duration = duration
-  )
+internal fun Attachment.toDto(): AttachmentDto {
+    return AttachmentDto(
+        id = id.uuid.toString(),
+        type = mimeType,
+        url = remoteDataUrl ?: "",
+        size = size,
+        duration = duration
+    )
 }

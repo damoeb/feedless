@@ -3,7 +3,7 @@ package org.migor.feedless.data.jpa.document
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.repository.KotlinJdslJpqlExecutor
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.ReleaseStatus
+import org.migor.feedless.document.ReleaseStatus
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
