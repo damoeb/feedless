@@ -1,4 +1,6 @@
 -- migrate DocumentPipelineJobEntity.executorParams
+-- old: {"jsonData": null, "org_feedless_feed": null, "org_feedless_filter": null, "org_feedless_fulltext": {"summary": false, "readability": false, "inheritParams": true, "onErrorRemove": null}, "org_feedless_conditional_tag": null, "org_feedless_diff_email_forward": null}
+-- new:
 UPDATE t_pipeline_job
 SET executor_params = COALESCE(
   (executor_params -> 'org_feedless_feed'),
@@ -10,6 +12,8 @@ SET executor_params = COALESCE(
 WHERE type = 'd';
 
 -- migrate AbstractRepositoryEntity.plugins
+-- old: [{"id": "org_feedless_fulltext", "params": {"jsonData": null, "org_feedless_feed": null, "org_feedless_filter": null, "org_feedless_fulltext": {"summary": false, "readability": false, "inheritParams": true, "onErrorRemove": null}, "org_feedless_conditional_tag": null, "org_feedless_diff_email_forward": null}}]
+-- new:
 update t_repository
 set plugins = (COALESCE((SELECT jsonb_agg(
                                   jsonb_build_object(
@@ -50,6 +54,8 @@ SET report_plugin = jsonb_build_object(
 WHERE report_plugin IS NOT NULL;
 
 -- migrate ExecuteActionEntity.executorParams
+-- old: {"jsonData": null, "org_feedless_feed": null, "org_feedless_filter": [{"composite": {"exclude": {"link": null, "index": null, "title": {"value": "ist", "operator": "contains"}, "content": null}, "include": null}, "expression": null}], "org_feedless_fulltext": null, "org_feedless_conditional_tag": null, "org_feedless_diff_email_forward": null}
+-- new:
 UPDATE t_action_execute_plugin
 SET executor_params = COALESCE(
   (executor_params -> 'org_feedless_feed'),
