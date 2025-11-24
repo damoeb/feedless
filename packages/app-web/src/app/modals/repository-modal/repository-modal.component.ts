@@ -60,12 +60,7 @@ import { ServerConfigService } from '../../services/server-config.service';
 import { ArrayElement, isDefined, Nullable, TypedFormGroup } from '../../types';
 import { omit, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
-import {
-  closeOutline,
-  ellipsisHorizontalOutline,
-  extensionPuzzleOutline,
-  flaskOutline,
-} from 'ionicons/icons';
+import { closeOutline, ellipsisHorizontalOutline, flaskOutline } from 'ionicons/icons';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
 import { FeatureService } from '../../services/feature.service';
 import {
@@ -155,7 +150,6 @@ type RepositoryFormGroupDef = {
     BubbleComponent,
     IonText,
     IonItemDivider,
-    FlowModalComponent,
   ],
 })
 export class RepositoryModalComponent implements RepositoryModalComponentProps, OnInit {
@@ -195,7 +189,7 @@ export class RepositoryModalComponent implements RepositoryModalComponentProps, 
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
 
-  private filterParams: GqlItemFilterParamsInput[];
+  private filterParams: GqlItemFilterParamsInput[] = [];
   protected repositoryMaxItemsUpperLimit: Nullable<number> = null;
 
   constructor() {
@@ -266,6 +260,7 @@ export class RepositoryModalComponent implements RepositoryModalComponentProps, 
 
   async createOrUpdateFeed() {
     if (this.formFg.invalid) {
+      console.warn('form is invalid', this.formFg.errors);
       return;
     }
 
@@ -482,7 +477,7 @@ export class RepositoryModalComponent implements RepositoryModalComponentProps, 
   }
 
   handleFilterChange(filterParams: GqlItemFilterParamsInput[]) {
-    this.filterParams = filterParams;
+    this.filterParams = filterParams ?? [];
   }
 
   getPathname(): string {
