@@ -2,6 +2,7 @@ package org.migor.feedless.document
 
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -47,172 +48,176 @@ import java.time.LocalDateTime
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
 @ActiveProfiles(
-    "test",
-    "database",
-    AppProfiles.document,
-    AppProfiles.repository,
-    AppProfiles.user,
-    AppLayer.repository,
-    AppLayer.service,
+  "test",
+  "database",
+  AppProfiles.document,
+  AppProfiles.repository,
+  AppProfiles.user,
+  AppLayer.repository,
+  AppLayer.service,
 )
 @MockitoBean(
-    types = [
-        SessionService::class,
-        ProductDAO::class,
-        RepositoryService::class,
-        HttpService::class,
-        DocumentPipelineJobRepository::class,
-        PluginService::class,
-        FeatureService::class,
-        ProductService::class,
-        PropertyService::class,
-        RepositoryHarvester::class,
-        AttachmentDAO::class,
-        GroupService::class,
-        PermissionService::class,
-    ]
+  types = [
+    SessionService::class,
+    ProductDAO::class,
+    RepositoryService::class,
+    HttpService::class,
+    DocumentPipelineJobRepository::class,
+    PluginService::class,
+    FeatureService::class,
+    ProductService::class,
+    PropertyService::class,
+    RepositoryHarvester::class,
+    AttachmentDAO::class,
+    GroupService::class,
+    PermissionService::class,
+  ]
 )
 @Testcontainers
 class DocumentIntTest {
 
-    lateinit var repository: Repository
+  lateinit var repository: Repository
 
-    @Autowired
-    lateinit var documentService: DocumentService
+  @Autowired
+  lateinit var documentService: DocumentService
 
-    @Autowired
-    lateinit var repositoryDAO: RepositoryRepository
+  @Autowired
+  lateinit var repositoryDAO: RepositoryRepository
 
-    @Autowired
-    lateinit var userDAO: UserRepository
+  @Autowired
+  lateinit var userDAO: UserRepository
 
-    @Autowired
-    lateinit var documentDAO: DocumentRepository
+  @Autowired
+  lateinit var documentDAO: DocumentRepository
 
-    @MockitoBean
-    lateinit var planConstraintsService: PlanConstraintsService
+  @MockitoBean
+  lateinit var planConstraintsService: PlanConstraintsService
 
-    val past = LocalDateTime.now().minusDays(1)
-    val future = LocalDateTime.now().plusDays(1)
+  private val past = LocalDateTime.now().minusDays(1)
+  private val future = LocalDateTime.now().plusDays(1)
 
-    @BeforeEach
-    fun setUp() = runTest {
-        // todo creat user
-        val user = User(
-            email = "test@test.com",
-            lastLogin = LocalDateTime.now(),
-        )
-        userDAO.save(user)
+  @BeforeEach
+  fun setUp() = runTest {
+    // Clean up before each test
+    userDAO.deleteAll()
 
-        repository = createRepository("A", user)
-        createRepository("B", user)
+    // todo creat user
+    val user = User(
+      email = "test@test.com",
+      lastLogin = LocalDateTime.now(),
+    )
+    userDAO.save(user)
 
-        assertThat(documentDAO.countByRepositoryId(repository.id)).isEqualTo(4)
-    }
+    repository = createRepository("A", user)
+    createRepository("B", user)
 
-    private suspend fun addDocuments(it: Repository) {
-        createDocument(
-            it,
-            title = "past-released",
-            status = ReleaseStatus.released,
-            publishedAt = past,
-            startingAt = past,
-            createdAt = past,
-            latlon = JtsUtil.createPoint(1.0, 1.0)
-        )
-        createDocument(
-            it,
-            title = "future-released",
-            status = ReleaseStatus.released,
-            publishedAt = future,
-            startingAt = future,
-            createdAt = future,
-            latlon = JtsUtil.createPoint(1.0, 1.0)
-        )
-        createDocument(
-            it,
-            title = "3",
-            status = ReleaseStatus.unreleased,
-            publishedAt = past,
-            startingAt = past,
-            createdAt = past,
-            latlon = JtsUtil.createPoint(1.0, 1.0)
-        )
-        createDocument(
-            it,
-            title = "4",
-            status = ReleaseStatus.unreleased,
-            publishedAt = future,
-            startingAt = future,
-            createdAt = future,
-            latlon = JtsUtil.createPoint(1.0, 1.0)
-        )
-    }
+    assertThat(documentDAO.countByRepositoryId(repository.id)).isEqualTo(4)
+  }
 
-    private suspend fun createRepository(suffix: String, user: User): Repository {
-        val repository = Repository(
-            title = "title $suffix",
-            description = "description $suffix",
-            sourcesSyncCron = "",
-            product = Vertical.rssProxy,
-            ownerId = user.id,
-            lastUpdatedAt = LocalDateTime.now().minusDays(2),
-            retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
-        )
+  private suspend fun addDocuments(it: Repository) {
+    createDocument(
+      it,
+      title = "past-released",
+      status = ReleaseStatus.released,
+      publishedAt = past,
+      startingAt = past,
+      createdAt = past,
+      latlon = JtsUtil.createPoint(1.0, 1.0)
+    )
+    createDocument(
+      it,
+      title = "future-released",
+      status = ReleaseStatus.released,
+      publishedAt = future,
+      startingAt = future,
+      createdAt = future,
+      latlon = JtsUtil.createPoint(1.0, 1.0)
+    )
+    createDocument(
+      it,
+      title = "3",
+      status = ReleaseStatus.unreleased,
+      publishedAt = past,
+      startingAt = past,
+      createdAt = past,
+      latlon = JtsUtil.createPoint(1.0, 1.0)
+    )
+    createDocument(
+      it,
+      title = "4",
+      status = ReleaseStatus.unreleased,
+      publishedAt = future,
+      startingAt = future,
+      createdAt = future,
+      latlon = JtsUtil.createPoint(1.0, 1.0)
+    )
+  }
 
-        return repositoryDAO.save(repository).also { addDocuments(it) }
-    }
+  private suspend fun createRepository(suffix: String, user: User): Repository {
+    val repository = Repository(
+      title = "title $suffix",
+      description = "description $suffix",
+      sourcesSyncCron = "",
+      shareKey = "1234",
+      product = Vertical.rssProxy,
+      ownerId = user.id,
+      lastUpdatedAt = LocalDateTime.now().minusDays(2),
+      retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
+    )
 
-    private suspend fun createDocument(
-        repository: Repository,
-        title: String,
-        status: ReleaseStatus,
-        publishedAt: LocalDateTime,
-        startingAt: LocalDateTime,
-        createdAt: LocalDateTime,
-        latlon: Point
-    ) {
-        val d = Document(
-            url = "http://localhost:8080",
-            title = title,
-            text = "",
-            repositoryId = repository.id,
-            status = status,
-            publishedAt = publishedAt,
-            contentHash = CryptUtil.sha1(newCorrId()),
-            startingAt = startingAt,
-            createdAt = createdAt,
-            latLon = latlon
-        )
+    return repositoryDAO.save(repository).also { addDocuments(it) }
+  }
 
-        documentDAO.save(d)
-    }
+  private suspend fun createDocument(
+    repository: Repository,
+    title: String,
+    status: ReleaseStatus,
+    publishedAt: LocalDateTime,
+    startingAt: LocalDateTime,
+    createdAt: LocalDateTime,
+    latlon: Point
+  ) {
+    val d = Document(
+      url = "http://localhost:8080",
+      title = title,
+      text = "",
+      repositoryId = repository.id,
+      status = status,
+      publishedAt = publishedAt,
+      contentHash = CryptUtil.sha1(newCorrId()),
+      startingAt = startingAt,
+      createdAt = createdAt,
+      latLon = latlon
+    )
 
-    @BeforeEach
-    fun tearDown() {
-        userDAO.deleteAll()
-    }
+    documentDAO.save(d)
+  }
 
-    @Test
-    fun `given where is null, findAll filters repoId and status`() = runTest {
-        val documents = documentService.findAllByRepositoryId(
-            repositoryId = repository.id,
-            status = ReleaseStatus.released,
-            pageable = PageRequest.of(0, 10),
-        )
-        assertThat(documents.size).isEqualTo(1)
-    }
+  @AfterEach
+  fun tearDown() {
+    userDAO.deleteAll()
+  }
 
-    @Test
-    fun `given retention by capacity given, delete old items first`() = runTest {
+  @Test
+  fun `given where is null, findAll filters repoId and status`() = runTest {
+    val documents = documentService.findAllByRepositoryId(
+      repositoryId = repository.id,
+      status = ReleaseStatus.released,
+      pageable = PageRequest.of(0, 10),
+    )
+    assertThat(documents.size).isEqualTo(1)
+  }
 
-        `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2(), any2())).thenReturn(1)
-        documentService.applyRetentionStrategyByCapacity()
+  @Test
+  fun `given retention by capacity given, delete old items first`() = runTest {
 
-        val documents = documentDAO.findAllByRepositoryId(repository.id)
-        assertThat(documents.size).isEqualTo(3)
-        assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
-        assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
-    }
+    `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2(), any2())).thenReturn(1)
+    documentService.applyRetentionStrategyByCapacity()
+
+    val documents = documentDAO.findAllByRepositoryId(repository.id)
+    assertThat(documents.size).isEqualTo(3)
+    assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
+    assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
+  }
 
 }

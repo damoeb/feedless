@@ -32,7 +32,7 @@ class AnalyticsSyncExecutor internal constructor(
   private val log = LoggerFactory.getLogger(AnalyticsSyncExecutor::class.simpleName)
 
   @Scheduled(fixedDelay = 61000, initialDelay = 5000)
-  fun syncPullCountForPublicRepos() {
+  suspend fun syncPullCountForPublicRepos() {
     try {
       val corrId = newCorrId()
 

@@ -32,8 +32,10 @@ class RepositoryHarvesterExecutor internal constructor(
   fun refreshSubscriptions() {
     try {
       val corrId = newCorrId()
-      val reposDue =
+      val reposDue = runBlocking {
         repositoryService.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
+      }
+
       log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
       if (reposDue.isNotEmpty()) {
         val semaphore = Semaphore(10)

@@ -78,7 +78,7 @@ class RepositoryResolver(
         if (pageable.pageSize == 0) {
             emptyList()
         } else {
-            repositoryService.findAll(data.cursor.toPageable(), data.where, userId)
+            repositoryService.findAll(data.cursor.toPageable(), data.where?.toDomain(), userId)
                 .map { it.toDto(it.ownerId == userId.uuid) }
         }
     }
@@ -100,7 +100,8 @@ class RepositoryResolver(
         @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
     ): RepositoryDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
         log.debug("repository $data")
-        val repository = repositoryService.findById(RepositoryId(data.where.id)).orElseThrow()
+        val repository = repositoryService.findById(RepositoryId(data.where.id)) 
+            ?: throw IllegalArgumentException("Repository not found")
         repository.toDto(repository.ownerId == coroutineContext.userIdOptional()?.uuid)
     }
 
@@ -206,6 +207,41 @@ class RepositoryResolver(
             .flatten()
             .distinct()
     }
+}
+
+fun org.migor.feedless.generated.types.RepositoriesWhereInput.toDomain(): RepositoriesWhereInput {
+    return RepositoriesWhereInput(
+        product = this.product?.toDomain(),
+        visibility = this.visibility?.toDomain(),
+        text = this.text?.toDomain(),
+        tags = this.tags?.toDomain(),
+    )
+}
+
+fun org.migor.feedless.generated.types.VerticalFilter.toDomain(): VerticalFilter {
+    return VerticalFilter(
+        eq = this.eq?.fromDto(),
+        `in` = this.`in`?.map { it.fromDto() },
+    )
+}
+
+fun org.migor.feedless.generated.types.VisibilityFilter.toDomain(): VisibilityFilter {
+    return VisibilityFilter(
+        `in` = this.`in`?.map { it.fromDto() },
+    )
+}
+
+fun org.migor.feedless.generated.types.FulltextQueryFilter.toDomain(): FulltextQueryFilter {
+    return FulltextQueryFilter(
+        query = this.query,
+    )
+}
+
+fun org.migor.feedless.generated.types.StringArrayFilter.toDomain(): StringArrayFilter {
+    return StringArrayFilter(
+        every = this.every,
+        some = this.some,
+    )
 }
 
 //private fun VoteEntity.toDto(): Annotation {

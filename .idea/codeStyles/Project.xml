@@ -37,9 +37,6 @@
       <option name="INTERPOLATION_NEW_LINE_AFTER_START_DELIMITER" value="false" />
       <option name="INTERPOLATION_NEW_LINE_BEFORE_END_DELIMITER" value="false" />
     </VueCodeStyleSettings>
-    <editorconfig>
-      <option name="ENABLED" value="false" />
-    </editorconfig>
     <codeStyleSettings language="HTML">
       <option name="SOFT_MARGINS" value="80" />
       <indentOptions>
