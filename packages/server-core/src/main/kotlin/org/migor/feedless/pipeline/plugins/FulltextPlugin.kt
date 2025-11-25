@@ -33,162 +33,159 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import kotlin.coroutines.coroutineContext
 
 data class FulltextPluginParams(
-    @SerializedName("readability") val readability: Boolean,
-    @SerializedName("summary") val summary: Boolean,
-    @SerializedName("inheritParams") val inheritParams: Boolean,
-    @SerializedName("onErrorRemove") val onErrorRemove: Boolean? = null,
+  @SerializedName("readability") val readability: Boolean,
+  @SerializedName("summary") val summary: Boolean,
+  @SerializedName("inheritParams") val inheritParams: Boolean,
+  @SerializedName("onErrorRemove") val onErrorRemove: Boolean? = null,
 )
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransformerPlugin {
 
-    private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
+  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
-    @Autowired
-    private lateinit var webToArticleTransformer: WebToArticleTransformer
+  @Autowired
+  private lateinit var webToArticleTransformer: WebToArticleTransformer
 
-    @Autowired
-    private lateinit var sourceService: SourceService
+  @Autowired
+  private lateinit var sourceService: SourceService
 
-    @Lazy
-    @Autowired
-    private lateinit var scrapeService: ScrapeService
+  @Lazy
+  @Autowired
+  private lateinit var scrapeService: ScrapeService
 
-    override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
-    override fun name(): String = "Fulltext & Readability"
-    override fun listed() = true
+  override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
+  override fun name(): String = "Fulltext & Readability"
+  override fun listed() = true
 
-    override suspend fun mapEntity(
-        document: Document,
-        repository: Repository,
-        params: FulltextPluginParams,
-        logCollector: LogCollector
-    ): Document {
-        val corrId = coroutineContext.corrId()
-        logCollector.log("[$corrId] mapEntity ${document.url}")
+  override suspend fun mapEntity(
+    document: Document,
+    repository: Repository,
+    params: FulltextPluginParams,
+    logCollector: LogCollector
+  ): Document {
+    val corrId = coroutineContext.corrId()
+    logCollector.log("[$corrId] mapEntity ${document.url}")
 
-        return if (StringUtils.isBlank(document.url)) {
-            logCollector.log("[$corrId] skipping, url is empty")
-            document
-        } else {
-            val request = Source(
-                id = SourceId(),
-                title = "Feed from ${document.url}",
-                repositoryId = repository.id,
-                createdAt = LocalDateTime.now(),
-                actions = emptyList(),
+    return if (StringUtils.isBlank(document.url)) {
+      logCollector.log("[$corrId] skipping, url is empty")
+      document
+    } else {
+      val request = Source(
+        id = SourceId(),
+        title = "Feed from ${document.url}",
+        repositoryId = repository.id,
+        createdAt = LocalDateTime.now(),
+        actions = emptyList(),
+      )
+
+
+      val fetchAction = FetchAction(
+        sourceId = SourceId(),
+        url = document.url,
+      )
+
+      val source = document.source(sourceService)
+      val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
+
+      val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
+        logCollector.log("[$corrId] inheritParams from source")
+        request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
+      } else {
+        request.copy(actions = listOf(fetchAction))
+      }
+
+      try {
+        val scrapeOutput = scrapeService.scrape(requestWithAction, logCollector)
+
+        if (scrapeOutput.outputs.isNotEmpty()) {
+          val lastOutput = scrapeOutput.outputs.last()
+          val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+          if (params.readability || params.summary) {
+            logCollector.log("[$corrId] convert to readability/summary")
+            val readability = webToArticleTransformer.fromHtml(
+              html,
+              document.url.replace(Regex("#[^/]+$"), ""),
+              params.summary
             )
+            log.debug("${document.id} title ${document.title} -> ${readability.title}")
 
-
-            val fetchAction = FetchAction(
-                sourceId = SourceId(),
-                url = document.url,
+            document.copy(
+              html = readability.html,
+              text = StringUtils.trimToEmpty(readability.text),
+              title = readability.title
             )
-
-            val source = document.source(sourceService)
-            val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
-
-            val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
-                logCollector.log("[$corrId] inheritParams from source")
-                request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
-            } else {
-                request.copy(actions = listOf(fetchAction))
-            }
-
-            try {
-                val scrapeOutput = scrapeService.scrape(requestWithAction, logCollector)
-
-                if (scrapeOutput.outputs.isNotEmpty()) {
-                    val lastOutput = scrapeOutput.outputs.last()
-                    val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-                    if (params.readability || params.summary) {
-                        logCollector.log("[$corrId] convert to readability/summary")
-                        val readability = webToArticleTransformer.fromHtml(
-                            html,
-                            document.url.replace(Regex("#[^/]+$"), ""),
-                            params.summary
-                        )
-                        log.debug("${document.id} title ${document.title} -> ${readability.title}")
-
-                        document.copy(
-                            html = readability.html,
-                            text = StringUtils.trimToEmpty(readability.text),
-                            title = readability.title
-                        )
-                    } else {
-                        document.copy(
-                            html = html,
-                            title = HtmlUtil.parseHtml(html, document.url).title()
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                if (e !is SiteNotFoundException) {
+          } else {
+            document.copy(
+              html = html,
+              title = HtmlUtil.parseHtml(html, document.url).title()
+            )
+          }
+        }
+      } catch (e: Exception) {
+        if (e !is SiteNotFoundException) {
 //                    document.url = ""
-                    throw e
-                }
-            }
-            document
+          throw e
         }
+      }
+      document
     }
+  }
 
-    override suspend fun mapEntity(
-        document: Document,
-        repository: Repository,
-        paramsJson: String?,
-        logCollector: LogCollector
-    ): Document {
-        return mapEntity(document, repository, fromJson(paramsJson), logCollector)
+  override suspend fun mapEntity(
+    document: Document,
+    repository: Repository,
+    paramsJson: String?,
+    logCollector: LogCollector
+  ): Document {
+    return mapEntity(document, repository, fromJson(paramsJson), logCollector)
+  }
+
+  override suspend fun fromJson(jsonParams: String?): FulltextPluginParams {
+    return Gson().fromJson(jsonParams, FulltextPluginParams::class.java)
+  }
+
+  suspend fun mergeWithSourceActions(
+    fetchAction: FetchAction,
+    sourceActions: List<ScrapeAction>
+  ): List<ScrapeAction> {
+    return if (sourceActions.isEmpty()) {
+      listOf(fetchAction)
+    } else {
+      val cleanedActions = sourceActions.sortedBy { it.pos }
+        .filter { it !is ExecuteAction && it !is ExtractBoundingBoxAction && it !is ExtractXpathAction }
+        .toMutableList()
+      // replace fetch
+      cleanedActions[cleanedActions.indexOfFirst { it is FetchAction }] = fetchAction
+      cleanedActions
     }
+  }
 
-    override suspend fun fromJson(jsonParams: String?): FulltextPluginParams {
-        return Gson().fromJson(jsonParams, FulltextPluginParams::class.java)
-    }
-
-    suspend fun mergeWithSourceActions(
-        fetchAction: FetchAction,
-        sourceActions: List<ScrapeAction>
-    ): List<ScrapeAction> {
-        return if (sourceActions.isEmpty()) {
-            listOf(fetchAction)
-        } else {
-            val cleanedActions = sourceActions.sortedBy { it.pos }
-                .filter { it !is ExecuteAction && it !is ExtractBoundingBoxAction && it !is ExtractXpathAction }
-                .toMutableList()
-            // replace fetch
-            cleanedActions[cleanedActions.indexOfFirst { it is FetchAction }] = fetchAction
-            cleanedActions
-        }
-    }
-
-    override suspend fun transformFragment(
-        action: ExecuteAction,
-        data: HttpResponse,
-        logger: LogCollector,
-    ): FragmentOutput {
-        val markup = data.responseBody.toString(StandardCharsets.UTF_8)
-        return FragmentOutput(
-            fragmentName = "fulltext",
-            items = listOf(
-                webToArticleTransformer.fromHtml(
-                    markup,
-                    data.url,
-                    fromJson(action.executorParams!!.paramsJsonString).summary
-                )
-            ),
+  override suspend fun transformFragment(
+    action: ExecuteAction,
+    data: HttpResponse,
+    logger: LogCollector,
+  ): FragmentOutput {
+    val markup = data.responseBody.toString(StandardCharsets.UTF_8)
+    return FragmentOutput(
+      fragmentName = "fulltext",
+      items = listOf(
+        webToArticleTransformer.fromHtml(
+          markup,
+          data.url,
+          fromJson(action.executorParams!!.paramsJsonString).summary
         )
-    }
+      ),
+    )
+  }
 }
 
 private suspend fun Document.source(sourceService: SourceService): Source? {
-    return sourceId?.let { sourceService.findById(it) }
+  return sourceId?.let { sourceService.findById(it) }
 }

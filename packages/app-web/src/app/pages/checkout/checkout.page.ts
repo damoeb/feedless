@@ -352,18 +352,14 @@ export class CheckoutPage implements OnInit, OnDestroy {
     firstName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
     lastName: new FormControl<string>('', [Validators.required, Validators.minLength(2)]),
     acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
-    paymentMethod: new FormControl<PaymentMethod>(GqlPaymentMethod.Bill, Validators.required),
+    paymentMethod: new FormControl<PaymentMethod>(GqlPaymentMethod.CreditCard, Validators.required),
   });
   protected products: Product[];
   protected loginWithRedirect: string;
   protected loggedIn: boolean;
   protected loading: boolean;
   protected paymentOptions: PaymentOption[] = [
-    { title: 'Bill', method: GqlPaymentMethod.Bill },
-    { title: 'PayPal', method: GqlPaymentMethod.PayPal },
     { title: 'Credit Card', method: GqlPaymentMethod.CreditCard },
-    { title: 'Bitcoin', method: GqlPaymentMethod.Bitcoin },
-    { title: 'Ethereum', method: GqlPaymentMethod.Ethereum },
   ];
   private subscriptions: Subscription[] = [];
   private productId: string;

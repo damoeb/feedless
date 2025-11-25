@@ -21,31 +21,32 @@ import org.migor.feedless.generated.types.User as UserDto
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
 class GroupResolver(
-    private val groupService: GroupService
+  private val groupService: GroupService
 ) {
 
-    @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-    suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignmentDto> = coroutineScope {
-        val user: UserDto = dfe.getSourceOrThrow()
-        groupService.findAllByUserId(UserId(user.id))
-            .map {
-                GroupAssignmentDto(
-                    id = it.groupId.toString(),
-                    name = it.group(groupService)?.name ?: "-",
-                    role = it.role.toDto()
-                )
-            }
-    }
+  @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
+  suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignmentDto> = coroutineScope {
+    val user: UserDto = dfe.getSourceOrThrow()
+    groupService.findAllByUserId(UserId(user.id))
+      .map {
+        GroupAssignmentDto(
+          id = it.groupId.toString(),
+          name = it.group(groupService)?.name ?: "-",
+          role = it.role.toDto()
+        )
+      }
+  }
 
-    private suspend fun UserGroupAssignment.group(groupService: GroupService): Group? {
-        return groupService.findById(groupId)
-    }
+  // todo move to domain
+  private suspend fun UserGroupAssignment.group(groupService: GroupService): Group? {
+    return groupService.findById(groupId)
+  }
 }
 
 private fun RoleInGroup.toDto(): RoleDto {
-    return when (this) {
-        RoleInGroup.editor -> RoleDto.editor
-        RoleInGroup.viewer -> RoleDto.viewer
-        RoleInGroup.owner -> RoleDto.owner
-    }
+  return when (this) {
+    RoleInGroup.editor -> RoleDto.editor
+    RoleInGroup.viewer -> RoleDto.viewer
+    RoleInGroup.owner -> RoleDto.owner
+  }
 }

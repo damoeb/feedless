@@ -236,7 +236,7 @@ class RepositoryService(
     // Fetch entity for mutation
     val existingRepository = repositoryDAO.findById(id)
       ?: throw NotFoundException("Repository not found")
-    
+
     var repository = existingRepository.copy(
       lastUpdatedAt = LocalDateTime.now()
     )
@@ -463,10 +463,10 @@ class RepositoryService(
 }
 
 fun PluginExecutionInput.fromDto(): PluginExecution {
-  return PluginExecution(id = pluginId, params = params.toEntity())
+  return PluginExecution(id = pluginId, params = params.toParams())
 }
 
-fun PluginExecutionParamsInput.toEntity(): PluginExecutionJson {
+fun PluginExecutionParamsInput.toParams(): PluginExecutionJson {
   val data = listOfNotNull(
     org_feedless_filter,
     org_feedless_feed,

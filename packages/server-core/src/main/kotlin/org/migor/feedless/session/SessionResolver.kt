@@ -20,7 +20,6 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.Session
-import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -67,7 +66,7 @@ class SessionResolver {
           Session(
             isLoggedIn = true,
             isAnonymous = false,
-            userId = user.id.toString()
+            userId = user.id.uuid.toString()
           )
         }.getOrDefault(defaultSession)
       } else {
