@@ -42,8 +42,13 @@ export class MapComponent implements AfterViewInit {
 
   ngAfterViewInit() {
     try {
-      const lat = this.position().lat;
-      const lng = this.position().lng;
+      const position = this.position();
+      if (!position) {
+        console.warn('Position not provided to map component');
+        return;
+      }
+      const lat = position.lat;
+      const lng = position.lng;
       const minZoom = this.minZoom();
       const maxZoom = this.maxZoom();
       this.markersLayer = layerGroup();

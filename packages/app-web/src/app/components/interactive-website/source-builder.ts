@@ -97,7 +97,6 @@ export class SourceBuilder {
   ) {
     this.patch(pick(source, ['latLng', 'tags', 'title']));
     this.flow = cloneDeep(source.flow.sequence);
-    console.log('this.flow', this.flow);
     this.validateFlow();
   }
 
@@ -113,7 +112,6 @@ export class SourceBuilder {
       >
     >
   ) {
-    console.log(params);
     const fetchAction = getFirstFetch(this.flow);
 
     // @ts-ignore
@@ -134,7 +132,6 @@ export class SourceBuilder {
   }
 
   removePluginById(pluginId: GqlFeedlessPlugins) {
-    console.log('removePluginById', pluginId);
     if (this.flow) {
       this.flow = this.flow.filter((a) => a.execute?.pluginId !== pluginId);
       this.events.stateChange.next('DIRTY');
@@ -152,10 +149,10 @@ export class SourceBuilder {
 
     const updateIndex = this.flow.findIndex((a) => a.execute?.pluginId === pluginId);
     if (updateIndex > -1) {
-      console.log(`update #${updateIndex}`);
+      console.log(`update ${pluginId} #${updateIndex}`);
       this.flow[updateIndex] = action;
     } else {
-      console.log('add');
+      console.log(`add ${pluginId}`);
 
       if (before) {
         const addBeforeIndex = this.flow.findIndex((a) => a.execute?.pluginId === before);

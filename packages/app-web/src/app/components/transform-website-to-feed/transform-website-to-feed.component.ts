@@ -221,7 +221,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             }
           })
       );
-      const elementWithFeeds = this.sourceBuilder().response.outputs.find(
+      const outputs = this.sourceBuilder().response?.outputs;
+      if (!outputs) {
+        throw new Error('No outputs found in response');
+      }
+      const elementWithFeeds = outputs.find(
         (o) => o.response?.extract?.feeds
       );
       if (elementWithFeeds) {

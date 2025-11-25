@@ -20,7 +20,7 @@ import {
 import { SourceBuilder } from './source-builder';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '../../services/server-config.service';
-import { Embeddable, AnnotateImageComponent } from '../annotate-image/annotate-image.component';
+import { AnnotateImageComponent, Embeddable } from '../annotate-image/annotate-image.component';
 import { ScrapeResponse } from '../../graphql/types';
 import { addIcons } from 'ionicons';
 import { addOutline, removeOutline } from 'ionicons/icons';
@@ -213,7 +213,6 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   }
 
   protected async scrape() {
-    console.log('scrape');
     this.shouldScrape = false;
     if (this.loading) {
       return;
@@ -247,13 +246,24 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
     this.embedMarkup = null;
     this.changeRef.detectChanges();
 
-    this.logs = scrapeResponse.logs;
+    if (!scrapeResponse) {
+      this.errorMessage = 'No response received from scraper';
+      return;
+    }
+
+    this.logs = scrapeResponse.logs || [];
     if (!scrapeResponse.ok) {
       this.errorMessage = scrapeResponse.errorMessage;
     } else {
-      const fetchAction = scrapeResponse.outputs.find((o) => o.response.fetch).response.fetch;
-      const extractAction = scrapeResponse.outputs.find((o) => o.response.extract?.fragments)
+      const fetchActionOutput = scrapeResponse.outputs?.find((o) => o.response?.fetch);
+      const fetchAction = fetchActionOutput?.response?.fetch;
+      const extractAction = scrapeResponse.outputs?.find((o) => o.response?.extract?.fragments)
         ?.response?.extract;
+
+      if (!fetchAction) {
+        this.errorMessage = 'No fetch action found in response';
+        return;
+      }
 
       this.formFg.controls.prerenderingOptions.patchValue(
         {

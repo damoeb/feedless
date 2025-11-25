@@ -29,25 +29,30 @@ export async function parseLocationFromUrl(
   activatedRoute: ActivatedRoute,
   openStreetMapService: OpenStreetMapService
 ): Promise<NamedLatLon> {
-  const { place, region, countryCode } = parsePath(
-    upcomingBaseRoute.events.countryCode.region.place,
-    activatedRoute.snapshot.params
-  );
-
   const err = Error('Cannot parse location from url');
 
-  if (countryCode && region && place) {
-    const results = await openStreetMapService.searchByObject({
-      area: region,
-      countryCode,
-      place,
-    });
-    if (results.length > 0) {
-      return results[0];
+  try {
+    const { place, region, countryCode } = parsePath(
+      upcomingBaseRoute.events.countryCode.region.place,
+      activatedRoute.snapshot.params
+    );
+
+    if (countryCode && region && place) {
+      const results = await openStreetMapService.searchByObject({
+        area: region,
+        countryCode,
+        place,
+      });
+      if (results.length > 0) {
+        return results[0];
+      }
+      throw err;
     }
     throw err;
+  } catch (e) {
+    // If parsePath fails due to missing params, throw our custom error
+    throw err;
   }
-  throw err;
 }
 
 export const perimeterParser = param<number>({
