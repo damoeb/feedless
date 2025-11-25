@@ -11,6 +11,7 @@ import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.validation.constraints.Min
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.migor.feedless.annotation.TextAnnotation
 import org.migor.feedless.data.jpa.document.DocumentEntity
 import java.util.*
 
@@ -43,4 +44,12 @@ open class TextAnnotationEntity : AnnotationEntity() {
     foreignKey = ForeignKey(name = "fk_text_annotation__to__document")
   )
   open var comment: DocumentEntity? = null
+}
+
+fun TextAnnotationEntity.toDomain(): TextAnnotation {
+  return TextAnnotationMapper.Companion.INSTANCE.toDomain(this)
+}
+
+fun TextAnnotation.toEntity(): TextAnnotationEntity {
+  return TextAnnotationMapper.Companion.INSTANCE.toEntity(this)
 }

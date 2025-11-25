@@ -1,17 +1,15 @@
 package org.migor.feedless.plan
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
-import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureValue.FeatureName
-import org.migor.feedless.data.jpa.featureValue.FeatureValueDAO
-import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
-import org.migor.feedless.data.jpa.plan.PlanDAO
+import org.migor.feedless.feature.FeatureGroupRepository
+import org.migor.feedless.feature.FeatureValue
+import org.migor.feedless.feature.FeatureValueRepository
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductService
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.RequestContext
@@ -19,7 +17,6 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -35,27 +32,17 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
 @Transactional(propagation = Propagation.NEVER)
-class PlanConstraintsService {
+class PlanConstraintsService(
+  private val planRepository: PlanRepository,
+  private val environment: Environment,
+  private val repositoryRepository: RepositoryRepository,
+  private val featureValueRepository: FeatureValueRepository,
+  private val productService: ProductService,
+  private val productRepository: ProductRepository,
+  private val featureGroupRepository: FeatureGroupRepository
+) {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
-
-  @Autowired
-  private lateinit var planDAO: PlanDAO
-
-  @Autowired
-  private lateinit var environment: Environment
-
-  @Autowired
-  private lateinit var repositoryDAO: RepositoryRepository
-
-  @Autowired
-  private lateinit var featureValueDAO: FeatureValueDAO
-
-  @Autowired
-  private lateinit var productService: ProductService
-
-  @Autowired
-  private lateinit var featureGroupDAO: FeatureGroupDAO
 
   @Transactional(readOnly = true)
   suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UserId, product: Vertical): Int? {
@@ -148,7 +135,7 @@ class PlanConstraintsService {
 
   @Transactional(readOnly = true)
   suspend fun violatesRepositoriesMaxActiveCount(userId: UserId): Boolean {
-    val activeCount = repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
+    val activeCount = repositoryRepository.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
     return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
   }
 
@@ -174,32 +161,31 @@ class PlanConstraintsService {
     featureName: FeatureName,
     userId: UserId,
     product: Vertical
-  ): FeatureValueEntity? {
+  ): FeatureValue? {
     return try {
-      withContext(Dispatchers.IO) {
-        if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
-          featureValueDAO.resolveByFeatureGroupIdAndName(
-            featureGroupDAO.findByParentFeatureGroupIdIsNull()!!.id,
-            featureName.name
+      if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
+        featureValueRepository.resolveByFeatureGroupIdAndName(
+          featureGroupRepository.findByParentFeatureGroupIdIsNull()!!.id,
+          featureName.name
+        )
+      } else {
+        var plan =
+          planRepository.findActiveByUserAndProductIn(
+            userId,
+            listOf(product, Vertical.feedless),
+            LocalDateTime.now()
           )
-        } else {
-          var plan =
-            planDAO.findActiveByUserAndProductIn(
-              userId.uuid,
-              listOf(product, Vertical.feedless),
-              LocalDateTime.now()
-            )
-          if (plan == null) {
-            productService.enableDefaultSaasProduct(product, userId)
-            plan = planDAO.findActiveByUserAndProductIn(
-              userId.uuid,
-              listOf(product, Vertical.feedless),
-              LocalDateTime.now()
-            )
-          }
-
-          featureValueDAO.resolveByFeatureGroupIdAndName(plan!!.product!!.featureGroupId, featureName.name)
+        if (plan == null) {
+          productService.enableDefaultSaasProduct(product, userId)
+          plan = planRepository.findActiveByUserAndProductIn(
+            userId,
+            listOf(product, Vertical.feedless),
+            LocalDateTime.now()
+          )
         }
+
+        val featureGroupId = plan!!.product(productRepository)!!.featureGroupId
+        featureValueRepository.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)
       }
     } catch (e: Exception) {
       log.error("getFeature featureName=$featureName userId=$userId product=$product failed: ${e.message}")
@@ -211,3 +197,4 @@ class PlanConstraintsService {
     return product ?: currentCoroutineContext()[RequestContext]?.product!!
   }
 }
+

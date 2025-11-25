@@ -15,6 +15,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.product.ProductEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.plan.Plan
 import java.time.LocalDateTime
 import java.util.*
 
@@ -60,6 +61,10 @@ open class PlanEntity : EntityWithUUID() {
 
 }
 
-fun PlanEntity.toDomain(): org.migor.feedless.plan.Plan {
+fun PlanEntity.toDomain(): Plan {
   return PlanMapper.Companion.INSTANCE.toDomain(this)
+}
+
+fun Plan.toEntity(): PlanEntity {
+  return PlanMapper.Companion.INSTANCE.toEntity(this)
 }

@@ -12,7 +12,7 @@ class ReportJobExecutorTest {
 
   @Test
   @Disabled
-  fun `only process reports that have permissions for the repository`() {
+  fun `only processes reports that have permissions for the repository`() {
 // todo test
   }
 

@@ -7,12 +7,12 @@ import java.time.LocalDateTime
 
 
 data class TextAnnotation(
-    val fromChar: Int,
-    val toChar: Int,
-    override val id: AnnotationId,
-    override val repositoryId: RepositoryId?,
-    override val documentId: DocumentId?,
-    override val ownerId: UserId,
-    override val createdAt: LocalDateTime
+  val fromChar: Int,
+  val toChar: Int,
+  override val id: AnnotationId = AnnotationId(),
+  override val repositoryId: RepositoryId?,
+  override val documentId: DocumentId?,
+  override val ownerId: UserId,
+  override val createdAt: LocalDateTime = LocalDateTime.now(),
 ) : Annotation(id, repositoryId, documentId, ownerId, createdAt) {
 }

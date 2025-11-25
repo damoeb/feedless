@@ -7,6 +7,7 @@ import jakarta.persistence.ForeignKey
 import jakarta.persistence.PrePersist
 import jakarta.persistence.PrimaryKeyJoinColumn
 import jakarta.persistence.Table
+import org.migor.feedless.annotation.Vote
 
 @Entity
 @Table(name = "t_annotation_vote")
@@ -41,6 +42,10 @@ open class VoteEntity : AnnotationEntity() {
   }
 }
 
-fun VoteEntity.toDomain(): org.migor.feedless.annotation.Vote {
+fun VoteEntity.toDomain(): Vote {
   return VoteMapper.Companion.INSTANCE.toDomain(this)
+}
+
+fun Vote.toEntity(): VoteEntity {
+  return VoteMapper.Companion.INSTANCE.toEntity(this)
 }

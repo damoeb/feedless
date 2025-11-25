@@ -1,6 +1,8 @@
 package org.migor.feedless.plan
 
+import org.migor.feedless.product.Product
 import org.migor.feedless.product.ProductId
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 
@@ -11,5 +13,9 @@ data class Plan(
   val startedAt: LocalDateTime?,
   val terminatedAt: LocalDateTime?,
   val createdAt: LocalDateTime
-)
+) {
+  suspend fun product(repository: ProductRepository): Product? {
+    return repository.findById(productId)
+  }
+}
 

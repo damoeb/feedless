@@ -7,13 +7,13 @@ import java.time.LocalDateTime
 
 
 data class Vote(
-    val upVote: Boolean = false,
-    val downVote: Boolean = false,
-    val flag: Boolean = false,
-    override val id: AnnotationId,
-    override val repositoryId: RepositoryId?,
-    override val documentId: DocumentId?,
-    override val ownerId: UserId,
-    override val createdAt: LocalDateTime
+  val upVote: Boolean = false,
+  val downVote: Boolean = false,
+  val flag: Boolean = false,
+  override val id: AnnotationId = AnnotationId(),
+  override val repositoryId: RepositoryId?,
+  override val documentId: DocumentId?,
+  override val ownerId: UserId,
+  override val createdAt: LocalDateTime = LocalDateTime.now(),
 ) : Annotation(id, repositoryId, documentId, ownerId, createdAt) {
 }

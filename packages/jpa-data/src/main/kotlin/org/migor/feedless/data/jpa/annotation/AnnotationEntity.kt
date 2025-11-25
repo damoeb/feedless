@@ -75,12 +75,14 @@ open class AnnotationEntity : EntityWithUUID() {
 fun AnnotationEntity.toDomain(): org.migor.feedless.annotation.Annotation {
     return when (this) {
         is VoteEntity -> VoteMapper.INSTANCE.toDomain(this)
-        is TextAnnotationEntity -> {
-            // TextAnnotation domain class doesn't exist yet, just map to Vote for now
-            // or throw an exception
-            throw NotImplementedError("TextAnnotation mapping not implemented yet")
-        }
-
+        is TextAnnotationEntity -> TextAnnotationMapper.INSTANCE.toDomain(this)
         else -> throw IllegalArgumentException("Unknown AnnotationEntity type: ${this.javaClass}")
+    }
+}
+
+fun org.migor.feedless.annotation.Annotation.toEntity(): AnnotationEntity {
+    return when (this) {
+        is org.migor.feedless.annotation.Vote -> VoteMapper.INSTANCE.toEntity(this)
+        is org.migor.feedless.annotation.TextAnnotation -> TextAnnotationMapper.INSTANCE.toEntity(this)
     }
 }
