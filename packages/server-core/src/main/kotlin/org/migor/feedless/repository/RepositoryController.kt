@@ -9,6 +9,9 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.RecordOrderBy
+import org.migor.feedless.document.RecordsFilter
+import org.migor.feedless.document.toDomain
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.RecordOrderByInput
 import org.migor.feedless.generated.types.RecordsWhereInput
@@ -76,22 +79,21 @@ class RepositoryController {
       repositoryService.getFeedByRepositoryId(
         RepositoryId(repositoryId),
         page,
-        tags,
         parseWhere(whereStr),
         parseOrderBy(orderByStr)
       )
     )
   }
 
-  private fun parseWhere(whereStr: String?): RecordsWhereInput? {
+  private fun parseWhere(whereStr: String?): RecordsFilter? {
     return whereStr?.let {
-      Gson().fromJson(it, RecordsWhereInput::class.java)
+      Gson().fromJson(it, RecordsWhereInput::class.java).toDomain()
     }
   }
 
-  private fun parseOrderBy(orderByStr: String?): RecordOrderByInput? {
+  private fun parseOrderBy(orderByStr: String?): RecordOrderBy? {
     return orderByStr?.let {
-      Gson().fromJson(it, RecordOrderByInput::class.java)
+      Gson().fromJson(it, RecordOrderByInput::class.java).toDomain()
     }
   }
 

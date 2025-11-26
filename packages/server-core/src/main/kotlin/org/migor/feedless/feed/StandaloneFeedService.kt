@@ -21,6 +21,7 @@ import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
@@ -55,242 +56,242 @@ import kotlin.coroutines.coroutineContext
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.standaloneFeeds} & ${AppLayer.service}")
 class StandaloneFeedService(
-    private val propertyService: PropertyService,
-    private val webToFeedTransformer: WebToFeedTransformer,
-    private val feedParserService: FeedParserService,
-    private val scrapeService: ScrapeService,
-    private val repositoryService: RepositoryService,
-    private val userService: UserService,
-    private val sourceService: SourceService,
-    private val documentService: DocumentService,
-    private val filterPlugin: CompositeFilterPlugin,
+  private val propertyService: PropertyService,
+  private val webToFeedTransformer: WebToFeedTransformer,
+  private val feedParserService: FeedParserService,
+  private val scrapeService: ScrapeService,
+  private val repositoryService: RepositoryService,
+  private val userService: UserService,
+  private val sourceService: SourceService,
+  private val documentService: DocumentService,
+  private val filterPlugin: CompositeFilterPlugin,
 ) {
 
-    private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
+  private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
 
-    fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
+  fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
 
-    @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-    suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
-        val feed =
-            sourceService.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
-        feed.items =
-            documentService.findAllBySourceId(
-                sourceId,
-                PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(SortableRequest("publishedAt", false)))
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
+    val feed =
+      sourceService.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
+    feed.items =
+      documentService.findAllBySourceId(
+        sourceId,
+        PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(SortableRequest("publishedAt", false)))
+      )
+        .map { it.asJsonItem() }
+
+    return appendNotifications(feed)
+  }
+
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  suspend fun webToFeed(
+    url: String,
+    linkXPath: String,
+    extendContext: String,
+    contextXPath: String,
+    dateXPath: String?,
+    prerender: Boolean,
+    filter: String?,
+    ts: LocalDateTime? = null,
+    feedUrl: String
+  ): JsonFeed {
+    val corrId = coroutineContext.corrId()
+    return if (standaloneSupport(ts)) {
+      val sourceId = SourceId()
+      val source = Source(
+        id = sourceId,
+        title = "Feed from $url",
+        actions = listOf(
+          FetchAction(
+            sourceId = sourceId,
+            pos = 1,
+            forcePrerender = prerender,
+            url = url,
+            isVariable = false
+          )
+        )
+      )
+      val scrapeOutput = scrapeService.scrape(source, LogCollector())
+
+      val selectors = GenericFeedSelectors(
+        linkXPath = linkXPath,
+        extendContext = when (extendContext) {
+          "p" -> ExtendContext.PREVIOUS
+          "n" -> ExtendContext.NEXT
+          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+          else -> ExtendContext.NONE
+        },
+        contextXPath = contextXPath,
+        dateXPath = dateXPath,
+      )
+
+      val document = HtmlUtil.parseHtml(
+        scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+          StandardCharsets.UTF_8
+        ), url
+      )
+      val feed = webToFeedTransformer.getFeedBySelectors(
+        selectors,
+        document,
+        URI(url),
+        LogCollector()
+      )
+      feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
+      feed.feedUrl = feedUrl
+      feed.websiteUrl = url
+
+      try {
+        filter?.let {
+          feed.items = feed.items.filterIndexed { index, jsonItem ->
+            filterPlugin.filterEntity(
+              jsonItem,
+              convertFilterStringToPluginParams(it),
+              index,
+              LogCollector()
             )
-                .map { it.asJsonItem() }
-
-        return appendNotifications(feed)
-    }
-
-    @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-    suspend fun webToFeed(
-        url: String,
-        linkXPath: String,
-        extendContext: String,
-        contextXPath: String,
-        dateXPath: String?,
-        prerender: Boolean,
-        filter: String?,
-        ts: LocalDateTime? = null,
-        feedUrl: String
-    ): JsonFeed {
-        val corrId = coroutineContext.corrId()
-        return if (standaloneSupport(ts)) {
-            val sourceId = SourceId()
-            val source = Source(
-                id = sourceId,
-                title = "Feed from $url",
-                actions = listOf(
-                    FetchAction(
-                        sourceId = sourceId,
-                        pos = 1,
-                        forcePrerender = prerender,
-                        url = url,
-                        isVariable = false
-                    )
-                )
-            )
-            val scrapeOutput = scrapeService.scrape(source, LogCollector())
-
-            val selectors = GenericFeedSelectors(
-                linkXPath = linkXPath,
-                extendContext = when (extendContext) {
-                    "p" -> ExtendContext.PREVIOUS
-                    "n" -> ExtendContext.NEXT
-                    "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-                    else -> ExtendContext.NONE
-                },
-                contextXPath = contextXPath,
-                dateXPath = dateXPath,
-            )
-
-            val document = HtmlUtil.parseHtml(
-                scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-                    StandardCharsets.UTF_8
-                ), url
-            )
-            val feed = webToFeedTransformer.getFeedBySelectors(
-                selectors,
-                document,
-                URI(url),
-                LogCollector()
-            )
-            feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
-            feed.feedUrl = feedUrl
-            feed.websiteUrl = url
-
-            try {
-                filter?.let {
-                    feed.items = feed.items.filterIndexed { index, jsonItem ->
-                        filterPlugin.filterEntity(
-                            jsonItem,
-                            convertFilterStringToPluginParams(it),
-                            index,
-                            LogCollector()
-                        )
-                    }
-                }
-            } catch (e: Throwable) {
-                log.warn("[$corrId] webToFeed failed: ${e.message}", e)
-            }
-
-            appendNotifications(feed)
-        } else {
-            createEolFeed(feedUrl)
+          }
         }
-    }
+      } catch (e: Throwable) {
+        log.warn("[$corrId] webToFeed failed: ${e.message}", e)
+      }
 
-    private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): List<ItemFilterParams> {
-        return try {
-            stringToArray(jsonOrExpressionFilter, Array<ItemFilterParams>::class.java)
-        } catch (e: Exception) {
-            listOf(
-                ItemFilterParams(
-                    expression = jsonOrExpressionFilter,
-                )
-            )
+      appendNotifications(feed)
+    } else {
+      createEolFeed(feedUrl)
+    }
+  }
+
+  private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): List<ItemFilterParams> {
+    return try {
+      stringToArray(jsonOrExpressionFilter, Array<ItemFilterParams>::class.java)
+    } catch (e: Exception) {
+      listOf(
+        ItemFilterParams(
+          expression = jsonOrExpressionFilter,
+        )
+      )
+    }
+  }
+
+  private fun <T> stringToArray(s: String, clazz: Class<Array<T>>): List<T> {
+    val arr: Array<T> = Gson().fromJson(s, clazz)
+    return arr.toList()
+  }
+
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  suspend fun transformFeed(
+    nativeFeedUrl: String,
+    filter: String?,
+    ts: LocalDateTime? = null,
+    feedUrl: String
+  ): JsonFeed {
+    return if (standaloneSupport(ts)) {
+      val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
+      filter?.let {
+        feed.items = feed.items.filterIndexed { index, jsonItem ->
+          filterPlugin.filterEntity(
+            jsonItem,
+            filterPlugin.fromJson(filter),
+            index,
+            LogCollector()
+          )
         }
+      }
+
+      appendNotifications(feed)
+      feed
+    } else {
+      createEolFeed(feedUrl)
     }
+  }
 
-    private fun <T> stringToArray(s: String, clazz: Class<Array<T>>): List<T> {
-        val arr: Array<T> = Gson().fromJson(s, clazz)
-        return arr.toList()
-    }
+  fun getRepository(repositoryId: String): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/atom")
+    return ResponseEntity(headers, HttpStatus.FOUND)
+  }
 
-    @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-    suspend fun transformFeed(
-        nativeFeedUrl: String,
-        filter: String?,
-        ts: LocalDateTime? = null,
-        feedUrl: String
-    ): JsonFeed {
-        return if (standaloneSupport(ts)) {
-            val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
-            filter?.let {
-                feed.items = feed.items.filterIndexed { index, jsonItem ->
-                    filterPlugin.filterEntity(
-                        jsonItem,
-                        filterPlugin.fromJson(filter),
-                        index,
-                        LogCollector()
-                    )
-                }
-            }
+  // --
 
-            appendNotifications(feed)
-            feed
-        } else {
-            createEolFeed(feedUrl)
+  private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
+    val corrId = coroutineContext.corrId()
+    val root = userService.findAdminUser()
+    repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
+      val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
+      val documents = documentService.findAllByRepositoryId(
+        repo.id,
+        status = ReleaseStatus.released,
+        pageable = pageable.toPageableRequest(),
+      )
+        .map {
+          it.copy(publishedAt = LocalDateTime.now()).asJsonItem()
         }
-    }
 
-    fun getRepository(repositoryId: String): ResponseEntity<String> {
-        val headers = HttpHeaders()
-        headers.add("Location", "/f/$repositoryId/atom")
-        return ResponseEntity(headers, HttpStatus.FOUND)
-    }
+      feed.items = documents.plus(feed.items)
+    } ?: log.error("[$corrId] Repo for standalone notification not found")
+    return feed
+  }
 
-    // --
-
-    private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
-        val corrId = coroutineContext.corrId()
-        val root = userService.findAdminUser()
-        repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
-            val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
-            val documents = documentService.findAllByRepositoryId(
-                repo.id,
-                status = ReleaseStatus.released,
-                pageable = pageable,
-            )
-                .map {
-                    it.copy(publishedAt = LocalDateTime.now()).asJsonItem()
-                }
-
-            feed.items = documents.plus(feed.items)
-        } ?: log.error("[$corrId] Repo for standalone notification not found")
-        return feed
-    }
-
-    suspend fun standaloneSupport(ts: LocalDateTime?): Boolean {
+  suspend fun standaloneSupport(ts: LocalDateTime?): Boolean {
 //    return environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted)) || (ts != null && ts.isAfter(LocalDateTime.now().minusMonths(2)))
 //    return !featureService.isDisabled(FeatureName.legacyApiBool)
-        // todo enable some time
-        return true
+    // todo enable some time
+    return true
+  }
+
+  private fun createEolFeed(feedUrl: String): JsonFeed {
+    val feed = JsonFeed()
+    feed.id = "rss-proxy:2"
+    feed.title = "End Of Trial"
+    feed.feedUrl = feedUrl
+    feed.expired = true
+    feed.publishedAt = LocalDateTime.now()
+    feed.items = listOf(createEolArticle(feedUrl))
+
+    return feed
+  }
+
+  suspend fun createErrorFeed(feedUrl: String, t: Throwable): JsonFeed {
+    val feed = JsonFeed()
+    feed.id = "rss-proxy:2"
+    feed.title = "Feed"
+    feed.feedUrl = feedUrl
+    feed.expired = false
+    feed.publishedAt = LocalDateTime.now()
+
+    feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
+      emptyList()
+    } else {
+      listOf(createErrorArticle(t, feedUrl))
     }
 
-    private fun createEolFeed(feedUrl: String): JsonFeed {
-        val feed = JsonFeed()
-        feed.id = "rss-proxy:2"
-        feed.title = "End Of Trial"
-        feed.feedUrl = feedUrl
-        feed.expired = true
-        feed.publishedAt = LocalDateTime.now()
-        feed.items = listOf(createEolArticle(feedUrl))
+    return feed
+  }
 
-        return feed
-    }
-
-    suspend fun createErrorFeed(feedUrl: String, t: Throwable): JsonFeed {
-        val feed = JsonFeed()
-        feed.id = "rss-proxy:2"
-        feed.title = "Feed"
-        feed.feedUrl = feedUrl
-        feed.expired = false
-        feed.publishedAt = LocalDateTime.now()
-
-        feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
-            emptyList()
-        } else {
-            listOf(createErrorArticle(t, feedUrl))
-        }
-
-        return feed
-    }
-
-    private fun createEolArticle(feedUrl: String): JsonItem {
-        val article = JsonItem()
-        val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
-        article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
-        article.title = "ACTION REQUIRED – Reenable Your Feed"
-        article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
+  private fun createEolArticle(feedUrl: String): JsonItem {
+    val article = JsonItem()
+    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
+    article.title = "ACTION REQUIRED – Reenable Your Feed"
+    article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
       <p>If you liked it, restore your feed simply by <a href="$feedActivationLink">reenabling it</a>, it is just a couple of clicks.</p>
 <p>Reenable your feed today to get back to seamless service.</p>
 <p>Thanks!</p>
     """.trimIndent()
 //    article.text = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
-        article.url = feedActivationLink
-        article.publishedAt = LocalDateTime.now()
-        return article
-    }
+    article.url = feedActivationLink
+    article.publishedAt = LocalDateTime.now()
+    return article
+  }
 
-    private suspend fun createErrorArticle(t: Throwable, feedUrl: String): JsonItem {
-        val corrId = coroutineContext.corrId()
-        val article = JsonItem()
-        article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
-        article.title = "ALERT: Potential Issue with Feed"
-        article.text = """Dear User,
+  private suspend fun createErrorArticle(t: Throwable, feedUrl: String): JsonItem {
+    val corrId = coroutineContext.corrId()
+    val article = JsonItem()
+    article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
+    article.title = "ALERT: Potential Issue with Feed"
+    article.text = """Dear User,
 an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.
 If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.
 
@@ -299,7 +300,7 @@ Feed URL: $feedUrl
 corrId: $corrId
 ${StringUtils.truncate(t.stackTraceToString(), 800)}
 """.trimIndent()
-        article.html = """<p>Dear User,</p>
+    article.html = """<p>Dear User,</p>
 <p>an error occurred while fetching your feed: '${t.message}'. This may require your attention. Please note, this error will only be reported once per month.</p>
 
 <p>If you believe this is a bug, maybe related with the new release, here is the stack trace so you can report it.<p>
@@ -313,18 +314,18 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
 </pre>
 </p>
 """.trimIndent()
-        article.url = "https://github.com/damoeb/feedless/wiki/Errors#error-potential-issue-with-feed"
-        article.publishedAt = LocalDateTime.now()
-        return article
-    }
+    article.url = "https://github.com/damoeb/feedless/wiki/Errors#error-potential-issue-with-feed"
+    article.publishedAt = LocalDateTime.now()
+    return article
+  }
 }
 
 private fun Source.toJsonFeed(feedUrl: String): JsonFeed {
-    val feed = JsonFeed()
-    feed.id = "legacy-feed"
-    feed.title = title
-    feed.publishedAt = createdAt
-    feed.items = emptyList()
-    feed.feedUrl = feedUrl
-    return feed
+  val feed = JsonFeed()
+  feed.id = "legacy-feed"
+  feed.title = title
+  feed.publishedAt = createdAt
+  feed.items = emptyList()
+  feed.feedUrl = feedUrl
+  return feed
 }

@@ -8,11 +8,11 @@ import org.springframework.stereotype.Component
 @Component("capabilityService")
 class SecurityContextCapabilityService : CapabilityService {
 
-  override fun hasCapability(capabilityId: String): Boolean {
+  override fun hasCapability(capabilityId: CapabilityId): Boolean {
     val authorities = getAuthentication().authorities
     return authorities.any { authority ->
       if (authority is LazyGrantedAuthority) {
-        authority.authority == capabilityId
+        authority.authority == capabilityId.value
       } else {
         false
       }
@@ -21,6 +21,15 @@ class SecurityContextCapabilityService : CapabilityService {
 
   override fun hasToken(): Boolean {
     return getAuthentication().isAuthenticated
+  }
+
+  override fun getCapability(capabilityId: CapabilityId): UnresolvedCapability? {
+    val authorities = getAuthentication().authorities
+    return authorities
+      .filterIsInstance<LazyGrantedAuthority>()
+      .filter { authority -> authority.authority == capabilityId.value }
+      .map { authority -> UnresolvedCapability(CapabilityId(authority.authority), authority.payload) }
+      .firstOrNull()
   }
 
   private fun getAuthentication(): Authentication {

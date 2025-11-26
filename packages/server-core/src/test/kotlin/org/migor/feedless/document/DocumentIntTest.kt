@@ -29,6 +29,7 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.User
@@ -204,7 +205,7 @@ class DocumentIntTest {
     val documents = documentService.findAllByRepositoryId(
       repositoryId = repository.id,
       status = ReleaseStatus.released,
-      pageable = PageRequest.of(0, 10),
+      pageable = PageRequest.of(0, 10).toPageableRequest(),
     )
     assertThat(documents.size).isEqualTo(1)
   }

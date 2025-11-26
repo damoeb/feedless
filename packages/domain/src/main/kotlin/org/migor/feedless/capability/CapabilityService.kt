@@ -7,11 +7,13 @@ interface CapabilityService {
    * @param capabilityId The ID of the capability to check (e.g., 'USER', 'AGENT', 'READ', 'WRITE')
    * @return true if the capability is present in the SecurityContext, false otherwise
    */
-  fun hasCapability(capabilityId: String): Boolean
+  fun hasCapability(capabilityId: CapabilityId): Boolean
 
   /**
    * Checks if the current user has any valid token/authentication.
    * @return true if authentication is present and authenticated, false otherwise
    */
   fun hasToken(): Boolean
+
+  fun getCapability(capabilityId: CapabilityId): UnresolvedCapability?
 }

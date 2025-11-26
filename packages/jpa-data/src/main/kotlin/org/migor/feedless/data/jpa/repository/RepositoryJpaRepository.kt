@@ -1,6 +1,5 @@
 package org.migor.feedless.data.jpa.repository
 
-import com.linecorp.kotlinjdsl.dsl.jpql.jpql
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -10,8 +9,8 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.Vertical
 import org.migor.feedless.document.DocumentId
+import org.migor.feedless.repository.RepositoriesFilter
 import org.migor.feedless.repository.Repository
-import org.migor.feedless.repository.RepositoriesWhereInput
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.source.SourceId
@@ -26,10 +25,10 @@ import kotlin.jvm.optionals.getOrNull
 @Component
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : RepositoryRepository {
-  
+
   override suspend fun findAll(
     pageable: PageableRequest,
-    where: RepositoriesWhereInput?,
+    where: RepositoriesFilter?,
     userId: UserId?
   ): List<Repository> {
     return withContext(Dispatchers.IO) {
@@ -106,7 +105,7 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
       }.toList().filterNotNull().map { it.toDomain() }
     }
   }
-  
+
   override suspend fun findAllWhereNextHarvestIsDue(
     now: LocalDateTime,
     pageable: PageableRequest

@@ -9,6 +9,10 @@ open class UserCapability(val userId: UserId) : Capability<UserId>(ID, userId) {
       return UserCapability(Gson().fromJson(value, UserId::class.java))
     }
 
-    val ID: String = "user";
+    fun resolve(value: UnresolvedCapability): UserCapability {
+      return fromString(value.capabilityPayload)
+    }
+
+    val ID: CapabilityId = CapabilityId("user");
   }
 }

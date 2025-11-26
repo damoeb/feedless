@@ -4,13 +4,14 @@ import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -36,7 +37,7 @@ suspend fun getLastReleasedDocumentByRepositoryId(
   documentService: DocumentService,
   repositoryId: RepositoryId
 ): Document? {
-  val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt")
+  val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt").toPageableRequest()
   return documentService.findAllByRepositoryId(
     repositoryId,
     status = ReleaseStatus.released,

@@ -10,16 +10,21 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.capability.CapabilityId
+import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.RecordOrderBy
+import org.migor.feedless.document.RecordsFilter
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -27,8 +32,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.RecordOrderByInput
-import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
@@ -68,8 +71,8 @@ fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   return PageRequest.of(fixedPage, fixedPageSize)
 }
 
-fun Pageable.toPageableRequest(): org.migor.feedless.PageableRequest {
-  return org.migor.feedless.PageableRequest(
+fun Pageable.toPageableRequest(): PageableRequest {
+  return PageableRequest(
     pageNumber = pageNumber,
     pageSize = pageSize,
     sortBy = sort.map { org.migor.feedless.SortableRequest(it.property, it.isAscending) }.toList()
@@ -80,7 +83,6 @@ fun Pageable.toPageableRequest(): org.migor.feedless.PageableRequest {
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryService(
-//  private var userDAO: UserDAO,
   private var repositoryDAO: RepositoryRepository,
   private var sessionService: SessionService,
   private var userService: UserService,
@@ -89,16 +91,9 @@ class RepositoryService(
   private var propertyService: PropertyService,
   private var sourceService: SourceService,
   private var context: ApplicationContext,
-) {
+) : RepositoryProvider {
 
   private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
-
-//  @Autowired
-//  private lateinit var mailForwardDAO: MailForwardDAO
-
-//  @Autowired
-//  private lateinit var analyticsService: AnalyticsService
-
 
   @Transactional
   suspend fun create(data: List<RepositoryCreateInput>): List<Repository> {
@@ -120,22 +115,21 @@ class RepositoryService(
   suspend fun getFeedByRepositoryId(
     repositoryId: RepositoryId,
     page: Int,
-    tags: List<String>,
-    where: RecordsWhereInput?,
-    orderBy: RecordOrderByInput?,
+    filter: RecordsFilter?,
+    order: RecordOrderBy?,
   ): JsonFeed {
     val repository = context.getBean(RepositoryService::class.java).findById(repositoryId)
       ?: throw IllegalArgumentException("Repository not found")
 
     val pageSize = 11
-    val pageable = toPageRequest(page, pageSize)
+    val pageable = toPageRequest(page, pageSize).toPageableRequest()
     val items = try {
       documentService.findAllByRepositoryId(
         repositoryId,
         status = ReleaseStatus.released,
-        tags = tags,
-        where = where,
-        orderBy = orderBy,
+        tags = emptyList(),
+        filter = filter,
+        orderBy = order,
         pageable = pageable,
       ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 
@@ -173,40 +167,19 @@ class RepositoryService(
   }
 
   @Transactional(readOnly = true)
-  suspend fun findAll(
-    pageable: Pageable,
-    where: RepositoriesWhereInput?,
+  suspend fun findAllByUserId(
+    pageable: PageableRequest,
+    where: RepositoriesFilter?,
     userId: UserId?
   ): List<Repository> {
     log.debug("userId=$userId")
-    return repositoryDAO.findAll(pageable.toPageableRequest(), where, userId)
+    return repositoryDAO.findAll(pageable, where, userId)
   }
 
   @Transactional(readOnly = true)
   suspend fun findById(repositoryId: RepositoryId): Repository? {
     return repositoryDAO.findById(repositoryId)
   }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findByIdWithSources(repositoryId: UUID, shareKey: String? = null): RepositoryEntity {
-//    val sub = withContext(Dispatchers.IO) {
-//      repositoryDAO.findById(repositoryId).orElseThrow()
-//        ?: throw NotFoundException("Repository $repositoryId not found")
-//    }
-//    return if (sub.visibility === EntityVisibility.isPublic) {
-//      sub
-//    } else {
-////      if (sub.ownerId == getActualUserOrDefaultUser(corrId).id) {
-//      sub
-////      } else {
-////        if (StringUtils.isNotBlank(sub.shareKey) && sub.shareKey == shareKey) {
-////          sub
-////        } else {
-////          throw PermissionDeniedException("unauthorized ($corrId)")
-////        }
-////      }
-//    }
-//  }
 
   @Transactional
   suspend fun delete(repositoryId: RepositoryId) {
@@ -355,7 +328,6 @@ class RepositoryService(
     repoInput: RepositoryCreateInput
   ): Repository {
 
-//    val product = sessionService.activeProductFromRequest()!!
     val product = repoInput.product.fromDto()
     var repo = Repository(
       shareKey = newCorrId(10),
@@ -459,6 +431,18 @@ class RepositoryService(
   @Transactional(readOnly = true)
   suspend fun findByTitleAndOwnerId(title: String, ownerId: UserId): Repository? {
     return repositoryDAO.findByTitleAndOwnerId(title, ownerId)
+  }
+
+  override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {
+    TODO("Not yet implemented")
+  }
+
+  override suspend fun provideAll(
+    capability: UnresolvedCapability,
+    pageable: PageableRequest,
+    where: RepositoriesFilter?
+  ): List<Repository> {
+    TODO("Not yet implemented")
   }
 }
 

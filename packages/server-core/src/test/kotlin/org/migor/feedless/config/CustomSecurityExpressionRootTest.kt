@@ -3,6 +3,7 @@ package org.migor.feedless.config
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
+import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.SecurityContextCapabilityService
 import org.migor.feedless.session.LazyGrantedAuthority
 import org.mockito.Mockito
@@ -28,8 +29,8 @@ class CustomSecurityExpressionRootTest {
       val expressionRoot = SecurityContextCapabilityService()
 
       // when & then
-      assertThat(expressionRoot.hasCapability("user")).isTrue()
-      assertThat(expressionRoot.hasCapability("groups")).isTrue()
+      assertThat(expressionRoot.hasCapability(CapabilityId("user"))).isTrue()
+      assertThat(expressionRoot.hasCapability(CapabilityId("groups"))).isTrue()
     }
   }
 
@@ -46,9 +47,9 @@ class CustomSecurityExpressionRootTest {
       val expressionRoot = SecurityContextCapabilityService()
 
       // when & then
-      assertThat(expressionRoot.hasCapability("agent")).isFalse()
-      assertThat(expressionRoot.hasCapability("admin")).isFalse()
-      assertThat(expressionRoot.hasCapability("nonexistent")).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("agent"))).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("admin"))).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("nonexistent"))).isFalse()
     }
   }
 
@@ -62,8 +63,8 @@ class CustomSecurityExpressionRootTest {
       val expressionRoot = SecurityContextCapabilityService()
 
       // when & then
-      assertThat(expressionRoot.hasCapability("user")).isFalse()
-      assertThat(expressionRoot.hasCapability("agent")).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("user"))).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("agent"))).isFalse()
     }
   }
 
@@ -81,10 +82,10 @@ class CustomSecurityExpressionRootTest {
       val expressionRoot = SecurityContextCapabilityService()
 
       // when & then
-      assertThat(expressionRoot.hasCapability("user")).isTrue()
-      assertThat(expressionRoot.hasCapability("agent")).isTrue()
-      assertThat(expressionRoot.hasCapability("groups")).isTrue()
-      assertThat(expressionRoot.hasCapability("admin")).isFalse()
+      assertThat(expressionRoot.hasCapability(CapabilityId("user"))).isTrue()
+      assertThat(expressionRoot.hasCapability(CapabilityId("agent"))).isTrue()
+      assertThat(expressionRoot.hasCapability(CapabilityId("groups"))).isTrue()
+      assertThat(expressionRoot.hasCapability(CapabilityId("admin"))).isFalse()
     }
   }
 

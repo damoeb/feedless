@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.migor.feedless.capability.Capability
+import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.connector.git.GitConnectionCapability
 import org.migor.feedless.connector.git.LocalGitRepository
 import org.migor.feedless.connector.git.LocalGitRepositoryCapability
@@ -108,7 +109,7 @@ class LocalGitRepositoryImpl private constructor(
   }
 
   override fun capability(): Capability<LocalGitRepositoryCapability> {
-    return Capability("repository", LocalGitRepositoryCapability(containerDir, gitConnectionCapability))
+    return Capability(CapabilityId("repository"), LocalGitRepositoryCapability(containerDir, gitConnectionCapability))
   }
 
   fun close() {

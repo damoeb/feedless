@@ -146,7 +146,7 @@ class JwtTokenIssuer(
 
   private fun toAuthorities(capabilities: List<Capability<out Any>>): Map<String, String> {
     return capabilities.associate {
-      it.capabilityId to Gson().toJson(it.capabilityPayload)
+      it.capabilityId.value to Gson().toJson(it.capabilityPayload)
     }
   }
 

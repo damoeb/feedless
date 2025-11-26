@@ -20,32 +20,35 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateRecordInput
-import org.migor.feedless.generated.types.DatesWhereInput
 import org.migor.feedless.generated.types.DeleteRecordsInput
 import org.migor.feedless.generated.types.Record
 import org.migor.feedless.generated.types.RecordDateField
 import org.migor.feedless.generated.types.RecordFrequency
 import org.migor.feedless.generated.types.RecordWhereInput
 import org.migor.feedless.generated.types.RecordsInput
-import org.migor.feedless.generated.types.RecordsWhereInput
 import org.migor.feedless.generated.types.Repository
-import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
-import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.UpdateRecordInput
 import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.toPageable
+import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.injectCurrentUser
-import org.migor.feedless.util.toMillis
+import org.migor.feedless.source.SourceId
+import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import org.migor.feedless.generated.types.DatesWhereInput as DatesWhereInputDto
+import org.migor.feedless.generated.types.RecordOrderByInput as RecordOrderByInputDto
+import org.migor.feedless.generated.types.RecordsWhereInput as RecordsWhereInputDto
+import org.migor.feedless.generated.types.RepositoryUniqueWhereInput as RepositoryUniqueWhereInputDto
+import org.migor.feedless.generated.types.StringFilterInput as StringFilterInputDto
 
 @DgsComponent
 @Transactional(propagation = Propagation.NEVER)
@@ -93,9 +96,9 @@ class DocumentResolver(
     } else {
       documentService.findAllByRepositoryId(
         repository.id,
-        data.where,
-        data.orderBy,
-        pageable = pageable
+        data.where.toDomain(),
+        data.orderBy?.toDomain(),
+        pageable = pageable.toPageableRequest()
       ).map {
         it.toDto(
           propertyService
@@ -124,13 +127,6 @@ class DocumentResolver(
     true
   }
 
-  private fun StringFilterInput.toDomain(): StringFilter {
-    return StringFilter(
-      eq = eq,
-      `in` = `in`
-    )
-  }
-
   @DgsMutation(field = DgsConstants.MUTATION.CreateRecords)
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun createRecords(
@@ -152,10 +148,10 @@ class DocumentResolver(
 
   @DgsQuery(field = DgsConstants.QUERY.RecordsFrequency)
   suspend fun recordsFrequency(
-    @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInput,
+    @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInputDto,
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
   ): List<RecordFrequency> = coroutineScope {
-    documentService.getRecordFrequency(where, groupBy)
+    documentService.getRecordFrequency(where.toDomain(), groupBy)
   }
 
 
@@ -165,12 +161,98 @@ class DocumentResolver(
   ): List<RecordFrequency> = coroutineScope {
     val repository: Repository = dfe.getSourceOrThrow()
     documentService.getRecordFrequency(
-      RecordsWhereInput(
-        repository = RepositoryUniqueWhereInput(id = repository.id),
-        createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1).toMillis())
+      RecordsFilter(
+        repository = RepositoryId(repository.id),
+        createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1))
       ),
       RecordDateField.createdAt
     )
   }
 
+}
+
+
+private fun StringFilterInputDto.toDomain(): StringFilter {
+  return StringFilter(
+    eq = eq,
+    `in` = `in`
+  )
+}
+
+fun RecordsWhereInputDto.toDomain(): RecordsFilter {
+  return RecordsFilter(
+    id = id?.toDomainStringFilter(),
+    repository = repository.toDomain(),
+    source = source?.toDomain(),
+    startedAt = startedAt?.toDomain(),
+    createdAt = createdAt?.toDomain(),
+    publishedAt = publishedAt?.toDomain(),
+    updatedAt = updatedAt?.toDomain(),
+    latLng = latLng?.toDomain(),
+    tags = tags?.toDomainStringFilter()
+  )
+}
+
+private fun RepositoryUniqueWhereInputDto.toDomain(): RepositoryId {
+  return RepositoryId(id)
+}
+
+private fun org.migor.feedless.generated.types.SourceUniqueWhereInput.toDomain(): SourceUniqueWhere {
+  return SourceUniqueWhere(id = SourceId(id))
+}
+
+private fun StringFilterInputDto.toDomainStringFilter(): org.migor.feedless.document.StringFilter {
+  return org.migor.feedless.document.StringFilter(
+    eq = eq,
+    `in` = `in`
+  )
+}
+
+private fun DatesWhereInputDto.toDomain(): DatesWhereInput {
+  return DatesWhereInput(
+    before = before?.toLocalDateTime(),
+    after = after?.toLocalDateTime(),
+    inFuture = inFuture
+  )
+}
+
+private fun org.migor.feedless.generated.types.GeoPointWhereInput.toDomain(): GeoPointWhereInput {
+  return GeoPointWhereInput(
+    near = near?.toDomain(),
+    within = within?.toDomain()
+  )
+}
+
+private fun org.migor.feedless.generated.types.GeoPointWhereNearInput.toDomain(): GeoPointWhereNearInput {
+  return GeoPointWhereNearInput(
+    point = point.toDomain(),
+    distanceKm = distanceKm
+  )
+}
+
+private fun org.migor.feedless.generated.types.GeoPointWhereWithinInput.toDomain(): GeoPointWhereWithinInput {
+  return GeoPointWhereWithinInput(
+    nw = nw.toDomain(),
+    se = se.toDomain()
+  )
+}
+
+private fun org.migor.feedless.generated.types.GeoPointInput.toDomain(): GeoPointInput {
+  return GeoPointInput(
+    lat = lat,
+    lng = lng
+  )
+}
+
+fun RecordOrderByInputDto.toDomain(): RecordOrderBy {
+  return RecordOrderBy(
+    startedAt = startedAt?.toDomain()
+  )
+}
+
+private fun org.migor.feedless.generated.types.SortOrder.toDomain(): SortOrder {
+  return when (this) {
+    org.migor.feedless.generated.types.SortOrder.asc -> SortOrder.ASC
+    else -> SortOrder.DESC
+  }
 }

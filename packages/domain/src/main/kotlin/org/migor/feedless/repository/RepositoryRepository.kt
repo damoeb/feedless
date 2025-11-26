@@ -10,8 +10,8 @@ import java.time.LocalDateTime
 
 interface RepositoryRepository {
 
-  suspend fun findAll(pageable: PageableRequest, where: RepositoriesWhereInput?, userId: UserId?): List<Repository>
-  
+  suspend fun findAll(pageable: PageableRequest, where: RepositoriesFilter?, userId: UserId?): List<Repository>
+
   suspend fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageableRequest): List<Repository>
 
   suspend fun countByOwnerId(id: UserId): Int

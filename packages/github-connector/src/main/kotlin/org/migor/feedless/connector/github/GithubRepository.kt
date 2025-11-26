@@ -5,7 +5,7 @@ data class GithubRepository(
   val full_name: String,
   val html_url: String,
   val _private: Boolean,
-  val description: String
+  val description: String?
 ) {
 
 }

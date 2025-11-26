@@ -9,7 +9,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.config.DgsCustomContext
-import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userIdOptional
@@ -34,7 +33,7 @@ fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchi
 }
 
 private fun OAuth2AuthenticationToken.getUserCapability(): UserCapability? {
-  return this.authorities.find { it.authority == UserCapability.ID }
+  return this.authorities.find { it.authority == UserCapability.ID.value }
     ?.let { UserCapability.fromString((it as LazyGrantedAuthority).getPayload()) }
 }
 
