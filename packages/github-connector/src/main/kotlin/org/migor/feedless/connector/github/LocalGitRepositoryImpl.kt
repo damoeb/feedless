@@ -1,7 +1,6 @@
 package org.migor.feedless.connector.github
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import kotlinx.serialization.json.Json
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.migor.feedless.capability.Capability
@@ -32,7 +31,6 @@ class LocalGitRepositoryImpl private constructor(
   companion object {
     private const val STAT_FILENAME = "stat.json"
     private const val REPO_SUBFOLDER = "repo"
-    private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
 
     fun clone(
       repoUrl: String,
@@ -137,7 +135,7 @@ class LocalGitRepositoryImpl private constructor(
     val statFile = File(containerDir, STAT_FILENAME)
     return if (statFile.exists()) {
       try {
-        gson.fromJson(statFile.readText(), StatData::class.java)
+        Json.decodeFromString<StatData>(statFile.readText())
       } catch (_: Exception) {
         null
       }
@@ -148,7 +146,7 @@ class LocalGitRepositoryImpl private constructor(
 
   private fun writeStatFile(statData: StatData) {
     val metadataFile = File(containerDir, STAT_FILENAME)
-    metadataFile.writeText(gson.toJson(statData))
+    metadataFile.writeText(Json.encodeToString(statData))
   }
 
   fun getMetadata(): StatData? {

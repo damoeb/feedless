@@ -19,7 +19,6 @@ dependencies {
   implementation(project(":packages:domain"))
 
   implementation(libs.kotlinx.coroutines.core)
-  implementation(libs.gson)
   testImplementation(libs.kotlinx.coroutines.test)
   implementation(libs.spring.boot.validation)
   implementation(libs.commons.text)

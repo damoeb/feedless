@@ -1,18 +1,21 @@
 package org.migor.feedless.license
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import org.migor.feedless.Vertical
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 
+
+@Serializable
 data class LicensePayload(
-  @SerializedName("v") val version: Int,
-  @SerializedName("n") val name: String,
-  @SerializedName("e") val email: String,
-  @SerializedName("c") val createdAt: LocalDateTime,
-  @SerializedName("u") val validUntil: LocalDateTime? = null,
-  @SerializedName("s") val scope: Vertical
+  @SerialName("v") val version: Int,
+  @SerialName("n") val name: String,
+  @SerialName("e") val email: String,
+  @SerialName("c") val createdAt: LocalDateTime,
+  @SerialName("u") val validUntil: LocalDateTime? = null,
+  @SerialName("s") val scope: Vertical
 ) {
   override fun equals(other: Any?): Boolean {
     if (this === other) return true

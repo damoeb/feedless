@@ -6,6 +6,7 @@ dgs = "9.2.2"
 test-logger = "4.0.0"
 javacc = "4.0.1"
 kotlinx-coroutines = "1.7.2"
+kotlinx-serialization = "1.9.0"
 testcontainers = "1.21.3"
 tika = "3.2.3"
 pdfbox = "3.0.5"
@@ -93,6 +94,7 @@ kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref =
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
 
 language-de = { module = "org.languagetool:language-de", version.ref = "languagetool" }
 language-en = { module = "org.languagetool:language-en", version.ref = "languagetool" }

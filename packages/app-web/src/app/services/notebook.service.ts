@@ -483,7 +483,11 @@ export class NotebookService {
           page++;
         }
       } catch (e) {
-        console.error(e);
+        if (e.toString().indexOf('not found')) {
+          console.log('repository not found');
+        } else {
+          console.error(e);
+        }
       }
 
       notebook.lastSyncedAt = new Date();

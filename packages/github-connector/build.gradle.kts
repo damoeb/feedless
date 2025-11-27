@@ -2,6 +2,7 @@ plugins {
   alias(libs.plugins.test.logger)
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
+  kotlin("plugin.serialization") version "2.2.21"
 }
 
 repositories {
@@ -19,13 +20,13 @@ dependencies {
   implementation("org.jetbrains.kotlin:kotlin-reflect")
 
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.serialization.json)
   testImplementation(libs.kotlinx.coroutines.test)
   implementation(libs.spring.boot.web)
   testImplementation(libs.spring.boot.test)
   implementation(libs.commons.lang3)
   // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.4.0.202509020913-r")
-  implementation(libs.gson)
 }
 
 tasks.test {

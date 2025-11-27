@@ -1,6 +1,6 @@
 package org.migor.feedless.connector.github
 
-import com.google.gson.Gson
+import kotlinx.serialization.json.Json
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -26,7 +26,8 @@ class GithubAccount(private val accountConfig: GithubAccountConfig) {
     val response: HttpResponse<String> = client.send(request, HttpResponse.BodyHandlers.ofString())
 
     if (response.statusCode() == 200) {
-      return Gson().fromJson<List<GithubRepository>>(response.body(), List::class.java)
+      val body = response.body()
+      return Json.decodeFromString<List<GithubRepository>>(body)
     }
     throw IllegalStateException("Could not fetch repositories. ${response.body()}")
   }

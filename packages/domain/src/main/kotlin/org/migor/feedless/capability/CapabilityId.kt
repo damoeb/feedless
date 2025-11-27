@@ -1,4 +1,6 @@
 package org.migor.feedless.capability
 
-open class CapabilityId(open val value: String) {
-}
+import kotlinx.serialization.Serializable
+
+@Serializable
+open class CapabilityId(open val value: String)

@@ -69,7 +69,6 @@ import {
 } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { DarkModeButtonComponent } from '../../components/dark-mode-button/dark-mode-button.component';
-import { ProfileButtonComponent } from '../../components/profile-button/profile-button.component';
 import {
   TypeaheadSuggestion,
   TypeheadComponent,
@@ -85,6 +84,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 import { NotebookSettingsComponent } from '../../components/notebook-settings/notebook-settings.component';
 import { createNoteReferenceWidget } from './note-reference.widget';
 import { NotificationsButtonComponent } from '../../components/notifications-button/notifications-button.component';
+import { LoginButtonComponent } from '../../components/login-button/login-button.component';
 
 export type EditorHandle = {
   note: Note;
@@ -117,7 +117,6 @@ enum Focussable {
     IonContent,
     ReactiveFormsModule,
     DarkModeButtonComponent,
-    ProfileButtonComponent,
     IonProgressBar,
     TypeheadComponent,
     NoteDetailsComponent,
@@ -144,6 +143,7 @@ enum Focussable {
     CdkTreeNodeDef,
     NotificationsButtonComponent,
     IonTitle,
+    LoginButtonComponent,
   ],
   standalone: true,
 })
