@@ -18,7 +18,7 @@ import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.feed.StandaloneFeedService
+import org.migor.feedless.feed.FeedService
 import org.mockito.Mockito
 import org.mockito.Mockito.argThat
 import org.mockito.Mockito.mock
@@ -37,7 +37,7 @@ class SeederTest {
   private lateinit var pricedProductDAO: PricedProductDAO
   private lateinit var userSecretDAO: UserSecretDAO
   private lateinit var repositoryDAO: RepositoryDAO
-  private lateinit var standaloneFeedService: StandaloneFeedService
+  private lateinit var feedService: FeedService
   private lateinit var userDAO: UserDAO
   private lateinit var groupDAO: GroupDAO
   private lateinit var userGroupAssignmentDAO: UserGroupAssignmentDAO
@@ -54,7 +54,7 @@ class SeederTest {
     pricedProductDAO = Mockito.mock(PricedProductDAO::class.java)
     userSecretDAO = Mockito.mock(UserSecretDAO::class.java)
     repositoryDAO = Mockito.mock(RepositoryDAO::class.java)
-    standaloneFeedService = Mockito.mock(StandaloneFeedService::class.java)
+    feedService = Mockito.mock(FeedService::class.java)
     groupDAO = Mockito.mock(GroupDAO::class.java)
     userGroupAssignmentDAO = Mockito.mock(UserGroupAssignmentDAO::class.java)
     userDAO = Mockito.mock(UserDAO::class.java)
@@ -69,7 +69,7 @@ class SeederTest {
       pricedProductDAO,
       userSecretDAO,
       repositoryDAO,
-      standaloneFeedService,
+      feedService,
       userDAO,
       groupDAO,
       userGroupAssignmentDAO
@@ -81,7 +81,7 @@ class SeederTest {
     Mockito.`when`(userDAO.saveAndFlush(any2())).thenAnswer { it.arguments[0] }
     Mockito.`when`(repositoryDAO.save(any2())).thenAnswer { it.arguments[0] }
     Mockito.`when`(featureGroupDAO.save(any2())).thenAnswer { it.arguments[0] }
-    Mockito.`when`(standaloneFeedService.getRepoTitleForStandaloneFeedNotifications()).thenReturn("opsops")
+    Mockito.`when`(feedService.getRepoTitleForStandaloneFeedNotifications()).thenReturn("opsops")
 
 
     Mockito.`when`(userDAO.save(any2())).thenAnswer { it.arguments[0] }

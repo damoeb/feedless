@@ -43,9 +43,9 @@ import kotlin.time.toDuration
 @Controller
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppLayer.api} & ${AppProfiles.standaloneFeeds}")
-class StandaloneFeedController(
+class FeedController(
   val feedExporter: FeedExporter,
-  val standaloneFeedService: StandaloneFeedService,
+  val feedService: FeedService,
   val meterRegistry: MeterRegistry,
   val analyticsService: AnalyticsService
 ) {
@@ -66,7 +66,7 @@ class StandaloneFeedController(
       analyticsService.track()
     }
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "repositoryId"))).increment()
-    return standaloneFeedService.getRepository(repositoryId)
+    return feedService.getRepository(repositoryId)
   }
 
   @GetMapping(
@@ -85,7 +85,7 @@ class StandaloneFeedController(
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
-      standaloneFeedService.getFeed(
+      feedService.getFeed(
         SourceId(feedId),
         feedUrl
       )
@@ -102,7 +102,7 @@ class StandaloneFeedController(
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl)
     {
-      standaloneFeedService.webToFeed(
+      feedService.webToFeed(
         request.param("url"),
         request.param("pLink"),
         "",
@@ -125,7 +125,7 @@ class StandaloneFeedController(
     val feedUrl = toFullUrlString(request)
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
     val feed = resolveFeedCatching(feedUrl) {
-      standaloneFeedService.webToFeed(
+      feedService.webToFeed(
         request.param("url"),
         request.firstParam("link", "linkXPath"),
         request.firstParamOptional("x", "extendContext") ?: "",
@@ -151,7 +151,7 @@ class StandaloneFeedController(
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
-      standaloneFeedService.transformFeed(
+      feedService.transformFeed(
         request.param("url"),
         request.paramOptional("q"),
         request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
@@ -168,7 +168,7 @@ class StandaloneFeedController(
     return try {
       feedProvider()
     } catch (t: Throwable) {
-      standaloneFeedService.createErrorFeed(feedUrl, t)
+      feedService.createErrorFeed(feedUrl, t)
     }
   }
 

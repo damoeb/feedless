@@ -20,7 +20,6 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserService
 import org.migor.feedless.userSecret.UserSecret
 import org.mockito.ArgumentMatchers.anyString
-import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
@@ -36,95 +35,102 @@ const val rootEmail = "fooEmail"
 const val rootSecretKey = "barBarBarKey"
 
 @SpringBootTest(
-    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-    properties = [
-        "app.rootEmail=$rootEmail",
-        "app.rootSecretKey=$rootSecretKey",
-        "app.apiGatewayUrl=https://localhost",
-        "app.actuatorPassword=s3cr3t",
-    ],
+  webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
+  properties = [
+    "app.rootEmail=$rootEmail",
+    "app.rootSecretKey=$rootSecretKey",
+    "app.apiGatewayUrl=https://localhost",
+    "app.actuatorPassword=s3cr3t",
+  ],
 )
 @ActiveProfiles(
-    "test",
-    AppLayer.api,
-    AppLayer.service,
-    AppProfiles.properties,
-    AppLayer.security,
-    AppProfiles.authRoot,
-    AppProfiles.session,
+  "test",
+  AppLayer.api,
+  AppLayer.service,
+  AppProfiles.properties,
+  AppLayer.security,
+  AppProfiles.authRoot,
+  AppProfiles.session,
 )
 @MockitoBean(
-    types = [
-        ServerConfigResolver::class,
-        PermissionService::class,
-    ]
+  types = [
+    ServerConfigResolver::class,
+    PermissionService::class,
+  ]
 )
 @Import(DisableDatabaseConfiguration::class)
 class AuthenticationTest {
 
-    private lateinit var monoGraphQLClient: WebClientGraphQLClient
+  private lateinit var monoGraphQLClient: WebClientGraphQLClient
 
-    @LocalServerPort
-    private var port: Int = 0
+  @LocalServerPort
+  private var port: Int = 0
 
-    @MockitoBean
-    lateinit var userService: UserService
+  @MockitoBean
+  lateinit var userService: UserService
 
-    @MockitoBean
-    lateinit var userSecretService: UserSecretService
+  @MockitoBean
+  lateinit var userSecretService: UserSecretService
 
-    @MockitoBean
-    lateinit var authorizedClientService: OAuth2AuthorizedClientService
+  @MockitoBean
+  lateinit var authorizedClientService: OAuth2AuthorizedClientService
 
-    @BeforeEach
-    fun setUp() {
-        val webClient = WebClient.create("http://localhost:$port/graphql")
-        this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
+  @BeforeEach
+  fun setUp() {
+    val webClient = WebClient.create("http://localhost:$port/graphql")
+    this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
+  }
+
+  @Test
+  fun `authAnonymous works`() = runTest {
+    val token = monoGraphQLClient.requestAnonymousJwt()
+
+    assertThat(token).isNotEmpty()
+  }
+
+  @Test
+  fun `authUser works`() = runTest {
+    // given
+    val mockUser = mock(User::class.java)
+    `when`(mockUser.admin).thenReturn(true)
+    `when`(userService.findByEmail(anyString())).thenReturn(mockUser)
+    val mockSecretKey = mock(UserSecret::class.java)
+    `when`(userSecretService.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)
+
+    // when
+    val graphQLMutation = DgsClient.buildMutation {
+      authUser(data = AuthUserInput(email = rootEmail, secretKey = rootSecretKey)) {
+        token
+        corrId
+      }
     }
 
-    @Test
-    fun `authAnonymous works`() = runTest {
-        val graphQLMutation = DgsClient.buildMutation {
-            authAnonymous {
-                token
-                corrId
-            }
-        }
+    val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
+      .toFuture()
+      .await()
+      .extractValue<LinkedHashMap<String, Any>>("data.authUser")
 
-        val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
-            .toFuture()
-            .await()
-            .extractValue<LinkedHashMap<String, Any>>("data.authAnonymous")
+    // then
+    val auth = ObjectMapper().convertValue(response, Map::class.java)
+    assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
+  }
+}
 
-        val auth = ObjectMapper().convertValue(response, Map::class.java)
-
-        assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
+suspend fun WebClientGraphQLClient.requestAnonymousJwt(): String {
+  val graphQLMutation = DgsClient.buildMutation {
+    authAnonymous {
+      token
+      corrId
     }
+  }
 
-    @Test
-    fun `authUser works`() = runTest {
-        // given
-        val mockUser = mock(User::class.java)
-        `when`(mockUser.admin).thenReturn(true)
-        `when`(userService.findByEmail(anyString())).thenReturn(mockUser)
-        val mockSecretKey = mock(UserSecret::class.java)
-        Mockito.`when`(userSecretService.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)
+  val response = this.reactiveExecuteQuery(graphQLMutation)
+    .toFuture()
+    .await()
+    .extractValue<LinkedHashMap<String, Any>>("data.authAnonymous")
 
-        // when
-        val graphQLMutation = DgsClient.buildMutation {
-            authUser(data = AuthUserInput(email = rootEmail, secretKey = rootSecretKey)) {
-                token
-                corrId
-            }
-        }
+  val auth = ObjectMapper().convertValue(response, Map::class.java)
+  val token = auth[DgsConstants.AUTHENTICATION.Token] as String
 
-        val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
-            .toFuture()
-            .await()
-            .extractValue<LinkedHashMap<String, Any>>("data.authUser")
-
-        // then
-        val auth = ObjectMapper().convertValue(response, Map::class.java)
-        assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
-    }
+  return token
 }

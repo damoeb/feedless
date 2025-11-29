@@ -69,7 +69,7 @@ class StandaloneFeedControllerTest {
   var port = 0
 
   @MockitoBean
-  lateinit var standaloneFeedService: StandaloneFeedService
+  lateinit var feedService: FeedService
 
   @MockitoBean
   lateinit var analyticsService: AnalyticsService
@@ -93,7 +93,7 @@ class StandaloneFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      standaloneFeedService.transformFeed(
+      feedService.transformFeed(
         any2(),
         anyOrNull2(),
         any2(),
@@ -126,7 +126,7 @@ class StandaloneFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      standaloneFeedService.webToFeed(
+      feedService.webToFeed(
         any2(),
         any2(),
         any2(),
@@ -175,7 +175,7 @@ class StandaloneFeedControllerTest {
     val restTemplate = TestRestTemplate()
 
     `when`(
-      standaloneFeedService.getFeed(
+      feedService.getFeed(
         any2(),
         any2(),
       )
@@ -201,7 +201,7 @@ class StandaloneFeedControllerTest {
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
     val restTemplate = TestRestTemplate()
-    `when`(standaloneFeedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
+    `when`(feedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)

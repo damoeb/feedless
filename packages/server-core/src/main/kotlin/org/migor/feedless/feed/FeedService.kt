@@ -55,7 +55,7 @@ import kotlin.coroutines.coroutineContext
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.standaloneFeeds} & ${AppLayer.service}")
-class StandaloneFeedService(
+class FeedService(
   private val propertyService: PropertyService,
   private val webToFeedTransformer: WebToFeedTransformer,
   private val feedParserService: FeedParserService,
@@ -67,7 +67,7 @@ class StandaloneFeedService(
   private val filterPlugin: CompositeFilterPlugin,
 ) {
 
-  private val log = LoggerFactory.getLogger(StandaloneFeedService::class.simpleName)
+  private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
   fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
 

@@ -5,7 +5,6 @@ import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.Vertical
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.document.DocumentDAO
@@ -28,9 +27,10 @@ import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
 import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueType
-import org.migor.feedless.feed.StandaloneFeedService
+import org.migor.feedless.feed.FeedService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecretType
 import org.migor.feedless.util.CryptUtil
@@ -60,7 +60,7 @@ class Seeder(
   private val pricedProductDAO: PricedProductDAO,
   private val userSecretDAO: UserSecretDAO,
   private val repositoryDAO: RepositoryDAO,
-  private val standaloneFeedService: StandaloneFeedService,
+  private val feedService: FeedService,
   private val userDAO: UserDAO,
   private val groupDAO: GroupDAO,
   private val userGroupAssignmentDAO: UserGroupAssignmentDAO,
@@ -187,7 +187,7 @@ class Seeder(
   }
 
   private fun resolveStandaloneNotificationsRepo(root: UserEntity): RepositoryEntity {
-    return resolveOpsNotificationsRepo(standaloneFeedService.getRepoTitleForStandaloneFeedNotifications(), root)
+    return resolveOpsNotificationsRepo(feedService.getRepoTitleForStandaloneFeedNotifications(), root)
   }
 
   private fun resolveOpsNotificationsRepo(repoTitle: String, root: UserEntity): RepositoryEntity {
