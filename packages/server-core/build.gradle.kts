@@ -99,6 +99,7 @@ dependencies {
   implementation(project(":packages:github-connector"))
   implementation(project(":packages:stripe-payments"))
   implementation(project(":packages:jpa-data"))
+  implementation(project(":packages:feed-parser"))
   api(project(":packages:graphql-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")
@@ -142,7 +143,6 @@ dependencies {
   // json feed
   implementation(libs.json)
   implementation(libs.guava)
-  implementation(libs.ical4j)
 
 
   implementation(libs.commons.lang3)
@@ -177,12 +177,8 @@ dependencies {
   implementation(libs.flyway.core)
 
   implementation(libs.async.http.client)
-  implementation(libs.broken.xml)
-  implementation(libs.rome)
-  implementation(libs.rome.modules)
   implementation(libs.jsoup)
   implementation(libs.xsoup)
-  implementation(libs.gson)
 
   testImplementation(libs.spring.boot.test)
   testImplementation("org.junit.jupiter:junit-jupiter-api")

@@ -1,0 +1,1141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:itunes="http://www.itunes.com/dtds/podcast-1.0.dtd"
+     xmlns:content="http://purl.org/rss/1.0/modules/content/" xmlns:podcast="https://podcastindex.org/namespace/1.0"
+>
+	<channel>
+		<atom:link href="https://afteron.libsyn.com/rss" rel="self" type="application/rss+xml"/>
+		<title>The After On Podcast</title>
+		<pubDate>Mon, 28 Feb 2022 19:20:01 +0000</pubDate>
+		<lastBuildDate>Mon, 30 May 2022 19:29:26 +0000</lastBuildDate>
+		<generator>Libsyn WebEngine 2.0</generator>
+		<link>https://www.after-on.com</link>
+		<language>en</language>
+		<copyright><![CDATA[Copyright 2019 by Rob Reid]]></copyright>
+		<docs>https://www.after-on.com</docs>
+		<managingEditor>afteron.podcast@after-on.com (afteron.podcast@after-on.com)</managingEditor>
+		<itunes:summary><![CDATA[We dive deep into the science, tech, and social issues explored in the novel "After On." It's  NOT necessary to be an "After On" reader to listen, learn & enjoy this podcast!]]></itunes:summary>
+		<image>
+			<url>https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg</url>
+			<title>The After On Podcast</title>
+			<link><![CDATA[https://www.after-on.com]]></link>
+		</image>
+		<itunes:author>Rob Reid</itunes:author>
+		<itunes:category text="Science"/>
+		<itunes:category text="Technology"/>
+		<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+		<itunes:explicit>false</itunes:explicit>
+		<itunes:owner>
+			<itunes:name><![CDATA[Rob Reid]]></itunes:name>
+			<itunes:email>afteron.podcast@after-on.com</itunes:email>
+		</itunes:owner>
+		<description><![CDATA[We dive deep into the science, tech, and social issues explored in the novel "After On." It's  NOT necessary to be an "After On" reader to listen, learn & enjoy this podcast!]]></description>
+		<itunes:subtitle><![CDATA[Deep Dives into Tech & Science with Author Rob Reid]]></itunes:subtitle>
+		<itunes:type>episodic</itunes:type>
+
+
+
+		<podcast:locked owner="afteron.podcast@after-on.com">no</podcast:locked>
+
+		<item>
+			<title>58: Recipes for Future Plagues | Kevin Esvelt</title>
+			<itunes:title>Recipes for Future Plagues | Kevin Esvelt</itunes:title>
+			<pubDate>Mon, 28 Feb 2022 19:20:01 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[4b8c7976-3b9f-4ff2-944f-f6d2b8eb6a77]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/058]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>USAID’s new “DEEP VZN” program aims to discover new pandemic-grade viruses, then broadcast their genomes to the world, according to MIT evolutionary engineer Kevin Esvelt. He estimates that 30,000 people in dozens of countries could then easily assemble them.</p>]]></description>
+			<content:encoded><![CDATA[<p>USAID’s new “DEEP VZN” program aims to discover new pandemic-grade viruses, then broadcast their genomes to the world, according to MIT evolutionary engineer Kevin Esvelt. He estimates that 30,000 people in dozens of countries could then easily assemble them.</p>]]></content:encoded>
+			<enclosure length="111161100" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/KevinEsvelt_full_v3_1.mp3?dest-id=547951" />
+			<itunes:duration>01:55:23</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[USAID’s new “DEEP VZN” program aims to discover new pandemic-grade viruses, then broadcast their genomes to the world, according to MIT evolutionary engineer Kevin Esvelt. He estimates that 30,000 people in dozens of countries could then easily asse]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>58</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>57: Octopus Intelligence (and more!) | Roger Hanlon</title>
+			<itunes:title>Octopus Intelligence (and more!) | Roger Hanlon</itunes:title>
+			<pubDate>Fri, 08 Oct 2021 17:58:10 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[d6513fb7-fbb2-4a75-acc9-536df3c4cccc]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/056]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>A wide-ranging discussion of cognition in octopuses & cuttlefish, plus many, many other topics with globally renowned sensory ecologist Roger Hanlon.</p>]]></description>
+			<content:encoded><![CDATA[<p>A wide-ranging discussion of cognition in octopuses & cuttlefish, plus many, many other topics with globally renowned sensory ecologist Roger Hanlon.</p>]]></content:encoded>
+			<enclosure length="114932763" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Roger_Final.mp3?dest-id=547951" />
+			<itunes:duration>01:59:19</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[A wide-ranging discussion of cognition in octopuses & cuttlefish, plus many, many other topics with globally renowned sensory ecologist Roger Hanlon.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>57</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>56: A Massive Future for an Old Vaccine?  | Megan Murray</title>
+			<itunes:title>A Massive Future for an Old Vaccine?  | Megan Murray</itunes:title>
+			<pubDate>Sat, 19 Jun 2021 09:39:30 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[d9672b83-3fee-481b-a7de-1ee28ecbc689]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/056]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Harvard epidemiologist Megan Murray tells us all about the anti-tuberculosis vaccine “BCG,” and the astonishing protection it may provide against Covid -- as well as looming future pandemics.</p>]]></description>
+			<content:encoded><![CDATA[<p>Harvard epidemiologist Megan Murray tells us all about the anti-tuberculosis vaccine “BCG,” and the astonishing protection it may provide against Covid -- as well as looming future pandemics.</p>]]></content:encoded>
+			<enclosure length="71054990" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/56_-_Megan_Murray.mp3?dest-id=547951" />
+			<itunes:duration>01:13:37</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Harvard epidemiologist Megan Murray tells us all about the anti-tuberculosis vaccine “BCG,” and the astonishing protection it may provide against Covid -- as well as looming future pandemics.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>56</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>55: Detecting Disease Outbreaks from Internet Traffic | Seth Stephens-Davidowitz</title>
+			<itunes:title>Detecting Disease Outbreaks from Internet Traffic | Seth Stephens-Davidowitz</itunes:title>
+			<pubDate>Fri, 23 Apr 2021 22:34:09 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[1db1a3e7-ac7e-4658-ad71-114e0dd29452]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/055]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>This is closely tied to a 4-hour collaboration between Sam Harris and me, which Sam is posting to his podcast's feed. I strongly recommend that episode too! But it's not "required" for you to get everything out of this fascinating conversation with Seth.</p>]]></description>
+			<content:encoded><![CDATA[<p>This is closely tied to a 4-hour collaboration between Sam Harris and me, which Sam is posting to his podcast's feed. I strongly recommend that episode too! But it's not "required" for you to get everything out of this fascinating conversation with Seth.</p>]]></content:encoded>
+			<enclosure length="98784074" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Seth_SD_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:42:30</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[This is closely tied to a 4-hour collaboration between Sam Harris and me, which Sam is posting to his podcast's feed. I strongly recommend that episode too! But it's not "required" for you to get everything out of this fascinating conversation with Seth.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>55</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>54: Announcing a New Season</title>
+			<itunes:title>Announcing a New Season</itunes:title>
+			<pubDate>Tue, 02 Feb 2021 22:34:58 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[62413463-2b44-4e36-abd1-4fbc5cf5b429]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/054]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>This "episode" is just a quick new announcement of a new season of the podcast (finally)! And also of something very cool that I'm working on with fellow podcaster Sam Harris.</p>]]></description>
+			<content:encoded><![CDATA[<p>This "episode" is just a quick new announcement of a new season of the podcast (finally)! And also of something very cool that I'm working on with fellow podcaster Sam Harris.</p>]]></content:encoded>
+			<enclosure length="3060554" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/54__Announcing_a_New_Season.mp3?dest-id=547951" />
+			<itunes:duration>02:47</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[This "episode" is just a quick new announcement of a new season of the podcast (finally)! And also of something very cool that I'm working on with fellow podcaster Sam Harris.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>54</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>53: The Case Against Reality | Don Hoffman (classic + updated)</title>
+			<itunes:title>The Case Against Reality | Don Hoffman (classic + updated)</itunes:title>
+			<pubDate>Tue, 30 Jul 2019 04:01:10 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[9f0bf8fa67ce42e9a7158e937bf97be3]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/053]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. This is a revisitation of our original interview, expanded with lots of new material recorded last week.  </p>]]></description>
+			<content:encoded><![CDATA[<p>Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. This is a revisitation of our original interview, expanded with lots of new material recorded last week.  </p>]]></content:encoded>
+			<enclosure length="97493550" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/53_-The_Case_Against_Reality__Don_Hoffman_classic__updated.mp3?dest-id=547951" />
+			<itunes:duration>01:41:09</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. This is a revisitation of our original interview, expanded with lots of new material recorded last week.  ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>53</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>52: Many Quantum Worlds | Sean Carroll</title>
+			<itunes:title>Many Quantum Worlds | Sean Carroll</itunes:title>
+			<pubDate>Mon, 15 Jul 2019 04:02:10 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[23095e6fa3ac4ca7b06beccf8cd6adfd]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/052]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Quantum mechanics – and its eerie "Many Worlds" interpretation – are explored in terms that both poets & physicists can appreciate.</p>]]></description>
+			<content:encoded><![CDATA[<p>Quantum mechanics – and its eerie "Many Worlds" interpretation – are explored in terms that both poets & physicists can appreciate.</p>]]></content:encoded>
+			<enclosure length="93546215" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/52_-_Many_Quantum_Worlds__Sean_Carrolll.mp3?dest-id=547951" />
+			<itunes:duration>01:37:02</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Quantum mechanics – and its eerie "Many Worlds" interpretation – are explored in terms that both poets & physicists can appreciate.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>52</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>51: On Consciousness | Annaka Harris</title>
+			<itunes:title>On Consciousness | Annaka Harris</itunes:title>
+			<pubDate>Tue, 25 Jun 2019 04:01:21 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[e8b88c71739c4d3dab7a326ef2e745be]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/051]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The baffling and fascinating mysteries connected to the phenomenon of consciousness are explored in this conversation with the deeply thoughtful science writer, Annaka Harris.</p>]]></description>
+			<content:encoded><![CDATA[<p>The baffling and fascinating mysteries connected to the phenomenon of consciousness are explored in this conversation with the deeply thoughtful science writer, Annaka Harris.</p>]]></content:encoded>
+			<enclosure length="77561365" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Annaka_Harris.mp3?dest-id=547951" />
+			<itunes:duration>01:20:23</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The baffling and fascinating mysteries connected to the phenomenon of consciousness are explored in this conversation with the deeply thoughtful science writer, Annaka Harris.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>51</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>50: About that TED Talk | Kevin Rose</title>
+			<itunes:title>About that TED Talk | Kevin Rose</itunes:title>
+			<pubDate>Tue, 18 Jun 2019 16:13:47 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[23f3fc2b4f6d40828755df101d762df3]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/050]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>This morning, TED posted a talk I just gave at their annual conference (on 11 days notice!). Kevin Rose interviewed me about my talk for his podcast. I’m posting his interview here as well.</p>]]></description>
+			<content:encoded><![CDATA[<p>This morning, TED posted a talk I just gave at their annual conference (on 11 days notice!). Kevin Rose interviewed me about my talk for his podcast. I’m posting his interview here as well.</p>]]></content:encoded>
+			<enclosure length="157233166" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/50_About_That_TED_Talk__Kevin_Rose.mp3?dest-id=547951" />
+			<itunes:duration>01:21:42</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords>Kevin,Rob,talk,rose,ted,Reid,synbio</itunes:keywords>
+			<itunes:subtitle><![CDATA[This morning, TED posted a talk I just gave at their annual conference (on 11 days notice!). Kevin Rose interviewed me about my talk for his podcast. I’m posting his interview here as well.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>50</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>49: Canceling PTSD with MDMA (part 2) | Rick Doblin</title>
+			<itunes:title>Canceling PTSD with MDMA (part 2) | Rick Doblin</itunes:title>
+			<pubDate>Tue, 28 May 2019 17:11:05 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[80a3feee907041088379e121e19da3f4]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/049]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.</p>]]></description>
+			<content:encoded><![CDATA[<p>The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.</p>]]></content:encoded>
+			<enclosure length="116546510" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/49__Rick_Doblin_PART_TWO.mp3?dest-id=547951" />
+			<itunes:duration>01:00:30</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>49</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>48: Canceling PTSD with MDMA (part 1) | Rick Doblin</title>
+			<itunes:title>Canceling PTSD with MDMA (part 1) | Rick Doblin</itunes:title>
+			<pubDate>Tue, 21 May 2019 04:15:13 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[cb9a340f404549a8a5b61fc91ad7114a]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/048]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.</p>]]></description>
+			<content:encoded><![CDATA[<p>The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.</p>]]></content:encoded>
+			<enclosure length="64200174" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/48__Rick_Doblin.mp3?dest-id=547951" />
+			<itunes:duration>01:06:28</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The drug known as Molly, Ecstasy and MDMA may soon get regulatory approved for therapeutic use, thanks to a 34-year campaign waged by Rick Doblin. Rick and I discuss all of this, plus his own unique story.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>48</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>47. AI Boom, or Doom? | Stuart Russell</title>
+			<itunes:title>AI Boom, or Doom? | Stuart Russell</itunes:title>
+			<pubDate>Tue, 30 Apr 2019 04:00:41 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[40890f9bc25046c8a1d8bdc98758c66f]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/047]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Stuart Russell’s textbook is used to teach AI in over 1,400 universities and 120 countries. If AI scares him, it should scare you too.</p>]]></description>
+			<content:encoded><![CDATA[<p>Stuart Russell’s textbook is used to teach AI in over 1,400 universities and 120 countries. If AI scares him, it should scare you too.</p>]]></content:encoded>
+			<enclosure length="86886871" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/47__Stuart_Russell.mp3?dest-id=547951" />
+			<itunes:duration>01:30:06</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Stuart Russell’s textbook is used to teach AI in over 1,400 universities and 120 countries. If AI scares him, it should scare you too. ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>47</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>46: Defeating Food Allergies | Kari Nadeau</title>
+			<itunes:title>Defeating Food Allergies | Kari Nadeau</itunes:title>
+			<pubDate>Tue, 09 Apr 2019 04:01:31 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[022547f1d47a49afb3e80cfef4dc5f35]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/046]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The food allergy epidemic is mysterious, volatile, and growing fast. Kari Nadeau and her Stanford team are trying to halt it.</p>]]></description>
+			<content:encoded><![CDATA[<p>The food allergy epidemic is mysterious, volatile, and growing fast. Kari Nadeau and her Stanford team are trying to halt it.</p>]]></content:encoded>
+			<enclosure length="103886336" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Kari_Final.mp3?dest-id=547951" />
+			<itunes:duration>01:47:49</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The food allergy epidemic is mysterious, volatile, and growing fast. Kari Nadeau and her Stanford team are trying to halt it.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>46</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>45: End Games (part 2) | Naval Ravikant</title>
+			<itunes:title>End Games (part 2) | Naval Ravikant</itunes:title>
+			<pubDate>Thu, 21 Mar 2019 15:40:51 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[9e7d806c24864283b478e014d445199e]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/045]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>A rampage killer with a knife can kill a few. With a gun, dozens. With a jetliner, way more. What might future tech enable? In Part Two of our conversation, Naval and I discuss "The Ender."And how to preclude this monstrosity.</p>]]></description>
+			<content:encoded><![CDATA[<p>A rampage killer with a knife can kill a few. With a gun, dozens. With a jetliner, way more. What might future tech enable? In Part Two of our conversation, Naval and I discuss "The Ender."And how to preclude this monstrosity.</p>]]></content:encoded>
+			<enclosure length="95482328" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/45_-_Naval_Ravikant_part_2_End_Games.mp3?dest-id=547951" />
+			<itunes:duration>01:06:02</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[A rampage killer with a knife can kill a few. With a gun, dozens. With a jetliner, way more. What might future tech enable? In Part Two of our conversation, Naval and I discuss "The Ender."And how to preclude this monstrosity.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>45</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>44: End Games (part 1) | Naval Ravikant</title>
+			<itunes:title>End Games (part 1) | Naval Ravikant</itunes:title>
+			<pubDate>Tue, 19 Mar 2019 04:03:41 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[c7923a024d974d09b9beecec60c08357]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/044]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Naval & I discuss a horrifying risk. We questioned whether to post this. Might it give someone ideas? Well, the bad guys already HAVE ideas. And cataclysms are only averted if we face them. There’s still time.</p>]]></description>
+			<content:encoded><![CDATA[<p>Naval & I discuss a horrifying risk. We questioned whether to post this. Might it give someone ideas? Well, the bad guys already HAVE ideas. And cataclysms are only averted if we face them. There’s still time.</p>]]></content:encoded>
+			<enclosure length="71124376" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/44_-_Naval_Ravikant_part_1__End_Games.mp3?dest-id=547951" />
+			<itunes:duration>01:13:41</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Naval & I discuss a horrifying risk. We questioned whether to post this. Might it give someone ideas? Well, the bad guys already HAVE ideas. And cataclysms are only averted if we face them. There’s still time.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>44</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>43: Synthetic Neurobiology | Ed Boyden</title>
+			<itunes:title>Synthetic Neurobiology | Ed Boyden</itunes:title>
+			<pubDate>Fri, 01 Mar 2019 05:03:11 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[61550528068a44e2ad2b3007cea3a02a]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/043]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Not yet 40, Ed Boyden has already concocted a panoply of tools, which are revolutionizing neuroscience research. He tells us all about optogenetics, expansion microscopy, and more.</p>]]></description>
+			<content:encoded><![CDATA[<p>Not yet 40, Ed Boyden has already concocted a panoply of tools, which are revolutionizing neuroscience research. He tells us all about optogenetics, expansion microscopy, and more.</p>]]></content:encoded>
+			<enclosure length="79167711" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/43_-_Ed_Boyden__Tools_to_Tranform_Neuroscience.mp3?dest-id=547951" />
+			<itunes:duration>01:22:04</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Not yet 40, Ed Boyden has already concocted a panoply of tools, which are revolutionizing neuroscience research. He tells us all about optogenetics, expansion microscopy, and more. ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>43</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>42: Live from Gainesville + the 2019 Plan</title>
+			<itunes:title>Live from Gainesville + the 2019 Plan</itunes:title>
+			<pubDate>Sun, 30 Dec 2018 01:57:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[b2f6d1c6c6ed4fbc801ee1fc787b8498]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/042]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>We start with a review of this podcast's 2019 roadmap. Then – recorded before a live audience in Gainesville, Florida – I'M the interviewee for once!</p>]]></description>
+			<content:encoded><![CDATA[<p>We start with a review of this podcast's 2019 roadmap. Then – recorded before a live audience in Gainesville, Florida – I'M the interviewee for once!</p>]]></content:encoded>
+			<enclosure length="54254289" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/42__Live_from_Gainesville__the_2019_Plan.mp3?dest-id=547951" />
+			<itunes:duration>56:07</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[We start with a review of this podcast's 2019 roadmap. Then – recorded before a live audience in Gainesville, Florida – I'M the interviewee for once!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>42</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>41: The Medical Potential of Video Games | Adam Gazzaley</title>
+			<itunes:title>The Medical Potential of Video Games | Adam Gazzaley</itunes:title>
+			<pubDate>Wed, 19 Dec 2018 05:00:38 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[2bd0b0888db8413d83095053623c317f]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/041]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Both a recap and extensive update of last summer's conversation about neuroscience, consciousness, and the medical potential of video games.</p>]]></description>
+			<content:encoded><![CDATA[<p>Both a recap and extensive update of last summer's conversation about neuroscience, consciousness, and the medical potential of video games.</p>]]></content:encoded>
+			<enclosure length="43296362" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/41__Adam_Gazzaley.mp3?dest-id=547951" />
+			<itunes:duration>01:29:23</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Both a recap and extensive update of last summer's conversation about neuroscience, consciousness, and the medical potential of video games.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>41</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>40: Our Interstellar Visitor | Avi Loeb</title>
+			<itunes:title>Our Interstellar Visitor | Avi Loeb</itunes:title>
+			<pubDate>Wed, 28 Nov 2018 05:04:57 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[edf459ab84fd4c66b6c04373bcb10c4a]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/040]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Did the product of an alien intelligence make a near-Earth approach last fall? Harvard Astronomy Department Chair Avi Loeb believes this is possible.</p>]]></description>
+			<content:encoded><![CDATA[<p>Did the product of an alien intelligence make a near-Earth approach last fall? Harvard Astronomy Department Chair Avi Loeb believes this is possible.</p>]]></content:encoded>
+			<enclosure length="68149760" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/40_-_Our_Interstellar_Visit__Avi_Loeb.mp3?dest-id=547951" />
+			<itunes:duration>01:10:35</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Did the product of an alien intelligence make a near-Earth approach last fall? Harvard Astronomy Department Chair Avi Loeb believes this is possible.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>40</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>39: Restoring Sight to the Blind | EJ Chichinilsky</title>
+			<itunes:title>Restoring Sight to the Blind | EJ Chichinilsky</itunes:title>
+			<pubDate>Wed, 14 Nov 2018 09:22:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[df2e42ebe5dd4819ab9822164b639f1b]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/039]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Amazing work at Stanford could restore vision to the blind. Then later become a gateway some mind-blowing neural augmentation! We discuss the astounding neuroscience and engineering behind all this, with the professor who's making it happen.</p>]]></description>
+			<content:encoded><![CDATA[<p>Amazing work at Stanford could restore vision to the blind. Then later become a gateway some mind-blowing neural augmentation! We discuss the astounding neuroscience and engineering behind all this, with the professor who's making it happen.</p>]]></content:encoded>
+			<enclosure length="81286764" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/1._Restoring_Sight_to_the_Blind__EJ_Chichilnisky.mp3?dest-id=547951" />
+			<itunes:duration>01:24:16</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Amazing work at Stanford could restore vision to the blind. Then later become a gateway some mind-blowing neural augmentation! We discuss the astounding neuroscience and engineering behind all this, with the professor who's making it happen.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>39</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>38:  The Science &amp; Practice of Happiness | Laurie Santos</title>
+			<itunes:title>The Science &amp; Practice of Happiness | Laurie Santos</itunes:title>
+			<pubDate>Wed, 24 Oct 2018 04:00:09 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[af6fb2c273774ee8a42efc5c6857d4f7]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/038]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>This spring, Yale evolutionary psychologist Laurie Santos debuted a course about happiness, almost as an experiment. It became the most popular course in the university's 300+ year history. Listen carefully, because this episode could make you happier!</p>]]></description>
+			<content:encoded><![CDATA[<p>This spring, Yale evolutionary psychologist Laurie Santos debuted a course about happiness, almost as an experiment. It became the most popular course in the university's 300+ year history. Listen carefully, because this episode could make you happier!</p>]]></content:encoded>
+			<enclosure length="82869029" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Laurie_Santos__The_Science_of_Happiness.mp3?dest-id=547951" />
+			<itunes:duration>01:25:55</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[This spring, Yale evolutionary psychologist Laurie Santos debuted a course about happiness, almost as an experiment. It became the most popular course in the university's 300+ year history. Listen carefully, because this episode could make you happier!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>38</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>37. On the Future | Astronomer Royal Martin Rees</title>
+			<itunes:title>On the Future | Astronomer Royal Martin Rees</itunes:title>
+			<pubDate>Mon, 01 Oct 2018 04:01:02 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[187994a927404559bbfa79bff9948941]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/037]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Can humankind survive this century? Great Britain’s Astronomer Royal Martin Rees shares some of his profoundly original thinking on this fraught question.</p>]]></description>
+			<content:encoded><![CDATA[<p>Can humankind survive this century? Great Britain’s Astronomer Royal Martin Rees shares some of his profoundly original thinking on this fraught question.</p>]]></content:encoded>
+			<enclosure length="78139403" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/37._Martin_Rees.mp3?dest-id=547951" />
+			<itunes:duration>01:20:59</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Can humankind survive this century? Great Britain’s Astronomer Royal Martin Rees shares some of his profoundly original thinking on this fraught question.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>37</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>36. Mapping the Heavens | Priya Natarajan</title>
+			<itunes:title>Mapping the Heavens | Priya Natarajan</itunes:title>
+			<pubDate>Thu, 13 Sep 2018 23:42:50 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[9f9995bd0018422287388e00e2082b83]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/036]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Dark matter, dark energy, and black holes are the universe's three most massive mysteries. Literally! Yale astrophysicist Priya Natarajan takes us on a fascinating tour of them all. </p>]]></description>
+			<content:encoded><![CDATA[<p>Dark matter, dark energy, and black holes are the universe's three most massive mysteries. Literally! Yale astrophysicist Priya Natarajan takes us on a fascinating tour of them all. </p>]]></content:encoded>
+			<enclosure length="80779361" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/36._Priya_Nataranjan__Mapping_the_Heavens.mp3?dest-id=547951" />
+			<itunes:duration>01:23:44</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Dark matter, dark energy, and black holes are the universe's three most massive mysteries. Literally! Yale astrophysicist Priya Natarajan takes us on a fascinating tour of them all. ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>36</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>35: Empowering the Acre | Andrew Youn</title>
+			<itunes:title>Empowering the Acre | Andrew Youn</itunes:title>
+			<pubDate>Wed, 22 Aug 2018 04:31:47 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[a005e7a559264793b465c338b98fc7b4]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/035]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Andrew Youn's One Acre Found is bringing food security to hundreds of thousands of families throughout Central Africa. Now THAT'S an inspiring startup!</p>]]></description>
+			<content:encoded><![CDATA[<p>Andrew Youn's One Acre Found is bringing food security to hundreds of thousands of families throughout Central Africa. Now THAT'S an inspiring startup!</p>]]></content:encoded>
+			<enclosure length="70877362" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/35_-_Andrew_Youn__Empowering_the_Acre.mp3?dest-id=547951" />
+			<itunes:duration>01:13:26</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Andrew Youn's One Acre Found is bringing food security to hundreds of thousands of families throughout Central Africa. Now THAT'S an inspiring startup!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>35</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>34: Ancient DNA | David Reich</title>
+			<itunes:title>Ancient DNA | David Reich</itunes:title>
+			<pubDate>Tue, 31 Jul 2018 04:00:30 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[2c9f01c4cbd74560896ad9d90ef87637]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/034]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The genetic code of Neanderthals, archaic humans, and other elders is reconfiguring much of our understanding of human history. And it could just save hundreds of thousands of modern human lives per year.</p>]]></description>
+			<content:encoded><![CDATA[<p>The genetic code of Neanderthals, archaic humans, and other elders is reconfiguring much of our understanding of human history. And it could just save hundreds of thousands of modern human lives per year.</p>]]></content:encoded>
+			<enclosure length="88307096" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Ep._34_David_Reich.mp3?dest-id=547951" />
+			<itunes:duration>01:31:35</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The genetic code of Neanderthals, archaic humans, and other elders is reconfiguring much of our understanding of human history. And it could just save hundreds of thousands of modern human lives per year.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>34</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>33: The Evolution of Beauty | Richard Prum</title>
+			<itunes:title>The Evolution of Beauty | Richard Prum</itunes:title>
+			<pubDate>Mon, 16 Jul 2018 04:09:17 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[d449c6817cd64c5691afae1858688bdd]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/033]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>A bold and brilliant refutation of the common wisdom about sexual attraction, aesthetics, and more. Rick Prum is an evolutionary heretic. And the wellspring of his unorthodox ideas is ... Charles Darwin himself.</p>]]></description>
+			<content:encoded><![CDATA[<p>A bold and brilliant refutation of the common wisdom about sexual attraction, aesthetics, and more. Rick Prum is an evolutionary heretic. And the wellspring of his unorthodox ideas is ... Charles Darwin himself.</p>]]></content:encoded>
+			<enclosure length="82031857" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Rick_Prum_full.mp3?dest-id=547951" />
+			<itunes:duration>01:25:03</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[A bold and brilliant refutation of the common wisdom about sexual attraction, aesthetics, and more. Rick Prum is an evolutionary heretic. And the wellspring of his unorthodox ideas is ... Charles Darwin himself.  ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>33</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>Announcement | On the Future of this Podcast</title>
+			<itunes:title>Announcement | On the Future of this Podcast</itunes:title>
+			<pubDate>Sun, 01 Jul 2018 02:16:43 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[ab66964f2c9845c7a46a8c028b6c6444]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/032]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The full lowdown on where this podcast is going from here.</p>]]></description>
+			<content:encoded><![CDATA[<p>The full lowdown on where this podcast is going from here.</p>]]></content:encoded>
+			<enclosure length="20535848" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/June_30_Announcement.mp3?dest-id=547951" />
+			<itunes:duration>20:59</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The full lowdown on where this podcast is going from here. ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>32</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>31: Expanding DNA's Alphabet (by half!) | Floyd Romesberg</title>
+			<itunes:title>Expanding DNA's Alphabet (by half!) | Floyd Romesberg</itunes:title>
+			<pubDate>Tue, 26 Jun 2018 18:03:32 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[b975ae34e54a4a6481227475fb9b8054]]></guid>
+			<link><![CDATA[https://after-on.com/episodes-31-60/031]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Floyd Romesberg added two letters to DNA's ancient four-letter alphabet. He got this running in cells. And coding proteins. His cell lines have passed it down hundreds of generations. Now what?</p>]]></description>
+			<content:encoded><![CDATA[<p>Floyd Romesberg added two letters to DNA's ancient four-letter alphabet. He got this running in cells. And coding proteins. His cell lines have passed it down hundreds of generations. Now what?</p>]]></content:encoded>
+			<enclosure length="77767547" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/31_-_Expanding_DNAs_Library__Floyd_Romesberg.mp3?dest-id=547951" />
+			<itunes:duration>01:20:36</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Floyd Romesberg added two letters to DNA's ancient four-letter alphabet. He got this running in cells. And coding proteins. His cell lines have passed it down hundreds of generations. Now what?]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>31</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>30. De-extinction, The Whole Earth, and Way More|Stewart Brand </title>
+			<itunes:title>De-extinction, The Whole Earth, and Way More|Stewart Brand </itunes:title>
+			<pubDate>Tue, 12 Jun 2018 04:01:48 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[d5e1b35fa8b646b78ba7e518a3c8b44b]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/030]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Over six consecutive decades, Stewart Brand has impacted society, tech and science in outlandishly diverse ways. This truly unhurried conversation explores the scope of his intensely original American life.</p>]]></description>
+			<content:encoded><![CDATA[<p>Over six consecutive decades, Stewart Brand has impacted society, tech and science in outlandishly diverse ways. This truly unhurried conversation explores the scope of his intensely original American life.</p>]]></content:encoded>
+			<enclosure length="99073725" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Stewart_brand.mp3?dest-id=547951" />
+			<itunes:duration>01:42:48</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Over six consecutive decades, Stewart Brand has impacted society, tech and science in outlandishly diverse ways. This truly unhurried conversation explores the scope of his intensely original American life.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>30</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>Jordan Harbinger | Bonus Episode</title>
+			<itunes:title>Jordan Harbinger | Bonus Episode</itunes:title>
+			<pubDate>Fri, 08 Jun 2018 03:49:49 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[88dd7608c3e74028b3cb63743be6fe52]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/029]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>An examination of the science of psychopathy from my buddy Jordan Harbinger’s terrific podcast. This bonus episode is in addition to the two new original episodes I’m creating this month.</p>]]></description>
+			<content:encoded><![CDATA[<p>An examination of the science of psychopathy from my buddy Jordan Harbinger’s terrific podcast. This bonus episode is in addition to the two new original episodes I’m creating this month.</p>]]></content:encoded>
+			<enclosure length="84792895" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Jordan.mp3?dest-id=547951" />
+			<itunes:duration>01:27:55</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[An examination of the science of psychopathy from my buddy Jordan Harbinger’s terrific podcast. This bonus episode is in addition to the two new original episodes I’m creating this month.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>27</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>28: Exponential Medicine | Daniel Kraft</title>
+			<itunes:title>Exponential Medicine | Daniel Kraft</itunes:title>
+			<pubDate>Tue, 29 May 2018 04:00:37 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[650431797cb04dc6a98e2d2ba001032a]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/028]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Key aspects of medical technology are improving even faster than computers. What are the ramifications for our health? For our lifespans? Dr. Daniel Kraft has tremendous insights into all of this - particularly as it relates to cancer.</p>]]></description>
+			<content:encoded><![CDATA[<p>Key aspects of medical technology are improving even faster than computers. What are the ramifications for our health? For our lifespans? Dr. Daniel Kraft has tremendous insights into all of this - particularly as it relates to cancer.</p>]]></content:encoded>
+			<enclosure length="66097581" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Daniel_Kraft_final.mp3?dest-id=547951" />
+			<itunes:duration>01:08:27</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Key aspects of medical technology are improving even faster than computers. What are the ramifications for our health? For our lifespans? Dr. Daniel Kraft has tremendous insights into all of this - particularly as it relates to cancer.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>28</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>27. Depression: The Psychedelic Cure | Katya Malievskaia &amp; George Goldsmith</title>
+			<itunes:title>Depression: The Psychedelic Cure | Katya Malievskaia &amp; George Goldsmith</itunes:title>
+			<pubDate>Tue, 15 May 2018 04:00:22 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[c20c46d15298ba2c9de6f2b8febd92ec]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/027]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>The largest-ever clinical trial of a psychedelic drug will soon begin in Europe and North America. The drug is psilocybin - the active ingredient in magic mushrooms. The target is treatment-resistant depression.</p>]]></description>
+			<content:encoded><![CDATA[<p>The largest-ever clinical trial of a psychedelic drug will soon begin in Europe and North America. The drug is psilocybin - the active ingredient in magic mushrooms. The target is treatment-resistant depression.</p>]]></content:encoded>
+			<enclosure length="63460804" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/27._Depression_-_The_Psychedelic_Cure.mp3?dest-id=547951" />
+			<itunes:duration>01:05:42</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[The largest-ever clinical trial of a psychedelic drug will soon begin in Europe and North America. The drug is psilocybin - the active ingredient in magic mushrooms. The target is treatment-resistant depression.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>27</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>26: Reality Isn't | Don Hoffman</title>
+			<itunes:title>Reality Isn't | Don Hoffman</itunes:title>
+			<pubDate>Mon, 30 Apr 2018 16:45:21 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[6511411c2e4eb4f9bbf1918f26370915]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/026]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. Is it the most counterintuitive insight since Pythagoras figured the Earth is round?</p>]]></description>
+			<content:encoded><![CDATA[<p>Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. Is it the most counterintuitive insight since Pythagoras figured the Earth is round?</p>]]></content:encoded>
+			<enclosure length="79048046" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Don_Hoffman_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:21:56</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Quantitative Psychologist Don Hoffman has a head-spinning take on the true nature of reality vs. what our senses report to us. Is it the most counterintuitive insight since Pythagoras figured the Earth is round?]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>26</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>25. A Night at the Battery</title>
+			<itunes:title>A Night at the Battery</itunes:title>
+			<pubDate>Tue, 17 Apr 2018 04:02:42 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[36a1a07446a37c7f7c564048eaf4d2b0]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/025]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>In this very atypical episode, the tables turn and I'm the interviewee! We discuss all of my creative projects, including this podcast series. Recorded live at The Battery in San Francisco.</p>]]></description>
+			<content:encoded><![CDATA[<p>In this very atypical episode, the tables turn and I'm the interviewee! We discuss all of my creative projects, including this podcast series. Recorded live at The Battery in San Francisco.</p>]]></content:encoded>
+			<enclosure length="61505045" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Episode_25.mp3?dest-id=547951" />
+			<itunes:duration>01:03:40</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[In this very atypical episode, the tables turn and I'm the interviewee! We discuss all of my creative projects, including this podcast series. Recorded live at The Battery in San Francisco.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>25</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>24: BioEngineering |George Church </title>
+			<itunes:title>BioEngineering |George Church </itunes:title>
+			<pubDate>Tue, 03 Apr 2018 00:25:51 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[4280faf65f3781c92ebf167554a64cb2]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/024]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>George Church helped found 22 companies, and co-invented the paradigm-shattering gene editing technique CRISPR. In our interview, he delivers a sweeping survey of the world of synthetic biology, and makes some astounding predictions</p>]]></description>
+			<content:encoded><![CDATA[<p>George Church helped found 22 companies, and co-invented the paradigm-shattering gene editing technique CRISPR. In our interview, he delivers a sweeping survey of the world of synthetic biology, and makes some astounding predictions</p>]]></content:encoded>
+			<enclosure length="78029898" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/George_Church_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:20:53</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[George Church helped found 22 companies, and co-invented the paradigm-shattering gene editing technique CRISPR. In our interview, he delivers a sweeping survey of the world of synthetic biology, and makes some astounding predictions]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>24</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>23: AI &amp; Robotics - Their Present and Future| Rodney Brooks</title>
+			<itunes:title>AI &amp; Robotics - Their Present and Future| Rodney Brooks</itunes:title>
+			<pubDate>Tue, 20 Mar 2018 04:06:46 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[79ce1ea55865a57b6f4b23bea2722f4c]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/023]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Rodney Brooks is a founding luminary of TWO vital domains in tech: robotics and AI. He's the father of the Roomba, the long-time head of MIT's AI lab, and a serial entrepreneur. Few can rival his breadth & depth in technology.</p>]]></description>
+			<content:encoded><![CDATA[<p>Rodney Brooks is a founding luminary of TWO vital domains in tech: robotics and AI. He's the father of the Roomba, the long-time head of MIT's AI lab, and a serial entrepreneur. Few can rival his breadth & depth in technology.</p>]]></content:encoded>
+			<enclosure length="79805516" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/23._Rodney_Brooks_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:22:44</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Rodney Brooks is a founding luminary of TWO vital domains in tech: robotics and AI. He's the father of the Roomba, the long-time head of MIT's AI lab, and a serial entrepreneur. Few can rival his breadth & depth in technology.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>23</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>22: Creating the 6th, 7th &amp; 8th Sense | David Eagleman</title>
+			<itunes:title>Creating the 6th, 7th &amp; 8th Sense | David Eagleman</itunes:title>
+			<pubDate>Tue, 06 Mar 2018 06:09:13 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[a016af45d2ab3510bf949ae18aa3ff40]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/022]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Neuroscientist David Eagleman has done groundbreaking work on how we perceive time. Now he hopes to radically expand the pantheon of human senses.</p>]]></description>
+			<content:encoded><![CDATA[<p>Neuroscientist David Eagleman has done groundbreaking work on how we perceive time. Now he hopes to radically expand the pantheon of human senses.</p>]]></content:encoded>
+			<enclosure length="57536940" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/David_E_FINAL_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>59:32</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Neuroscientist David Eagleman has done groundbreaking work on how we perceive  time. Now he hopes to radically expand the pantheon of human senses.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>22</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>21: Neural Imaging and ... Telepathy? | Mary Lou Jepsen</title>
+			<itunes:title>Neural Imaging and ... Telepathy? | Mary Lou Jepsen</itunes:title>
+			<pubDate>Tue, 20 Feb 2018 05:45:28 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[e021aaa494ab21d7e2b102bb4e7e6a54]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/021]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>After stints at Google and Facebook, serial entrepreneur Mary Lou Jepsen is ready to upend the worlds of medical imaging and ... telepathy. Yup, TELEPATHY. Give it a listen!</p>]]></description>
+			<content:encoded><![CDATA[<p>After stints at Google and Facebook, serial entrepreneur Mary Lou Jepsen is ready to upend the worlds of medical imaging and ... telepathy. Yup, TELEPATHY. Give it a listen!</p>]]></content:encoded>
+			<enclosure length="65457813" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/21._Mary_Lou_Jepsen__Neural_Imagining_and_..._TELEPATHY.mp3?dest-id=547951" />
+			<itunes:duration>01:07:47</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[After stints at Google and Facebook, serial entrepreneur Mary Lou Jepsen is ready to upend the worlds of medical imaging and ... telepathy. Yup, TELEPATHY. Give it a listen!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>21</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>20: Radical Life Extension | Aubrey de Grey </title>
+			<itunes:title>Radical Life Extension | Aubrey de Grey </itunes:title>
+			<pubDate>Wed, 17 Jan 2018 20:14:59 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[f01e15d653a5333ec660061c45012dbb]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/020]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Aubrey de Grey is a highly credentialed scientist who believes it's within our grasp to REVERSE human aging in the next few decades. Dozens of scientists are now executing on his plan, funded by extremely smart backers including Peter Thiel.</p>]]></description>
+			<content:encoded><![CDATA[<p>Aubrey de Grey is a highly credentialed scientist who believes it's within our grasp to REVERSE human aging in the next few decades. Dozens of scientists are now executing on his plan, funded by extremely smart backers including Peter Thiel.</p>]]></content:encoded>
+			<enclosure length="64702015" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/20._Aubrey_De_Grey_-_Radical_Life_Extension.mp3?dest-id=547951" />
+			<itunes:duration>01:07:00</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Aubrey de Grey is a highly credentialed scientist who believes it's within our grasp to REVERSE human aging in the next few decades. Dozens of scientists are now executing on his plan, funded by extremely smart backers like Peter Thiel.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>20</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>19: A Lightning Tour of the After On Universe</title>
+			<itunes:title>A Lightning Tour of the After On Universe</itunes:title>
+			<pubDate>Tue, 02 Jan 2018 02:40:12 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[b1b03df84c0c0e3e9bf7bea787e8c58c]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/019]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>A wide-ranging set of excerpts from the After On audiobook, read brilliant folks including John Hodgman, Felicia Day, Jesse Cox, Tom Merritt. Back to "normal" episodes next week, promise! :-)</p>]]></description>
+			<content:encoded><![CDATA[<p>A wide-ranging set of excerpts from the After On audiobook, read brilliant folks including John Hodgman, Felicia Day, Jesse Cox, Tom Merritt. Back to "normal" episodes next week, promise! :-)</p>]]></content:encoded>
+			<enclosure length="71498867" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Ep_19_Ver_1_After_On_2.mp3?dest-id=547951" />
+			<itunes:duration>01:14:04</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[A wide-ranging set of excerpts from the After On audiobook, read brilliant folks including John Hodgman, Felicia Day, Jesse Cox, Tom Merritt.  Back to "normal" episodes next week, promise!   :-)]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>19</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>18: It's Really After On</title>
+			<itunes:title>It's Really After On</itunes:title>
+			<pubDate>Fri, 22 Dec 2017 00:39:36 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[c3e3eb59249186645e2f01dca859dd5f]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/018]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>This week, Broadway's own January LaVoy and legendary fantasy writer Patrick Rothfuss read/perform the the opening of the After On audiobook (plus quite a bit more). With some notes & observations from the author.</p>]]></description>
+			<content:encoded><![CDATA[<p>This week, Broadway's own January LaVoy and legendary fantasy writer Patrick Rothfuss read/perform the the opening of the After On audiobook (plus quite a bit more). With some notes & observations from the author.</p>]]></content:encoded>
+			<enclosure length="82388794" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/18_-_After_On_Part_1.mp3?dest-id=547951" />
+			<itunes:duration>01:25:25</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[This week, Broadway's own January LaVoy and legendary fantasy writer Patrick Rothfuss read/perform the the opening of the After On audiobook (plus quite a bit more). With some notes & observations from the author.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>18</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>17: The Past Present &amp; Future of Cryptocurrency | Coinbase Co-Founder Fred Ehrsam</title>
+			<itunes:title>The Past Present &amp; Future of Cryptocurrency | Coinbase Co-Founder Fred Ehrsam</itunes:title>
+			<pubDate>Wed, 13 Dec 2017 04:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[f9e794a5098138f81e0457603a1cbffc]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/017]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Whether you’re a cryptocurrency novice or expert, this episode will teach you a ton. My guest, Fred Ehrsam, founded the world’s largest platform for storing & trading Bitcoin and more. Just us for a full crypto education!</p>]]></description>
+			<content:encoded><![CDATA[<p>Whether you’re a cryptocurrency novice or expert, this episode will teach you a ton. My guest, Fred Ehrsam, founded the world’s largest platform for storing & trading Bitcoin and more. Just us for a full crypto education!</p>]]></content:encoded>
+			<enclosure length="100839441" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/17._Fred_Ehrsam.mp3?dest-id=547951" />
+			<itunes:duration>01:44:38</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Whether you’re a cryptocurrency novice or expert, this episode will teach you a ton. My guest, Fred Ehrsam, founded the world’s largest platform for storing & trading Bitcoin and more. Just us for a full crypto education!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>17</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>16: The Promise &amp; Peril in YOUR Genes | Robert Green</title>
+			<itunes:title>The Promise &amp; Peril in YOUR Genes | Robert Green</itunes:title>
+			<pubDate>Wed, 29 Nov 2017 04:53:11 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[53c5fc4225601f7b0486a9872e304586]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/016]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>You will soon have access to a dizzying battery of facts about your health. Some could be horrid or positive on a life-changing scale! But most will be wildly ambiguous. Should you peek? NOTE: This is NOT just hypothetical.</p>]]></description>
+			<content:encoded><![CDATA[<p>You will soon have access to a dizzying battery of facts about your health. Some could be horrid or positive on a life-changing scale! But most will be wildly ambiguous. Should you peek? NOTE: This is NOT just hypothetical.</p>]]></content:encoded>
+			<enclosure length="92653036" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/16._Robert_Green_1.mp3?dest-id=547951" />
+			<itunes:duration>01:36:07</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[You will soon have access to a dizzying battery of facts about your health. Some could be life-changingly horrid or positive! But most will be wildly ambiguous. Should you peak? NOTE: This is NOT just hypothetical.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>16</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>15. Music Piracy | The Extraterrestrial Threat</title>
+			<itunes:title>Music Piracy | The Extraterrestrial Threat</itunes:title>
+			<pubDate>Tue, 21 Nov 2017 03:48:56 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[86fd75d8e6bd3ae96435a274fba80246]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/015]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>A vast alien civilization is so into American pop music, it recently committed the biggest copyright violation since the dawn of time. Against us! How should humanity respond? A special (and rather playful) episode with John Hodgman.</p>]]></description>
+			<content:encoded><![CDATA[<p>A vast alien civilization is so into American pop music, it recently committed the biggest copyright violation since the dawn of time. Against us! How should humanity respond? A special (and rather playful) episode with John Hodgman.</p>]]></content:encoded>
+			<enclosure length="60294464" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/15._Year_Zero.mp3?dest-id=547951" />
+			<itunes:duration>01:23:12</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[A vast alien civilization is so into American pop music, it recently committed the biggest copyright violation since the dawn of time. Against us! How should humanity respond? A special (and rather playful) episode with John Hodgman.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>15</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>14: The Future (if any) of Jobs | Andrew McAfee</title>
+			<itunes:title>The Future (if any) of Jobs | Andrew McAfee</itunes:title>
+			<pubDate>Tue, 14 Nov 2017 16:45:37 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[06c74de5bb3d6a45196f0e5478d5019b]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/014]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Andy McAfee of MIT is a leading thinker about how robotics and other automation will influence the future of work and jobs. We touch on some scary stuff - plus some delightful notes of optimism!</p>]]></description>
+			<content:encoded><![CDATA[<p>Andy McAfee of MIT is a leading thinker about how robotics and other automation will influence the future of work and jobs. We touch on some scary stuff - plus some delightful notes of optimism!</p>]]></content:encoded>
+			<enclosure length="56148416" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/14._Andy_M_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:17:27</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Andrew McAfee of MIT is a leading thinker about how robotics and other automation will influence the future of work and jobs. We touch on some scary stuff - plus some delightful notes of optimism!]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>14</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>13: Medium, Twitter, and Networked Words | Ev Williams</title>
+			<itunes:title>Medium, Twitter, and Networked Words | Ev Williams</itunes:title>
+			<pubDate>Tue, 31 Oct 2017 04:04:33 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[60c42027d8966489dee14187e8360003]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/013]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Ev Williams co-founded and ran both Twitter and Blogger.com, and is now the founder/CEO of Medium. He’s a deep thinker about ideas morph & travel, and is carving out a place for thoughtful, serious writing online.</p> <p> </p> <p> </p> <p> </p> <p> </p>]]></description>
+			<content:encoded><![CDATA[<p>Ev Williams co-founded and ran both Twitter and Blogger.com, and is now the founder/CEO of Medium. He’s a deep thinker about ideas morph & travel, and is carving out a place for thoughtful, serious writing online.</p> <p> </p> <p> </p> <p> </p> <p> </p>]]></content:encoded>
+			<enclosure length="56306080" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Ev_Williams_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:17:40</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Ev Williams co-founded and ran both Twitter and Blogger.com, and is now the founder/CEO of Medium. He’s a deep thinker about ideas morph & travel, and is carving out a place for thoughtful, serious writing online.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>13</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>12. TED Talks + Organization | Chris Anderson</title>
+			<itunes:title>TED Talks + Organization | Chris Anderson</itunes:title>
+			<pubDate>Tue, 24 Oct 2017 08:45:22 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[3c137339d4920b3a42f44dcda8da5dd1]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/012]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>You've probably seen a TED Talk or two (or 500!) online. Chris runs the TED organization, and has some fascinating thoughts both on how we're wired to process oratory, and how we might build a better world.</p>]]></description>
+			<content:encoded><![CDATA[<p>You've probably seen a TED Talk or two (or 500!) online. Chris runs the TED organization, and has some fascinating thoughts both on how we're wired to process oratory, and how we might build a better world.</p>]]></content:encoded>
+			<enclosure length="58120928" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Chris_Anderson_TED_v3.mp3?dest-id=547951" />
+			<itunes:duration>01:20:11</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[You've probably seen a TED Talk or two (or 500!) online. Chris runs the TED organization, and has some fascinating thoughts both on how we're wired to process oratory, and how we might build a better world.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>12</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>11. Space Archaeology | Sarah Parcak</title>
+			<itunes:title>Space Archaeology | Sarah Parcak</itunes:title>
+			<pubDate>Tue, 17 Oct 2017 04:32:02 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[076f271d457bb9e284d75d38bc83e0b7]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/011]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Sarah Parcak is a pioneer in the emerging field of space archaeology. In 2016 she won the TED Prize to launch a “citizen science” platform, which is finding lost sites and fighting archaeological looting throughout the world.</p> <p> </p> <p> </p>]]></description>
+			<content:encoded><![CDATA[<p>Sarah Parcak is a pioneer in the emerging field of space archaeology. In 2016 she won the TED Prize to launch a “citizen science” platform, which is finding lost sites and fighting archaeological looting throughout the world.</p> <p> </p> <p> </p>]]></content:encoded>
+			<enclosure length="70925120" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/11._Sarah_Parcak_FINAL.mp3?dest-id=547951" />
+			<itunes:duration>01:37:58</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Sarah Parcak is a pioneer in the emerging field of space archaeology. In 2016 she won the TED Prize to launch a “citizen science” platform, which is finding lost sites and fighting archaeological looting throughout the world.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>11</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>10. Tech's Past &amp; Future | Tim O'Reilly</title>
+			<itunes:title>10. Tech's Past &amp; Future | Tim O'Reilly</itunes:title>
+			<pubDate>Tue, 10 Oct 2017 07:20:58 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[a05ea6597fc982b3cab76aa6d378a292]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/010]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Technology’s pre-eminent publisher, Tim O’Reilly helped trigger the rise of the commercial Web, the open source community, the Web 2.0 era, and the maker movement. I discuss tech’s past and future with one of its most original thinkers.</p>]]></description>
+			<content:encoded><![CDATA[<p>Technology’s pre-eminent publisher, Tim O’Reilly helped trigger the rise of the commercial Web, the open source community, the Web 2.0 era, and the maker movement. I discuss tech’s past and future with one of its most original thinkers.</p>]]></content:encoded>
+			<enclosure length="56807648" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/10._Tim_OReilly__Techs_Past__Future.mp3?dest-id=547951" />
+			<itunes:duration>01:18:21</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Technology’s pre-eminent publisher, Tim O’Reilly helped trigger the rise of the commercial Web, the open source community, the Web 2.0 era, and the maker movement. I discuss tech’s past and future with one of its most original thinkers. ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>10</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>9. Drones |Chris Anderson of Wired &amp; 3DR </title>
+			<itunes:title>Drones |Chris Anderson of Wired &amp; 3DR </itunes:title>
+			<pubDate>Tue, 03 Oct 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[e82c4782af65604322b847fed66fecbb]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/009]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Chris Anderson was Wired’s editor-in-chief for 12 years, then started one of the world’s great drone companies.</p> <p>We discuss all this – and his origins as a high school dropout living in a squat and playing bass for a band called REM (no, not that REM).</p>]]></description>
+			<content:encoded><![CDATA[<p>Chris Anderson was Wired’s editor-in-chief for 12 years, then started one of the world’s great drone companies.</p> <p>We discuss all this – and his origins as a high school dropout living in a squat and playing bass for a band called REM (no, not that REM).</p>]]></content:encoded>
+			<enclosure length="60444800" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/09._Chris_Wired-3DR_Anderson_v3.mp3?dest-id=547951" />
+			<itunes:duration>01:23:25</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Chris Anderson was Wired’s editor-in-chief for 12 years, then started one of the world’s great drone companies.  We discuss all this – and his origins as a high school dropout living in a squat and playing bass for a band called REM (no, not that RE]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>9</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>8: Fermi's Paradox (or, where are all the aliens?) | Stephen Webb</title>
+			<itunes:title>Fermi's Paradox (or, where are all the aliens?) | Stephen Webb</itunes:title>
+			<pubDate>Tue, 26 Sep 2017 13:43:37 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[90a9267fae4d03b9d0ef3b6963ecf459]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/008]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Our universe’s vastness and age has given alien intelligence ample space and time in which to arise. Why can we detect no sign of it? </p> <p>This is actually a momentous and scientifically serious question. Yes, really! With British astronomer Stephen Webb.</p>]]></description>
+			<content:encoded><![CDATA[<p>Our universe’s vastness and age has given alien intelligence ample space and time in which to arise. Why can we detect no sign of it? </p> <p>This is actually a momentous and scientifically serious question. Yes, really! With British astronomer Stephen Webb.</p>]]></content:encoded>
+			<enclosure length="53204224" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/08._Stephen_Webb_FINAL_v2.mp3?dest-id=547951" />
+			<itunes:duration>01:50:02</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Our universe’s vastness and age has given alien intelligence ample space and time in which to arise. Why can we detect no sign of it?  This is actually a momentous and scientifically serious question. Yes, really! With British astronomer Stephen Webb.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>8</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>7. The Dangers of Superintelligence| James Barrat </title>
+			<itunes:title>The Dangers of Superintelligence| James Barrat </itunes:title>
+			<pubDate>Tue, 19 Sep 2017 05:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[a649c1542f03afb5c9ef3d99da892271]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/007]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>James Barrat’s book “Our Final Invention” helped touch off a public debate about the possible dangers of superintelligence, which continues to this day. We discuss these dangers in depth in our interview.</p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 380-464 in the very last section of the podcast.</p> <p> </p>]]></description>
+			<content:encoded><![CDATA[<p>James Barrat’s book “Our Final Invention” helped touch off a public debate about the possible dangers of superintelligence, which continues to this day. We discuss these dangers in depth in our interview.</p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 380-464 in the very last section of the podcast.</p> <p> </p>]]></content:encoded>
+			<enclosure length="41055200" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/07._James_Barrat_FINAL_with_CTA.mp3?dest-id=547951" />
+			<itunes:duration>56:29</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[James Barrat’s book “Our Final Invention” helped touch off a public debate about the possible dangers of superintelligence, which continues to this day. We discuss these dangers in depth in our interview.  For those who are reading the novel After O]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>6. On Terrorism | Sam Harris</title>
+			<itunes:title>On Terrorism | Sam Harris</itunes:title>
+			<pubDate>Tue, 12 Sep 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[5cc86eb18087d8f5d6943ffc810274b6]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/006]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Sam Harris is one of the most visible and controversial commentators on terrorism and its roots. Our interview dives deep into this subject, as well the personal journey that made Sam into the public intellectual he has become.</p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 289-380 in the very last section of the podcast.</p> <p> </p>]]></description>
+			<content:encoded><![CDATA[<p>Sam Harris is one of the most visible and controversial commentators on terrorism and its roots. Our interview dives deep into this subject, as well the personal journey that made Sam into the public intellectual he has become.</p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 289-380 in the very last section of the podcast.</p> <p> </p>]]></content:encoded>
+			<enclosure length="98545760" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/06._Sam_Harris_FINAL_with_CTA.mp3?dest-id=547951" />
+			<itunes:duration>02:16:20</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Sam Harris is one of the most visible and controversial commentators on terrorism and its roots. Our interview dives deep into this subject, as well the personal journey that made Sam into the public intellectual he has become.  For those who are reading ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>6</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>5.  Quantum Computing |Steve Jurvetson</title>
+			<itunes:title>Quantum Computing |Steve Jurvetson</itunes:title>
+			<pubDate>Tue, 05 Sep 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[e6a149dc8272130ddf540d1998eacd5f]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/005]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>Quantum computers could be almost farcically powerful compared to classical computers. Venture capitalist Steve Jurvetson and I discuss how & why this is – and whether this potential will ever be realized.</p> <p> </p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 241-288 in the very last section of the podcast.</p>]]></description>
+			<content:encoded><![CDATA[<p>Quantum computers could be almost farcically powerful compared to classical computers. Venture capitalist Steve Jurvetson and I discuss how & why this is – and whether this potential will ever be realized.</p> <p> </p> <p>For those who are reading the novel After On, Tom Meritt and I discuss pages 241-288 in the very last section of the podcast.</p>]]></content:encoded>
+			<enclosure length="49326624" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/05._Steve_Jurvetson_FINAL_with_CTA_date_fix.mp3?dest-id=547951" />
+			<itunes:duration>01:08:31</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[Quantum computers could be almost farcically powerful compared to classical computers. Venture capitalist Steve Jurvetson and I discuss how & why this is – and whether this potential will ever be realized.     For those who are reading the novel After ]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>5</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>4: Synthetic Biology | Andrew Hessel</title>
+			<itunes:title>Synthetic Biology | Andrew Hessel</itunes:title>
+			<pubDate>Thu, 24 Aug 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[5e4d6122f541237f087faf4411050074]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/0004]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>It took 13 years and $3 billion to read the first human genome in 2003. Now takes #$1K and just hours. What happens when we can WRITE DNA as easily as we now read it?</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 180-241 in the very last section of the podcast.</p>]]></description>
+			<content:encoded><![CDATA[<p>It took 13 years and $3 billion to read the first human genome in 2003. Now takes #$1K and just hours. What happens when we can WRITE DNA as easily as we now read it?</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 180-241 in the very last section of the podcast.</p>]]></content:encoded>
+			<enclosure length="56730464" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/04._Andy_Hessel_FINAL_v2_CTA_Podcast_Version.mp3?dest-id=547951" />
+			<itunes:duration>01:18:15</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[It took 13 years and $3 billion to read the first human genome in 2003. Now takes #$1K and just hours. What happens when we can WRITE DNA as easily as we now read it?  For those who are reading the novel After On, Tom Merritt and I discuss pages 180-241 i]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>4</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>3: Privacy + Govt Intrusion | Cindy Cohn (EFF)</title>
+			<itunes:title>Privacy + Govt Intrusion | Cindy Cohn (EFF)</itunes:title>
+			<pubDate>Thu, 17 Aug 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[8a808e2ae786c3dd7916523f42e549c4]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/003]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>In this episode, we discuss patent trolls, government hacking, privacy in the digital age, and other vital issues with Cindy Cohn, who runs the Electronic Frontier Foundation.</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 110-180 in the very last section of the podcast.</p>]]></description>
+			<content:encoded><![CDATA[<p>In this episode, we discuss patent trolls, government hacking, privacy in the digital age, and other vital issues with Cindy Cohn, who runs the Electronic Frontier Foundation.</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 110-180 in the very last section of the podcast.</p>]]></content:encoded>
+			<enclosure length="55649312" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/03._Cindy_Cohn_FINAL_v3_CTA_Podcast_Version.mp3?dest-id=547951" />
+			<itunes:duration>01:16:45</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[In this episode, we discuss patent trolls, government hacking, privacy in the digital age, and other vital issues with Cindy Cohn, who runs the Electronic Frontier Foundation.  For those who are reading the novel After On, Tom Merritt and I discuss pages]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>3</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+		</item>
+		<item>
+			<title>2: Consciousness &amp; Neuroscience | Adam Gazzaley</title>
+			<itunes:title>Consciousness &amp; Neuroscience | Adam Gazzaley</itunes:title>
+			<pubDate>Thu, 10 Aug 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[958dfbf85dd690c94884659185ab6183]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/002]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>In this episode,we discuss the roots of consciousness and other vital topics with UCSF neuroscientist Adam Gazzaley.</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 51-109 in the very last section of the podcast.</p>]]></description>
+			<content:encoded><![CDATA[<p>In this episode,we discuss the roots of consciousness and other vital topics with UCSF neuroscientist Adam Gazzaley.</p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 51-109 in the very last section of the podcast.</p>]]></content:encoded>
+			<enclosure length="78139949" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/Episode_2_Revised.mp3?dest-id=547951" />
+			<itunes:duration>01:21:00</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[In this episode,we discuss the roots of consciousness and other vital topics with UCSF neuroscientist Adam Gazzaley.  For those who are reading the novel After On, Tom Merritt and I discuss pages 51-109 in the very last section of the podcast.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>2</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+		<item>
+			<title>1: Augmented Reality | Meron Gribetz</title>
+			<itunes:title>Augmented Reality | Meron Gribetz</itunes:title>
+			<pubDate>Thu, 03 Aug 2017 07:00:00 +0000</pubDate>
+			<guid isPermaLink="false"><![CDATA[c9bd4b3f3e9e800486a866680f9e27b5]]></guid>
+			<link><![CDATA[https://after-on.com/episodes/001]]></link>
+			<itunes:image href="https://ssl-static.libsyn.com/p/assets/8/5/e/5/85e5d3110306034f/AfterOnPodcastCover-3000x3000.jpg" />
+			<description><![CDATA[<p>In this episode, we discuss augmented reality (AR) with the CEO of AR pioneer Meta, Inc. Meron Gribetz. </p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 1-51 in the very last section of the podcast.</p>]]></description>
+			<content:encoded><![CDATA[<p>In this episode, we discuss augmented reality (AR) with the CEO of AR pioneer Meta, Inc. Meron Gribetz. </p> <p>For those who are reading the novel After On, Tom Merritt and I discuss pages 1-51 in the very last section of the podcast.</p>]]></content:encoded>
+			<enclosure length="57133952" type="audio/mpeg" url="https://traffic.libsyn.com/secure/afteron/01._Meron_GMv2_1.mp3?dest-id=547951" />
+			<itunes:duration>01:18:49</itunes:duration>
+			<itunes:explicit>false</itunes:explicit>
+			<itunes:keywords />
+			<itunes:subtitle><![CDATA[In this episode, we discuss augmented reality (AR) with the CEO of AR pioneer Meta, Inc. Meron Gribetz.   For those who are reading the novel After On, Tom Merritt and I discuss pages 1-51 in the very last section of the podcast.]]></itunes:subtitle>
+			<itunes:season>1</itunes:season>
+			<itunes:episode>1</itunes:episode>
+			<itunes:episodeType>full</itunes:episodeType>
+			<itunes:author>Rob Reid</itunes:author>
+		</item>
+
+	</channel>
+</rss>

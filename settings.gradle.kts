@@ -11,6 +11,7 @@ include("packages:graphql-api")
 include("packages:github-connector")
 include("packages:stripe-payments")
 include("packages:jpa-data")
+include("packages:feed-parser")
 
 pluginManagement {
   plugins {
