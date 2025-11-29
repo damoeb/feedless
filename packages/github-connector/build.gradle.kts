@@ -27,6 +27,9 @@ dependencies {
   implementation(libs.commons.lang3)
   // https://mvnrepository.com/artifact/org.eclipse.jgit/org.eclipse.jgit
   implementation("org.eclipse.jgit:org.eclipse.jgit:7.4.0.202509020913-r")
+
+  // Logging
+  implementation("org.slf4j:slf4j-api:2.0.16")
 }
 
 tasks.test {

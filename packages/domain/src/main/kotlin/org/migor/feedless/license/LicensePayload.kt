@@ -1,5 +1,6 @@
 package org.migor.feedless.license
 
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import org.migor.feedless.Vertical
@@ -13,8 +14,8 @@ data class LicensePayload(
   @SerialName("v") val version: Int,
   @SerialName("n") val name: String,
   @SerialName("e") val email: String,
-  @SerialName("c") val createdAt: LocalDateTime,
-  @SerialName("u") val validUntil: LocalDateTime? = null,
+  @Contextual @SerialName("c") val createdAt: LocalDateTime,
+  @Contextual @SerialName("u") val validUntil: LocalDateTime? = null,
   @SerialName("s") val scope: Vertical
 ) {
   override fun equals(other: Any?): Boolean {
