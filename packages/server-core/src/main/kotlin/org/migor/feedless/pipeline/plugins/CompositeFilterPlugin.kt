@@ -56,7 +56,7 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
             && it.include?.let { matches(item, it, index) } != false
         } != false
           &&
-          matchesExpression(plugin.expression, item)
+          matchesExpression(StringUtils.trimToNull(plugin.expression), item)
       }
     } != false
 

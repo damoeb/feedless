@@ -29,12 +29,18 @@ class PostStartupVerificationService {
   }
 
   private fun verifyGeneralEnvironment() {
-    verifyEnvironment("general", arrayOf(AppProfiles.scrape, AppLayer.scheduler, AppLayer.repository, AppLayer.api, AppProfiles.standaloneFeeds))
+    verifyEnvironment(
+      "general",
+      arrayOf(AppProfiles.scrape, AppLayer.scheduler, AppLayer.repository, AppLayer.api, AppProfiles.feed)
+    )
   }
 
   private fun verifySaasEnvironment() {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      verifyEnvironment("saas", arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.standaloneFeeds, AppProfiles.analytics ))
+      verifyEnvironment(
+        "saas",
+        arrayOf(AppProfiles.telegram, AppProfiles.seed, AppProfiles.feed, AppProfiles.analytics)
+      )
     }
   }
 

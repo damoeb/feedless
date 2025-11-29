@@ -68,3 +68,9 @@ mutation createUserSecret {
 mutation deleteUserSecret($data: DeleteUserSecretInput!) {
   deleteUserSecret(data: $data)
 }
+
+mutation issueAnonymousFeedToken($url: String!) {
+  issueAnonymousFeedToken(url: $url) {
+    token
+  }
+}

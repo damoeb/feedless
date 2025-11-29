@@ -1,6 +1,7 @@
 plugins {
   alias(libs.plugins.test.logger)
   alias(libs.plugins.kotlin.jvm)
+  kotlin("plugin.serialization") version "2.2.21"
   alias(libs.plugins.kotlin.spring)
 }
 
@@ -12,7 +13,7 @@ repositories {
 
 dependencies {
   implementation(platform(libs.spring.boot.bom))
-  implementation(project(":packages:domain"))
+  api(project(":packages:domain"))
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
@@ -33,6 +34,7 @@ dependencies {
   implementation(libs.gson)
   implementation(libs.ical4j)
   implementation(libs.broken.xml)
+  implementation(libs.kotlinx.serialization.json)
 
   // HTML/XML parsing
   implementation(libs.jsoup)

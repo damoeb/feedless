@@ -11,6 +11,7 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.SortableRequest
 import org.migor.feedless.actions.FetchAction
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.DocumentService
@@ -27,6 +28,7 @@ import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
@@ -54,7 +56,7 @@ import kotlin.coroutines.coroutineContext
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppProfiles.standaloneFeeds} & ${AppLayer.service}")
+@Profile("${AppProfiles.feed} & ${AppLayer.service}")
 class FeedService(
   private val propertyService: PropertyService,
   private val webToFeedTransformer: WebToFeedTransformer,
@@ -65,6 +67,7 @@ class FeedService(
   private val sourceService: SourceService,
   private val documentService: DocumentService,
   private val filterPlugin: CompositeFilterPlugin,
+  private val jwtTokenIssuer: JwtTokenIssuer,
 ) {
 
   private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
@@ -317,6 +320,11 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
     article.url = "https://github.com/damoeb/feedless/wiki/Errors#error-potential-issue-with-feed"
     article.publishedAt = LocalDateTime.now()
     return article
+  }
+
+  fun createAnonymousFeedUrl(baseUri: URI): AuthToken {
+    val jwt = jwtTokenIssuer.createJwtForAnonymousFeed(baseUri.host)
+    return AuthToken(token = jwt.tokenValue)
   }
 }
 

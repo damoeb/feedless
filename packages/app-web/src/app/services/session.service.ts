@@ -8,6 +8,8 @@ import {
   GqlDeleteUserSecretMutation,
   GqlDeleteUserSecretMutationVariables,
   GqlFeatureName,
+  GqlIssueAnonymousFeedTokenMutation,
+  GqlIssueAnonymousFeedTokenMutationVariables,
   GqlLogoutMutation,
   GqlLogoutMutationVariables,
   GqlSessionQuery,
@@ -15,6 +17,7 @@ import {
   GqlUpdateCurrentUserInput,
   GqlUpdateCurrentUserMutation,
   GqlUpdateCurrentUserMutationVariables,
+  IssueAnonymousFeedToken,
   Logout,
   Session as SessionQuery,
   UpdateCurrentUser,
@@ -62,6 +65,17 @@ export class SessionService {
 
   getFeature(featureName: GqlFeatureName): Nullable<Feature> {
     return this.session?.user?.features.find((ft) => ft.name === featureName)!;
+  }
+
+  requestAnonymousFeedToken(url: string): Promise<string> {
+    return this.apollo
+      .mutate<GqlIssueAnonymousFeedTokenMutation, GqlIssueAnonymousFeedTokenMutationVariables>({
+        mutation: IssueAnonymousFeedToken,
+        variables: {
+          url,
+        },
+      })
+      .then((response) => response.data.issueAnonymousFeedToken.token);
   }
 
   async fetchSession(fetchPolicy: FetchPolicy = 'cache-first'): Promise<void> {

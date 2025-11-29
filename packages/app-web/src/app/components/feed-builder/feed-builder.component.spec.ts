@@ -4,10 +4,15 @@ import { AppTestModule, mockPlugins, mockRecords, mockRepository } from '../../a
 import { FeedBuilderComponent } from './feed-builder.component';
 import { standaloneV1WebToFeedRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { renderPath, renderQuery } from 'typesafe-routes';
+import { GqlExtendContentOptions } from '../../../generated/graphql';
+import { ServerConfigService } from '../../services/server-config.service';
+import { SessionService } from '../../services/session.service';
 
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
   let fixture: ComponentFixture<FeedBuilderComponent>;
+  const mockIsSaasFn = jest.fn<boolean, []>();
+  const mockRequestAnonymousFeedToken = jest.fn<string, []>();
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -21,13 +26,22 @@ describe('FeedBuilderComponent', () => {
           },
         }),
       ],
+      providers: [
+        {
+          provide: ServerConfigService,
+          useValue: {
+            apiUrl: 'http://localhost',
+            isSaas: mockIsSaasFn,
+          },
+        },
+        {
+          provide: SessionService,
+          useValue: {
+            requestAnonymousFeedToken: mockRequestAnonymousFeedToken,
+          },
+        },
+      ],
     }).compileComponents();
-
-    // await mockServerSettings(
-    //   TestBed.inject(ApolloMockController),
-    //   TestBed.inject(ServerConfigService),
-    //   TestBed.inject(ApolloClient),
-    // );
 
     fixture = TestBed.createComponent(FeedBuilderComponent);
     component = fixture.componentInstance;
@@ -39,6 +53,56 @@ describe('FeedBuilderComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('#createFeedUrl', () => {
+    it('when sass=false', async () => {
+      mockIsSaasFn.mockReturnValue(false);
+      component.selectedFeed = {
+        genericFeed: {
+          selectors: {
+            contextXPath: 'contextXPath',
+            dateXPath: 'dateXPath',
+            linkXPath: 'linkXPath',
+            dateIsStartOfEvent: true,
+            extendContext: GqlExtendContentOptions.None,
+            paginationXPath: 'paginationXPath',
+          },
+          count: 1,
+          score: 1,
+          hash: '',
+        },
+      };
+      component.getFilterPlugin = () => ({}) as any;
+      const url = await component.createFeedUrl();
+      expect(url).toEqual(
+        'http://localhost/api/w2f?link=linkXPath&context=contextXPath&date=dateXPath&dateIsEvent=true&q=%7B%7D&out=atom&token=null'
+      );
+    });
+    it('when sass=true', async () => {
+      mockIsSaasFn.mockReturnValue(true);
+      mockRequestAnonymousFeedToken.mockReturnValue('foo-token');
+      component.selectedFeed = {
+        genericFeed: {
+          selectors: {
+            contextXPath: 'contextXPath',
+            dateXPath: 'dateXPath',
+            linkXPath: 'linkXPath',
+            dateIsStartOfEvent: true,
+            extendContext: GqlExtendContentOptions.None,
+            paginationXPath: 'paginationXPath',
+          },
+          count: 1,
+          score: 1,
+          hash: '',
+        },
+      };
+      component.getFilterPlugin = () => ({}) as any;
+      const url = await component.createFeedUrl();
+      expect(url).toEqual(
+        'http://localhost/api/w2f?link=linkXPath&context=contextXPath&date=dateXPath&dateIsEvent=true&q=%7B%7D&out=atom&token=foo-token'
+      );
+    });
+  });
+
   describe('parse standalone url', () => {
     it('V2', () => {
       const input = {
@@ -48,7 +112,7 @@ describe('FeedBuilderComponent', () => {
         out: 'out',
         dateIsEvent: true,
         link: 'link',
-        ts: 0,
+        token: 'foo',
         q: 'q',
       };
       const path = renderPath(standaloneV2WebToFeedRoute.feed, input);

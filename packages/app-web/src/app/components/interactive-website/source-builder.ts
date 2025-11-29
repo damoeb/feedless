@@ -126,6 +126,7 @@ export class SourceBuilder {
   }
 
   build(append: Array<GqlScrapeActionInput> = null): GqlSource {
+    console.log(this.flow);
     return this.toSource({
       sequence: [...this.flow, ...(append ? append : [])],
     }) as GqlSource;

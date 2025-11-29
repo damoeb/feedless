@@ -103,7 +103,6 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonSpinner,
     RemoteFeedPreviewComponent,
     ConsoleButtonComponent,
-    CodeEditorModalComponent,
     BlockElementComponent,
   ],
   standalone: true,
@@ -193,7 +192,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
               linkXPath: this.genFeedXpathsFg.value.linkXPath,
               contextXPath: this.genFeedXpathsFg.value.contextXPath,
               paginationXPath: this.genFeedXpathsFg.value.paginationXPath,
-              dateIsStartOfEvent: this.genFeedXpathsFg.value.dateIsStartOfEvent,
+              dateIsStartOfEvent: `${this.genFeedXpathsFg.value.dateIsStartOfEvent}` === 'true',
               extendContext: this.genFeedXpathsFg.value.extendContext,
               dateXPath: this.genFeedXpathsFg.value.dateXPath,
             },
@@ -225,9 +224,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       if (!outputs) {
         throw new Error('No outputs found in response');
       }
-      const elementWithFeeds = outputs.find(
-        (o) => o.response?.extract?.feeds
-      );
+      const elementWithFeeds = outputs.find((o) => o.response?.extract?.feeds);
       if (elementWithFeeds) {
         const feeds = elementWithFeeds.response.extract.feeds;
         this.genericFeeds = feeds.genericFeeds;

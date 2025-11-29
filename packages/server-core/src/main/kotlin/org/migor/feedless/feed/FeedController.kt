@@ -42,7 +42,7 @@ import kotlin.time.toDuration
  */
 @Controller
 @Transactional(propagation = Propagation.NEVER)
-@Profile("${AppLayer.api} & ${AppProfiles.standaloneFeeds}")
+@Profile("${AppLayer.api} & ${AppProfiles.feed}")
 class FeedController(
   val feedExporter: FeedExporter,
   val feedService: FeedService,

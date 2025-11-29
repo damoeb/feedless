@@ -156,6 +156,7 @@ type LoginResponse {
 
 type Mutation {
   authAnonymous: Authentication!
+  issueAnonymousFeedToken(url: String!): Authentication!
   authenticateWithCodeViaMail(data: AuthViaMailInput!): ConfirmCode!
   authConfirmCode(data: ConfirmAuthCodeInput!): Authentication!
 

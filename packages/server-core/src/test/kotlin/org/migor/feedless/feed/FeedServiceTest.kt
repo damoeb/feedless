@@ -26,6 +26,7 @@ import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
@@ -78,6 +79,7 @@ class FeedServiceTest {
       sourceService,
       documentService,
       filterPlugin,
+      mock(JwtTokenIssuer::class.java)
     )
   }
 

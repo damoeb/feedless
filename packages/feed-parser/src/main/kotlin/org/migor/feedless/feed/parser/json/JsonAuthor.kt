@@ -3,6 +3,7 @@ package org.migor.feedless.feed.parser.json
 import com.google.gson.annotations.SerializedName
 import java.io.Serializable
 
+@kotlinx.serialization.Serializable
 data class JsonAuthor(
   @SerializedName(value = "name")
   val name: String?,

@@ -84,6 +84,17 @@ class JwtTokenIssuer(
     )
   }
 
+  fun createJwtForAnonymousFeed(host: String): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
+    log.debug("signedToken for service")
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
+        JwtParameterNames.HOST to host,
+      ),
+    )
+  }
+
   fun createJwtForApi(user: User): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for service")
@@ -123,18 +134,23 @@ class JwtTokenIssuer(
     }
   }
 
-  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration): Jwt {
+  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration? = null): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
-    val claimsSet = JwtClaimsSet.builder()
+    var claimsSet = JwtClaimsSet.builder()
       .issuer(propertyService.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "feedless" }
       .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().toMillis() }
-      .claims { c ->
-        c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn.toJavaDuration()).toMillis()
-      }
       .build()
+
+    expiresIn?.let {
+      claimsSet = JwtClaimsSet.from(claimsSet)
+        .claims { c ->
+          c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn.toJavaDuration()).toMillis()
+        }
+        .build()
+    }
     val params = JwtEncoderParameters.from(jwsHeader, claimsSet)
     return NimbusJwtEncoder(ImmutableSecret(getSecretKey()))
       .encode(params)
@@ -153,5 +169,4 @@ class JwtTokenIssuer(
   private fun parseDuration(actual: String, fallback: String) = runCatching {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
-
 }

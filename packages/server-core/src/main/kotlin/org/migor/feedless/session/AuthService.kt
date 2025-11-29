@@ -2,8 +2,6 @@ package org.migor.feedless.session
 
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.data.jpa.user.UserEntity
-import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
@@ -12,7 +10,6 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.*
 
 
 enum class Authority {
@@ -30,6 +27,7 @@ object JwtParameterNames {
   const val USER_ID = "user_id"
   const val CAPABILITIES = "capabilities"
   const val TYPE = "token_type"
+  const val HOST = "host"
 }
 
 enum class AuthTokenType(val value: String) {

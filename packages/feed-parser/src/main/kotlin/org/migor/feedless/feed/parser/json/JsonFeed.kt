@@ -1,8 +1,11 @@
 package org.migor.feedless.feed.parser.json
 
 import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
 
+@Serializable
 open class JsonFeed : java.io.Serializable {
   @SerializedName(value = "id")
   lateinit var id: String
@@ -41,6 +44,7 @@ open class JsonFeed : java.io.Serializable {
   var language: String? = null
 
   @SerializedName(value = "date_published")
+  @Contextual
   lateinit var publishedAt: LocalDateTime
 
   @SerializedName(value = "items")

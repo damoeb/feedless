@@ -1,14 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
@@ -17,7 +7,7 @@ import {
   GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed,
+  GqlTransientGenericFeed
 } from '../../../generated/graphql';
 import {
   AlertController,
@@ -32,7 +22,7 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController,
+  ToastController
 } from '@ionic/angular/standalone';
 import { ScrapeService } from '../../services/scrape.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,7 +30,7 @@ import { RepositoryWithFrequency, ScrapeResponse } from '../../graphql/types';
 import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
 import {
   InteractiveWebsiteModalComponent,
-  InteractiveWebsiteModalComponentProps,
+  InteractiveWebsiteModalComponentProps
 } from '../../modals/interactive-website-modal/interactive-website-modal.component';
 import { fixUrl, isValidUrl } from '../../app.module';
 import { ApolloAbortControllerService } from '../../services/apollo-abort-controller.service';
@@ -55,23 +45,20 @@ import {
   checkmarkOutline,
   closeOutline,
   logoJavascript,
-  settingsOutline,
+  settingsOutline
 } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
-import {
-  standaloneV1WebToFeedRoute,
-  standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { LatLng, Nullable } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { assignIn, first, isArray } from 'lodash-es';
-import { parseQuery, renderPath } from 'typesafe-routes';
+import { parseQuery, renderPath, renderQuery } from 'typesafe-routes';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
 import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
+import { SessionService } from '../../services/session.service';
 
 /**
  * IDEEN
@@ -163,6 +150,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   private readonly serverConfigService = inject(ServerConfigService);
   private readonly toastCtrl = inject(ToastController);
   private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly sessionService = inject(SessionService);
 
   url: string;
 
@@ -481,6 +469,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
     setTimeout(async () => {
       if (params.context) {
+        debugger;
         await this.webToFeedTransformerComponent().pickGenericFeed({
           selectors: {
             contextXPath: params.context,
@@ -540,16 +529,17 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     return this.sourceBuilder.needsJavascript();
   }
 
-  async createFeedUrl() {
+  async showFeedUrlModal() {
+    const feedUrl = await this.createFeedUrl();
     const alert = await this.alertCtrl.create({
-      header: 'Standalone URL',
+      header: 'Feed URL',
       backdropDismiss: false,
       message: 'You can use this link directly in your feed reader',
       inputs: [
         {
           name: 'feedUrl',
           type: 'textarea',
-          value: this.createStandaloneFeedUrl(),
+          value: feedUrl,
           attributes: {
             readonly: true,
             style: {
@@ -584,36 +574,45 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     await alert.present();
   }
 
-  private createStandaloneFeedUrl() {
-    const baseUrl = this.serverConfigService.apiUrl + '/';
-    const q = JSON.stringify(this.getFilterPlugin());
-    const ts = new Date().getTime();
+  private createStandaloneFeedUrl(token: string = null) {
+    const serviceUrl = this.serverConfigService.apiUrl;
+    const q = JSON.stringify(this.getFilterPlugin()) ?? '';
+    const url = this.getRequestInputUrl();
 
     if (this.selectedFeed.genericFeed) {
       const gf = this.selectedFeed.genericFeed;
-      return (
-        baseUrl +
-        renderPath(standaloneV2WebToFeedRoute.feed, {
-          url: this.url,
-          link: gf.selectors.linkXPath,
-          context: gf.selectors.contextXPath,
-          date: gf.selectors.dateXPath,
-          dateIsEvent: gf.selectors.dateIsStartOfEvent,
-          q,
-          out: 'atom',
-          ts,
-        })
-      );
+      const input = {
+        url,
+        link: gf.selectors.linkXPath,
+        context: gf.selectors.contextXPath,
+        date: gf.selectors.dateXPath,
+        dateIsEvent: gf.selectors.dateIsStartOfEvent,
+        q,
+        out: 'atom',
+        token,
+      };
+      const w2fPath = renderPath(standaloneV2WebToFeedRoute.feed, input);
+      const w2fQuery = renderQuery(standaloneV2WebToFeedRoute.feed, input);
+      return serviceUrl + w2fPath + '?' + w2fQuery;
     } else {
-      return (
-        baseUrl +
-        renderPath(standaloneV2FeedTransformRoute.feed, {
-          url: this.selectedFeed.nativeFeed.feedUrl,
-          q,
-          out: 'atom',
-          ts,
-        })
-      );
+      const input = {
+        url,
+        q,
+        out: 'atom',
+        token,
+      };
+      const tfPath = renderPath(standaloneV2FeedTransformRoute.feed, input);
+      const tfQuery = renderQuery(standaloneV2FeedTransformRoute.feed, input);
+      return serviceUrl + tfPath + '?' + tfQuery;
+    }
+  }
+
+  private getRequestInputUrl() {
+    if (this.selectedFeed.genericFeed) {
+      const gf = this.selectedFeed.genericFeed;
+      return this.url;
+    } else {
+      return this.selectedFeed.nativeFeed.feedUrl;
     }
   }
 
@@ -656,6 +655,15 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.url = '';
     this.sourceBuilder = null;
     this.changeRef.detectChanges();
+  }
+
+  async createFeedUrl(): Promise<string> {
+    if (this.serverConfigService.isSaas()) {
+      const token = await this.sessionService.requestAnonymousFeedToken(this.getRequestInputUrl());
+      return this.createStandaloneFeedUrl(token);
+    } else {
+      return this.createStandaloneFeedUrl();
+    }
   }
 }
 

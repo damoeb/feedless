@@ -30,7 +30,7 @@
 //   parse: parse(defaultValue),
 // });
 
-import { bool, createRoutes, int, str } from 'typesafe-routes';
+import { bool, createRoutes, str } from 'typesafe-routes';
 
 export const standaloneV2WebToFeedRoute = createRoutes({
   feed: {
@@ -43,7 +43,7 @@ export const standaloneV2WebToFeedRoute = createRoutes({
       bool('dateIsEvent'),
       str('q'),
       str('out'),
-      int('ts'),
+      str('token'),
     ],
   },
 });
@@ -58,6 +58,6 @@ export const standaloneV1WebToFeedRoute = createRoutes({
 export const standaloneV2FeedTransformRoute = createRoutes({
   feed: {
     path: ['api', 'tf'],
-    query: [str('url'), str('q'), str('out'), int('ts')],
+    query: [str('url'), str('q'), str('out'), str('token')],
   },
 });

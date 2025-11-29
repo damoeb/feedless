@@ -55,13 +55,13 @@ const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
   AppLayer.api,
   AppLayer.service,
   AppProfiles.properties,
-  AppProfiles.standaloneFeeds,
+  AppProfiles.feed,
 )
 @Import(
   DisableDatabaseConfiguration::class,
   DisableSecurityConfiguration::class,
 )
-class StandaloneFeedControllerTest {
+class FeedControllerTest {
 
   lateinit var baseEndpoint: String
 

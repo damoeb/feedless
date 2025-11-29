@@ -95,7 +95,6 @@ export class SelectionModalComponent<T>
     this.subscriptions.push(
       this.selectAllFormControl.valueChanges.subscribe((selectAll) => {
         this.entitiesWithFormControl.forEach((entityWithFormControl) => {
-          debugger;
           entityWithFormControl.formControl.setValue(selectAll);
           this.changeRef.markForCheck();
         });

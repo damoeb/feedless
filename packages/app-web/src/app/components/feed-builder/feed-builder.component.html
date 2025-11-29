@@ -34,7 +34,7 @@
           <p class="ion-margin">
             Some errors can be resolved by
             <a (click)="showInteractiveWebsiteModal()" href="javascript:void(0)"
-              >enabling JavaScript</a
+            >enabling JavaScript</a
             >
           </p>
         }
@@ -84,7 +84,7 @@
         </ion-item>
         <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
           <ion-item slot="header">
-            <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'"> Metadata </ion-label>
+            <ion-label [color]="geoLocation || tags ? 'dark' : 'medium'"> Metadata</ion-label>
           </ion-item>
           <ion-list class="ion-no-padding" slot="content">
             <ion-item>
@@ -112,7 +112,7 @@
                   <ion-note>None</ion-note>
                 }
                 @if (geoLocation) {
-                  <ion-note>({{ geoLocation.lat }}/{{ geoLocation.lng }}) </ion-note>
+                  <ion-note>({{ geoLocation.lat }}/{{ geoLocation.lng }})</ion-note>
                 }
               </ion-label>
             </ion-item>
@@ -162,7 +162,7 @@
           }
           @if (standaloneFeedMode()) {
             <ion-item
-              (click)="createFeedUrl()"
+              (click)="showFeedUrlModal()"
               [button]="true"
               color="primary"
               [disabled]="!hasValidFeed || needsJavaScript()"
