@@ -9,6 +9,7 @@ import org.migor.feedless.connector.git.GitConnectionCapability
 import org.migor.feedless.connector.git.LocalGitRepository
 import org.migor.feedless.connector.git.LocalGitRepositoryCapability
 import org.migor.feedless.connector.git.LocalGitRepositoryFile
+import org.migor.feedless.util.JsonSerializer.toJson
 import java.io.File
 import java.nio.file.Files
 import java.nio.file.attribute.PosixFilePermission
@@ -146,7 +147,7 @@ class LocalGitRepositoryImpl private constructor(
 
   private fun writeStatFile(statData: StatData) {
     val metadataFile = File(containerDir, STAT_FILENAME)
-    metadataFile.writeText(Json.encodeToString(statData))
+    metadataFile.writeText(toJson(statData))
   }
 
   fun getMetadata(): StatData? {

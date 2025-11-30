@@ -16,7 +16,6 @@ import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
-import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -26,19 +25,20 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
+import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
 import kotlin.time.DurationUnit
+import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
-import kotlin.time.toJavaDuration
 
 
+@OptIn(ExperimentalTime::class)
 @Service
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtTokenIssuer(
@@ -78,7 +78,7 @@ class JwtTokenIssuer(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.USER.value,
         JwtParameterNames.CAPABILITIES to capabilities.associate {
-          it.capabilityId to Gson().toJson(it.capabilityPayload)
+          it.capabilityId.value to Gson().toJson(it.capabilityPayload)
         },
       ),
       getExpiration(AuthTokenType.USER)
@@ -94,6 +94,7 @@ class JwtTokenIssuer(
         JwtParameterNames.HOST to host,
         JwtParameterNames.ID to id.uuid,
       ),
+      null
     )
   }
 
@@ -136,23 +137,25 @@ class JwtTokenIssuer(
     }
   }
 
-  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration? = null): Jwt {
+  private fun encodeJwt(claims: Map<String, Any>, expiresIn: Duration?): Jwt {
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     var claimsSet = JwtClaimsSet.builder()
       .issuer(propertyService.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "feedless" }
-      .claims { c -> c[JwtParameterNames.IAT] = LocalDateTime.now().toMillis() }
+      .claims { c -> c[JwtParameterNames.IAT] = Clock.System.now().toEpochMilliseconds() }
       .build()
 
     expiresIn?.let {
       claimsSet = JwtClaimsSet.from(claimsSet)
         .claims { c ->
-          c[JwtParameterNames.EXP] = LocalDateTime.now().plus(expiresIn.toJavaDuration()).toMillis()
+          c[JwtParameterNames.EXP] = Clock.System.now().plus(expiresIn).toEpochMilliseconds()
         }
         .build()
     }
+
+
     val params = JwtEncoderParameters.from(jwsHeader, claimsSet)
     return NimbusJwtEncoder(ImmutableSecret(getSecretKey()))
       .encode(params)

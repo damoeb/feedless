@@ -3,15 +3,14 @@ package org.migor.feedless.session
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
+import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -24,7 +23,6 @@ import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 
 fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContext {
   val requestContext = currentCoroutineContext[RequestContext] ?: createRequestContext()
@@ -70,19 +68,26 @@ class RequestContext(
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
+@Deprecated("Use capabilityservice instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class SessionService {
 
   @Autowired
   private lateinit var authService: AuthService
 
-  suspend fun isUser(): Boolean = StringUtils.isNotBlank(coroutineContext[RequestContext]!!.userId?.toString())
+  @Autowired
+  private lateinit var capabilityService: CapabilityService
+
+  suspend fun isUser(): Boolean {
+    val userCapability = capabilityService.getCapability(UserCapability.ID)
+    return userCapability != null
+  }
 
   @Transactional(readOnly = true)
   suspend fun user(): User {
     val notFoundException = IllegalArgumentException("user not found")
-    return coroutineContext.userIdOptional()
-      ?.let { authService.findUserById(it) ?: throw notFoundException }
+    return capabilityService.getCapability(UserCapability.ID)
+      ?.let { authService.findUserById(UserCapability.resolve(it).userId) ?: throw notFoundException }
       ?: throw notFoundException
   }
 
@@ -91,5 +96,7 @@ class SessionService {
   }
 
   @Deprecated("")
-  suspend fun userId(): UserId? = currentCoroutineContext()[RequestContext]?.userId
+  suspend fun userId(): UserId? = capabilityService.getCapability(UserCapability.ID)
+    ?.let { UserCapability.resolve(it).userId }
+
 }

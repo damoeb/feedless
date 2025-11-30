@@ -19,52 +19,59 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.time.toJavaDuration
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 
+@OptIn(ExperimentalTime::class)
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.secrets} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserSecretService(
-    private val userSecretDAO: UserSecretDAO,
-    private val jwtTokenIssuer: JwtTokenIssuer
+  private val userSecretDAO: UserSecretDAO,
+  private val jwtTokenIssuer: JwtTokenIssuer
 ) {
 
-    private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
+  private val log = LoggerFactory.getLogger(UserSecretService::class.simpleName)
 
-    @Transactional
-    suspend fun createUserSecret(user: User): UserSecret {
-        val token = jwtTokenIssuer.createJwtForApi(user)
-        val k = UserSecretEntity()
-        k.ownerId = user.id.uuid
-        k.value = token.tokenValue
-        k.type = UserSecretType.SecretKey
-        k.validUntil = LocalDateTime.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER).toJavaDuration())
+  @Transactional
+  suspend fun createUserSecret(user: User): UserSecret {
+    val token = jwtTokenIssuer.createJwtForApi(user)
+    val k = UserSecretEntity()
+    k.ownerId = user.id.uuid
+    k.value = token.tokenValue
+    k.type = UserSecretType.SecretKey
+    k.validUntil = LocalDateTime.from(
+      Instant.ofEpochMilli(
+        Clock.System.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
+      )
+    )
 
-        return withContext(Dispatchers.IO) {
-            userSecretDAO.save(k).toDomain()
-        }
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.save(k).toDomain()
     }
+  }
 
-    @Transactional
-    suspend fun deleteUserSecret(user: User, uuid: UUID) {
-        withContext(Dispatchers.IO) {
-            val secret = userSecretDAO.findById(uuid).orElseThrow()
-            if (secret.ownerId == user.id.uuid) {
-                userSecretDAO.delete(secret)
-            } else {
-                throw PermissionDeniedException("User does not have an owner")
-            }
-        }
+  @Transactional
+  suspend fun deleteUserSecret(user: User, uuid: UUID) {
+    withContext(Dispatchers.IO) {
+      val secret = userSecretDAO.findById(uuid).orElseThrow()
+      if (secret.ownerId == user.id.uuid) {
+        userSecretDAO.delete(secret)
+      } else {
+        throw PermissionDeniedException("User does not have an owner")
+      }
     }
+  }
 
-    @Transactional(readOnly = true)
-    suspend fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecret? {
-        return withContext(Dispatchers.IO) {
-            userSecretDAO.findBySecretKeyValue(secretKeyValue, email)?.toDomain()
-        }
+  @Transactional(readOnly = true)
+  suspend fun findBySecretKeyValue(secretKeyValue: String, email: String): UserSecret? {
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.findBySecretKeyValue(secretKeyValue, email)?.toDomain()
     }
+  }
 
 //  @Transactional
 //  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
@@ -73,11 +80,11 @@ class UserSecretService(
 //    }
 //  }
 
-    @Transactional(readOnly = true)
-    suspend fun findAllByOwnerId(userId: UserId): List<UserSecret> {
-        return withContext(Dispatchers.IO) {
-            userSecretDAO.findAllByOwnerId(userId.uuid).map { it.toDomain() }
-        }
+  @Transactional(readOnly = true)
+  suspend fun findAllByOwnerId(userId: UserId): List<UserSecret> {
+    return withContext(Dispatchers.IO) {
+      userSecretDAO.findAllByOwnerId(userId.uuid).map { it.toDomain() }
     }
+  }
 
 }

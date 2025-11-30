@@ -2,7 +2,7 @@ plugins {
   alias(libs.plugins.test.logger)
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
-  kotlin("plugin.serialization") version "2.2.21"
+  kotlin("plugin.serialization") version "1.9.0"
 }
 
 repositories {

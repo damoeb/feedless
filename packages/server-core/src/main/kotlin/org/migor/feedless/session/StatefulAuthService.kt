@@ -159,10 +159,6 @@ class StatefulAuthService : AuthService() {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
 
-  private suspend fun getAuthorities(jwt: Jwt): List<String> {
-    return jwt.getClaim(attrAuthorities) as List<String>
-  }
-
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }

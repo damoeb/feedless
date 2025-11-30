@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.UserCapability
@@ -17,174 +18,187 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import java.time.Duration
+import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 class JwtTokenIssuerTest {
 
-    private lateinit var jwtTokenIssuer: JwtTokenIssuer
-    private lateinit var propertyService: PropertyService
-    private lateinit var meterRegistry: MeterRegistry
-    private val testJwtSecret = "test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm"
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+  private lateinit var propertyService: PropertyService
+  private lateinit var meterRegistry: MeterRegistry
+  private val testJwtSecret = "test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm"
 
-    @BeforeEach
-    fun setUp() {
-        propertyService = mock(PropertyService::class.java)
-        meterRegistry = SimpleMeterRegistry()
+  @BeforeEach
+  fun setUp() {
+    propertyService = mock(PropertyService::class.java)
+    meterRegistry = SimpleMeterRegistry()
 
-        `when`(propertyService.jwtSecret).thenReturn(testJwtSecret)
-        `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
+    `when`(propertyService.jwtSecret).thenReturn(testJwtSecret)
+    `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
 
-        jwtTokenIssuer = JwtTokenIssuer(
-            propertyService = propertyService,
-            meterRegistry = meterRegistry,
-            tokenAnonymousValidForDays = "1",
-            defaultTokenAnonymousValidForDays = "1"
-        )
-        jwtTokenIssuer.postConstruct()
-    }
+    jwtTokenIssuer = JwtTokenIssuer(
+      propertyService = propertyService,
+      meterRegistry = meterRegistry,
+      tokenAnonymousValidForDays = "1",
+      defaultTokenAnonymousValidForDays = "1"
+    )
+    jwtTokenIssuer.postConstruct()
+  }
 
-    @Test
-    fun `createJwtForAnonymous creates a properly signed JWT`() = runTest {
-        // when
-        val jwt = jwtTokenIssuer.createJwtForAnonymous()
+  @Test
+  fun `createJwtForAnonymous creates a properly signed JWT`() = runTest {
+    // when
+    val jwt = jwtTokenIssuer.createJwtForAnonymous()
 
-        // then
-        assertThat(jwt.tokenValue).isNotNull()
-        assertThat(jwt.tokenValue).isNotEmpty()
+    // then
+    assertThat(jwt.tokenValue).isNotNull()
+    assertThat(jwt.tokenValue).isNotEmpty()
 
-        // Verify the JWT is properly signed
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
-        assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
+    // Verify the JWT is properly signed
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
 
-        // Verify signature with the secret key
-        val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
-        assertThat(signedJWT.verify(verifier)).isTrue()
+    // Verify signature with the secret key
+    val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
+    assertThat(signedJWT.verify(verifier)).isTrue()
 
-        // Verify token type claim
-        assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
-            .isEqualTo(AuthTokenType.ANONYMOUS.value)
-    }
+    // Verify token type claim
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
+      .isEqualTo(AuthTokenType.ANONYMOUS.value)
+  }
 
-    @Test
-    fun `createJwtForCapabilities creates a properly signed JWT`() = runTest {
-        // given
-        val userId = UserId()
-        val capabilities = listOf(UserCapability(userId))
+  @Test
+  fun `createJwtForCapabilities creates a properly signed JWT`() = runTest {
+    // given
+    val userId = UserId()
+    val capabilities = listOf(UserCapability(userId))
 
-        // when
-        val jwt = jwtTokenIssuer.createJwtForCapabilities(capabilities)
+    // when
+    val jwt = jwtTokenIssuer.createJwtForCapabilities(capabilities)
 
-        // then
-        assertThat(jwt.tokenValue).isNotNull()
-        assertThat(jwt.tokenValue).isNotEmpty()
+    // then
+    assertThat(jwt.tokenValue).isNotNull()
+    assertThat(jwt.tokenValue).isNotEmpty()
 
-        // Verify the JWT is properly signed
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
-        assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
+    // Verify the JWT is properly signed
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
 
-        // Verify signature with the secret key
-        val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
-        assertThat(signedJWT.verify(verifier)).isTrue()
+    // Verify signature with the secret key
+    val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
+    assertThat(signedJWT.verify(verifier)).isTrue()
 
-        // Verify token type claim
-        assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
-            .isEqualTo(AuthTokenType.USER.value)
+    // Verify token type claim
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
+      .isEqualTo(AuthTokenType.USER.value)
 
-        // Verify capabilities claim exists
-        assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.CAPABILITIES)).isNotNull()
-    }
+    // Verify capabilities claim exists
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.CAPABILITIES)).isNotNull()
+  }
 
-    @Test
-    fun `createJwtForApi creates a properly signed JWT`() = runTest {
-        // given
-        val user = mock(User::class.java)
-        `when`(user.id).thenReturn(UserId())
+  @Test
+  fun `createJwtForApi creates a properly signed JWT`() = runTest {
+    // given
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(UserId())
 
-        // when
-        val jwt = jwtTokenIssuer.createJwtForApi(user)
+    // when
+    val jwt = jwtTokenIssuer.createJwtForApi(user)
 
-        // then
-        assertThat(jwt.tokenValue).isNotNull()
-        assertThat(jwt.tokenValue).isNotEmpty()
+    // then
+    assertThat(jwt.tokenValue).isNotNull()
+    assertThat(jwt.tokenValue).isNotEmpty()
 
-        // Verify the JWT is properly signed
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
-        assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
+    // Verify the JWT is properly signed
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
 
-        // Verify signature with the secret key
-        val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
-        assertThat(signedJWT.verify(verifier)).isTrue()
+    // Verify signature with the secret key
+    val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
+    assertThat(signedJWT.verify(verifier)).isTrue()
 
-        // Verify token type claim
-        assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
-            .isEqualTo(AuthTokenType.API.value)
-    }
+    // Verify token type claim
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
+      .isEqualTo(AuthTokenType.API.value)
+  }
 
-    @Test
-    fun `createJwtForService creates a properly signed JWT`() = runTest {
-        // given
-        val userSecret = mock(UserSecret::class.java)
-        `when`(userSecret.ownerId).thenReturn(UserId())
+  @Test
+  fun `createJwtForService creates a properly signed JWT`() = runTest {
+    // given
+    val userSecret = mock(UserSecret::class.java)
+    `when`(userSecret.ownerId).thenReturn(UserId())
 
-        // when
-        val jwt = jwtTokenIssuer.createJwtForService(userSecret)
+    // when
+    val jwt = jwtTokenIssuer.createJwtForService(userSecret)
 
-        // then
-        assertThat(jwt.tokenValue).isNotNull()
-        assertThat(jwt.tokenValue).isNotEmpty()
+    // then
+    assertThat(jwt.tokenValue).isNotNull()
+    assertThat(jwt.tokenValue).isNotEmpty()
 
-        // Verify the JWT is properly signed
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
-        assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
+    // Verify the JWT is properly signed
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    assertThat(signedJWT.header.algorithm).isEqualTo(JWSAlgorithm.HS256)
 
-        // Verify signature with the secret key
-        val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
-        assertThat(signedJWT.verify(verifier)).isTrue()
+    // Verify signature with the secret key
+    val verifier: JWSVerifier = MACVerifier(testJwtSecret.toByteArray())
+    assertThat(signedJWT.verify(verifier)).isTrue()
 
-        // Verify token type claim
-        assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
-            .isEqualTo(AuthTokenType.SERVICE.value)
-    }
+    // Verify token type claim
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE))
+      .isEqualTo(AuthTokenType.SERVICE.value)
+  }
 
-    @Test
-    fun `JWT signature fails with wrong secret`() = runTest {
-        // when
-        val jwt = jwtTokenIssuer.createJwtForAnonymous()
+  @Test
+  fun `JWT signature fails with wrong secret`() = runTest {
+    // when
+    val jwt = jwtTokenIssuer.createJwtForAnonymous()
 
-        // then
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    // then
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
 
-        // Verify signature fails with wrong secret
-        val wrongSecret = "wrong-secret-key-that-is-different-from-the-original"
-        val verifier: JWSVerifier = MACVerifier(wrongSecret.toByteArray())
-        assertThat(signedJWT.verify(verifier)).isFalse()
-    }
+    // Verify signature fails with wrong secret
+    val wrongSecret = "wrong-secret-key-that-is-different-from-the-original"
+    val verifier: JWSVerifier = MACVerifier(wrongSecret.toByteArray())
+    assertThat(signedJWT.verify(verifier)).isFalse()
+  }
 
-    @Test
-    fun `JWT contains required claims`() = runTest {
-        // when
-        val jwt = jwtTokenIssuer.createJwtForAnonymous()
+  @Test
+  fun `JWT contains required claims`() = runTest {
+    // when
+    val jwt = jwtTokenIssuer.createJwtForAnonymous()
 
-        // then
-        val signedJWT = SignedJWT.parse(jwt.tokenValue)
-        val claims = signedJWT.jwtClaimsSet
+    // then
+    val signedJWT = SignedJWT.parse(jwt.tokenValue)
+    val claims = signedJWT.jwtClaimsSet
 
-        // Verify required claims exist
-        assertThat(claims.getClaim(JwtParameterNames.ID)).isNotNull()
-        assertThat(claims.getClaim(JwtParameterNames.IAT)).isNotNull()
-        assertThat(claims.getClaim(JwtParameterNames.EXP)).isNotNull()
-        assertThat(claims.getClaim(JwtParameterNames.TYPE)).isNotNull()
-        assertThat(claims.getClaim(JwtParameterNames.CAPABILITIES)).isNotNull()
-        assertThat(claims.issuer).isEqualTo("http://localhost:8080")
-    }
+    // Verify required claims exist
+    assertThat(claims.getClaim(JwtParameterNames.ID)).isNotNull()
+    assertThat(claims.getClaim(JwtParameterNames.IAT)).isNotNull()
+    assertThat(claims.getClaim(JwtParameterNames.EXP)).isNotNull()
+    assertThat(claims.getClaim(JwtParameterNames.TYPE)).isNotNull()
+    assertThat(claims.getClaim(JwtParameterNames.CAPABILITIES)).isNotNull()
+    assertThat(claims.issuer).isEqualTo("http://localhost:8080")
+  }
 
-    @Test
-    fun `JWT has proper expiration time`() = runTest {
-        // when
-        val jwt = jwtTokenIssuer.createJwtForAnonymous()
+  @Test
+  fun `anonymous JWT has proper expiration time`() = runTest {
+    // when
+    val jwt = jwtTokenIssuer.createJwtForAnonymous()
 
-        // then
-        assertThat(jwt.expiresAt).isNotNull()
-        assertThat(jwt.expiresAt?.epochSecond).isGreaterThan(jwt.issuedAt?.epochSecond ?: 0)
-    }
+    // then
+    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofDays(1)), within(10, ChronoUnit.SECONDS));
+  }
+
+  @Test
+  fun `capabilities JWT has proper expiration time`() = runTest {
+    // when
+    val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf())
+
+    // then
+    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS));
+  }
 }
 

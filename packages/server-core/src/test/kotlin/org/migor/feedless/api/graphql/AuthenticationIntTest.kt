@@ -15,6 +15,7 @@ import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserService
@@ -22,6 +23,7 @@ import org.migor.feedless.userSecret.UserSecret
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
@@ -69,6 +71,9 @@ class AuthenticationTest {
   @MockitoBean
   lateinit var userService: UserService
 
+  @Autowired
+  lateinit var authService: AuthService
+
   @MockitoBean
   lateinit var userSecretService: UserSecretService
 
@@ -112,7 +117,11 @@ class AuthenticationTest {
 
     // then
     val auth = ObjectMapper().convertValue(response, Map::class.java)
-    assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isNotEmpty()
+    val actualToken = auth[DgsConstants.AUTHENTICATION.Token] as String
+    assertThat(actualToken).isNotEmpty()
+
+    val jwt = authService.parseAndVerify(actualToken)
+    assertThat(jwt).isNotNull()
   }
 }
 

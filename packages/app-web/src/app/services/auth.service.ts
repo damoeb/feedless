@@ -25,8 +25,8 @@ import { ServerConfigService } from './server-config.service';
 
 export type ConfirmCode = GqlAuthUsingMailMutation['authenticateWithCodeViaMail'];
 
-interface RichAuthToken {
-  authorities: string[];
+interface AuthToken {
+  capabilities: Record<string, string>;
   exp: number;
   iat: number;
   id: string;
@@ -113,11 +113,11 @@ export class AuthService {
   }
 
   async handleAuthenticationToken(token: string) {
-    const decodedToken = jwtDecode<RichAuthToken>(token);
-    // console.log('handleAuthenticationToken', decodedToken);
+    const decodedToken = jwtDecode<AuthToken>(token);
+
     // todo mag add timeout when token expires to trigger change event
     this.authStatus.next({
-      loggedIn: decodedToken.user_id?.length > 0,
+      loggedIn: decodedToken.capabilities['user']?.length > 0,
     });
   }
 
