@@ -17,6 +17,9 @@ class ProductsAuthProperties {
   lateinit var untold: ProductAuthProperties
 
   @NestedConfigurationProperty
+  lateinit var rssProxy: ProductAuthProperties
+
+  @NestedConfigurationProperty
   lateinit var feedless: ProductAuthProperties
 
   @NestedConfigurationProperty

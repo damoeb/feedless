@@ -23,6 +23,8 @@ import org.migor.feedless.pipeline.plugins.CompositeFilterPluginParams
 import org.migor.feedless.repository.RepositoryClaim
 import org.migor.feedless.repository.RepositoryClaimRepository
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.HttpFetchOutput
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
@@ -146,13 +148,17 @@ class FeedServiceTest {
     `when`(scrapeOutput.outputs).thenReturn(listOf(scrapeAction))
     `when`(scrapeService.scrape(any2(), any2())).thenReturn(scrapeOutput)
 
+    val selectors = GenericFeedSelectors(
+      linkXPath = "linkXPath",
+      extendContext = ExtendContext.NONE,
+      contextXPath = "contextXPath",
+      dateXPath = "dateXPath",
+    )
+
     // when
     feedService.webToFeed(
       "url",
-      "linkXPath",
-      "extendContext",
-      "contextXPath",
-      "dateXPath",
+      selectors,
       prerender = false,
       filter = "filter",
       feedUrl = "feedUrl",

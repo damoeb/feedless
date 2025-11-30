@@ -23,8 +23,8 @@ import java.util.*
 )
 open class RepositoryClaimEntity : EntityWithUUID() {
 
-  @Column(name = StandardJpaFields.repositoryId, nullable = false)
-  open lateinit var repositoryId: UUID
+  @Column(name = StandardJpaFields.repositoryId)
+  open var repositoryId: UUID? = null
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

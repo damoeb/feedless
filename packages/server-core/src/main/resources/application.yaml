@@ -19,6 +19,9 @@ spring:
 app:
   auth:
     products:
+      rssProxy:
+        oauth: true
+        mailToken: true
       untold:
         oauth: true
         mailToken: true

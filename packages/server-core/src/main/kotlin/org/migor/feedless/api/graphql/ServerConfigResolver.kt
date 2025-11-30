@@ -95,6 +95,7 @@ class ServerConfigResolver {
 
   private fun getProductAuthProperties(product: Vertical): List<AuthType> {
     val props = when (product) {
+      Vertical.rssProxy -> productsAuthProperties.rssProxy
       Vertical.feedless -> productsAuthProperties.feedless
       Vertical.untoldNotes -> productsAuthProperties.untold
       Vertical.upcoming -> productsAuthProperties.upcoming

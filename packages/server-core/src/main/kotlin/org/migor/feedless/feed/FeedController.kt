@@ -17,6 +17,8 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
@@ -99,14 +101,19 @@ class FeedController(
     analyticsService.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
     val feedUrl = toFullUrlString(request)
+
+    val selectors = GenericFeedSelectors(
+      linkXPath = request.param("pLink"),
+      extendContext = ExtendContext.NONE,
+      contextXPath = request.param("pContext").replace("//body/", "//"),
+      dateXPath = null,
+    )
+
     val feed = resolveFeedCatching(feedUrl)
     {
       feedService.webToFeed(
         request.param("url"),
-        request.param("pLink"),
-        "",
-        request.param("pContext").replace("//body/", "//"),
-        null,
+        selectors,
         false,
         null,
         null,
@@ -123,13 +130,23 @@ class FeedController(
     analyticsService.track()
     val feedUrl = toFullUrlString(request)
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
+
+    val selectors = GenericFeedSelectors(
+      linkXPath = request.firstParam("link", "linkXPath"),
+      extendContext = when (request.firstParamOptional("x", "extendContext") ?: "") {
+        "p" -> ExtendContext.PREVIOUS
+        "n" -> ExtendContext.NEXT
+        "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+        else -> ExtendContext.NONE
+      },
+      contextXPath = request.firstParam("context", "contextXPath"),
+      dateXPath = request.paramOptional("date"),
+    )
+
     val feed = resolveFeedCatching(feedUrl) {
       feedService.webToFeed(
         request.param("url"),
-        request.firstParam("link", "linkXPath"),
-        request.firstParamOptional("x", "extendContext") ?: "",
-        request.firstParam("context", "contextXPath"),
-        request.paramOptional("date"),
+        selectors,
         request.paramBool("pp"),
         request.paramOptional("q"),
         request.paramOptional("token"),

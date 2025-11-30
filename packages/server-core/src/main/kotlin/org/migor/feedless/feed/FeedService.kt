@@ -22,12 +22,12 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryClaim
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.repository.RepositoryClaimRepository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
@@ -82,14 +82,11 @@ class FeedService(
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
-    val feed =
-      sourceService.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
-    feed.items =
-      documentService.findAllBySourceId(
-        sourceId,
-        PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(SortableRequest("publishedAt", false)))
-      )
-        .map { it.asJsonItem() }
+    val feed = sourceService.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
+
+    val sortable = SortableRequest("publishedAt", false)
+    val pageable = PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(sortable));
+    feed.items = documentService.findAllBySourceId(sourceId, pageable).map { it.asJsonItem() }
 
     return feed
   }
@@ -97,17 +94,13 @@ class FeedService(
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun webToFeed(
     url: String,
-    linkXPath: String,
-    extendContext: String,
-    contextXPath: String,
-    dateXPath: String?,
+    selectors: GenericFeedSelectors,
     prerender: Boolean,
     filter: String?,
     token: String? = null,
     feedUrl: String
   ): JsonFeed {
-    val fromUrl =
-      suspend { fetchFeedFromUrl(url, prerender, linkXPath, extendContext, contextXPath, dateXPath, feedUrl) }
+    val fromUrl = suspend { fetchFeedFromUrl(url, prerender, selectors, feedUrl) }
     return resolveFeed(fromUrl, feedUrl, token, filter)
   }
 
@@ -123,23 +116,23 @@ class FeedService(
       val requiresToken = featureService.isDisabled(FeatureName.legacyFeedApiBool)
 
       val claim = resolveClaim(token)
-      val hasExpiredTrial = claim?.createdAt?.isBefore(LocalDateTime.now().minusDays(30)) ?: true
+      val hasExpiredTrial = claim?.createdAt?.isBefore(LocalDateTime.now().minusDays(30)) ?: requiresToken
       val hasValidContract = claim?.repositoryId?.let { hasUserValidContract(claim.repositoryId!!) } ?: false
 
-      val fromRepository: () -> JsonFeed = { fetchFeedFromRepository(claim!!.repositoryId) }
+      val fromRepository = suspend { fetchFeedFromRepository(claim!!.repositoryId!!, publicFeedUrl) }
       val fromUrl = suspend { fromUrlLazy().applyFilter(filter) }
-      val afterTokenEval = suspend {
+      val continuePostTokenEval = suspend {
         if (hasExpiredTrial) {
           if (hasValidContract) {
-            fromRepository()
+            fromRepository().appendWelcomeMessage(token)
           } else {
             // show no-subscription message
             sendNoSubscriptionMessage()
           }
         } else {
           // still on trial
-          if (claim.repositoryId == null) {
-            fromUrl()
+          if (claim?.repositoryId == null) {
+            fromUrl().appendWelcomeMessage(token)
           } else {
             fromRepository()
           }
@@ -148,12 +141,12 @@ class FeedService(
 
       if (requiresToken) {
         if (hasToken) {
-          afterTokenEval()
+          continuePostTokenEval()
         } else {
           sendEolMessage()
         }
       } else {
-        afterTokenEval()
+        continuePostTokenEval()
       }
     } catch (e: Exception) {
       createErrorFeed(publicFeedUrl, e)
@@ -162,20 +155,36 @@ class FeedService(
 
   private fun hasUserValidContract(repositoryId: RepositoryId): Boolean {
     // TODO("Not yet implemented")
-    return false;
+    return true
   }
 
-  private fun fetchFeedFromRepository(repositoryId: RepositoryId?): JsonFeed {
-    TODO("Not yet implemented")
+  private suspend fun fetchFeedFromRepository(repositoryId: RepositoryId, feedUrl: String): JsonFeed {
+    val feed = repositoryRepository.findById(repositoryId)?.toJsonFeed(feedUrl)
+      ?: throw NotFoundException("repositoryId not found")
+
+    feed.items =
+      documentService.findAllByRepositoryId(
+        repositoryId,
+        pageable = PageableRequest(
+          pageNumber = 0,
+          pageSize = 10,
+          sortBy = listOf(SortableRequest("publishedAt", false))
+        )
+      )
+        .map { it.asJsonItem() }
+    
+    return feed
+  }
+
+  private suspend fun JsonFeed.appendWelcomeMessage(token: String?): JsonFeed {
+    // todo implement
+    return this
   }
 
   private suspend fun fetchFeedFromUrl(
     url: String,
     prerender: Boolean,
-    linkXPath: String,
-    extendContext: String,
-    contextXPath: String,
-    dateXPath: String?,
+    selectors: GenericFeedSelectors,
     feedUrl: String,
   ): JsonFeed {
     val sourceId = SourceId()
@@ -193,18 +202,6 @@ class FeedService(
       )
     )
     val scrapeOutput = scrapeService.scrape(source, LogCollector())
-
-    val selectors = GenericFeedSelectors(
-      linkXPath = linkXPath,
-      extendContext = when (extendContext) {
-        "p" -> ExtendContext.PREVIOUS
-        "n" -> ExtendContext.NEXT
-        "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-        else -> ExtendContext.NONE
-      },
-      contextXPath = contextXPath,
-      dateXPath = dateXPath,
-    )
 
     val document = HtmlUtil.parseHtml(
       scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
@@ -422,5 +419,9 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
     feed.items = emptyList()
     feed.feedUrl = feedUrl
     return feed
+  }
+
+  private fun Repository.toJsonFeed(feedUrl: String): JsonFeed {
+    TODO("Not yet implemented")
   }
 }
