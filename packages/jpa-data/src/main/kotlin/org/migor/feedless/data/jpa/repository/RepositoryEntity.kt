@@ -12,9 +12,9 @@ import org.migor.feedless.repository.Repository
 open class RepositoryEntity : AbstractRepositoryEntity()
 
 fun RepositoryEntity.toDomain(): Repository {
-    return RepositoryMapper.Companion.INSTANCE.toDomain(this)
+  return RepositoryMapper.INSTANCE.toDomain(this)
 }
 
 fun Repository.toEntity(): RepositoryEntity {
-    return RepositoryMapper.Companion.INSTANCE.toEntity(this)
+  return RepositoryMapper.INSTANCE.toEntity(this)
 }

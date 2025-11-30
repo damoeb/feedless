@@ -3,7 +3,6 @@ package org.migor.feedless.feed
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
@@ -15,17 +14,22 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.CompositeFilterPluginParams
-import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.RepositoryClaim
+import org.migor.feedless.repository.RepositoryClaimRepository
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.HttpFetchOutput
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
@@ -38,7 +42,9 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.security.oauth2.jwt.Jwt
 import java.time.LocalDateTime
+import java.util.*
 
 class FeedServiceTest {
 
@@ -69,17 +75,33 @@ class FeedServiceTest {
     environment = mock(Environment::class.java)
     `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
 
+    val featureService = mock(FeatureService::class.java)
+    `when`(featureService.isDisabled(FeatureName.legacyFeedApiBool)).thenReturn(false)
+
+    val authService = mock(AuthService::class.java)
+    val jwt = mock(Jwt::class.java)
+    `when`(jwt.getClaimAsString("id")).thenReturn(UUID.randomUUID().toString())
+    `when`(authService.parseAndVerify(any2())).thenReturn(jwt)
+
+    val claim = mock(RepositoryClaim::class.java)
+    `when`(claim.createdAt).thenReturn(LocalDateTime.now())
+
+    val repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(claim)
+
     feedService = FeedService(
       mock(PropertyService::class.java),
       webToFeedTransformer,
       feedParserService,
       scrapeService,
-      mock(RepositoryService::class.java),
-      userService,
+      authService,
       sourceService,
       documentService,
       filterPlugin,
-      mock(JwtTokenIssuer::class.java)
+      mock(JwtTokenIssuer::class.java),
+      repositoryClaimRepository,
+      mock(RepositoryRepository::class.java),
+      featureService,
     )
   }
 
@@ -133,7 +155,8 @@ class FeedServiceTest {
       "dateXPath",
       prerender = false,
       filter = "filter",
-      feedUrl = "feedUrl"
+      feedUrl = "feedUrl",
+      token = "token"
     )
 
     // then
@@ -145,44 +168,44 @@ class FeedServiceTest {
     )
   }
 
-  @Test
-  fun `given self-hosted, standalone is supported`() = runTest {
-    // given
-    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
+//  @Test
+//  fun `given self-hosted, standalone is supported`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(null)).isTrue()
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isTrue()
+//  }
 
-    // when
-    assertThat(feedService.standaloneSupport(null)).isTrue()
-    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isTrue()
-  }
+//  @Test
+//  fun `given saas, standalone is supported within 2 month`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now())).isTrue()
+//  }
 
-  @Test
-  fun `given saas, standalone is supported within 2 month`() = runTest {
-    // given
-    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//  @Test
+//  @Disabled
+//  fun `given saas, standalone is not supported if ts is null`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(null)).isFalse()
+//  }
 
-    // when
-    assertThat(feedService.standaloneSupport(LocalDateTime.now())).isTrue()
-  }
-
-  @Test
-  @Disabled
-  fun `given saas, standalone is not supported if ts is null`() = runTest {
-    // given
-    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
-
-    // when
-    assertThat(feedService.standaloneSupport(null)).isFalse()
-  }
-
-  @Test
-  @Disabled
-  fun `given saas, standalone is not supported if ts is older than 2 month`() = runTest {
-    // given
-    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
-
-    // when
-    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isFalse()
-  }
+//  @Test
+//  @Disabled
+//  fun `given saas, standalone is not supported if ts is older than 2 month`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isFalse()
+//  }
 
   @ParameterizedTest
   @CsvSource(
@@ -211,7 +234,7 @@ class FeedServiceTest {
     ).thenReturn(mock(CompositeFilterPluginParams::class.java))
 
     // when
-    feedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl")
+    feedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl", token = "token")
 
     // then
     verify(filterPlugin, times(2)).filterEntity(

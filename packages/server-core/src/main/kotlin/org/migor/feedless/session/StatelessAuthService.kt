@@ -20,63 +20,63 @@ import java.time.LocalDateTime
 @Transactional(propagation = Propagation.NEVER)
 @ConditionalOnMissingBean(StatefulAuthService::class)
 class StatelessAuthService : AuthService() {
-    @Value("\${app.rootEmail}")
-    private lateinit var rootEmail: String
+  @Value("\${app.rootEmail}")
+  private lateinit var rootEmail: String
 
-    @Value("\${app.rootSecretKey}")
-    private lateinit var rootSecretKey: String
+  @Value("\${app.rootSecretKey}")
+  private lateinit var rootSecretKey: String
 
-    private lateinit var root: User
-    private lateinit var key: UserSecret
+  private lateinit var root: User
+  private lateinit var key: UserSecret
 
 
-    @PostConstruct
-    fun init() {
-        root = User(
-            email = rootEmail,
-            lastLogin = LocalDateTime.now(),
-            hasAcceptedTerms = true,
-        )
-        key = UserSecret(
-            value = rootSecretKey,
-            validUntil = LocalDateTime.now().plusDays(1),
-            type = UserSecretType.SecretKey,
-            ownerId = root.id,
-        )
+  @PostConstruct
+  fun init() {
+    root = User(
+      email = rootEmail,
+      lastLogin = LocalDateTime.now(),
+      hasAcceptedTerms = true,
+    )
+    key = UserSecret(
+      value = rootSecretKey,
+      validUntil = LocalDateTime.now().plusDays(1),
+      type = UserSecretType.SecretKey,
+      ownerId = root.id,
+    )
+  }
+
+  override suspend fun parseAndVerify(token: String): Jwt? = null
+  override suspend fun assertToken(request: HttpServletRequest) {
+
+  }
+
+  override fun isWhitelisted(request: HttpServletRequest): Boolean = true
+
+  override suspend fun interceptToken(request: HttpServletRequest): Jwt {
+    TODO("ignore")
+  }
+
+  override fun authenticateUser(email: String, secretKey: String): User {
+    return if (email == rootEmail && secretKey == rootSecretKey) {
+      root
+    } else {
+      throw AccessDeniedException("User does not exist or password invalid")
     }
+  }
 
-    override suspend fun verifyTokenSignature(token: String): Jwt? = null
-    override suspend fun assertToken(request: HttpServletRequest) {
-
+  override suspend fun findUserById(userId: UserId): User? {
+    return if (root.id == userId.uuid) {
+      root
+    } else {
+      null
     }
+  }
 
-    override fun isWhitelisted(request: HttpServletRequest): Boolean = true
-
-    override suspend fun interceptToken(request: HttpServletRequest): Jwt {
-        TODO("ignore")
+  override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret? {
+    return if (email == rootEmail && secretKey == rootSecretKey) {
+      key
+    } else {
+      throw AccessDeniedException("User does not exist or password invalid")
     }
-
-    override fun authenticateUser(email: String, secretKey: String): User {
-        return if (email == rootEmail && secretKey == rootSecretKey) {
-            root
-        } else {
-            throw AccessDeniedException("User does not exist or password invalid")
-        }
-    }
-
-    override suspend fun findUserById(userId: UserId): User? {
-        return if (root.id == userId.uuid) {
-            root
-        } else {
-            null
-        }
-    }
-
-    override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret? {
-        return if (email == rootEmail && secretKey == rootSecretKey) {
-            key
-        } else {
-            throw AccessDeniedException("User does not exist or password invalid")
-        }
-    }
+  }
 }

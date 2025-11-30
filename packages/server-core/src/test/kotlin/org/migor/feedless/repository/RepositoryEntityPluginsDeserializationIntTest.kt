@@ -17,10 +17,10 @@ import org.migor.feedless.any
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
+import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
@@ -153,7 +153,7 @@ class RepositoryEntityPluginsDeserializationIntTest {
         params = PluginExecutionJson(paramsJsonString = paramsJsonString)
       )
     )
-    
+
     // [{"id": "org_feedless_diff_records", "paramsJsonString": "{\"compareBy\": {\"field\": \"text\", \"fragmentNameRef\": null}, \"inlineDiffImage\": true, \"inlineLatestImage\": true, \"inlinePreviousImage\": null, \"nextItemMinIncrement\": 0.0}"}]
     // [{"id":"org_feedless_fulltext","params":{"paramsJsonString":"{\"readability\":true,\"summary\":true,\"inheritParams\":false,\"onErrorRemove\":true}"}}]
 

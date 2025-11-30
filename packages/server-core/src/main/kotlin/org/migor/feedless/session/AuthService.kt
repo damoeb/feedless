@@ -39,7 +39,7 @@ enum class AuthTokenType(val value: String) {
 
 @Service
 abstract class AuthService {
-  abstract suspend fun verifyTokenSignature(token: String): Jwt?
+  abstract suspend fun parseAndVerify(token: String): Jwt?
   abstract suspend fun assertToken(request: HttpServletRequest)
   abstract fun isWhitelisted(request: HttpServletRequest): Boolean
   abstract suspend fun interceptToken(request: HttpServletRequest): Jwt

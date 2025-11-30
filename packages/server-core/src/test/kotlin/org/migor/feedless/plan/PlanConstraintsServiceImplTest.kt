@@ -14,11 +14,11 @@ import org.migor.feedless.Vertical
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
-import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureGroup
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureGroupRepository
+import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.product.Product

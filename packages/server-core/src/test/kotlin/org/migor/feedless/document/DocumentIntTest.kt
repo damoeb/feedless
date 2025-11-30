@@ -18,6 +18,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.data.jpa.product.ProductDAO
+import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.GroupService
 import org.migor.feedless.pipeline.PluginService
@@ -73,6 +74,7 @@ import java.time.LocalDateTime
     AttachmentDAO::class,
     GroupService::class,
     PermissionService::class,
+    RepositoryClaimJpaRepository::class,
   ]
 )
 @Testcontainers

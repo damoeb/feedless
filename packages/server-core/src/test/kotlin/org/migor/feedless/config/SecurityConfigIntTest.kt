@@ -9,10 +9,12 @@ import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.graphql.ServerConfigResolver
-import org.migor.feedless.document.DocumentController
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
+import org.migor.feedless.document.DocumentController
+import org.migor.feedless.feed.FeedService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionResolver
@@ -45,7 +47,9 @@ const val actuatorPassword = "password"
     DocumentController::class,
     PermissionService::class,
     OneTimePasswordService::class,
-    OAuth2AuthorizedClientService::class
+    OAuth2AuthorizedClientService::class,
+    FeedService::class,
+    AnalyticsService::class
   ]
 )
 @ActiveProfiles(
@@ -59,7 +63,7 @@ const val actuatorPassword = "password"
   "metrics"
 )
 @Import(DisableDatabaseConfiguration::class)
-class SecurityConfigTest {
+class SecurityConfigIntTest {
 
   lateinit var baseEndpoint: String
   lateinit var actuatorEndpoint: String

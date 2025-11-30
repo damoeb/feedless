@@ -19,7 +19,6 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.util.toLocalDateTime
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -110,7 +109,7 @@ class FeedController(
         null,
         false,
         null,
-        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
+        null,
         feedUrl
       )
     }
@@ -133,7 +132,7 @@ class FeedController(
         request.paramOptional("date"),
         request.paramBool("pp"),
         request.paramOptional("q"),
-        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
+        request.paramOptional("token"),
         feedUrl
       )
     }
@@ -154,7 +153,7 @@ class FeedController(
       feedService.transformFeed(
         request.param("url"),
         request.paramOptional("q"),
-        request.paramOptional("ts")?.toLong()?.toLocalDateTime(),
+        request.paramOptional("token"),
         feedUrl
       )
     }

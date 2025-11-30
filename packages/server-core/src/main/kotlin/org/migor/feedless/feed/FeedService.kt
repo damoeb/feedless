@@ -15,35 +15,38 @@ import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.DocumentService
-import org.migor.feedless.document.ReleaseStatus
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
-import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.repository.toPageableRequest
+import org.migor.feedless.repository.RepositoryClaim
+import org.migor.feedless.repository.RepositoryClaimId
+import org.migor.feedless.repository.RepositoryClaimRepository
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebToFeedTransformer
+import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
-import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
@@ -54,6 +57,9 @@ import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.coroutineContext
 
+typealias ShipFeedItems = Boolean;
+
+
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.feed} & ${AppLayer.service}")
@@ -62,17 +68,17 @@ class FeedService(
   private val webToFeedTransformer: WebToFeedTransformer,
   private val feedParserService: FeedParserService,
   private val scrapeService: ScrapeService,
-  private val repositoryService: RepositoryService,
-  private val userService: UserService,
+  private val authService: AuthService,
   private val sourceService: SourceService,
   private val documentService: DocumentService,
   private val filterPlugin: CompositeFilterPlugin,
   private val jwtTokenIssuer: JwtTokenIssuer,
+  private val repositoryClaimRepository: RepositoryClaimRepository,
+  private val repositoryRepository: RepositoryRepository,
+  private val featureService: FeatureService,
 ) {
 
-  private val log = LoggerFactory.getLogger(FeedService::class.simpleName)
-
-  fun getRepoTitleForStandaloneFeedNotifications(): String = "legacyFeedNotifications"
+  val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
@@ -85,7 +91,7 @@ class FeedService(
       )
         .map { it.asJsonItem() }
 
-    return appendNotifications(feed)
+    return feed
   }
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
@@ -97,73 +103,139 @@ class FeedService(
     dateXPath: String?,
     prerender: Boolean,
     filter: String?,
-    ts: LocalDateTime? = null,
+    token: String? = null,
     feedUrl: String
   ): JsonFeed {
-    val corrId = coroutineContext.corrId()
-    return if (standaloneSupport(ts)) {
-      val sourceId = SourceId()
-      val source = Source(
-        id = sourceId,
-        title = "Feed from $url",
-        actions = listOf(
-          FetchAction(
-            sourceId = sourceId,
-            pos = 1,
-            forcePrerender = prerender,
-            url = url,
-            isVariable = false
-          )
-        )
-      )
-      val scrapeOutput = scrapeService.scrape(source, LogCollector())
+    val fromUrl =
+      suspend { fetchFeedFromUrl(url, prerender, linkXPath, extendContext, contextXPath, dateXPath, feedUrl) }
+    return resolveFeed(fromUrl, feedUrl, token, filter)
+  }
 
-      val selectors = GenericFeedSelectors(
-        linkXPath = linkXPath,
-        extendContext = when (extendContext) {
-          "p" -> ExtendContext.PREVIOUS
-          "n" -> ExtendContext.NEXT
-          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-          else -> ExtendContext.NONE
-        },
-        contextXPath = contextXPath,
-        dateXPath = dateXPath,
-      )
+  private suspend fun resolveFeed(
+    fromUrlLazy: suspend () -> JsonFeed,
+    publicFeedUrl: String,
+    token: String? = null,
+    filter: String? = null,
+  ): JsonFeed {
 
-      val document = HtmlUtil.parseHtml(
-        scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-          StandardCharsets.UTF_8
-        ), url
-      )
-      val feed = webToFeedTransformer.getFeedBySelectors(
-        selectors,
-        document,
-        URI(url),
-        LogCollector()
-      )
-      feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
-      feed.feedUrl = feedUrl
-      feed.websiteUrl = url
+    return try {
+      val hasToken = token != null
+      val requiresToken = featureService.isDisabled(FeatureName.legacyFeedApiBool)
 
-      try {
-        filter?.let {
-          feed.items = feed.items.filterIndexed { index, jsonItem ->
-            filterPlugin.filterEntity(
-              jsonItem,
-              convertFilterStringToPluginParams(it),
-              index,
-              LogCollector()
-            )
+      val claim = resolveClaim(token)
+      val hasExpiredTrial = claim?.createdAt?.isBefore(LocalDateTime.now().minusDays(30)) ?: true
+      val hasValidContract = claim?.repositoryId?.let { hasUserValidContract(claim.repositoryId!!) } ?: false
+
+      val fromRepository: () -> JsonFeed = { fetchFeedFromRepository(claim!!.repositoryId) }
+      val fromUrl = suspend { fromUrlLazy().applyFilter(filter) }
+      val afterTokenEval = suspend {
+        if (hasExpiredTrial) {
+          if (hasValidContract) {
+            fromRepository()
+          } else {
+            // show no-subscription message
+            sendNoSubscriptionMessage()
+          }
+        } else {
+          // still on trial
+          if (claim.repositoryId == null) {
+            fromUrl()
+          } else {
+            fromRepository()
           }
         }
-      } catch (e: Throwable) {
-        log.warn("[$corrId] webToFeed failed: ${e.message}", e)
       }
 
-      appendNotifications(feed)
-    } else {
-      createEolFeed(feedUrl)
+      if (requiresToken) {
+        if (hasToken) {
+          afterTokenEval()
+        } else {
+          sendEolMessage()
+        }
+      } else {
+        afterTokenEval()
+      }
+    } catch (e: Exception) {
+      createErrorFeed(publicFeedUrl, e)
     }
+  }
+
+  private fun hasUserValidContract(repositoryId: RepositoryId): Boolean {
+    // TODO("Not yet implemented")
+    return false;
+  }
+
+  private fun fetchFeedFromRepository(repositoryId: RepositoryId?): JsonFeed {
+    TODO("Not yet implemented")
+  }
+
+  private suspend fun fetchFeedFromUrl(
+    url: String,
+    prerender: Boolean,
+    linkXPath: String,
+    extendContext: String,
+    contextXPath: String,
+    dateXPath: String?,
+    feedUrl: String,
+  ): JsonFeed {
+    val sourceId = SourceId()
+    val source = Source(
+      id = sourceId,
+      title = "Feed from $url",
+      actions = listOf(
+        FetchAction(
+          sourceId = sourceId,
+          pos = 1,
+          forcePrerender = prerender,
+          url = url,
+          isVariable = false
+        )
+      )
+    )
+    val scrapeOutput = scrapeService.scrape(source, LogCollector())
+
+    val selectors = GenericFeedSelectors(
+      linkXPath = linkXPath,
+      extendContext = when (extendContext) {
+        "p" -> ExtendContext.PREVIOUS
+        "n" -> ExtendContext.NEXT
+        "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+        else -> ExtendContext.NONE
+      },
+      contextXPath = contextXPath,
+      dateXPath = dateXPath,
+    )
+
+    val document = HtmlUtil.parseHtml(
+      scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
+        StandardCharsets.UTF_8
+      ), url
+    )
+    val feed = webToFeedTransformer.getFeedBySelectors(
+      selectors,
+      document,
+      URI(url),
+      LogCollector()
+    )
+    feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
+    feed.feedUrl = feedUrl
+    feed.websiteUrl = url
+
+    return feed
+  }
+
+  private suspend fun JsonFeed.applyFilter(filter: String?): JsonFeed {
+    filter?.let {
+      items = items.filterIndexed { index, jsonItem ->
+        filterPlugin.filterEntity(
+          jsonItem,
+          convertFilterStringToPluginParams(it),
+          index,
+          LogCollector()
+        )
+      }
+    }
+    return this
   }
 
   private fun convertFilterStringToPluginParams(jsonOrExpressionFilter: String): List<ItemFilterParams> {
@@ -187,27 +259,13 @@ class FeedService(
   suspend fun transformFeed(
     nativeFeedUrl: String,
     filter: String?,
-    ts: LocalDateTime? = null,
+    token: String? = null,
     feedUrl: String
   ): JsonFeed {
-    return if (standaloneSupport(ts)) {
-      val feed = feedParserService.parseFeedFromUrl(nativeFeedUrl)
-      filter?.let {
-        feed.items = feed.items.filterIndexed { index, jsonItem ->
-          filterPlugin.filterEntity(
-            jsonItem,
-            filterPlugin.fromJson(filter),
-            index,
-            LogCollector()
-          )
-        }
-      }
 
-      appendNotifications(feed)
-      feed
-    } else {
-      createEolFeed(feedUrl)
-    }
+    val feedFromUrlLazy = suspend { feedParserService.parseFeedFromUrl(nativeFeedUrl) }
+
+    return resolveFeed(feedFromUrlLazy, nativeFeedUrl, token, filter)
   }
 
   fun getRepository(repositoryId: String): ResponseEntity<String> {
@@ -218,43 +276,45 @@ class FeedService(
 
   // --
 
-  private suspend fun appendNotifications(feed: JsonFeed): JsonFeed {
-    val corrId = coroutineContext.corrId()
-    val root = userService.findAdminUser()
-    repositoryService.findByTitleAndOwnerId(getRepoTitleForStandaloneFeedNotifications(), root!!.id)?.let { repo ->
-      val pageable = PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "publishedAt"))
-      val documents = documentService.findAllByRepositoryId(
-        repo.id,
-        status = ReleaseStatus.released,
-        pageable = pageable.toPageableRequest(),
-      )
-        .map {
-          it.copy(publishedAt = LocalDateTime.now()).asJsonItem()
-        }
-
-      feed.items = documents.plus(feed.items)
-    } ?: log.error("[$corrId] Repo for standalone notification not found")
-    return feed
-  }
-
-  suspend fun standaloneSupport(ts: LocalDateTime?): Boolean {
-//    return environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted)) || (ts != null && ts.isAfter(LocalDateTime.now().minusMonths(2)))
-//    return !featureService.isDisabled(FeatureName.legacyApiBool)
-    // todo enable some time
-    return true
-  }
-
-  private fun createEolFeed(feedUrl: String): JsonFeed {
-    val feed = JsonFeed()
-    feed.id = "rss-proxy:2"
-    feed.title = "End Of Trial"
-    feed.feedUrl = feedUrl
-    feed.expired = true
-    feed.publishedAt = LocalDateTime.now()
-    feed.items = listOf(createEolArticle(feedUrl))
+  private suspend fun appendNotifications(feed: JsonFeed, feedSupport: FeedMessage, jwt: Jwt? = null): JsonFeed {
+    when (feedSupport) {
+      FeedMessage.NO_TOKEN_FEED -> ""
+      FeedMessage.WELCOME_MESSAGE -> ""
+      FeedMessage.END_OF_LIFE_FEED -> ""
+      FeedMessage.EXPIRED_FEED -> ""
+    }
 
     return feed
   }
+
+  suspend fun resolveClaim(token: String?): RepositoryClaim? {
+    val jwt = try {
+      token?.let { authService.parseAndVerify(token)!! }
+    } catch (_: Throwable) {
+      null
+    }
+    if (jwt != null) {
+      try {
+        return repositoryClaimRepository.findById(RepositoryClaimId(jwt.getClaimAsString("id")))
+      } catch (e: Exception) {
+        log.error("Error resolving id claim from token: ${e.message}")
+      }
+    }
+    return null
+  }
+
+//    private suspend fun createEolFeed(feedUrl: String): JsonFeed {
+//      val feed = JsonFeed()
+//      feed.id = "rss-proxy:2"
+//      feed.title = "End Of Trial"
+//      feed.feedUrl = feedUrl
+//      feed.expired = true
+//      feed.publishedAt = LocalDateTime.now()
+//
+//      appendNotifications(feed, FeedMessage.END_OF_LIFE_FEED)
+//
+//      return feed
+//    }
 
   suspend fun createErrorFeed(feedUrl: String, t: Throwable): JsonFeed {
     val feed = JsonFeed()
@@ -267,7 +327,7 @@ class FeedService(
     feed.items = if (t is ResumableHarvestException || t is TooManyConnectionsPerHostException) {
       emptyList()
     } else {
-      listOf(createErrorArticle(t, feedUrl))
+      listOf(createErrorMessage(t, feedUrl))
     }
 
     return feed
@@ -289,7 +349,23 @@ class FeedService(
     return article
   }
 
-  private suspend fun createErrorArticle(t: Throwable, feedUrl: String): JsonItem {
+  private fun createFeedMessage(feedUrl: String): JsonItem {
+    val article = JsonItem()
+    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
+    article.title = "ACTION REQUIRED – Reenable Your Feed"
+    article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
+      <p>If you liked it, restore your feed simply by <a href="$feedActivationLink">reenabling it</a>, it is just a couple of clicks.</p>
+<p>Reenable your feed today to get back to seamless service.</p>
+<p>Thanks!</p>
+    """.trimIndent()
+//    article.text = "Thanks for using rssproxy or feedless. I have terminated the service has has ended. You may migrate to the latest version using this link $migrationUrl"
+    article.url = feedActivationLink
+    article.publishedAt = LocalDateTime.now()
+    return article
+  }
+
+  private suspend fun createErrorMessage(t: Throwable, feedUrl: String): JsonItem {
     val corrId = coroutineContext.corrId()
     val article = JsonItem()
     article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
@@ -322,18 +398,29 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
     return article
   }
 
-  fun createAnonymousFeedUrl(baseUri: URI): AuthToken {
-    val jwt = jwtTokenIssuer.createJwtForAnonymousFeed(baseUri.host)
+  @Transactional
+  suspend fun createAnonymousFeedUrl(baseUri: URI): AuthToken {
+    val repositoryClaim = RepositoryClaim()
+    repositoryClaimRepository.save(repositoryClaim)
+    val jwt = jwtTokenIssuer.createJwtForAnonymousFeed(baseUri.host, repositoryClaim.id)
     return AuthToken(token = jwt.tokenValue)
   }
-}
 
-private fun Source.toJsonFeed(feedUrl: String): JsonFeed {
-  val feed = JsonFeed()
-  feed.id = "legacy-feed"
-  feed.title = title
-  feed.publishedAt = createdAt
-  feed.items = emptyList()
-  feed.feedUrl = feedUrl
-  return feed
+  private fun sendEolMessage(): JsonFeed {
+    TODO("Not yet implemented")
+  }
+
+  private fun sendNoSubscriptionMessage(): JsonFeed {
+    TODO("Not yet implemented")
+  }
+
+  private fun Source.toJsonFeed(feedUrl: String): JsonFeed {
+    val feed = JsonFeed()
+    feed.id = "legacy-feed"
+    feed.title = title
+    feed.publishedAt = createdAt
+    feed.items = emptyList()
+    feed.feedUrl = feedUrl
+    return feed
+  }
 }

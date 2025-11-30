@@ -8,10 +8,8 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
-import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.data.jpa.group.GroupDAO
 import org.migor.feedless.data.jpa.group.GroupEntity
@@ -27,13 +25,12 @@ import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentDAO
 import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretEntity
-import org.migor.feedless.document.ReleaseStatus
+import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.feed.FeedService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecretType
-import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.annotation.Order
@@ -125,7 +122,6 @@ class Seeder(
       userSecretDAO.save(userSecret)
     }
 
-    prepareStandaloneNotification(root)
 //    pushFeedlessOpsNotifications(root)
 
     return root
@@ -155,40 +151,36 @@ class Seeder(
 //    }
 //  }
 
-  private fun prepareStandaloneNotification(root: UserEntity) {
-    val standaloneFeedNotificationRepo = resolveStandaloneNotificationsRepo(root)
-
-    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
-      val deprecationMessageTitle = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
-      val repositoryId = standaloneFeedNotificationRepo.id
-
-      val title = "SERVICE ANNOUNCEMENT: About this feed"
-      val notification =
-        documentDAO.findByTitleInAndRepositoryId(listOf(title, deprecationMessageTitle), repositoryId) ?: run {
-          val d = DocumentEntity()
-          d.repositoryId = repositoryId
-          d
-        }
-
-      val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls"
-      notification.url = url
-      notification.title = title
-      notification.status = ReleaseStatus.released
-      notification.contentHash = CryptUtil.sha1(url)
-      notification.text =
-        "Dear user, this standalone feed URL is generated per request and comes with some limitations like fetch frequency and others."
-      notification.html =
-        "Dear user, this standalone feed URL is generated per request and <a href=\"https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls\">comes with some limitations</a> like fetch frequency and others."
-      notification.publishedAt = LocalDateTime.now() // force to top on most readers
-      notification.updatedAt = LocalDateTime.now()
-
-      documentDAO.save(notification)
-    }
-  }
-
-  private fun resolveStandaloneNotificationsRepo(root: UserEntity): RepositoryEntity {
-    return resolveOpsNotificationsRepo(feedService.getRepoTitleForStandaloneFeedNotifications(), root)
-  }
+//  private fun prepareStandaloneNotification(root: UserEntity) {
+//    val standaloneFeedNotificationRepo = resolveStandaloneNotificationsRepo(root)
+//
+//    if (environment.acceptsProfiles(Profiles.of(AppProfiles.saas))) {
+//      val deprecationMessageTitle = "SERVICE ANNOUNCEMENT: RSS-Proxy Feeds Deprecation Warning"
+//      val repositoryId = standaloneFeedNotificationRepo.id
+//
+//      val title = "SERVICE ANNOUNCEMENT: About this feed"
+//      val notification =
+//        documentDAO.findByTitleInAndRepositoryId(listOf(title, deprecationMessageTitle), repositoryId) ?: run {
+//          val d = DocumentEntity()
+//          d.repositoryId = repositoryId
+//          d
+//        }
+//
+//      val url = "https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls"
+//      notification.url = url
+//      notification.title = title
+//      notification.status = ReleaseStatus.released
+//      notification.contentHash = CryptUtil.sha1(url)
+//      notification.text =
+//        "Dear user, this standalone feed URL is generated per request and comes with some limitations like fetch frequency and others."
+//      notification.html =
+//        "Dear user, this standalone feed URL is generated per request and <a href=\"https://github.com/damoeb/feedless/wiki/Messages-in-your-Feed#standalone-feed-urls\">comes with some limitations</a> like fetch frequency and others."
+//      notification.publishedAt = LocalDateTime.now() // force to top on most readers
+//      notification.updatedAt = LocalDateTime.now()
+//
+//      documentDAO.save(notification)
+//    }
+//  }
 
   private fun resolveOpsNotificationsRepo(repoTitle: String, root: UserEntity): RepositoryEntity {
     val repo = RepositoryEntity()
@@ -240,7 +232,7 @@ class Seeder(
           FeatureName.refreshRateInMinutesLowerLimitInt to asIntFeature(5),
           FeatureName.publicRepositoryBool to asBoolFeature(false),
           FeatureName.pluginsBool to asBoolFeature(false),
-          FeatureName.legacyApiBool to asBoolFeature(true),
+          FeatureName.legacyFeedApiBool to asBoolFeature(true),
 
           FeatureName.repositoryCapacityLowerLimitInt to asIntFeature(0),
           FeatureName.repositoryCapacityUpperLimitInt to asIntFeature(0),

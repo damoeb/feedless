@@ -81,7 +81,6 @@ class SeederTest {
     Mockito.`when`(userDAO.saveAndFlush(any2())).thenAnswer { it.arguments[0] }
     Mockito.`when`(repositoryDAO.save(any2())).thenAnswer { it.arguments[0] }
     Mockito.`when`(featureGroupDAO.save(any2())).thenAnswer { it.arguments[0] }
-    Mockito.`when`(feedService.getRepoTitleForStandaloneFeedNotifications()).thenReturn("opsops")
 
 
     Mockito.`when`(userDAO.save(any2())).thenAnswer { it.arguments[0] }

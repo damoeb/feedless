@@ -13,11 +13,11 @@ import org.migor.feedless.data.jpa.feature.FeatureDAO
 import org.migor.feedless.data.jpa.feature.FeatureEntity
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
-import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.data.jpa.featureValue.FeatureValueDAO
 import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.data.jpa.plan.PlanDAO
 import org.migor.feedless.data.jpa.product.ProductDAO
+import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.session.SessionService

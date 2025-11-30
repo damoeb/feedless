@@ -12,6 +12,7 @@ import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
@@ -84,13 +85,14 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForAnonymousFeed(host: String): Jwt {
+  fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
-    log.debug("signedToken for service")
+    log.debug("signedToken for anonymous feed")
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
         JwtParameterNames.HOST to host,
+        JwtParameterNames.ID to id.uuid,
       ),
     )
   }

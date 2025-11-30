@@ -5,8 +5,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
-import org.migor.feedless.data.jpa.featureValue.FeatureName
 import org.migor.feedless.feature.FeatureGroupRepository
+import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.product.ProductRepository

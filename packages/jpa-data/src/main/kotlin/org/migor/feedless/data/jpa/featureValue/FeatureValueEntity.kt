@@ -22,33 +22,6 @@ import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
 import org.migor.feedless.feature.FeatureValueType
 import java.util.*
 
-enum class FeatureName {
-  requestPerMinuteUpperLimitInt,
-  refreshRateInMinutesLowerLimitInt,
-  publicRepositoryBool,
-  pluginsBool,
-  legacyApiBool,
-
-  repositoryCapacityUpperLimitInt,
-  repositoryCapacityLowerLimitInt,
-  repositoryRetentionMaxDaysLowerLimitInt,
-  itemEmailForwardBool,
-  itemWebhookForwardBool,
-  canLogin,
-  canActivatePlan,
-  canCreateUser,
-  canJoinPlanWaitList,
-  canSignUp,
-
-  scrapeRequestTimeoutMsecInt,
-  repositoriesMaxCountActiveInt,
-  sourceMaxCountPerRepositoryInt,
-
-  @Deprecated("will be removed")
-  scrapeRequestActionMaxCountInt,
-  repositoriesMaxCountTotalInt,
-}
-
 @Entity
 @Table(
   name = "t_feature_value",
