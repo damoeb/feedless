@@ -5,6 +5,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Disabled
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.util.JsonSerializer.fromJson
 import org.migor.feedless.util.JsonSerializer.toJson
 import kotlin.test.Test
 
@@ -19,5 +20,20 @@ class GitRepositoryProviderTest {
     val repositories = git.provideAll(capability, pageable, null)
 
     assertThat(repositories).isNotNull()
+  }
+
+  @Test
+  fun `round-trip serialization of GithubCapability should preserve all data`() {
+    // given
+    val original = GithubCapability("my-github-token-12345")
+
+    // when
+    val jsonString = toJson(original)
+    val deserialized = fromJson<GithubCapability>(jsonString)
+
+    // then
+    assertThat(deserialized.token).isEqualTo(original.token)
+    assertThat(deserialized.capabilityId.value).isEqualTo(original.capabilityId.value)
+    assertThat(deserialized.capabilityPayload).isEqualTo(original.capabilityPayload)
   }
 }

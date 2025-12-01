@@ -24,6 +24,7 @@ import org.springframework.web.context.request.RequestContextHolder
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
+@Deprecated("use capabilityService")
 fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContext {
   val requestContext = currentCoroutineContext[RequestContext] ?: createRequestContext()
   DgsContext.getCustomContext<DgsCustomContext>(dfe).userId = requestContext.userId
@@ -32,7 +33,7 @@ fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchi
 
 private fun OAuth2AuthenticationToken.getUserCapability(): UserCapability? {
   return this.authorities.find { it.authority == UserCapability.ID.value }
-    ?.let { UserCapability.fromString((it as LazyGrantedAuthority).getPayload()) }
+    ?.let { UserCapability(UserCapability.fromString((it as LazyGrantedAuthority).getPayload())) }
 }
 
 fun createRequestContext(): RequestContext {
@@ -87,7 +88,7 @@ class SessionService {
   suspend fun user(): User {
     val notFoundException = IllegalArgumentException("user not found")
     return capabilityService.getCapability(UserCapability.ID)
-      ?.let { authService.findUserById(UserCapability.resolve(it).userId) ?: throw notFoundException }
+      ?.let { authService.findUserById(UserCapability.resolve(it)) ?: throw notFoundException }
       ?: throw notFoundException
   }
 
@@ -97,6 +98,6 @@ class SessionService {
 
   @Deprecated("")
   suspend fun userId(): UserId? = capabilityService.getCapability(UserCapability.ID)
-    ?.let { UserCapability.resolve(it).userId }
+    ?.let { UserCapability.resolve(it) }
 
 }

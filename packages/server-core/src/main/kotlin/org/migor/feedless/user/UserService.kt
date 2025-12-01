@@ -351,10 +351,3 @@ fun CoroutineContext.corrId(): String? {
   return this[RequestContext]?.corrId
 }
 
-fun CoroutineContext.userIdOptional(): UserId? {
-  return this[RequestContext]?.userId
-}
-
-fun CoroutineContext.userId(): UserId {
-  return this.userIdOptional()!!
-}

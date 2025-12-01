@@ -80,7 +80,7 @@ class GitDocumentProvider : DocumentProvider {
 
   private fun parseCapability(capability: UnresolvedCapability): LocalGitRepositoryCapability {
     return try {
-      // Parse JSON manually to handle File object
+      // todo Parse JSON manually to handle File object
       val json = Json.parseToJsonElement(capability.capabilityPayload)
       val jsonObject = json.jsonObject
 

@@ -3,6 +3,7 @@ package org.migor.feedless.api.graphql
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -16,9 +17,14 @@ import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.UserService
+import org.mockito.Mockito
+import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
+import org.springframework.security.authentication.TestingAuthenticationToken
+import org.springframework.security.core.context.SecurityContext
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -55,6 +61,11 @@ class QueryResolverTest {
   @Autowired
   lateinit var dgsQueryExecutor: DgsQueryExecutor
 
+  @BeforeEach
+  fun setUp() {
+    mockSecurityContext()
+  }
+
   @Test
   fun `fetchProfile for anonymous works`() {
     val graphQLQuery = DgsClient.buildQuery {
@@ -73,4 +84,10 @@ class QueryResolverTest {
     assertThat(session[DgsConstants.SESSION.UserId] as String?).isBlank()
   }
 
+  private fun mockSecurityContext() {
+    val authentication = TestingAuthenticationToken("", "", "WRITE")
+    val securityContext: SecurityContext = Mockito.mock(SecurityContext::class.java)
+    `when`(securityContext.authentication).thenReturn(authentication)
+    SecurityContextHolder.setContext(securityContext)
+  }
 }

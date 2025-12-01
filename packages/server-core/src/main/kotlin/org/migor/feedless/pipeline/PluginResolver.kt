@@ -3,14 +3,12 @@ package org.migor.feedless.pipeline
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.types.Plugin
 import org.migor.feedless.generated.types.PluginType
-import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -22,33 +20,33 @@ import org.springframework.transaction.annotation.Transactional
 @Profile("${AppProfiles.scrape} & ${AppLayer.api}")
 class PluginResolver {
 
-    private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
+  private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
 
-    @Autowired
-    private lateinit var pluginsService: PluginService
+  @Autowired
+  private lateinit var pluginsService: PluginService
 
-    @Throttled
-    @DgsQuery
-    suspend fun plugins(
-        dfe: DataFetchingEnvironment,
-    ): List<Plugin> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-        log.debug("plugins")
-        pluginsService.findAll().map { it.toDto() }
-    }
+  @Throttled
+  @DgsQuery
+  suspend fun plugins(
+    dfe: DataFetchingEnvironment,
+  ): List<Plugin> = coroutineScope {
+    log.debug("plugins")
+    pluginsService.findAll().map { it.toDto() }
+  }
 }
 
 
 internal fun FeedlessPlugin.toDto(): Plugin {
-    return Plugin(
-        id = id(),
-        name = name(),
-        listed = listed(),
-        type =
-            if (this is FragmentTransformerPlugin) {
-                PluginType.fragment
-            } else {
-                PluginType.entity
-            }
+  return Plugin(
+    id = id(),
+    name = name(),
+    listed = listed(),
+    type =
+      if (this is FragmentTransformerPlugin) {
+        PluginType.fragment
+      } else {
+        PluginType.entity
+      }
 
-    )
+  )
 }

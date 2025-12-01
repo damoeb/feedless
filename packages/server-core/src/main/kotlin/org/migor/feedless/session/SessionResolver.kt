@@ -9,8 +9,6 @@ import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -52,28 +50,27 @@ class SessionResolver {
   private lateinit var cookieProvider: CookieProvider
 
   @DgsQuery
-  suspend fun session(dfe: DataFetchingEnvironment): Session =
-    withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-      unsetSessionCookie(dfe)
-      val defaultSession = Session(
-        isLoggedIn = false,
-        isAnonymous = true
-      )
+  suspend fun session(dfe: DataFetchingEnvironment): Session = coroutineScope {
+    unsetSessionCookie(dfe)
+    val defaultSession = Session(
+      isLoggedIn = false,
+      isAnonymous = true
+    )
 
-      if (sessionService.isUser()) {
-        runCatching {
-          val user = sessionService.user()
-          Session(
-            isLoggedIn = true,
-            isAnonymous = false,
-            userId = user.id.uuid.toString()
-          )
-        }.getOrDefault(defaultSession)
-      } else {
-        defaultSession
+    if (sessionService.isUser()) {
+      runCatching {
+        val user = sessionService.user()
+        Session(
+          isLoggedIn = true,
+          isAnonymous = false,
+          userId = user.id.uuid.toString()
+        )
+      }.getOrDefault(defaultSession)
+    } else {
+      defaultSession
 
-      }
     }
+  }
 
   private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {
     ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
@@ -86,7 +83,7 @@ class SessionResolver {
   suspend fun authUser(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.AUTHUSER_INPUT_ARGUMENT.Data) data: AuthUserInput,
-  ): Authentication = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): Authentication = coroutineScope {
     log.debug("authUser")
     try {
       val user = authService.authenticateUser(data.email, data.secretKey)

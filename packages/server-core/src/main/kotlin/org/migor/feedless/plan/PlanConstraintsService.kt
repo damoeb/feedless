@@ -5,6 +5,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.feature.FeatureGroupRepository
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValue
@@ -15,7 +17,6 @@ import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.corrId
-import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
@@ -39,7 +40,8 @@ class PlanConstraintsService(
   private val featureValueRepository: FeatureValueRepository,
   private val productService: ProductService,
   private val productRepository: ProductRepository,
-  private val featureGroupRepository: FeatureGroupRepository
+  private val featureGroupRepository: FeatureGroupRepository,
+  private val capabilityService: CapabilityService
 ) {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
@@ -87,11 +89,16 @@ class PlanConstraintsService(
     return cronString
   }
 
+  private fun userId(): UserId {
+    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }!!
+  }
+
   @Transactional(readOnly = true)
   suspend fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
+
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
-      coroutineContext.userId()
+      userId()
     ) ?: false
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate

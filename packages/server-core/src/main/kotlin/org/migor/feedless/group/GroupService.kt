@@ -5,10 +5,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
-import org.migor.feedless.user.userId
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
@@ -16,7 +17,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Transactional(readOnly = true)
@@ -25,18 +25,23 @@ class GroupService(
   private val userGroupAssignmentDAO: UserGroupAssignmentRepository,
   private val userDAO: UserRepository,
   private val groupDAO: GroupRepository,
+  private val capabilityService: CapabilityService,
 ) {
 
   private val log = LoggerFactory.getLogger(GroupService::class.simpleName)
 
 //  fun getAdminGroupName(): String = "admin"
 
+  private fun userId(): UserId {
+    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }!!
+  }
+
+
   @Transactional
   suspend fun addUserToGroup(user: User, group: Group, role: RoleInGroup): UserGroupAssignment {
-    val currentUserId = coroutineContext.userId()
 
     return withContext(Dispatchers.IO) {
-      assertCurrentUserHasPermissions(currentUserId, group)
+      assertCurrentUserHasPermissions(userId(), group)
 
       val newAssigment = UserGroupAssignment(
         userId = user.id,
@@ -50,9 +55,7 @@ class GroupService(
 
   @Transactional
   suspend fun removeUserFromGroup(user: User, group: Group) {
-    val currentUserId = coroutineContext.userId()
-
-    assertCurrentUserHasPermissions(currentUserId, group)
+    assertCurrentUserHasPermissions(userId(), group)
 
     val assigment = userGroupAssignmentDAO.findByUserIdAndGroupId(user.id, group.id)
       ?: throw IllegalArgumentException("assignment not found")

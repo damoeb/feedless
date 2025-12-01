@@ -2,30 +2,34 @@ package org.migor.feedless.util
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
+import org.slf4j.LoggerFactory
+import java.io.File
 import java.time.LocalDateTime
 import java.util.*
 
-val module = SerializersModule {
-  contextual(UUID::class, UUIDSerializer)
-}
-
 object JsonSerializer {
+  val log = LoggerFactory.getLogger(JsonSerializer::class.simpleName)
+
   val json = Json {
     serializersModule = SerializersModule {
       contextual(UUID::class, UUIDSerializer)
       contextual(LocalDateTime::class, LocalDateTimeSerializer)
+      contextual(File::class, FileSerializer)
     }
     encodeDefaults = true
     prettyPrint = true
   }
 
-  // Serialize any @Serializable object to JSON string
   inline fun <reified T> toJson(obj: T): String {
     return json.encodeToString(obj)
   }
 
-  // Deserialize JSON string to any @Serializable object
   inline fun <reified T> fromJson(jsonString: String): T {
-    return json.decodeFromString(jsonString)
+    try {
+      return json.decodeFromString(jsonString)
+    } catch (e: Exception) {
+      log.error("Can't parse json: $jsonString", e)
+      throw RuntimeException("Failed to convert $jsonString to object", e)
+    }
   }
 }

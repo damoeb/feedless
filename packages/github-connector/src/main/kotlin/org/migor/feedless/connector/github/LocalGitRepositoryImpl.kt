@@ -1,6 +1,5 @@
 package org.migor.feedless.connector.github
 
-import kotlinx.serialization.json.Json
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider
 import org.migor.feedless.capability.Capability
@@ -9,6 +8,8 @@ import org.migor.feedless.connector.git.GitConnectionCapability
 import org.migor.feedless.connector.git.LocalGitRepository
 import org.migor.feedless.connector.git.LocalGitRepositoryCapability
 import org.migor.feedless.connector.git.LocalGitRepositoryFile
+import kotlinx.serialization.Serializable
+import org.migor.feedless.util.JsonSerializer.fromJson
 import org.migor.feedless.util.JsonSerializer.toJson
 import java.io.File
 import java.nio.file.Files
@@ -16,6 +17,7 @@ import java.nio.file.attribute.PosixFilePermission
 import java.nio.file.attribute.PosixFilePermissions
 import java.time.Instant
 
+@Serializable
 data class StatData(
   val createdAt: String,
   var lastUsed: String,
@@ -136,7 +138,7 @@ class LocalGitRepositoryImpl private constructor(
     val statFile = File(containerDir, STAT_FILENAME)
     return if (statFile.exists()) {
       try {
-        Json.decodeFromString<StatData>(statFile.readText())
+        fromJson<StatData>(statFile.readText())
       } catch (_: Exception) {
         null
       }

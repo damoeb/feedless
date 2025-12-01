@@ -1,5 +1,11 @@
 package org.migor.feedless.connector.git
 
+import kotlinx.serialization.Contextual
+import kotlinx.serialization.Serializable
 import java.io.File
 
-data class LocalGitRepositoryCapability(val directory: File, val gitConnectionCapability: GitConnectionCapability)
+@Serializable
+data class LocalGitRepositoryCapability(
+  @Contextual val directory: File,
+  val gitConnectionCapability: GitConnectionCapability
+)

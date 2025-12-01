@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.*
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
@@ -43,10 +44,11 @@ class UserSecretService(
     k.ownerId = user.id.uuid
     k.value = token.tokenValue
     k.type = UserSecretType.SecretKey
-    k.validUntil = LocalDateTime.from(
+    k.validUntil = LocalDateTime.ofInstant(
       Instant.ofEpochMilli(
         Clock.System.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
-      )
+      ),
+      ZoneId.systemDefault()
     )
 
     return withContext(Dispatchers.IO) {

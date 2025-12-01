@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
@@ -28,9 +30,13 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
+import org.springframework.security.oauth2.jwt.JwtDecoder
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.web.reactive.function.client.WebClient
+import javax.crypto.SecretKey
+import javax.crypto.spec.SecretKeySpec
 
 
 const val rootEmail = "fooEmail"
@@ -61,7 +67,7 @@ const val rootSecretKey = "barBarBarKey"
   ]
 )
 @Import(DisableDatabaseConfiguration::class)
-class AuthenticationTest {
+class AuthenticationIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
 
@@ -71,11 +77,19 @@ class AuthenticationTest {
   @MockitoBean
   lateinit var userService: UserService
 
+  @MockitoBean
+  lateinit var userDAO: UserDAO
+
   @Autowired
   lateinit var authService: AuthService
 
+  @Autowired
+  lateinit var propertyService: PropertyService
+
   @MockitoBean
   lateinit var userSecretService: UserSecretService
+
+  private lateinit var jwtDecoder: JwtDecoder
 
   @MockitoBean
   lateinit var authorizedClientService: OAuth2AuthorizedClientService
@@ -84,6 +98,10 @@ class AuthenticationTest {
   fun setUp() {
     val webClient = WebClient.create("http://localhost:$port/graphql")
     this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
+
+    // Create JWT decoder with the same secret key used to sign tokens
+    val secretKey: SecretKey = SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    this.jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey).build()
   }
 
   @Test
@@ -120,8 +138,11 @@ class AuthenticationTest {
     val actualToken = auth[DgsConstants.AUTHENTICATION.Token] as String
     assertThat(actualToken).isNotEmpty()
 
-    val jwt = authService.parseAndVerify(actualToken)
+    // Verify the JWT is valid and can be decoded
+    val jwt = jwtDecoder.decode(actualToken)
     assertThat(jwt).isNotNull()
+    assertThat(jwt.tokenValue).isEqualTo(actualToken)
+    assertThat(jwt.issuer.toString()).isEqualTo(propertyService.apiGatewayUrl)
   }
 }
 

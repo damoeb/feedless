@@ -9,8 +9,6 @@ import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
@@ -35,7 +33,6 @@ import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -68,7 +65,7 @@ class DocumentResolver(
   suspend fun record(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
-  ): Record = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): Record = coroutineScope {
     log.debug("record $data")
     permissionService.canReadDocument(DocumentId(data.where.id))
     val document =
@@ -84,7 +81,7 @@ class DocumentResolver(
   suspend fun records(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
-  ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): List<Record> = coroutineScope {
     log.debug("records $data")
     val repositoryId = RepositoryId(data.where.repository.id)
 
@@ -118,7 +115,7 @@ class DocumentResolver(
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
-  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): Boolean = coroutineScope {
     documentService.deleteDocuments(
       sessionService.user(),
       RepositoryId(data.where.repository.id),
@@ -132,7 +129,7 @@ class DocumentResolver(
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
-  ): List<Record> = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): List<Record> = coroutineScope {
     records.map { documentService.createDocument(it).toDto(propertyService) }
   }
 
@@ -141,7 +138,7 @@ class DocumentResolver(
   suspend fun updateRecord(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
-  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): Boolean = coroutineScope {
     documentService.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
     true
   }

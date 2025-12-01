@@ -1,6 +1,6 @@
 package org.migor.feedless.connector.github
 
-import kotlinx.serialization.json.Json
+import org.migor.feedless.util.JsonSerializer.fromJson
 import java.net.URI
 import java.net.http.HttpClient
 import java.net.http.HttpRequest
@@ -27,7 +27,7 @@ class GithubAccount(private val accountConfig: GithubAccountConfig) {
 
     if (response.statusCode() == 200) {
       val body = response.body()
-      return Json.decodeFromString<List<GithubRepository>>(body)
+      return fromJson<List<GithubRepository>>(body)
     }
     throw IllegalStateException("Could not fetch repositories. ${response.body()}")
   }

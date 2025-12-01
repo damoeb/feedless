@@ -7,8 +7,6 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -18,7 +16,6 @@ import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
 import org.migor.feedless.session.SessionService
-import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
@@ -46,7 +43,7 @@ class SecretsResolver(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun createUserSecret(
     dfe: DataFetchingEnvironment,
-  ): UserSecret = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): UserSecret = coroutineScope {
     userSecretService.createUserSecret(sessionService.user()).toDto(false)
   }
 
@@ -57,7 +54,7 @@ class SecretsResolver(
   suspend fun deleteUserSecret(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEUSERSECRET_INPUT_ARGUMENT.Data) data: DeleteUserSecretInput,
-  ): Boolean = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): Boolean = coroutineScope {
     userSecretService.deleteUserSecret(
       sessionService.user(),
       UUID.fromString(data.where.`eq`)

@@ -61,7 +61,7 @@ const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
   DisableDatabaseConfiguration::class,
   DisableSecurityConfiguration::class,
 )
-class FeedControllerTest {
+class FeedControllerIntTest {
 
   lateinit var baseEndpoint: String
 
@@ -129,7 +129,7 @@ class FeedControllerTest {
       feedService.webToFeed(
         any2(),
         any2(),
-        any2(),
+        any(Boolean::class.java),
         anyOrNull(String::class.java),
         any2(),
         any(String::class.java),

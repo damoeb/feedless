@@ -17,7 +17,9 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.capability.CapabilityId
+import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
@@ -44,8 +46,6 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
 import org.migor.feedless.user.corrId
-import org.migor.feedless.user.userId
-import org.migor.feedless.user.userIdOptional
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -91,6 +91,7 @@ class RepositoryService(
   private var propertyService: PropertyService,
   private var sourceService: SourceService,
   private var context: ApplicationContext,
+  private var capabilityService: CapabilityService,
 ) : RepositoryProvider {
 
   private val log = LoggerFactory.getLogger(RepositoryService::class.simpleName)
@@ -184,7 +185,7 @@ class RepositoryService(
   @Transactional
   suspend fun delete(repositoryId: RepositoryId) {
     val repository = repositoryDAO.findById(repositoryId)!!
-    if (repository.ownerId != coroutineContext.userId()) {
+    if (repository.ownerId != userId()) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
@@ -215,7 +216,7 @@ class RepositoryService(
     )
 
     val corrId = coroutineContext.corrId()
-    if (repository.ownerId != coroutineContext.userId()) {
+    if (repository.ownerId != userId()) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[$corrId] update $id")
@@ -316,11 +317,15 @@ class RepositoryService(
     )
   }
 
+  private fun userId(): UserId? {
+    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }
+  }
+
   private suspend fun getActualUserOrDefaultUser(): User {
-    return coroutineContext.userIdOptional()?.let {
+    return userId()?.let {
       sessionService.user()
     } ?: userService.getAnonymousUser()
-      .also { log.debug("[${coroutineContext.corrId()}] fallback to user anonymous") }
+      .also { log.debug("fallback to user anonymous") }
   }
 
   private suspend fun createRepository(

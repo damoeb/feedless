@@ -4,8 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.mapper.toSource
@@ -22,7 +21,6 @@ import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.session.injectCurrentUser
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -38,79 +36,79 @@ import java.util.*
 @Profile("${AppProfiles.scrape} & ${AppLayer.api}")
 class ScrapeQueryResolver {
 
-    private val log = LoggerFactory.getLogger(ScrapeQueryResolver::class.simpleName)
+  private val log = LoggerFactory.getLogger(ScrapeQueryResolver::class.simpleName)
 
-    @Autowired
-    private lateinit var scrapeService: ScrapeService
+  @Autowired
+  private lateinit var scrapeService: ScrapeService
 
-    @Throttled
-    @DgsQuery(field = DgsConstants.QUERY.Scrape)
-    @PreAuthorize("@capabilityService.hasToken()")
-    suspend fun scrape(
-        dfe: DataFetchingEnvironment,
-        @InputArgument(DgsConstants.QUERY.SCRAPE_INPUT_ARGUMENT.Data) data: SourceInput,
-    ): ScrapeResponse = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
-        log.debug("scrape $data")
-        val source = data.toSource()
-        val logCollector = LogCollector()
-        val scrapeOutput = scrapeService.scrape(source, logCollector)
-        ScrapeResponse(
-            ok = true,
-            logs = logCollector.logs,
-            errorMessage = null,
-            outputs = scrapeOutput.outputs.map { it.toDto() }
-        )
-    }
+  @Throttled
+  @DgsQuery(field = DgsConstants.QUERY.Scrape)
+  @PreAuthorize("@capabilityService.hasToken()")
+  suspend fun scrape(
+    dfe: DataFetchingEnvironment,
+    @InputArgument(DgsConstants.QUERY.SCRAPE_INPUT_ARGUMENT.Data) data: SourceInput,
+  ): ScrapeResponse = coroutineScope {
+    log.debug("scrape $data")
+    val source = data.toSource()
+    val logCollector = LogCollector()
+    val scrapeOutput = scrapeService.scrape(source, logCollector)
+    ScrapeResponse(
+      ok = true,
+      logs = logCollector.logs,
+      errorMessage = null,
+      outputs = scrapeOutput.outputs.map { it.toDto() }
+    )
+  }
 }
 
 private fun ScrapeActionOutput.toDto(): ScrapeOutputResponse {
-    return ScrapeOutputResponse(
-        index = index,
-        response = ScrapeActionResponse(
-            fetch = fetch?.let {
-                HttpFetchResponse(
-                    data = it.response.responseBody.toString(StandardCharsets.UTF_8),
-                    debug = it.debug
-                )
-            },
-            extract = fragment?.let {
-                ScrapeExtractResponse(
-                    fragmentName = "extract",
-                    fragments = it.fragments,
-                    items = it.items?.map { it.toDto() },
-                    feeds = it.feeds
-                )
-            })
-    )
+  return ScrapeOutputResponse(
+    index = index,
+    response = ScrapeActionResponse(
+      fetch = fetch?.let {
+        HttpFetchResponse(
+          data = it.response.responseBody.toString(StandardCharsets.UTF_8),
+          debug = it.debug
+        )
+      },
+      extract = fragment?.let {
+        ScrapeExtractResponse(
+          fragmentName = "extract",
+          fragments = it.fragments,
+          items = it.items?.map { it.toDto() },
+          feeds = it.feeds
+        )
+      })
+  )
 }
 
 private fun JsonItem.toDto() = Record(
-    rawBase64 = rawBase64,
-    rawMimeType = rawMimeType,
-    html = html,
-    text = text,
-    title = title,
-    url = url,
-    tags = tags,
-    createdAt = publishedAt.toMillis(),
-    updatedAt = publishedAt.toMillis(),
-    attachments = attachments.map { it.toDto() },
-    id = id,
-    imageUrl = imageUrl,
-    publishedAt = publishedAt.toMillis(),
-    startingAt = startingAt?.toMillis(),
-    latLng = latLng?.toGeoPoint(),
+  rawBase64 = rawBase64,
+  rawMimeType = rawMimeType,
+  html = html,
+  text = text,
+  title = title,
+  url = url,
+  tags = tags,
+  createdAt = publishedAt.toMillis(),
+  updatedAt = publishedAt.toMillis(),
+  attachments = attachments.map { it.toDto() },
+  id = id,
+  imageUrl = imageUrl,
+  publishedAt = publishedAt.toMillis(),
+  startingAt = startingAt?.toMillis(),
+  latLng = latLng?.toGeoPoint(),
 )
 
 private fun JsonPoint.toGeoPoint() = GeoPoint(
-    lat = x,
-    lng = y
+  lat = x,
+  lng = y
 )
 
 private fun JsonAttachment.toDto() = org.migor.feedless.generated.types.Attachment(
-    duration = duration,
-    size = length,
-    type = type,
-    url = url,
-    id = UUID.randomUUID().toString()
+  duration = duration,
+  size = length,
+  type = type,
+  url = url,
+  id = UUID.randomUUID().toString()
 )

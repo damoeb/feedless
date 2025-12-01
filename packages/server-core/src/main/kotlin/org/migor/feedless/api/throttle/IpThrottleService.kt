@@ -41,7 +41,7 @@ class IpThrottleService(
   fun resolveTokenBucket(jwt: Jwt): Bucket {
     val userId =
       jwt.capabilities().find { it.authority == UserCapability.ID.value }
-        ?.let { UserCapability.fromString(it.payload).userId } ?: throw BadRequestException("invalid jwt)")
+        ?.let { UserCapability.fromString(it.payload) } ?: throw BadRequestException("invalid jwt)")
     return ip2BucketCache.computeIfAbsent(userId.uuid.toString()) {
       Bucket.builder()
         .addLimit(resolveRateLimitFromApiKey(jwt))

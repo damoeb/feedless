@@ -4,6 +4,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.connector.git.GitConnectionCapability
+import org.migor.feedless.util.JsonSerializer.fromJson
+import org.migor.feedless.util.JsonSerializer.toJson
 import java.io.File
 
 class LocalGitRepositoryImplTest {
@@ -99,6 +101,24 @@ class LocalGitRepositoryImplTest {
     assertThat(metadata!!.createdAt).isNotNull()
     assertThat(metadata.lastUsed).isNotNull()
     assertThat(metadata.createdAt).isEqualTo(metadata.lastUsed) // Should be equal on creation
+  }
+
+  @Test
+  fun `round-trip serialization of StatData should preserve all data`() {
+    // given
+    val original = StatData(
+      createdAt = "2024-12-01T10:30:00Z",
+      lastUsed = "2024-12-01T12:45:30Z"
+    )
+
+    // when
+    val jsonString = toJson(original)
+    val deserialized = fromJson<StatData>(jsonString)
+
+    // then
+    assertThat(deserialized).isEqualTo(original)
+    assertThat(deserialized.createdAt).isEqualTo(original.createdAt)
+    assertThat(deserialized.lastUsed).isEqualTo(original.lastUsed)
   }
 }
 

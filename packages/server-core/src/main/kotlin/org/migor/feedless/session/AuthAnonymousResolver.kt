@@ -6,8 +6,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -38,7 +37,7 @@ class AuthAnonymousResolver {
   @DgsMutation(field = DgsConstants.MUTATION.AuthAnonymous)
   suspend fun authAnonymous(
     dfe: DataFetchingEnvironment,
-  ): AuthenticationDto = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): AuthenticationDto = coroutineScope {
     log.debug("authAnonymous")
     val jwt = jwtTokenIssuer.createJwtForAnonymous()
     addCookie(dfe, cookieProvider.createTokenCookie(jwt))

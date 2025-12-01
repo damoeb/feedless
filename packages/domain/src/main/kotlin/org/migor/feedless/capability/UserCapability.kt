@@ -7,11 +7,11 @@ import org.migor.feedless.util.JsonSerializer.fromJson
 @Serializable
 open class UserCapability(val userId: UserId) : Capability<UserId>(ID, userId) {
   companion object {
-    fun fromString(value: String): UserCapability {
-      return fromJson<UserCapability>(value)
+    fun fromString(value: String): UserId {
+      return fromJson(value)
     }
 
-    fun resolve(value: UnresolvedCapability): UserCapability {
+    fun resolve(value: UnresolvedCapability): UserId {
       return fromString(value.capabilityPayload)
     }
 

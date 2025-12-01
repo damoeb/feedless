@@ -4,8 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.currentCoroutineContext
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
@@ -21,7 +20,6 @@ import org.migor.feedless.generated.types.ServerSettingsContextInput
 import org.migor.feedless.license.LicenseService
 import org.migor.feedless.session.ProductAuthProperties
 import org.migor.feedless.session.ProductsAuthProperties
-import org.migor.feedless.session.injectCurrentUser
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -64,7 +62,7 @@ class ServerConfigResolver {
   suspend fun serverSettings(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.SERVERSETTINGS_INPUT_ARGUMENT.Data) data: ServerSettingsContextInput,
-  ): ServerSettings = withContext(injectCurrentUser(currentCoroutineContext(), dfe)) {
+  ): ServerSettings = coroutineScope {
     log.debug("serverSettings $data")
     analyticsService.track()
     val product = data.product.fromDto()
