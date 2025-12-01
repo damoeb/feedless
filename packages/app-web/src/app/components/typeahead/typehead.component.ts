@@ -19,6 +19,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 
 export type TypeaheadSuggestion = {
   id: string;
+  title: string;
   highlightedTitle: string;
 };
 

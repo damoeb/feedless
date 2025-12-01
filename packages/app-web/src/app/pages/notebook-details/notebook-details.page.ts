@@ -442,6 +442,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   private toTypeaheadSuggestion(note: Note, queryParts: string[]): TypeaheadSuggestion {
     return {
       id: note.id,
+      title: note.title,
       highlightedTitle: this.highlightMatches(note.text, queryParts),
     };
   }

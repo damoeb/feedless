@@ -1,15 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import {
-  firstValueFrom,
-  forkJoin,
-  map,
-  Observable,
-  of,
-  OperatorFunction,
-  ReplaySubject,
-  switchMap,
-  zip,
-} from 'rxjs';
+import { firstValueFrom, forkJoin, map, Observable, of, OperatorFunction, ReplaySubject, switchMap, zip, } from 'rxjs';
 import { Document } from 'flexsearch';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { get, map as mapObj, orderBy, slice, uniq } from 'lodash-es';
@@ -40,6 +30,7 @@ export type CreateNoteParams = Partial<Pick<Note, 'title' | 'customId' | 'text' 
 
 export type Notebook = ArrayElement<GqlCreateRepositoriesMutation['createRepositories']> & {
   lastSyncedAt: Date;
+  offline: boolean;
 };
 
 export enum NotebookActionId {
@@ -451,47 +442,49 @@ export class NotebookService {
       notes.forEach((note) => this.index.add(this.toIndexDocument(note)));
       console.log('Notes indexed');
 
-      // sync up
-      const upSyncNew = notes.filter((note) => note.createdAt > notebook.lastSyncedAt);
-      await this.recordService.createRecords(
-        upSyncNew.map((note) => this.covertNoteToRecord(note))
-      );
+      if (!notebook.offline) {
+        // sync up
+        const upSyncNew = notes.filter((note) => note.createdAt > notebook.lastSyncedAt);
+        await this.recordService.createRecords(
+          upSyncNew.map((note) => this.covertNoteToRecord(note))
+        );
 
-      const upSyncChanged = notes.filter((note) => note.updatedAt > notebook.lastSyncedAt);
-      await Promise.all(upSyncChanged.map((note) => this.updateNoteInternal(note)));
+        const upSyncChanged = notes.filter((note) => note.updatedAt > notebook.lastSyncedAt);
+        await Promise.all(upSyncChanged.map((note) => this.updateNoteInternal(note)));
 
-      // sync down
-      try {
-        let page = 0;
-        while (true) {
-          const records = await this.recordService.findAllFullByRepositoryId({
-            where: {
-              repository: {
-                id: notebook.id,
+        // sync down
+        try {
+          let page = 0;
+          while (true) {
+            const records = await this.recordService.findAllFullByRepositoryId({
+              where: {
+                repository: {
+                  id: notebook.id,
+                },
+                updatedAt: {
+                  after: notebook.lastUpdatedAt,
+                },
               },
-              updatedAt: {
-                after: notebook.lastUpdatedAt,
+              cursor: {
+                page,
               },
-            },
-            cursor: {
-              page,
-            },
-          });
-          if (records.length == 0) {
-            break;
+            });
+            if (records.length == 0) {
+              break;
+            }
+            page++;
           }
-          page++;
+        } catch (e) {
+          if (e.toString().indexOf('not found')) {
+            console.log('repository not found');
+          } else {
+            console.error(e);
+          }
         }
-      } catch (e) {
-        if (e.toString().indexOf('not found')) {
-          console.log('repository not found');
-        } else {
-          console.error(e);
-        }
-      }
 
-      notebook.lastSyncedAt = new Date();
-      notebookRepository.notebooks.update(notebook.id, notebook);
+        notebook.lastSyncedAt = new Date();
+        notebookRepository.notebooks.update(notebook.id, notebook);
+      }
 
       // if (notes.length === 0) {
       //   this.createNote({ title: 'First Note', text: firstNoteBody });
@@ -730,7 +723,6 @@ export class NotebookService {
   }
 
   private async init() {
-    this.notebooks = await notebookRepository.notebooks.toArray();
     await this.authGuard.assertLoggedIn();
     const remoteNotebooks = await this.withOnline<
       ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]
@@ -750,6 +742,13 @@ export class NotebookService {
     );
     console.log('remoteNotebooks', remoteNotebooks);
 
+    this.notebooks = (await notebookRepository.notebooks.toArray()).map((notebook) => {
+      notebook.offline = !remoteNotebooks.some(
+        (remoteNotebook) => remoteNotebook.id === notebook.id
+      );
+      return notebook;
+    });
+
     const newRepositories = remoteNotebooks.filter(
       (r) => !this.notebooks.some((notebook) => notebook.id == r.id)
     );
@@ -758,6 +757,7 @@ export class NotebookService {
       newRepositories.forEach((repository) =>
         notebookRepository.notebooks.add({
           ...repository,
+          offline: false,
           lastSyncedAt: new Date(0),
         })
       );

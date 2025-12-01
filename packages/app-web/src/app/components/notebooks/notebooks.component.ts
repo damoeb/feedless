@@ -14,7 +14,14 @@ import { chevronForwardOutline } from 'ionicons/icons';
 import { ProductHeaderComponent } from '../product-header/product-header.component';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
 
-import { IonIcon, IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angular/standalone';
+import {
+  IonChip,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonListHeader,
+} from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-notebook-builder',
@@ -30,6 +37,7 @@ import { IonIcon, IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angul
     IonItem,
     RouterLink,
     IonIcon,
+    IonChip,
   ],
   standalone: true,
 })
