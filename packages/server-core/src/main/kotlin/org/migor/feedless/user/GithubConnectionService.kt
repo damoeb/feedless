@@ -1,43 +1,34 @@
 package org.migor.feedless.user
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.connectedApp.GithubConnectionDAO
-import org.migor.feedless.data.jpa.connectedApp.GithubConnectionEntity
+import org.migor.feedless.connectedApp.GithubConnection
+import org.migor.feedless.connectedApp.GithubConnectionRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
 class GithubConnectionService(
-  private var githubConnectionDAO: GithubConnectionDAO
+  private var githubConnectionRepository: GithubConnectionRepository
 ) {
 
   @Transactional
-  suspend fun save(githubLink: GithubConnectionEntity) {
-    return withContext(Dispatchers.IO) {
-      githubConnectionDAO.save(githubLink)
-    }
+  suspend fun save(githubLink: GithubConnection): GithubConnection {
+    return githubConnectionRepository.save(githubLink)
   }
 
   @Transactional(readOnly = true)
   suspend fun existsByGithubId(githubId: String): Boolean {
-    return withContext(Dispatchers.IO) {
-      githubConnectionDAO.existsByGithubId(githubId)
-    }
+    return githubConnectionRepository.existsByGithubId(githubId)
   }
 
   @Transactional(readOnly = true)
-  suspend fun existsByUserId(userId: UUID): Boolean {
-    return withContext(Dispatchers.IO) {
-      githubConnectionDAO.existsByUserId(userId)
-    }
+  suspend fun existsByUserId(userId: UserId): Boolean {
+    return githubConnectionRepository.existsByUserId(userId)
   }
 
 }

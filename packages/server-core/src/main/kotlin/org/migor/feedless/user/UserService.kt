@@ -2,8 +2,6 @@ package org.migor.feedless.user
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
@@ -15,24 +13,19 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.connectedApp.ConnectedApp
 import org.migor.feedless.connectedApp.ConnectedAppId
-import org.migor.feedless.data.jpa.connectedApp.ConnectedAppDAO
-import org.migor.feedless.data.jpa.connectedApp.GithubConnectionDAO
-import org.migor.feedless.data.jpa.connectedApp.GithubConnectionEntity
-import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
-import org.migor.feedless.data.jpa.connectedApp.toDomain
-import org.migor.feedless.data.jpa.product.ProductDAO
-import org.migor.feedless.data.jpa.repository.RepositoryDAO
-import org.migor.feedless.data.jpa.repository.RepositoryEntity
-import org.migor.feedless.data.jpa.repository.toDomain
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
-import org.migor.feedless.data.jpa.user.toDomain
+import org.migor.feedless.connectedApp.ConnectedAppRepository
+import org.migor.feedless.connectedApp.GithubConnection
+import org.migor.feedless.connectedApp.GithubConnectionRepository
+import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
+import org.migor.feedless.product.ProductId
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductService
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.slf4j.LoggerFactory
@@ -53,15 +46,15 @@ import kotlin.jvm.optionals.getOrNull
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserService(
-  private var userDAO: UserDAO,
-  private var productDAO: ProductDAO,
+  private var userRepository: UserRepository,
+  private var productRepository: ProductRepository,
   private var meterRegistry: MeterRegistry,
   private var environment: Environment,
   private var featureService: FeatureService,
-  private var repositoryDAO: RepositoryDAO,
+  private var repositoryRepository: RepositoryRepository,
   private var productService: ProductService,
-  private var githubConnectionService: GithubConnectionDAO,
-  private var connectedAppDAO: ConnectedAppDAO,
+  private var githubConnectionRepository: GithubConnectionRepository,
+  private var connectedAppRepository: ConnectedAppRepository,
   @Lazy
   private var telegramBotServiceMaybe: Optional<TelegramBotService>
 ) {
@@ -82,145 +75,145 @@ class UserService(
 //    if (plan.availability == PlanAvailability.unavailable) {
 //      throw BadRequestException("plan $planName for product $productName is unavailable")
 //    }
-    return withContext(Dispatchers.IO) {
-      if (StringUtils.isNotBlank(email)) {
-        if (userDAO.existsByEmail(email!!)) {
-          throw BadRequestException("user already exists")
-        }
+    if (StringUtils.isNotBlank(email)) {
+      if (userRepository.existsByEmail(email!!)) {
+        throw BadRequestException("user already exists")
       }
-      if (StringUtils.isNotBlank(githubId)) {
-        if (githubConnectionService.existsByGithubId(githubId!!)) {
-          throw BadRequestException("user already exists")
-        }
-
-      }
-      meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-      log.debug("[${coroutineContext.corrId()}] create user")
-      val user = UserEntity()
-      user.email = email ?: fallbackEmail(user)
-      user.admin = false
-      user.anonymous = false
-      user.hasAcceptedTerms = isSelfHosted()
-
-      val savedUser = userDAO.save(user)
-
-      if (githubId != null) {
-        linkGithubAccount(savedUser, githubId)
-      }
-      createInboxRepository(savedUser.toDomain())
-
-      // todo saas only?
-      productService.enableDefaultSaasProduct(Vertical.feedless, UserId(savedUser.id))
-      savedUser.toDomain()
     }
+    if (StringUtils.isNotBlank(githubId)) {
+      if (githubConnectionRepository.existsByGithubId(githubId!!)) {
+        throw BadRequestException("user already exists")
+      }
+
+    }
+    meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
+    log.debug("[${coroutineContext.corrId()}] create user")
+    val userId = UserId()
+    val user = User(
+      id = userId,
+      email = email ?: fallbackEmail(userId),
+      admin = false,
+      anonymous = false,
+      hasAcceptedTerms = isSelfHosted(),
+      lastLogin = LocalDateTime.now(),
+    )
+
+    val savedUser = userRepository.save(user)
+
+    if (githubId != null) {
+      linkGithubAccount(savedUser.id, githubId)
+    }
+    createInboxRepository(savedUser.id)
+
+    // todo saas only?
+    productService.enableDefaultSaasProduct(Vertical.feedless, savedUser.id)
+
+    return savedUser
   }
 
   @Transactional
-  suspend fun createInboxRepository(user: User): Repository {
-    val r = RepositoryEntity()
-    r.title = "Notifications"
-    r.description = ""
-    r.sourcesSyncCron = ""
-    r.product = Vertical.all
-    r.ownerId = user.id.uuid
-    r.retentionMaxCapacity = 1000
-    r.retentionMaxAgeDays = null
-    r.visibility = EntityVisibility.isPrivate
-    r.retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
+  suspend fun createInboxRepository(userId: UserId): Repository {
+    val r = Repository(
+      title = "Notifications",
+      description = "",
+      sourcesSyncCron = "",
+      product = Vertical.all,
+      ownerId = userId,
+      retentionMaxCapacity = 1000,
+      retentionMaxAgeDays = null,
+      visibility = EntityVisibility.isPrivate,
+      retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
+    )
+    val savedRepository = repositoryRepository.save(r)
 
-    return withContext(Dispatchers.IO) {
-      val savedRepository = repositoryDAO.save(r)
-
-      val userEntity = userDAO.findById(user.id.uuid).orElseThrow()
-      userEntity.inboxRepositoryId = r.id
-      userDAO.save(userEntity)
-
-      savedRepository.toDomain()
+    userRepository.findById(userId)?.let {
+      userRepository.save(it.copy(inboxRepositoryId = r.id))
     }
+
+    return savedRepository
   }
 
   @Transactional(readOnly = true)
   suspend fun findByEmail(email: String): User? {
-    return withContext(Dispatchers.IO) {
-      userDAO.findByEmail(email)?.toDomain()
-    }
+    return userRepository.findByEmail(email)
   }
 
   @Transactional(readOnly = true)
   suspend fun findByGithubId(githubId: String): User? {
-    return withContext(Dispatchers.IO) {
-      val userEntity = userDAO.findByGithubId(githubId) ?: userDAO.findByEmail("$githubId@github.com")
-      userEntity?.toDomain()
-    }
+    return userRepository.findByGithubId(githubId) ?: userRepository.findByEmail("$githubId@github.com")
   }
 
   @Transactional
   suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) {
-    val user = withContext(Dispatchers.IO) {
-      userDAO.findById(userId.uuid).orElseThrow { NotFoundException("user not found") }
-    }
+    var user = userRepository.findById(userId) ?: throw NotFoundException("user not found")
 
     var changed = false
 
     val corrId = coroutineContext.corrId()
-    data.email?.let {
+    user = data.email?.let {
       log.info("[$corrId] changing email from ${user.email} to ${it.set}")
-      user.email = it.set
-      user.validatedEmailAt = null
-      user.hasValidatedEmail = false
       // todo ask to validate email
       changed = true
-    }
+      user.copy(
+        email = it.set,
+        validatedEmailAt = null,
+        hasValidatedEmail = false
+      )
+    } ?: user
 
-    data.firstName?.let {
-      user.firstName = it.set
+    user = data.firstName?.let {
       changed = true
-    }
-    data.lastName?.let {
-      user.lastName = it.set
+      user.copy(firstName = it.set)
+    } ?: user
+
+    user = data.lastName?.let {
       changed = true
-    }
-    data.country?.let {
-      user.country = it.set
+      user.copy(lastName = it.set)
+    } ?: user
+
+    user = data.country?.let {
       changed = true
-    }
+      user.copy(country = it.set)
+    } ?: user
 
     data.plan?.let {
-      val productEntity =
-        withContext(Dispatchers.IO) { productDAO.findById(UUID.fromString(it.set)).orElseThrow() }
-      val product = org.migor.feedless.product.ProductMapper.INSTANCE.toDomain(productEntity)
+      val product = productRepository.findById(ProductId(it.set))!!
       productService.enableSaasProduct(
         product,
-        user.toDomain()
+        user
       )
     }
 
-    data.acceptedTermsAndServices?.let {
+    user = data.acceptedTermsAndServices?.let {
+      changed = true
       if (it.set) {
-        user.hasAcceptedTerms = true
-        user.acceptedTermsAt = LocalDateTime.now()
         log.debug("[$corrId] accepted terms")
+        user.copy(
+          hasAcceptedTerms = true,
+          acceptedTermsAt = LocalDateTime.now()
+        )
       } else {
         log.debug("[$corrId] rejecting hasAcceptedTerms")
-        user.hasAcceptedTerms = false
-        user.acceptedTermsAt = null
+        user.copy(
+          hasAcceptedTerms = false,
+          acceptedTermsAt = null
+        )
       }
+    } ?: user
+
+    user = data.purgeScheduledFor?.let {
       changed = true
-    }
-    data.purgeScheduledFor?.let {
       if (it.assignNull) {
-        user.purgeScheduledFor = null
         log.info("[$corrId] unset purgeScheduledFor")
+        user.copy(purgeScheduledFor = null)
       } else {
-        user.purgeScheduledFor = LocalDateTime.now().plusDays(30)
         log.info("[$corrId] set purgeScheduledFor")
+        user.copy(purgeScheduledFor = LocalDateTime.now().plusDays(30))
       }
-      changed = true
-    }
+    } ?: user
+
     if (changed) {
-      withContext(Dispatchers.IO) {
-        userDAO.save(user)
-      }
+      userRepository.save(user)
     } else {
       log.debug("[$corrId] unchanged")
     }
@@ -228,73 +221,67 @@ class UserService(
 
   @Transactional(readOnly = true)
   suspend fun getAnonymousUser(): User {
-    return withContext(Dispatchers.IO) {
-      userDAO.findByAnonymousIsTrue().toDomain()
-    }
+    return userRepository.findByAnonymousIsTrue()
   }
 
   @Transactional
-  suspend fun updateLegacyUser(user: User, githubId: String) {
+  suspend fun updateLegacyUser(userId: UserId, githubId: String) {
     log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
 
-    val isGithubAccountLinked = withContext(Dispatchers.IO) {
-      githubConnectionService.existsByUserId(user.id.uuid)
-    }
+    val isGithubAccountLinked = githubConnectionRepository.existsByUserId(userId)
 
-    val userEntity = withContext(Dispatchers.IO) {
-      userDAO.findById(user.id.uuid).orElseThrow()
-    }
+    val user = userRepository.findById(userId)!!
 
     if (!isGithubAccountLinked) {
-      linkGithubAccount(userEntity, githubId)
+      linkGithubAccount(userId, githubId)
     }
 
-    if (userEntity.email.trim().endsWith("github.com")) {
-      userEntity.email = fallbackEmail(userEntity)
-    }
-
-    withContext(Dispatchers.IO) {
-      userDAO.save(userEntity)
+    if (user.email.trim().endsWith("github.com")) {
+      userRepository.save(
+        user.copy(email = fallbackEmail(userId))
+      )
     }
   }
 
   @Transactional(readOnly = true)
-  suspend fun findById(userId: UserId): Optional<User> {
-    return withContext(Dispatchers.IO) {
-      userDAO.findById(userId.uuid).map { it.toDomain() }
-    }
+  suspend fun findById(userId: UserId): User? {
+    return userRepository.findById(userId)
   }
 
   @Transactional(readOnly = true)
   suspend fun getConnectedAppByUserAndId(userId: UserId, connectedAppId: ConnectedAppId): ConnectedApp {
-    return withContext(Dispatchers.IO) {
-      val connectedAppEntity = connectedAppDAO.findByIdAndUserIdEquals(connectedAppId.uuid, userId.uuid)
-        ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId.uuid, false)
-        ?: throw IllegalArgumentException("not found")
-      connectedAppEntity.toDomain()
-    }
+
+    return connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
+      ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+      ?: throw IllegalArgumentException("not found")
   }
 
   @Transactional
   suspend fun updateConnectedApp(userId: UserId, connectedAppId: ConnectedAppId, authorize: Boolean) {
-    withContext(Dispatchers.IO) {
-      val app = connectedAppDAO.findByIdAndUserIdEquals(connectedAppId.uuid, userId.uuid)
-        ?: connectedAppDAO.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId.uuid, false)
-        ?: throw IllegalArgumentException("not found")
-      app.userId?.let {
-        if (userId.uuid != it) {
-          throw PermissionDeniedException("error")
-        }
+    val app = connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
+      ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+      ?: throw IllegalArgumentException("not found")
+
+    app.userId?.let {
+      if (userId != it) {
+        throw PermissionDeniedException("error")
       }
 
-      app.authorized = authorize
-      app.authorizedAt = LocalDateTime.now()
-      app.userId = userId.uuid
+      if (app is TelegramConnection) {
+        connectedAppRepository.save(
+          app.copy(
+            authorized = authorize,
+            authorizedAt = LocalDateTime.now(),
+            userId = userId
+          )
+        )
+      }
 
-      connectedAppDAO.save(app)
+      connectedAppRepository.save(app)
+
       telegramBotServiceMaybe.getOrNull()?.let {
-        if (app is TelegramConnectionEntity) {
-          it.showOptionsForKnownUser(app.chatId)
+        if (app is TelegramConnection && app.chatId != null) {
+          it.showOptionsForKnownUser(app.chatId!!)
         }
       }
     }
@@ -302,48 +289,42 @@ class UserService(
 
   @Transactional
   suspend fun deleteConnectedApp(currentUserId: UserId, connectedAppId: ConnectedAppId) {
-    withContext(Dispatchers.IO) {
-      val app =
-        connectedAppDAO.findByIdAndAuthorizedEquals(connectedAppId.uuid, true)
-          ?: throw IllegalArgumentException("not found")
+    val app =
+      connectedAppRepository.findByIdAndAuthorizedEquals(connectedAppId, true)
+        ?: throw IllegalArgumentException("not found")
 //      app.userId?.let {
-      if (currentUserId.uuid != app.userId) {
-        throw PermissionDeniedException("error")
-      }
+    if (currentUserId != app.userId) {
+      throw PermissionDeniedException("error")
+    }
 //      }
 
-      if (app is TelegramConnectionEntity) {
-        telegramBotServiceMaybe.getOrNull()?.let { it.sendMessage(app.chatId, "Disconnected") }
-      } else {
-        throw IllegalArgumentException("github connection cannot be removed")
-      }
-
-
-      connectedAppDAO.delete(app)
+    if (app is TelegramConnection && app.chatId != null) {
+      telegramBotServiceMaybe.getOrNull()?.let { it.sendMessage(app.chatId!!, "Disconnected") }
+    } else {
+      throw IllegalArgumentException("github connection cannot be removed")
     }
+
+
+    connectedAppRepository.deleteById(app.id)
   }
 
-  private fun fallbackEmail(user: UserEntity) = "${user.id}@feedless.org"
+  private fun fallbackEmail(id: UserId) = "${id.uuid}@feedless.org"
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
-  private suspend fun linkGithubAccount(user: UserEntity, githubId: String) {
-    val githubLink = GithubConnectionEntity()
-    githubLink.userId = user.id
-    githubLink.githubId = githubId
-    githubLink.authorized = true
-    githubLink.authorizedAt = LocalDateTime.now()
-
-    withContext(Dispatchers.IO) {
-      githubConnectionService.save(githubLink)
-    }
+  private suspend fun linkGithubAccount(userId: UserId, githubId: String) {
+    val githubLink = GithubConnection(
+      userId = userId,
+      githubId = githubId,
+      authorized = true,
+      authorizedAt = LocalDateTime.now()
+    )
+    githubConnectionRepository.save(githubLink)
   }
 
   @Transactional(readOnly = true)
   suspend fun findAdminUser(): User? {
-    return withContext(Dispatchers.IO) {
-      userDAO.findFirstByAdminIsTrue()?.toDomain()
-    }
+    return userRepository.findFirstByAdminIsTrue()
   }
 }
 

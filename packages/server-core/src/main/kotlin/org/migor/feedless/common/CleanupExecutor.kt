@@ -20,24 +20,26 @@ import java.util.*
 @Profile(AppLayer.scheduler)
 @Transactional(propagation = Propagation.NEVER)
 class CleanupExecutor(
-    private val oneTimePasswordService: Optional<OneTimePasswordService>,
-    private val sourcePipelineService: SourcePipelineService,
-    private val documentService: DocumentService,
-    private val documentPipelineService: DocumentPipelineService,
-    private val harvestService: HarvestService,
+  private val oneTimePasswordService: Optional<OneTimePasswordService>,
+  private val sourcePipelineService: SourcePipelineService,
+  private val documentService: DocumentService,
+  private val documentPipelineService: DocumentPipelineService,
+  private val harvestService: HarvestService,
 ) {
 
-    private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
+  private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
 
-    @Scheduled(cron = "0 0 * * * *")
-    fun executeCleanup() {
-        val now = LocalDateTime.now()
-        oneTimePasswordService.ifPresent { it.deleteAllByValidUntilBefore(now) }
-        runBlocking {
-            documentService.applyRetentionStrategyByCapacity()
-        }
-        sourcePipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
-        documentPipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
-        harvestService.deleteAllTailing()
+  @Scheduled(cron = "0 0 * * * *")
+  fun executeCleanup() {
+    val now = LocalDateTime.now()
+    runBlocking {
+      oneTimePasswordService.ifPresent {
+        runBlocking { it.deleteAllByValidUntilBefore(now) }
+      }
+      documentService.applyRetentionStrategyByCapacity()
+      documentPipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
+      sourcePipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
     }
+    harvestService.deleteAllTailing()
+  }
 }

@@ -4,7 +4,7 @@ import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile

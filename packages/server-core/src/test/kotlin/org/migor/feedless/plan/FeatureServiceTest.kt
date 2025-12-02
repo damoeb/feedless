@@ -1,5 +1,6 @@
 package org.migor.feedless.plan
 
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -9,24 +10,25 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.data.jpa.feature.FeatureDAO
-import org.migor.feedless.data.jpa.feature.FeatureEntity
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupDAO
-import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
-import org.migor.feedless.data.jpa.featureValue.FeatureValueDAO
-import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
-import org.migor.feedless.data.jpa.plan.PlanDAO
-import org.migor.feedless.data.jpa.product.ProductDAO
+import org.migor.feedless.feature.Feature
+import org.migor.feedless.feature.FeatureGroup
+import org.migor.feedless.feature.FeatureGroupId
+import org.migor.feedless.feature.FeatureGroupRepository
+import org.migor.feedless.feature.FeatureId
 import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureRepository
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.feature.FeatureValue
+import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.feature.FeatureValueType
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.session.SessionService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import java.util.*
 
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -41,45 +43,50 @@ import java.util.*
 @MockitoBean(
   types = [
     SessionService::class,
-    ProductDAO::class,
-    PlanDAO::class,
+    ProductRepository::class,
+    PlanRepository::class,
   ]
 )
 class FeatureServiceTest {
 
-  private lateinit var childFeatureGroup: FeatureGroupEntity
-  private lateinit var parentFeatureGroup: FeatureGroupEntity
+  private lateinit var childFeatureGroup: FeatureGroup
+  private lateinit var parentFeatureGroup: FeatureGroup
 
   @Autowired
-  lateinit var featureDAO: FeatureDAO
+  lateinit var featureRepository: FeatureRepository
 
   @Autowired
   lateinit var featureService: FeatureService
 
   @Autowired
-  lateinit var featureValueDAO: FeatureValueDAO
+  lateinit var featureValueRepository: FeatureValueRepository
+
+  @Autowired
+  lateinit var featureGroupRepository: FeatureGroupRepository
 
   @Autowired
   lateinit var featureGroupDAO: FeatureGroupDAO
 
-  private fun createFeatureGroup(name: String, parentId: UUID?): FeatureGroupEntity {
-    val group = FeatureGroupEntity()
-    group.name = name
-    group.parentFeatureGroupId = parentId
-
-    return featureGroupDAO.findByNameEqualsIgnoreCase(name) ?: featureGroupDAO.save(group)
+  private suspend fun createFeatureGroup(name: String, parentId: FeatureGroupId?): FeatureGroup {
+    val group = FeatureGroup(
+      name = name,
+      parentFeatureGroupId = parentId
+    )
+    return featureGroupRepository.findByNameEqualsIgnoreCase(name) ?: featureGroupRepository.save(group)
   }
 
   @BeforeEach
   fun beforeEach() {
-    parentFeatureGroup = createFeatureGroup("parent", null)
-    childFeatureGroup = createFeatureGroup("child", parentFeatureGroup.id)
+    runBlocking {
+      parentFeatureGroup = createFeatureGroup("parent", null)
+      childFeatureGroup = createFeatureGroup("child", parentFeatureGroup.id)
+    }
   }
 
   @AfterEach
   fun afterEach() {
-    featureGroupDAO.delete(childFeatureGroup)
-    featureGroupDAO.delete(parentFeatureGroup)
+    featureGroupDAO.deleteById(childFeatureGroup.id.uuid)
+    featureGroupDAO.deleteById(parentFeatureGroup.id.uuid)
     assertThat(featureGroupDAO.count()).isEqualTo(0)
   }
 
@@ -90,20 +97,20 @@ class FeatureServiceTest {
     val featureName = FeatureName.repositoriesMaxCountActiveInt
     val feature = resolveFeature(featureName)
 
-    assertThat(featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)).isNull()
+    assertThat(featureValueRepository.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)).isNull()
     val randomInt = (Math.random() * 100).toLong()
 
     // when
     featureService.assignFeatureValues(parentFeatureGroup, mapOf(featureName to createFeatureValue(randomInt)))
 
     // then
-    val parentValue = featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)
-    val childValue = featureValueDAO.resolveByFeatureGroupIdAndName(childFeatureGroup.id, feature.name)
+    val parentValue = featureValueRepository.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, feature.name)
+    val childValue = featureValueRepository.resolveByFeatureGroupIdAndName(childFeatureGroup.id, feature.name)
     assertThat(parentValue!!.valueInt).isEqualTo(randomInt)
     assertThat(childValue!!.valueInt).isEqualTo(randomInt)
 
-    assertThat(featureValueDAO.resolveAllByFeatureGroupId(parentFeatureGroup.id)[0].valueInt).isEqualTo(randomInt)
-    assertThat(featureValueDAO.resolveAllByFeatureGroupId(childFeatureGroup.id)[0].valueInt).isEqualTo(randomInt)
+    assertThat(featureValueRepository.resolveAllByFeatureGroupId(parentFeatureGroup.id)[0].valueInt).isEqualTo(randomInt)
+    assertThat(featureValueRepository.resolveAllByFeatureGroupId(childFeatureGroup.id)[0].valueInt).isEqualTo(randomInt)
   }
 
   @Test
@@ -128,27 +135,28 @@ class FeatureServiceTest {
     )
 
     // then
-    val parentValue = featureValueDAO.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, featureA.name)
-    val childValue = featureValueDAO.resolveByFeatureGroupIdAndName(childFeatureGroup.id, featureA.name)
+    val parentValue = featureValueRepository.resolveByFeatureGroupIdAndName(parentFeatureGroup.id, featureA.name)
+    val childValue = featureValueRepository.resolveByFeatureGroupIdAndName(childFeatureGroup.id, featureA.name)
     assertThat(parentValue!!.valueInt).isEqualTo(randomInt)
     assertThat(childValue!!.valueInt).isEqualTo(otherRandomInt)
 
-    val flatten = { list: List<FeatureValueEntity> ->
-      list.fold(mutableMapOf<String, Long>()) { acc, featureValueEntity ->
-        run {
-          acc[featureDAO.findById(featureValueEntity.featureId).orElseThrow().name] = featureValueEntity.valueInt!!
+    val flatten = { list: List<FeatureValue> ->
+      list.fold(mutableMapOf<String, Long>()) { acc, featureValue ->
+        runBlocking {
+          acc[featureRepository.findById(featureValue.featureId)!!.name] =
+            featureValue.valueInt!!
           acc
         }
       }
     }
 
-    val allParent = flatten(featureValueDAO.resolveAllByFeatureGroupId(parentFeatureGroup.id))
+    val allParent = flatten(featureValueRepository.resolveAllByFeatureGroupId(parentFeatureGroup.id))
     assertThat(allParent.size).isEqualTo(2)
     assertThat(allParent).containsEntry(featureA.name, randomInt)
     assertThat(allParent).containsEntry(featureB.name, randomInt)
 
 
-    val allChild = flatten(featureValueDAO.resolveAllByFeatureGroupId(childFeatureGroup.id))
+    val allChild = flatten(featureValueRepository.resolveAllByFeatureGroupId(childFeatureGroup.id))
     assertThat(allChild.size).isEqualTo(2)
     assertThat(allChild).containsEntry(featureA.name, otherRandomInt)
     assertThat(allChild).containsEntry(featureB.name, randomInt)
@@ -156,16 +164,22 @@ class FeatureServiceTest {
 
   private fun createFeatureValue(
     valueInt: Long
-  ): FeatureValueEntity {
-    val featureValue = FeatureValueEntity()
-    featureValue.valueType = FeatureValueType.number
-    featureValue.valueInt = valueInt
+  ): FeatureValue {
+    val featureValue = FeatureValue(
+      valueType = FeatureValueType.number,
+      valueInt = valueInt,
+      // --
+      featureGroupId = FeatureGroupId(),
+      featureId = FeatureId(),
+    )
     return featureValue
   }
 
-  private fun resolveFeature(featureName: FeatureName): FeatureEntity {
-    val feature = FeatureEntity()
-    feature.name = featureName.name
-    return featureDAO.findByName(featureName.name) ?: featureDAO.save(feature)
+  private suspend fun resolveFeature(featureName: FeatureName): Feature {
+    return featureRepository.findByName(featureName.name) ?: featureRepository.save(
+      Feature(
+        name = featureName.name
+      )
+    )
   }
 }

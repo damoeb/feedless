@@ -81,5 +81,9 @@ open class ProductEntity : EntityWithUUID() {
 }
 
 fun ProductEntity.toDomain(): Product {
-  return ProductMapper.Companion.INSTANCE.toDomain(this)
+  return ProductMapper.INSTANCE.toDomain(this)
+}
+
+fun Product.toEntity(): ProductEntity {
+  return ProductMapper.INSTANCE.toEntity(this)
 }

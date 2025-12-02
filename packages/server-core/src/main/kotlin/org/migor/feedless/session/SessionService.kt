@@ -1,20 +1,16 @@
 package org.migor.feedless.session
 
-import com.netflix.graphql.dgs.context.DgsContext
-import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -23,13 +19,6 @@ import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
-
-@Deprecated("use capabilityService")
-fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContext {
-  val requestContext = currentCoroutineContext[RequestContext] ?: createRequestContext()
-  DgsContext.getCustomContext<DgsCustomContext>(dfe).userId = requestContext.userId
-  return requestContext
-}
 
 private fun OAuth2AuthenticationToken.getUserCapability(): UserCapability? {
   return this.authorities.find { it.authority == UserCapability.ID.value }
@@ -40,11 +29,11 @@ fun createRequestContext(): RequestContext {
   val context = RequestContext(corrId = newCorrId())
 
   runCatching {
-    context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
-      (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).getUserCapability()?.userId
-    } else {
-      null
-    }
+//    context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+//      (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).getUserCapability()?.userId
+//    } else {
+//      null
+//    }
 
     context.product = runCatching {
       RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)

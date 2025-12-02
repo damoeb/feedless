@@ -4,6 +4,7 @@ import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Table
 import org.migor.feedless.data.jpa.EntityWithUUID
+import org.migor.feedless.systemSettings.SystemSettings
 
 
 @Entity
@@ -24,6 +25,10 @@ open class SystemSettingsEntity : EntityWithUUID() {
 
 }
 
-fun SystemSettingsEntity.toDomain(): org.migor.feedless.systemSettings.SystemSettings {
-  return SystemSettingsMapper.Companion.INSTANCE.toDomain(this)
+fun SystemSettingsEntity.toDomain(): SystemSettings {
+  return SystemSettingsMapper.INSTANCE.toDomain(this)
+}
+
+fun SystemSettings.toEntity(): SystemSettingsEntity {
+  return SystemSettingsMapper.INSTANCE.toEntity(this)
 }

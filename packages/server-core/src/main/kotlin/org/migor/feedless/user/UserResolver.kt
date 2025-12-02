@@ -10,7 +10,6 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.Vertical
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.capability.CapabilityService
@@ -101,7 +100,7 @@ class UserResolver(
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
   suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): UserDto? = coroutineScope {
     val session: SessionDto = dfe.getSourceOrThrow()
-    session.userId?.let { userService.findById(UserId(it)).orElseThrow().toDto() }
+    session.userId?.let { userService.findById(UserId(it))!!.toDto() }
   }
 
 
@@ -115,13 +114,15 @@ class UserResolver(
   @DgsData(field = DgsConstants.USER.Features, parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<FeatureDto> = coroutineScope {
     val user: UserDto = dfe.getSourceOrThrow()
-    featureService.findAllByProductAndUserId(Vertical.feedless, UserId(user.id))
+
+//  todo fix this  featureService.findAllByProductAndUserId(Vertical.feedless, UserId(user.id)).map { it.toDto() }
+    emptyList()
   }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)
   suspend fun userForOrder(dfe: DgsDataFetchingEnvironment): UserDto = coroutineScope {
     val order: OrderDto = dfe.getSourceOrThrow()
-    userService.findById(UserId(order.userId)).orElseThrow().toDto()
+    userService.findById(UserId(order.userId))!!.toDto()
   }
 }
 

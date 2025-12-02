@@ -9,8 +9,8 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
-import org.migor.feedless.document.RecordsFilter
 import org.migor.feedless.document.toDomain
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.RecordOrderByInput
@@ -85,7 +85,7 @@ class RepositoryController {
     )
   }
 
-  private fun parseWhere(whereStr: String?): RecordsFilter? {
+  private fun parseWhere(whereStr: String?): DocumentsFilter? {
     return whereStr?.let {
       Gson().fromJson(it, RecordsWhereInput::class.java).toDomain()
     }

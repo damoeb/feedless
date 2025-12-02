@@ -11,13 +11,6 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
-
-enum class Authority {
-  ANONYMOUS,
-  AGENT,
-  USER
-}
-
 object JwtParameterNames {
   const val EXP = "exp"
   const val ID = "id"
@@ -43,7 +36,7 @@ abstract class AuthService {
   abstract suspend fun assertToken(request: HttpServletRequest)
   abstract fun isWhitelisted(request: HttpServletRequest): Boolean
   abstract suspend fun interceptToken(request: HttpServletRequest): Jwt
-  abstract fun authenticateUser(email: String, secretKey: String): User
+  abstract suspend fun authenticateUser(email: String, secretKey: String): User
 
   @Throws(AccessDeniedException::class)
   protected fun interceptTokenRaw(request: HttpServletRequest): String {

@@ -10,7 +10,6 @@ import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -34,9 +33,9 @@ class ProductJpaRepository(private val productDAO: ProductDAO) : ProductReposito
     }
   }
 
-  override suspend fun findAllByIdIn(ids: List<UUID>): List<Product> {
+  override suspend fun findAllByIdIn(ids: List<ProductId>): List<Product> {
     return withContext(Dispatchers.IO) {
-      productDAO.findAllByIdIn(ids).map { it.toDomain() }
+      productDAO.findAllByIdIn(ids.map { it.uuid }).map { it.toDomain() }
     }
   }
 
@@ -45,5 +44,11 @@ class ProductJpaRepository(private val productDAO: ProductDAO) : ProductReposito
       productDAO.findById(productId.uuid).getOrNull()?.toDomain()
     }
 
+  }
+
+  override suspend fun save(product: Product): Product {
+    return withContext(Dispatchers.IO) {
+      productDAO.save(product.toEntity()).toDomain()
+    }
   }
 }

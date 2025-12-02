@@ -13,26 +13,26 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.repository} & ${AppLayer.service}")
 class StatefulAgentRegistry(
-  private val agentDAO: AgentRepository
+  private val agentRepository: AgentRepository
 ) : AgentRegistry {
 
   @Transactional(readOnly = true)
   override suspend fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UserId?): List<Agent> {
-    return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+    return agentRepository.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
 
   @Transactional(readOnly = true)
   override suspend fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UserSecretId): Agent? {
-    return agentDAO.findByConnectionIdAndSecretKeyId(connectionId, secretKeyId)
+    return agentRepository.findByConnectionIdAndSecretKeyId(connectionId, secretKeyId)
   }
 
   @Transactional
   override suspend fun delete(agent: Agent) {
-    agentDAO.deleteById(agent.id)
+    agentRepository.deleteById(agent.id)
   }
 
   @Transactional
   override suspend fun save(agent: Agent) {
-    agentDAO.save(agent)
+    agentRepository.save(agent)
   }
 }

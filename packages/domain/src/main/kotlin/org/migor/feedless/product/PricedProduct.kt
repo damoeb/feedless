@@ -4,13 +4,13 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 data class PricedProduct(
-  val id: PricedProductId,
-  val validFrom: LocalDateTime?,
-  val validTo: LocalDateTime?,
+  val id: PricedProductId = PricedProductId(),
+  val validFrom: LocalDateTime? = null,
+  val validTo: LocalDateTime? = null,
   val unit: String,
   val price: Double,
-  val inStock: Int?,
+  val inStock: Int? = null,
   val recurringInterval: ChronoUnit,
-  val productId: ProductId?,
-  val createdAt: LocalDateTime
+  val productId: ProductId? = null,
+  val createdAt: LocalDateTime = LocalDateTime.now(),
 )

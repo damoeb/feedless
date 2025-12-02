@@ -13,11 +13,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
+import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.JtsUtil
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
-import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.GroupService
@@ -25,6 +24,7 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
@@ -62,7 +62,7 @@ import java.time.LocalDateTime
 @MockitoBean(
   types = [
     SessionService::class,
-    ProductDAO::class,
+    ProductRepository::class,
     RepositoryService::class,
     HttpService::class,
     DocumentPipelineJobRepository::class,
@@ -71,7 +71,7 @@ import java.time.LocalDateTime
     ProductService::class,
     PropertyService::class,
     RepositoryHarvester::class,
-    AttachmentDAO::class,
+    AttachmentRepository::class,
     GroupService::class,
     PermissionService::class,
     RepositoryClaimJpaRepository::class,
@@ -86,13 +86,13 @@ class DocumentIntTest {
   lateinit var documentService: DocumentService
 
   @Autowired
-  lateinit var repositoryDAO: RepositoryRepository
+  lateinit var repositoryRepository: RepositoryRepository
 
   @Autowired
-  lateinit var userDAO: UserRepository
+  lateinit var userRepository: UserRepository
 
   @Autowired
-  lateinit var documentDAO: DocumentRepository
+  lateinit var documentRepository: DocumentRepository
 
   @MockitoBean
   lateinit var planConstraintsService: PlanConstraintsService
@@ -103,19 +103,19 @@ class DocumentIntTest {
   @BeforeEach
   fun setUp() = runTest {
     // Clean up before each test
-    userDAO.deleteAll()
+    userRepository.deleteAll()
 
     // todo creat user
     val user = User(
       email = "test@test.com",
       lastLogin = LocalDateTime.now(),
     )
-    userDAO.save(user)
+    userRepository.save(user)
 
     repository = createRepository("A", user)
     createRepository("B", user)
 
-    assertThat(documentDAO.countByRepositoryId(repository.id)).isEqualTo(4)
+    assertThat(documentRepository.countByRepositoryId(repository.id)).isEqualTo(4)
   }
 
   private suspend fun addDocuments(it: Repository) {
@@ -169,7 +169,7 @@ class DocumentIntTest {
       retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt
     )
 
-    return repositoryDAO.save(repository).also { addDocuments(it) }
+    return repositoryRepository.save(repository).also { addDocuments(it) }
   }
 
   private suspend fun createDocument(
@@ -194,12 +194,12 @@ class DocumentIntTest {
       latLon = latlon
     )
 
-    documentDAO.save(d)
+    documentRepository.save(d)
   }
 
   @AfterEach
   fun tearDown() {
-    userDAO.deleteAll()
+    userRepository.deleteAll()
   }
 
   @Test
@@ -219,7 +219,7 @@ class DocumentIntTest {
     `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2(), any2())).thenReturn(1)
     documentService.applyRetentionStrategyByCapacity()
 
-    val documents = documentDAO.findAllByRepositoryId(repository.id)
+    val documents = documentRepository.findAllByRepositoryId(repository.id)
     assertThat(documents.size).isEqualTo(3)
     assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
     assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")

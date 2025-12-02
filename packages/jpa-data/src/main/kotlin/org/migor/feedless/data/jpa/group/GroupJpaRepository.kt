@@ -25,4 +25,10 @@ class GroupJpaRepository(private val groupDAO: GroupDAO) : GroupRepository {
       groupDAO.findById(groupId.uuid).getOrNull()?.toDomain()
     }
   }
+
+  override suspend fun save(group: Group): Group {
+    return withContext(Dispatchers.IO) {
+      groupDAO.save(group.toEntity()).toDomain()
+    }
+  }
 }

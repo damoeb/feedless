@@ -15,28 +15,29 @@ import java.time.LocalDateTime
 import java.util.*
 
 object Mother {
-    fun randomUserId(): UserId = UserId()
-    fun randomGroupId(): GroupId = GroupId()
-    fun randomDocumentId(): DocumentId = DocumentId()
-    fun randomRepositoryId(): RepositoryId = RepositoryId()
-    fun randomSourceId(): SourceId = SourceId()
-    fun randomConnectedAppId(): ConnectedAppId = ConnectedAppId()
+  fun randomUserId(): UserId = UserId()
+  fun randomGroupId(): GroupId = GroupId()
+  fun randomDocumentId(): DocumentId = DocumentId()
+  fun randomRepositoryId(): RepositoryId = RepositoryId()
+  fun randomSourceId(): SourceId = SourceId()
+  fun randomConnectedAppId(): ConnectedAppId = ConnectedAppId()
 
-    fun randomUser(): User {
-        return User(
-            email = UUID.randomUUID().toString() + "@localhost",
-            lastLogin = LocalDateTime.now(),
-            hasAcceptedTerms = true,
-        )
-    }
+  fun randomUser(): User {
+    return User(
+      email = UUID.randomUUID().toString() + "@localhost",
+      lastLogin = LocalDateTime.now(),
+      hasAcceptedTerms = true,
+    )
+  }
 
-    fun randomOneTimePassword(user: User): OneTimePassword {
-        return OneTimePassword(
-            password = "1234",
-            validUntil = LocalDateTime.now(),
-            userId = user.id,
-        )
-    }
+  fun randomOneTimePassword(user: User): OneTimePassword {
+    return OneTimePassword(
+      password = "1234",
+      validUntil = LocalDateTime.now(),
+      userId = user.id,
+      attemptsLeft = 1
+    )
+  }
 }
 
 

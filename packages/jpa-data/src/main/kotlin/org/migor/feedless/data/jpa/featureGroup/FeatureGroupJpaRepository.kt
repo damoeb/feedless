@@ -5,9 +5,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.feature.FeatureGroup
+import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureGroupRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.util.*
 
 @Component
 @Profile("${AppProfiles.features} & ${AppLayer.repository}")
@@ -21,6 +23,30 @@ class FeatureGroupJpaRepository(private val featureGroupDAO: FeatureGroupDAO) : 
   override suspend fun findByNameEqualsIgnoreCase(name: String): FeatureGroup? {
     return withContext(Dispatchers.IO) {
       featureGroupDAO.findByNameEqualsIgnoreCase(name)?.toDomain()
+    }
+  }
+
+  override suspend fun findById(id: FeatureGroupId): Optional<FeatureGroup> {
+    return withContext(Dispatchers.IO) {
+      featureGroupDAO.findById(id.uuid).map { it.toDomain() }
+    }
+  }
+
+  override suspend fun findAll(): List<FeatureGroup> {
+    return withContext(Dispatchers.IO) {
+      featureGroupDAO.findAll().map { it.toDomain() }
+    }
+  }
+
+  override suspend fun save(featureGroup: FeatureGroup): FeatureGroup {
+    return withContext(Dispatchers.IO) {
+      featureGroupDAO.save(featureGroup.toEntity()).toDomain()
+    }
+  }
+
+  override suspend fun deleteById(id: FeatureGroupId) {
+    withContext(Dispatchers.IO) {
+      featureGroupDAO.deleteById(id.uuid)
     }
   }
 

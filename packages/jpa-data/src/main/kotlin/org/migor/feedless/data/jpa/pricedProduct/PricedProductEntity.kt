@@ -14,6 +14,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.product.ProductEntity
+import org.migor.feedless.product.PricedProduct
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -58,6 +59,10 @@ open class PricedProductEntity : EntityWithUUID() {
   open var product: ProductEntity? = null
 }
 
-fun PricedProductEntity.toDomain(): org.migor.feedless.product.PricedProduct {
-  return PricedProductMapper.Companion.INSTANCE.toDomain(this)
+fun PricedProductEntity.toDomain(): PricedProduct {
+  return PricedProductMapper.INSTANCE.toDomain(this)
+}
+
+fun PricedProduct.toEntity(): PricedProductEntity {
+  return PricedProductMapper.INSTANCE.toEntity(this)
 }

@@ -2,21 +2,17 @@ package org.migor.feedless.session
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.toDomain
-import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
-import org.migor.feedless.data.jpa.userSecret.toDomain
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
+import org.migor.feedless.userSecret.UserSecretRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -30,7 +26,6 @@ import java.net.InetAddress
 import java.time.LocalDateTime
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
-import kotlin.jvm.optionals.getOrNull
 import kotlin.properties.Delegates
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -47,10 +42,10 @@ class StatefulAuthService : AuthService() {
   private lateinit var propertyService: PropertyService
 
   @Autowired
-  private lateinit var userDAO: UserDAO
+  private lateinit var userRepository: UserRepository
 
   @Autowired
-  private lateinit var userSecretDAO: UserSecretDAO
+  private lateinit var userSecretRepository: UserSecretRepository
 
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String
@@ -85,36 +80,30 @@ class StatefulAuthService : AuthService() {
   }
 
   @Transactional(readOnly = true)
-  override fun authenticateUser(email: String, secretKey: String): User {
+  override suspend fun authenticateUser(email: String, secretKey: String): User {
     log.debug("authRoot")
-    val root = userDAO.findByEmail(email)?.toDomain() ?: throw NotFoundException("user not found")
+    val root = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
     if (!root.admin) {
       throw PermissionDeniedException("account is not root")
     }
-    userSecretDAO.findBySecretKeyValue(secretKey, email)
+    userSecretRepository.findBySecretKeyValue(secretKey, email)
       ?: throw IllegalArgumentException("secretKey does not match")
     return root
   }
 
   @Transactional(readOnly = true)
   override suspend fun findUserById(userId: UserId): User? {
-    return withContext(Dispatchers.IO) {
-      userDAO.findById(userId.uuid).map { it.toDomain() }.getOrNull()
-    }
+    return userRepository.findById(userId)
   }
 
   @Transactional(readOnly = true)
   override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret? {
-    return withContext(Dispatchers.IO) {
-      userSecretDAO.findBySecretKeyValue(secretKey, email)?.toDomain()
-    }
+    return userSecretRepository.findBySecretKeyValue(secretKey, email)
   }
 
   @Transactional
   override suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {
-    withContext(Dispatchers.IO) {
-      userSecretDAO.updateLastUsed(id.uuid, date)
-    }
+    userSecretRepository.updateLastUsed(id, date)
   }
 
   @Transactional(readOnly = true)

@@ -13,16 +13,16 @@ import java.time.LocalDateTime
 @Profile("${AppProfiles.agent} & ${AppLayer.scheduler}")
 class AgentSyncExecutor(
   private val agentService: AgentService,
-  private val agentDAO: AgentRepository
+  private val agentRepository: AgentRepository
 ) {
 
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeSync() {
     runBlocking {
-      agentDAO.saveAll(
+      agentRepository.saveAll(
         agentService.agentRefs().mapNotNull {
-          agentDAO.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
+          agentRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
         }.map {
           it.copy(lastSyncedAt = LocalDateTime.now())
         })
@@ -33,7 +33,7 @@ class AgentSyncExecutor(
   @Transactional
   fun executeCleanup() {
     runBlocking {
-      agentDAO.deleteAllByLastSyncedAtBefore(
+      agentRepository.deleteAllByLastSyncedAtBefore(
         LocalDateTime.now().minusMinutes(2)
       )
     }

@@ -7,20 +7,21 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureId
 import org.migor.feedless.feature.FeatureValue
+import org.migor.feedless.feature.FeatureValueId
 import org.migor.feedless.feature.FeatureValueRepository
-import org.migor.feedless.plan.PlanId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 @Profile("${AppProfiles.features} & ${AppLayer.repository}")
 class FeatureValueJpaRepository(private val featureValueDAO: FeatureValueDAO) : FeatureValueRepository {
   override suspend fun findByFeatureGroupIdAndFeatureId(
-    planId: PlanId,
+    featureGroupId: FeatureGroupId,
     featureId: FeatureId
   ): FeatureValue? {
     return withContext(Dispatchers.IO) {
-      featureValueDAO.findByFeatureGroupIdAndFeatureId(planId.uuid, featureId.uuid)?.toDomain()
+      featureValueDAO.findByFeatureGroupIdAndFeatureId(featureGroupId.uuid, featureId.uuid)?.toDomain()
     }
   }
 
@@ -48,6 +49,18 @@ class FeatureValueJpaRepository(private val featureValueDAO: FeatureValueDAO) : 
   override suspend fun deleteAllByFeatureGroupId(id: FeatureGroupId) {
     withContext(Dispatchers.IO) {
       featureValueDAO.deleteAllByFeatureGroupId(id.uuid)
+    }
+  }
+
+  override suspend fun findById(id: FeatureValueId): FeatureValue? {
+    return withContext(Dispatchers.IO) {
+      featureValueDAO.findById(id.uuid).getOrNull()?.toDomain()
+    }
+  }
+
+  override suspend fun save(feature: FeatureValue): FeatureValue {
+    return withContext(Dispatchers.IO) {
+      featureValueDAO.save(feature.toEntity()).toDomain()
     }
   }
 

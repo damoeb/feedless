@@ -41,132 +41,132 @@ import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class OrderServiceImpl : OrderService {
 
-    private val log = LoggerFactory.getLogger(OrderServiceImpl::class.simpleName)
+  private val log = LoggerFactory.getLogger(OrderServiceImpl::class.simpleName)
 
-    @Autowired
-    private lateinit var orderDAO: OrderDAO
+  @Autowired
+  private lateinit var orderDAO: OrderDAO
 
-    @Autowired
-    private lateinit var sessionService: SessionService
+  @Autowired
+  private lateinit var sessionService: SessionService
 
-    @Autowired
-    private lateinit var productService: ProductService
+  @Autowired
+  private lateinit var productService: ProductService
 
-    @Autowired
-    private lateinit var userDAO: UserDAO
+  @Autowired
+  private lateinit var userDAO: UserDAO
 
-    @Transactional(readOnly = true)
-    suspend fun findAll(data: OrdersInput): List<Order> {
-        val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
-        val currentUser = sessionService.user()
-        return withContext(Dispatchers.IO) {
-            if (currentUser.admin) {
+  @Transactional(readOnly = true)
+  suspend fun findAll(data: OrdersInput): List<Order> {
+    val pageable = PageRequest.of(data.cursor.page, data.cursor.pageSize ?: 10, Sort.Direction.DESC, "createdAt")
+    val currentUser = sessionService.user()
+    return withContext(Dispatchers.IO) {
+      if (currentUser.admin) {
 //      data.where?.id?.let {
 //        orderDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
-                orderDAO.findAll(pageable).toList()
-            } else {
-                orderDAO.findAllByUserId(currentUser.id.uuid, pageable).toList()
-            }
-        }.map { it.toDomain() }
+        orderDAO.findAll(pageable).toList()
+      } else {
+        orderDAO.findAllByUserId(currentUser.id.uuid, pageable).toList()
+      }
+    }.map { it.toDomain() }
+  }
+
+  @Transactional
+  suspend fun upsert(
+    where: OrderWhereUniqueInput?,
+    create: OrderCreateInput?,
+    update: OrderUpdateInput?
+  ): Order {
+    return where?.let {
+      update(where, update!!)
+    } ?: create(create!!)
+  }
+
+  private suspend fun create(create: OrderCreateInput): Order {
+    val corrId = coroutineContext.corrId()
+    log.info("[$corrId] create $create]")
+    val order = OrderEntity()
+    order.isOffer = BooleanUtils.isTrue(create.isOffer)
+    val productId = ProductId(UUID.fromString(create.productId))
+    order.productId = productId.uuid
+    order.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
+    order.invoiceRecipientName = create.invoiceRecipientName.trim()
+    order.paymentMethod = create.paymentMethod.fromDTO()
+    order.callbackUrl = "" // create.callbackUrl
+    order.targetGroupIndividual = create.targetGroup === ProductTargetGroup.individual
+    order.targetGroupEnterprise = create.targetGroup === ProductTargetGroup.eneterprise
+    order.targetGroupOther = create.targetGroup === ProductTargetGroup.other
+
+    order.price = if (create.overwritePrice <= 0) {
+      productService.resolvePriceForProduct(
+        productId,
+        create.user.connect?.id?.let { UserId(UUID.fromString(it)) })
+    } else {
+      create.overwritePrice
     }
-
-    @Transactional
-    suspend fun upsert(
-        where: OrderWhereUniqueInput?,
-        create: OrderCreateInput?,
-        update: OrderUpdateInput?
-    ): Order {
-        return where?.let {
-            update(where, update!!)
-        } ?: create(create!!)
+    create.user.connect?.let {
+      order.userId = UUID.fromString(it.id)
+    } ?: create.user.create?.let { userCreateInput ->
+      order.userId = createUser(userCreateInput).id
+    } ?: throw IllegalArgumentException("Neither connect or create is present")
+    return withContext(Dispatchers.IO) {
+      orderDAO.save(order).toDomain()
     }
+  }
 
-    private suspend fun create(create: OrderCreateInput): Order {
-        val corrId = coroutineContext.corrId()
-        log.info("[$corrId] create $create]")
-        val order = OrderEntity()
-        order.isOffer = BooleanUtils.isTrue(create.isOffer)
-        val productId = ProductId(UUID.fromString(create.productId))
-        order.productId = productId.uuid
-        order.invoiceRecipientEmail = create.invoiceRecipientEmail.trim()
-        order.invoiceRecipientName = create.invoiceRecipientName.trim()
-        order.paymentMethod = create.paymentMethod.fromDTO()
-        order.callbackUrl = create.callbackUrl
-        order.targetGroupIndividual = create.targetGroup === ProductTargetGroup.individual
-        order.targetGroupEnterprise = create.targetGroup === ProductTargetGroup.eneterprise
-        order.targetGroupOther = create.targetGroup === ProductTargetGroup.other
-
-        order.price = if (create.overwritePrice <= 0) {
-            productService.resolvePriceForProduct(
-                productId,
-                create.user.connect?.id?.let { UserId(UUID.fromString(it)) })
-        } else {
-            create.overwritePrice
+  private suspend fun createUser(create: UserCreateInput): UserEntity {
+    val corrId = coroutineContext.corrId()
+    return withContext(Dispatchers.IO) {
+      userDAO.findByEmail(create.email.trim()) ?: run {
+        log.info("[$corrId] createUser $create]")
+        if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
+          throw IllegalArgumentException("You have to accept the terms")
         }
-        create.user.connect?.let {
-            order.userId = UUID.fromString(it.id)
-        } ?: create.user.create?.let { userCreateInput ->
-            order.userId = createUser(userCreateInput).id
-        } ?: throw IllegalArgumentException("Neither connect or create is present")
-        return withContext(Dispatchers.IO) {
-            orderDAO.save(order).toDomain()
-        }
+        val user = UserEntity()
+        user.email = create.email
+        user.firstName = create.firstName
+        user.lastName = create.lastName
+        user.hasAcceptedTerms = create.hasAcceptedTerms
+        user.acceptedTermsAt = LocalDateTime.now()
+
+        userDAO.save(user)
+      }
+    }
+  }
+
+  private suspend fun update(where: OrderWhereUniqueInput, update: OrderUpdateInput): Order {
+    val corrId = coroutineContext.corrId()
+    log.info("[$corrId] update $update $where")
+    if (!sessionService.user().admin) {
+      throw PermissionDeniedException("must be root ($corrId)")
     }
 
-    private suspend fun createUser(create: UserCreateInput): UserEntity {
-        val corrId = coroutineContext.corrId()
-        return withContext(Dispatchers.IO) {
-            userDAO.findByEmail(create.email.trim()) ?: run {
-                log.info("[$corrId] createUser $create]")
-                if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
-                    throw IllegalArgumentException("You have to accept the terms")
-                }
-                val user = UserEntity()
-                user.email = create.email
-                user.firstName = create.firstName
-                user.lastName = create.lastName
-                user.hasAcceptedTerms = create.hasAcceptedTerms
-                user.acceptedTermsAt = LocalDateTime.now()
+    return withContext(Dispatchers.IO) {
+      val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
 
-                userDAO.save(user)
-            }
-        }
+      update.isRejected?.let {
+        order.isOfferRejected = it.set
+      }
+      update.price?.let {
+        order.price = it.set
+      }
+      update.isRejected?.let {
+        order.isOfferRejected = it.set
+      }
+
+      orderDAO.save(order).toDomain()
     }
+  }
 
-    private suspend fun update(where: OrderWhereUniqueInput, update: OrderUpdateInput): Order {
-        val corrId = coroutineContext.corrId()
-        log.info("[$corrId] update $update $where")
-        if (!sessionService.user().admin) {
-            throw PermissionDeniedException("must be root ($corrId)")
-        }
-
-        return withContext(Dispatchers.IO) {
-            val order = orderDAO.findById(UUID.fromString(where.id)).orElseThrow()
-
-            update.isRejected?.let {
-                order.isOfferRejected = it.set
-            }
-            update.price?.let {
-                order.price = it.set
-            }
-            update.isRejected?.let {
-                order.isOfferRejected = it.set
-            }
-
-            orderDAO.save(order).toDomain()
-        }
-    }
-
-    override fun findById(orderID: OrderId): org.migor.feedless.order.Order {
-        return orderDAO.findById(orderID.uuid)
-            .map { OrderMapper.INSTANCE.toDomain(it) }
-            .orElseThrow { IllegalArgumentException("Order not found: ${orderID.uuid}") }
-    }
+  override fun findById(orderID: OrderId): org.migor.feedless.order.Order {
+    return orderDAO.findById(orderID.uuid)
+      .map { OrderMapper.INSTANCE.toDomain(it) }
+      .orElseThrow { IllegalArgumentException("Order not found: ${orderID.uuid}") }
+  }
 }
 
 private fun PaymentMethodDto.fromDTO(): PaymentMethod {
-    return when (this) {
-        PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
-    }
+  return when (this) {
+    PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
+  }
 }

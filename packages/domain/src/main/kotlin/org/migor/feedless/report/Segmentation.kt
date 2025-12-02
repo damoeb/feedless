@@ -7,14 +7,14 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 data class Segmentation(
-  val id: SegmentationId,
+  val id: SegmentationId = SegmentationId(),
   val size: Int,
   val timeSegmentStartingAt: LocalDateTime,
   val timeInterval: ChronoUnit,
-  val contentSegmentLatLon: LatLonPoint?,
-  val contentSegmentLatLonDistance: Double?,
+  val contentSegmentLatLon: LatLonPoint? = null,
+  val contentSegmentLatLonDistance: Double? = null,
   val reportPlugin: PluginExecution,
   val repositoryId: RepositoryId,
-  val createdAt: LocalDateTime
+  val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

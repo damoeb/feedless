@@ -1,18 +1,20 @@
 package org.migor.feedless.pipeline
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.any
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
+import org.migor.feedless.pipelineJob.PipelineJobId
+import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
-import java.util.*
 
 class SourcePipelineJobExecutorTest {
 
@@ -22,7 +24,7 @@ class SourcePipelineJobExecutorTest {
   private lateinit var sourceService: SourceService
 
   @BeforeEach
-  fun setUp() {
+  fun setUp() = runTest {
     sourcePipelineService = mock(SourcePipelineService::class.java)
     repositoryService = mock(RepositoryService::class.java)
     sourceService = mock(SourceService::class.java)
@@ -33,8 +35,8 @@ class SourcePipelineJobExecutorTest {
       sourceService,
     )
 
-    val id1 = UUID.randomUUID()
-    val id2 = UUID.randomUUID()
+    val id1 = SourceId()
+    val id2 = SourceId()
 
     val sourceJobs = listOf(
       createSourcePipelineJob(id1),
@@ -56,10 +58,9 @@ class SourcePipelineJobExecutorTest {
     // todo test
   }
 
-  private fun createSourcePipelineJob(sourceId: UUID): SourcePipelineJobEntity {
-    val jobId = UUID.randomUUID()
-    val job = mock(SourcePipelineJobEntity::class.java)
-    `when`(job.id).thenReturn(jobId)
+  private fun createSourcePipelineJob(sourceId: SourceId): SourcePipelineJob {
+    val job = mock(SourcePipelineJob::class.java)
+    `when`(job.id).thenReturn(PipelineJobId())
     `when`(job.sourceId).thenReturn(sourceId)
 
 //    val source = mock(SourceEntity::class.java)

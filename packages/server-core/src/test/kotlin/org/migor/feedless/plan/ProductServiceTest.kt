@@ -7,52 +7,50 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
-import org.migor.feedless.data.jpa.plan.PlanDAO
-import org.migor.feedless.data.jpa.pricedProduct.PricedProductDAO
-import org.migor.feedless.data.jpa.product.ProductDAO
-import org.migor.feedless.data.jpa.product.ProductEntity
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.pricedProduct.PricedProductRepository
+import org.migor.feedless.product.Product
+import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductService
 import org.migor.feedless.product.ProductServiceImpl
+import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import java.util.*
 
 class ProductServiceTest {
 
   private lateinit var service: ProductService
-  private lateinit var productDAO: ProductDAO
-  private lateinit var userDAO: UserDAO
-  private lateinit var planDAO: PlanDAO
-  private lateinit var pricedProductDAO: PricedProductDAO
+  private lateinit var productRepository: ProductRepository
+  private lateinit var userRepository: UserRepository
+  private lateinit var planRepository: PlanRepository
+  private lateinit var pricedProductRepository: PricedProductRepository
   private lateinit var userId: UserId
 
   @BeforeEach
   fun setUp() {
     userId = randomUserId()
-    productDAO = mock(ProductDAO::class.java)
-    userDAO = mock(UserDAO::class.java)
-    planDAO = mock(PlanDAO::class.java)
-    pricedProductDAO = mock(PricedProductDAO::class.java)
+    productRepository = mock(ProductRepository::class.java)
+    userRepository = mock(UserRepository::class.java)
+    planRepository = mock(PlanRepository::class.java)
+    pricedProductRepository = mock(PricedProductRepository::class.java)
     service = ProductServiceImpl(
-      productDAO,
-      userDAO,
-      planDAO,
-      pricedProductDAO,
+      productRepository,
+      userRepository,
+      planRepository,
+      pricedProductRepository,
     )
   }
 
   @Test
   @Disabled
   fun `enableDefaultSaasProduct`() = runTest {
-    `when`(productDAO.findByPartOfAndBaseProductIsTrue(any2())).thenReturn(mock(ProductEntity::class.java))
-    `when`(userDAO.findById(any2())).thenReturn(Optional.of(mock(UserEntity::class.java)))
+    `when`(productRepository.findByPartOfAndBaseProductIsTrue(any2())).thenReturn(mock(Product::class.java))
+    `when`(userRepository.findById(any2())).thenReturn(mock(User::class.java))
 
     service.enableDefaultSaasProduct(Vertical.feedless, userId)
 
-    verify(planDAO).save(any2())
+    verify(planRepository).save(any2())
   }
 }

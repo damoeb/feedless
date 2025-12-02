@@ -16,6 +16,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretType
 import java.time.LocalDateTime
 import java.util.*
@@ -57,6 +58,10 @@ open class UserSecretEntity : EntityWithUUID() {
 
 }
 
-fun UserSecretEntity.toDomain(): org.migor.feedless.userSecret.UserSecret {
-  return UserSecretMapper.Companion.INSTANCE.toDomain(this)
+fun UserSecretEntity.toDomain(): UserSecret {
+  return UserSecretMapper.INSTANCE.toDomain(this)
+}
+
+fun UserSecret.toEntity(): UserSecretEntity {
+  return UserSecretMapper.INSTANCE.toEntity(this)
 }

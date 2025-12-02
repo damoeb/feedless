@@ -2,7 +2,7 @@ package org.migor.feedless.community.text.complex
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.text.simple.CitationScorer
 import org.migor.feedless.community.text.simple.EngagementScorer

@@ -25,8 +25,8 @@ import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
-import org.migor.feedless.document.RecordsFilter
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -83,7 +83,7 @@ fun Pageable.toPageableRequest(): PageableRequest {
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryService(
-  private var repositoryDAO: RepositoryRepository,
+  private var repositoryRepository: RepositoryRepository,
   private var sessionService: SessionService,
   private var userService: UserService,
   private var planConstraintsService: PlanConstraintsService,
@@ -101,7 +101,7 @@ class RepositoryService(
     log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
 
     val ownerId = getActualUserOrDefaultUser().id
-    val totalCount = repositoryDAO.countByOwnerId(ownerId)
+    val totalCount = repositoryRepository.countByOwnerId(ownerId)
     planConstraintsService.auditRepositoryMaxCount(totalCount, ownerId)
     if (planConstraintsService.violatesRepositoriesMaxActiveCount(ownerId)) {
       log.info("[${coroutineContext.corrId()}] violates maxActiveCount")
@@ -116,7 +116,7 @@ class RepositoryService(
   suspend fun getFeedByRepositoryId(
     repositoryId: RepositoryId,
     page: Int,
-    filter: RecordsFilter?,
+    filter: DocumentsFilter?,
     order: RecordOrderBy?,
   ): JsonFeed {
     val repository = context.getBean(RepositoryService::class.java).findById(repositoryId)
@@ -174,22 +174,22 @@ class RepositoryService(
     userId: UserId?
   ): List<Repository> {
     log.debug("userId=$userId")
-    return repositoryDAO.findAll(pageable, where, userId)
+    return repositoryRepository.findAll(pageable, where, userId)
   }
 
   @Transactional(readOnly = true)
   suspend fun findById(repositoryId: RepositoryId): Repository? {
-    return repositoryDAO.findById(repositoryId)
+    return repositoryRepository.findById(repositoryId)
   }
 
   @Transactional
   suspend fun delete(repositoryId: RepositoryId) {
-    val repository = repositoryDAO.findById(repositoryId)!!
+    val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.ownerId != userId()) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
-    repositoryDAO.delete(repository)
+    repositoryRepository.delete(repository)
   }
 
   suspend fun calculateScheduledNextAt(
@@ -208,7 +208,7 @@ class RepositoryService(
 
   suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
     // Fetch entity for mutation
-    val existingRepository = repositoryDAO.findById(id)
+    val existingRepository = repositoryRepository.findById(id)
       ?: throw NotFoundException("Repository not found")
 
     var repository = existingRepository.copy(
@@ -295,21 +295,21 @@ class RepositoryService(
       }
     }
     withContext(Dispatchers.IO) {
-      repositoryDAO.save(repository)
+      repositoryRepository.save(repository)
     }
   }
 
   @Transactional(readOnly = true)
   suspend fun countAll(userId: UserId?, product: Vertical): Int {
     return userId
-      ?.let { repositoryDAO.countAllByOwnerIdAndProduct(it, product) }
-      ?: repositoryDAO.countAllByVisibility(EntityVisibility.isPublic)
+      ?.let { repositoryRepository.countAllByOwnerIdAndProduct(it, product) }
+      ?: repositoryRepository.countAllByVisibility(EntityVisibility.isPublic)
   }
 
   @Transactional
   suspend fun updatePullsFromAnalytics(repositoryId: RepositoryId, pulls: Int) {
-    val repository = repositoryDAO.findById(repositoryId)!!
-    repositoryDAO.save(
+    val repository = repositoryRepository.findById(repositoryId)!!
+    repositoryRepository.save(
       repository.copy(
         pullsPerMonth = pulls,
         lastUpdatedAt = LocalDateTime.now()
@@ -335,7 +335,7 @@ class RepositoryService(
 
     val product = repoInput.product.fromDto()
     var repo = Repository(
-      shareKey = newCorrId(10),
+      shareKey = newCorrId(9),
       title = repoInput.title,
       description = repoInput.description,
       visibility = planConstraintsService.coerceVisibility(repoInput.visibility?.fromDto()),
@@ -370,7 +370,7 @@ class RepositoryService(
 //      ""
 //    }
 
-    val saved = repositoryDAO.save(repo)
+    val saved = repositoryRepository.save(repo)
 
     sourceService.createSources(ownerId, repoInput.sources, repo.id)
 
@@ -406,7 +406,7 @@ class RepositoryService(
 
   @Transactional
   suspend fun findBySourceId(sourceId: SourceId): Repository? {
-    return repositoryDAO.findBySourceId(sourceId)
+    return repositoryRepository.findBySourceId(sourceId)
   }
 
   @Transactional(readOnly = true)
@@ -415,27 +415,27 @@ class RepositoryService(
     now: LocalDateTime,
     pageable: PageRequest
   ): List<Repository> {
-    return repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageableRequest())
+    return repositoryRepository.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageableRequest())
   }
 
   @Transactional(readOnly = true)
   suspend fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageRequest): List<Repository> {
-    return repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable.toPageableRequest())
+    return repositoryRepository.findAllWhereNextHarvestIsDue(now, pageable.toPageableRequest())
   }
 
   @Transactional(readOnly = true)
   suspend fun findByDocumentId(documentId: DocumentId): Repository? {
-    return repositoryDAO.findByDocumentId(documentId)
+    return repositoryRepository.findByDocumentId(documentId)
   }
 
   @Transactional
   suspend fun save(repository: Repository): Repository {
-    return repositoryDAO.save(repository)
+    return repositoryRepository.save(repository)
   }
 
   @Transactional(readOnly = true)
   suspend fun findByTitleAndOwnerId(title: String, ownerId: UserId): Repository? {
-    return repositoryDAO.findByTitleAndOwnerId(title, ownerId)
+    return repositoryRepository.findByTitleAndOwnerId(title, ownerId)
   }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {

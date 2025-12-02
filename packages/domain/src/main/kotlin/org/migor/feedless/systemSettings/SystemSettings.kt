@@ -3,11 +3,11 @@ package org.migor.feedless.systemSettings
 import java.time.LocalDateTime
 
 data class SystemSettings(
-  val id: SystemSettingsId,
+  val id: SystemSettingsId = SystemSettingsId(),
   val name: String,
-  val valueInt: Int?,
-  val valueBoolean: Boolean?,
-  val valueString: String?,
-  val createdAt: LocalDateTime
+  val valueInt: Int? = null,
+  val valueBoolean: Boolean? = null,
+  val valueString: String? = null,
+  val createdAt: LocalDateTime = LocalDateTime.now()
 )
 

@@ -1,21 +1,15 @@
 package org.migor.feedless.report
 
 import io.micrometer.core.instrument.MeterRegistry
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.data.jpa.JtsUtil
-import org.migor.feedless.data.jpa.report.ReportDAO
-import org.migor.feedless.data.jpa.report.ReportEntity
-import org.migor.feedless.data.jpa.report.SegmentationEntity
-import org.migor.feedless.data.jpa.report.toDomain
-import org.migor.feedless.data.jpa.report.toEntity
 import org.migor.feedless.generated.types.GeoPointInput
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
+import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryService
 import org.migor.feedless.repository.fromDto
@@ -39,7 +33,7 @@ import java.time.temporal.TemporalAdjusters
 @Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
 class ReportService(
-  val reportDAO: ReportDAO,
+  val reportRepository: ReportRepository,
   val repositoryService: RepositoryService,
   val userService: UserService,
   val segmentationService: SegmentationService,
@@ -52,11 +46,6 @@ class ReportService(
   @Transactional(propagation = Propagation.REQUIRED)
   suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput, currentUserId: UserId?): Report {
     log.debug("createReport for $repositoryId")
-    val report = ReportEntity()
-
-    currentUserId?.let {
-      report.userId = it.uuid
-    }
 
     val repository = repositoryService.findById(repositoryId)!!
 
@@ -72,50 +61,60 @@ class ReportService(
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
 //      throw IllegalArgumentException() // obscured access denied
 //    }
-
-    val segmentation = SegmentationEntity()
-    segmentation.size = 200
-    segmentation.repositoryId = repositoryId.uuid
     val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
-    segmentation.timeSegmentStartingAt = startingAt
-    segment.what.latLng?.let {
-      it.near?.let {
-        segmentation.contentSegmentLatLon = it.point.toPoint()
-        segmentation.contentSegmentLatLonDistance = it.distanceKm
-      }
-    }
+
     val interval = when (segment.`when`.scheduled.interval) {
       IntervalUnit.MONTH -> ChronoUnit.MONTHS
       IntervalUnit.WEEK -> ChronoUnit.WEEKS
     }
-    segmentation.timeInterval = interval
-    segmentation.reportPlugin = segment.report.plugin.fromDto()
 
-    report.segmentId = segmentationService.saveSegmentation(segmentation).id
+    var segmentation = Segmentation(
+      size = 200,
+      repositoryId = repositoryId,
+      timeSegmentStartingAt = startingAt,
+      timeInterval = interval,
+      reportPlugin = segment.report.plugin.fromDto()
+    )
 
-    if (interval == ChronoUnit.MONTHS) {
-      report.nextReportedAt = startingAt.with(TemporalAdjusters.lastDayOfMonth())
+    segmentation = segment.what.latLng?.let {
+      it.near?.let {
+        segmentation.copy(
+          contentSegmentLatLon = LatLonPoint(it.point.lat, it.point.lng),
+          contentSegmentLatLonDistance = it.distanceKm
+        )
+      } ?: segmentation
+    } ?: segmentation
+
+    segmentationService.saveSegmentation(segmentation)
+
+
+    val nextReportedAt = if (interval == ChronoUnit.MONTHS) {
+      startingAt.with(TemporalAdjusters.lastDayOfMonth())
     } else {
-      report.nextReportedAt = startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+      startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
     }
-    report.recipientName = segment.recipient.email.name
-    report.recipientEmail = email
 
-    // send authorization mail
-    report.authorizationAttempt = 1
-    report.lastRequestedAuthorization = LocalDateTime.now()
+    val report = Report(
+      recipientName = segment.recipient.email.name,
+      recipientEmail = email,
+
+      // send authorization mail
+      authorizationAttempt = 1,
+      lastRequestedAuthorization = LocalDateTime.now(),
+      segmentId = segmentation.id,
+      nextReportedAt = nextReportedAt,
+      userId = currentUserId
+    )
 
     meterRegistry.counter(AppMetrics.createReport)
     sendAuthorizationMail(segment)
 
-    return context.getBean(ReportService::class.java).saveReport(report.toDomain())
+    return context.getBean(ReportService::class.java).saveReport(report)
   }
 
   @Transactional
   suspend fun saveReport(report: Report): Report {
-    return withContext(Dispatchers.IO) {
-      reportDAO.save(report.toEntity()).toDomain()
-    }
+    return reportRepository.save(report)
   }
 
   private suspend fun sendAuthorizationMail(segment: SegmentInput) {
@@ -124,19 +123,18 @@ class ReportService(
 
   @Transactional
   suspend fun deleteReport(reportId: ReportId, currentUser: User) {
-    withContext(Dispatchers.IO) {
-      reportDAO.deleteById(reportId.uuid)
-    }
+    reportRepository.deleteById(reportId)
   }
 
   @Transactional
   suspend fun updateReportById(reportId: ReportId, authorize: Boolean) {
-    withContext(Dispatchers.IO) {
-      reportDAO.findById(reportId.uuid).orElseThrow()?.let {
-        it.authorized = authorize
-        it.authorizedAt = LocalDateTime.now()
-        reportDAO.save(it)
-      }
+    reportRepository.findById(reportId)?.let {
+      reportRepository.save(
+        it.copy(
+          authorized = authorize,
+          authorizedAt = LocalDateTime.now()
+        )
+      )
     }
   }
 }

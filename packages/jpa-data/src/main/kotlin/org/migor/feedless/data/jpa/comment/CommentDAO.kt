@@ -1,4 +1,4 @@
-package org.migor.feedless.community
+package org.migor.feedless.data.jpa.comment
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles

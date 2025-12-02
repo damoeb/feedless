@@ -4,7 +4,7 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.SourceId
 import java.time.LocalDateTime
 
-data class RecordsFilter(
+data class DocumentsFilter(
   val id: StringFilter? = null,
   val repository: RepositoryId,
   val source: SourceUniqueWhere? = null,

@@ -56,7 +56,7 @@ class StatelessAuthService : AuthService() {
     TODO("ignore")
   }
 
-  override fun authenticateUser(email: String, secretKey: String): User {
+  override suspend fun authenticateUser(email: String, secretKey: String): User {
     return if (email == rootEmail && secretKey == rootSecretKey) {
       root
     } else {

@@ -10,6 +10,7 @@ import org.migor.feedless.community.text.complex.QualityScorer
 import org.migor.feedless.community.text.complex.QualityWeights
 import org.migor.feedless.community.text.complex.RelevanceScorer
 import org.migor.feedless.community.text.complex.RelevanceWeights
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service

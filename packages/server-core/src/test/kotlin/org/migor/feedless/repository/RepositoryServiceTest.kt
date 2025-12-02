@@ -16,6 +16,9 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
@@ -37,6 +40,7 @@ import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
+import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -48,7 +52,7 @@ import java.time.temporal.ChronoUnit
 
 class RepositoryServiceTest {
 
-  private lateinit var repositoryDAO: RepositoryRepository
+  private lateinit var repositoryRepository: RepositoryRepository
 
   private lateinit var sessionService: SessionService
 
@@ -62,33 +66,38 @@ class RepositoryServiceTest {
 
   @BeforeEach
   fun beforeEach() = runTest {
-    repositoryDAO = mock(RepositoryRepository::class.java)
+    userId = randomUserId()
+    repositoryRepository = mock(RepositoryRepository::class.java)
     sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     applicationContext = mock(ApplicationContext::class.java)
     sourceService = mock(SourceService::class.java)
 
+    val capabilityService = mock(CapabilityService::class.java)
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(userId)))
+
     repositoryService = RepositoryService(
 //      mock(UserDAO::class.java),
-      repositoryDAO,
+      repositoryRepository,
       sessionService,
       mock(UserService::class.java),
       planConstraintsService,
       mock(DocumentService::class.java),
       mock(PropertyService::class.java),
       sourceService,
-      applicationContext
+      applicationContext,
+      capabilityService
     )
     `when`(applicationContext.getBean(eq(RepositoryService::class.java))).thenReturn(repositoryService)
 
-    userId = randomUserId()
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(userId)
     `when`(sessionService.user()).thenReturn(user)
     `when`(sessionService.activeProductFromRequest()).thenReturn(Vertical.rssProxy.fromDto())
-    `when`(repositoryDAO.save(any2()))
+    `when`(repositoryRepository.save(any2()))
       .thenAnswer { it.getArgument(0) }
-    `when`(repositoryDAO.countByOwnerId(any(UserId::class.java)))
+    `when`(repositoryRepository.countByOwnerId(any(UserId::class.java)))
       .thenReturn(0)
   }
 
@@ -215,7 +224,7 @@ class RepositoryServiceTest {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       val mockInput = RepositoryUpdateDataInput()
       runTest(context = RequestContext(userId = userId)) {
-        `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
+        `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
           .thenReturn(mockRepository)
 
         repositoryService.updateRepository(repositoryId, mockInput)
@@ -238,7 +247,7 @@ class RepositoryServiceTest {
       ownerId = userId
     )
 
-    `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
+    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
       .thenReturn(mockRepository)
 
     // when
@@ -263,7 +272,7 @@ class RepositoryServiceTest {
       ownerId = userId
     )
 
-    `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
+    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
       .thenReturn(repositoryEntity)
 
     // when
@@ -288,7 +297,7 @@ class RepositoryServiceTest {
       ownerId = userId
     )
 
-    `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
+    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
       .thenReturn(repository)
 
     // when
@@ -307,7 +316,7 @@ class RepositoryServiceTest {
       ownerId = UserId()
     )
 
-    `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
+    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
       .thenReturn(mockRepository)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {

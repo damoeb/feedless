@@ -15,6 +15,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.data.jpa.userGroup.UserGroupAssignmentEntity
+import org.migor.feedless.group.Group
 import java.util.*
 
 @Entity
@@ -47,6 +48,10 @@ open class GroupEntity : EntityWithUUID() {
   open var memberships: MutableList<UserGroupAssignmentEntity> = mutableListOf()
 }
 
-fun GroupEntity.toDomain(): org.migor.feedless.group.Group {
-  return GroupMapper.Companion.INSTANCE.toDomain(this)
+fun GroupEntity.toDomain(): Group {
+  return GroupMapper.INSTANCE.toDomain(this)
+}
+
+fun Group.toEntity(): GroupEntity {
+  return GroupMapper.INSTANCE.toEntity(this)
 }

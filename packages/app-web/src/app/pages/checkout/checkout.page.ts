@@ -427,7 +427,7 @@ export class CheckoutPage implements OnInit, OnDestroy {
         invoiceRecipientEmail: this.formFg.value.email,
         targetGroup: GqlProductTargetGroup.Individual,
         paymentMethod: this.formFg.value.paymentMethod,
-        callbackUrl: this.activatedRoute.snapshot.queryParams.callbackUrl, // todo makes no sense
+        // callbackUrl: this.activatedRoute.snapshot.queryParams.callbackUrl, // todo makes no sense
         productId: this.productId,
         user: this.getUserInput(),
       });

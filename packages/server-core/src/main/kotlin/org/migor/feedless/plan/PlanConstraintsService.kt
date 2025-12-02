@@ -192,7 +192,7 @@ class PlanConstraintsService(
         }
 
         val featureGroupId = plan!!.product(productRepository)!!.featureGroupId
-        featureValueRepository.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)
+        featureValueRepository.resolveByFeatureGroupIdAndName(featureGroupId!!, featureName.name)
       }
     } catch (e: Exception) {
       log.error("getFeature featureName=$featureName userId=$userId product=$product failed: ${e.message}")

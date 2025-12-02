@@ -13,4 +13,7 @@ interface PlanRepository {
     products: List<Vertical>,
     date: LocalDateTime,
   ): Plan?
+
+  suspend fun save(plan: Plan): Plan
+  suspend fun findById(id: PlanId): Plan?
 }

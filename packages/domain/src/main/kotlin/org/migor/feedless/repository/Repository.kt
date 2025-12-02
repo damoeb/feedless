@@ -22,7 +22,7 @@ data class Repository(
   val retentionMaxAgeDaysReferenceField: MaxAgeDaysDateField = MaxAgeDaysDateField.createdAt,
   val lastUpdatedAt: LocalDateTime = LocalDateTime.now(),
   val disabledFrom: LocalDateTime?? = null,
-  val shareKey: String = UUID.randomUUID().toString(),
+  val shareKey: String = UUID.randomUUID().toString().substring(0, 9),
   val sunsetAfterTimestamp: LocalDateTime?? = null,
   val sunsetAfterTotalDocumentCount: Int?? = null,
   val documentCountSinceCreation: Int = 0,

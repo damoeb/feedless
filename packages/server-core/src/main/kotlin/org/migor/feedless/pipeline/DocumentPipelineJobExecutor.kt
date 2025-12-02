@@ -40,10 +40,13 @@ class DocumentPipelineJobExecutor internal constructor(
   fun processDocumentJobs() {
     try {
       val corrId = newCorrId()
-      val groupedDocuments = documentPipelineService.findAllPendingBatched(LocalDateTime.now())
-        .groupBy { it.documentId }
+      val groupedDocuments = runBlocking {
+        val grouped = documentPipelineService.findAllPendingBatched(LocalDateTime.now())
+          .groupBy { it.documentId }
 
-      documentPipelineService.incrementDocumentJobAttemptCount(groupedDocuments)
+        documentPipelineService.incrementDocumentJobAttemptCount(grouped)
+        grouped
+      }
 
       if (groupedDocuments.isNotEmpty()) {
         val semaphore = Semaphore(5)

@@ -22,9 +22,9 @@ import org.springframework.transaction.annotation.Transactional
 @Transactional(readOnly = true)
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
 class GroupService(
-  private val userGroupAssignmentDAO: UserGroupAssignmentRepository,
-  private val userDAO: UserRepository,
-  private val groupDAO: GroupRepository,
+  private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
+  private val userRepository: UserRepository,
+  private val groupRepository: GroupRepository,
   private val capabilityService: CapabilityService,
 ) {
 
@@ -49,7 +49,7 @@ class GroupService(
         role = role
       )
 
-      userGroupAssignmentDAO.save(newAssigment)
+      userGroupAssignmentRepository.save(newAssigment)
     }
   }
 
@@ -57,18 +57,18 @@ class GroupService(
   suspend fun removeUserFromGroup(user: User, group: Group) {
     assertCurrentUserHasPermissions(userId(), group)
 
-    val assigment = userGroupAssignmentDAO.findByUserIdAndGroupId(user.id, group.id)
+    val assigment = userGroupAssignmentRepository.findByUserIdAndGroupId(user.id, group.id)
       ?: throw IllegalArgumentException("assignment not found")
-    userGroupAssignmentDAO.delete(assigment)
+    userGroupAssignmentRepository.delete(assigment)
   }
 
   private suspend fun assertCurrentUserHasPermissions(currentUserId: UserId, group: Group) {
-    val isAdmin = userDAO.findById(currentUserId)!!.admin
+    val isAdmin = userRepository.findById(currentUserId)!!.admin
 
     if (!isAdmin) {
       val deniedException = PermissionDeniedException("")
       val currentUserPermissions =
-        userGroupAssignmentDAO.findByUserIdAndGroupId(currentUserId, group.id)
+        userGroupAssignmentRepository.findByUserIdAndGroupId(currentUserId, group.id)
           ?: throw deniedException
       if (RoleInGroup.owner != currentUserPermissions.role) {
         throw deniedException
@@ -78,11 +78,11 @@ class GroupService(
 
   @Transactional(readOnly = true)
   suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment> {
-    return userGroupAssignmentDAO.findAllByUserId(userId)
+    return userGroupAssignmentRepository.findAllByUserId(userId)
   }
 
   @Transactional(readOnly = true)
   suspend fun findById(groupId: GroupId): Group? {
-    return groupDAO.findById(groupId)
+    return groupRepository.findById(groupId)
   }
 }

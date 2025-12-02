@@ -14,12 +14,12 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
 import org.migor.feedless.data.jpa.harvest.HarvestEntity
 import org.migor.feedless.data.jpa.harvest.toDomain
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
@@ -35,6 +35,7 @@ import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
@@ -46,7 +47,6 @@ import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -135,7 +135,7 @@ class RepositoryHarvester(
     var sources: List<Source>
     var currentPage = 0
     do {
-      sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
+      sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageableRequest(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
       log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
@@ -452,13 +452,11 @@ class RepositoryHarvester(
         sourcePipelineService.saveAll(
           pageUrls
             .mapIndexed { index, url ->
-              run {
-                val e = SourcePipelineJobEntity()
-                e.sourceId = source.id.uuid
-                e.url = url
-                e.sequenceId = index
-                e
-              }
+              SourcePipelineJob(
+                sourceId = source.id,
+                url = url,
+                sequenceId = index
+              )
             })
       } else {
         log.debug("[$corrId] wont follow page urls")
@@ -581,7 +579,7 @@ class RepositoryHarvester(
     index: Int
   ): DocumentPipelineJob {
     return DocumentPipelineJob(
-      id = PipelineJobId(UUID.randomUUID()),
+      id = PipelineJobId(),
       sequenceId = index,
       documentId = document.id,
       pluginId = plugin.id,

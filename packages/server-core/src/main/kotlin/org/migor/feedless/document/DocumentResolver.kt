@@ -148,7 +148,7 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInputDto,
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
   ): List<RecordFrequency> = coroutineScope {
-    documentService.getRecordFrequency(where.toDomain(), groupBy)
+    documentService.getRecordFrequency(where.toDomain(), groupBy.toDomain()).map { it.toDto() }
   }
 
 
@@ -158,26 +158,41 @@ class DocumentResolver(
   ): List<RecordFrequency> = coroutineScope {
     val repository: Repository = dfe.getSourceOrThrow()
     documentService.getRecordFrequency(
-      RecordsFilter(
+      DocumentsFilter(
         repository = RepositoryId(repository.id),
         createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1))
       ),
-      RecordDateField.createdAt
-    )
+      DocumentDateField.createdAt
+    ).map { it.toDto() }
   }
 
 }
 
 
-private fun StringFilterInputDto.toDomain(): StringFilter {
+fun StringFilterInputDto.toDomain(): StringFilter {
   return StringFilter(
     eq = eq,
     `in` = `in`
   )
 }
 
-fun RecordsWhereInputDto.toDomain(): RecordsFilter {
-  return RecordsFilter(
+fun DocumentFrequency.toDto(): RecordFrequency {
+  return RecordFrequency(
+    count = count,
+    group = group,
+  )
+}
+
+fun RecordDateField.toDomain(): DocumentDateField {
+  return when (this) {
+    RecordDateField.createdAt -> DocumentDateField.createdAt
+    RecordDateField.publishedAt -> DocumentDateField.publishedAt
+    RecordDateField.startingAt -> DocumentDateField.startingAt
+  }
+}
+
+fun RecordsWhereInputDto.toDomain(): DocumentsFilter {
+  return DocumentsFilter(
     id = id?.toDomainStringFilter(),
     repository = repository.toDomain(),
     source = source?.toDomain(),
@@ -194,18 +209,18 @@ private fun RepositoryUniqueWhereInputDto.toDomain(): RepositoryId {
   return RepositoryId(id)
 }
 
-private fun org.migor.feedless.generated.types.SourceUniqueWhereInput.toDomain(): SourceUniqueWhere {
+fun org.migor.feedless.generated.types.SourceUniqueWhereInput.toDomain(): SourceUniqueWhere {
   return SourceUniqueWhere(id = SourceId(id))
 }
 
-private fun StringFilterInputDto.toDomainStringFilter(): org.migor.feedless.document.StringFilter {
+fun StringFilterInputDto.toDomainStringFilter(): org.migor.feedless.document.StringFilter {
   return org.migor.feedless.document.StringFilter(
     eq = eq,
     `in` = `in`
   )
 }
 
-private fun DatesWhereInputDto.toDomain(): DatesWhereInput {
+fun DatesWhereInputDto.toDomain(): DatesWhereInput {
   return DatesWhereInput(
     before = before?.toLocalDateTime(),
     after = after?.toLocalDateTime(),
@@ -213,28 +228,28 @@ private fun DatesWhereInputDto.toDomain(): DatesWhereInput {
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereInput.toDomain(): GeoPointWhereInput {
+fun org.migor.feedless.generated.types.GeoPointWhereInput.toDomain(): GeoPointWhereInput {
   return GeoPointWhereInput(
     near = near?.toDomain(),
     within = within?.toDomain()
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereNearInput.toDomain(): GeoPointWhereNearInput {
+fun org.migor.feedless.generated.types.GeoPointWhereNearInput.toDomain(): GeoPointWhereNearInput {
   return GeoPointWhereNearInput(
     point = point.toDomain(),
     distanceKm = distanceKm
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereWithinInput.toDomain(): GeoPointWhereWithinInput {
+fun org.migor.feedless.generated.types.GeoPointWhereWithinInput.toDomain(): GeoPointWhereWithinInput {
   return GeoPointWhereWithinInput(
     nw = nw.toDomain(),
     se = se.toDomain()
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointInput.toDomain(): GeoPointInput {
+fun org.migor.feedless.generated.types.GeoPointInput.toDomain(): GeoPointInput {
   return GeoPointInput(
     lat = lat,
     lng = lng
@@ -247,7 +262,7 @@ fun RecordOrderByInputDto.toDomain(): RecordOrderBy {
   )
 }
 
-private fun org.migor.feedless.generated.types.SortOrder.toDomain(): SortOrder {
+fun org.migor.feedless.generated.types.SortOrder.toDomain(): SortOrder {
   return when (this) {
     org.migor.feedless.generated.types.SortOrder.asc -> SortOrder.ASC
     else -> SortOrder.DESC

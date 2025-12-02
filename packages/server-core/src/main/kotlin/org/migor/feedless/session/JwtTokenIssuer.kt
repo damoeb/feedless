@@ -25,7 +25,6 @@ import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
-import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
@@ -65,7 +64,7 @@ class JwtTokenIssuer(
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
-        JwtParameterNames.CAPABILITIES to toAuthorities(listOf(UserCapability(UserId(UUID.randomUUID())))),
+        JwtParameterNames.CAPABILITIES to toAuthorities(listOf(UserCapability(UserId()))),
       ),
       getExpiration(AuthTokenType.ANONYMOUS)
     )

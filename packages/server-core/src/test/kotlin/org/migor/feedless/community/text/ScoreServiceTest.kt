@@ -13,7 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.any2
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.community.ScoreService
 import org.migor.feedless.community.ScoreWeights
@@ -41,73 +41,73 @@ import kotlin.math.pow
 @SpringBootTest
 @ActiveProfiles("test", AppProfiles.community, AppLayer.service)
 @MockitoBean(
-    types = [
-        UserSecretService::class,
-        LicenseService::class,
-        ProductService::class,
-        KotlinJdslJpqlExecutor::class,
-    ]
+  types = [
+    UserSecretService::class,
+    LicenseService::class,
+    ProductService::class,
+    KotlinJdslJpqlExecutor::class,
+  ]
 )
 @Tag("nlp")
 class ScoreServiceTest {
 
-    @Autowired
-    lateinit var scoreService: ScoreService
+  @Autowired
+  lateinit var scoreService: ScoreService
 
-    @Autowired
-    lateinit var engagementScorer: EngagementScorer
+  @Autowired
+  lateinit var engagementScorer: EngagementScorer
 
-    @Autowired
-    lateinit var relevanceScorer: RelevanceScorer
+  @Autowired
+  lateinit var relevanceScorer: RelevanceScorer
 
-    @MockitoBean
-    lateinit var spellingScorer: SpellingScorer
+  @MockitoBean
+  lateinit var spellingScorer: SpellingScorer
 
-    @BeforeEach
-    fun setUp() {
-    }
+  @BeforeEach
+  fun setUp() {
+  }
 
-    @Test
-    fun score() = runTest {
-        assertThat(scoreService).isNotNull
-        val comment = mock(CommentEntity::class.java)
-        Mockito.`when`(comment.text).thenReturn("Du erzählst nur scheisse")
+  @Test
+  fun score() = runTest {
+    assertThat(scoreService).isNotNull
+    val comment = mock(CommentEntity::class.java)
+    Mockito.`when`(comment.text).thenReturn("Du erzählst nur scheisse")
 
-        val neutral = 1.0
-        val weights = ScoreWeights(
-            civility = CivilityWeights(
-                sentiment = neutral,
-                attacks = neutral,
-                politeness = neutral
-            ),
-            quality = QualityWeights(
-                engagement = neutral,
-                citation = neutral,
-                vocabulary = neutral,
-                spelling = neutral,
-                wordCount = neutral,
-                ease = neutral,
-            ),
-            relevance = RelevanceWeights(
-                context = neutral,
-            ),
-            originality = OriginalityWeights(
-                duplicate = neutral,
-                novelty = neutral,
-                spam = neutral,
-                links = neutral,
-            )
-        )
+    val neutral = 1.0
+    val weights = ScoreWeights(
+      civility = CivilityWeights(
+        sentiment = neutral,
+        attacks = neutral,
+        politeness = neutral
+      ),
+      quality = QualityWeights(
+        engagement = neutral,
+        citation = neutral,
+        vocabulary = neutral,
+        spelling = neutral,
+        wordCount = neutral,
+        ease = neutral,
+      ),
+      relevance = RelevanceWeights(
+        context = neutral,
+      ),
+      originality = OriginalityWeights(
+        duplicate = neutral,
+        novelty = neutral,
+        spam = neutral,
+        links = neutral,
+      )
+    )
 
-        assertThat(scoreService.score(comment, weights)).isCloseTo(0.3, within(0.01))
-    }
+    assertThat(scoreService.score(comment, weights)).isCloseTo(0.3, within(0.01))
+  }
 
-    @Test
-    fun testEstimatePenalty() {
-        val expected = listOf(1, 2, 3, 4)
-        assertThat(estimatePenalty(listOf(1, 2, 3, 4), expected)).isEqualTo(0)
-        assertThat(estimatePenalty(listOf(1, 2, 4, 3), expected)).isEqualTo(-2)
-    }
+  @Test
+  fun testEstimatePenalty() {
+    val expected = listOf(1, 2, 3, 4)
+    assertThat(estimatePenalty(listOf(1, 2, 3, 4), expected)).isEqualTo(0)
+    assertThat(estimatePenalty(listOf(1, 2, 4, 3), expected)).isEqualTo(-2)
+  }
 
 
 //  @Test
@@ -176,88 +176,88 @@ class ScoreServiceTest {
 //    println("Selected: " + result + ". Sum: " + fitness(result, comments, true).toString())
 //  }
 
-    private suspend fun fitness(
-        result: Genotype<DoubleGene>,
-        commentsGroups: List<Map<Int, String>>,
-        log: Boolean = false
-    ): Int {
-        val chromosomes = result.chromosome().stream().toList()
+  private suspend fun fitness(
+    result: Genotype<DoubleGene>,
+    commentsGroups: List<Map<Int, String>>,
+    log: Boolean = false
+  ): Int {
+    val chromosomes = result.chromosome().stream().toList()
 
-        var i = 0
-        val inactive = 0.0
-        val weights = ScoreWeights(
-            civility = CivilityWeights(
-                sentiment = inactive,
-                attacks = inactive,
-                politeness = inactive
-            ),
-            quality = QualityWeights(
-                engagement = inactive,
-                citation = chromosomes[i++].allele(),
-                vocabulary = chromosomes[i++].allele(),
-                spelling = inactive,
-                wordCount = chromosomes[i++].allele(),
-                ease = chromosomes[i++].allele(),
-            ),
-            relevance = RelevanceWeights(
-                context = chromosomes[i++].allele(),
-            ),
-            originality = OriginalityWeights(
-                duplicate = chromosomes[i++].allele(),
-                novelty = chromosomes[i++].allele(),
-                spam = chromosomes[i++].allele(),
-                links = chromosomes[i].allele(),
-            )
-        )
+    var i = 0
+    val inactive = 0.0
+    val weights = ScoreWeights(
+      civility = CivilityWeights(
+        sentiment = inactive,
+        attacks = inactive,
+        politeness = inactive
+      ),
+      quality = QualityWeights(
+        engagement = inactive,
+        citation = chromosomes[i++].allele(),
+        vocabulary = chromosomes[i++].allele(),
+        spelling = inactive,
+        wordCount = chromosomes[i++].allele(),
+        ease = chromosomes[i++].allele(),
+      ),
+      relevance = RelevanceWeights(
+        context = chromosomes[i++].allele(),
+      ),
+      originality = OriginalityWeights(
+        duplicate = chromosomes[i++].allele(),
+        novelty = chromosomes[i++].allele(),
+        spam = chromosomes[i++].allele(),
+        links = chromosomes[i].allele(),
+      )
+    )
 
-        var sum = 0
-        for (comments in commentsGroups) {
-            val parent = mock(CommentEntity::class.java)
-            Mockito.`when`(parent.text).thenReturn(patchCommentValue(comments[0]!!))
-            val commentGraphService = mock(CommentGraphService::class.java)
-            Mockito.`when`(commentGraphService.getParent(any2())).thenReturn(parent)
-            Mockito.`when`(commentGraphService.getReplyCount(any2())).thenReturn(0)
+    var sum = 0
+    for (comments in commentsGroups) {
+      val parent = mock(CommentEntity::class.java)
+      Mockito.`when`(parent.text).thenReturn(patchCommentValue(comments[0]!!))
+      val commentGraphService = mock(CommentGraphService::class.java)
+      Mockito.`when`(commentGraphService.getParent(any2())).thenReturn(parent)
+      Mockito.`when`(commentGraphService.getReplyCount(any2())).thenReturn(0)
 //      engagementScorer.commentGraphService = commentGraphService
 //      relevanceScorer.commentGraphService = commentGraphService
 
-            sum += score(comments, weights, log)
-            TODO("implement")
+      sum += score(comments, weights, log)
+      TODO("implement")
+    }
+
+    println("$sum")
+
+    return sum
+  }
+
+  private fun patchCommentValue(v: String): String {
+    return v.replace("<p>", "\n").replace("&#62;", ">")
+  }
+
+  private suspend fun score(
+    comments: Map<Int, String>,
+    weights: ScoreWeights,
+    log: Boolean
+  ): Int {
+    val order = comments.filterKeys { it != 0 }
+      .map {
+        val comment = mock(CommentEntity::class.java)
+        Mockito.`when`(comment.text).thenReturn(it.value)
+
+        scoreService.score(comment, weights)
+      }
+
+    return estimatePenalty(order, order.sorted(), log)
+  }
+
+  private fun <T> estimatePenalty(actual: List<T>, expected: List<T>, log: Boolean = false): Int {
+    return expected.mapIndexed { index, score ->
+      run {
+        val penalty = (actual.indexOf(score) - index).toDouble().pow(2.0).toInt()
+        if (log) {
+          println("actual $index expected ${actual.indexOf(score)} -> $penalty")
         }
-
-        println("$sum")
-
-        return sum
-    }
-
-    private fun patchCommentValue(v: String): String {
-        return v.replace("<p>", "\n").replace("&#62;", ">")
-    }
-
-    private suspend fun score(
-        comments: Map<Int, String>,
-        weights: ScoreWeights,
-        log: Boolean
-    ): Int {
-        val order = comments.filterKeys { it != 0 }
-            .map {
-                val comment = mock(CommentEntity::class.java)
-                Mockito.`when`(comment.text).thenReturn(it.value)
-
-                scoreService.score(comment, weights)
-            }
-
-        return estimatePenalty(order, order.sorted(), log)
-    }
-
-    private fun <T> estimatePenalty(actual: List<T>, expected: List<T>, log: Boolean = false): Int {
-        return expected.mapIndexed { index, score ->
-            run {
-                val penalty = (actual.indexOf(score) - index).toDouble().pow(2.0).toInt()
-                if (log) {
-                    println("actual $index expected ${actual.indexOf(score)} -> $penalty")
-                }
-                -penalty
-            }
-        }.sum()
-    }
+        -penalty
+      }
+    }.sum()
+  }
 }

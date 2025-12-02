@@ -1,4 +1,4 @@
-package org.migor.feedless.community
+package org.migor.feedless.data.jpa.comment
 
 import jakarta.persistence.Column
 import jakarta.persistence.DiscriminatorValue

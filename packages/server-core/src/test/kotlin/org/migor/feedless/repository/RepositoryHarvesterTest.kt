@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
@@ -17,8 +18,6 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
 import org.migor.feedless.argThat
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentService
@@ -34,6 +33,7 @@ import org.migor.feedless.pipeline.DocumentPipelineService
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
@@ -51,10 +51,8 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
-import org.springframework.data.domain.Pageable
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -112,7 +110,7 @@ class RepositoryHarvesterTest {
     `when`(repository.plugins).thenReturn(emptyList())
 
     `when`(sourceService.findAllByRepositoryIdFiltered(any2(), any2(), eq(null), eq(null))).thenAnswer {
-      if ((it.arguments[1] as Pageable).pageNumber == 0) {
+      if ((it.arguments[1] as PageableRequest).pageNumber == 0) {
         mutableListOf(source)
       } else {
         emptyList()
@@ -467,8 +465,8 @@ class RepositoryHarvesterTest {
   fun `released documents will trigger post release effects`() =
     runTest(context = RequestContext(userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(emptyList())
-      val newDocument = mock(DocumentEntity::class.java)
-      `when`(newDocument.id).thenReturn(UUID.randomUUID())
+      val newDocument = mock(Document::class.java)
+      `when`(newDocument.id).thenReturn(DocumentId())
 
       `when`(
         documentService.saveAll(any2())
@@ -559,7 +557,7 @@ class RepositoryHarvesterTest {
 //    TODO        verify(existing).title = "updated.title"
 //            verify(existing).text = "updated.text"
 //            verify(existing).startingAt = updatedStartingAt
-//            verify(documentService).saveAll(argThat<List<DocumentEntity>> {
+//            verify(documentService).saveAll(argThat<List<Document>> {
 //                it.count() == 1 && it.first() == existing
 //            })
     }
@@ -618,7 +616,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(repositoryId)
 
-    verify(sourcePipelineService).saveAll(argThat<List<SourcePipelineJobEntity>> { it.count() == 1 })
+    verify(sourcePipelineService).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
   }
 
   private fun newJsonItem(

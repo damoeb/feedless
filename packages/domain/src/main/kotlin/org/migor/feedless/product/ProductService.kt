@@ -6,14 +6,14 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 
 interface ProductService {
-    suspend fun resolvePriceForProduct(productId: ProductId, userId: UserId?): Double
-    suspend fun enableDefaultSaasProduct(vertical: Vertical, id: UserId)
-    suspend fun enableSaasProduct(
-        product: Product,
-        user: User,
-        order: Order? = null
-    )
+  suspend fun resolvePriceForProduct(productId: ProductId, userId: UserId?): Double
+  suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId)
+  suspend fun enableSaasProduct(
+    product: Product,
+    user: User,
+    order: Order? = null
+  )
 
-    suspend fun findAllByProductId(productId: ProductId): List<PricedProduct>
-    suspend fun findById(productId: ProductId): Product?
+  suspend fun findAllByProductId(productId: ProductId): List<PricedProduct>
+  suspend fun findById(productId: ProductId): Product?
 }

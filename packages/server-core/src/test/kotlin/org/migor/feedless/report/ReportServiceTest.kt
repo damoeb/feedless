@@ -11,9 +11,6 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
-import org.migor.feedless.data.jpa.report.ReportDAO
-import org.migor.feedless.data.jpa.report.ReportEntity
-import org.migor.feedless.data.jpa.report.SegmentationEntity
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
@@ -40,7 +37,7 @@ import org.springframework.context.ApplicationContext
 class ReportServiceTest {
 
   private lateinit var reportService: ReportService
-  private lateinit var reportDAO: ReportDAO
+  private lateinit var reportRepository: ReportRepository
   private lateinit var repositoryService: RepositoryService
   private lateinit var userService: UserService
   private lateinit var segmentationService: SegmentationService
@@ -54,7 +51,7 @@ class ReportServiceTest {
   @BeforeEach
   fun setUp() = runTest {
     repositoryId = randomRepositoryId()
-    reportDAO = mock(ReportDAO::class.java)
+    reportRepository = mock(ReportRepository::class.java)
     repositoryService = mock(RepositoryService::class.java)
     userService = mock(UserService::class.java)
     segmentationService = mock(SegmentationService::class.java)
@@ -62,7 +59,7 @@ class ReportServiceTest {
     user = mock(User::class.java)
 
     reportService = ReportService(
-      reportDAO,
+      reportRepository,
       repositoryService,
       userService,
       segmentationService,
@@ -70,8 +67,8 @@ class ReportServiceTest {
       context
     )
 
-    `when`(segmentationService.saveSegmentation(any(SegmentationEntity::class.java))).thenAnswer { it.arguments[0] }
-    `when`(reportDAO.save(any(ReportEntity::class.java))).thenAnswer { it.arguments[0] }
+    `when`(segmentationService.saveSegmentation(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
+    `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
     `when`(context.getBean(eq(ReportService::class.java))).thenReturn(reportService)
 
     repository = mock(Repository::class.java)
@@ -114,7 +111,7 @@ class ReportServiceTest {
 
     // then
     assertThat(report).isNotNull
-    verify(reportDAO).save(any(ReportEntity::class.java))
+    verify(reportRepository).save(any(Report::class.java))
   }
 
   @Test
@@ -139,7 +136,7 @@ class ReportServiceTest {
 
     // then
     assertThat(report).isNotNull
-    verify(reportDAO).save(any(ReportEntity::class.java))
+    verify(reportRepository).save(any(Report::class.java))
   }
 
   @Test

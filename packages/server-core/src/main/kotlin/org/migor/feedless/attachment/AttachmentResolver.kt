@@ -19,7 +19,6 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
 import org.migor.feedless.generated.types.Attachment as AttachmentDto
 
 
@@ -60,7 +59,7 @@ class AttachmentResolver(
 
 private fun CreateAttachmentFieldsInput.toDomain(file: MultipartFile): Attachment {
   return Attachment(
-    id = AttachmentId(UUID.randomUUID()),
+    id = AttachmentId(),
     name = name.ifBlank { file.originalFilename ?: "unknown" },
     hasData = true,
     remoteDataUrl = null,

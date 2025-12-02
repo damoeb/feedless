@@ -10,6 +10,7 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.throttle.Throttled
@@ -17,6 +18,8 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.document.toDomain
+import org.migor.feedless.document.toDomainStringFilter
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
@@ -29,7 +32,9 @@ import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
 import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.SourceOrderBy
 import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -168,7 +173,12 @@ class RepositoryResolver(
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
-        sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), pageable, where, order)
+        sourceService.findAllByRepositoryIdFiltered(
+          RepositoryId(repository.id),
+          pageable.toPageableRequest(),
+          where?.toDomain(),
+          order?.map { it.toDomain() }
+        )
           .toList()
           .map { it.toDto() }
       }
@@ -216,11 +226,28 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageRequest.of(0, 10))
+    sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageableRequest(0, 10))
       .mapNotNull { it.tags?.asList() }
       .flatten()
       .distinct()
   }
+}
+
+fun SourceOrderByInput.toDomain(): SourceOrderBy {
+  return SourceOrderBy(
+    title = title?.toDomain(),
+    lastRecordsRetrieved = lastRecordsRetrieved?.toDomain(),
+    lastRefreshedAt = lastRefreshedAt?.toDomain()
+  )
+}
+
+fun SourcesWhereInput.toDomain(): SourcesFilter {
+  return SourcesFilter(
+    id = id?.toDomainStringFilter(),
+    latLng = latLng?.toDomain(),
+    like = like,
+    disabled = disabled,
+  )
 }
 
 fun org.migor.feedless.generated.types.RepositoriesWhereInput.toDomain(): RepositoriesFilter {

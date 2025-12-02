@@ -12,6 +12,9 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentService
 import org.migor.feedless.eq
@@ -28,12 +31,11 @@ import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceService
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserService
-import org.mockito.ArgumentCaptor
+import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -45,7 +47,7 @@ import java.time.LocalDateTime
 class RepositoryUpdateTest {
 
   private lateinit var repositoryService: RepositoryService
-  private lateinit var repositoryDAO: RepositoryRepository
+  private lateinit var repositoryRepository: RepositoryRepository
   private lateinit var sessionService: SessionService
   private lateinit var planConstraintsService: PlanConstraintsService
   private lateinit var repositoryId: RepositoryId
@@ -54,20 +56,24 @@ class RepositoryUpdateTest {
   private lateinit var data: RepositoryUpdateDataInput
   private lateinit var applicationContext: ApplicationContext
   private lateinit var sourceService: SourceService
+  private lateinit var capabilityService: CapabilityService
   private val currentUserId = randomUserId()
 
   @BeforeEach
   fun setUp() {
-    repositoryDAO = mock(RepositoryRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
     sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     applicationContext = mock(ApplicationContext::class.java)
     sourceService = mock(SourceService::class.java)
+    capabilityService = mock(CapabilityService::class.java)
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
 
     repositoryService = spy(
       RepositoryService(
 //      mock(UserDAO::class.java),
-        repositoryDAO,
+        repositoryRepository,
         sessionService,
         mock(UserService::class.java),
         planConstraintsService,
@@ -75,6 +81,7 @@ class RepositoryUpdateTest {
         mock(PropertyService::class.java),
         sourceService,
         applicationContext,
+        capabilityService
       )
     )
 
@@ -117,7 +124,8 @@ class RepositoryUpdateTest {
   @Test
   fun `given repo does not exists, update will fail`() {
     assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+      runTest {
+        mockCurrentUser(currentUserId)
         repositoryService.updateRepository(repositoryId, data)
       }
     }
@@ -126,52 +134,60 @@ class RepositoryUpdateTest {
   @Test
   fun `given current user has insuffieient priveleges, update will fail`() {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = randomUserId())) {
-        `when`(repositoryDAO.findById(any2())).thenReturn(repository)
+      runTest {
+        mockCurrentUser(randomUserId())
+        `when`(repositoryRepository.findById(any2())).thenReturn(repository)
         repositoryService.updateRepository(repositoryId, data)
       }
     }
   }
 
   @Test
-  fun `given all requirements are met, repository data will be updated`() =
-    runTest(context = RequestContext(userId = ownerId)) {
-      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
-        it.arguments[0]
-      }
-      `when`(
-        planConstraintsService.coerceMinScheduledNextAt(
-          any2(),
-          any2(),
-          any2(),
-          any2(),
-        )
-      ).thenReturn(LocalDateTime.now())
-      `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
-        it.arguments[0] ?: EntityVisibility.isPrivate
-      }
-      mockActiveProductFromRequest()
-      `when`(repositoryDAO.findById(any2())).thenReturn(repository)
-      
-      var savedRepo: Repository? = null
-      `when`(repositoryDAO.save(any2())).thenAnswer {
-        savedRepo = it.arguments[0] as Repository
-        savedRepo
-      }
+  fun `given all requirements are met, repository data will be updated`() = runTest {
+    mockCurrentUser(ownerId)
 
-      repositoryService.updateRepository(repositoryId, data)
+    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
+      it.arguments[0]
+    }
+    `when`(
+      planConstraintsService.coerceMinScheduledNextAt(
+        any2(),
+        any2(),
+        any2(),
+        any2(),
+      )
+    ).thenReturn(LocalDateTime.now())
+    `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
+      it.arguments[0] ?: EntityVisibility.isPrivate
+    }
+    mockActiveProductFromRequest()
+    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
 
-      // Verify the repository was saved with updated values
-      assertThat(savedRepo).isNotNull
-      assertThat(savedRepo!!.title).isEqualTo("new-title")
-      assertThat(savedRepo!!.description).isEqualTo("new-description")
-      assertThat(savedRepo!!.sourcesSyncCron).isEqualTo("* * * * * *")
+    var savedRepo: Repository? = null
+    `when`(repositoryRepository.save(any2())).thenAnswer {
+      savedRepo = it.arguments[0] as Repository
+      savedRepo
     }
 
+    repositoryService.updateRepository(repositoryId, data)
+
+    // Verify the repository was saved with updated values
+    assertThat(savedRepo).isNotNull
+    assertThat(savedRepo!!.title).isEqualTo("new-title")
+    assertThat(savedRepo.description).isEqualTo("new-description")
+    assertThat(savedRepo.sourcesSyncCron).isEqualTo("* * * * * *")
+  }
+
+  private fun mockCurrentUser(currentUserId: UserId) {
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
+  }
+
   @Test
-  fun `given a valid update request, sources can be added`() = runTest(context = RequestContext(userId = ownerId)) {
+  fun `given a valid update request, sources can be added`() = runTest {
     // given
-    `when`(repositoryDAO.findById(any2())).thenReturn(repository)
+    mockCurrentUser(ownerId)
+    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
     `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
     `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
       it.arguments[0] ?: EntityVisibility.isPrivate
@@ -195,9 +211,10 @@ class RepositoryUpdateTest {
   }
 
   @Test
-  fun `given a valid update request, sources can be updated`() = runTest(context = RequestContext(userId = ownerId)) {
+  fun `given a valid update request, sources can be updated`() = runTest {
     // given
-    `when`(repositoryDAO.findById(any2())).thenReturn(repository)
+    mockCurrentUser(ownerId)
+    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
     `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
     `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
       it.arguments[0] ?: EntityVisibility.isPrivate
@@ -221,9 +238,10 @@ class RepositoryUpdateTest {
   }
 
   @Test
-  fun `given a valid update request, sources can be removed`() = runTest(context = RequestContext(userId = ownerId)) {
+  fun `given a valid update request, sources can be removed`() = runTest {
     // given
-    `when`(repositoryDAO.findById(any2())).thenReturn(repository)
+    mockCurrentUser(ownerId)
+    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
     `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
     `when`(planConstraintsService.coerceVisibility(any2())).thenAnswer {
       it.arguments[0] ?: EntityVisibility.isPrivate
@@ -247,7 +265,7 @@ class RepositoryUpdateTest {
   }
 
   private suspend fun mockRepositorySave() {
-    `when`(repositoryDAO.save(any2())).thenAnswer { it.arguments[0] }
+    `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
 
   private suspend fun mockActiveProductFromRequest() {

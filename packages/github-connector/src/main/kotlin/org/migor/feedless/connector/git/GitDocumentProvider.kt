@@ -8,8 +8,8 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentProvider
+import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
-import org.migor.feedless.document.RecordsFilter
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.SortOrder
 import org.slf4j.LoggerFactory
@@ -51,7 +51,7 @@ class GitDocumentProvider : DocumentProvider {
   override suspend fun provideAll(
     capability: UnresolvedCapability,
     pageable: PageableRequest,
-    filter: RecordsFilter,
+    filter: DocumentsFilter,
     order: RecordOrderBy
   ): List<Document> {
     log.debug("Providing documents from git repository")
@@ -178,7 +178,7 @@ class GitDocumentProvider : DocumentProvider {
     return extension == "html" || extension == "htm"
   }
 
-  private fun applyFilters(documents: List<Document>, filter: RecordsFilter): List<Document> {
+  private fun applyFilters(documents: List<Document>, filter: DocumentsFilter): List<Document> {
     var result = documents
 
     // Filter by ID

@@ -17,6 +17,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.data.jpa.product.ProductEntity
+import org.migor.feedless.feature.FeatureGroup
 import java.util.*
 
 enum class PlanName {
@@ -61,6 +62,10 @@ open class FeatureGroupEntity : EntityWithUUID() {
   open var products: MutableList<ProductEntity> = mutableListOf()
 }
 
-fun FeatureGroupEntity.toDomain(): org.migor.feedless.feature.FeatureGroup {
-  return FeatureGroupMapper.Companion.INSTANCE.toDomain(this)
+fun FeatureGroupEntity.toDomain(): FeatureGroup {
+  return FeatureGroupMapper.INSTANCE.toDomain(this)
+}
+
+fun FeatureGroup.toEntity(): FeatureGroupEntity {
+  return FeatureGroupMapper.INSTANCE.toEntity(this)
 }
