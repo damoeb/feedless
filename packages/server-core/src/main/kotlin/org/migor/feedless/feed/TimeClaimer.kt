@@ -3,15 +3,11 @@ package org.migor.feedless.feed
 import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalTime
 import java.time.format.DateTimeFormatter
-import java.util.*
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class TimeClaimer {
 
   private val log = LoggerFactory.getLogger(TimeClaimer::class.simpleName)
@@ -68,6 +64,6 @@ class TimeClaimer {
       .sortedByDescending { it.second.length }
       .mapTo(ArrayList()) { (regex, timeFormat) ->
         Pair(timeFormat, regex.findAll(value).map { it.groups[0] }.filterNotNull().toList())
-  }.filter { it.second.isNotEmpty() }
+      }.filter { it.second.isNotEmpty() }
   }
 }

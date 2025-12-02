@@ -1,56 +1,42 @@
 package org.migor.feedless.plan
 
-import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.Vertical
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.feature.FeatureGroupRepository
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueRepository
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.product.ProductRepository
-import org.migor.feedless.product.ProductService
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.RequestContext
-import org.migor.feedless.user.UserId
-import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import kotlin.coroutines.coroutineContext
 
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-@Transactional(propagation = Propagation.NEVER)
 class PlanConstraintsService(
   private val planRepository: PlanRepository,
   private val environment: Environment,
   private val repositoryRepository: RepositoryRepository,
   private val featureValueRepository: FeatureValueRepository,
-  private val productService: ProductService,
   private val productRepository: ProductRepository,
   private val featureGroupRepository: FeatureGroupRepository,
-  private val capabilityService: CapabilityService
 ) {
 
   private val log = LoggerFactory.getLogger(PlanConstraintsService::class.simpleName)
 
-  @Transactional(readOnly = true)
-  suspend fun coerceRetentionMaxCapacity(customMaxItems: Int?, userId: UserId, product: Vertical): Int? {
+  fun coerceRetentionMaxCapacity(customMaxItems: Int?, groupId: GroupId): Int? {
     val minItems =
-      (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, userId, product) ?: 0).coerceAtLeast(2).toInt()
-    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, userId, product)?.toInt()
+      (getFeatureInt(FeatureName.repositoryCapacityLowerLimitInt, groupId) ?: 0).coerceAtLeast(2).toInt()
+    val maxItems = getFeatureInt(FeatureName.repositoryCapacityUpperLimitInt, groupId)?.toInt()
     return customMaxItems?.let {
       maxItems?.let {
         customMaxItems.coerceAtLeast(minItems)
@@ -59,15 +45,13 @@ class PlanConstraintsService(
     } ?: maxItems
   }
 
-  @Transactional(readOnly = true)
-  suspend fun coerceMinScheduledNextAt(
+  fun coerceMinScheduledNextAt(
     lastDate: LocalDateTime,
     nextDate: LocalDateTime,
-    userId: UserId,
-    product: Vertical
+    groupId: GroupId,
   ): LocalDateTime {
     val minRefreshRateInMinutes =
-      (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, userId, product) ?: 0).coerceAtLeast(1)
+      (getFeatureInt(FeatureName.refreshRateInMinutesLowerLimitInt, groupId) ?: 0).coerceAtLeast(1)
     val minNextDate = lastDate.plus(minRefreshRateInMinutes, ChronoUnit.MINUTES)
 
     return if (nextDate < minNextDate) {
@@ -77,9 +61,8 @@ class PlanConstraintsService(
     }
   }
 
-  @Transactional(readOnly = true)
-  suspend fun coerceRetentionMaxAgeDays(maxAge: Int?, ownerId: UserId, product: Vertical): Int? {
-    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, ownerId, product)?.toInt()
+  fun coerceRetentionMaxAgeDays(maxAge: Int?, groupId: GroupId): Int? {
+    val minItems = getFeatureInt(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, groupId)?.toInt()
     return minItems?.let { maxAge?.coerceAtLeast(minItems) }
   }
 
@@ -89,85 +72,74 @@ class PlanConstraintsService(
     return cronString
   }
 
-  private fun userId(): UserId {
-    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }!!
-  }
-
-  @Transactional(readOnly = true)
-  suspend fun coerceVisibility(visibility: EntityVisibility?): EntityVisibility {
+  fun coerceVisibility(groupId: GroupId, visibility: EntityVisibility?): EntityVisibility {
 
     val canPublic = getFeatureBool(
       FeatureName.publicRepositoryBool,
-      userId()
+      groupId
     ) ?: false
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate
     } else {
       if (visibility !== EntityVisibility.isPublic) {
-        log.info("[${coroutineContext.corrId()}] overwrite visibility to $visibility")
+        log.info("overwrite visibility to $visibility")
       }
       EntityVisibility.isPrivate
     }
   }
 
-  @Transactional(readOnly = true)
-  suspend fun auditScrapeRequestMaxActions(actionsCount: Int?, userId: UserId) {
+  fun auditScrapeRequestMaxActions(actionsCount: Int?, groupId: GroupId) {
     actionsCount
       ?.let {
-        val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, userId)
+        val maxActions = getFeatureInt(FeatureName.scrapeRequestActionMaxCountInt, groupId)
         if (maxActions != null && maxActions < actionsCount) {
           throw IllegalArgumentException("Too many actions (limit $maxActions, actual $actionsCount")
         }
       }
   }
 
-  @Transactional(readOnly = true)
-  suspend fun auditScrapeRequestTimeout(timeout: Int?, userId: UserId) {
+  fun auditScrapeRequestTimeout(timeout: Int?, groupId: GroupId) {
     timeout
       ?.let {
-        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutMsecInt, userId)
+        val maxTimeout = getFeatureInt(FeatureName.scrapeRequestTimeoutMsecInt, groupId)
         if (maxTimeout != null && maxTimeout < it) {
           throw IllegalArgumentException("Timeout exceedes limit (limit $maxTimeout, actual $it")
         }
       }
   }
 
-  @Transactional(readOnly = true)
-  suspend fun auditRepositoryMaxCount(count: Int, userId: UserId) {
-    val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, userId)
+  fun auditRepositoryMaxCount(count: Int, groupId: GroupId) {
+    val maxRepoCount = getFeatureInt(FeatureName.repositoriesMaxCountTotalInt, groupId)
     if (maxRepoCount != null && maxRepoCount < count) {
       throw IllegalArgumentException("Too many repository (limit $maxRepoCount, actual $count")
     }
   }
 
-  @Transactional(readOnly = true)
-  suspend fun violatesRepositoriesMaxActiveCount(userId: UserId): Boolean {
-    val activeCount = repositoryRepository.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId, "")
-    return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, userId)?.let { it <= activeCount } ?: false
+  fun violatesRepositoriesMaxActiveCount(groupId: GroupId): Boolean {
+    val activeCount = repositoryRepository.countByGroupIdAndArchivedIsFalseAndSourcesSyncCronIsNot(groupId, "")
+    return getFeatureInt(FeatureName.repositoriesMaxCountActiveInt, groupId)?.let { it <= activeCount } ?: false
   }
 
-  @Transactional(readOnly = true)
-  suspend fun auditSourcesMaxCountPerRepository(count: Int, userId: UserId, product: Vertical) {
-    val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, userId, product)
+  fun auditSourcesMaxCountPerRepository(count: Int, groupId: GroupId) {
+    val maxRequests = getFeatureInt(FeatureName.sourceMaxCountPerRepositoryInt, groupId)
     if (maxRequests != null && maxRequests < count) {
+
       throw IllegalArgumentException("Too many requests in source (limit $maxRequests, actual $count)")
     }
   }
 
-  private suspend fun getFeatureInt(featureName: FeatureName, userId: UserId, product: Vertical? = null): Long? =
-    getFeature(featureName, userId, resolveProduct(product))?.valueInt
+  private fun getFeatureInt(featureName: FeatureName, groupId: GroupId): Long? =
+    getFeature(featureName, groupId)?.valueInt
 
-  private suspend fun getFeatureBool(
+  private fun getFeatureBool(
     featureName: FeatureName,
-    userId: UserId,
-    product: Vertical? = null
+    groupId: GroupId,
   ): Boolean? =
-    getFeature(featureName, userId, resolveProduct(product))?.valueBoolean
+    getFeature(featureName, groupId)?.valueBoolean
 
-  private suspend fun getFeature(
+  private fun getFeature(
     featureName: FeatureName,
-    userId: UserId,
-    product: Vertical
+    groupId: GroupId,
   ): FeatureValue? {
     return try {
       if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
@@ -176,32 +148,24 @@ class PlanConstraintsService(
           featureName.name
         )
       } else {
-        var plan =
-          planRepository.findActiveByUserAndProductIn(
-            userId,
-            listOf(product, Vertical.feedless),
-            LocalDateTime.now()
-          )
-        if (plan == null) {
-          productService.enableDefaultSaasProduct(product, userId)
-          plan = planRepository.findActiveByUserAndProductIn(
-            userId,
-            listOf(product, Vertical.feedless),
-            LocalDateTime.now()
-          )
-        }
+        val featureGroup = featureGroupRepository.findByGroupId(groupId)!!
+//        if (plan == null) {
+//          runBlocking {
+//            productService.enableDefaultSaasProduct(product, planId)
+//          }
+//          plan = planRepository.findActiveByUserAndProductIn(
+//            planId,
+//            listOf(product, Vertical.feedless),
+//            LocalDateTime.now()
+//          )!!
+//        }
 
-        val featureGroupId = plan!!.product(productRepository)!!.featureGroupId
-        featureValueRepository.resolveByFeatureGroupIdAndName(featureGroupId, featureName.name)
+        featureValueRepository.resolveByFeatureGroupIdAndName(featureGroup.id, featureName.name)
       }
     } catch (e: Exception) {
-      log.error("getFeature featureName=$featureName userId=$userId product=$product failed: ${e.message}")
+      log.error("getFeature featureName=$featureName planId=$groupId failed: ${e.message}")
       null
     }
-  }
-
-  private suspend fun resolveProduct(product: Vertical?): Vertical {
-    return product ?: currentCoroutineContext()[RequestContext]?.product!!
   }
 }
 

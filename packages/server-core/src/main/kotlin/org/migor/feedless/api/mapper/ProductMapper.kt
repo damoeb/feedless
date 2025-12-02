@@ -10,31 +10,31 @@ import org.migor.feedless.generated.types.RecurringPaymentInterval as RecurringP
 
 
 fun Product.toDto(): ProductDto = ProductDto(
-    id = id.uuid.toString(),
-    name = name,
-    description = description,
-    isCloud = saas,
-    individual = selfHostingIndividual,
-    enterprise = selfHostingEnterprise,
-    other = selfHostingOther,
-    partOf = partOf?.toDto(),
-    featureGroupId = featureGroupId.uuid.toString(),
-    prices = emptyList(),
+  id = id.uuid.toString(),
+  name = name,
+  description = description,
+  isCloud = saas,
+  individual = selfHostingIndividual,
+  enterprise = selfHostingEnterprise,
+  other = selfHostingOther,
+  partOf = partOf?.toDto(),
+  featureGroupId = featureGroupId?.uuid.toString(),
+  prices = emptyList(),
 )
 
 
 fun PricedProduct.toDto(): PricedProductDto = PricedProductDto(
-    id = id.uuid.toString(),
-    description = "",
-    inStock = inStock ?: 0,
-    recurringInterval = recurringInterval.toDto(),
-    price = price
+  id = id.uuid.toString(),
+  description = "",
+  inStock = inStock ?: 0,
+  recurringInterval = recurringInterval.toDto(),
+  price = price
 )
 
 private fun ChronoUnit.toDto(): RecurringPaymentIntervalDto {
-    return when (this) {
-        ChronoUnit.YEARS -> RecurringPaymentIntervalDto.yearly
-        ChronoUnit.MONTHS -> RecurringPaymentIntervalDto.monthly
-        else -> throw IllegalArgumentException("Invalid RecurringPaymentInterval: $this")
-    }
+  return when (this) {
+    ChronoUnit.YEARS -> RecurringPaymentIntervalDto.yearly
+    ChronoUnit.MONTHS -> RecurringPaymentIntervalDto.monthly
+    else -> throw IllegalArgumentException("Invalid RecurringPaymentInterval: $this")
+  }
 }

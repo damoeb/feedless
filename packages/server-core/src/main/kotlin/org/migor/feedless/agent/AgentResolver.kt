@@ -6,29 +6,25 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.SubmitAgentDataInput
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.toMillis
-import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.migor.feedless.generated.types.Agent as AgentDto
-import org.migor.feedless.generated.types.AgentEvent as AgentEventDto
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.api}")
 class AgentResolver(
   private val agentService: AgentService,
@@ -38,13 +34,9 @@ class AgentResolver(
   private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
 
   @DgsSubscription
-  fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEventDto> {
+  suspend fun registerAgent(@InputArgument data: RegisterAgentInput): Channel<AgentEvent> = coroutineScope {
     log.info("registerAgent ${data.secretKey.email}")
-    return runBlocking {
-      coroutineScope {
-        data.secretKey.let { agentService.registerAgent(data) }
-      }
-    }
+    data.secretKey.let { agentService.registerAgent(data) }
   }
 
   @Throttled

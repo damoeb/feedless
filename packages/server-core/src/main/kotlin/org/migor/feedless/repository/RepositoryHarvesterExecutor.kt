@@ -14,16 +14,13 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
 class RepositoryHarvesterExecutor internal constructor(
   private val repositoryHarvester: RepositoryHarvester,
-  private val repositoryService: RepositoryService
+  private val repositoryRepository: RepositoryRepository
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvesterExecutor::class.simpleName)
@@ -33,7 +30,10 @@ class RepositoryHarvesterExecutor internal constructor(
     try {
       val corrId = newCorrId()
       val reposDue = runBlocking {
-        repositoryService.findAllWhereNextHarvestIsDue(LocalDateTime.now(), PageRequest.ofSize(50))
+        repositoryRepository.findAllWhereNextHarvestIsDue(
+          LocalDateTime.now(),
+          PageRequest.ofSize(50).toPageableRequest()
+        )
       }
 
       log.debug("[$corrId] batch refresh with ${reposDue.size} repos")

@@ -1,6 +1,8 @@
 package org.migor.feedless.feed
 
 import com.google.gson.Gson
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.time.DateUtils
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
@@ -14,7 +16,8 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -36,7 +39,7 @@ import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil
@@ -48,8 +51,6 @@ import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -61,7 +62,6 @@ typealias ShipFeedItems = Boolean;
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.feed} & ${AppLayer.service}")
 class FeedService(
   private val propertyService: PropertyService,
@@ -69,24 +69,25 @@ class FeedService(
   private val feedParserService: FeedParserService,
   private val scrapeService: ScrapeService,
   private val authService: AuthService,
-  private val sourceService: SourceService,
-  private val documentService: DocumentService,
+  private val documentUseCase: DocumentUseCase,
+  private val documentRepository: DocumentRepository,
   private val filterPlugin: CompositeFilterPlugin,
   private val jwtTokenIssuer: JwtTokenIssuer,
   private val repositoryClaimRepository: RepositoryClaimRepository,
   private val repositoryRepository: RepositoryRepository,
   private val featureService: FeatureService,
+  private val sourceRepository: SourceRepository,
 ) {
 
   val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
   suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
-    val feed = sourceService.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
+    val feed = sourceRepository.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
 
     val sortable = SortableRequest("publishedAt", false)
     val pageable = PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(sortable));
-    feed.items = documentService.findAllBySourceId(sourceId, pageable).map { it.asJsonItem() }
+    feed.items = documentRepository.findAllBySourceId(sourceId, pageable).map { it.asJsonItem() }
 
     return feed
   }
@@ -163,7 +164,7 @@ class FeedService(
       ?: throw NotFoundException("repositoryId not found")
 
     feed.items =
-      documentService.findAllByRepositoryId(
+      documentUseCase.findAllByRepositoryId(
         repositoryId,
         pageable = PageableRequest(
           pageNumber = 0,
@@ -172,7 +173,7 @@ class FeedService(
         )
       )
         .map { it.asJsonItem() }
-    
+
     return feed
   }
 
@@ -395,12 +396,11 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
     return article
   }
 
-  @Transactional
-  suspend fun createAnonymousFeedUrl(baseUri: URI): AuthToken {
+  suspend fun createAnonymousFeedUrl(baseUri: URI): AuthToken = withContext(Dispatchers.IO) {
     val repositoryClaim = RepositoryClaim()
     repositoryClaimRepository.save(repositoryClaim)
     val jwt = jwtTokenIssuer.createJwtForAnonymousFeed(baseUri.host, repositoryClaim.id)
-    return AuthToken(token = jwt.tokenValue)
+    AuthToken(token = jwt.tokenValue)
   }
 
   private fun sendEolMessage(): JsonFeed {

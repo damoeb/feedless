@@ -4,42 +4,37 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.attachment.AttachmentRepository
+import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.ReleaseStatus
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
-import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.user.toDomain
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
-import java.util.*
-import kotlin.coroutines.coroutineContext
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class InboxService {
   private val log = LoggerFactory.getLogger(InboxService::class.simpleName)
 
   @Autowired
-  private lateinit var userDAO: UserDAO
+  private lateinit var userRepository: UserRepository
 
   @Autowired
-  private lateinit var documentDAO: DocumentDAO
+  private lateinit var documentRepository: DocumentRepository
 
   @Autowired
-  private lateinit var attachmentDAO: AttachmentDAO
+  private lateinit var attachmentRepository: AttachmentRepository
 
   @Lazy
   @Autowired
-  private lateinit var userService: UserService
+  private lateinit var userUseCase: UserUseCase
 
 
 //  suspend fun createNotification(
@@ -75,28 +70,26 @@ class InboxService {
 //    }
 //  }
 
-  @Transactional
   suspend fun appendMessage(
-    ownerId: UUID,
-    document: DocumentEntity,
-  ) {
+    userId: UserId,
+    document: Document,
+  ) = withContext(Dispatchers.IO) {
     try {
-      withContext(Dispatchers.IO) {
-        val user = userDAO.findById(ownerId).orElseThrow().toDomain()
+      val user = userRepository.findById(userId)!!
+      val repositoryId = user.inboxRepositoryId ?: userUseCase.createInboxRepository(user.id).id
+      log.info("appending inbox message to $repositoryId")
 
-        document.status = ReleaseStatus.released
-        val repositoryId = user.inboxRepositoryId ?: userService.createInboxRepository(user).id
-        log.info("appending inbox message to $repositoryId")
-        document.repositoryId = repositoryId.uuid
-        val attachments = document.attachments
-        document.attachments = mutableListOf()
-        documentDAO.save(document)
+      documentRepository.save(
+        document.copy(
+          status = ReleaseStatus.released,
+          repositoryId = repositoryId,
+          attachments = emptyList(),
+        )
+      )
 
-        attachmentDAO.saveAll(attachments.map {
-          it.documentId = document.id
-          it
-        })
-      }
+      attachmentRepository.saveAll(document.attachments.map {
+        it.copy(documentId = document.id)
+      })
     } catch (e: Exception) {
       val corrId = coroutineContext.corrId()
       log.error("[$corrId] Failed to append message: ${e.message}", e)

@@ -2,15 +2,12 @@ package org.migor.feedless.community.text.simple
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class DuplicateContentScorer {
 

@@ -6,7 +6,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.migor.feedless.community.CommentGraphService
 import org.migor.feedless.any2
 import org.mockito.Mockito

@@ -219,7 +219,7 @@ input OrderCreateInput {
   paymentMethod: PaymentMethod!
   targetGroup: ProductTargetGroup!
   invoiceRecipientName: String!
-  callbackUrl: String! @url
+  #  callbackUrl: String! @url
   invoiceRecipientEmail: String! @email
   user: UserCreateOrConnectInput!
 }

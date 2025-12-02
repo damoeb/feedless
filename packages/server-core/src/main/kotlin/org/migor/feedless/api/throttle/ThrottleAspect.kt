@@ -9,12 +9,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Aspect
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.throttle} && ${AppLayer.api}")
 class ThrottleAspect {
   private val log = LoggerFactory.getLogger(ThrottleAspect::class.simpleName)

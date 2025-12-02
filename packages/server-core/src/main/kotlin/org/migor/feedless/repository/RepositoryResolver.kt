@@ -10,6 +10,7 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.throttle.Throttled
@@ -17,6 +18,9 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.toDomain
+import org.migor.feedless.document.toDomainStringFilter
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CountRepositoriesInput
 import org.migor.feedless.generated.types.Cursor
@@ -29,7 +33,9 @@ import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceOrderBy
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -37,9 +43,6 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
-import java.util.*
 import org.migor.feedless.generated.types.Repository as RepositoryDto
 import org.migor.feedless.generated.types.Source as SourceDto
 
@@ -53,11 +56,12 @@ fun Cursor.toPageable(maxPageSize: Int? = null): Pageable {
 }
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
 class RepositoryResolver(
-  private val repositoryService: RepositoryService,
-  private val sourceService: SourceService,
+  private val repositoryUseCase: RepositoryUseCase,
+  private val repositoryRepository: RepositoryRepository,
+  private val sourceRepository: SourceRepository,
+  private val documentRepository: DocumentRepository,
   private val harvestService: HarvestService,
   private val capabilityService: CapabilityService
 ) {
@@ -79,7 +83,7 @@ class RepositoryResolver(
     } else {
       val whereFilter = data.where?.toDomain()
       if (data.capability == null) {
-        repositoryService.findAllByUserId(pageable, whereFilter, userId)
+        repositoryUseCase.findAllByUserId(pageable, whereFilter, userId)
           .map { it.toDto(it.ownerId == userId.uuid) }
       } else {
         val capabilityId = CapabilityId(data.capability!!)
@@ -87,7 +91,7 @@ class RepositoryResolver(
           throw IllegalArgumentException("Capability ${data.capability} is not present")
         }
         val capability = capabilityService.getCapability(capabilityId)!!
-        repositoryService.provideAll(capability, pageable, whereFilter)
+        repositoryUseCase.provideAll(capability, pageable, whereFilter)
           .map { it.toDto(it.ownerId == userId.uuid) }
       }
     }
@@ -100,7 +104,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.QUERY.COUNTREPOSITORIES_INPUT_ARGUMENT.Data) data: CountRepositoriesInput,
   ): Int = coroutineScope {
     log.debug("countRepositories")
-    repositoryService.countAll(userId(), data.product.fromDto())
+    repositoryUseCase.countAll(userId(), data.product.fromDto())
   }
 
   private fun userId(): UserId? {
@@ -114,7 +118,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
   ): RepositoryDto = coroutineScope {
     log.debug("repository $data")
-    val repository = repositoryService.findById(RepositoryId(data.where.id))
+    val repository = repositoryRepository.findById(RepositoryId(data.where.id))
       ?: throw IllegalArgumentException("Repository not found")
     repository.toDto(repository.ownerId == userId()?.uuid)
   }
@@ -127,7 +131,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
   ): List<RepositoryDto> = coroutineScope {
     log.debug("createRepositories $data")
-    repositoryService.create(data).map { it.toDto(it.ownerId == userId()?.uuid) }
+    repositoryUseCase.create(data).map { it.toDto(it.ownerId == userId()?.uuid) }
   }
 
   @Throttled
@@ -138,7 +142,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
   ) = coroutineScope {
     log.debug("updateRepository $data")
-    repositoryService.updateRepository(RepositoryId(data.where.id), data.data)
+    repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data, userId()!!)
     true
   }
 
@@ -150,7 +154,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUniqueWhereInput,
   ): Boolean = coroutineScope {
     log.debug("deleteRepository $data")
-    repositoryService.delete(RepositoryId(data.id))
+    repositoryUseCase.delete(RepositoryId(data.id))
     true
   }
 
@@ -168,7 +172,12 @@ class RepositoryResolver(
       if (pageable.pageSize == 0) {
         emptyList()
       } else {
-        sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), pageable, where, order)
+        sourceRepository.findAllByRepositoryIdFiltered(
+          RepositoryId(repository.id),
+          pageable.toPageableRequest(),
+          where?.toDomain(),
+          order?.map { it.toDomain() }
+        )
           .toList()
           .map { it.toDto() }
       }
@@ -183,7 +192,7 @@ class RepositoryResolver(
   ): Long = coroutineScope {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     if (repository.currentUserIsOwner) {
-      sourceService.countAllByRepositoryId(RepositoryId(repository.id))
+      sourceRepository.countByRepositoryId(RepositoryId(repository.id))
     } else {
       0
     }
@@ -194,7 +203,7 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
     val source: SourceDto = dfe.getSourceOrThrow()
-    sourceService.countDocumentsBySourceId(SourceId(source.id))
+    documentRepository.countBySourceId(SourceId(source.id))
   }
 
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.Harvests)
@@ -202,7 +211,7 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): List<Harvest> = coroutineScope {
     val source: SourceDto = dfe.getSourceOrThrow()
-    harvestService.lastHarvests(UUID.fromString(source.id)).map { it.toDto() }
+    harvestService.lastHarvests(SourceId(source.id)).map { it.toDto() }
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCountWithProblems)
@@ -210,17 +219,34 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): Int = coroutineScope {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceService.countProblematicSourcesByRepositoryId(RepositoryId(repository.id))
+    sourceRepository.countSourcesWithProblems(RepositoryId(repository.id))
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceService.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageRequest.of(0, 10))
+    sourceRepository.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageableRequest(0, 10))
       .mapNotNull { it.tags?.asList() }
       .flatten()
       .distinct()
   }
+}
+
+fun SourceOrderByInput.toDomain(): SourceOrderBy {
+  return SourceOrderBy(
+    title = title?.toDomain(),
+    lastRecordsRetrieved = lastRecordsRetrieved?.toDomain(),
+    lastRefreshedAt = lastRefreshedAt?.toDomain()
+  )
+}
+
+fun SourcesWhereInput.toDomain(): SourcesFilter {
+  return SourcesFilter(
+    id = id?.toDomainStringFilter(),
+    latLng = latLng?.toDomain(),
+    like = like,
+    disabled = disabled,
+  )
 }
 
 fun org.migor.feedless.generated.types.RepositoriesWhereInput.toDomain(): RepositoriesFilter {

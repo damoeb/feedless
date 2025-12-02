@@ -80,5 +80,6 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   )
   fun findByDocumentId(@Param("documentId") documentId: UUID): RepositoryEntity?
   fun findAllByLastUpdatedAtBefore(lastUpdatedAt: LocalDateTime): List<RepositoryEntity>
+  fun countByGroupId(groupId: UUID): Int
 
 }

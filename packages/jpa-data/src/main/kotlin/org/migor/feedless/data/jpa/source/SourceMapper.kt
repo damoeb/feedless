@@ -3,7 +3,6 @@ package org.migor.feedless.data.jpa.source
 import org.locationtech.jts.geom.Point
 import org.mapstruct.Mapper
 import org.mapstruct.ReportingPolicy
-import org.mapstruct.SubclassMapping
 import org.mapstruct.factory.Mappers
 import org.migor.feedless.actions.ClickPositionAction
 import org.migor.feedless.actions.ClickXpathAction
@@ -18,23 +17,23 @@ import org.migor.feedless.actions.WaitAction
 import org.migor.feedless.data.jpa.IdMappers
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.source.actions.ClickPositionActionEntity
+import org.migor.feedless.data.jpa.source.actions.ClickPositionActionMapper
 import org.migor.feedless.data.jpa.source.actions.ClickXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.ClickXpathActionMapper
 import org.migor.feedless.data.jpa.source.actions.DomActionEntity
+import org.migor.feedless.data.jpa.source.actions.DomActionMapper
 import org.migor.feedless.data.jpa.source.actions.ExecuteActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExecuteActionMapper
 import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionMapper
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
+import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionMapper
 import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
+import org.migor.feedless.data.jpa.source.actions.FetchActionMapper
 import org.migor.feedless.data.jpa.source.actions.HeaderActionEntity
+import org.migor.feedless.data.jpa.source.actions.HeaderActionMapper
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionEntity
 import org.migor.feedless.data.jpa.source.actions.WaitActionEntity
-import org.migor.feedless.data.jpa.source.actions.ClickPositionActionMapper
-import org.migor.feedless.data.jpa.source.actions.ClickXpathActionMapper
-import org.migor.feedless.data.jpa.source.actions.DomActionMapper
-import org.migor.feedless.data.jpa.source.actions.ExecuteActionMapper
-import org.migor.feedless.data.jpa.source.actions.ExtractBoundingBoxActionMapper
-import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionMapper
-import org.migor.feedless.data.jpa.source.actions.FetchActionMapper
-import org.migor.feedless.data.jpa.source.actions.HeaderActionMapper
 import org.migor.feedless.data.jpa.source.actions.WaitActionMapper
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.source.Source
@@ -80,11 +79,11 @@ interface SourceMapper {
 
 
 fun SourceEntity.toDomain(): Source {
-  return SourceMapper.Companion.INSTANCE.toDomain(this)
+  return SourceMapper.INSTANCE.toDomain(this)
 }
 
 fun Source.toEntity(): SourceEntity {
-  return SourceMapper.Companion.INSTANCE.toEntity(this)
+  return SourceMapper.INSTANCE.toEntity(this)
 }
 
 fun ScrapeActionEntity.toDomain(): ScrapeAction {

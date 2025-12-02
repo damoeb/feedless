@@ -11,35 +11,32 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.migor.feedless.generated.types.GroupAssignment as GroupAssignmentDto
 import org.migor.feedless.generated.types.Role as RoleDto
 import org.migor.feedless.generated.types.User as UserDto
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
 class GroupResolver(
-  private val groupService: GroupService
+  private val groupRepository: GroupRepository,
+  private val groupUseCase: GroupUseCase,
 ) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
   suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignmentDto> = coroutineScope {
     val user: UserDto = dfe.getSourceOrThrow()
-    groupService.findAllByUserId(UserId(user.id))
+    groupUseCase.findAllByUserId(UserId(user.id))
       .map {
         GroupAssignmentDto(
           id = it.groupId.toString(),
-          name = it.group(groupService)?.name ?: "-",
+          name = it.group()?.name ?: "-",
           role = it.role.toDto()
         )
       }
   }
 
-  // todo move to domain
-  private suspend fun UserGroupAssignment.group(groupService: GroupService): Group? {
-    return groupService.findById(groupId)
+  private suspend fun UserGroupAssignment.group(): Group? {
+    return groupRepository.findById(groupId)
   }
 }
 

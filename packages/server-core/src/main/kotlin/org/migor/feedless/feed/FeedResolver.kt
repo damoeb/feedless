@@ -13,14 +13,11 @@ import org.migor.feedless.generated.DgsConstants
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import org.migor.feedless.generated.types.Authentication as AuthenticationDto
 
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.feed} & ${AppLayer.api}")
 class FeedResolver(
   private val feedService: FeedService,

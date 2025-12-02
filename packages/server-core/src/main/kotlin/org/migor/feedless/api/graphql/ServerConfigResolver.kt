@@ -17,7 +17,7 @@ import org.migor.feedless.generated.types.BuildInfo
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.license.LicenseUseCase
 import org.migor.feedless.session.ProductAuthProperties
 import org.migor.feedless.session.ProductsAuthProperties
 import org.slf4j.LoggerFactory
@@ -26,11 +26,8 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class ServerConfigResolver {
 
@@ -46,7 +43,7 @@ class ServerConfigResolver {
   private lateinit var version: String
 
   @Autowired
-  private lateinit var licenseService: LicenseService
+  private lateinit var licenseUseCase: LicenseUseCase
 
   @Autowired
   private lateinit var analyticsService: AnalyticsService
@@ -67,7 +64,7 @@ class ServerConfigResolver {
     analyticsService.track()
     val product = data.product.fromDto()
 
-    if (!licenseService.isTrial() && !licenseService.isLicenseNotNeeded() && !licenseService.isLicensedForProduct(
+    if (!licenseUseCase.isTrial() && !licenseUseCase.isLicenseNotNeeded() && !licenseUseCase.isLicensedForProduct(
         product
       )
     ) {
@@ -77,7 +74,7 @@ class ServerConfigResolver {
     ServerSettings(
       version = version,
       build = BuildInfo(
-        date = licenseService.getBuildDate(),
+        date = licenseUseCase.getBuildDate(),
         commit = commit
       ),
       auth = getProductAuthProperties(product),

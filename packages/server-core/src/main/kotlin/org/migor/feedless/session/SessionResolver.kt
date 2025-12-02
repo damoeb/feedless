@@ -12,7 +12,6 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
@@ -23,12 +22,9 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.session} & ${AppLayer.api}")
 class SessionResolver {
 
@@ -86,8 +82,7 @@ class SessionResolver {
   ): Authentication = coroutineScope {
     log.debug("authUser")
     try {
-      val user = authService.authenticateUser(data.email, data.secretKey)
-      val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id)))
+      val jwt = authService.authenticateUser(data.email, data.secretKey)
       addCookie(dfe, cookieProvider.createTokenCookie(jwt))
       Authentication(
         token = jwt.tokenValue,

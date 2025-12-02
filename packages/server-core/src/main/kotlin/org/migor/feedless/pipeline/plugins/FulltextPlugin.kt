@@ -25,7 +25,7 @@ import org.migor.feedless.scrape.WebToArticleTransformer
 import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
@@ -54,7 +54,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
   private lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @Autowired
-  private lateinit var sourceService: SourceService
+  private lateinit var sourceRepository: SourceRepository
 
   @Lazy
   @Autowired
@@ -91,7 +91,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
         url = document.url,
       )
 
-      val source = document.source(sourceService)
+      val source = document.source(sourceRepository)
       val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
 
       val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
@@ -186,6 +186,6 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
   }
 }
 
-private suspend fun Document.source(sourceService: SourceService): Source? {
-  return sourceId?.let { sourceService.findById(it) }
+private fun Document.source(sourceRepository: SourceRepository): Source? {
+  return sourceId?.let { sourceRepository.findById(it) }
 }

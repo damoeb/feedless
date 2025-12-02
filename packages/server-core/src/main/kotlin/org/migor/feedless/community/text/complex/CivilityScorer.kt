@@ -3,20 +3,17 @@ package org.migor.feedless.community.text.complex
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.text.simple.VocabularyScorer
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 
 data class CivilityWeights(val sentiment: Double, val attacks: Double, val politeness: Double)
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class CivilityScorer(
   private val languageService: LanguageService

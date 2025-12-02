@@ -1,14 +1,13 @@
 package org.migor.feedless.data.jpa.repository
 
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.Vertical
 import org.migor.feedless.document.DocumentId
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoriesFilter
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
@@ -19,190 +18,168 @@ import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Component
+@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : RepositoryRepository {
 
-  override suspend fun findAll(
+  override fun findAll(
     pageable: PageableRequest,
     where: RepositoriesFilter?,
     userId: UserId?
   ): List<Repository> {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findPage(pageable.toPageRequest()) {
-        val whereStatements = mutableListOf<Predicatable>()
-        where?.let {
-          where.visibility?.let { visibility ->
-            visibility.`in`?.let {
-              whereStatements.add(
-                path(RepositoryEntity::visibility).`in`(it),
-              )
-            }
-          }
-
-          userId?.let {
+    return repositoryDAO.findPage(pageable.toPageRequest()) {
+      val whereStatements = mutableListOf<Predicatable>()
+      where?.let {
+        where.visibility?.let { visibility ->
+          visibility.`in`?.let {
             whereStatements.add(
-              path(RepositoryEntity::ownerId).eq(userId.uuid)
+              path(RepositoryEntity::visibility).`in`(it),
             )
-          }
-
-          where.product?.let {
-            it.eq?.let {
-              whereStatements.add(
-                path(RepositoryEntity::product).eq(it)
-              )
-            }
-            it.`in`?.let { products ->
-              whereStatements.add(
-                path(RepositoryEntity::product).`in`(products)
-              )
-            }
-          }
-          where.tags?.let {
-            it.every?.let { every ->
-              whereStatements.add(
-                function(
-                  Boolean::class,
-                  "fl_array_contains",
-                  path(RepositoryEntity::tags),
-                  every,
-                  true
-                )
-                  .eq(true)
-              )
-            }
-            it.some?.let { some ->
-              whereStatements.add(
-                function(
-                  Boolean::class,
-                  "fl_array_contains",
-                  path(RepositoryEntity::tags),
-                  some,
-                  false
-                )
-                  .eq(true)
-              )
-            }
           }
         }
 
-        select(
-          entity(RepositoryEntity::class)
-        ).from(
-          entity(RepositoryEntity::class)
-        ).whereAnd(
-          *whereStatements.toTypedArray(),
-          or(
-            path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
-            path(RepositoryEntity::ownerId).eq(userId?.uuid),
+        userId?.let {
+          whereStatements.add(
+            path(RepositoryEntity::ownerId).eq(userId.uuid)
           )
-        ).orderBy(
-          path(RepositoryEntity::lastUpdatedAt).desc()
+        }
+
+        where.product?.let {
+          it.eq?.let {
+            whereStatements.add(
+              path(RepositoryEntity::product).eq(it)
+            )
+          }
+          it.`in`?.let { products ->
+            whereStatements.add(
+              path(RepositoryEntity::product).`in`(products)
+            )
+          }
+        }
+        where.tags?.let {
+          it.every?.let { every ->
+            whereStatements.add(
+              function(
+                Boolean::class,
+                "fl_array_contains",
+                path(RepositoryEntity::tags),
+                every,
+                true
+              )
+                .eq(true)
+            )
+          }
+          it.some?.let { some ->
+            whereStatements.add(
+              function(
+                Boolean::class,
+                "fl_array_contains",
+                path(RepositoryEntity::tags),
+                some,
+                false
+              )
+                .eq(true)
+            )
+          }
+        }
+      }
+
+      select(
+        entity(RepositoryEntity::class)
+      ).from(
+        entity(RepositoryEntity::class)
+      ).whereAnd(
+        *whereStatements.toTypedArray(),
+        or(
+          path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
+          path(RepositoryEntity::ownerId).eq(userId?.uuid),
         )
-      }.toList().filterNotNull().map { it.toDomain() }
-    }
+      ).orderBy(
+        path(RepositoryEntity::lastUpdatedAt).desc()
+      )
+    }.toList().filterNotNull().map { it.toDomain() }
   }
 
-  override suspend fun findAllWhereNextHarvestIsDue(
+  override fun findAllWhereNextHarvestIsDue(
     now: LocalDateTime,
     pageable: PageableRequest
   ): List<Repository> {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable.toPageRequest()).map { it.toDomain() }
-    }
+    return repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable.toPageRequest()).map { it.toDomain() }
   }
 
-  override suspend fun countByOwnerId(id: UserId): Int {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerId(id.uuid)
-    }
+  override fun countByGroupId(id: GroupId): Int {
+    return repositoryDAO.countByGroupId(id.uuid)
   }
 
-  override suspend fun countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(
-    id: UserId,
+
+  override fun countByGroupIdAndArchivedIsFalseAndSourcesSyncCronIsNot(
+    groupId: GroupId,
     cron: String
   ): Int {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(id.uuid, cron)
-    }
+    // todo implement
+//    return repositoryDAO.countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(userId.uuid, cron)
+    return 0
   }
 
-  override suspend fun countAllByOwnerIdAndProduct(
+  override fun countAllByOwnerIdAndProduct(
     id: UserId,
     product: Vertical
   ): Int {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.countAllByOwnerIdAndProduct(id.uuid, product)
-    }
+    return repositoryDAO.countAllByOwnerIdAndProduct(id.uuid, product)
   }
 
-  override suspend fun countAllByVisibility(visibility: EntityVisibility): Int {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.countAllByVisibility(visibility)
-    }
+  override fun countAllByVisibility(visibility: EntityVisibility): Int {
+    return repositoryDAO.countAllByVisibility(visibility)
   }
 
-  override suspend fun findByTitleAndOwnerId(
+  override fun findByTitleAndOwnerId(
     title: String,
     ownerId: UserId
   ): Repository? {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findByTitleAndOwnerId(title, ownerId.uuid)?.toDomain()
-    }
+    return repositoryDAO.findByTitleAndOwnerId(title, ownerId.uuid)?.toDomain()
   }
 
-  override suspend fun findAllByVisibilityAndLastPullSyncBefore(
+  override fun findAllByVisibilityAndLastPullSyncBefore(
     visibility: EntityVisibility,
     now: LocalDateTime?,
     pageable: PageableRequest
   ): List<Repository> {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageRequest())
-        .map { it.toDomain() }
-    }
+    return repositoryDAO.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageRequest())
+      .map { it.toDomain() }
   }
 
-  override suspend fun findInboxRepositoryByUserId(userId: UserId) {
+  override fun findInboxRepositoryByUserId(userId: UserId) {
     TODO("not implemented")
   }
 
-  override suspend fun findBySourceId(sourceId: SourceId): Repository? {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findBySourceId(sourceId.uuid)?.toDomain()
-    }
+  override fun findBySourceId(sourceId: SourceId): Repository? {
+    return repositoryDAO.findBySourceId(sourceId.uuid)?.toDomain()
   }
 
-  override suspend fun findByDocumentId(documentId: DocumentId): Repository? {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findByDocumentId(documentId.uuid)?.toDomain()
-    }
+  override fun findByDocumentId(documentId: DocumentId): Repository? {
+    return repositoryDAO.findByDocumentId(documentId.uuid)?.toDomain()
   }
 
-  override suspend fun findAllByLastUpdatedAtBefore(lastUpdatedAt: LocalDateTime): List<Repository> {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findAllByLastUpdatedAtBefore(lastUpdatedAt).map { it.toDomain() }
-    }
+  override fun findAllByLastUpdatedAtBefore(lastUpdatedAt: LocalDateTime): List<Repository> {
+    return repositoryDAO.findAllByLastUpdatedAtBefore(lastUpdatedAt).map { it.toDomain() }
   }
 
-  override suspend fun findById(id: RepositoryId): Repository? {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.findById(id.uuid).getOrNull()?.toDomain()
-    }
+  override fun findById(id: RepositoryId): Repository? {
+    return repositoryDAO.findById(id.uuid).getOrNull()?.toDomain()
   }
 
-  override suspend fun save(repository: Repository): Repository {
-    return withContext(Dispatchers.IO) {
-      repositoryDAO.save(repository.toEntity()).toDomain()
-    }
+  override fun save(repository: Repository): Repository {
+    return repositoryDAO.save(repository.toEntity()).toDomain()
   }
 
-  override suspend fun delete(repository: Repository) {
-    withContext(Dispatchers.IO) {
-      repositoryDAO.delete(repository.toEntity())
-    }
+  override fun delete(repository: Repository) {
+    repositoryDAO.delete(repository.toEntity())
   }
 
 }

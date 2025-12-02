@@ -18,11 +18,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.license} & ${AppLayer.api}")
 class LinceseResolver {
 
@@ -32,7 +29,7 @@ class LinceseResolver {
   lateinit var version: String
 
   @Autowired
-  private lateinit var licenseService: LicenseService
+  private lateinit var licenseUseCase: LicenseUseCase
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateLicense)
   suspend fun updateLicense(
@@ -41,7 +38,7 @@ class LinceseResolver {
   ): LocalizedLicense = coroutineScope {
     log.debug("updateLicense")
 
-    licenseService.updateLicense(data.licenseRaw)
+    licenseUseCase.updateLicense(data.licenseRaw)
     getLicense()
   }
 
@@ -52,12 +49,12 @@ class LinceseResolver {
 
 
   private fun getLicense(): LocalizedLicense {
-    val payload = licenseService.getLicensePayload()
+    val payload = licenseUseCase.getLicensePayload()
     return LocalizedLicense(
-      isValid = licenseService.hasValidLicenseOrLicenseNotNeeded(),
-      isTrial = licenseService.isTrial(),
+      isValid = licenseUseCase.hasValidLicenseOrLicenseNotNeeded(),
+      isTrial = licenseUseCase.isTrial(),
       isLocated = payload != null,
-      trialUntil = licenseService.getTrialUntil(),
+      trialUntil = licenseUseCase.getTrialUntil(),
       data = payload?.let {
         org.migor.feedless.generated.types.License(
           name = payload.name,

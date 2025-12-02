@@ -1,8 +1,8 @@
 package org.migor.feedless
 
+import org.migor.feedless.order.OrderId
 import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.otp.OneTimePasswordId
-import org.migor.feedless.order.OrderId
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -94,7 +94,8 @@ object Mother {
       id = OneTimePasswordId(randomUUID()),
       password = randomString().substring(0, 6),
       validUntil = LocalDateTime.now().plusMinutes(10),
-      userId = userId ?: UserId(randomUUID())
+      userId = userId ?: UserId(),
+      attemptsLeft = 0
     )
   }
 

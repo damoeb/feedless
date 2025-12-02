@@ -1,14 +1,12 @@
 package org.migor.feedless.session
 
-import com.netflix.graphql.dgs.context.DgsContext
-import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.Vertical
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.config.DgsCustomContext
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -17,19 +15,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
-import org.springframework.web.context.request.RequestAttributes
-import org.springframework.web.context.request.RequestContextHolder
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
-
-@Deprecated("use capabilityService")
-fun injectCurrentUser(currentCoroutineContext: CoroutineContext, dfe: DataFetchingEnvironment): RequestContext {
-  val requestContext = currentCoroutineContext[RequestContext] ?: createRequestContext()
-  DgsContext.getCustomContext<DgsCustomContext>(dfe).userId = requestContext.userId
-  return requestContext
-}
 
 private fun OAuth2AuthenticationToken.getUserCapability(): UserCapability? {
   return this.authorities.find { it.authority == UserCapability.ID.value }
@@ -46,12 +33,12 @@ fun createRequestContext(): RequestContext {
       null
     }
 
-    context.product = runCatching {
-      RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
-        ?.let {
-          Vertical.valueOf(it as String)
-        }
-    }.getOrNull()
+//    context.product = runCatching {
+//      RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
+//        ?.let {
+//          Vertical.valueOf(it as String)
+//        }
+//    }.getOrNull()
 
   }.onFailure {
     println(it.message)
@@ -60,16 +47,14 @@ fun createRequestContext(): RequestContext {
 }
 
 class RequestContext(
-  var product: Vertical? = null,
   val corrId: String? = newCorrId(),
-  var userId: UserId? = null
+  var userId: UserId? = null,
+  var groupId: GroupId? = null
 ) : AbstractCoroutineContextElement(RequestContext) {
   companion object Key : CoroutineContext.Key<RequestContext>
 }
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
-@Deprecated("Use capabilityservice instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class SessionService {
 
@@ -84,20 +69,20 @@ class SessionService {
     return userCapability != null
   }
 
-  @Transactional(readOnly = true)
-  suspend fun user(): User {
+  suspend fun user(): User = withContext(Dispatchers.IO) {
     val notFoundException = IllegalArgumentException("user not found")
-    return capabilityService.getCapability(UserCapability.ID)
+    capabilityService.getCapability(UserCapability.ID)
       ?.let { authService.findUserById(UserCapability.resolve(it)) ?: throw notFoundException }
       ?: throw notFoundException
   }
 
-  suspend fun activeProductFromRequest(): Vertical? {
-    return currentCoroutineContext()[RequestContext]?.product
+  suspend fun currentUserId(): UserId {
+    TODO()
   }
+//  capabilityService.getCapability(UserCapability.ID)
+//    ?.let { UserCapability.resolve(it) }
 
-  @Deprecated("")
-  suspend fun userId(): UserId? = capabilityService.getCapability(UserCapability.ID)
-    ?.let { UserCapability.resolve(it) }
-
+  suspend fun currentGroupId(): GroupId {
+    TODO()
+  }
 }

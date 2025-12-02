@@ -6,23 +6,23 @@ import org.migor.feedless.user.UserId
 
 interface VoteRepository {
 
-    suspend fun existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
-        flag: Boolean,
-        upvote: Boolean,
-        downvote: Boolean,
-        userId: UserId,
-        documentId: DocumentId?,
-        repositoryId: RepositoryId?
-    ): Boolean
+  fun existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
+    flag: Boolean,
+    upvote: Boolean,
+    downvote: Boolean,
+    userId: UserId,
+    documentId: DocumentId?,
+    repositoryId: RepositoryId?
+  ): Boolean
 
-    suspend fun countUpVotesIsTrueByRepositoryId(repositoryId: RepositoryId): Int
+  fun countUpVotesByRepositoryId(repositoryId: RepositoryId): Int
 
-    suspend fun countDownVoteIsTrueByRepositoryId(repositoryId: RepositoryId): Int
+  fun countDownVoteByRepositoryId(repositoryId: RepositoryId): Int
 
-    suspend fun findAllByOwnerIdAndRepositoryId(userId: UserId, repositoryId: RepositoryId): List<Vote>
+  fun findAllByOwnerIdAndRepositoryId(userId: UserId, repositoryId: RepositoryId): List<Vote>
 
-    suspend fun findAllByOwnerIdAndDocumentId(userId: UserId, documentId: DocumentId): List<Vote>
+  fun findAllByOwnerIdAndDocumentId(userId: UserId, documentId: DocumentId): List<Vote>
 
-    suspend fun save(vote: Vote): Vote
+  fun save(vote: Vote): Vote
 }
 

@@ -4,8 +4,6 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.scrape.LogCollector
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -14,12 +12,16 @@ import java.util.*
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class DateClaimer {
 
   private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
 
-  private val allMonth = (1..12).map { LocalDate.parse("2018-${StringUtils.leftPad("$it",2,'0')}-01", DateTimeFormatter.ofPattern("yyyy-MM-dd")) }
+  private val allMonth = (1..12).map {
+    LocalDate.parse(
+      "2018-${StringUtils.leftPad("$it", 2, '0')}-01",
+      DateTimeFormatter.ofPattern("yyyy-MM-dd")
+    )
+  }
   private val days = listOf(Pair("\\d{1}", "d"), Pair("\\d{2}", "dd"))
   private val months =
     listOf(Pair("\\d{1}", "M"), Pair("\\d{2}", "MM"), Pair("[a-z]{3}", "LLL"), Pair("[a-z]{3,}", "MMMM"))
@@ -126,13 +128,17 @@ class DateClaimer {
     }
 
     val relevantChars =
-      allMonth.joinToString("") { DateTimeFormatter.ofPattern("MMMM", locale).format(it) }.lowercase().split("").distinct().joinToString("")
+      allMonth.joinToString("") { DateTimeFormatter.ofPattern("MMMM", locale).format(it) }.lowercase().split("")
+        .distinct().joinToString("")
 
     return runCatching {
       val simpleDateTimeStr = dateTimeStrParam
         .trim().replace(".", " ")
         .replace("\n", " ")
-        .replace("[^\\p{Alnum}$relevantChars:]".toRegex(RegexOption.IGNORE_CASE), " ") // todo fix and replace just special chars
+        .replace(
+          "[^\\p{Alnum}$relevantChars:]".toRegex(RegexOption.IGNORE_CASE),
+          " "
+        ) // todo fix and replace just special chars
         .replace("T", " ")
         .replace("\\s+".toRegex(), " ")
       val date = guessDateFormats(simpleDateTimeStr, logger)

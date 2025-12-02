@@ -4,19 +4,16 @@ import org.apache.commons.math3.analysis.interpolation.SplineInterpolator
 import org.apache.commons.math3.analysis.polynomials.PolynomialSplineFunction
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.PartOfSpeechService
 import org.migor.feedless.community.StemmerService
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class KeywordIntersectionScorer(
   private val partOfSpeechService: PartOfSpeechService,

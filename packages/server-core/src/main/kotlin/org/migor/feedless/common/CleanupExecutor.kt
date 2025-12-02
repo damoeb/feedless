@@ -2,42 +2,43 @@ package org.migor.feedless.common
 
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
-import org.migor.feedless.document.DocumentService
-import org.migor.feedless.pipeline.DocumentPipelineService
-import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.document.DocumentUseCase
+import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
+import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
 @Service
 @Profile(AppLayer.scheduler)
-@Transactional(propagation = Propagation.NEVER)
 class CleanupExecutor(
-    private val oneTimePasswordService: Optional<OneTimePasswordService>,
-    private val sourcePipelineService: SourcePipelineService,
-    private val documentService: DocumentService,
-    private val documentPipelineService: DocumentPipelineService,
-    private val harvestService: HarvestService,
+  private val oneTimePasswordService: Optional<OneTimePasswordService>,
+  private val sourcePipelineJobRepository: SourcePipelineJobRepository,
+  private val documentUseCase: DocumentUseCase,
+  private val documentPipelineJobRepository: DocumentPipelineJobRepository,
+  private val harvestService: HarvestService,
 ) {
 
-    private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
+  private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
 
-    @Scheduled(cron = "0 0 * * * *")
-    fun executeCleanup() {
-        val now = LocalDateTime.now()
-        oneTimePasswordService.ifPresent { it.deleteAllByValidUntilBefore(now) }
-        runBlocking {
-            documentService.applyRetentionStrategyByCapacity()
-        }
-        sourcePipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
-        documentPipelineService.deleteAllByCreatedAtBefore(now.minusDays(3))
-        harvestService.deleteAllTailing()
+  @Scheduled(cron = "0 0 * * * *")
+  @Transactional
+  fun executeCleanup() {
+    val now = LocalDateTime.now()
+    runBlocking {
+      oneTimePasswordService.ifPresent {
+        runBlocking { it.deleteAllByValidUntilBefore(now) }
+      }
+      documentUseCase.applyRetentionStrategyByCapacity()
+      documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+      sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
     }
+    harvestService.deleteAllTailing()
+  }
 }

@@ -24,8 +24,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.io.Serializable
 import java.net.ConnectException
 import java.net.MalformedURLException
@@ -41,7 +39,6 @@ import kotlin.coroutines.coroutineContext
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class HttpService(
   @Value("\${app.apiGatewayUrl}")
   private val apiGatewayUrl: String

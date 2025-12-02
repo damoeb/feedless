@@ -14,24 +14,25 @@ import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
+import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
-import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.product.ProductDAO
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.pipeline.plugins.DiffRecordsPlugin
 import org.migor.feedless.pipeline.plugins.FulltextPlugin
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.product.ProductService
+import org.migor.feedless.product.ProductRepository
+import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.User
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -54,23 +55,25 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 )
 @MockitoBean(
   types = [
-    ProductDAO::class,
-    DocumentDAO::class,
-    DocumentService::class,
-    ProductService::class,
+    ProductRepository::class,
+    DocumentRepository::class,
+    DocumentUseCase::class,
+    ProductUseCase::class,
     PropertyService::class,
     InboxService::class,
     AgentService::class,
-    AttachmentDAO::class,
+    AttachmentRepository::class,
   ]
 )
-class RepositoryEntityPluginsDeserializationIntTest {
+class
+
+RepositoryEntityPluginsDeserializationIntTest {
 
   @Autowired
-  private lateinit var repositoryDAO: RepositoryRepository
+  private lateinit var repositoryRepository: RepositoryRepository
 
   @Autowired
-  private lateinit var userService: UserService
+  private lateinit var userUseCase: UserUseCase
 
   @MockitoBean
   private lateinit var sessionService: SessionService
@@ -93,7 +96,7 @@ class RepositoryEntityPluginsDeserializationIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    testUser = userService.createUser("test-plugins-deserialization-${System.currentTimeMillis()}@example.com")
+    testUser = userUseCase.createUser("test-plugins-deserialization-${System.currentTimeMillis()}@example.com")
   }
 
   @Test
@@ -102,8 +105,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Empty Plugins", emptyList())
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).isEmpty()
@@ -121,8 +124,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Plugin with Null Params", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(1)
@@ -160,8 +163,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Fulltext Plugin", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(1)
@@ -215,8 +218,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Diff Records Plugin", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(1)
@@ -284,8 +287,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Multiple Plugins", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(3)
@@ -364,8 +367,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Filter Plugin with Arrays", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(1)
@@ -416,8 +419,8 @@ class RepositoryEntityPluginsDeserializationIntTest {
     val repository = createRepository("Special Characters", plugins)
 
     // when
-    val savedRepository = repositoryDAO.save(repository)
-    val retrievedRepository = repositoryDAO.findById(savedRepository.id)!!
+    val savedRepository = repositoryRepository.save(repository)
+    val retrievedRepository = repositoryRepository.findById(savedRepository.id)!!
 
     // then
     assertThat(retrievedRepository.plugins).hasSize(1)
@@ -445,6 +448,7 @@ class RepositoryEntityPluginsDeserializationIntTest {
       visibility = EntityVisibility.isPublic,
       product = Vertical.feedless,
       ownerId = testUser.id,
+      groupId = GroupId(),
       plugins = plugins,
       shareKey = "test${System.currentTimeMillis().toString().takeLast(6)}" // 10 chars max
     )

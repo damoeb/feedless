@@ -20,6 +20,7 @@ import org.migor.feedless.data.jpa.invoice.InvoiceEntity
 import org.migor.feedless.data.jpa.license.LicenseEntity
 import org.migor.feedless.data.jpa.product.ProductEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.order.Order
 import org.migor.feedless.payment.PaymentMethod
 import java.time.LocalDateTime
 import java.util.*
@@ -109,6 +110,10 @@ open class OrderEntity : EntityWithUUID() {
   open var invoices: MutableList<InvoiceEntity> = mutableListOf()
 }
 
-fun OrderEntity.toDomain(): org.migor.feedless.order.Order {
+fun OrderEntity.toDomain(): Order {
   return OrderMapper.Companion.INSTANCE.toDomain(this)
+}
+
+fun Order.toEntity(): OrderEntity {
+  return OrderMapper.Companion.INSTANCE.toEntity(this)
 }

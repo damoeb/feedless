@@ -1,5 +1,7 @@
 package org.migor.feedless.capability
 
+// todo how is this compatible with non http-based requests
+// should only life in the graphql/http layer, inside only groupId/userId are relevant
 interface CapabilityService {
 
   /**

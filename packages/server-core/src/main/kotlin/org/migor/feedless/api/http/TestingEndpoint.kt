@@ -7,10 +7,9 @@ import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -33,7 +32,7 @@ class TestingEndpoint {
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @Autowired
-  private lateinit var userDAO: UserDAO
+  private lateinit var userRepository: UserRepository
 
   @Autowired
   private lateinit var cookieProvider: CookieProvider
@@ -41,24 +40,20 @@ class TestingEndpoint {
 
   @GetMapping("testing/create-token")
   suspend fun createTestToken(response: HttpServletResponse) = coroutineScope {
-    val user = withContext(Dispatchers.IO) {
-      userDAO.findFirstByAdminIsTrue() ?: throw IllegalArgumentException("root user not found")
-    }
+    val user = userRepository.findFirstByAdminIsTrue() ?: throw IllegalArgumentException("root user not found")
+
     if (!user.hasAcceptedTerms) {
-      user.hasAcceptedTerms = true
-      user.acceptedTermsAt = LocalDateTime.now()
-      withContext(Dispatchers.IO) {
-        userDAO.save(user)
-      }
+      userRepository.save(
+        user.copy(
+          hasAcceptedTerms = true,
+          acceptedTermsAt = LocalDateTime.now()
+        )
+      )
     }
     response.addCookie(
       cookieProvider.createTokenCookie(
         jwtTokenIssuer.createJwtForCapabilities(
-          listOf(
-            UserCapability(
-              UserId(user.id)
-            )
-          )
+          listOf(UserCapability(user.id))
         )
       )
     )

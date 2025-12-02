@@ -10,6 +10,8 @@ import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import java.util.*
 
+// todo no repository
+
 @Repository
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {

@@ -11,10 +11,6 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
-import org.migor.feedless.data.jpa.report.ReportDAO
-import org.migor.feedless.data.jpa.report.ReportEntity
-import org.migor.feedless.data.jpa.report.SegmentationEntity
-import org.migor.feedless.eq
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -28,56 +24,51 @@ import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.context.ApplicationContext
 
 class ReportServiceTest {
 
-  private lateinit var reportService: ReportService
-  private lateinit var reportDAO: ReportDAO
-  private lateinit var repositoryService: RepositoryService
-  private lateinit var userService: UserService
+  private lateinit var reportUseCase: ReportUseCase
+  private lateinit var reportRepository: ReportRepository
+  private lateinit var repositoryRepository: RepositoryRepository
   private lateinit var segmentationService: SegmentationService
-  private lateinit var context: ApplicationContext
   private lateinit var repositoryId: RepositoryId
   private lateinit var segment: SegmentInput
   private lateinit var repository: Repository
   private lateinit var repositoryOwnerId: UserId
   private lateinit var user: User
+  private lateinit var userRepository: UserRepository
 
   @BeforeEach
   fun setUp() = runTest {
     repositoryId = randomRepositoryId()
-    reportDAO = mock(ReportDAO::class.java)
-    repositoryService = mock(RepositoryService::class.java)
-    userService = mock(UserService::class.java)
+    reportRepository = mock(ReportRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
     segmentationService = mock(SegmentationService::class.java)
-    context = mock(ApplicationContext::class.java)
     user = mock(User::class.java)
+    userRepository = mock(userRepository::class.java)
 
-    reportService = ReportService(
-      reportDAO,
-      repositoryService,
-      userService,
+    reportUseCase = ReportUseCase(
+      reportRepository,
+      repositoryRepository,
+      userRepository,
       segmentationService,
       mock(MeterRegistry::class.java),
-      context
     )
 
-    `when`(segmentationService.saveSegmentation(any(SegmentationEntity::class.java))).thenAnswer { it.arguments[0] }
-    `when`(reportDAO.save(any(ReportEntity::class.java))).thenAnswer { it.arguments[0] }
-    `when`(context.getBean(eq(ReportService::class.java))).thenReturn(reportService)
+    `when`(segmentationService.saveSegmentation(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
+    `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
 
     repository = mock(Repository::class.java)
     repositoryOwnerId = randomUserId()
     `when`(repository.ownerId).thenReturn(repositoryOwnerId)
-    `when`(repositoryService.findById(any(RepositoryId::class.java))).thenReturn(repository)
+    `when`(repositoryRepository.findById(any(RepositoryId::class.java))).thenReturn(repository)
 
     segment = SegmentInput(
       `when` = TimeSegmentInput(
@@ -107,14 +98,14 @@ class ReportServiceTest {
   fun `reports can be created by anonymous if repository is public`() = runTest {
     // given
     `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
-    `when`(userService.findByEmail(any(String::class.java))).thenReturn(null)
+    `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
 
     // when
-    val report = reportService.createReport(repositoryId, segment, null)
+    val report = reportUseCase.createReport(repositoryId, segment, null)
 
     // then
     assertThat(report).isNotNull
-    verify(reportDAO).save(any(ReportEntity::class.java))
+    verify(reportRepository).save(any(Report::class.java))
   }
 
   @Test
@@ -123,8 +114,8 @@ class ReportServiceTest {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest {
         `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
-        `when`(userService.findByEmail(any(String::class.java))).thenReturn(null)
-        reportService.createReport(repositoryId, segment, null)
+        `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
+        reportUseCase.createReport(repositoryId, segment, null)
       }
     }
   }
@@ -132,14 +123,14 @@ class ReportServiceTest {
   @Test
   fun `reports can be created by owner if repository is private`() = runTest {
     `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
-    `when`(userService.findByEmail(any(String::class.java))).thenReturn(user)
+    `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
 
     // when
-    val report = reportService.createReport(repositoryId, segment, repositoryOwnerId)
+    val report = reportUseCase.createReport(repositoryId, segment, repositoryOwnerId)
 
     // then
     assertThat(report).isNotNull
-    verify(reportDAO).save(any(ReportEntity::class.java))
+    verify(reportRepository).save(any(Report::class.java))
   }
 
   @Test
@@ -170,8 +161,8 @@ class ReportServiceTest {
   fun `if email belongs to user, he will be asked to login`() {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest {
-        `when`(userService.findByEmail(any(String::class.java))).thenReturn(user)
-        reportService.createReport(repositoryId, segment, null)
+        `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
+        reportUseCase.createReport(repositoryId, segment, null)
       }
     }
   }

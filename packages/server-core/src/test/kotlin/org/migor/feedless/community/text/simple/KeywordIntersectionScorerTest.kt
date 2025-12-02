@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.PartOfSpeechService
 import org.migor.feedless.community.StemmerService

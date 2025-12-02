@@ -18,8 +18,6 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.time.Duration
@@ -39,7 +37,6 @@ fun toFullUrlString(request: HttpServletRequest): String {
 }
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.analytics} & ${AppLayer.service}")
 @ConfigurationProperties("app.analytics")
 class AnalyticsService {

@@ -20,18 +20,17 @@ import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import org.migor.feedless.generated.types.Annotation as AnnotationDto
 import org.migor.feedless.generated.types.Annotations as AnnotationsDto
 import org.migor.feedless.generated.types.Repository as RepositoryDto
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.annotation} & ${AppLayer.api}")
 class AnnotationResolver(
-  private val annotationService: AnnotationService,
+  private val annotationUseCase: AnnotationUseCase,
+  private val annotationRepository: AnnotationRepository,
+  private val voteRepository: VoteRepository,
   private val sessionService: SessionService
 ) {
 
@@ -45,7 +44,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
   ): AnnotationDto = coroutineScope {
     log.debug("createAnnotation $data")
-    annotationService.createAnnotation(data, sessionService.user()).toDto()
+    annotationUseCase.createAnnotation(data, sessionService.user()).toDto()
   }
 
   @Throttled
@@ -56,7 +55,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
   ): Boolean = coroutineScope {
     log.debug("deleteAnnotation $data")
-    annotationService.deleteAnnotation(data, sessionService.user())
+    annotationUseCase.deleteAnnotation(data, sessionService.user())
     true
   }
 
@@ -68,8 +67,8 @@ class AnnotationResolver(
     val userId = context.userId
     userId?.let {
       context.repositoryId?.let { repositoryId ->
-        annotationService.findAllVotesByUserIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
-      } ?: annotationService.findAllVotesByUserIdAndDocumentId(userId, context.documentId!!)
+        voteRepository.findAllByOwnerIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
+      } ?: voteRepository.findAllByOwnerIdAndDocumentId(userId, context.documentId!!)
         .map { it.toDto() }
     } ?: emptyList()
   }
@@ -83,8 +82,8 @@ class AnnotationResolver(
     val repositoryId = RepositoryId(UUID.fromString(repository.id))
     DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
     AnnotationsDto(
-      upVotes = annotationService.countUpVotesByRepositoryId(repositoryId),
-      downVotes = annotationService.countDownVotesByRepositoryId(repositoryId)
+      upVotes = voteRepository.countUpVotesByRepositoryId(repositoryId),
+      downVotes = voteRepository.countDownVoteByRepositoryId(repositoryId)
     )
   }
 }

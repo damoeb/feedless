@@ -1,15 +1,15 @@
 package org.migor.feedless.user
 
 interface UserRepository {
-    suspend fun findByEmail(name: String): User?
-    suspend fun existsByEmail(email: String): Boolean
+  fun findByEmail(name: String): User?
+  fun existsByEmail(email: String): Boolean
 
-    suspend fun findFirstByAdminIsTrue(): User?
+  fun findFirstByAdminIsTrue(): User?
 
-    suspend fun findByAnonymousIsTrue(): User
+  fun findByAnonymousUser(): User
 
-    suspend fun findByGithubId(githubId: String): User?
-    suspend fun findById(id: UserId): User?
-    suspend fun save(user: User): User
-    fun deleteAll()
+  fun findByGithubId(githubId: String): User?
+  fun findById(id: UserId): User?
+  fun save(user: User): User
+  fun deleteAll()
 }

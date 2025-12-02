@@ -16,12 +16,12 @@ import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
-import org.migor.feedless.secrets.UserSecretService
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.User
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretRepository
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -75,7 +75,7 @@ class AuthenticationIntTest {
   private var port: Int = 0
 
   @MockitoBean
-  lateinit var userService: UserService
+  lateinit var userRepository: UserRepository
 
   @MockitoBean
   lateinit var userDAO: UserDAO
@@ -87,7 +87,7 @@ class AuthenticationIntTest {
   lateinit var propertyService: PropertyService
 
   @MockitoBean
-  lateinit var userSecretService: UserSecretService
+  lateinit var userSecretRepository: UserSecretRepository
 
   private lateinit var jwtDecoder: JwtDecoder
 
@@ -116,9 +116,9 @@ class AuthenticationIntTest {
     // given
     val mockUser = mock(User::class.java)
     `when`(mockUser.admin).thenReturn(true)
-    `when`(userService.findByEmail(anyString())).thenReturn(mockUser)
+    `when`(userRepository.findByEmail(anyString())).thenReturn(mockUser)
     val mockSecretKey = mock(UserSecret::class.java)
-    `when`(userSecretService.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)
+    `when`(userSecretRepository.findBySecretKeyValue(anyString(), anyString())).thenReturn(mockSecretKey)
 
     // when
     val graphQLMutation = DgsClient.buildMutation {

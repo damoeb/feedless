@@ -2,8 +2,8 @@ package org.migor.feedless.repository
 
 interface RepositoryClaimRepository {
 
-  suspend fun findById(repositoryClaim: RepositoryClaimId): RepositoryClaim?
-  suspend fun save(repositoryClaim: RepositoryClaim): RepositoryClaim
+  fun findById(repositoryClaim: RepositoryClaimId): RepositoryClaim?
+  fun save(repositoryClaim: RepositoryClaim): RepositoryClaim
 
-  suspend fun deleteById(id: RepositoryClaimId)
+  fun deleteById(id: RepositoryClaimId)
 }

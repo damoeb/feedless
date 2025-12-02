@@ -1,46 +1,35 @@
 package org.migor.feedless.repository
 
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.harvest.HarvestDAO
-import org.migor.feedless.data.jpa.harvest.toDomain
-import org.migor.feedless.data.jpa.harvest.toEntity
 import org.migor.feedless.harvest.Harvest
+import org.migor.feedless.harvest.HarvestRepository
+import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
-import java.util.*
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class HarvestService(
-    private var harvestDAO: HarvestDAO,
+  private var harvestRepository: HarvestRepository,
 ) {
 
-    private val log = LoggerFactory.getLogger(HarvestService::class.simpleName)
+  private val log = LoggerFactory.getLogger(HarvestService::class.simpleName)
 
-    @Transactional
-    suspend fun saveLast(data: Harvest) {
-        withContext(Dispatchers.IO) {
-            harvestDAO.save(data.toEntity())
-        }
-    }
+  @Transactional
+  fun deleteAllTailing() {
+    harvestRepository.deleteAllTailingBySourceId()
+  }
 
-    @Transactional
-    fun deleteAllTailing() {
-        harvestDAO.deleteAllTailingBySourceId()
-    }
-
-    @Transactional(readOnly = true)
-    fun lastHarvests(sourceId: UUID): List<Harvest> {
-        return harvestDAO.findAllBySourceId(sourceId, PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt")))
-            .map { it.toDomain() }
-    }
+  @Transactional(readOnly = true)
+  fun lastHarvests(sourceId: SourceId): List<Harvest> {
+    return harvestRepository.findAllBySourceId(
+      sourceId,
+      PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt")).toPageableRequest()
+    )
+  }
 }

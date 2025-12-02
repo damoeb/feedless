@@ -22,8 +22,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
 import java.time.LocalDateTime
@@ -140,7 +138,6 @@ enum class ExtendContext(val value: String) {
  */
 // todo split into list parser, field parser
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToFeedTransformer(
   @Autowired

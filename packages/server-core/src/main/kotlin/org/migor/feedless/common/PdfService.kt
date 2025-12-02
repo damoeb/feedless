@@ -4,15 +4,12 @@ import org.apache.pdfbox.Loader
 import org.apache.pdfbox.tools.PDFText2HTML
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.InputStream
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class PdfService {
 
   private val log = LoggerFactory.getLogger(PdfService::class.simpleName)

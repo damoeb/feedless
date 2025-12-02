@@ -11,14 +11,15 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
-import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
-import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionEntity
-import org.migor.feedless.data.jpa.systemSettings.SystemSettingsDAO
-import org.migor.feedless.data.jpa.systemSettings.SystemSettingsEntity
+import org.migor.feedless.connectedApp.TelegramConnection
+import org.migor.feedless.connectedApp.TelegramConnectionRepository
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.repository.InboxService
+import org.migor.feedless.systemSettings.SystemSettings
+import org.migor.feedless.systemSettings.SystemSettingsRepository
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.reset
 import org.mockito.Mockito.spy
@@ -39,45 +40,44 @@ import reactor.test.scheduler.VirtualTimeScheduler
 import java.net.URI
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class TelegramBotServiceTest {
 
-  lateinit var telegramLinkDAO: TelegramConnectionDAO
+  lateinit var telegramConnectionRepository: TelegramConnectionRepository
   lateinit var restTemplate: RestTemplate
   lateinit var messageService: MessageService
-  lateinit var systemSettingsDAO: SystemSettingsDAO
+  lateinit var systemSettingsRepository: SystemSettingsRepository
   lateinit var telegramBotService: TelegramBotService
   lateinit var inboxService: InboxService
   val botToken = "MY_SECRET_TOKEN"
   val appHost = ""
 
   @BeforeEach
-  fun setUp() {
-    telegramLinkDAO = mock(TelegramConnectionDAO::class.java)
+  fun setUp() = runTest {
+    telegramConnectionRepository = mock(TelegramConnectionRepository::class.java)
     restTemplate = mock(RestTemplate::class.java)
     messageService = mock(MessageService::class.java)
-    systemSettingsDAO = mock(SystemSettingsDAO::class.java)
+    systemSettingsRepository = mock(SystemSettingsRepository::class.java)
     inboxService = mock(InboxService::class.java)
     val properties = mock(TelegramProperties::class.java)
     `when`(properties.token).thenReturn(botToken)
     telegramBotService = TelegramBotService(
       properties,
       appHost,
-      telegramLinkDAO,
+      telegramConnectionRepository,
       mock(Environment::class.java),
       messageService,
-      systemSettingsDAO,
+      systemSettingsRepository,
       restTemplate,
       inboxService
     )
 
-
-    `when`(systemSettingsDAO.save(any2())).thenAnswer { it.arguments[0] as SystemSettingsEntity }
-    `when`(systemSettingsDAO.findByName(any2())).thenReturn(null)
+    `when`(telegramConnectionRepository.findAllAuthorized()).thenReturn(emptyList())
+    `when`(systemSettingsRepository.save(any2())).thenAnswer { it.arguments[0] as SystemSettings }
+    `when`(systemSettingsRepository.findByName(any2())).thenReturn(null)
   }
 
   @Test
@@ -86,26 +86,27 @@ class TelegramBotServiceTest {
   }
 
   @Test
-  fun `given lastUpdateId is not stored, when initialized it gets set and saved`() {
-    `when`(systemSettingsDAO.findByName(any2())).thenReturn(null)
+  fun `given lastUpdateId is not stored, when initialized it gets set and saved`() = runTest {
+    `when`(systemSettingsRepository.findByName(any2())).thenReturn(null)
 
     telegramBotService.onInit()
 
     assertThat(telegramBotService.lastUpdateId).isEqualTo(Int.MAX_VALUE)
-    verify(systemSettingsDAO, times(1)).save(any2())
+    verify(systemSettingsRepository, times(1)).save(any2())
   }
 
   @Test
-  fun `given lastUpdateId is stored, when initialized it gets used`() {
-    val mockSetting = SystemSettingsEntity()
-    mockSetting.valueInt = 15243
-    mockSetting.name = "tg-last-updated-id"
-    `when`(systemSettingsDAO.findByName(any2())).thenReturn(mockSetting)
+  fun `given lastUpdateId is stored, when initialized it gets used`() = runTest {
+    val storedSettings = SystemSettings(
+      valueInt = 15243,
+      name = "tg-last-updated-id"
+    )
+    `when`(systemSettingsRepository.findByName(any2())).thenReturn(storedSettings)
 
     telegramBotService.onInit()
 
     assertThat(telegramBotService.lastUpdateId).isEqualTo(15243)
-    verify(systemSettingsDAO, times(0)).save(any2())
+    verify(systemSettingsRepository, times(0)).save(any2())
   }
 
   @Test
@@ -120,7 +121,7 @@ class TelegramBotServiceTest {
   }
 
   @Test
-  fun `pollUpdates will update lastUpdateId using the last message`() {
+  fun `pollUpdates will update lastUpdateId using the last message`() = runTest {
     val message = mock(Update::class.java)
     `when`(message.updateId).thenReturn(874112)
     val response = TelegramUpdatesResponse(
@@ -137,17 +138,17 @@ class TelegramBotServiceTest {
     )
       .thenReturn(response)
     telegramBotService.onInit()
-    reset(systemSettingsDAO)
+    reset(systemSettingsRepository)
 
     telegramBotService.pollUpdates()
 
     assertThat(telegramBotService.lastUpdateId).isEqualTo(874112)
-    verify(systemSettingsDAO).save(argThat { it.valueInt == 874112 })
+    verify(systemSettingsRepository).save(argThat { it.valueInt == 874112 })
   }
 
   @Test
-  fun `onInit will subscribe to all authorized chatIds`() {
-    `when`(telegramLinkDAO.findAllByAuthorizedIsTrue())
+  fun `onInit will subscribe to all authorized chatIds`() = runTest {
+    `when`(telegramConnectionRepository.findAllAuthorized())
       .thenReturn(
         listOf(
           newTelegramConnection(123),
@@ -227,13 +228,13 @@ class TelegramBotServiceTest {
   private fun newTelegramConnection(
     chatId: Long,
     authorized: Boolean = true,
-    userId: UUID? = null
-  ): TelegramConnectionEntity {
-    val connection = TelegramConnectionEntity()
-    connection.chatId = chatId
-    connection.authorized = authorized
-    connection.userId = userId
-    return connection
+    userId: UserId? = null
+  ): TelegramConnection {
+    return TelegramConnection(
+      chatId = chatId,
+      authorized = authorized,
+      userId = userId
+    )
   }
 
   @Test
@@ -261,9 +262,9 @@ class TelegramBotServiceTest {
     )
       .thenReturn(response)
 
-    `when`(telegramLinkDAO.findByChatId(eq(chatId)))
+    `when`(telegramConnectionRepository.findByChatId(eq(chatId)))
       .thenReturn(
-        newTelegramConnection(chatId, true, UUID.randomUUID()),
+        newTelegramConnection(chatId, true, UserId()),
       )
     telegramBotService.onInit()
     telegramBotService.pollUpdates()

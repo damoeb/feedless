@@ -9,4 +9,5 @@ interface RepositoryProvider : CapabilityConsumer {
     capability: UnresolvedCapability, pageable: PageableRequest,
     where: RepositoriesFilter?,
   ): List<Repository>
+
 }

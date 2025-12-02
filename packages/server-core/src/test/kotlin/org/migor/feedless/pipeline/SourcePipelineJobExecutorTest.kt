@@ -1,47 +1,57 @@
 package org.migor.feedless.pipeline
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.any
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
-import org.migor.feedless.repository.RepositoryService
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.pipelineJob.PipelineJobId
+import org.migor.feedless.pipelineJob.SourcePipelineJob
+import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.source.SourceUseCase
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled
 import java.time.LocalDateTime
-import java.util.*
 
 class SourcePipelineJobExecutorTest {
 
   private lateinit var sourcePipelineJobExecutor: SourcePipelineJobExecutor
   private lateinit var sourcePipelineService: SourcePipelineService
-  private lateinit var repositoryService: RepositoryService
-  private lateinit var sourceService: SourceService
+  private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var sourceUseCase: SourceUseCase
+  private lateinit var sourceRepository: SourceRepository
+  private lateinit var sourcePipelineJobRepository: SourcePipelineJobRepository
 
   @BeforeEach
-  fun setUp() {
+  fun setUp() = runTest {
     sourcePipelineService = mock(SourcePipelineService::class.java)
-    repositoryService = mock(RepositoryService::class.java)
-    sourceService = mock(SourceService::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
+    sourceUseCase = mock(SourceUseCase::class.java)
+    sourceRepository = mock(sourceRepository::class.java)
+    sourcePipelineJobRepository = mock(sourcePipelineJobRepository::class.java)
 
     sourcePipelineJobExecutor = SourcePipelineJobExecutor(
       sourcePipelineService,
-      repositoryService,
-      sourceService,
+      sourcePipelineJobRepository,
+      sourceUseCase,
+      repositoryRepository,
+      sourceRepository,
     )
 
-    val id1 = UUID.randomUUID()
-    val id2 = UUID.randomUUID()
+    val id1 = SourceId()
+    val id2 = SourceId()
 
     val sourceJobs = listOf(
       createSourcePipelineJob(id1),
       createSourcePipelineJob(id2),
       createSourcePipelineJob(id1)
     )
-    `when`(sourcePipelineService.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
+    `when`(sourcePipelineJobRepository.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(sourceJobs)
   }
 
   @Test
@@ -56,10 +66,9 @@ class SourcePipelineJobExecutorTest {
     // todo test
   }
 
-  private fun createSourcePipelineJob(sourceId: UUID): SourcePipelineJobEntity {
-    val jobId = UUID.randomUUID()
-    val job = mock(SourcePipelineJobEntity::class.java)
-    `when`(job.id).thenReturn(jobId)
+  private fun createSourcePipelineJob(sourceId: SourceId): SourcePipelineJob {
+    val job = mock(SourcePipelineJob::class.java)
+    `when`(job.id).thenReturn(PipelineJobId())
     `when`(job.sourceId).thenReturn(sourceId)
 
 //    val source = mock(SourceEntity::class.java)

@@ -19,6 +19,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.feature.FeatureEntity
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
+import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueType
 import java.util.*
 
@@ -78,6 +79,10 @@ open class FeatureValueEntity : EntityWithUUID() {
   open var feature: FeatureEntity? = null
 }
 
-fun FeatureValueEntity.toDomain(): org.migor.feedless.feature.FeatureValue {
-  return FeatureValueMapper.Companion.INSTANCE.toDomain(this)
+fun FeatureValueEntity.toDomain(): FeatureValue {
+  return FeatureValueMapper.INSTANCE.toDomain(this)
+}
+
+fun FeatureValue.toEntity(): FeatureValueEntity {
+  return FeatureValueMapper.INSTANCE.toEntity(this)
 }

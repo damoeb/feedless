@@ -9,8 +9,8 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
-import org.migor.feedless.document.RecordsFilter
 import org.migor.feedless.document.toDomain
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.generated.types.RecordOrderByInput
@@ -22,8 +22,6 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestMapping
@@ -32,7 +30,6 @@ import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
 
 @Controller
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
 class RepositoryController {
 
@@ -40,7 +37,7 @@ class RepositoryController {
   private val log = LoggerFactory.getLogger(RepositoryController::class.simpleName)
 
   @Autowired
-  private lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
@@ -76,7 +73,7 @@ class RepositoryController {
     feedExporter.to(
       HttpStatus.OK,
       format,
-      repositoryService.getFeedByRepositoryId(
+      repositoryUseCase.getFeedByRepositoryId(
         RepositoryId(repositoryId),
         page,
         parseWhere(whereStr),
@@ -85,7 +82,7 @@ class RepositoryController {
     )
   }
 
-  private fun parseWhere(whereStr: String?): RecordsFilter? {
+  private fun parseWhere(whereStr: String?): DocumentsFilter? {
     return whereStr?.let {
       Gson().fromJson(it, RecordsWhereInput::class.java).toDomain()
     }

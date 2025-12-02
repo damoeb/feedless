@@ -9,6 +9,7 @@ import org.hibernate.annotations.Cache
 import org.hibernate.annotations.CacheConcurrencyStrategy
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.feature.Feature
 
 
 @Entity
@@ -30,6 +31,10 @@ open class FeatureEntity : EntityWithUUID() {
   open lateinit var name: String
 }
 
-fun FeatureEntity.toDomain(): org.migor.feedless.feature.Feature {
-  return FeatureMapper.Companion.INSTANCE.toDomain(this)
+fun FeatureEntity.toDomain(): Feature {
+  return FeatureMapper.INSTANCE.toDomain(this)
+}
+
+fun Feature.toEntity(): FeatureEntity {
+  return FeatureMapper.INSTANCE.toEntity(this)
 }

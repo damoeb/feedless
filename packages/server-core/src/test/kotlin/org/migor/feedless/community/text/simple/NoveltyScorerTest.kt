@@ -5,7 +5,7 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
-import org.migor.feedless.community.CommentEntity
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 

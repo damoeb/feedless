@@ -12,20 +12,17 @@ import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
 
 @Controller
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
 class PaymentController {
 
   private val log = LoggerFactory.getLogger(PaymentController::class.simpleName)
 
   @Autowired
-  private lateinit var paymentService: PaymentService
+  private lateinit var paymentUseCase: PaymentUseCase
 
   @Autowired
   private lateinit var propertyService: PropertyService
@@ -40,7 +37,7 @@ class PaymentController {
     log.info("paymentCallback $orderId")
     val headers = HttpHeaders()
     val queryParams = try {
-      paymentService.handlePaymentCallback(OrderId(orderId))
+      paymentUseCase.handlePaymentCallback(OrderId(orderId))
       "success=true"
     } catch (ex: Exception) {
       log.error("Payment callback failed with ${ex.message}", ex)

@@ -1,7 +1,7 @@
 package org.migor.feedless.annotation
 
 interface AnnotationRepository {
-    suspend fun findById(id: AnnotationId): Annotation?
-    suspend fun delete(annotation: Annotation)
+  fun findById(id: AnnotationId): Annotation?
+  fun delete(annotation: Annotation)
 }
 

@@ -22,7 +22,7 @@ data class Repository(
   val retentionMaxAgeDaysReferenceField: MaxAgeDaysDateField = MaxAgeDaysDateField.createdAt,
   val lastUpdatedAt: LocalDateTime = LocalDateTime.now(),
   val disabledFrom: LocalDateTime?? = null,
-  val shareKey: String = UUID.randomUUID().toString(),
+  val shareKey: String = UUID.randomUUID().toString().substring(0, 9),
   val sunsetAfterTimestamp: LocalDateTime?? = null,
   val sunsetAfterTotalDocumentCount: Int?? = null,
   val documentCountSinceCreation: Int = 0,
@@ -34,7 +34,7 @@ data class Repository(
   val lastPullSync: LocalDateTime? = null,
   val plugins: List<PluginExecution> = emptyList(),
   val ownerId: UserId,
-  val groupId: GroupId? = null,
+  val groupId: GroupId,
   val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
   override fun equals(other: Any?): Boolean {

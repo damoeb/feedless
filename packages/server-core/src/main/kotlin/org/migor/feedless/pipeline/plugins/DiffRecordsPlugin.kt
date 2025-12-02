@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -34,11 +34,11 @@ import kotlin.math.abs
 
 
 suspend fun getLastReleasedDocumentByRepositoryId(
-  documentService: DocumentService,
+  documentUseCase: DocumentUseCase,
   repositoryId: RepositoryId
 ): Document? {
   val pageable = PageRequest.of(0, 1, Sort.Direction.DESC, "createdAt").toPageableRequest()
-  return documentService.findAllByRepositoryId(
+  return documentUseCase.findAllByRepositoryId(
     repositoryId,
     status = ReleaseStatus.released,
     pageable = pageable
@@ -79,7 +79,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 
   @Autowired
   @Lazy
-  private lateinit var documentService: DocumentService
+  private lateinit var documentUseCase: DocumentUseCase
 
 //  @Autowired
 //  private lateinit var productService: ProductService
@@ -106,7 +106,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
     val increment = params.nextItemMinIncrement.coerceAtLeast(0.01)
     log.info("[$corrId] filter nextItemMinIncrement=$increment")
 
-    val previous = getLastReleasedDocumentByRepositoryId(documentService, item.repositoryId!!)
+    val previous = getLastReleasedDocumentByRepositoryId(documentUseCase, item.repositoryId!!)
 
     return previous?.let {
       val compareBy = params.compareBy

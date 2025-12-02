@@ -18,6 +18,7 @@ import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.report.Segmentation
 import org.springframework.context.annotation.Lazy
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -67,8 +68,12 @@ open class SegmentationEntity : EntityWithUUID() {
   open var repository: RepositoryEntity? = null
 }
 
-fun SegmentationEntity.toDomain(): org.migor.feedless.report.Segmentation {
-  return SegmentationMapper.Companion.INSTANCE.toDomain(this)
+fun SegmentationEntity.toDomain(): Segmentation {
+  return SegmentationMapper.INSTANCE.toDomain(this)
+}
+
+fun Segmentation.toEntity(): SegmentationEntity {
+  return SegmentationMapper.INSTANCE.toEntity(this)
 }
 
 //private fun ChronoUnit.toDto(): IntervalUnit {

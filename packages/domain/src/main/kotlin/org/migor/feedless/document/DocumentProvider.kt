@@ -8,7 +8,7 @@ interface DocumentProvider : CapabilityConsumer {
   suspend fun provideAll(
     capability: UnresolvedCapability,
     pageable: PageableRequest,
-    filter: RecordsFilter,
+    filter: DocumentsFilter,
     order: RecordOrderBy
   ): List<Document>
 }

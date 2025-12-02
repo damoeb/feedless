@@ -3,10 +3,10 @@ package org.migor.feedless.payment.stripe
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.order.OrderService
 import org.migor.feedless.order.OrderId
-import org.migor.feedless.payment.PaymentService
+import org.migor.feedless.order.OrderUseCase
 import org.migor.feedless.payment.PaymentStatus
+import org.migor.feedless.payment.PaymentUseCase
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -30,10 +30,10 @@ class StripeWebhookController {
   private val log = LoggerFactory.getLogger(StripeWebhookController::class.simpleName)
 
   @Autowired
-  lateinit var paymentService: PaymentService
+  lateinit var paymentUseCase: PaymentUseCase
 
   @Autowired
-  lateinit var orderService: OrderService
+  lateinit var orderUseCase: OrderUseCase
 
   @GetMapping(
     "/aspi/payment/{orderId}/checkout",
@@ -97,7 +97,7 @@ class StripeWebhookController {
       log.info("Received Stripe webhook")
 
       // Process the webhook event using PaymentService
-      val webhookEvent = paymentService.handleWebhook(payload, signature)
+      val webhookEvent = paymentUseCase.handleWebhook(payload, signature)
 
       log.info("Processed webhook event: ${webhookEvent.eventType} (${webhookEvent.eventId})")
 
@@ -110,15 +110,15 @@ class StripeWebhookController {
       // Handle successful payment events
       when (webhookEvent.status) {
         PaymentStatus.SUCCEEDED -> {
-          paymentService.handlePaymentCallback(orderId)
+          paymentUseCase.handlePaymentCallback(orderId)
         }
 
         PaymentStatus.FAILED -> {
-          paymentService.handlePaymentFailureCallback(orderId)
+          paymentUseCase.handlePaymentFailureCallback(orderId)
         }
 
         PaymentStatus.CANCELLED -> {
-          paymentService.handlePaymentCancelCallback(orderId)
+          paymentUseCase.handlePaymentCancelCallback(orderId)
         }
 
         else -> {

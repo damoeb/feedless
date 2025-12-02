@@ -14,39 +14,42 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
 import org.migor.feedless.data.jpa.harvest.HarvestEntity
 import org.migor.feedless.data.jpa.harvest.toDomain
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
-import org.migor.feedless.pipeline.DocumentPipelineService
-import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
+import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.pipelineJob.SourcePipelineJob
+import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
@@ -62,17 +65,18 @@ import java.util.*
 import kotlin.coroutines.coroutineContext
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.repository} & ${AppLayer.service} & ${AppLayer.scheduler}")
 class RepositoryHarvester(
-  private val documentService: DocumentService,
-  private val documentPipelineService: DocumentPipelineService,
-  private val sourcePipelineService: SourcePipelineService,
-  private val sourceService: SourceService,
+  private val documentUseCase: DocumentUseCase,
+  private val documentRepository: DocumentRepository,
+  private val documentPipelineJobRepository: DocumentPipelineJobRepository,
+  private val sourcePipelineJobRepository: SourcePipelineJobRepository,
+  private val sourceRepository: SourceRepository,
   private val scrapeService: ScrapeService,
   private val meterRegistry: MeterRegistry,
-  private val repositoryService: RepositoryService,
-  private val harvestService: HarvestService,
+  private val repositoryUseCase: RepositoryUseCase,
+  private val repositoryRepository: RepositoryRepository,
+  private val harvestRepository: HarvestRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
@@ -88,6 +92,7 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
+  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun handleRepository(repositoryId: RepositoryId) {
     val corrId = coroutineContext.corrId()
     runCatching {
@@ -100,7 +105,7 @@ class RepositoryHarvester(
         )
       ).count()
 
-      val repository = repositoryService.findById(repositoryId)!!
+      val repository = repositoryRepository.findById(repositoryId)!!
 
       repository.triggerScheduledNextAt?.let {
         val diffInMillis = Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it))
@@ -109,14 +114,15 @@ class RepositoryHarvester(
 
       scrapeSources(repositoryId)
 
-      val scheduledNextAt = repositoryService.calculateScheduledNextAt(
+      val groupId = resolveGroupId()
+
+      val scheduledNextAt = repositoryUseCase.calculateScheduledNextAt(
         repository.sourcesSyncCron,
-        repository.ownerId,
-        repository.product,
+        groupId,
         LocalDateTime.now()
       )
       log.debug("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
-      repositoryService.save(
+      repositoryRepository.save(
         repository.copy(
           triggerScheduledNextAt = scheduledNextAt,
           lastUpdatedAt = LocalDateTime.now()
@@ -128,6 +134,10 @@ class RepositoryHarvester(
     }
   }
 
+  private fun resolveGroupId(): GroupId {
+    TODO("Not yet implemented")
+  }
+
   private suspend fun scrapeSources(
     repositoryId: RepositoryId,
   ) {
@@ -135,7 +145,7 @@ class RepositoryHarvester(
     var sources: List<Source>
     var currentPage = 0
     do {
-      sources = sourceService.findAllByRepositoryIdFiltered(repositoryId, PageRequest.of(currentPage++, 5))
+      sources = sourceRepository.findAllByRepositoryIdFiltered(repositoryId, PageableRequest(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
       log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
@@ -161,7 +171,7 @@ class RepositoryHarvester(
                 lastRecordsRetrieved = retrieved,
                 lastRefreshedAt = LocalDateTime.now()
               )
-              sourceService.save(updatedSource)
+              sourceRepository.save(updatedSource)
 
             } catch (e: Throwable) {
               handleScrapeException(e, source, logCollector)
@@ -173,7 +183,7 @@ class RepositoryHarvester(
                   it.time.toLocalDateTime().format(iso8601DateFormat)
                 }  ${it.message}"
               }, "...", 32000)
-              harvestService.saveLast(harvest.toDomain())
+              harvestRepository.save(harvest.toDomain())
             }
           }
         }
@@ -237,7 +247,7 @@ class RepositoryHarvester(
           lastRefreshedAt = LocalDateTime.now()
         )
       }
-    sourceService.save(updatedSource)
+    sourceRepository.save(updatedSource)
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector): Int {
@@ -253,7 +263,7 @@ class RepositoryHarvester(
   ): Int {
     val corrId = coroutineContext.corrId()
     log.debug("[$corrId] importElement")
-    val repository = repositoryService.findById(repositoryId)!!
+    val repository = repositoryRepository.findById(repositoryId)!!
     return if (output.outputs.isEmpty()) {
       throw NoItemsRetrievedException()
     } else {
@@ -292,7 +302,7 @@ class RepositoryHarvester(
     repository: Repository,
     documents: List<Pair<Boolean, Document>>
   ) {
-    documentService.triggerPostReleaseEffects(documents.map { it.second }, repository)
+    documentUseCase.triggerPostReleaseEffects(documents.map { it.second }, repository)
   }
 
   private suspend fun triggerPlugins(
@@ -303,14 +313,14 @@ class RepositoryHarvester(
     if (repository.plugins.isNotEmpty()) {
       try {
         log.debug("[$corrId] delete all document job by documents")
-        documentPipelineService.deleteAllByDocumentIdIn(
+        documentPipelineJobRepository.deleteAllByDocumentIdIn(
           documents.filter { (isNew, _) -> !isNew }
             .map { (_, document) -> document.id })
       } catch (e: Exception) {
         log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
       }
     }
-    documentPipelineService.saveAll(
+    documentPipelineJobRepository.saveAll(
       documents
         .map { (_, document) -> document }
         .flatMap {
@@ -333,7 +343,7 @@ class RepositoryHarvester(
 
     val updated = fragment.createDocument(repository.id, source)
     val existing =
-      documentService.findFirstByContentHashOrUrlAndRepositoryId(
+      documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
         updated.contentHash,
         updated.url,
         repository.id
@@ -341,7 +351,7 @@ class RepositoryHarvester(
 
     val validNewOrUpdatedDocuments =
       filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository, logCollector)!!))
-    documentService.saveAll(validNewOrUpdatedDocuments)
+    documentRepository.saveAll(validNewOrUpdatedDocuments)
 
     return listOf(Pair(existing != null, updated))
   }
@@ -416,7 +426,7 @@ class RepositoryHarvester(
       .mapNotNull { updated ->
         try {
           val existing =
-            documentService.findFirstByContentHashOrUrlAndRepositoryId(
+            documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
               updated.contentHash,
               updated.url,
               repository.id
@@ -435,7 +445,7 @@ class RepositoryHarvester(
       }
 
     val validNewOrUpdatedDocuments = filterInvalidDocuments(newOrUpdatedDocuments)
-    documentService.saveAll(validNewOrUpdatedDocuments)
+    documentRepository.saveAll(validNewOrUpdatedDocuments)
 
     if (validNewOrUpdatedDocuments.isNotEmpty()) {
       log.info("[$corrId] ${repository.id}/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
@@ -447,18 +457,16 @@ class RepositoryHarvester(
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
         val pageUrls =
-          next.filterNot { url -> sourcePipelineService.existsBySourceIdAndUrl(source.id, url) }
+          next.filterNot { url -> sourcePipelineJobRepository.existsBySourceIdAndUrl(source.id, url) }
         log.info("[$corrId] Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
-        sourcePipelineService.saveAll(
+        sourcePipelineJobRepository.saveAll(
           pageUrls
             .mapIndexed { index, url ->
-              run {
-                val e = SourcePipelineJobEntity()
-                e.sourceId = source.id.uuid
-                e.url = url
-                e.sequenceId = index
-                e
-              }
+              SourcePipelineJob(
+                sourceId = source.id,
+                url = url,
+                sequenceId = index
+              )
             })
       } else {
         log.debug("[$corrId] wont follow page urls")
@@ -581,7 +589,7 @@ class RepositoryHarvester(
     index: Int
   ): DocumentPipelineJob {
     return DocumentPipelineJob(
-      id = PipelineJobId(UUID.randomUUID()),
+      id = PipelineJobId(),
       sequenceId = index,
       documentId = document.id,
       pluginId = plugin.id,

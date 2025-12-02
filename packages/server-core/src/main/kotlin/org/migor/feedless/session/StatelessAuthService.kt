@@ -2,22 +2,21 @@ package org.migor.feedless.session
 
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretType
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @ConditionalOnMissingBean(StatefulAuthService::class)
 class StatelessAuthService : AuthService() {
   @Value("\${app.rootEmail}")
@@ -25,6 +24,9 @@ class StatelessAuthService : AuthService() {
 
   @Value("\${app.rootSecretKey}")
   private lateinit var rootSecretKey: String
+
+  @Autowired
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   private lateinit var root: User
   private lateinit var key: UserSecret
@@ -56,9 +58,9 @@ class StatelessAuthService : AuthService() {
     TODO("ignore")
   }
 
-  override fun authenticateUser(email: String, secretKey: String): User {
+  override suspend fun authenticateUser(email: String, secretKey: String): Jwt {
     return if (email == rootEmail && secretKey == rootSecretKey) {
-      root
+      jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(root.id)))
     } else {
       throw AccessDeniedException("User does not exist or password invalid")
     }

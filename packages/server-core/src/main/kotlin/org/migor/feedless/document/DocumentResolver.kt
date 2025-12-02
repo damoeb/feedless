@@ -28,7 +28,7 @@ import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.UpdateRecordInput
 import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryService
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.PermissionService
@@ -38,8 +38,6 @@ import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import org.migor.feedless.generated.types.DatesWhereInput as DatesWhereInputDto
 import org.migor.feedless.generated.types.RecordOrderByInput as RecordOrderByInputDto
@@ -48,13 +46,12 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput as Reposito
 import org.migor.feedless.generated.types.StringFilterInput as StringFilterInputDto
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentResolver(
-  private val repositoryService: RepositoryService,
+  private val repositoryUseCase: RepositoryUseCase,
   private val sessionService: SessionService,
   private val propertyService: PropertyService,
-  private val documentService: DocumentService,
+  private val documentUseCase: DocumentUseCase,
   private val permissionService: PermissionService
 ) {
 
@@ -69,7 +66,7 @@ class DocumentResolver(
     log.debug("record $data")
     permissionService.canReadDocument(DocumentId(data.where.id))
     val document =
-      documentService.findById(DocumentId(data.where.id)) ?: throw NotFoundException("record not found")
+      documentUseCase.findById(DocumentId(data.where.id)) ?: throw NotFoundException("record not found")
 
     DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = DocumentId(data.where.id)
 
@@ -86,12 +83,12 @@ class DocumentResolver(
     val repositoryId = RepositoryId(data.where.repository.id)
 
     val repository =
-      repositoryService.findById(repositoryId) ?: throw NotFoundException("repository $repositoryId not found")
+      repositoryUseCase.findById(repositoryId) ?: throw NotFoundException("repository $repositoryId not found")
     val pageable = data.cursor.toPageable()
     if (pageable.pageSize == 0) {
       emptyList()
     } else {
-      documentService.findAllByRepositoryId(
+      documentUseCase.findAllByRepositoryId(
         repository.id,
         data.where.toDomain(),
         data.orderBy?.toDomain(),
@@ -107,7 +104,7 @@ class DocumentResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
   suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
     val repository: Repository = dfe.getSourceOrThrow()
-    documentService.countByRepositoryId(RepositoryId(repository.id))
+    documentUseCase.countByRepositoryId(RepositoryId(repository.id))
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.DeleteRecords)
@@ -116,7 +113,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
   ): Boolean = coroutineScope {
-    documentService.deleteDocuments(
+    documentUseCase.deleteDocuments(
       sessionService.user(),
       RepositoryId(data.where.repository.id),
       data.where.id!!.toDomain()
@@ -130,7 +127,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
   ): List<Record> = coroutineScope {
-    records.map { documentService.createDocument(it).toDto(propertyService) }
+    records.map { documentUseCase.createDocument(it).toDto(propertyService) }
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
@@ -139,7 +136,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = coroutineScope {
-    documentService.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
+    documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
     true
   }
 
@@ -148,7 +145,7 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInputDto,
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
   ): List<RecordFrequency> = coroutineScope {
-    documentService.getRecordFrequency(where.toDomain(), groupBy)
+    documentUseCase.getRecordFrequency(where.toDomain(), groupBy.toDomain()).map { it.toDto() }
   }
 
 
@@ -157,27 +154,42 @@ class DocumentResolver(
     dfe: DgsDataFetchingEnvironment,
   ): List<RecordFrequency> = coroutineScope {
     val repository: Repository = dfe.getSourceOrThrow()
-    documentService.getRecordFrequency(
-      RecordsFilter(
+    documentUseCase.getRecordFrequency(
+      DocumentsFilter(
         repository = RepositoryId(repository.id),
         createdAt = DatesWhereInput(after = LocalDateTime.now().minusMonths(1))
       ),
-      RecordDateField.createdAt
-    )
+      DocumentDateField.createdAt
+    ).map { it.toDto() }
   }
 
 }
 
 
-private fun StringFilterInputDto.toDomain(): StringFilter {
+fun StringFilterInputDto.toDomain(): StringFilter {
   return StringFilter(
     eq = eq,
     `in` = `in`
   )
 }
 
-fun RecordsWhereInputDto.toDomain(): RecordsFilter {
-  return RecordsFilter(
+fun DocumentFrequency.toDto(): RecordFrequency {
+  return RecordFrequency(
+    count = count,
+    group = group,
+  )
+}
+
+fun RecordDateField.toDomain(): DocumentDateField {
+  return when (this) {
+    RecordDateField.createdAt -> DocumentDateField.createdAt
+    RecordDateField.publishedAt -> DocumentDateField.publishedAt
+    RecordDateField.startingAt -> DocumentDateField.startingAt
+  }
+}
+
+fun RecordsWhereInputDto.toDomain(): DocumentsFilter {
+  return DocumentsFilter(
     id = id?.toDomainStringFilter(),
     repository = repository.toDomain(),
     source = source?.toDomain(),
@@ -194,18 +206,18 @@ private fun RepositoryUniqueWhereInputDto.toDomain(): RepositoryId {
   return RepositoryId(id)
 }
 
-private fun org.migor.feedless.generated.types.SourceUniqueWhereInput.toDomain(): SourceUniqueWhere {
+fun org.migor.feedless.generated.types.SourceUniqueWhereInput.toDomain(): SourceUniqueWhere {
   return SourceUniqueWhere(id = SourceId(id))
 }
 
-private fun StringFilterInputDto.toDomainStringFilter(): org.migor.feedless.document.StringFilter {
+fun StringFilterInputDto.toDomainStringFilter(): org.migor.feedless.document.StringFilter {
   return org.migor.feedless.document.StringFilter(
     eq = eq,
     `in` = `in`
   )
 }
 
-private fun DatesWhereInputDto.toDomain(): DatesWhereInput {
+fun DatesWhereInputDto.toDomain(): DatesWhereInput {
   return DatesWhereInput(
     before = before?.toLocalDateTime(),
     after = after?.toLocalDateTime(),
@@ -213,28 +225,28 @@ private fun DatesWhereInputDto.toDomain(): DatesWhereInput {
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereInput.toDomain(): GeoPointWhereInput {
+fun org.migor.feedless.generated.types.GeoPointWhereInput.toDomain(): GeoPointWhereInput {
   return GeoPointWhereInput(
     near = near?.toDomain(),
     within = within?.toDomain()
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereNearInput.toDomain(): GeoPointWhereNearInput {
+fun org.migor.feedless.generated.types.GeoPointWhereNearInput.toDomain(): GeoPointWhereNearInput {
   return GeoPointWhereNearInput(
     point = point.toDomain(),
     distanceKm = distanceKm
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointWhereWithinInput.toDomain(): GeoPointWhereWithinInput {
+fun org.migor.feedless.generated.types.GeoPointWhereWithinInput.toDomain(): GeoPointWhereWithinInput {
   return GeoPointWhereWithinInput(
     nw = nw.toDomain(),
     se = se.toDomain()
   )
 }
 
-private fun org.migor.feedless.generated.types.GeoPointInput.toDomain(): GeoPointInput {
+fun org.migor.feedless.generated.types.GeoPointInput.toDomain(): GeoPointInput {
   return GeoPointInput(
     lat = lat,
     lng = lng
@@ -247,7 +259,7 @@ fun RecordOrderByInputDto.toDomain(): RecordOrderBy {
   )
 }
 
-private fun org.migor.feedless.generated.types.SortOrder.toDomain(): SortOrder {
+fun org.migor.feedless.generated.types.SortOrder.toDomain(): SortOrder {
   return when (this) {
     org.migor.feedless.generated.types.SortOrder.asc -> SortOrder.ASC
     else -> SortOrder.DESC

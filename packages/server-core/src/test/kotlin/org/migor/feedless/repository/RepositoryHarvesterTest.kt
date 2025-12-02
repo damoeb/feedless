@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
@@ -17,11 +18,10 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
 import org.migor.feedless.argThat
-import org.migor.feedless.data.jpa.document.DocumentEntity
-import org.migor.feedless.data.jpa.pipelineJob.SourcePipelineJobEntity
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
@@ -30,10 +30,13 @@ import org.migor.feedless.generated.types.MimeData
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.TextData
-import org.migor.feedless.pipeline.DocumentPipelineService
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipeline.FragmentOutput
-import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.pipelineJob.SourcePipelineJob
+import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
@@ -42,7 +45,7 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -51,48 +54,50 @@ import org.mockito.Mockito.`when`
 import org.mockito.junit.jupiter.MockitoExtension
 import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
-import org.springframework.data.domain.Pageable
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
 class RepositoryHarvesterTest {
 
-  private lateinit var documentService: DocumentService
-  private lateinit var sourceService: SourceService
+  private lateinit var documentUseCase: DocumentUseCase
+  private lateinit var sourceRepository: SourceRepository
   private lateinit var meterRegistry: MeterRegistry
-  private lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryUseCase: RepositoryUseCase
   private lateinit var scrapeService: ScrapeService
   private lateinit var repositoryHarvester: RepositoryHarvester
   private lateinit var repositoryId: RepositoryId
 
   private lateinit var repository: Repository
   private lateinit var source: Source
-  private lateinit var sourcePipelineService: SourcePipelineService
-  private lateinit var documentPipelineService: DocumentPipelineService
+  private lateinit var sourcePipelineJobRepository: SourcePipelineJobRepository
+  private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
+  private lateinit var documentRepository: DocumentRepository
 
   @BeforeEach
   fun setUp() = runTest {
     repositoryId = randomRepositoryId()
-    documentService = mock(DocumentService::class.java)
-    sourceService = mock(SourceService::class.java)
+    documentUseCase = mock(DocumentUseCase::class.java)
+    sourceRepository = mock(SourceRepository::class.java)
     meterRegistry = mock(MeterRegistry::class.java)
-    repositoryService = mock(RepositoryService::class.java)
+    repositoryUseCase = mock(RepositoryUseCase::class.java)
     scrapeService = mock(ScrapeService::class.java)
-    sourcePipelineService = mock(SourcePipelineService::class.java)
-    documentPipelineService = mock(DocumentPipelineService::class.java)
+    sourcePipelineJobRepository = mock(SourcePipelineJobRepository::class.java)
+    documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
+    documentRepository = mock(DocumentRepository::class.java)
 
     repositoryHarvester = RepositoryHarvester(
-      documentService,
-      documentPipelineService,
-      sourcePipelineService,
-      sourceService,
+      documentUseCase,
+      documentRepository,
+      documentPipelineJobRepository,
+      sourcePipelineJobRepository,
+      sourceRepository,
       scrapeService,
       meterRegistry,
-      repositoryService,
-      mock(HarvestService::class.java),
+      repositoryUseCase,
+      mock(RepositoryRepository::class.java),
+      mock(HarvestRepository::class.java),
     )
 
     `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
@@ -111,21 +116,19 @@ class RepositoryHarvesterTest {
     `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repository.plugins).thenReturn(emptyList())
 
-    `when`(sourceService.findAllByRepositoryIdFiltered(any2(), any2(), eq(null), eq(null))).thenAnswer {
-      if ((it.arguments[1] as Pageable).pageNumber == 0) {
+    `when`(sourceRepository.findAllByRepositoryIdFiltered(any2(), any2(), eq(null), eq(null))).thenAnswer {
+      if ((it.arguments[1] as PageableRequest).pageNumber == 0) {
         mutableListOf(source)
       } else {
         emptyList()
       }
     }
 
-    `when`(repositoryService.findById(eq(repositoryId))).thenReturn(repository)
+    `when`(repositoryUseCase.findById(eq(repositoryId))).thenReturn(repository)
 
     `when`(
-      repositoryService.calculateScheduledNextAt(
-        any(String::class.java), any(UserId::class.java), any(
-          Vertical::class.java
-        ), any(
+      repositoryUseCase.calculateScheduledNextAt(
+        any(String::class.java), any(GroupId::class.java), any(
           LocalDateTime::class.java
         )
       )
@@ -151,7 +154,7 @@ class RepositoryHarvesterTest {
       any2()
     )
 
-    verify(sourceService, times(1)).save(
+    verify(sourceRepository, times(1)).save(
       source
         .copy(
           disabled = false,
@@ -176,7 +179,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(repositoryId)
 
-    verify(sourceService, times(1))
+    verify(sourceRepository, times(1))
       .save(
         source.copy(
           errorsInSuccession = 0,
@@ -205,7 +208,7 @@ class RepositoryHarvesterTest {
       any(LogCollector::class.java)
     )
 
-    verify(sourceService, times(1))
+    verify(sourceRepository, times(1))
       .save(
         source.copy(
           disabled = true,
@@ -238,7 +241,7 @@ class RepositoryHarvesterTest {
       any(LogCollector::class.java)
     )
 
-    verify(sourceService, times(1))
+    verify(sourceRepository, times(1))
       .save(
         source.copy(
           errorsInSuccession = 0,
@@ -278,7 +281,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat { it.count() == 3 })
+      verify(documentRepository).saveAll(argThat { it.count() == 3 })
     }
 
   @Test
@@ -286,7 +289,7 @@ class RepositoryHarvesterTest {
     runTest(context = RequestContext(userId = randomUserId())) {
 
       `when`(
-        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(RepositoryId::class.java)
@@ -322,7 +325,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat { it.count() == 1 })
+      verify(documentRepository).saveAll(argThat { it.count() == 1 })
     }
 
   @Test
@@ -356,7 +359,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat { it.count() == 2 })
+      verify(documentRepository).saveAll(argThat { it.count() == 2 })
     }
 
   @Test
@@ -365,7 +368,7 @@ class RepositoryHarvesterTest {
       `when`(repository.plugins).thenReturn(listOf(mock(PluginExecution::class.java)))
       val existing = mock(Document::class.java)
       `when`(
-        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(RepositoryId::class.java)
@@ -399,7 +402,7 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentService).saveAll(argThat {
+      verify(documentRepository).saveAll(argThat {
         it.isEmpty()
       })
     }
@@ -416,7 +419,7 @@ class RepositoryHarvesterTest {
       val existing = mock(Document::class.java)
       `when`(existing.id).thenReturn(DocumentId())
       `when`(
-        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(RepositoryId::class.java)
@@ -454,10 +457,10 @@ class RepositoryHarvesterTest {
 
       repositoryHarvester.handleRepository(repositoryId)
 
-      verify(documentPipelineService).deleteAllByDocumentIdIn(argThat {
+      verify(documentPipelineJobRepository).deleteAllByDocumentIdIn(argThat {
         it.count() == 1
       })
-      verify(documentPipelineService).saveAll(argThat {
+      verify(documentPipelineJobRepository).saveAll(argThat {
         it.count() == 2 // number of plugins
       })
 //         TODO   verify(existing).status = ReleaseStatus.unreleased
@@ -467,11 +470,11 @@ class RepositoryHarvesterTest {
   fun `released documents will trigger post release effects`() =
     runTest(context = RequestContext(userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(emptyList())
-      val newDocument = mock(DocumentEntity::class.java)
-      `when`(newDocument.id).thenReturn(UUID.randomUUID())
+      val newDocument = mock(Document::class.java)
+      `when`(newDocument.id).thenReturn(DocumentId())
 
       `when`(
-        documentService.saveAll(any2())
+        documentRepository.saveAll(any2())
       ).thenAnswer { it.arguments[0] }
 //      `when`(
 //        documentService.findFirstByContentHashOrUrlAndRepositoryId(
@@ -507,7 +510,7 @@ class RepositoryHarvesterTest {
       repositoryHarvester.handleRepository(repositoryId)
 
       // then
-      verify(documentService, times(1)).triggerPostReleaseEffects(any2(), any2())
+      verify(documentUseCase, times(1)).triggerPostReleaseEffects(any2(), any2())
     }
 
   @Test
@@ -515,7 +518,7 @@ class RepositoryHarvesterTest {
     runTest(context = RequestContext(userId = randomUserId())) {
       val existing = mock(Document::class.java)
       `when`(
-        documentService.findFirstByContentHashOrUrlAndRepositoryId(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
           any(String::class.java),
           any(RepositoryId::class.java)
@@ -559,7 +562,7 @@ class RepositoryHarvesterTest {
 //    TODO        verify(existing).title = "updated.title"
 //            verify(existing).text = "updated.text"
 //            verify(existing).startingAt = updatedStartingAt
-//            verify(documentService).saveAll(argThat<List<DocumentEntity>> {
+//            verify(documentService).saveAll(argThat<List<Document>> {
 //                it.count() == 1 && it.first() == existing
 //            })
     }
@@ -581,7 +584,7 @@ class RepositoryHarvesterTest {
   @Test
   fun `will follow pagination links`() = runTest(context = RequestContext(userId = randomUserId())) {
     `when`(
-      sourcePipelineService.existsBySourceIdAndUrl(
+      sourcePipelineJobRepository.existsBySourceIdAndUrl(
         any(SourceId::class.java),
         any(String::class.java)
       )
@@ -618,7 +621,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.handleRepository(repositoryId)
 
-    verify(sourcePipelineService).saveAll(argThat<List<SourcePipelineJobEntity>> { it.count() == 1 })
+    verify(sourcePipelineJobRepository).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
   }
 
   private fun newJsonItem(

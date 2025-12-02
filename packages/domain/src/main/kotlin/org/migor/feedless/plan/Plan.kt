@@ -7,12 +7,12 @@ import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 
 data class Plan(
-  val id: PlanId,
+  val id: PlanId = PlanId(),
   val userId: UserId,
   val productId: ProductId,
-  val startedAt: LocalDateTime?,
-  val terminatedAt: LocalDateTime?,
-  val createdAt: LocalDateTime
+  val startedAt: LocalDateTime? = null,
+  val terminatedAt: LocalDateTime? = null,
+  val createdAt: LocalDateTime = LocalDateTime.now(),
 ) {
   suspend fun product(repository: ProductRepository): Product? {
     return repository.findById(productId)

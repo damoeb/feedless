@@ -23,7 +23,7 @@ import org.migor.feedless.payment.PaymentStatus
  */
 class StripeServiceTest {
 
-  private lateinit var stripeService: StripeService
+  private lateinit var stripeService: StripeUseCase
 
   // Test configuration
   private val testApiKey = System.getenv("STRIPE_API_KEY") ?: "sk_test_DUMMY_KEY_FOR_TESTING"
@@ -33,7 +33,7 @@ class StripeServiceTest {
 
   @BeforeEach
   fun setup() {
-    stripeService = StripeService(
+    stripeService = StripeUseCase(
       apiKey = testApiKey,
       webhookSecret = testWebhookSecret
     )
@@ -47,7 +47,7 @@ class StripeServiceTest {
   @Test
   fun `test createPaymentSession with invalid API key throws exception`() = runTest {
     if (shouldRunIntegrationTests) {
-      val invalidService = StripeService(
+      val invalidService = StripeUseCase(
         apiKey = "sk_test_invalid",
         webhookSecret = testWebhookSecret
       )

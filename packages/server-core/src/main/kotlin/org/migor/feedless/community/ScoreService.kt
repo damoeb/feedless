@@ -10,11 +10,10 @@ import org.migor.feedless.community.text.complex.QualityScorer
 import org.migor.feedless.community.text.complex.QualityWeights
 import org.migor.feedless.community.text.complex.RelevanceScorer
 import org.migor.feedless.community.text.complex.RelevanceWeights
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 data class ScoreWeights(
   val civility: CivilityWeights,
@@ -24,7 +23,6 @@ data class ScoreWeights(
 )
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class ScoreService(
   private val civilityScorer: CivilityScorer,

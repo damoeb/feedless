@@ -12,7 +12,8 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
@@ -35,9 +36,9 @@ import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceService
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.User
-import org.migor.feedless.user.UserService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -53,27 +54,28 @@ class FeedServiceTest {
   private lateinit var feedService: FeedService
   private lateinit var feedParserService: FeedParserService
   private lateinit var filterPlugin: CompositeFilterPlugin
-  private lateinit var userService: UserService
   private lateinit var webToFeedTransformer: WebToFeedTransformer
   private lateinit var scrapeService: ScrapeService
-  private lateinit var sourceService: SourceService
-  private lateinit var documentService: DocumentService
+  private lateinit var sourceUseCase: SourceUseCase
+  private lateinit var documentRepository: DocumentRepository
   private lateinit var environment: Environment
+  private lateinit var documentUseCase: DocumentUseCase
+  private lateinit var sourceRepository: SourceRepository
 
   @BeforeEach
   fun beforeEach() = runTest {
     feedParserService = mock(FeedParserService::class.java)
     filterPlugin = mock(CompositeFilterPlugin::class.java)
 
-    userService = mock(UserService::class.java)
     val adminUser = mock(User::class.java)
     `when`(adminUser.id).thenReturn(randomUserId())
-    `when`(userService.findAdminUser()).thenReturn(adminUser)
 
     webToFeedTransformer = mock(WebToFeedTransformer::class.java)
     scrapeService = mock(ScrapeService::class.java)
-    sourceService = mock(SourceService::class.java)
-    documentService = mock(DocumentService::class.java)
+    sourceUseCase = mock(SourceUseCase::class.java)
+    documentRepository = mock(DocumentRepository::class.java)
+    documentUseCase = mock(documentUseCase::class.java)
+    sourceRepository = mock(SourceRepository::class.java)
     environment = mock(Environment::class.java)
     `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
 
@@ -97,13 +99,14 @@ class FeedServiceTest {
       feedParserService,
       scrapeService,
       authService,
-      sourceService,
-      documentService,
+      documentUseCase,
+      documentRepository,
       filterPlugin,
       mock(JwtTokenIssuer::class.java),
       repositoryClaimRepository,
       mock(RepositoryRepository::class.java),
       featureService,
+      sourceRepository,
     )
   }
 
@@ -113,8 +116,8 @@ class FeedServiceTest {
     `when`(source.title).thenReturn("title")
     `when`(source.createdAt).thenReturn(LocalDateTime.now())
 
-    `when`(sourceService.findById(any2())).thenReturn(source)
-    `when`(documentService.findAllBySourceId(any2(), any2())).thenReturn(listOf())
+    `when`(sourceRepository.findById(any2())).thenReturn(source)
+    `when`(documentRepository.findAllBySourceId(any2(), any2())).thenReturn(listOf())
 
     val feed = feedService.getFeed(mock(SourceId::class.java), "feedUrl")
     assertThat(feed).isNotNull()

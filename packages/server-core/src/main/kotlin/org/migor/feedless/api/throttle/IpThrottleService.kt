@@ -20,8 +20,6 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
 import java.time.Duration
@@ -29,7 +27,6 @@ import java.util.concurrent.ConcurrentHashMap
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.throttle} && ${AppLayer.api}")
 class IpThrottleService(
   private val authService: AuthService

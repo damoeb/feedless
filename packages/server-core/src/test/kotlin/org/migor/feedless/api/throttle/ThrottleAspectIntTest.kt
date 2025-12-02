@@ -15,15 +15,15 @@ import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.generated.DgsClient
-import org.migor.feedless.license.LicenseService
+import org.migor.feedless.license.LicenseUseCase
 import org.migor.feedless.secrets.OneTimePasswordService
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
@@ -51,13 +51,13 @@ import kotlin.time.Duration.Companion.seconds
 )
 @MockitoBean(
   types = [
-    LicenseService::class,
-    UserService::class,
-    DocumentService::class,
+    LicenseUseCase::class,
+    UserUseCase::class,
+    DocumentUseCase::class,
     HttpService::class,
     PropertyService::class,
     PermissionService::class,
-    UserSecretService::class,
+    UserSecretUseCase::class,
     UserDAO::class,
     OneTimePasswordService::class,
   ]

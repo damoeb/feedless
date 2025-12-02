@@ -3,7 +3,6 @@ package org.migor.feedless.repository
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -17,16 +16,13 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Sort
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.analytics} & ${AppLayer.scheduler}")
 class AnalyticsSyncExecutor internal constructor(
   private val analyticsService: AnalyticsService,
-  private val repositoryService: RepositoryService
+  private val repositoryUseCase: RepositoryUseCase
 ) {
 
   private val log = LoggerFactory.getLogger(AnalyticsSyncExecutor::class.simpleName)
@@ -39,7 +35,7 @@ class AnalyticsSyncExecutor internal constructor(
       LocalDateTime.now().minusDays(1)
       val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
       val repos =
-        repositoryService.findAllByVisibilityAndLastPullSyncBefore(
+        repositoryUseCase.findAllByVisibilityAndLastPullSyncBefore(
           EntityVisibility.isPublic,
           LocalDateTime.now(),
           pageable
@@ -48,25 +44,23 @@ class AnalyticsSyncExecutor internal constructor(
       if (analyticsService.canPullEvents()) {
 
         val semaphore = Semaphore(2)
-        runBlocking {
-          runCatching {
-            coroutineScope {
-              repos.map { repo ->
-                async(RequestContext(userId = repo.ownerId)) {
-                  semaphore.acquire()
-                  try {
-                    val views = analyticsService.getUniquePageViewsForRepository(repo.id)
-                    repositoryService.updatePullsFromAnalytics(repo.id, views)
-                  } finally {
-                    semaphore.release()
-                  }
+        runCatching {
+          coroutineScope {
+            repos.map { repo ->
+              async(RequestContext(userId = repo.ownerId)) {
+                semaphore.acquire()
+                try {
+                  val views = analyticsService.getUniquePageViewsForRepository(repo.id)
+                  repositoryUseCase.updatePullsFromAnalytics(repo.id, views)
+                } finally {
+                  semaphore.release()
                 }
-              }.awaitAll()
-            }
-            log.debug("done")
-          }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}")
+              }
+            }.awaitAll()
           }
+          log.debug("done")
+        }.onFailure {
+          log.error("[$corrId] batch refresh done: ${it.message}")
         }
       }
     } catch (e: Exception) {

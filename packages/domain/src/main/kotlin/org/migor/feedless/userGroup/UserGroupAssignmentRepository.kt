@@ -5,8 +5,8 @@ import org.migor.feedless.user.UserId
 
 interface UserGroupAssignmentRepository {
 
-  suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment>
-  suspend fun findByUserIdAndGroupId(userId: UserId, groupId: GroupId): UserGroupAssignment?
-  suspend fun save(assignment: UserGroupAssignment): UserGroupAssignment
-  suspend fun delete(assignment: UserGroupAssignment)
+  fun findAllByUserId(userId: UserId): List<UserGroupAssignment>
+  fun findByUserIdAndGroupId(userId: UserId, groupId: GroupId): UserGroupAssignment?
+  fun save(assignment: UserGroupAssignment): UserGroupAssignment
+  fun delete(assignment: UserGroupAssignment)
 }

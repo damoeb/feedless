@@ -6,11 +6,14 @@ import java.time.LocalDateTime
 
 interface PlanRepository {
 
-  suspend fun findAllByUser(userId: UserId): List<Plan>
+  fun findAllByUser(userId: UserId): List<Plan>
 
-  suspend fun findActiveByUserAndProductIn(
+  fun findActiveByUserAndProductIn(
     userId: UserId,
     products: List<Vertical>,
     date: LocalDateTime,
   ): Plan?
+
+  fun save(plan: Plan): Plan
+  fun findById(id: PlanId): Plan?
 }

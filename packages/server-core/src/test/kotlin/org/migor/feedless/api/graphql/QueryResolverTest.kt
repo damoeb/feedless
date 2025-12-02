@@ -10,13 +10,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.generated.DgsClient
-import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
-import org.migor.feedless.secrets.UserSecretService
+import org.migor.feedless.generated.DgsClient
+import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.session.PermissionService
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -43,10 +43,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 @MockitoBean(
   types = [
     HttpService::class,
-    UserService::class,
+    UserUseCase::class,
     UserDAO::class,
     ServerConfigResolver::class,
-    UserSecretService::class,
+    UserSecretUseCase::class,
     UserSecretDAO::class,
     PermissionService::class,
     OAuth2AuthorizedClientService::class

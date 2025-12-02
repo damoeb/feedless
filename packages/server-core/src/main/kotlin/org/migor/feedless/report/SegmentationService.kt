@@ -4,24 +4,17 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.report.SegmentationDAO
-import org.migor.feedless.data.jpa.report.SegmentationEntity
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
 class SegmentationService(
-  val segmentationDAO: SegmentationDAO,
+  val segmentationRepository: SegmentationRepository,
 ) {
 
-  @Transactional
-  suspend fun saveSegmentation(segmentation: SegmentationEntity): SegmentationEntity {
-    return withContext(Dispatchers.IO) {
-      segmentationDAO.save(segmentation)
-    }
+  @Deprecated("use repository")
+  suspend fun saveSegmentation(segmentation: Segmentation): Segmentation = withContext(Dispatchers.IO) {
+    segmentationRepository.save(segmentation)
   }
 }

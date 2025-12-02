@@ -1,13 +1,11 @@
 package org.migor.feedless.agent
 
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.data.jpa.agent.AgentEntity
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecretId
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 @Profile(AppProfiles.agent)
@@ -28,7 +26,8 @@ class StatelessAgentRegistry : AgentRegistry {
     registry.remove(agent)
   }
 
-  override suspend fun save(agent: Agent) {
+  override suspend fun save(agent: Agent): Agent {
     registry.add(agent)
+    return agent
   }
 }

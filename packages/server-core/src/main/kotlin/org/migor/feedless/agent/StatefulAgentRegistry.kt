@@ -1,38 +1,36 @@
 package org.migor.feedless.agent
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecretId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.agent} & ${AppLayer.repository} & ${AppLayer.service}")
 class StatefulAgentRegistry(
-  private val agentDAO: AgentRepository
+  private val agentRepository: AgentRepository
 ) : AgentRegistry {
 
-  @Transactional(readOnly = true)
   override suspend fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UserId?): List<Agent> {
-    return agentDAO.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+    return withContext(Dispatchers.IO) {
+      agentRepository.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
+    }
   }
 
-  @Transactional(readOnly = true)
-  override suspend fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UserSecretId): Agent? {
-    return agentDAO.findByConnectionIdAndSecretKeyId(connectionId, secretKeyId)
+  override suspend fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UserSecretId): Agent? =
+    withContext(Dispatchers.IO) {
+      agentRepository.findByConnectionIdAndSecretKeyId(connectionId, secretKeyId)
+    }
+
+  override suspend fun delete(agent: Agent) = withContext(Dispatchers.IO) {
+    agentRepository.deleteById(agent.id)
   }
 
-  @Transactional
-  override suspend fun delete(agent: Agent) {
-    agentDAO.deleteById(agent.id)
-  }
-
-  @Transactional
-  override suspend fun save(agent: Agent) {
-    agentDAO.save(agent)
+  override suspend fun save(agent: Agent): Agent = withContext(Dispatchers.IO) {
+    agentRepository.save(agent)
   }
 }

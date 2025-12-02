@@ -3,6 +3,7 @@ package org.migor.feedless.connector.github
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoriesFilter
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryProvider
@@ -24,6 +25,7 @@ class GitRepositoryProvider : RepositoryProvider {
     val githubCapability = fromJson<GithubCapability>(capability.capabilityPayload)
 
     val userId = UserId() // todo get from capability
+    val groupId = GroupId() // todo get from capability
 
     val accountConfig = GithubAccountConfig(githubCapability)
     val githubAccount = GithubAccount(accountConfig)
@@ -33,7 +35,8 @@ class GitRepositoryProvider : RepositoryProvider {
       Repository(
         title = githubRepo.name,
         description = "", //githubRepo.description ?: "",
-        ownerId = userId
+        ownerId = userId,
+        groupId = groupId
       )
     }
 

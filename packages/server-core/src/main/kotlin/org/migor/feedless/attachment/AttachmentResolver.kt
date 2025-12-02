@@ -16,18 +16,14 @@ import org.migor.feedless.generated.types.DeleteAttachmentInput
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.multipart.MultipartFile
-import java.util.*
 import org.migor.feedless.generated.types.Attachment as AttachmentDto
 
 
 @DgsComponent
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.attachment} & ${AppLayer.api}")
 class AttachmentResolver(
-  private val attachmentService: AttachmentService,
+  private val attachmentUseCase: AttachmentUseCase,
 ) {
 
   private val log = LoggerFactory.getLogger(AttachmentResolver::class.simpleName)
@@ -42,7 +38,7 @@ class AttachmentResolver(
     log.debug("createAttachment $data")
     val file: MultipartFile = dfe.getArgument<MultipartFile>("input")!!
     val attachment = data.attachment.toDomain(file)
-    attachmentService.createAttachment(DocumentId(data.where.id), attachment).toDto()
+    attachmentUseCase.createAttachment(DocumentId(data.where.id), attachment).toDto()
   }
 
   @Throttled
@@ -53,14 +49,14 @@ class AttachmentResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAttachmentInput,
   ): Boolean = coroutineScope {
     log.debug("deleteAttachment $data")
-    attachmentService.deleteAttachment(AttachmentId(data.where.id))
+    attachmentUseCase.deleteAttachment(AttachmentId(data.where.id))
     true
   }
 }
 
 private fun CreateAttachmentFieldsInput.toDomain(file: MultipartFile): Attachment {
   return Attachment(
-    id = AttachmentId(UUID.randomUUID()),
+    id = AttachmentId(),
     name = name.ifBlank { file.originalFilename ?: "unknown" },
     hasData = true,
     remoteDataUrl = null,

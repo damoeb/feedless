@@ -2,7 +2,6 @@ package org.migor.feedless.community.text.complex
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.community.CommentEntity
 import org.migor.feedless.community.LanguageService
 import org.migor.feedless.community.text.simple.CitationScorer
 import org.migor.feedless.community.text.simple.EngagementScorer
@@ -10,11 +9,10 @@ import org.migor.feedless.community.text.simple.ReadingEaseScorer
 import org.migor.feedless.community.text.simple.SpellingScorer
 import org.migor.feedless.community.text.simple.VocabularyScorer
 import org.migor.feedless.community.text.simple.WordCountScorer
+import org.migor.feedless.data.jpa.comment.CommentEntity
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 data class QualityWeights(
   val engagement: Double,
@@ -26,7 +24,6 @@ data class QualityWeights(
 )
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 @Profile("${AppProfiles.community} & ${AppLayer.service}")
 class QualityScorer(
   private val vocabularyScorer: VocabularyScorer,

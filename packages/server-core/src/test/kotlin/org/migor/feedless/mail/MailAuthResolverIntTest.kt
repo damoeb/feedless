@@ -22,7 +22,7 @@ import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Vertical
-import org.migor.feedless.report.ReportService
+import org.migor.feedless.report.ReportUseCase
 import org.migor.feedless.session.PermissionService
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
@@ -55,7 +55,7 @@ import java.util.*
     ServerConfigResolver::class,
     PermissionService::class,
     OneTimePasswordDAO::class,
-    ReportService::class,
+    ReportUseCase::class,
     MailService::class,
     OAuth2AuthorizedClientService::class
   ]

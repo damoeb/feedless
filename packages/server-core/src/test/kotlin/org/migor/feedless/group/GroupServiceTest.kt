@@ -12,6 +12,9 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
@@ -20,40 +23,49 @@ import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
 class GroupServiceTest {
 
+  private lateinit var capabilityService: CapabilityService
   private val currentUserId = UserId()
   private val userId = randomUserId()
   private val groupId = randomGroupId()
-  private lateinit var userGroupAssignmentDAO: UserGroupAssignmentRepository
-  private lateinit var userDAO: UserRepository
-  private lateinit var groupService: GroupService
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
+  private lateinit var userRepository: UserRepository
+  private lateinit var groupUseCase: GroupUseCase
   private lateinit var user: User
   private lateinit var currentUser: User
   private lateinit var group: Group
 
   @BeforeEach
   fun setUp() = runTest {
-    userGroupAssignmentDAO = mock(UserGroupAssignmentRepository::class.java)
-    userDAO = mock(UserRepository::class.java)
-    val groupDAO = mock(GroupRepository::class.java)
+    userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
+    userRepository = mock(UserRepository::class.java)
 
     user = mock(User::class.java)
     `when`(user.id).thenReturn(userId)
 
     currentUser = mock(User::class.java)
     `when`(currentUser.id).thenReturn(currentUserId)
-    `when`(userDAO.findById(any2())).thenReturn(currentUser)
+    `when`(userRepository.findById(any2())).thenReturn(currentUser)
 
     group = mock(Group::class.java)
     `when`(group.id).thenReturn(groupId)
 
-    groupService = GroupService(userGroupAssignmentDAO, userDAO, groupDAO)
-    `when`(userGroupAssignmentDAO.save(any2())).thenAnswer { it.arguments[0] }
+    capabilityService = mock(CapabilityService::class.java)
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(UserId())))
+
+    groupUseCase = GroupUseCase(
+      userGroupAssignmentRepository,
+      userRepository,
+      capabilityService
+    )
+    `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
 
   @ParameterizedTest
@@ -65,15 +77,16 @@ class GroupServiceTest {
     ]
   )
   fun `admin can add a user with role`(role: RoleInGroup) =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest {
       // given
+      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(true)
 
       // when
-      groupService.addUserToGroup(user, group, role)
+      groupUseCase.addUserToGroup(user, group, role)
 
       // then
-      verify(userGroupAssignmentDAO).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
+      verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
     }
 
   @ParameterizedTest
@@ -85,29 +98,31 @@ class GroupServiceTest {
     ]
   )
   fun `owner of group can add a user with role`(role: RoleInGroup) =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest {
       // given
+      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(false)
       mockCurrentUserRoleForGroup(RoleInGroup.owner)
 
       // when
-      groupService.addUserToGroup(user, group, role)
+      groupUseCase.addUserToGroup(user, group, role)
 
       // then
-      verify(userGroupAssignmentDAO).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
+      verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
     }
 
   @Test
   fun `editor of group cannot add a user with role owner`() =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest {
       // given
+      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(false)
       mockCurrentUserRoleForGroup(RoleInGroup.editor)
 
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runBlocking(RequestContext(userId = currentUserId)) {
-          groupService.addUserToGroup(user, group, RoleInGroup.owner)
+          groupUseCase.addUserToGroup(user, group, RoleInGroup.owner)
         }
       }
     }
@@ -127,7 +142,7 @@ class GroupServiceTest {
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runBlocking(RequestContext(userId = currentUserId)) {
-          groupService.addUserToGroup(user, group, RoleInGroup.viewer)
+          groupUseCase.addUserToGroup(user, group, RoleInGroup.viewer)
         }
       }
     }
@@ -139,24 +154,25 @@ class GroupServiceTest {
     val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
     // when
-    groupService.removeUserFromGroup(user, group)
+    groupUseCase.removeUserFromGroup(user, group)
 
     // then
-    verify(userGroupAssignmentDAO).delete(eq(assignment))
+    verify(userGroupAssignmentRepository).delete(eq(assignment))
   }
 
   @Test
-  fun `owner can remove user from group`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `owner can remove user from group`() = runTest {
     // given
+    mockCurrentUser(currentUserId)
     mockCurrentUserIsAdmin(false)
     mockUserRoleForGroup(currentUserId, RoleInGroup.owner)
     val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
     // when
-    groupService.removeUserFromGroup(user, group)
+    groupUseCase.removeUserFromGroup(user, group)
 
     // then
-    verify(userGroupAssignmentDAO).delete(eq(assignment))
+    verify(userGroupAssignmentRepository).delete(eq(assignment))
   }
 
 
@@ -168,11 +184,12 @@ class GroupServiceTest {
     ]
   )
   fun `others cannot remove a user from group`(role: RoleInGroup) =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest {
+      mockCurrentUser(currentUserId)
       mockCurrentUserRoleForGroup(role)
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runTest(context = RequestContext(userId = currentUserId)) {
-          groupService.removeUserFromGroup(user, group)
+          groupUseCase.removeUserFromGroup(user, group)
         }
       }
     }
@@ -185,7 +202,7 @@ class GroupServiceTest {
   private suspend fun mockUserRoleForGroup(userId: UserId, role: RoleInGroup): UserGroupAssignment {
     val assignment = mock(UserGroupAssignment::class.java)
     `when`(assignment.role).thenReturn(role)
-    `when`(userGroupAssignmentDAO.findByUserIdAndGroupId(eq(userId), any2())).thenReturn(assignment)
+    `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(eq(userId), any2())).thenReturn(assignment)
     return assignment
   }
 
@@ -193,5 +210,9 @@ class GroupServiceTest {
     `when`(currentUser.admin).thenReturn(isAdmin)
   }
 
+  private fun mockCurrentUser(currentUserId: UserId) {
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
+  }
 
 }

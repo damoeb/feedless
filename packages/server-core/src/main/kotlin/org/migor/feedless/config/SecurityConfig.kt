@@ -3,8 +3,10 @@ package org.migor.feedless.config
 import io.micrometer.core.instrument.MeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
@@ -17,7 +19,8 @@ import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.UserUseCase
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -65,7 +68,9 @@ class SecurityConfig {
   lateinit var allowedOrigins: String
 
   @Autowired(required = false)
-  private var userService: UserService? = null
+  private var userUseCase: UserUseCase? = null
+
+  private lateinit var userRepository: UserRepository
 
   @Autowired
   private lateinit var jwtRequestFilter: JwtRequestFilter
@@ -226,15 +231,15 @@ class SecurityConfig {
     val attributes = (authentication.principal as DefaultOAuth2User).attributes
     val email = attributes["email"] as String?
     val githubId = (attributes["id"] as Int).toString()
-    return resolveUserByGithubId(githubId)?.also { userService!!.updateLegacyUser(it, githubId) }
-      ?: userService!!.createUser(
+    return resolveUserByGithubId(githubId)?.also { userUseCase!!.updateLegacyUser(it.id, githubId) }
+      ?: userUseCase!!.createUser(
         email = email,
         githubId = githubId,
       )
   }
 
-  private suspend fun resolveUserByGithubId(githubId: String): User? {
-    return userService!!.findByGithubId(githubId)
+  private suspend fun resolveUserByGithubId(githubId: String): User? = withContext(Dispatchers.IO) {
+    userRepository.findByGithubId(githubId)
       .also {
         it?.let {
           meterRegistry.counter(AppMetrics.userLogin).increment()

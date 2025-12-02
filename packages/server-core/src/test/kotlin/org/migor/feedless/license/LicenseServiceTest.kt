@@ -36,14 +36,14 @@ class LicenseServiceTest {
   @Mock
   lateinit var environment: Environment
 
-  lateinit var service: LicenseService
+  lateinit var service: LicenseUseCase
 
   private val keyID = "test"
 
   @BeforeEach
   fun setup() {
     Mockito.`when`(environment.acceptsProfiles(ArgumentMatchers.any(Profiles::class.java))).thenReturn(false)
-    service = LicenseService()
+    service = LicenseUseCase()
     service.environment = environment
     thisKeyPair = service.createLicenseKey(keyID, SecureRandom("this".toByteArray()))
     otherKeyPair = service.createLicenseKey(keyID, SecureRandom("other".toByteArray()))

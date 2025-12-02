@@ -9,15 +9,17 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.Vertical
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
+import org.migor.feedless.any2
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UnresolvedCapability
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.document.DocumentDAO
-import org.migor.feedless.data.jpa.product.ProductDAO
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
-import org.migor.feedless.document.DocumentService
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
@@ -32,14 +34,16 @@ import org.migor.feedless.generated.types.ScrapeExtractInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.product.ProductService
+import org.migor.feedless.product.ProductRepository
+import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.user.User
-import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserService
+import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -63,10 +67,10 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
 )
 @MockitoBean(
   types = [
-    ProductDAO::class,
-    DocumentDAO::class,
-    DocumentService::class,
-    ProductService::class,
+    ProductRepository::class,
+    DocumentRepository::class,
+    DocumentUseCase::class,
+    ProductUseCase::class,
     PropertyService::class,
     InboxService::class,
 //  SourceService::class
@@ -75,7 +79,7 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
 )
 class RepositoryServiceIntTest {
   @Autowired
-  private lateinit var repositoryService: RepositoryService
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @MockitoBean
   private lateinit var featureService: FeatureService
@@ -87,10 +91,13 @@ class RepositoryServiceIntTest {
   private lateinit var sessionService: SessionService
 
   @Autowired
-  private lateinit var userService: UserService
+  private lateinit var userUseCase: UserUseCase
 
   @MockitoBean
   private lateinit var planConstraintsService: PlanConstraintsService
+
+  @MockitoBean
+  private lateinit var capabilityService: CapabilityService
 
   private lateinit var user: User
 
@@ -99,22 +106,22 @@ class RepositoryServiceIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    user = userService.createUser("foo@bar.com")
+    user = userUseCase.createUser("foo@bar.com")
   }
 
   @Test
   fun `create repos`() = runTest(context = RequestContext(userId = user.id)) {
+    `when`(capabilityService.getCapability(UserCapability.ID))
+      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(user.id)))
 
     `when`(sessionService.user())
       .thenReturn(user)
-    `when`(sessionService.activeProductFromRequest())
-      .thenReturn(Vertical.feedless)
-    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(UserId::class.java)))
+    `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
       .thenReturn(false)
-    `when`(planConstraintsService.coerceVisibility(eq(null)))
+    `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
       .thenReturn(EntityVisibility.isPublic)
 
-    repositoryService.create(
+    repositoryUseCase.create(
       listOf(
         RepositoryCreateInput(
           product = VerticalDto.rssProxy,

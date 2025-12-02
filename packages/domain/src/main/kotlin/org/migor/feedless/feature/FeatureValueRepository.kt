@@ -1,19 +1,19 @@
 package org.migor.feedless.feature
 
-import org.migor.feedless.plan.PlanId
-
 interface FeatureValueRepository {
 
-  suspend fun findByFeatureGroupIdAndFeatureId(planId: PlanId, featureId: FeatureId): FeatureValue?
+  fun findByFeatureGroupIdAndFeatureId(featureGroupId: FeatureGroupId, featureId: FeatureId): FeatureValue?
 
-  suspend fun resolveByFeatureGroupIdAndName(
+  fun resolveByFeatureGroupIdAndName(
     featureGroupId: FeatureGroupId,
     feature: String
   ): FeatureValue?
 
 
-  suspend fun resolveAllByFeatureGroupId(featureGroupId: FeatureGroupId): List<FeatureValue>
-  suspend fun findAllByFeatureGroupId(featureGroupId: FeatureGroupId): List<FeatureValue>
-  suspend fun deleteAllByFeatureGroupId(id: FeatureGroupId)
+  fun resolveAllByFeatureGroupId(featureGroupId: FeatureGroupId): List<FeatureValue>
+  fun findAllByFeatureGroupId(featureGroupId: FeatureGroupId): List<FeatureValue>
+  fun deleteAllByFeatureGroupId(id: FeatureGroupId)
+  fun findById(id: FeatureValueId): FeatureValue?
+  fun save(feature: FeatureValue): FeatureValue
 
 }

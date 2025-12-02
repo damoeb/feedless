@@ -5,12 +5,9 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)

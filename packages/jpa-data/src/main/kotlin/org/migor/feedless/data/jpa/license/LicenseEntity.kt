@@ -12,6 +12,7 @@ import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.order.OrderEntity
+import org.migor.feedless.license.License
 import java.util.*
 
 @Entity
@@ -38,6 +39,10 @@ open class LicenseEntity : EntityWithUUID() {
   open var order: OrderEntity? = null
 }
 
-fun LicenseEntity.toDomain(): org.migor.feedless.license.License {
-  return LicenseMapper.Companion.INSTANCE.toDomain(this)
+fun LicenseEntity.toDomain(): License {
+  return LicenseMapper.INSTANCE.toDomain(this)
+}
+
+fun License.toEntity(): LicenseEntity {
+  return LicenseMapper.INSTANCE.toEntity(this)
 }

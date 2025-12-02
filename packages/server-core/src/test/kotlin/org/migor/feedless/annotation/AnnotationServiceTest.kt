@@ -34,7 +34,7 @@ class AnnotationServiceTest {
   private lateinit var voteRepository: VoteRepository
   private lateinit var textAnnotationRepository: TextAnnotationRepository
   private lateinit var annotationRepository: AnnotationRepository
-  private lateinit var annotationService: AnnotationService
+  private lateinit var annotationUseCase: AnnotationUseCase
   private lateinit var currentUser: User
   private val currentUserId = randomUserId()
   private val documentId = randomDocumentId()
@@ -46,7 +46,7 @@ class AnnotationServiceTest {
     `when`(voteRepository.save(any(Vote::class.java))).thenAnswer { it.arguments[0] }
     textAnnotationRepository = mock(TextAnnotationRepository::class.java)
     annotationRepository = mock(AnnotationRepository::class.java)
-    annotationService = AnnotationService(annotationRepository, voteRepository, textAnnotationRepository)
+    annotationUseCase = AnnotationUseCase(annotationRepository, voteRepository, textAnnotationRepository)
 
     currentUser = mock(User::class.java)
     `when`(currentUser.id).thenReturn(currentUserId)
@@ -59,7 +59,7 @@ class AnnotationServiceTest {
       runTest(context = RequestContext(userId = currentUserId)) {
         mockAnnotationExists(true)
 
-        annotationService.createAnnotation(
+        annotationUseCase.createAnnotation(
           CreateAnnotationInput(
             where = AnnotationWhereInput(
               document = RecordUniqueWhereInput(UUID.randomUUID().toString())
@@ -76,7 +76,7 @@ class AnnotationServiceTest {
   @Test
   fun `flag a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.uuid.toString())
@@ -93,7 +93,7 @@ class AnnotationServiceTest {
   @Test
   fun `upVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.uuid.toString()),
@@ -110,7 +110,7 @@ class AnnotationServiceTest {
   @Test
   fun `downVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           document = RecordUniqueWhereInput(documentId.uuid.toString()),
@@ -127,7 +127,7 @@ class AnnotationServiceTest {
   @Test
   fun `flag a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
@@ -144,7 +144,7 @@ class AnnotationServiceTest {
   @Test
   fun `upVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
@@ -161,7 +161,7 @@ class AnnotationServiceTest {
   @Test
   fun `downVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
     mockAnnotationExists(false)
-    annotationService.createAnnotation(
+    annotationUseCase.createAnnotation(
       CreateAnnotationInput(
         where = AnnotationWhereInput(
           repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
@@ -186,7 +186,7 @@ class AnnotationServiceTest {
       runTest(context = RequestContext(userId = currentUserId)) {
         `when`(annotationRepository.findById(any(AnnotationId::class.java))).thenReturn(annotation)
 
-        annotationService.deleteAnnotation(
+        annotationUseCase.deleteAnnotation(
           DeleteAnnotationInput(
             where = AnnotationWhereUniqueInput(annotationId.uuid.toString())
           ), currentUser
