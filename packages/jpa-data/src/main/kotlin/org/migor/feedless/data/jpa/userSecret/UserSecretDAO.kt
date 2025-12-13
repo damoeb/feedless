@@ -8,8 +8,6 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 
@@ -32,7 +30,6 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
   fun existsByValueAndOwnerId(value: String, ownerId: UUID): Boolean
 
   @Modifying
-  @Transactional(propagation = Propagation.REQUIRED)
   @Query(
     """
     update UserSecretEntity K SET K.lastUsedAt = :date where K.id = :id

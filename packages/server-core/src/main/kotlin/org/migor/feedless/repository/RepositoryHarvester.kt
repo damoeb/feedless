@@ -30,7 +30,6 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
-import org.migor.feedless.group.GroupId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
@@ -46,14 +45,13 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
+import org.migor.feedless.user.groupId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.net.ConnectException
 import java.net.UnknownHostException
 import java.time.Duration
@@ -92,7 +90,6 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
   suspend fun handleRepository(repositoryId: RepositoryId) {
     val corrId = coroutineContext.corrId()
     runCatching {
@@ -114,7 +111,7 @@ class RepositoryHarvester(
 
       scrapeSources(repositoryId)
 
-      val groupId = resolveGroupId()
+      val groupId = coroutineContext.groupId()
 
       val scheduledNextAt = repositoryUseCase.calculateScheduledNextAt(
         repository.sourcesSyncCron,
@@ -132,10 +129,6 @@ class RepositoryHarvester(
     }.onFailure {
       log.error("[$corrId] handleRepository failed: ${it.message}", it)
     }
-  }
-
-  private fun resolveGroupId(): GroupId {
-    TODO("Not yet implemented")
   }
 
   private suspend fun scrapeSources(

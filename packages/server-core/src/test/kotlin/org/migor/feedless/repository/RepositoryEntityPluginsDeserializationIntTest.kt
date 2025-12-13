@@ -21,7 +21,9 @@ import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.group.GroupId
+import org.migor.feedless.group.Group
+import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.order.OrderRepository
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.pipeline.plugins.DiffRecordsPlugin
@@ -31,6 +33,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.`when`
@@ -63,6 +66,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     InboxService::class,
     AgentService::class,
     AttachmentRepository::class,
+    OrderRepository::class,
+    StatelessAuthService::class,
   ]
 )
 class
@@ -75,6 +80,9 @@ RepositoryEntityPluginsDeserializationIntTest {
   @Autowired
   private lateinit var userUseCase: UserUseCase
 
+  @Autowired
+  private lateinit var groupRepository: GroupRepository
+
   @MockitoBean
   private lateinit var sessionService: SessionService
 
@@ -84,7 +92,8 @@ RepositoryEntityPluginsDeserializationIntTest {
   @MockitoBean
   private lateinit var planConstraintsService: PlanConstraintsService
 
-  private lateinit var testUser: User
+  private lateinit var user: User
+  private lateinit var group: Group
   private val gson = Gson()
 
   private val fulltextPlugin = FulltextPlugin()
@@ -96,7 +105,8 @@ RepositoryEntityPluginsDeserializationIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    testUser = userUseCase.createUser("test-plugins-deserialization-${System.currentTimeMillis()}@example.com")
+    user = userUseCase.createUser("test-plugins-deserialization-${System.currentTimeMillis()}@example.com")
+    group = groupRepository.findAllByOwner(user.id).single()
   }
 
   @Test
@@ -447,8 +457,8 @@ RepositoryEntityPluginsDeserializationIntTest {
       sourcesSyncCron = "0 0 * * *",
       visibility = EntityVisibility.isPublic,
       product = Vertical.feedless,
-      ownerId = testUser.id,
-      groupId = GroupId(),
+      ownerId = user.id,
+      groupId = group.id,
       plugins = plugins,
       shareKey = "test${System.currentTimeMillis().toString().takeLast(6)}" // 10 chars max
     )

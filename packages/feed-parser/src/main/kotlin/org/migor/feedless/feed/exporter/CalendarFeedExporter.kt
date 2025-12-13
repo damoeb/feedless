@@ -15,15 +15,12 @@ import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.net.URI
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 
 
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class CalendarFeedExporter {
 
   private val log = LoggerFactory.getLogger(JsonFeedExporter::class.simpleName)
@@ -46,11 +43,11 @@ class CalendarFeedExporter {
 private fun JsonItem.toVEvent(): CalendarComponent {
   val event = VEvent()
   event.fluentTarget
-  .withProperty(Uid(id))
-  .withProperty(Summary(title))
-  .withProperty(Description(text))
-  .withProperty(DtStart<LocalDateTime>(startingAt))
-  .withProperty(DtEnd<LocalDateTime>(startingAt?.plusHours(2)))
-  .withProperty(Url(URI(url)))
+    .withProperty(Uid(id))
+    .withProperty(Summary(title))
+    .withProperty(Description(text))
+    .withProperty(DtStart<LocalDateTime>(startingAt))
+    .withProperty(DtEnd<LocalDateTime>(startingAt?.plusHours(2)))
+    .withProperty(Url(URI(url)))
   return event
 }

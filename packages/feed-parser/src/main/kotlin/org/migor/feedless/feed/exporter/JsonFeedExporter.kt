@@ -10,17 +10,13 @@ import com.google.gson.JsonSerializer
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.lang.reflect.Type
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 
 
-
 @Service
-@Transactional(propagation = Propagation.NEVER)
 class JsonFeedExporter {
 
   private val log = LoggerFactory.getLogger(JsonFeedExporter::class.simpleName)
@@ -57,6 +53,6 @@ class LocalDateTimeTypeAdapter : JsonSerializer<LocalDateTime?>, JsonDeserialize
   }
 
   override fun deserialize(json: JsonElement?, typeOf: Type?, context: JsonDeserializationContext): LocalDateTime? {
-    return json?.let { LocalDateTime.parse(it.asString, formatter)}
+    return json?.let { LocalDateTime.parse(it.asString, formatter) }
   }
 }

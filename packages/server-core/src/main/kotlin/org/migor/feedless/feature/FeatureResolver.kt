@@ -39,7 +39,6 @@ class FeatureResolver(
   }
 
 //  @DgsData(parentType = DgsConstants.FEATUREGROUP.TYPE_NAME)
-//  @Transactional(propagation = Propagation.REQUIRED)
 //  suspend fun features(dfe: DgsDataFetchingEnvironment): List<Feature> = coroutineScope {
 //    val group: FeatureGroup = dfe.getSourceOrThrow()
 //    featureService.findAllByGroupId(UUID.fromString(group.id))

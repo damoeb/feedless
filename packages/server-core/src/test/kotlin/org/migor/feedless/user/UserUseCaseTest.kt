@@ -27,6 +27,9 @@ import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableUpdateOperationsInput
 import org.migor.feedless.generated.types.StringUpdateOperationsInput
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.group.Group
+import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
@@ -51,6 +54,7 @@ class UserUseCaseTest {
   private lateinit var featureService: FeatureService
   private lateinit var repositoryRepository: RepositoryRepository
   private lateinit var productUseCase: ProductUseCase
+  private lateinit var groupRepository: GroupRepository
 
 
   lateinit var user: User
@@ -71,6 +75,7 @@ class UserUseCaseTest {
     featureService = mock(FeatureService::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
     productUseCase = mock(ProductUseCase::class.java)
+    groupRepository = mock(GroupRepository::class.java)
 
     userUseCase = UserUseCase(
       userRepository,
@@ -82,6 +87,8 @@ class UserUseCaseTest {
       productUseCase,
       githubConnectionRepository,
       connectedAppRepository,
+      groupRepository,
+      mock(GroupUseCase::class.java),
       Optional.of(telegramBotService)
     )
 
@@ -102,6 +109,7 @@ class UserUseCaseTest {
     `when`(userRepository.save(any(User::class.java))).thenAnswer { it.arguments[0]!! as User }
     `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0]!! as Repository }
     `when`(githubConnectionRepository.save(any2())).thenAnswer { it.arguments[0]!! as GithubConnection }
+    `when`(groupRepository.save(any2())).thenAnswer { it.arguments[0]!! as Group }
   }
 
   @Test

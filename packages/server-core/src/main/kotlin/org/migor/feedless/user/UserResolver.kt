@@ -38,7 +38,6 @@ class UserResolver(
   private val userUseCase: UserUseCase,
   private val userRepository: UserRepository,
   private val connectedAppUseCase: ConnectedAppUseCase,
-//  private val featureService: FeatureService,
   private val capabilityService: CapabilityService
 ) {
 

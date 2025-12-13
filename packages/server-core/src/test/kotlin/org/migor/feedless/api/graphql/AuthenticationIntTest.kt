@@ -12,7 +12,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.user.UserDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
@@ -77,8 +76,8 @@ class AuthenticationIntTest {
   @MockitoBean
   lateinit var userRepository: UserRepository
 
-  @MockitoBean
-  lateinit var userDAO: UserDAO
+//  @MockitoBean
+//  lateinit var userDAO: UserDAO
 
   @Autowired
   lateinit var authService: AuthService

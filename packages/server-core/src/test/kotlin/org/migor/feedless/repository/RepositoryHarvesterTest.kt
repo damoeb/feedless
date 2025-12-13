@@ -74,6 +74,7 @@ class RepositoryHarvesterTest {
   private lateinit var sourcePipelineJobRepository: SourcePipelineJobRepository
   private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
   private lateinit var documentRepository: DocumentRepository
+  private lateinit var repositoryRepository: RepositoryRepository
 
   @BeforeEach
   fun setUp() = runTest {
@@ -86,6 +87,7 @@ class RepositoryHarvesterTest {
     sourcePipelineJobRepository = mock(SourcePipelineJobRepository::class.java)
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
     documentRepository = mock(DocumentRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
 
     repositoryHarvester = RepositoryHarvester(
       documentUseCase,
@@ -96,7 +98,7 @@ class RepositoryHarvesterTest {
       scrapeService,
       meterRegistry,
       repositoryUseCase,
-      mock(RepositoryRepository::class.java),
+      repositoryRepository,
       mock(HarvestRepository::class.java),
     )
 
@@ -125,6 +127,7 @@ class RepositoryHarvesterTest {
     }
 
     `when`(repositoryUseCase.findById(eq(repositoryId))).thenReturn(repository)
+    `when`(repositoryRepository.findById(eq(repositoryId))).thenReturn(repository)
 
     `when`(
       repositoryUseCase.calculateScheduledNextAt(
@@ -252,7 +255,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature a url, then urls will be used to deduplicate`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(
         scrapeService.scrape(
           any(Source::class.java),
@@ -286,7 +289,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature fragments, the fragments will be persisted`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
 
       `when`(
         documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
@@ -330,7 +333,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `given documents feature no url, then titles will be used to deduplicate`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(
         scrapeService.scrape(
           any(Source::class.java),
@@ -364,7 +367,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `updates for existing documents will be ignored, if repository has plugins`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(listOf(mock(PluginExecution::class.java)))
       val existing = mock(Document::class.java)
       `when`(
@@ -414,7 +417,7 @@ class RepositoryHarvesterTest {
   @Test
   @Disabled("lastUpdateAt is polluted and cannot be used atm")
   fun `updates for existing documents will be processed, if repository has changed after existing has been created`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(listOf(createPlugin(), createPlugin()))
       val existing = mock(Document::class.java)
       `when`(existing.id).thenReturn(DocumentId())
@@ -468,7 +471,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `released documents will trigger post release effects`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(repository.plugins).thenReturn(emptyList())
       val newDocument = mock(Document::class.java)
       `when`(newDocument.id).thenReturn(DocumentId())
@@ -515,7 +518,7 @@ class RepositoryHarvesterTest {
 
   @Test
   fun `updates for existing documents will be processed, if repository has no plugins`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       val existing = mock(Document::class.java)
       `when`(
         documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
@@ -570,59 +573,60 @@ class RepositoryHarvesterTest {
   @Test
   @Disabled
   fun `documents will inherit the plugins defined in repository`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       TODO("implement")
     }
 
   @Test
   @Disabled
   fun `scrape will update the retrieval count`() =
-    runTest(context = RequestContext(userId = randomUserId())) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       TODO("implement")
     }
 
   @Test
-  fun `will follow pagination links`() = runTest(context = RequestContext(userId = randomUserId())) {
-    `when`(
-      sourcePipelineJobRepository.existsBySourceIdAndUrl(
-        any(SourceId::class.java),
-        any(String::class.java)
-      )
-    ).thenReturn(false)
+  fun `will follow pagination links`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
+      `when`(
+        sourcePipelineJobRepository.existsBySourceIdAndUrl(
+          any(SourceId::class.java),
+          any(String::class.java)
+        )
+      ).thenReturn(false)
 
-    `when`(
-      scrapeService.scrape(
-        any(Source::class.java),
-        any(LogCollector::class.java)
-      )
-    ).thenReturn(
-      ScrapeOutput(
-        outputs = listOf(
-          ScrapeActionOutput(
-            index = 0,
-            fragment = FragmentOutput(
-              fragmentName = "feed",
-              fragments = listOf(
-                ScrapeExtractFragment(
-                  data = MimeData(
-                    mimeType = MIME_URL,
-                    data = "https://foo.bar/page/1"
-                  ),
-                  uniqueBy = ScrapeExtractFragmentPart.data
-                )
-              ),
-              items = listOf(newJsonItem(url = "", title = "1"))
+      `when`(
+        scrapeService.scrape(
+          any(Source::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = listOf(
+                  ScrapeExtractFragment(
+                    data = MimeData(
+                      mimeType = MIME_URL,
+                      data = "https://foo.bar/page/1"
+                    ),
+                    uniqueBy = ScrapeExtractFragmentPart.data
+                  )
+                ),
+                items = listOf(newJsonItem(url = "", title = "1"))
+              )
             )
-          )
-        ),
-        time = 0
+          ),
+          time = 0
+        )
       )
-    )
 
-    repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.handleRepository(repositoryId)
 
-    verify(sourcePipelineJobRepository).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
-  }
+      verify(sourcePipelineJobRepository).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
+    }
 
   private fun newJsonItem(
     url: String,

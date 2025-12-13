@@ -7,11 +7,8 @@ import org.migor.feedless.connectedApp.GithubConnectionRepository
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 class GithubConnectionJpaRepository(private val githubConnectionDAO: GithubConnectionDAO) : GithubConnectionRepository {
   override fun existsByUserId(userId: UserId): Boolean {

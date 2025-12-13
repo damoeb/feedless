@@ -1,6 +1,5 @@
 package org.migor.feedless.agent
 
-import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
@@ -19,23 +18,19 @@ class AgentSyncExecutor(
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeSync() {
-    runBlocking {
-      agentRepository.saveAll(
-        agentService.agentRefs().mapNotNull {
-          agentRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
-        }.map {
-          it.copy(lastSyncedAt = LocalDateTime.now())
-        })
-    }
+    agentRepository.saveAll(
+      agentService.agentRefs().mapNotNull {
+        agentRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
+      }.map {
+        it.copy(lastSyncedAt = LocalDateTime.now())
+      })
   }
 
   @Scheduled(fixedDelay = 3 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeCleanup() {
-    runBlocking {
-      agentRepository.deleteAllByLastSyncedAtBefore(
-        LocalDateTime.now().minusMinutes(2)
-      )
-    }
+    agentRepository.deleteAllByLastSyncedAtBefore(
+      LocalDateTime.now().minusMinutes(2)
+    )
   }
 }

@@ -32,8 +32,8 @@ class SourcePipelineJobExecutorTest {
     sourcePipelineService = mock(SourcePipelineService::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
-    sourceRepository = mock(sourceRepository::class.java)
-    sourcePipelineJobRepository = mock(sourcePipelineJobRepository::class.java)
+    sourceRepository = mock(SourceRepository::class.java)
+    sourcePipelineJobRepository = mock(SourcePipelineJobRepository::class.java)
 
     sourcePipelineJobExecutor = SourcePipelineJobExecutor(
       sourcePipelineService,

@@ -10,9 +10,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.types.ExtendContentOptions
 import org.migor.feedless.generated.types.FeedParamsInput
@@ -27,6 +27,8 @@ import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.generated.types.SelectorsInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.session.StatelessAuthService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.ArgumentMatchers.any
 import org.mockito.ArgumentMatchers.anyInt
@@ -49,7 +51,8 @@ import java.nio.file.Files
   types = [
     ServerConfigResolver::class,
     AgentService::class,
-    AttachmentDAO::class,
+    AttachmentRepository::class,
+    StatelessAuthService::class,
   ]
 )
 @ActiveProfiles(
@@ -63,7 +66,7 @@ import java.nio.file.Files
   DisableDatabaseConfiguration::class,
   DisableWebSocketsConfiguration::class
 )
-class ScrapeQueryResolverTest {
+class ScrapeQueryResolverIntTest {
 
   @Autowired
   lateinit var dgsQueryExecutor: DgsQueryExecutor
@@ -73,6 +76,9 @@ class ScrapeQueryResolverTest {
 
   @MockitoBean
   lateinit var sourceUseCase: SourceUseCase
+
+  @MockitoBean
+  lateinit var sourceRepository: SourceRepository
 
   val url = "http://www.foo.bar/something"
 

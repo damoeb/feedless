@@ -167,7 +167,6 @@ class HttpService(
       log.debug("[$corrId] -> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
         when (response.statusCode) {
-          // todo mag readjust bucket
           500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
           429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))

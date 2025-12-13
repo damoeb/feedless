@@ -33,7 +33,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     MailGatewayProperties::class,
   ]
 )
-@Import(MailServiceWithMailgunTest.MailgunTestConfig::class)
+@Import(MailServiceWithMailgunIntTest.MailgunTestConfig::class)
 @EnableAutoConfiguration(
   exclude = [
     DataSourceAutoConfiguration::class,
@@ -51,7 +51,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     "app.mail.domain=feedless.org"
   ]
 )
-class MailServiceWithMailgunTest {
+class MailServiceWithMailgunIntTest {
 
   @Autowired
   lateinit var mailService: MailService

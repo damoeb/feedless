@@ -11,7 +11,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
-class PlanUseCase(private var planRepository: PlanRepository) {
+class PlanUseCase(private val planRepository: PlanRepository) {
   private val log = LoggerFactory.getLogger(PlanUseCase::class.simpleName)
 
   suspend fun findById(id: PlanId): Plan? = withContext(Dispatchers.IO) {

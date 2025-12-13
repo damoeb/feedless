@@ -12,26 +12,24 @@ import org.migor.feedless.api.mapper.fromDto
 import org.migor.feedless.api.mapper.toSource
 import org.migor.feedless.data.jpa.source.toDomain
 import org.migor.feedless.data.jpa.source.toEntity
-import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.geo.LatLonPoint
-import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
+import org.migor.feedless.user.groupId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -40,19 +38,14 @@ class SourceUseCase(
   private val sourcePipelineJobRepository: SourcePipelineJobRepository,
   private val sourceRepository: SourceRepository,
   @Lazy private val repositoryHarvester: RepositoryHarvester,
-  private val documentRepository: DocumentRepository,
   private val planConstraintsService: PlanConstraintsService,
-  private val scrapeActionRepository: ScrapeActionRepository
+  private val scrapeActionRepository: ScrapeActionRepository,
+  private val repositoryRepository: RepositoryRepository
 ) {
 
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
 
-  fun trackedRepositories() {
-//    sourceDAO.getRepositoryHealthByRepositoryIdIn()
-  }
-
-  @Transactional
-  suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) {
+  suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) = withContext(Dispatchers.IO) {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
 
@@ -104,7 +97,6 @@ class SourceUseCase(
     return newSource
   }
 
-//  @Transactional(readOnly = true)
 //  suspend fun countProblematicSourcesByRepositoryId(repositoryId: RepositoryId): Int {
 //
 ////      sourceDAO.countByRepositoryIdAndDisabledTrue(repositoryId)
@@ -112,22 +104,18 @@ class SourceUseCase(
 //
 //  }
 
-//  @Transactional(readOnly = true)
 //  suspend fun countDocumentsBySourceId(sourceId: SourceId): Int {
 //    return documentRepository.countBySourceId(sourceId)
 //  }
 //
-//  @Transactional
 //  suspend fun setErrorState(sourceId: SourceId, erroneous: Boolean, message: String?) {
 //    sourceRepository.setErrorState(sourceId, erroneous, message)
 //  }
 
-//  @Deprecated("use repository")
 //  suspend fun save(source: Source): Source = withContext(Dispatchers.IO) {
 //    sourceRepository.save(source)
 //  }
 
-//  @Deprecated("use repository")
 //  suspend fun countAllByRepositoryId(id: RepositoryId): Long {
 //    return withContext(Dispatchers.IO) {
 //      sourceRepository.countByRepositoryId(id)
@@ -143,15 +131,11 @@ class SourceUseCase(
 //    sourceRepository.findAllByRepositoryIdFiltered(repositoryId, pageable, where, orders)
 //  }
 
-  private fun resolveGroupId(): GroupId {
-    TODO()
-  }
-
   suspend fun createSources(sourceInputs: List<SourceInput>, repositoryId: RepositoryId) =
     withContext(Dispatchers.IO) {
       log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
 
-      val groupId = resolveGroupId()
+      val groupId = coroutineContext.groupId()
 
       val createSources = mutableListOf<Source>()
       val createScrapeActions = mutableListOf<ScrapeAction>()
@@ -197,95 +181,93 @@ class SourceUseCase(
 
     }
 
-  @Transactional
-  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<SourceUpdateInput>) {
-    log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
+  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<SourceUpdateInput>) =
+    withContext(Dispatchers.IO) {
+      log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
 
-    // todo check owner
-
-    val modifiedSources = mutableListOf<Source>()
-    val deleteScrapeActions = mutableListOf<ScrapeAction>()
-    val saveScrapeActions = mutableListOf<ScrapeAction>()
-
-    updateInputs.map { sourceUpdate ->
-      var source = sourceRepository.findById(SourceId(sourceUpdate.where.id))!!
-      if (source.repositoryId != repositoryId) {
-        throw IllegalArgumentException("source does not belong to repository")
+      val repository = repositoryRepository.findById(repositoryId)!!
+      if (repository.groupId != coroutineContext.groupId()) {
+        throw IllegalArgumentException("Cannot update a source with a group id '${repository.groupId}'")
       }
 
-      var changed = false
+      val modifiedSources = mutableListOf<Source>()
+      val deleteScrapeActions = mutableListOf<ScrapeAction>()
+      val saveScrapeActions = mutableListOf<ScrapeAction>()
 
-      source = sourceUpdate.data.tags?.let {
-        changed = true
-        source.copy(tags = it.set.toTypedArray())
-      } ?: source
+      updateInputs.map { sourceUpdate ->
+        var source = sourceRepository.findById(SourceId(sourceUpdate.where.id))!!
+        if (source.repositoryId != repositoryId) {
+          throw IllegalArgumentException("source does not belong to repository")
+        }
 
-      source = sourceUpdate.data.title?.let {
-        changed = true
-        source.copy(title = it.set)
-      } ?: source
+        var changed = false
 
-      source = sourceUpdate.data.latLng?.let { point ->
-        changed = true
+        source = sourceUpdate.data.tags?.let {
+          changed = true
+          source.copy(tags = it.set.toTypedArray())
+        } ?: source
 
-        point.set?.let {
-          source.copy(latLon = LatLonPoint(it.lat, it.lng))
-        } ?: source.copy(latLon = null)
+        source = sourceUpdate.data.title?.let {
+          changed = true
+          source.copy(title = it.set)
+        } ?: source
 
-      } ?: source
+        source = sourceUpdate.data.latLng?.let { point ->
+          changed = true
 
-      source = sourceUpdate.data.disabled?.let { disabled ->
-        changed = true
-        source.copy(
-          disabled = disabled.set,
-          errorsInSuccession = 0
-        )
-      } ?: source
+          point.set?.let {
+            source.copy(latLon = LatLonPoint(it.lat, it.lng))
+          } ?: source.copy(latLon = null)
 
-      sourceUpdate.data.flow?.let { flow ->
-        // remove old actions
-        deleteScrapeActions.addAll(scrapeActionRepository.findAllBySourceId(source.id))
+        } ?: source
 
-        flow.set?.let {
-          // append new actions
-          val actions = flow.set?.fromDto()?.mapIndexed { index, scrapeAction ->
-            val actionEntity = scrapeAction.toEntity()
-            actionEntity.sourceId = source.id.uuid
-            actionEntity.pos = index
-            actionEntity.toDomain()
-          }
-          actions?.let {
-            saveScrapeActions.addAll(actions)
+        source = sourceUpdate.data.disabled?.let { disabled ->
+          changed = true
+          source.copy(
+            disabled = disabled.set,
+            errorsInSuccession = 0
+          )
+        } ?: source
+
+        sourceUpdate.data.flow?.let { flow ->
+          // remove old actions
+          deleteScrapeActions.addAll(scrapeActionRepository.findAllBySourceId(source.id))
+
+          flow.set?.let {
+            // append new actions
+            val actions = flow.set?.fromDto()?.mapIndexed { index, scrapeAction ->
+              val actionEntity = scrapeAction.toEntity()
+              actionEntity.sourceId = source.id.uuid
+              actionEntity.pos = index
+              actionEntity.toDomain()
+            }
+            actions?.let {
+              saveScrapeActions.addAll(actions)
+            }
           }
         }
-      }
 
 //      source.actions = mutableListOf() todo fix this
 
-      if (changed) {
-        modifiedSources.add(source)
+        if (changed) {
+          modifiedSources.add(source)
+        }
       }
+
+      scrapeActionRepository.deleteAll(deleteScrapeActions)
+      scrapeActionRepository.saveAll(saveScrapeActions)
+      sourceRepository.saveAll(modifiedSources)
     }
 
-    scrapeActionRepository.deleteAll(deleteScrapeActions)
-    scrapeActionRepository.saveAll(saveScrapeActions)
-    sourceRepository.saveAll(modifiedSources)
-  }
-
-  @Transactional
-  suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) {
-    log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
-    withContext(Dispatchers.IO) {
-      val sources = sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
-      sourceRepository.deleteAllById(sources.map { it.id })
-    }
-  }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findById(sourceId: SourceId): Source? {
-//    return withContext(Dispatchers.IO) {
-//      sourceRepository.findByIdWithActions(sourceId)
+  suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
+    // todo verify permissions
+//    val repository = repositoryRepository.findById(repositoryId)!!
+//    if (repository.groupId != coroutineContext.groupId()) {
+//      throw IllegalArgumentException("Cannot update a source with a group id '${repository.groupId}'")
 //    }
-//  }
 
+    log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
+    val sources = sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
+    sourceRepository.deleteAllById(sources.map { it.id })
+  }
 }

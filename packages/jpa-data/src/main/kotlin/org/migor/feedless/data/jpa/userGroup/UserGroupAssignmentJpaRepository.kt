@@ -8,11 +8,8 @@ import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 class UserGroupAssignmentJpaRepository(private val userGroupAssignmentDAO: UserGroupAssignmentDAO) :
   UserGroupAssignmentRepository {
@@ -32,7 +29,7 @@ class UserGroupAssignmentJpaRepository(private val userGroupAssignmentDAO: UserG
   }
 
   override fun delete(assignment: UserGroupAssignment) {
-    userGroupAssignmentDAO.delete(assignment.toEntity())
+    userGroupAssignmentDAO.deleteById(assignment.id.uuid)
   }
 
 }

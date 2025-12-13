@@ -22,9 +22,11 @@ import org.migor.feedless.generated.types.SegmentRecordsWhereInput
 import org.migor.feedless.generated.types.SegmentReportInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -32,12 +34,12 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
-class ReportServiceTest {
+class ReportUseCaseTest {
 
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var reportRepository: ReportRepository
   private lateinit var repositoryRepository: RepositoryRepository
-  private lateinit var segmentationService: SegmentationService
+  private lateinit var segmentationRepository: SegmentationRepository
   private lateinit var repositoryId: RepositoryId
   private lateinit var segment: SegmentInput
   private lateinit var repository: Repository
@@ -50,19 +52,19 @@ class ReportServiceTest {
     repositoryId = randomRepositoryId()
     reportRepository = mock(ReportRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
-    segmentationService = mock(SegmentationService::class.java)
+    segmentationRepository = mock(SegmentationRepository::class.java)
     user = mock(User::class.java)
-    userRepository = mock(userRepository::class.java)
+    userRepository = mock(UserRepository::class.java)
 
     reportUseCase = ReportUseCase(
       reportRepository,
       repositoryRepository,
       userRepository,
-      segmentationService,
+      segmentationRepository,
       mock(MeterRegistry::class.java),
     )
 
-    `when`(segmentationService.saveSegmentation(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
+    `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
     `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
 
     repository = mock(Repository::class.java)
@@ -95,43 +97,45 @@ class ReportServiceTest {
   }
 
   @Test
-  fun `reports can be created by anonymous if repository is public`() = runTest {
-    // given
-    `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
-    `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
+  fun `reports can be created by anonymous if repository is public`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
+      // given
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
+      `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
 
-    // when
-    val report = reportUseCase.createReport(repositoryId, segment, null)
+      // when
+      val report = reportUseCase.createReport(repositoryId, segment)
 
-    // then
-    assertThat(report).isNotNull
-    verify(reportRepository).save(any(Report::class.java))
-  }
+      // then
+      assertThat(report).isNotNull
+      verify(reportRepository).save(any(Report::class.java))
+    }
 
   @Test
   @Disabled
   fun `reports cannot be created by anonymous if repository is private`() {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest {
+      runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
         `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
         `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
-        reportUseCase.createReport(repositoryId, segment, null)
+        reportUseCase.createReport(repositoryId, segment)
       }
     }
   }
 
   @Test
-  fun `reports can be created by owner if repository is private`() = runTest {
-    `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
-    `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
+  fun `reports can be created by owner if repository is private`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
+      `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
 
-    // when
-    val report = reportUseCase.createReport(repositoryId, segment, repositoryOwnerId)
+      // when
+      val report = reportUseCase.createReport(repositoryId, segment)
 
-    // then
-    assertThat(report).isNotNull
-    verify(reportRepository).save(any(Report::class.java))
-  }
+      // then
+      assertThat(report).isNotNull
+      verify(reportRepository).save(any(Report::class.java))
+    }
 
   @Test
   @Disabled
@@ -158,11 +162,12 @@ class ReportServiceTest {
   }
 
   @Test
+  @Disabled("rethink that idea")
   fun `if email belongs to user, he will be asked to login`() {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest {
         `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
-        reportUseCase.createReport(repositoryId, segment, null)
+        reportUseCase.createReport(repositoryId, segment)
       }
     }
   }

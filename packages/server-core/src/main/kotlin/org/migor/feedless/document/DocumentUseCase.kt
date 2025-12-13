@@ -29,7 +29,6 @@ import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.plan.PlanId
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
@@ -37,14 +36,12 @@ import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.transport.TelegramBotService
-import org.migor.feedless.user.User
 import org.migor.feedless.user.corrId
+import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
@@ -68,12 +65,10 @@ class DocumentUseCase(
 
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
 
-  @Transactional(readOnly = true)
-  suspend fun findById(id: DocumentId): Document? {
-    return documentRepository.findById(id)
+  suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
+    documentRepository.findById(id)
   }
 
-  @Transactional(readOnly = true)
   suspend fun findAllByRepositoryId(
     repositoryId: RepositoryId,
     filter: DocumentsFilter? = null,
@@ -81,12 +76,8 @@ class DocumentUseCase(
     status: ReleaseStatus = ReleaseStatus.released,
     tags: List<String> = emptyList(),
     pageable: PageableRequest,
-  ): List<Document> {
-    return documentRepository.findAllFiltered(repositoryId, filter, orderBy, status, tags, pageable)
-  }
-
-  private fun resolvePlanId(repository: Repository): PlanId {
-    TODO()
+  ): List<Document> = withContext(Dispatchers.IO) {
+    documentRepository.findAllFiltered(repositoryId, filter, orderBy, status, tags, pageable)
   }
 
   suspend fun applyRetentionStrategyByCapacity() = withContext(Dispatchers.IO) {
@@ -152,12 +143,11 @@ class DocumentUseCase(
       } ?: log.debug("[$corrId] no retention with maxAgeDays given")
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun deleteDocuments(user: User, repositoryId: RepositoryId, documentIds: StringFilter) {
+  suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
     log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
 
     val repository = repositoryRepository.findById(repositoryId)!!
-    if (repository.ownerId != user.id.uuid) {
+    if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("current user ist not owner")
     }
 
@@ -177,113 +167,112 @@ class DocumentUseCase(
     documentRepository.deleteAllById(documents.map { it.id });
   }
 
-  @Transactional(readOnly = true)
   suspend fun getRecordFrequency(
     where: DocumentsFilter,
     groupBy: DocumentDateField,
-  ): List<DocumentFrequency> {
-    return documentRepository.getRecordFrequency(where, groupBy)
+  ): List<DocumentFrequency> = withContext(Dispatchers.IO) {
+    documentRepository.getRecordFrequency(where, groupBy)
   }
 
-  @Transactional(propagation = Propagation.REQUIRED)
-  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? {
-    val corrId = coroutineContext.corrId()
-    log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
-    val document = documentRepository.findByIdWithSource(documentId)!!
-    val logCollector = LogCollector()
+  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? =
+    withContext(Dispatchers.IO) {
+      val corrId = coroutineContext.corrId()
+      log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
+      val document = documentRepository.findByIdWithSource(documentId)!!
+      val logCollector = LogCollector()
 
-    return document?.let {
-      try {
-        val repository = repositoryRepository.findById(document.repositoryId)!!
+      document?.let {
+        try {
+          val repository = repositoryRepository.findById(document.repositoryId)!!
 
-        data class ProcessingState(
-          val currentDocument: Document,
-          val shouldContinue: Boolean,
-          val hasError: Boolean
-        )
+          data class ProcessingState(
+            val currentDocument: Document,
+            val shouldContinue: Boolean,
+            val hasError: Boolean
+          )
 
-        val finalState =
-          jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
-            if (!state.shouldContinue) {
-              return@fold state
-            }
-
-            try {
-              val updatedDocument =
-                when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
-                  is FilterEntityPlugin<*> -> {
-                    if (!plugin.filterEntity(
-                        state.currentDocument.toJsonItem(
-                          propertyService,
-                          EntityVisibility.isPublic
-                        ),
-                        job.executorParams.paramsJsonString,
-                        0,
-                        logCollector
-                      )
-                    ) {
-                      throw FilterMismatchException()
-                    }
-                    state.currentDocument
-                  }
-
-                  is MapEntityPlugin<*> -> plugin.mapEntity(
-                    state.currentDocument,
-                    repository,
-                    job.executorParams.paramsJsonString,
-                    logCollector
-                  )
-
-                  is ReportPlugin -> {
-                    log.info("[$corrId] ignoring ${plugin.id()} plugin")
-                    state.currentDocument
-                  }
-
-                  else -> {
-                    if (plugin == null) {
-                      log.error(
-                        "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
-                          pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
-                        }]")
-                    } else {
-                      log.warn("[$corrId] resolved unsupported plugin ${plugin}")
-                    }
-                    throw IllegalArgumentException("Invalid plugin")
-                  }
-                }
-
-              log.debug("[$corrId] executed ${job.pluginId} for $documentId")
-              documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
-              ProcessingState(updatedDocument, true, false)
-            } catch (e: Exception) {
-              if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-                delayJob(job, e, state.currentDocument)
-              } else {
-                if (e !is FilterMismatchException) {
-                  log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
-                } else {
-                  log.info("[$corrId] ${e::class.simpleName} ${e.message}")
-                }
-                deleteDocument(state.currentDocument)
+          val finalState =
+            jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
+              if (!state.shouldContinue) {
+                return@fold state
               }
-              ProcessingState(state.currentDocument, false, true)
+
+              try {
+                val updatedDocument =
+                  when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
+                    is FilterEntityPlugin<*> -> {
+                      if (!plugin.filterEntity(
+                          state.currentDocument.toJsonItem(
+                            propertyService,
+                            EntityVisibility.isPublic
+                          ),
+                          job.executorParams.paramsJsonString,
+                          0,
+                          logCollector
+                        )
+                      ) {
+                        throw FilterMismatchException()
+                      }
+                      state.currentDocument
+                    }
+
+                    is MapEntityPlugin<*> -> plugin.mapEntity(
+                      state.currentDocument,
+                      repository,
+                      job.executorParams.paramsJsonString,
+                      logCollector
+                    )
+
+                    is ReportPlugin -> {
+                      log.info("[$corrId] ignoring ${plugin.id()} plugin")
+                      state.currentDocument
+                    }
+
+                    else -> {
+                      if (plugin == null) {
+                        log.error(
+                          "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
+                            pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
+                          }]")
+                      } else {
+                        log.warn("[$corrId] resolved unsupported plugin ${plugin}")
+                      }
+                      throw IllegalArgumentException("Invalid plugin")
+                    }
+                  }
+
+                log.debug("[$corrId] executed ${job.pluginId} for $documentId")
+                documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
+                ProcessingState(updatedDocument, true, false)
+              } catch (e: Exception) {
+                if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+                  delayJob(job, e, state.currentDocument)
+                } else {
+                  if (e !is FilterMismatchException) {
+                    log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
+                  } else {
+                    log.info("[$corrId] ${e::class.simpleName} ${e.message}")
+                  }
+                  deleteDocument(state.currentDocument)
+                }
+                ProcessingState(state.currentDocument, false, true)
+              }
             }
+
+          if (!finalState.hasError) {
+            releaseDocument(finalState.currentDocument, repository)
+            finalState.currentDocument
+          } else {
+            null
           }
 
-        if (!finalState.hasError) {
-          releaseDocument(finalState.currentDocument, repository)
-          finalState.currentDocument
-        } else {
+        } catch (throwable: Throwable) {
+          log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
+          deleteDocument(document)
           null
         }
-
-      } catch (throwable: Throwable) {
-        log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
-        deleteDocument(document)
-        null
       }
     }
-  }
 
   private suspend fun releaseDocument(
     document: Document,
@@ -319,7 +308,7 @@ class DocumentUseCase(
     }
   }
 
-  private suspend fun deleteDocument(document: Document) {
+  private suspend fun deleteDocument(document: Document) = withContext(Dispatchers.IO) {
     log.info("[${coroutineContext.corrId()}] delete document ${document.id}")
     documentRepository.deleteById(document.id)
   }
@@ -328,7 +317,7 @@ class DocumentUseCase(
     job: DocumentPipelineJob,
     e: Exception,
     document: Document,
-  ) {
+  ) = withContext(Dispatchers.IO) {
     log.info("[${coroutineContext.corrId()}] delaying ${job.documentId} (${job.pluginId})")
 
     documentPipelineJobRepository.save(
@@ -343,13 +332,11 @@ class DocumentUseCase(
     documentRepository.save(document) // todo still needed?
   }
 
-  @Transactional(readOnly = true)
-  suspend fun countByRepositoryId(repositoryId: RepositoryId): Long {
-    return documentRepository.countByRepositoryId(repositoryId)
+  suspend fun countByRepositoryId(repositoryId: RepositoryId): Long = withContext(Dispatchers.IO) {
+    documentRepository.countByRepositoryId(repositoryId)
   }
 
-  @Transactional
-  suspend fun createDocument(data: CreateRecordInput): Document {
+  suspend fun createDocument(data: CreateRecordInput): Document = withContext(Dispatchers.IO) {
     val repositoryId = RepositoryId(data.repositoryId.id)
 
     val repository = repositoryRepository.findById(repositoryId)!!
@@ -367,11 +354,10 @@ class DocumentUseCase(
       contentHash = CryptUtil.sha1(data.rawBase64 ?: documentId.uuid.toString())
     )
 
-    return documentRepository.save(document)
+    documentRepository.save(document)
   }
 
-  @Transactional
-  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document {
+  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document = withContext(Dispatchers.IO) {
     var document = documentRepository.findById(id)!!
       .copy(
         updatedAt = LocalDateTime.now()
@@ -391,7 +377,7 @@ class DocumentUseCase(
       document.copy(title = it.set)
     } ?: document
 
-    return documentRepository.save(document)
+    documentRepository.save(document)
   }
 
   suspend fun findFirstByContentHashOrUrlAndRepositoryId(

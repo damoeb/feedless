@@ -78,6 +78,7 @@ class PlanConstraintsService(
       FeatureName.publicRepositoryBool,
       groupId
     ) ?: false
+
     return if (canPublic) {
       visibility ?: EntityVisibility.isPrivate
     } else {

@@ -19,7 +19,9 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
@@ -34,6 +36,7 @@ import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
@@ -76,6 +79,7 @@ import java.time.LocalDateTime
     GroupUseCase::class,
     PermissionService::class,
     RepositoryClaimJpaRepository::class,
+    StatelessAuthService::class,
   ]
 )
 @Testcontainers
@@ -95,6 +99,9 @@ class DocumentIntTest {
   @Autowired
   lateinit var documentRepository: DocumentRepository
 
+  @Autowired
+  lateinit var groupRepository: GroupRepository
+
   @MockitoBean
   lateinit var planConstraintsService: PlanConstraintsService
 
@@ -113,8 +120,16 @@ class DocumentIntTest {
     )
     userRepository.save(user)
 
-    repository = createRepository("A", user)
-    createRepository("B", user)
+    // Create a group for the user
+    val group = groupRepository.save(
+      Group(
+        name = "test-group",
+        ownerId = user.id
+      )
+    )
+
+    repository = createRepository("A", user, group.id)
+    createRepository("B", user, group.id)
 
     assertThat(documentRepository.countByRepositoryId(repository.id)).isEqualTo(4)
   }
@@ -158,7 +173,7 @@ class DocumentIntTest {
     )
   }
 
-  private suspend fun createRepository(suffix: String, user: User): Repository {
+  private suspend fun createRepository(suffix: String, user: User, groupId: GroupId): Repository {
     val repository = Repository(
       title = "title $suffix",
       description = "description $suffix",
@@ -166,7 +181,7 @@ class DocumentIntTest {
       shareKey = "1234",
       product = Vertical.rssProxy,
       ownerId = user.id,
-      groupId = GroupId(),
+      groupId = groupId,
       lastUpdatedAt = LocalDateTime.now().minusDays(2),
       retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt,
     )

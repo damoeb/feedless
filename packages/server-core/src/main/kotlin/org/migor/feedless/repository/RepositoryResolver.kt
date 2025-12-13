@@ -142,7 +142,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
   ) = coroutineScope {
     log.debug("updateRepository $data")
-    repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data, userId()!!)
+    repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data)
     true
   }
 

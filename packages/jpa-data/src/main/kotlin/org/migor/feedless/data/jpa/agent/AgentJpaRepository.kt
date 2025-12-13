@@ -9,12 +9,9 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecretId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppLayer.repository} & ${AppProfiles.agent}")
 class AgentJpaRepository(private val agentDAO: AgentDAO) : AgentRepository {
 

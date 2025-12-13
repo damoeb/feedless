@@ -9,11 +9,8 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.annotation} & ${AppLayer.repository}")
 class TextAnnotationJpaRepository(private val textAnnotationDAO: TextAnnotationDAO) : TextAnnotationRepository {
 

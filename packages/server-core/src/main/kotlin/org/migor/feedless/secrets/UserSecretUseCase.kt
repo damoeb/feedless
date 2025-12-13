@@ -7,7 +7,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.user.User
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.userId
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -26,46 +27,38 @@ import kotlin.time.ExperimentalTime
 @Profile("${AppProfiles.secrets} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserSecretUseCase(
   private val userSecretRepository: UserSecretRepository,
+  private val userRepository: UserRepository,
   private val jwtTokenIssuer: JwtTokenIssuer
 ) {
 
   private val log = LoggerFactory.getLogger(UserSecretUseCase::class.simpleName)
 
-  suspend fun createUserSecret(user: User): UserSecret {
+  suspend fun createUserSecret(): UserSecret = withContext(Dispatchers.IO) {
+    val userId = coroutineContext.userId()
+    val user = userRepository.findById(userId)!!
     val token = jwtTokenIssuer.createJwtForApi(user)
-    val k = UserSecret(
-      ownerId = user.id,
-      value = token.tokenValue,
-      type = UserSecretType.SecretKey,
-      validUntil = LocalDateTime.ofInstant(
-        Instant.ofEpochMilli(
-          Clock.System.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
-        ),
-        ZoneId.systemDefault()
+
+    userSecretRepository.save(
+      UserSecret(
+        ownerId = userId,
+        value = token.tokenValue,
+        type = UserSecretType.SecretKey,
+        validUntil = LocalDateTime.ofInstant(
+          Instant.ofEpochMilli(
+            Clock.System.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
+          ),
+          ZoneId.systemDefault()
+        )
       )
     )
-
-    return withContext(Dispatchers.IO) {
-      userSecretRepository.save(k)
-    }
   }
 
-  suspend fun deleteUserSecret(user: User, userSecretId: UserSecretId) {
-    withContext(Dispatchers.IO) {
-      val secret = userSecretRepository.findById(userSecretId)!!
-      if (secret.ownerId == user.id) {
-        userSecretRepository.deleteById(secret.id)
-      } else {
-        throw PermissionDeniedException("User does not have an owner")
-      }
+  suspend fun deleteUserSecret(userSecretId: UserSecretId) = withContext(Dispatchers.IO) {
+    val secret = userSecretRepository.findById(userSecretId)!!
+    if (secret.ownerId == coroutineContext.userId()) { // todo should be group
+      userSecretRepository.deleteById(secret.id)
+    } else {
+      throw PermissionDeniedException("User does not have an owner")
     }
   }
-
-//  @Transactional
-//  suspend fun updateLastUsed(id: UUID, date: LocalDateTime) {
-//    withContext(Dispatchers.IO) {
-//      userSecretDAO.updateLastUsed(id, date)
-//    }
-//  }
-
 }

@@ -20,6 +20,7 @@ import org.migor.feedless.anyOrNull2
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.session.StatelessAuthService
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -48,6 +49,7 @@ const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
     ServerConfigResolver::class,
     WebSocketHandler::class,
     FeedParserService::class,
+    StatelessAuthService::class,
   ]
 )
 @ActiveProfiles(

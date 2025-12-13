@@ -8,11 +8,8 @@ import org.migor.feedless.connectedApp.ConnectedAppRepository
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 class ConnectedAppJpaRepository(private val connectedAppDAO: ConnectedAppDAO) : ConnectedAppRepository {
   override fun findByIdAndAuthorizedEquals(

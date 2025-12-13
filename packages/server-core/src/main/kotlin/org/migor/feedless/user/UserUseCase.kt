@@ -22,7 +22,10 @@ import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
@@ -31,13 +34,13 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
+import org.migor.feedless.userGroup.RoleInGroup
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.CoroutineContext
@@ -47,17 +50,19 @@ import kotlin.jvm.optionals.getOrNull
 @Service
 @Profile("${AppProfiles.user} & ${AppLayer.service} & ${AppLayer.repository}")
 class UserUseCase(
-  private var userRepository: UserRepository,
-  private var productRepository: ProductRepository,
-  private var meterRegistry: MeterRegistry,
-  private var environment: Environment,
-  private var featureService: FeatureService,
-  private var repositoryRepository: RepositoryRepository,
-  private var productUseCase: ProductUseCase,
-  private var githubConnectionRepository: GithubConnectionRepository,
-  private var connectedAppRepository: ConnectedAppRepository,
+  private val userRepository: UserRepository,
+  private val productRepository: ProductRepository,
+  private val meterRegistry: MeterRegistry,
+  private val environment: Environment,
+  private val featureService: FeatureService,
+  private val repositoryRepository: RepositoryRepository,
+  private val productUseCase: ProductUseCase,
+  private val githubConnectionRepository: GithubConnectionRepository,
+  private val connectedAppRepository: ConnectedAppRepository,
+  private val groupRepository: GroupRepository,
+  private val groupUseCase: GroupUseCase,
   @Lazy
-  private var telegramBotServiceMaybe: Optional<TelegramBotService>
+  private val telegramBotServiceMaybe: Optional<TelegramBotService>
 ) {
 
   private val log = LoggerFactory.getLogger(UserUseCase::class.simpleName)
@@ -71,7 +76,7 @@ class UserUseCase(
 
   suspend fun createUser(
     userCreate: UserCreate,
-  ): User = withContext(Dispatchers.IO) {
+  ): User {
     if (featureService.isDisabled(FeatureName.canCreateUser, null)) {
       throw BadRequestException("sign-up is deactivated")
     }
@@ -94,36 +99,64 @@ class UserUseCase(
         throw BadRequestException("user already exists")
       }
     }
-    if (StringUtils.isNotBlank(email) && StringUtils.isNotBlank(githubId)) {
+    if (StringUtils.isBlank(email) && StringUtils.isBlank(githubId)) {
       throw BadRequestException("Neither email nor githubId provided")
     }
 
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
     log.debug("[${coroutineContext.corrId()}] create user")
     val userId = UserId()
-    val user = User(
-      id = userId,
-      email = email ?: fallbackEmail(userId),
-      admin = false,
-      anonymous = false,
-      hasAcceptedTerms = isSelfHosted(),
-      lastLogin = LocalDateTime.now(),
-    )
 
-    val savedUser = userRepository.save(user)
+    val (user, group) = withContext(Dispatchers.IO) {
+      val effectiveEmail = email ?: fallbackEmail(userId)
+      log.info("[${coroutineContext.corrId()}] create user $effectiveEmail -> id: $userId")
+      val user = userRepository.save(
+        User(
+          id = userId,
+          email = effectiveEmail,
+          admin = false,
+          anonymous = false,
+          hasAcceptedTerms = isSelfHosted(),
+          lastLogin = LocalDateTime.now(),
+        )
+      )
+
+      val groupId = GroupId()
+      log.info("[${coroutineContext.corrId()}] create default group for user -> id: $groupId")
+      val group = groupRepository.save(
+        Group(
+          id = groupId,
+          name = "user-default",
+          ownerId = userId,
+        )
+      )
+      Pair(user, group)
+    }
 
     if (githubId != null) {
-      linkGithubAccount(savedUser.id, githubId)
+      log.info("[${coroutineContext.corrId()}] link github account $githubId")
+      linkGithubAccount(user.id, githubId)
     }
-    createInboxRepository(savedUser.id)
+
+    val newCtx = coroutineContext + RequestContext(
+      groupId = group.id,
+      userId = userId
+    )
+
+    withContext(newCtx) {
+      groupUseCase.addUserToGroup(user.id, group, RoleInGroup.owner)
+
+      createInboxRepository(user.id)
+    }
 
     // todo saas only?
-    productUseCase.enableDefaultSaasProduct(Vertical.feedless, savedUser.id)
+    productUseCase.enableDefaultSaasProduct(Vertical.feedless, user.id)
 
-    savedUser
+    return user
   }
 
   suspend fun createInboxRepository(userId: UserId): Repository = withContext(Dispatchers.IO) {
+    log.debug("[${coroutineContext.corrId()}] create inbox repository for $userId in group ${coroutineContext.groupId()}")
     val r = Repository(
       title = "Notifications",
       description = "",
@@ -134,7 +167,7 @@ class UserUseCase(
       retentionMaxAgeDays = null,
       visibility = EntityVisibility.isPrivate,
       retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt,
-      groupId = resolveGroupId()
+      groupId = coroutineContext.groupId()
     )
     val savedRepository = repositoryRepository.save(r)
 
@@ -145,22 +178,7 @@ class UserUseCase(
     savedRepository
   }
 
-  private fun resolveGroupId(): GroupId {
-    TODO("Not yet implemented")
-  }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findByEmail(email: String): User? {
-//    return userRepository.findByEmail(email)
-//  }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findByGithubId(githubId: String): User? {
-//    return userRepository.findByGithubId(githubId) ?: userRepository.findByEmail("$githubId@github.com")
-//  }
-
-  @Transactional
-  suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) {
+  suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) = withContext(Dispatchers.IO) {
     var user = userRepository.findById(userId) ?: throw NotFoundException("user not found")
 
     var changed = false
@@ -235,13 +253,11 @@ class UserUseCase(
     }
   }
 
-//  @Transactional(readOnly = true)
 //  suspend fun getAnonymousUser(): User {
 //    return userRepository.findByAnonymousUser()
 //  }
 
-  @Transactional
-  suspend fun updateLegacyUser(userId: UserId, githubId: String) {
+  suspend fun updateLegacyUser(userId: UserId, githubId: String) = withContext(Dispatchers.IO) {
     log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
 
     val isGithubAccountLinked = githubConnectionRepository.existsByUserId(userId)
@@ -259,52 +275,50 @@ class UserUseCase(
     }
   }
 
-//  @Transactional(readOnly = true)
 //  suspend fun findById(userId: UserId): User? {
 //    return userRepository.findById(userId)
 //  }
 
-  @Transactional(readOnly = true)
-  suspend fun getConnectedAppByUserAndId(userId: UserId, connectedAppId: ConnectedAppId): ConnectedApp {
+  suspend fun getConnectedAppByUserAndId(userId: UserId, connectedAppId: ConnectedAppId): ConnectedApp =
+    withContext(Dispatchers.IO) {
 
-    return connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
-      ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
-      ?: throw IllegalArgumentException("not found")
-  }
+      connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
+        ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+        ?: throw IllegalArgumentException("not found")
+    }
 
-  @Transactional
-  suspend fun updateConnectedApp(userId: UserId, connectedAppId: ConnectedAppId, authorize: Boolean) {
-    val app = connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
-      ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
-      ?: throw IllegalArgumentException("not found")
+  suspend fun updateConnectedApp(userId: UserId, connectedAppId: ConnectedAppId, authorize: Boolean) =
+    withContext(Dispatchers.IO) {
+      val app = connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
+        ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
+        ?: throw IllegalArgumentException("not found")
 
-    app.userId?.let {
-      if (userId != it) {
-        throw PermissionDeniedException("error")
-      }
+      app.userId?.let {
+        if (userId != it) {
+          throw PermissionDeniedException("error")
+        }
 
-      if (app is TelegramConnection) {
-        connectedAppRepository.save(
-          app.copy(
-            authorized = authorize,
-            authorizedAt = LocalDateTime.now(),
-            userId = userId
+        if (app is TelegramConnection) {
+          connectedAppRepository.save(
+            app.copy(
+              authorized = authorize,
+              authorizedAt = LocalDateTime.now(),
+              userId = userId
+            )
           )
-        )
-      }
+        }
 
-      connectedAppRepository.save(app)
+        connectedAppRepository.save(app)
 
-      telegramBotServiceMaybe.getOrNull()?.let {
-        if (app is TelegramConnection && app.chatId != null) {
-          it.showOptionsForKnownUser(app.chatId!!)
+        telegramBotServiceMaybe.getOrNull()?.let {
+          if (app is TelegramConnection && app.chatId != null) {
+            it.showOptionsForKnownUser(app.chatId!!)
+          }
         }
       }
     }
-  }
 
-  @Transactional
-  suspend fun deleteConnectedApp(currentUserId: UserId, connectedAppId: ConnectedAppId) {
+  suspend fun deleteConnectedApp(currentUserId: UserId, connectedAppId: ConnectedAppId) = withContext(Dispatchers.IO) {
     val app =
       connectedAppRepository.findByIdAndAuthorizedEquals(connectedAppId, true)
         ?: throw IllegalArgumentException("not found")
@@ -320,7 +334,6 @@ class UserUseCase(
       throw IllegalArgumentException("github connection cannot be removed")
     }
 
-
     connectedAppRepository.deleteById(app.id)
   }
 
@@ -328,7 +341,7 @@ class UserUseCase(
 
   private fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
-  private suspend fun linkGithubAccount(userId: UserId, githubId: String) {
+  private fun linkGithubAccount(userId: UserId, githubId: String) {
     val githubLink = GithubConnection(
       userId = userId,
       githubId = githubId,
@@ -338,13 +351,22 @@ class UserUseCase(
     githubConnectionRepository.save(githubLink)
   }
 
-//  @Transactional(readOnly = true)
-//  suspend fun findAdminUser(): User? {
-//    return userRepository.findFirstByAdminIsTrue()
-//  }
 }
 
+// todo move this
 fun CoroutineContext.corrId(): String? {
   return this[RequestContext]?.corrId
+}
+
+fun CoroutineContext.userId(): UserId {
+  return this[RequestContext]?.userId!!
+}
+
+fun CoroutineContext.groupId(): GroupId {
+  return this[RequestContext]?.groupId!!
+}
+
+fun CoroutineContext.isAdmin(): Boolean {
+  return this[RequestContext]?.isAdmin ?: false
 }
 

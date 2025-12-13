@@ -7,11 +7,8 @@ import org.migor.feedless.product.PricedProduct
 import org.migor.feedless.product.ProductId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 class PricedProductJpaRepository(private val pricedProductDAO: PricedProductDAO) : PricedProductRepository {
   override fun findAllByProductId(id: ProductId): List<PricedProduct> {

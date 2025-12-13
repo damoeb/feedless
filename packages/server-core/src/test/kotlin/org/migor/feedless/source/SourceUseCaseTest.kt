@@ -10,7 +10,6 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
-import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.DOMElementByXPathInput
@@ -27,43 +26,54 @@ import org.migor.feedless.generated.types.SourceUniqueWhereInput
 import org.migor.feedless.generated.types.SourceUpdateDataInput
 import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.session.RequestContext
+import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
-class SourceServiceTest {
+class SourceUseCaseTest {
 
   private lateinit var sourceRepository: SourceRepository
   private lateinit var scrapeActionRepository: ScrapeActionRepository
   private lateinit var sourceUseCase: SourceUseCase
   private lateinit var repository: Repository
   private lateinit var repositoryId: RepositoryId
+  private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var groupId: GroupId
 
   @BeforeEach
   fun setUp() {
     sourceRepository = mock(SourceRepository::class.java)
     scrapeActionRepository = mock(ScrapeActionRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
     sourceUseCase = SourceUseCase(
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
       mock(RepositoryHarvester::class.java),
-      mock(DocumentRepository::class.java),
       mock(PlanConstraintsService::class.java),
-      scrapeActionRepository
+      scrapeActionRepository,
+      repositoryRepository,
     )
 
     repository = mock(Repository::class.java)
     repositoryId = randomRepositoryId()
     `when`(repository.id).thenReturn(repositoryId)
+
+    groupId = GroupId()
+    `when`(repository.groupId).thenReturn(groupId)
+    `when`(repositoryRepository.findById(repositoryId)).thenReturn(repository)
   }
 
   @Test
-  fun createSources() = runTest {
+  fun createSources() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
 
     val inputs = listOf(
       SourceInput(
@@ -88,7 +98,7 @@ class SourceServiceTest {
   }
 
   @Test
-  fun updateSources() = runTest {
+  fun updateSources() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
     val sourceId = SourceId()
     val update = SourceUpdateInput(
       where = SourceUniqueWhereInput(id = sourceId.uuid.toString()),
@@ -150,7 +160,7 @@ class SourceServiceTest {
   }
 
   @Test
-  fun deleteAllById() = runTest {
+  fun deleteAllById() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
     val sources = listOf(
       SourceId(),
       SourceId(),
@@ -161,7 +171,9 @@ class SourceServiceTest {
     }
     val sourceIds = sources.map { it.id }
     `when`(sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, sources.map { it.id })).thenReturn(sources)
+
     sourceUseCase.deleteAllById(repositoryId, sourceIds)
+
     verify(sourceRepository).deleteAllById(argThat<List<SourceId>> { it.size == sources.size })
   }
 }

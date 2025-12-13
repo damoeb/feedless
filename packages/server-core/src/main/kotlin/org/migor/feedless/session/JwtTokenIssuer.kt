@@ -127,7 +127,6 @@ class JwtTokenIssuer(
   }
 
   fun getExpiration(authority: AuthTokenType): Duration {
-    // todo from properties
     return when (authority) {
       AuthTokenType.ANONYMOUS -> 1.days
       AuthTokenType.USER -> 48.hours

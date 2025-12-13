@@ -11,4 +11,5 @@ import java.util.*
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 interface GroupDAO : JpaRepository<GroupEntity, UUID> {
   fun findByName(name: String): GroupEntity?
+  fun findAllByOwnerId(userId: UUID): List<GroupEntity>
 }

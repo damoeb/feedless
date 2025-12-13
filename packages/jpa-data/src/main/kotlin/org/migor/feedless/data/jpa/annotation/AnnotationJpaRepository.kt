@@ -7,12 +7,9 @@ import org.migor.feedless.annotation.AnnotationId
 import org.migor.feedless.annotation.AnnotationRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.annotation} & ${AppLayer.repository}")
 class AnnotationJpaRepository(private val annotationDAO: AnnotationDAO) : AnnotationRepository {
 

@@ -5,14 +5,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.user} & ${AppLayer.repository}")
 class GroupJpaRepository(private val groupDAO: GroupDAO) : GroupRepository {
   override fun findByName(name: String): Group? {
@@ -25,5 +23,9 @@ class GroupJpaRepository(private val groupDAO: GroupDAO) : GroupRepository {
 
   override fun save(group: Group): Group {
     return groupDAO.save(group.toEntity()).toDomain()
+  }
+
+  override fun findAllByOwner(id: UserId): List<Group> {
+    return groupDAO.findAllByOwnerId(id.uuid).map { it.toDomain() }
   }
 }

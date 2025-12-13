@@ -11,14 +11,14 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.graphql.ServerConfigResolver
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.document.DocumentController
 import org.migor.feedless.feed.FeedService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionResolver
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userSecret.UserSecretRepository
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -40,8 +40,8 @@ const val actuatorPassword = "password"
 @MockitoBean(
   types = [
     ServerConfigResolver::class,
-    UserDAO::class,
-    UserSecretDAO::class,
+    UserRepository::class,
+    UserSecretRepository::class,
     UserUseCase::class,
     SessionResolver::class,
     DocumentController::class,

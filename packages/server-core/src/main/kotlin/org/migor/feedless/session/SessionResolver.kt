@@ -12,38 +12,27 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.Session
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.context.request.ServletWebRequest
 
 @DgsComponent
 @Profile("${AppProfiles.session} & ${AppLayer.api}")
-class SessionResolver {
+class SessionResolver(
+  private val authService: AuthService,
+  private val cookieProvider: CookieProvider,
+  private val capabilityService: CapabilityService,
+) {
 
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
-
-  @Autowired
-  private lateinit var jwtTokenIssuer: JwtTokenIssuer
-
-  @Autowired
-  private lateinit var propertyService: PropertyService
-
-  @Autowired
-  private lateinit var authService: AuthService
-
-  @Autowired
-  private lateinit var sessionService: SessionService
-
-  @Autowired
-  private lateinit var cookieProvider: CookieProvider
 
   @DgsQuery
   suspend fun session(dfe: DataFetchingEnvironment): Session = coroutineScope {
@@ -53,13 +42,13 @@ class SessionResolver {
       isAnonymous = true
     )
 
-    if (sessionService.isUser()) {
+    if (capabilityService.hasCapability(UserCapability.ID)) {
       runCatching {
-        val user = sessionService.user()
+        val userCapability = UserCapability.resolve(capabilityService.getCapability(UserCapability.ID)!!)
         Session(
           isLoggedIn = true,
           isAnonymous = false,
-          userId = user.id.uuid.toString()
+          userId = userCapability.uuid.toString()
         )
       }.getOrDefault(defaultSession)
     } else {

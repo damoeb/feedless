@@ -11,35 +11,43 @@ import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.TextAnnotationInput
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.user.User
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.isAdmin
+import org.migor.feedless.user.userId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
+import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.annotation} & ${AppLayer.service}")
 class AnnotationUseCase(
-  val annotationRepository: AnnotationRepository,
-  val voteRepository: VoteRepository,
-  val textAnnotationRepository: TextAnnotationRepository
+  private val annotationRepository: AnnotationRepository,
+  private val voteRepository: VoteRepository,
+  private val textAnnotationRepository: TextAnnotationRepository
 ) {
 
-  suspend fun createAnnotation(data: CreateAnnotationInput, user: User): Annotation = withContext(Dispatchers.IO) {
-    data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set, user = user) }
-      ?: data.annotation.text?.let { createTextAnnotation(data.where, it, user) }
-      ?: data.annotation.upVote?.let { createBoolAnnotation(data.where, upvote = it.set, user = user) }
-      ?: data.annotation.downVote?.let { createBoolAnnotation(data.where, downvote = it.set, user = user) }
+  suspend fun createAnnotation(data: CreateAnnotationInput): Annotation = withContext(Dispatchers.IO) {
+    val userId = coroutineContext.userId()
+    data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set, userId = userId) }
+      ?: data.annotation.text?.let { createTextAnnotation(data.where, it, userId) }
+      ?: data.annotation.upVote?.let { createBoolAnnotation(data.where, upvote = it.set, userId = userId) }
+      ?: data.annotation.downVote?.let { createBoolAnnotation(data.where, downvote = it.set, userId = userId) }
       ?: throw IllegalArgumentException("Insufficient data for annotation")
   }
 
-  suspend fun deleteAnnotation(data: DeleteAnnotationInput, currentUser: User) = withContext(Dispatchers.IO) {
+  suspend fun deleteAnnotation(data: DeleteAnnotationInput) = withContext(Dispatchers.IO) {
     val annotation = annotationRepository.findById(AnnotationId(data.where.id))
       ?: throw IllegalArgumentException("Annotation not found")
-    if (currentUser.admin || currentUser.id == annotation.ownerId) {
+    if (coroutineContext.userId() == annotation.ownerId || isAdmin()) {
       annotationRepository.delete(annotation)
     } else {
       throw PermissionDeniedException("Must be owner")
     }
+  }
+
+  private suspend fun isAdmin(): Boolean {
+    return coroutineContext.isAdmin()
   }
 
   private fun createBoolAnnotation(
@@ -47,7 +55,7 @@ class AnnotationUseCase(
     flag: Boolean = false,
     upvote: Boolean = false,
     downvote: Boolean = false,
-    user: User
+    userId: UserId
   ): Annotation {
     val (documentId, repositoryId) = resolveReferences(where)
 
@@ -55,7 +63,7 @@ class AnnotationUseCase(
         flag,
         upvote,
         downvote,
-        user.id,
+        userId,
         documentId,
         repositoryId
       )
@@ -69,7 +77,7 @@ class AnnotationUseCase(
       flag = flag,
       repositoryId = repositoryId,
       documentId = documentId,
-      ownerId = user.id,
+      ownerId = userId,
     )
 
     return voteRepository.save(vote)
@@ -78,14 +86,14 @@ class AnnotationUseCase(
   private fun createTextAnnotation(
     where: AnnotationWhereInput,
     i: TextAnnotationInput,
-    user: User
+    userId: UserId
   ): Annotation {
     val (documentId, repositoryId) = resolveReferences(where)
 
     if (textAnnotationRepository.existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(
         i.fromChar,
         i.toChar,
-        user.id,
+        userId,
         documentId,
         repositoryId
       )
@@ -98,7 +106,7 @@ class AnnotationUseCase(
       toChar = i.toChar,
       repositoryId = repositoryId,
       documentId = documentId,
-      ownerId = user.id
+      ownerId = userId
     )
 
     return textAnnotationRepository.save(textAnnotation)

@@ -49,7 +49,7 @@ import kotlin.math.pow
   ]
 )
 @Tag("nlp")
-class ScoreServiceTest {
+class ScoreServiceIntTest {
 
   @Autowired
   lateinit var scoreService: ScoreService

@@ -44,7 +44,7 @@ import org.migor.feedless.generated.types.Product as ProductDto
 @DgsComponent
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class OrderResolver(
-  private var orderUseCase: OrderUseCase, // todo implement domain object
+  private var orderUseCase: OrderUseCase,
   private val productUseCase: ProductUseCase,
   private val userUseCase: UserUseCase,
   private val licenseRepository: LicenseRepository

@@ -10,13 +10,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.data.jpa.user.UserDAO
-import org.migor.feedless.data.jpa.userSecret.UserSecretDAO
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.session.PermissionService
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userSecret.UserSecretRepository
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
@@ -44,10 +44,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
   types = [
     HttpService::class,
     UserUseCase::class,
-    UserDAO::class,
+    UserRepository::class,
     ServerConfigResolver::class,
     UserSecretUseCase::class,
-    UserSecretDAO::class,
+    UserSecretRepository::class,
     PermissionService::class,
     OAuth2AuthorizedClientService::class
   ]
@@ -56,7 +56,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
   DisableDatabaseConfiguration::class,
   DisableWebSocketsConfiguration::class,
 )
-class QueryResolverTest {
+class QueryResolverIntTest {
 
   @Autowired
   lateinit var dgsQueryExecutor: DgsQueryExecutor

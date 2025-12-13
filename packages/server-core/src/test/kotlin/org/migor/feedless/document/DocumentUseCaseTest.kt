@@ -68,7 +68,7 @@ import java.util.*
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class DocumentServiceTest {
+class DocumentUseCaseTest {
 
   private lateinit var repository: Repository
   private lateinit var documentRepository: DocumentRepository
@@ -349,7 +349,7 @@ class DocumentServiceTest {
   @Test
   @Disabled
   fun `processDocumentPlugins will save document when execution gets delayed`() =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       val jobId = PipelineJobId()
       val job = DocumentPipelineJob(
         id = jobId,
@@ -398,63 +398,66 @@ class DocumentServiceTest {
     }
 
   @Test
-  fun `applyRetentionStrategy by startingAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    val repository =
-      mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
+  fun `applyRetentionStrategy by startingAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
 
-    mockDocumentFindById(documentId, document)
-    mockRepositoryFindById(repositoryId, repository)
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
 
-    // when
-    documentUseCase.applyRetentionStrategy(repositoryId)
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
 
-    // then
-    verify(documentRepository).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
       )
-    )
-  }
+    }
 
   @Test
-  fun `applyRetentionStrategy by createdAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    val repository =
-      mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
+  fun `applyRetentionStrategy by createdAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
 
-    mockDocumentFindById(documentId, document)
-    mockRepositoryFindById(repositoryId, repository)
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
 
-    // when
-    documentUseCase.applyRetentionStrategy(repositoryId)
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
 
-    // then
-    verify(documentRepository).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
       )
-    )
-  }
+    }
 
   @Test
-  fun `applyRetentionStrategy by publishedAt`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
-    val repository =
-      mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
-    mockDocumentFindById(documentId, document)
-    mockRepositoryFindById(repositoryId, repository)
+  fun `applyRetentionStrategy by publishedAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
 
-    // when
-    documentUseCase.applyRetentionStrategy(repositoryId)
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
 
-    // then
-    verify(documentRepository).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
-      eq(repositoryId), any(LocalDateTime::class.java), any(
-        ReleaseStatus::class.java
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
       )
-    )
-  }
+    }
 
   @Test
   fun `create document without permissions fails`() {
@@ -462,7 +465,7 @@ class DocumentServiceTest {
     val repositoryId = randomRepositoryId()
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
         mockUser(currentUserId)
         mockDocument(documentId = documentId, repositoryId = repositoryId)
         mockRepository(repositoryId, ownerId = randomUserId())
@@ -483,24 +486,25 @@ class DocumentServiceTest {
   }
 
   @Test
-  fun `create document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    val repositoryId = randomRepositoryId()
+  fun `create document of owner works`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
 
-    mockUser(currentUserId)
-    `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
-    mockRepository(repositoryId, ownerId = currentUserId)
+      mockUser(currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+      mockRepository(repositoryId, ownerId = currentUserId)
 
-    val data = CreateRecordInput(
-      title = "foo",
-      publishedAt = Date().time,
-      url = "",
-      text = "",
-      repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
-    )
-    documentUseCase.createDocument(data)
+      val data = CreateRecordInput(
+        title = "foo",
+        publishedAt = Date().time,
+        url = "",
+        text = "",
+        repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
+      )
+      documentUseCase.createDocument(data)
 
-    verify(documentRepository).save(any(Document::class.java))
-  }
+      verify(documentRepository).save(any(Document::class.java))
+    }
 
   @Test
   fun `update document without permissions fails`() = runTest {
@@ -511,7 +515,7 @@ class DocumentServiceTest {
     mockDocument(documentId = documentId, repositoryId = repositoryId)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
         mockRepository(repositoryId, ownerId = randomUserId())
 
         val data = RecordUpdateInput()
@@ -522,49 +526,52 @@ class DocumentServiceTest {
   }
 
   @Test
-  fun `update document of owner works`() = runTest(context = RequestContext(userId = currentUserId)) {
-    // given
-    val documentId = randomDocumentId()
-    val repositoryId = randomRepositoryId()
+  fun `update document of owner works`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      // given
+      val documentId = randomDocumentId()
+      val repositoryId = randomRepositoryId()
 
-    mockUser(currentUserId)
-    val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
-    val repository = mockRepository(repositoryId, ownerId = currentUserId)
-    `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+      mockUser(currentUserId)
+      val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
+      val repository = mockRepository(repositoryId, ownerId = currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
 
-    mockDocumentFindById(documentId, document)
-    mockRepositoryFindById(repositoryId, repository)
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
 
 
-    val data = RecordUpdateInput()
-    val where = DocumentId(documentId.uuid)
+      val data = RecordUpdateInput()
+      val where = DocumentId(documentId.uuid)
 
-    // when
-    documentUseCase.updateDocument(data, where)
+      // when
+      documentUseCase.updateDocument(data, where)
 
-    // then
+      // then
 
 //        val captor = ArgumentCaptor.forClass(Document::class.java)
-    verify(documentRepository).save(any2())
+      verify(documentRepository).save(any2())
 //        val savedDocument = captor.value
 //        assertThat(savedDocument.id).isEqualTo(documentId)
 //        assertThat(savedDocument.description).isEqualTo("new-description")
 //        assertThat(savedDocument.sourcesSyncCron).isEqualTo("* * * * * *")
-  }
+    }
 
 
   @Test
   fun `given deleteDocuments is executed not by the owner, it fails`() {
     val repository = mock(Repository::class.java)
     val repositoryId = randomRepositoryId()
-    `when`(repository.id).thenReturn(repositoryId)
+    val ownerId = UserId()
+    val differentUserId = randomUserId()
 
-    `when`(repository.ownerId).thenReturn(UserId())
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.ownerId).thenReturn(ownerId)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest {
+      runTest(context = RequestContext(groupId = GroupId(), userId = differentUserId)) {
         `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-        documentUseCase.deleteDocuments(currentUser, repositoryId, StringFilter())
+        documentUseCase.deleteDocuments(repositoryId, StringFilter())
       }
     }
   }

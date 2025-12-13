@@ -114,7 +114,6 @@ class DocumentResolver(
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
   ): Boolean = coroutineScope {
     documentUseCase.deleteDocuments(
-      sessionService.user(),
       RepositoryId(data.where.repository.id),
       data.where.id!!.toDomain()
     )

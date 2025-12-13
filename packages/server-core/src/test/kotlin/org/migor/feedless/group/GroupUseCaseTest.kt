@@ -12,9 +12,6 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.eq
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
@@ -23,14 +20,12 @@ import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
-import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 
-class GroupServiceTest {
+class GroupUseCaseTest {
 
-  private lateinit var capabilityService: CapabilityService
   private val currentUserId = UserId()
   private val userId = randomUserId()
   private val groupId = randomGroupId()
@@ -56,14 +51,9 @@ class GroupServiceTest {
     group = mock(Group::class.java)
     `when`(group.id).thenReturn(groupId)
 
-    capabilityService = mock(CapabilityService::class.java)
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(UserId())))
-
     groupUseCase = GroupUseCase(
       userGroupAssignmentRepository,
       userRepository,
-      capabilityService
     )
     `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
@@ -77,13 +67,12 @@ class GroupServiceTest {
     ]
   )
   fun `admin can add a user with role`(role: RoleInGroup) =
-    runTest {
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       // given
-      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(true)
 
       // when
-      groupUseCase.addUserToGroup(user, group, role)
+      groupUseCase.addUserToGroup(user.id, group, role)
 
       // then
       verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
@@ -98,14 +87,13 @@ class GroupServiceTest {
     ]
   )
   fun `owner of group can add a user with role`(role: RoleInGroup) =
-    runTest {
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       // given
-      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(false)
       mockCurrentUserRoleForGroup(RoleInGroup.owner)
 
       // when
-      groupUseCase.addUserToGroup(user, group, role)
+      groupUseCase.addUserToGroup(user.id, group, role)
 
       // then
       verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
@@ -113,16 +101,15 @@ class GroupServiceTest {
 
   @Test
   fun `editor of group cannot add a user with role owner`() =
-    runTest {
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       // given
-      mockCurrentUser(currentUserId)
       mockCurrentUserIsAdmin(false)
       mockCurrentUserRoleForGroup(RoleInGroup.editor)
 
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-        runBlocking(RequestContext(userId = currentUserId)) {
-          groupUseCase.addUserToGroup(user, group, RoleInGroup.owner)
+        runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
+          groupUseCase.addUserToGroup(user.id, group, RoleInGroup.owner)
         }
       }
     }
@@ -135,45 +122,46 @@ class GroupServiceTest {
     ]
   )
   fun `others cannot add a user to group`(role: RoleInGroup) =
-    runTest(context = RequestContext(userId = currentUserId)) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       // given
       mockCurrentUserRoleForGroup(role)
 
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-        runBlocking(RequestContext(userId = currentUserId)) {
-          groupUseCase.addUserToGroup(user, group, RoleInGroup.viewer)
+        runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
+          groupUseCase.addUserToGroup(user.id, group, RoleInGroup.viewer)
         }
       }
     }
 
   @Test
-  fun `admin can remove user from group`() = runTest(context = RequestContext(userId = currentUserId)) {
-    // given
-    mockCurrentUserIsAdmin(true)
-    val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
+  fun `admin can remove user from group`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      // given
+      mockCurrentUserIsAdmin(true)
+      val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
-    // when
-    groupUseCase.removeUserFromGroup(user, group)
+      // when
+      groupUseCase.removeUserFromGroup(user, group)
 
-    // then
-    verify(userGroupAssignmentRepository).delete(eq(assignment))
-  }
+      // then
+      verify(userGroupAssignmentRepository).delete(eq(assignment))
+    }
 
   @Test
-  fun `owner can remove user from group`() = runTest {
-    // given
-    mockCurrentUser(currentUserId)
-    mockCurrentUserIsAdmin(false)
-    mockUserRoleForGroup(currentUserId, RoleInGroup.owner)
-    val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
+  fun `owner can remove user from group`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      // given
+      mockCurrentUserIsAdmin(false)
+      mockUserRoleForGroup(currentUserId, RoleInGroup.owner)
+      val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
-    // when
-    groupUseCase.removeUserFromGroup(user, group)
+      // when
+      groupUseCase.removeUserFromGroup(user, group)
 
-    // then
-    verify(userGroupAssignmentRepository).delete(eq(assignment))
-  }
+      // then
+      verify(userGroupAssignmentRepository).delete(eq(assignment))
+    }
 
 
   @ParameterizedTest
@@ -184,22 +172,21 @@ class GroupServiceTest {
     ]
   )
   fun `others cannot remove a user from group`(role: RoleInGroup) =
-    runTest {
-      mockCurrentUser(currentUserId)
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       mockCurrentUserRoleForGroup(role)
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-        runTest(context = RequestContext(userId = currentUserId)) {
+        runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
           groupUseCase.removeUserFromGroup(user, group)
         }
       }
     }
 
 
-  private suspend fun mockCurrentUserRoleForGroup(role: RoleInGroup): UserGroupAssignment {
+  private fun mockCurrentUserRoleForGroup(role: RoleInGroup): UserGroupAssignment {
     return mockUserRoleForGroup(currentUserId, role)
   }
 
-  private suspend fun mockUserRoleForGroup(userId: UserId, role: RoleInGroup): UserGroupAssignment {
+  private fun mockUserRoleForGroup(userId: UserId, role: RoleInGroup): UserGroupAssignment {
     val assignment = mock(UserGroupAssignment::class.java)
     `when`(assignment.role).thenReturn(role)
     `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(eq(userId), any2())).thenReturn(assignment)
@@ -208,11 +195,6 @@ class GroupServiceTest {
 
   private fun mockCurrentUserIsAdmin(isAdmin: Boolean) {
     `when`(currentUser.admin).thenReturn(isAdmin)
-  }
-
-  private fun mockCurrentUser(currentUserId: UserId) {
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
   }
 
 }

@@ -3,9 +3,9 @@ package org.migor.feedless.common
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.document.DocumentUseCase
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
-import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -22,7 +22,7 @@ class CleanupExecutor(
   private val sourcePipelineJobRepository: SourcePipelineJobRepository,
   private val documentUseCase: DocumentUseCase,
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
-  private val harvestService: HarvestService,
+  private val harvestRepository: HarvestRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
@@ -31,14 +31,14 @@ class CleanupExecutor(
   @Transactional
   fun executeCleanup() {
     val now = LocalDateTime.now()
-    runBlocking {
-      oneTimePasswordService.ifPresent {
-        runBlocking { it.deleteAllByValidUntilBefore(now) }
-      }
-      documentUseCase.applyRetentionStrategyByCapacity()
-      documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
-      sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+    oneTimePasswordService.ifPresent {
+      runBlocking { it.deleteAllByValidUntilBefore(now) }
     }
-    harvestService.deleteAllTailing()
+    runBlocking {
+      documentUseCase.applyRetentionStrategyByCapacity()
+    }
+    documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+    sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+    harvestRepository.deleteAllTailingBySourceId()
   }
 }

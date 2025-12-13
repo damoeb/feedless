@@ -32,8 +32,8 @@ import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.mockito.ArgumentMatchers.anyMap
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -56,14 +56,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     PropertyService::class,
     AgentService::class,
     AttachmentDAO::class,
+    SourceRepository::class,
     SourceUseCase::class,
     StatelessAuthService::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class)
-class ScrapeServiceTest {
-
-  private val corrId: String = newCorrId()
+class ScrapeServiceIntTest {
 
   @Autowired
   lateinit var scrapeService: ScrapeService

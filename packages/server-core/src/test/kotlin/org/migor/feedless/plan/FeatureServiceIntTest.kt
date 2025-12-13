@@ -24,6 +24,7 @@ import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.StatelessAuthService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
@@ -45,9 +46,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     SessionService::class,
     ProductRepository::class,
     PlanRepository::class,
+    StatelessAuthService::class,
   ]
 )
-class FeatureServiceTest {
+class FeatureServiceIntTest {
 
   private lateinit var childFeatureGroup: FeatureGroup
   private lateinit var parentFeatureGroup: FeatureGroup

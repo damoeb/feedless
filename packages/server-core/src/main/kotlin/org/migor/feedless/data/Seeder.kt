@@ -311,7 +311,7 @@ class Seeder(
           FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
           FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
           FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
-          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
+          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10),
           FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(10),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),
@@ -392,7 +392,7 @@ class Seeder(
 //          FeatureName.scrapeRequestTimeoutMsecInt to asIntFeature(30000),
 //          FeatureName.repositoriesMaxCountTotalInt to asIntFeature(500),
 //          FeatureName.repositoriesMaxCountActiveInt to asIntFeature(500),
-//          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10), // todo check
+//          FeatureName.scrapeRequestActionMaxCountInt to asIntFeature(10),
           FeatureName.sourceMaxCountPerRepositoryInt to asIntFeature(1000),
 
 //          FeatureName.hasWaitList to asBoolFeature(false),

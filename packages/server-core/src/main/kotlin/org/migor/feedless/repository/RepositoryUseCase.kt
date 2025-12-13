@@ -17,9 +17,7 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.capability.CapabilityId
-import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
@@ -42,10 +40,10 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceUseCase
-import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.corrId
+import org.migor.feedless.user.groupId
+import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -55,7 +53,6 @@ import org.springframework.dao.EmptyResultDataAccessException
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import org.springframework.web.util.UriComponentsBuilder
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -80,14 +77,12 @@ fun Pageable.toPageableRequest(): PageableRequest {
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryUseCase(
-  private var repositoryRepository: RepositoryRepository,
-  private var sessionService: SessionService,
-  private var userRepository: UserRepository,
-  private var planConstraintsService: PlanConstraintsService,
-  private var documentUseCase: DocumentUseCase,
-  private var propertyService: PropertyService,
-  private var sourceUseCase: SourceUseCase,
-  private var capabilityService: CapabilityService,
+  private val repositoryRepository: RepositoryRepository,
+  private val sessionService: SessionService,
+  private val planConstraintsService: PlanConstraintsService,
+  private val documentUseCase: DocumentUseCase,
+  private val propertyService: PropertyService,
+  private val sourceUseCase: SourceUseCase,
 ) : RepositoryProvider {
 
   private val log = LoggerFactory.getLogger(RepositoryUseCase::class.simpleName)
@@ -96,7 +91,7 @@ class RepositoryUseCase(
     withContext(Dispatchers.IO) {
       log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
 
-      val groupId = sessionService.currentGroupId()
+      val groupId = coroutineContext.groupId()
 
       val totalCount = repositoryRepository.countByGroupId(groupId)
       planConstraintsService.auditRepositoryMaxCount(totalCount, groupId)
@@ -173,15 +168,13 @@ class RepositoryUseCase(
     return repositoryRepository.findAll(pageable, where, userId)
   }
 
-  //  @Transactional(readOnly = true)
   suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
     repositoryRepository.findById(repositoryId)
   }
 
-  @Transactional
   suspend fun delete(repositoryId: RepositoryId) {
     val repository = repositoryRepository.findById(repositoryId)!!
-    if (repository.ownerId != userId()) {
+    if (repository.ownerId != coroutineContext.userId()) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
@@ -200,7 +193,7 @@ class RepositoryUseCase(
     )
   }
 
-  suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput, userId: UserId) {
+  suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
     // Fetch entity for mutation
     val existingRepository = repositoryRepository.findById(id)
       ?: throw NotFoundException("Repository not found")
@@ -210,15 +203,15 @@ class RepositoryUseCase(
     )
 
     val corrId = coroutineContext.corrId()
-    if (repository.ownerId != userId()) {
+    val userId = coroutineContext.userId()
+    if (repository.ownerId != userId) {
       throw PermissionDeniedException("not authorized")
     }
     log.info("[$corrId] update $id")
     repository = data.title?.set?.let { repository.copy(title = it) } ?: repository
     repository = data.description?.set?.let { repository.copy(description = it) } ?: repository
 
-    val groupId: GroupId = resolveGroupId()
-
+    val groupId = coroutineContext.groupId()
     repository = data.refreshCron?.let {
       it.set?.let {
         repository.copy(
@@ -299,22 +292,12 @@ class RepositoryUseCase(
     }
   }
 
-  private fun resolveGroupId(): GroupId {
-    TODO("Not yet implemented")
-  }
-
-  private fun resolveUserId(): UserId {
-    TODO("Not yet implemented")
-  }
-
-  @Transactional(readOnly = true)
   suspend fun countAll(userId: UserId?, product: Vertical): Int {
     return userId
       ?.let { repositoryRepository.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryRepository.countAllByVisibility(EntityVisibility.isPublic)
   }
 
-  @Transactional
   suspend fun updatePullsFromAnalytics(repositoryId: RepositoryId, pulls: Int) {
     val repository = repositoryRepository.findById(repositoryId)!!
     repositoryRepository.save(
@@ -325,37 +308,31 @@ class RepositoryUseCase(
     )
   }
 
-  private fun userId(): UserId? {
-    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }
-  }
-
-  private suspend fun getActualUserOrDefaultUser(): User {
-    return userId()?.let {
-      sessionService.user()
-    } ?: userRepository.findByAnonymousUser()
-      .also { log.debug("fallback to user anonymous") }
-  }
+//  private suspend fun getActualUserOrDefaultUser(): User {
+//    return userId()?.let {
+//      sessionService.user()
+//    } ?: userRepository.findByAnonymousUser()
+//      .also { log.debug("fallback to user anonymous") }
+//  }
 
   private suspend fun createRepository(
     repoInput: RepositoryCreateInput
   ): Repository {
 
-    val groupId: GroupId = resolveGroupId()
-    val userId: UserId = resolveUserId()
-
     val product = repoInput.product.fromDto()
+    val groupId = coroutineContext.groupId()
     var repo = Repository(
       shareKey = newCorrId(9),
       title = repoInput.title,
       description = repoInput.description,
       visibility = planConstraintsService.coerceVisibility(groupId, repoInput.visibility?.fromDto()),
-      ownerId = sessionService.currentUserId(),
+      ownerId = coroutineContext.userId(),
       pushNotificationsEnabled = BooleanUtils.isTrue(repoInput.pushNotificationsMuted),
       retentionMaxCapacity =
         planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, groupId),
       retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
         repoInput.retention?.maxAgeDays,
-        groupId
+        groupId = groupId
       ),
       groupId = groupId,
       product = product,
@@ -414,12 +391,7 @@ class RepositoryUseCase(
 //    }
 //  }
 //
-//  @Transactional
-//  suspend fun findBySourceId(sourceId: SourceId): Repository? {
-//    return repositoryRepository.findBySourceId(sourceId)
-//  }
 
-  @Transactional(readOnly = true)
   suspend fun findAllByVisibilityAndLastPullSyncBefore(
     visibility: EntityVisibility,
     now: LocalDateTime,
@@ -427,26 +399,6 @@ class RepositoryUseCase(
   ): List<Repository> {
     return repositoryRepository.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageableRequest())
   }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageRequest): List<Repository> {
-//    return repositoryRepository.findAllWhereNextHarvestIsDue(now, pageable.toPageableRequest())
-//  }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findByDocumentId(documentId: DocumentId): Repository? {
-//    return repositoryRepository.findByDocumentId(documentId)
-//  }
-
-//  @Transactional
-//  suspend fun save(repository: Repository): Repository {
-//    return repositoryRepository.save(repository)
-//  }
-
-//  @Transactional(readOnly = true)
-//  suspend fun findByTitleAndOwnerId(title: String, ownerId: UserId): Repository? {
-//    return repositoryRepository.findByTitleAndOwnerId(title, ownerId)
-//  }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {
     TODO("Not yet implemented")

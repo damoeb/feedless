@@ -3,6 +3,7 @@ package org.migor.feedless.plan
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.data.TemporalUnitWithinOffset
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
@@ -10,13 +11,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.Vertical
 import org.migor.feedless.any
 import org.migor.feedless.any2
-import org.migor.feedless.anyList
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureGroup
 import org.migor.feedless.feature.FeatureGroupId
@@ -25,13 +21,11 @@ import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.product.Product
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
-import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mock
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -40,6 +34,7 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import org.springframework.core.env.Environment
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -64,21 +59,15 @@ class PlanConstraintsServiceImplTest {
   lateinit var environment: Environment
 
   lateinit var service: PlanConstraintsService
-  lateinit var capabilityService: CapabilityService
 
   private lateinit var userId: UserId
   private lateinit var groupId: GroupId
-  private val currentUserId = UserId()
   private lateinit var user: User
-  private val product = Vertical.feedless
 
   @BeforeEach
   fun beforeEach() = runTest {
     userId = UserId()
     groupId = GroupId()
-    capabilityService = mock(CapabilityService::class.java)
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(userId)))
 
     service = PlanConstraintsService(
       planRepository,
@@ -98,24 +87,25 @@ class PlanConstraintsServiceImplTest {
     `when`(system.name).thenReturn("")
     `when`(featureGroupRepository.findByParentFeatureGroupIdIsNull()).thenReturn(system)
 
+    `when`(featureGroupRepository.findByGroupId(groupId)).thenReturn(system)
 
-    val mockProduct = mock(Product::class.java)
-    `when`(mockProduct.featureGroupId).thenReturn(FeatureGroupId())
 
-    val mockPlan = mock(Plan::class.java)
-    `when`(mockPlan.product(any2())).thenAnswer { ff -> mockProduct }
-    `when`(
-      planRepository.findActiveByUserAndProductIn(
-        any2(),
-        anyList(),
-        any2()
-      )
-    ).thenReturn(mockPlan)
+//    val mockProduct = mock(Product::class.java)
+//    `when`(mockProduct.featureGroupId).thenReturn(FeatureGroupId())
+
+//    val mockPlan = mock(Plan::class.java)
+//    `when`(mockPlan.product(any2())).thenAnswer { ff -> mockProduct }
+//    `when`(
+//      planRepository.findActiveByUserAndProductIn(
+//        any2(),
+//        anyList(),
+//        any2()
+//      )
+//    ).thenReturn(mockPlan)
   }
 
   @Test
   fun `give maxItems is defined when coerceRetentionMaxItems works`() {
-    mockCurrentUser(currentUserId)
     val maxItems = 50L
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = maxItems)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
@@ -126,7 +116,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `give maxItems is undefined when coerceRetentionMaxItems works`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.repositoryCapacityUpperLimitInt, intValue = null)
     mockFeatureValue(FeatureName.repositoryCapacityLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxCapacity(null, groupId)).isNull()
@@ -148,7 +137,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is true, when coerceVisibility works`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = true)
     // fallback
     assertThat(service.coerceVisibility(groupId, null)).isEqualTo(EntityVisibility.isPrivate)
@@ -160,7 +148,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given publicScrapeSourceBool is false, when coerceVisibility works`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.publicRepositoryBool, boolValue = false)
 
     // fallback
@@ -173,7 +160,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given invalid refreshRate when coerceMinScheduledNextAt returns minimum rate`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
     val minNext = now.plusMinutes(4)
@@ -184,12 +170,11 @@ class PlanConstraintsServiceImplTest {
         now.minusDays(2),
         groupId,
       )
-    ).isAfterOrEqualTo(minNext)
+    ).isCloseTo(minNext, TemporalUnitWithinOffset(10, ChronoUnit.SECONDS))
   }
 
   @Test
   fun `given valid refreshRate when coerceMinScheduledNextAt returns refreshRate`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.refreshRateInMinutesLowerLimitInt, intValue = 4)
     val now = LocalDateTime.now()
     val future = now.plusDays(2)
@@ -205,13 +190,11 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given maxAge is undefined, RetentionMaxAgeDays is undefined`() {
-    mockCurrentUser(currentUserId)
     assertThat(service.coerceRetentionMaxAgeDays(null, groupId)).isEqualTo(null)
   }
 
   @Test
   fun `given maxAge is defined, RetentionMaxAgeDays is at least 2`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.repositoryRetentionMaxDaysLowerLimitInt, intValue = 2)
     assertThat(service.coerceRetentionMaxAgeDays(-3, groupId)).isEqualTo(2)
     assertThat(service.coerceRetentionMaxAgeDays(0, groupId)).isEqualTo(2)
@@ -220,7 +203,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestActionMaxCountInt is undefined, all actionsCount will pass`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = null)
     service.auditScrapeRequestMaxActions(null, groupId)
     service.auditScrapeRequestMaxActions(10000, groupId)
@@ -229,7 +211,6 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given scrapeRequestActionMaxCountInt is defined, violating actionsCounts will fail`() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      mockCurrentUser(currentUserId)
       mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = 4)
       service.auditScrapeRequestMaxActions(12, groupId)
     }
@@ -237,7 +218,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestActionMaxCountInt is defined, valid actionsCounts will pass`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.scrapeRequestActionMaxCountInt, intValue = 4)
     service.auditScrapeRequestMaxActions(4, groupId)
     service.auditScrapeRequestMaxActions(0, groupId)
@@ -246,7 +226,6 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given scrapeRequestTimeoutInt is defined, violating actionsCounts will fail`() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      mockCurrentUser(currentUserId)
       mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
       service.auditScrapeRequestTimeout(12, groupId)
     }
@@ -255,7 +234,6 @@ class PlanConstraintsServiceImplTest {
   @Test
 
   fun `given scrapeRequestTimeoutInt is defined, valid actionsCounts will pass`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.scrapeRequestTimeoutMsecInt, intValue = 4)
     service.auditScrapeRequestTimeout(4, groupId)
     service.auditScrapeRequestTimeout(0, groupId)
@@ -263,7 +241,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeSourceMaxCountTotalInt is undefined, all sourceCounts will pass`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = null)
     service.auditRepositoryMaxCount(0, groupId)
     service.auditRepositoryMaxCount(10000, groupId)
@@ -272,7 +249,6 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given scrapeSourceMaxCountTotalInt is defined, violating sourceCounts will fail`() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      mockCurrentUser(currentUserId)
       mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
       service.auditRepositoryMaxCount(12, groupId)
     }
@@ -286,7 +262,6 @@ class PlanConstraintsServiceImplTest {
     ]
   )
   fun `given scrapeSourceMaxCountTotalInt is defined, valid sourceCounts will pass`(sourceCount: Int) {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.repositoriesMaxCountTotalInt, intValue = 4)
     service.auditRepositoryMaxCount(sourceCount, groupId)
   }
@@ -299,7 +274,6 @@ class PlanConstraintsServiceImplTest {
 
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is undefined, all counts will pass`() {
-    mockCurrentUser(currentUserId)
     mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = null)
     service.auditSourcesMaxCountPerRepository(0, groupId)
     service.auditSourcesMaxCountPerRepository(10000, groupId)
@@ -308,7 +282,6 @@ class PlanConstraintsServiceImplTest {
   @Test
   fun `given scrapeRequestMaxCountPerSourceInt is defined, violating counts will fail`() {
     Assertions.assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      mockCurrentUser(currentUserId)
       mockFeatureValue(FeatureName.sourceMaxCountPerRepositoryInt, intValue = 4)
       service.auditSourcesMaxCountPerRepository(12, groupId)
     }
@@ -336,11 +309,6 @@ class PlanConstraintsServiceImplTest {
         eq(featureName.name),
       )
     ).thenReturn(feature)
-  }
-
-  private fun mockCurrentUser(currentUserId: UserId) {
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
   }
 
 }

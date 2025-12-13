@@ -14,8 +14,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
+import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.WebExtractService
@@ -23,6 +23,7 @@ import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.scrape.WebToFeedTransformer.Companion.toAbsoluteUrl
 import org.migor.feedless.scrape.WebToTextTransformer
 import org.migor.feedless.session.StatelessAuthService
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
@@ -48,16 +49,17 @@ import java.util.*
 @MockitoBean(
   types = [
     AgentService::class,
-    AttachmentDAO::class,
+    AttachmentRepository::class,
     SourceUseCase::class,
     StatelessAuthService::class,
+    SourceRepository::class,
   ]
 )
 @Import(
   DisableDatabaseConfiguration::class,
   DisableWebSocketsConfiguration::class,
 )
-internal class WebToFeedTransformerTest {
+internal class WebToFeedTransformerIntTest {
 
   private lateinit var parser: WebToFeedTransformer
 

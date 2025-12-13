@@ -33,7 +33,6 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.io.File
 import java.io.FileWriter
 import java.io.InputStream
@@ -316,7 +315,6 @@ class LicenseUseCase { // todo split up into provider and usecase
     return true
   }
 
-  @Transactional
   suspend fun createLicenseForProduct(product: Product, order: Order): License {
     log.info("createLicenseForProduct ${product.name}")
     if (product.saas) {

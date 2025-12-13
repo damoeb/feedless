@@ -7,9 +7,12 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -19,9 +22,10 @@ import org.mockito.Mockito.`when`
 import org.springframework.security.oauth2.jwt.Jwt
 import kotlin.time.Duration.Companion.seconds
 
-class UserSecretServiceTest {
+class UserSecretUseCaseTest {
 
   private lateinit var userSecretRepository: UserSecretRepository
+  private lateinit var userRepository: UserRepository
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
   private lateinit var userSecretUseCase: UserSecretUseCase
   private lateinit var currentUserId: UserId
@@ -35,29 +39,33 @@ class UserSecretServiceTest {
     userSecretRepository = mock(UserSecretRepository::class.java)
     `when`(userSecretRepository.save(any2())).thenAnswer { it.arguments[0] }
 
+    userRepository = mock(UserRepository::class.java)
+    `when`(userRepository.findById(currentUserId)).thenReturn(mock(User::class.java))
+
     jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
     val jwt = mock(Jwt::class.java)
     `when`(jwt.tokenValue).thenReturn("jwt")
     `when`(jwtTokenIssuer.createJwtForApi(any2())).thenReturn(jwt)
     `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.seconds)
 
-    userSecretUseCase = UserSecretUseCase(userSecretRepository, jwtTokenIssuer)
+    userSecretUseCase = UserSecretUseCase(userSecretRepository, userRepository, jwtTokenIssuer)
 
   }
 
   @Test
-  fun `can create encrypted secret`() = runTest {
-    userSecretUseCase.createUserSecret(currentUser)
+  fun `can create encrypted secret`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    userSecretUseCase.createUserSecret()
 
     verify(userSecretRepository).save(any2())
   }
 
   @Test
-  fun `can create unencrypted secret`() = runTest {
-    userSecretUseCase.createUserSecret(currentUser)
+  fun `can create unencrypted secret`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      userSecretUseCase.createUserSecret()
 
-    verify(userSecretRepository).save(any2())
-  }
+      verify(userSecretRepository).save(any2())
+    }
 
 
   @Test
@@ -67,9 +75,9 @@ class UserSecretServiceTest {
     `when`(userSecretRepository.findById(any2())).thenReturn(secret)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
         userSecretUseCase.deleteUserSecret(
-          currentUser, UserSecretId()
+          UserSecretId()
         )
       }
     }

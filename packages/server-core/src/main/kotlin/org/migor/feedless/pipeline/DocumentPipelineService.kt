@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 class DocumentPipelineService(
-  val documentPipelineJobRepository: DocumentPipelineJobRepository,
+  private val documentPipelineJobRepository: DocumentPipelineJobRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentPipelineService::class.simpleName)

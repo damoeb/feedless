@@ -21,7 +21,7 @@ import org.migor.feedless.payment.PaymentStatus
  *
  * Or skip these tests in CI by checking for environment variables
  */
-class StripeServiceTest {
+class StripeUseCaseTest {
 
   private lateinit var stripeService: StripeUseCase
 

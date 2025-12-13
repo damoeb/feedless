@@ -8,9 +8,9 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.any2
 import org.migor.feedless.common.CleanupExecutor
 import org.migor.feedless.document.DocumentUseCase
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
-import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
@@ -30,7 +30,7 @@ class CleanupExecutorTest {
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
   private lateinit var cleanupExecutor: CleanupExecutor
-  private lateinit var harvestService: HarvestService
+  private lateinit var harvestRepository: HarvestRepository
 
   @BeforeEach
   fun setUp() {
@@ -39,13 +39,13 @@ class CleanupExecutorTest {
     sourcePipelineService = mock(SourcePipelineJobRepository::class.java)
     documentUseCase = mock(DocumentUseCase::class.java)
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
-    harvestService = mock(HarvestService::class.java)
+    harvestRepository = mock(HarvestRepository::class.java)
     cleanupExecutor = CleanupExecutor(
       Optional.of(oneTimePasswordService),
       sourcePipelineService,
       documentUseCase,
       documentPipelineJobRepository,
-      harvestService
+      harvestRepository
     )
   }
 
@@ -82,7 +82,7 @@ class CleanupExecutorTest {
   @Test
   fun `executeCleanup removes harvests`() {
     cleanupExecutor.executeCleanup()
-    verify(harvestService).deleteAllTailing()
+    verify(harvestRepository).deleteAllTailingBySourceId()
   }
 
 }

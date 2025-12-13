@@ -8,12 +8,9 @@ import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.scrape} & ${AppLayer.repository}")
 class SourcePipelineJobJpaRepository(private val sourcePipelineJobDAO: SourcePipelineJobDAO) :
   SourcePipelineJobRepository {

@@ -22,6 +22,7 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.InjectMocks
 import org.mockito.Mock
@@ -42,6 +43,9 @@ class FulltextPluginTest {
 
   @Mock
   lateinit var scrapeService: ScrapeService
+
+  @Mock
+  lateinit var sourceRepository: SourceRepository
 
   @InjectMocks
   lateinit var fulltextPlugin: FulltextPlugin

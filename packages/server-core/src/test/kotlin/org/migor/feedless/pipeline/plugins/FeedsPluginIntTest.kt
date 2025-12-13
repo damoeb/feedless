@@ -12,14 +12,15 @@ import org.migor.feedless.PropertiesConfiguration
 import org.migor.feedless.actions.ExecuteAction
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any2
+import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.feed.FeedParserService
 import org.migor.feedless.feed.discovery.GenericFeedLocator
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -39,15 +40,17 @@ import java.time.LocalDateTime
 )
 @MockitoBean(
   types = [
-    AttachmentDAO::class,
+    AttachmentRepository::class,
     AgentService::class,
+    FulltextPlugin::class,
+    StatelessAuthService::class,
   ]
 )
 @Import(
   PropertiesConfiguration::class,
   DisableDatabaseConfiguration::class
 )
-class FeedsPluginTest {
+class FeedsPluginIntTest {
 
   @Autowired
   lateinit var feedsPlugin: FeedsPlugin

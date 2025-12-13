@@ -8,12 +8,9 @@ import org.migor.feedless.feature.FeatureGroupRepository
 import org.migor.feedless.group.GroupId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.features} & ${AppLayer.repository}")
 class FeatureGroupJpaRepository(private val featureGroupDAO: FeatureGroupDAO) : FeatureGroupRepository {
   override fun findByParentFeatureGroupIdIsNull(): FeatureGroup? {

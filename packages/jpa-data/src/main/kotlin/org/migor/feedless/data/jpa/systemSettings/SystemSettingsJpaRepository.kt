@@ -5,11 +5,8 @@ import org.migor.feedless.systemSettings.SystemSettings
 import org.migor.feedless.systemSettings.SystemSettingsRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile(AppLayer.repository)
 class SystemSettingsJpaRepository(private val systemSettingsDAO: SystemSettingsDAO) : SystemSettingsRepository {
   override fun findByName(name: String): SystemSettings? {

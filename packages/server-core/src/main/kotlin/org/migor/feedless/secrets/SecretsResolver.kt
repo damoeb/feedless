@@ -13,6 +13,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.api.toDto
+import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
@@ -30,6 +31,7 @@ class SecretsResolver(
   private val userSecretUseCase: UserSecretUseCase,
   private val userSecretRepository: UserSecretRepository,
   private val sessionService: SessionService,
+  private val capabilityService: CapabilityService,
 ) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
@@ -47,7 +49,7 @@ class SecretsResolver(
   suspend fun createUserSecret(
     dfe: DataFetchingEnvironment,
   ): UserSecret = coroutineScope {
-    userSecretUseCase.createUserSecret(sessionService.user()).toDto(false)
+    userSecretUseCase.createUserSecret().toDto(false)
   }
 
 
@@ -59,7 +61,6 @@ class SecretsResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEUSERSECRET_INPUT_ARGUMENT.Data) data: DeleteUserSecretInput,
   ): Boolean = coroutineScope {
     userSecretUseCase.deleteUserSecret(
-      sessionService.user(),
       UserSecretId(data.where.`eq`)
     )
     true

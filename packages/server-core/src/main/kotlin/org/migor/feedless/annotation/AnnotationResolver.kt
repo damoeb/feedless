@@ -44,7 +44,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
   ): AnnotationDto = coroutineScope {
     log.debug("createAnnotation $data")
-    annotationUseCase.createAnnotation(data, sessionService.user()).toDto()
+    annotationUseCase.createAnnotation(data).toDto()
   }
 
   @Throttled
@@ -55,7 +55,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
   ): Boolean = coroutineScope {
     log.debug("deleteAnnotation $data")
-    annotationUseCase.deleteAnnotation(data, sessionService.user())
+    annotationUseCase.deleteAnnotation(data)
     true
   }
 

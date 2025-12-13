@@ -424,7 +424,6 @@ class WebToFeedTransformer(
 
   private suspend fun getRelativeCssPath(nodeParam: Element, context: Element): String {
     if (nodeParam == context) {
-      // todo mag this is not applicable
       return "self"
     }
     var node = nodeParam

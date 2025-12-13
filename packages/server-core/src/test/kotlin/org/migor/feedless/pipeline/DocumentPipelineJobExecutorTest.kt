@@ -36,9 +36,9 @@ class DocumentPipelineJobExecutorTest {
     documentPipelineService = mock(DocumentPipelineService::class.java)
     repositoryUseCase = mock(RepositoryUseCase::class.java)
     documentUseCase = mock(DocumentUseCase::class.java)
-    documentPipelineJobRepository = mock(documentPipelineJobRepository::class.java)
-    documentRepository = mock(documentRepository::class.java)
-    repositoryRepository = mock(repositoryRepository::class.java)
+    documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
+    documentRepository = mock(DocumentRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
 
     documentPipelineJobExecutor = DocumentPipelineJobExecutor(
       documentPipelineJobRepository,

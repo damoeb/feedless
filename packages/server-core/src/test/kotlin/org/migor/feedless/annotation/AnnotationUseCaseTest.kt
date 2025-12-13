@@ -20,6 +20,7 @@ import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
@@ -29,7 +30,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import java.util.*
 
-class AnnotationServiceTest {
+class AnnotationUseCaseTest {
 
   private lateinit var voteRepository: VoteRepository
   private lateinit var textAnnotationRepository: TextAnnotationRepository
@@ -56,7 +57,7 @@ class AnnotationServiceTest {
   fun `given identical annotation exists, creating the same will be rejected`() {
 
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
         mockAnnotationExists(true)
 
         annotationUseCase.createAnnotation(
@@ -67,14 +68,14 @@ class AnnotationServiceTest {
             annotation = OneOfAnnotationInput(
               flag = BoolUpdateOperationsInput(set = true)
             )
-          ), currentUser
+          )
         )
       }
     }
   }
 
   @Test
-  fun `flag a document`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `flag a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -84,14 +85,14 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           flag = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.flag && it.documentId == documentId })
   }
 
   @Test
-  fun `upVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `upVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -101,14 +102,14 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           upVote = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.upVote && it.documentId == documentId })
   }
 
   @Test
-  fun `downVote a document`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `downVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -118,14 +119,14 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           downVote = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.downVote && it.documentId == documentId })
   }
 
   @Test
-  fun `flag a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `flag a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -135,14 +136,14 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           flag = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.flag && it.repositoryId == repositoryId })
   }
 
   @Test
-  fun `upVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `upVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -152,14 +153,14 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           upVote = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.upVote && it.repositoryId == repositoryId })
   }
 
   @Test
-  fun `downVote a repository`() = runTest(context = RequestContext(userId = currentUserId)) {
+  fun `downVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
       CreateAnnotationInput(
@@ -169,7 +170,7 @@ class AnnotationServiceTest {
         annotation = OneOfAnnotationInput(
           downVote = BoolUpdateOperationsInput(set = true)
         )
-      ), currentUser
+      )
     )
 
     verify(voteRepository).save(argThat { it.downVote && it.repositoryId == repositoryId })
@@ -183,13 +184,13 @@ class AnnotationServiceTest {
     `when`(annotation.ownerId).thenReturn(UserId())
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = currentUserId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
         `when`(annotationRepository.findById(any(AnnotationId::class.java))).thenReturn(annotation)
 
         annotationUseCase.deleteAnnotation(
           DeleteAnnotationInput(
             where = AnnotationWhereUniqueInput(annotationId.uuid.toString())
-          ), currentUser
+          )
         )
       }
     }

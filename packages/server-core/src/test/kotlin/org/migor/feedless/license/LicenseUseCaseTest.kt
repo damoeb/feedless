@@ -27,7 +27,7 @@ import java.util.*
 @Tag("unstable")
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
-class LicenseServiceTest {
+class LicenseUseCaseTest {
 
   private lateinit var licensePayload: LicensePayload
   private lateinit var thisKeyPair: RSAKey

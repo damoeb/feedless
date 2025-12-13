@@ -15,6 +15,7 @@ import org.migor.feedless.session.SessionService
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.security.access.prepost.PreAuthorize
 import org.migor.feedless.generated.types.Report as ReportDto
 
 @DgsComponent
@@ -27,6 +28,7 @@ class ReportResolver(
   private val log = LoggerFactory.getLogger(ReportResolver::class.simpleName)
 
   @Throttled
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   @DgsMutation(field = DgsConstants.MUTATION.CreateReport)
   suspend fun createReport(
     dfe: DataFetchingEnvironment,
@@ -34,17 +36,18 @@ class ReportResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.Segmentation) segmentation: SegmentInput
   ): ReportDto = coroutineScope {
     log.debug("createReport")
-    reportUseCase.createReport(RepositoryId(repositoryId), segmentation, sessionService.currentUserId()).toDto()
+    reportUseCase.createReport(RepositoryId(repositoryId), segmentation).toDto()
   }
 
   @Throttled
+  @PreAuthorize("@capabilityService.hasCapability('user')")
   @DgsMutation(field = DgsConstants.MUTATION.DeleteReport)
   suspend fun deleteReport(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPORT_INPUT_ARGUMENT.ReportId) reportId: String,
   ): Boolean = coroutineScope {
     log.debug("deleteReport $reportId")
-    reportUseCase.deleteReport(ReportId(reportId), sessionService.user())
+    reportUseCase.deleteReport(ReportId(reportId))
     true
   }
 }

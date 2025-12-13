@@ -7,11 +7,8 @@ import org.migor.feedless.license.LicenseRepository
 import org.migor.feedless.order.OrderId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.license} & ${AppLayer.repository}")
 class LicenseJpaRepository(private val licenseDAO: LicenseDAO) : LicenseRepository {
 

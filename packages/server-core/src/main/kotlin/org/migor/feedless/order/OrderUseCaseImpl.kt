@@ -10,11 +10,11 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.generated.types.UserCreateInput
 import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.product.ProductId
-import org.migor.feedless.product.ProductUseCase
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.corrId
+import org.migor.feedless.user.isAdmin
+import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -26,15 +26,13 @@ import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class OrderUseCaseImpl(
   private val orderRepository: OrderRepository,
-  private val sessionService: SessionService,
-  private val productUseCase: ProductUseCase,
   private val userRepository: UserRepository
 ) : OrderUseCase {
 
   private val log = LoggerFactory.getLogger(OrderUseCaseImpl::class.simpleName)
 
   override suspend fun findAll(cursor: PageableRequest): List<Order> {
-    val currentUser = sessionService.user()
+    val currentUser = userRepository.findById(coroutineContext.userId())!!
     return withContext(Dispatchers.IO) {
       if (currentUser.admin) {
 //      data.where?.id?.let {
@@ -118,8 +116,8 @@ class OrderUseCaseImpl(
   private suspend fun update(orderId: OrderId, update: OrderUpdate): Order {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] update $update $orderId")
-    if (!sessionService.user().admin) {
-      throw PermissionDeniedException("must be root ($corrId)")
+    if (!coroutineContext.isAdmin()) {
+      throw PermissionDeniedException("must be admin ($corrId)")
     }
 
     return withContext(Dispatchers.IO) {

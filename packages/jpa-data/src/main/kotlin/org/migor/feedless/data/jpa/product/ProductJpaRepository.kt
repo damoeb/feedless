@@ -8,12 +8,9 @@ import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 class ProductJpaRepository(private val productDAO: ProductDAO) : ProductRepository {
   override fun findByNameEqualsIgnoreCase(name: String): Product? {

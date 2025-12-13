@@ -12,7 +12,6 @@
 //import reactor.core.publisher.FluxSink
 //
 //@Service
-//@Transactional(propagation = Propagation.NEVER)
 //@Profile("${AppProfiles.session} & ${AppLayer.repository}")
 //class AuthWebsocketRepository : InMemorySinkRepository<String, AuthenticationEvent>() {
 //  fun pop(otp: OneTimePasswordEntity): FluxSink<AuthenticationEvent> {

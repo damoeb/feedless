@@ -102,7 +102,7 @@ class DateClaimer {
 //          val (format, dateString, hasTime) = guessDateFormats(corrId, fromDateStr).first()
 //          val fromDate = applyDateFormat(dateString, locale, format, hasTime)
 ////            val toDate = applyDateFormat(toDateStr, locale, format, hasTime)
-////            fromDate.rangeTo(toDate) // todo enable date range
+////            fromDate.rangeTo(toDate)
 //          fromDate
 //        }
 //      }.firstOrNull()
@@ -138,7 +138,7 @@ class DateClaimer {
         .replace(
           "[^\\p{Alnum}$relevantChars:]".toRegex(RegexOption.IGNORE_CASE),
           " "
-        ) // todo fix and replace just special chars
+        )
         .replace("T", " ")
         .replace("\\s+".toRegex(), " ")
       val date = guessDateFormats(simpleDateTimeStr, logger)

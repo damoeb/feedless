@@ -20,13 +20,10 @@ import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourcesFilter
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.source} & ${AppLayer.repository}")
 class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityManager: EntityManager) :
   SourceRepository {

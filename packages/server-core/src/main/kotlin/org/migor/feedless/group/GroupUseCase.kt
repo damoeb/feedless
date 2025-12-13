@@ -5,11 +5,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.corrId
+import org.migor.feedless.user.userId
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
@@ -21,23 +21,19 @@ import org.springframework.stereotype.Service
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
 class GroupUseCase(
   private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
-  private val userRepository: UserRepository,
-  private val capabilityService: CapabilityService,
+  private val userRepository: UserRepository
 ) {
 
   private val log = LoggerFactory.getLogger(GroupUseCase::class.simpleName)
 
-  private fun userId(): UserId {
-    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }!!
-  }
 
-
-  suspend fun addUserToGroup(user: User, group: Group, role: RoleInGroup): UserGroupAssignment =
+  suspend fun addUserToGroup(userId: UserId, group: Group, role: RoleInGroup): UserGroupAssignment =
     withContext(Dispatchers.IO) {
-      assertCurrentUserHasPermissions(userId(), group)
+      log.info("[${coroutineContext.corrId()}] add user $userId to group: ${group.id}")
+      assertCurrentUserHasPermissions(coroutineContext.userId(), group)
 
       val newAssigment = UserGroupAssignment(
-        userId = user.id,
+        userId = userId,
         groupId = group.id,
         role = role
       )
@@ -46,7 +42,7 @@ class GroupUseCase(
     }
 
   suspend fun removeUserFromGroup(user: User, group: Group) = withContext(Dispatchers.IO) {
-    assertCurrentUserHasPermissions(userId(), group)
+    assertCurrentUserHasPermissions(coroutineContext.userId(), group)
 
     val assigment = userGroupAssignmentRepository.findByUserIdAndGroupId(user.id, group.id)
       ?: throw IllegalArgumentException("assignment not found")
@@ -56,15 +52,15 @@ class GroupUseCase(
   private fun assertCurrentUserHasPermissions(currentUserId: UserId, group: Group) {
     val isAdmin = userRepository.findById(currentUserId)!!.admin
 
-    if (!isAdmin) {
-      val deniedException = PermissionDeniedException("")
+    if (!isAdmin && group.ownerId != currentUserId) {
       val currentUserPermissions =
         userGroupAssignmentRepository.findByUserIdAndGroupId(currentUserId, group.id)
-          ?: throw deniedException
+          ?: throw PermissionDeniedException("user does not belong to this group")
       if (RoleInGroup.owner != currentUserPermissions.role) {
-        throw deniedException
+        throw PermissionDeniedException("user is not owner of this group")
       }
     }
+    log.info("user has permissions")
   }
 
   suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment> = withContext(Dispatchers.IO) {

@@ -12,9 +12,6 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -32,11 +29,10 @@ import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserRepository
-import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
@@ -57,7 +53,6 @@ class RepositoryUpdateTest {
   private lateinit var data: RepositoryUpdateDataInput
   private lateinit var applicationContext: ApplicationContext
   private lateinit var sourceUseCase: SourceUseCase
-  private lateinit var capabilityService: CapabilityService
   private val currentUserId = randomUserId()
 
   @BeforeEach
@@ -67,20 +62,15 @@ class RepositoryUpdateTest {
     planConstraintsService = mock(PlanConstraintsService::class.java)
     applicationContext = mock(ApplicationContext::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
-    capabilityService = mock(CapabilityService::class.java)
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
 
     repositoryUseCase = spy(
       RepositoryUseCase(
         repositoryRepository,
         sessionService,
-        mock(UserRepository::class.java),
         planConstraintsService,
         mock(DocumentUseCase::class.java),
         mock(PropertyService::class.java),
         sourceUseCase,
-        capabilityService
       )
     )
 
@@ -124,9 +114,8 @@ class RepositoryUpdateTest {
   @Test
   fun `given repo does not exists, update will fail`() {
     assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
-      runTest {
-        mockCurrentUser(currentUserId)
-        repositoryUseCase.updateRepository(repositoryId, data, UserId())
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+        repositoryUseCase.updateRepository(repositoryId, data)
       }
     }
   }
@@ -134,129 +123,124 @@ class RepositoryUpdateTest {
   @Test
   fun `given current user has insuffieient priveleges, update will fail`() {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest {
-        mockCurrentUser(randomUserId())
+      runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
         `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-        repositoryUseCase.updateRepository(repositoryId, data, UserId())
+        repositoryUseCase.updateRepository(repositoryId, data)
       }
     }
   }
 
   @Test
-  fun `given all requirements are met, repository data will be updated`() = runTest {
-    mockCurrentUser(ownerId)
+  fun `given all requirements are met, repository data will be updated`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
 
-    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
-      it.arguments[0]
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer {
+        it.arguments[0]
+      }
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2(),
+        )
+      ).thenReturn(LocalDateTime.now())
+      `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
+        it.arguments[1] as? EntityVisibility ?: EntityVisibility.isPrivate
+      }
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+
+      var savedRepo: Repository? = null
+      `when`(repositoryRepository.save(any2())).thenAnswer {
+        savedRepo = it.arguments[0] as Repository
+        savedRepo
+      }
+
+      repositoryUseCase.updateRepository(repositoryId, data)
+
+      // Verify the repository was saved with updated values
+      assertThat(savedRepo).isNotNull
+      val saved = savedRepo!!
+      assertThat(saved.title).isEqualTo("new-title")
+      assertThat(saved.description).isEqualTo("new-description")
+      assertThat(saved.sourcesSyncCron).isEqualTo("* * * * * *")
     }
-    `when`(
-      planConstraintsService.coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2(),
-      )
-    ).thenReturn(LocalDateTime.now())
-    `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
-      it.arguments[0] ?: EntityVisibility.isPrivate
-    }
-    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-
-    var savedRepo: Repository? = null
-    `when`(repositoryRepository.save(any2())).thenAnswer {
-      savedRepo = it.arguments[0] as Repository
-      savedRepo
-    }
-
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
-
-    // Verify the repository was saved with updated values
-    assertThat(savedRepo).isNotNull
-    assertThat(savedRepo!!.title).isEqualTo("new-title")
-    assertThat(savedRepo.description).isEqualTo("new-description")
-    assertThat(savedRepo.sourcesSyncCron).isEqualTo("* * * * * *")
-  }
-
-  private fun mockCurrentUser(currentUserId: UserId) {
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(currentUserId)))
-  }
 
   @Test
-  fun `given a valid update request, sources can be added`() = runTest {
-    // given
-    mockCurrentUser(ownerId)
-    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
-    `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
-      it.arguments[0] ?: EntityVisibility.isPrivate
+  fun `given a valid update request, sources can be added`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      // given
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+      `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
+        it.arguments[1] as? EntityVisibility ?: EntityVisibility.isPrivate
+      }
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2(),
+        )
+      ).thenReturn(LocalDateTime.now())
+      mockRepositorySave()
+
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
+
+      // then
+      verify(sourceUseCase).createSources(any2(), any2())
     }
-    `when`(
-      planConstraintsService.coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2(),
-      )
-    ).thenReturn(LocalDateTime.now())
-    mockRepositorySave()
-
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
-
-    // then
-    verify(sourceUseCase).createSources(any2(), any2())
-  }
 
   @Test
-  fun `given a valid update request, sources can be updated`() = runTest {
-    // given
-    mockCurrentUser(ownerId)
-    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
-    `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
-      it.arguments[0] ?: EntityVisibility.isPrivate
+  fun `given a valid update request, sources can be updated`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      // given
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+      `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
+        it.arguments[1] as? EntityVisibility ?: EntityVisibility.isPrivate
+      }
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2()
+        )
+      ).thenReturn(LocalDateTime.now())
+      mockRepositorySave()
+
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
+
+      // then
+      verify(sourceUseCase).updateSources(any2(), any2())
     }
-    `when`(
-      planConstraintsService.coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2()
-      )
-    ).thenReturn(LocalDateTime.now())
-    mockRepositorySave()
-
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
-
-    // then
-    verify(sourceUseCase).updateSources(any2(), any2())
-  }
 
   @Test
-  fun `given a valid update request, sources can be removed`() = runTest {
-    // given
-    mockCurrentUser(ownerId)
-    `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-    `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
-    `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
-      it.arguments[0] ?: EntityVisibility.isPrivate
+  fun `given a valid update request, sources can be removed`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      // given
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+      `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
+        it.arguments[1] as? EntityVisibility ?: EntityVisibility.isPrivate
+      }
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2()
+        )
+      ).thenReturn(LocalDateTime.now())
+      mockRepositorySave()
+
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
+
+      // then
+      verify(sourceUseCase).deleteAllById(any2(), any2())
     }
-    `when`(
-      planConstraintsService.coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2()
-      )
-    ).thenReturn(LocalDateTime.now())
-    mockRepositorySave()
 
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
-
-    // then
-    verify(sourceUseCase).deleteAllById(any2(), any2())
-  }
-
-  private suspend fun mockRepositorySave() {
+  private fun mockRepositorySave() {
     `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
 

@@ -50,7 +50,7 @@ import java.util.*
     "app.mail.domain=feedless.org"
   ]
 )
-class MailServiceWithJavaMailTest {
+class MailServiceWithJavaMailIntTest {
 
   @Autowired
   lateinit var mailService: MailService

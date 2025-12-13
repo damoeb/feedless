@@ -7,12 +7,9 @@ import org.migor.feedless.report.ReportId
 import org.migor.feedless.report.ReportRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.report} & ${AppLayer.repository}")
 class ReportJpaRepository(private val reportDAO: ReportDAO) : ReportRepository {
   override fun save(report: Report): Report {

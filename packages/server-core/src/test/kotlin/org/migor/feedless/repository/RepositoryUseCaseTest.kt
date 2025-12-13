@@ -15,9 +15,6 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.any2
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -39,8 +36,6 @@ import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserRepository
-import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -50,7 +45,7 @@ import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-class RepositoryServiceTest {
+class RepositoryUseCaseTest {
 
   private lateinit var repositoryRepository: RepositoryRepository
 
@@ -73,26 +68,19 @@ class RepositoryServiceTest {
     applicationContext = mock(ApplicationContext::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
 
-    val capabilityService = mock(CapabilityService::class.java)
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(userId)))
-
     repositoryUseCase = RepositoryUseCase(
-//      mock(UserDAO::class.java),
       repositoryRepository,
       sessionService,
-      mock(UserRepository::class.java),
       planConstraintsService,
       mock(DocumentUseCase::class.java),
       mock(PropertyService::class.java),
       sourceUseCase,
-      capabilityService
     )
     `when`(applicationContext.getBean(eq(RepositoryUseCase::class.java))).thenReturn(repositoryUseCase)
 
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(userId)
-    `when`(sessionService.user()).thenReturn(user)
+//    `when`(sessionService.user()).thenReturn(user)
     `when`(repositoryRepository.save(any2()))
       .thenAnswer { it.getArgument(0) }
     `when`(repositoryRepository.countByGroupId(any(GroupId::class.java)))
@@ -102,7 +90,7 @@ class RepositoryServiceTest {
   @Test
   fun `given maxActiveCount is reached, when creating a new repositoru, then return error`() {
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = userId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
         `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
           .thenReturn(true)
 
@@ -114,7 +102,7 @@ class RepositoryServiceTest {
   }
 
   @Test
-  fun `create repos`() = runTest(context = RequestContext(userId = userId)) {
+  fun `create repos`() = runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
     `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(any(GroupId::class.java), eq(null)))
@@ -153,7 +141,7 @@ class RepositoryServiceTest {
 
   @Test
   fun `given maxActiveCount is not reached, when creating a new repository, then repository is created`() =
-    runTest(context = RequestContext(userId = userId)) {
+    runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
       `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
         .thenReturn(false)
       `when`(planConstraintsService.coerceVisibility(any2(), Mockito.any()))
@@ -179,7 +167,7 @@ class RepositoryServiceTest {
   @Disabled("legacy feeds demand disabled authority checks")
   fun `requesting private repository is restricted to owner`() {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = randomUserId())) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
         `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
           .thenReturn(false)
         `when`(planConstraintsService.coerceVisibility(any2(), Mockito.any()))
@@ -191,7 +179,7 @@ class RepositoryServiceTest {
   }
 
 //  @Test
-//  fun `given user is owner, updating repository works`() = runTest(context = RequestContext(userId = userId)) {
+//  fun `given user is owner, updating repository works`() = runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
 //    val repositoryId = randomRepositoryId()
 //    val data = RepositoryUpdateDataInput(
 //      nextUpdateAt = NullableLongUpdateOperationsInput(set = null)
@@ -222,92 +210,95 @@ class RepositoryServiceTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       val mockInput = RepositoryUpdateDataInput()
-      runTest(context = RequestContext(userId = userId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
         `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
           .thenReturn(mockRepository)
 
-        repositoryUseCase.updateRepository(repositoryId, mockInput, UserId())
+        repositoryUseCase.updateRepository(repositoryId, mockInput)
       }
     }
   }
 
   @Test
-  fun `given updateRepository call, sources can be removed`() = runTest(context = RequestContext(userId = userId)) {
-    val repositoryId = randomRepositoryId()
-    val removeSources = listOf(randomSourceId())
-    val data = RepositoryUpdateDataInput(
-      sources = SourcesUpdateInput(
-        remove = removeSources.map { it.uuid.toString() }
+  fun `given updateRepository call, sources can be removed`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
+      val repositoryId = randomRepositoryId()
+      val removeSources = listOf(randomSourceId())
+      val data = RepositoryUpdateDataInput(
+        sources = SourcesUpdateInput(
+          remove = removeSources.map { it.uuid.toString() }
+        )
       )
-    )
-    val mockRepository = Repository(
-      id = repositoryId,
-      title = "test",
-      ownerId = userId,
-      groupId = GroupId(),
-    )
+      val mockRepository = Repository(
+        id = repositoryId,
+        title = "test",
+        ownerId = userId,
+        groupId = GroupId(),
+      )
 
-    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
-      .thenReturn(mockRepository)
+      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+        .thenReturn(mockRepository)
 
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
 
-    // then
-    verify(sourceUseCase).deleteAllById(eq(repositoryId), eq(removeSources))
-  }
+      // then
+      verify(sourceUseCase).deleteAllById(eq(repositoryId), eq(removeSources))
+    }
 
   @Test
-  fun `given updateRepository call, sources can be updated`() = runTest(context = RequestContext(userId = userId)) {
-    val repositoryId = randomRepositoryId()
-    val updateSources = listOf(mock(SourceUpdateInput::class.java))
-    val data = RepositoryUpdateDataInput(
-      sources = SourcesUpdateInput(
-        update = updateSources,
+  fun `given updateRepository call, sources can be updated`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
+      val repositoryId = randomRepositoryId()
+      val updateSources = listOf(mock(SourceUpdateInput::class.java))
+      val data = RepositoryUpdateDataInput(
+        sources = SourcesUpdateInput(
+          update = updateSources,
+        )
       )
-    )
-    val repository = Repository(
-      id = repositoryId,
-      title = "test",
-      ownerId = userId,
-      groupId = GroupId(),
-    )
+      val repository = Repository(
+        id = repositoryId,
+        title = "test",
+        ownerId = userId,
+        groupId = GroupId(),
+      )
 
-    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
-      .thenReturn(repository)
+      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+        .thenReturn(repository)
 
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
 
-    // then
-    verify(sourceUseCase).updateSources(eq(repositoryId), eq(updateSources))
-  }
+      // then
+      verify(sourceUseCase).updateSources(eq(repositoryId), eq(updateSources))
+    }
 
   @Test
-  fun `given updateRepository call, sources can be added`() = runTest(context = RequestContext(userId = userId)) {
-    val repositoryId = randomRepositoryId()
-    val addSources = listOf(mock(SourceInput::class.java))
-    val data = RepositoryUpdateDataInput(
-      sources = SourcesUpdateInput(
-        add = addSources,
+  fun `given updateRepository call, sources can be added`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
+      val repositoryId = randomRepositoryId()
+      val addSources = listOf(mock(SourceInput::class.java))
+      val data = RepositoryUpdateDataInput(
+        sources = SourcesUpdateInput(
+          add = addSources,
+        )
       )
-    )
-    val repository = Repository(
-      id = repositoryId,
-      title = "test",
-      ownerId = userId,
-      groupId = GroupId(),
-    )
+      val repository = Repository(
+        id = repositoryId,
+        title = "test",
+        ownerId = userId,
+        groupId = GroupId(),
+      )
 
-    `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
-      .thenReturn(repository)
+      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+        .thenReturn(repository)
 
-    // when
-    repositoryUseCase.updateRepository(repositoryId, data, UserId())
+      // when
+      repositoryUseCase.updateRepository(repositoryId, data)
 
-    // then
-    verify(sourceUseCase).createSources(eq(addSources), eq(repositoryId))
-  }
+      // then
+      verify(sourceUseCase).createSources(eq(addSources), eq(repositoryId))
+    }
 
   @Test
   fun `given user is not owner, deleting repository fails`() = runTest {
@@ -323,7 +314,7 @@ class RepositoryServiceTest {
       .thenReturn(mockRepository)
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(userId = userId)) {
+      runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
         repositoryUseCase.delete(repositoryId)
       }
     }

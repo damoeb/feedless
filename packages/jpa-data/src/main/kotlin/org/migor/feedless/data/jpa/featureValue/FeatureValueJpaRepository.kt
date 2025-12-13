@@ -9,12 +9,9 @@ import org.migor.feedless.feature.FeatureValueId
 import org.migor.feedless.feature.FeatureValueRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.features} & ${AppLayer.repository}")
 class FeatureValueJpaRepository(private val featureValueDAO: FeatureValueDAO) : FeatureValueRepository {
   override fun findByFeatureGroupIdAndFeatureId(

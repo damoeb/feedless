@@ -12,9 +12,6 @@ import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
 import org.migor.feedless.any2
-import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
@@ -34,16 +31,19 @@ import org.migor.feedless.generated.types.ScrapeExtractInput
 import org.migor.feedless.generated.types.ScrapeFlowInput
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
+import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.order.OrderRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
-import org.migor.feedless.util.JsonSerializer.toJson
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -73,11 +73,12 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
     ProductUseCase::class,
     PropertyService::class,
     InboxService::class,
-//  SourceService::class
+    StatelessAuthService::class,
+    OrderRepository::class,
     AgentService::class,
   ]
 )
-class RepositoryServiceIntTest {
+class RepositoryUseCaseIntTest {
   @Autowired
   private lateinit var repositoryUseCase: RepositoryUseCase
 
@@ -93,13 +94,14 @@ class RepositoryServiceIntTest {
   @Autowired
   private lateinit var userUseCase: UserUseCase
 
+  @Autowired
+  private lateinit var groupRepository: GroupRepository
+
   @MockitoBean
   private lateinit var planConstraintsService: PlanConstraintsService
 
-  @MockitoBean
-  private lateinit var capabilityService: CapabilityService
-
   private lateinit var user: User
+  private lateinit var group: Group
 
 
   @BeforeEach
@@ -107,15 +109,11 @@ class RepositoryServiceIntTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
     user = userUseCase.createUser("foo@bar.com")
+    group = groupRepository.findAllByOwner(user.id).single()
   }
 
   @Test
-  fun `create repos`() = runTest(context = RequestContext(userId = user.id)) {
-    `when`(capabilityService.getCapability(UserCapability.ID))
-      .thenReturn(UnresolvedCapability(UserCapability.ID, toJson(user.id)))
-
-    `when`(sessionService.user())
-      .thenReturn(user)
+  fun `create repos`() = runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
     `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
       .thenReturn(false)
     `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))

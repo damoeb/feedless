@@ -9,13 +9,10 @@ import org.migor.feedless.plan.PlanRepository
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.plan} & ${AppLayer.repository}")
 class PlanJpaRepository(private val planDAO: PlanDAO) : PlanRepository {
   override fun findAllByUser(userId: UserId): List<Plan> {

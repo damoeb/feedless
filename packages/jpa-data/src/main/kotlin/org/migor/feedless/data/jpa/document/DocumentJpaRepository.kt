@@ -23,14 +23,11 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
-import org.springframework.transaction.annotation.Propagation
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Component
-@Transactional(propagation = Propagation.MANDATORY)
 @Profile("${AppProfiles.document} & ${AppLayer.repository}")
 class DocumentJpaRepository(private val documentDAO: DocumentDAO, private val entityManager: EntityManager) :
   DocumentRepository {

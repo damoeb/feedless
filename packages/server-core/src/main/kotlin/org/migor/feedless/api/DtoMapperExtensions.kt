@@ -45,29 +45,29 @@ import org.migor.feedless.generated.types.UserSecret as UserSecretDto
 class DtoMapperFacade(
 //    private val enumMapper: EnumMapper,
 //    private val userMapper: UserMapper,
-    private val documentMapper: DocumentMapper,
+  private val documentMapper: DocumentMapper,
 //    private val productMapper: ProductMapper,
-    private val featureMapper: FeatureMapper,
-    private val userSecretMapper: UserSecretMapper,
+  private val featureMapper: FeatureMapper,
+  private val userSecretMapper: UserSecretMapper,
 //    private val repositoryMapper: RepositoryMapper,
-    private val scrapeResponseMapper: ScrapeResponseMapper
+  private val scrapeResponseMapper: ScrapeResponseMapper
 ) {
 
-    companion object {
-        private lateinit var instance: DtoMapperFacade
+  companion object {
+    private lateinit var instance: DtoMapperFacade
 
-        fun initialize(facade: DtoMapperFacade) {
-            instance = facade
-        }
-
-        fun getInstance(): DtoMapperFacade = instance
+    fun initialize(facade: DtoMapperFacade) {
+      instance = facade
     }
 
-    init {
-        initialize(this)
-    }
+    fun getInstance(): DtoMapperFacade = instance
+  }
 
-    // Enum mappings
+  init {
+    initialize(this)
+  }
+
+  // Enum mappings
 //  fun toDto(visibility: EntityVisibility): VisibilityDto = enumMapper.toDto(visibility)
 //  fun fromDto(dto: VisibilityDto): EntityVisibility = enumMapper.fromDto(dto)
 //
@@ -94,23 +94,23 @@ class DtoMapperFacade(
 //  fun fromDto(dto: StringFilterOperatorDto): StringFilterOperator =
 //    enumMapper.fromDto(dto)
 
-    // Domain object mappings
+  // Domain object mappings
 //    fun toDto(user: User): UserDto = userMapper.toDto(user)
 
-    fun toDto(document: Document, propertyService: PropertyService): RecordDto =
-        documentMapper.toDto(document, propertyService)
+  fun toDto(document: Document, propertyService: PropertyService): RecordDto =
+    documentMapper.toDto(document, propertyService)
 
 //    fun toDto(product: Product): ProductDto = productMapper.toDto(product)
 //    fun toDto(pricedProduct: PricedProduct): PricedProductDto = productMapper.toDto(pricedProduct)
 
-    fun toDto(entity: FeatureGroupEntity, features: List<FeatureDto>): FeatureGroupDto =
-        featureMapper.toDto(entity, features)
+  fun toDto(entity: FeatureGroupEntity, features: List<FeatureDto>): FeatureGroupDto =
+    featureMapper.toDto(entity, features)
 
-    fun toDto(entity: FeatureValueEntity): FeatureValueDto =
-        featureMapper.toDto(entity)
+  fun toDto(entity: FeatureValueEntity): FeatureValueDto =
+    featureMapper.toDto(entity)
 
-    fun toDto(userSecret: UserSecret, mask: Boolean = true): UserSecretDto =
-        userSecretMapper.toDto(userSecret, mask)
+  fun toDto(userSecret: UserSecret, mask: Boolean = true): UserSecretDto =
+    userSecretMapper.toDto(userSecret, mask)
 
 
 //    fun toDto(harvest: Harvest): HarvestDto = repositoryMapper.harvestToDto(harvest)
@@ -119,22 +119,22 @@ class DtoMapperFacade(
 //    fun toDto(repository: Repository, currentUserIsOwner: Boolean): RepositoryDto =
 //        repositoryMapper.toDto(repository, currentUserIsOwner)
 
-    fun toDto(source: Source): SourceDto = source.toDto()
-    fun fromDto(input: SourceInputDto): Source = input.toSource()
+  fun toDto(source: Source): SourceDto = source.toDto()
+  fun fromDto(input: SourceInputDto): Source = input.toSource()
 
-    fun toDto(action: org.migor.feedless.actions.ScrapeAction): ScrapeActionDto =
-        action.toDto()
+  fun toDto(action: org.migor.feedless.actions.ScrapeAction): ScrapeActionDto =
+    action.toDto()
 
-    fun fromDto(input: ScrapeFlowInputDto): MutableList<org.migor.feedless.actions.ScrapeAction> =
-        input.scrapeFlowFromDto()
+  fun fromDto(input: ScrapeFlowInputDto): MutableList<org.migor.feedless.actions.ScrapeAction> =
+    input.scrapeFlowFromDto()
 
-    // Scrape response mappings
-    fun fromDto(input: ScrapeResponseInputDto): ScrapeResponseDto = scrapeResponseMapper.fromDto(input)
-    fun fromDto(input: MimeDataInputDto): MimeDataDto = scrapeResponseMapper.fromDto(input)
-    fun fromDto(input: TextDataInputDto): TextDataDto = scrapeResponseMapper.fromDto(input)
-    fun toDto(ref: RemoteNativeFeedRef): RemoteNativeFeedDto = scrapeResponseMapper.toDto(ref)
-    fun toDto(rule: GenericFeedRule): TransientGenericFeedDto = scrapeResponseMapper.toDto(rule)
-    fun fromDto(input: SelectorsDto): GenericFeedSelectors = scrapeResponseMapper.fromDto(input)
+  // Scrape response mappings
+  fun fromDto(input: ScrapeResponseInputDto): ScrapeResponseDto = scrapeResponseMapper.fromDto(input)
+  fun fromDto(input: MimeDataInputDto): MimeDataDto = scrapeResponseMapper.fromDto(input)
+  fun fromDto(input: TextDataInputDto): TextDataDto = scrapeResponseMapper.fromDto(input)
+  fun toDto(ref: RemoteNativeFeedRef): RemoteNativeFeedDto = scrapeResponseMapper.toDto(ref)
+  fun toDto(rule: GenericFeedRule): TransientGenericFeedDto = scrapeResponseMapper.toDto(rule)
+  fun fromDto(input: SelectorsDto): GenericFeedSelectors = scrapeResponseMapper.fromDto(input)
 }
 
 // Extension functions that delegate to the facade
@@ -169,19 +169,19 @@ class DtoMapperFacade(
 //fun User.toDTO(): UserDto = DtoMapperFacade.getInstance().toDto(this)
 
 fun Document.toDto(propertyService: PropertyService): RecordDto =
-    DtoMapperFacade.getInstance().toDto(this, propertyService)
+  DtoMapperFacade.getInstance().toDto(this, propertyService)
 
 //fun Product.toDTO(): ProductDto = DtoMapperFacade.getInstance().toDto(this)
 //fun PricedProduct.toDto(): PricedProductDto = DtoMapperFacade.getInstance().toDto(this)
 
 fun FeatureGroupEntity.toDto(features: List<FeatureDto>): FeatureGroupDto =
-    DtoMapperFacade.getInstance().toDto(this, features)
+  DtoMapperFacade.getInstance().toDto(this, features)
 
 fun FeatureValueEntity.toDto(): FeatureValueDto =
-    DtoMapperFacade.getInstance().toDto(this)
+  DtoMapperFacade.getInstance().toDto(this)
 
 fun UserSecret.toDto(mask: Boolean = true): UserSecretDto =
-    DtoMapperFacade.getInstance().toDto(this, mask)
+  DtoMapperFacade.getInstance().toDto(this, mask)
 
 //fun Repository.toDto(currentUserIsOwner: Boolean): RepositoryDto =
 //    DtoMapperFacade.getInstance().toDto(this, currentUserIsOwner)
@@ -199,25 +199,18 @@ fun GenericFeedRule.toDto(): TransientGenericFeedDto = DtoMapperFacade.getInstan
 fun SelectorsDto.fromDto(): GenericFeedSelectors = DtoMapperFacade.getInstance().fromDto(this)
 
 fun createDocumentUrl(propertyService: PropertyService, id: DocumentId): String =
-    "${propertyService.apiGatewayUrl}/article/${id}"
+  "${propertyService.apiGatewayUrl}/article/${id}"
 
 // Helper function for isHtml
 fun isHtml(rawMimeType: String?): Boolean = rawMimeType?.lowercase()?.startsWith("text/html") == true
 
-// Placeholder for PluginExecutionJson.toDto() - needs proper implementation
-//fun PluginExecutionJson.toDto(): PluginExecutionParamsDto {
-//    // TODO: Implement proper mapping
-//    return PluginExecutionParamsDto()
-//}
-
-// Additional helpers that were in DtoMapper
 fun SelectorsInputDto.fromDto(): SelectorsDto = SelectorsDto(
-    contextXPath = contextXPath,
-    linkXPath = linkXPath,
-    dateXPath = dateXPath,
-    extendContext = extendContext,
-    dateIsStartOfEvent = org.apache.commons.lang3.BooleanUtils.isTrue(dateIsStartOfEvent),
-    paginationXPath = paginationXPath,
+  contextXPath = contextXPath,
+  linkXPath = linkXPath,
+  dateXPath = dateXPath,
+  extendContext = extendContext,
+  dateIsStartOfEvent = org.apache.commons.lang3.BooleanUtils.isTrue(dateIsStartOfEvent),
+  paginationXPath = paginationXPath,
 )
 
 

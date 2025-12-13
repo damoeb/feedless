@@ -74,7 +74,7 @@ class FeedServiceTest {
     scrapeService = mock(ScrapeService::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
     documentRepository = mock(DocumentRepository::class.java)
-    documentUseCase = mock(documentUseCase::class.java)
+    documentUseCase = mock(DocumentUseCase::class.java)
     sourceRepository = mock(SourceRepository::class.java)
     environment = mock(Environment::class.java)
     `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)

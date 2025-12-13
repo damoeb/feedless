@@ -42,7 +42,6 @@ abstract class AuthService {
   protected fun interceptTokenRaw(request: HttpServletRequest): String {
     val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
     if (StringUtils.isNotBlank(authCookie?.value)) {
-      // todo validate ip
       return authCookie?.value!!
     }
     val authHeader = request.getHeader("Authentication")

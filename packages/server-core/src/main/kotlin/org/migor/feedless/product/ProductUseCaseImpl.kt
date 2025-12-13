@@ -58,14 +58,13 @@ class ProductUseCaseImpl(
       }
     }
 
-  // todo thats bad transactional code
   override suspend fun enableSaasProduct(
     product: Product,
     user: User,
     order: Order?
   ) = withContext(Dispatchers.IO) {
 
-    log.error("enableSaasProduct")
+    log.info("enableSaasProduct ${product.name} (${product.id}) for user ${user.id}")
     val prices = pricedProductRepository.findAllByProductId(product.id)
 
     val isFree = { prices.any { it.price == 0.0 } }
@@ -92,9 +91,9 @@ class ProductUseCaseImpl(
     }
   }
 
-  override suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) {
-    val product = withContext(Dispatchers.IO) { productRepository.findByPartOfAndBaseProductIsTrue(vertical)!! }
-    val user = withContext(Dispatchers.IO) { userRepository.findById(userId) }
+  override suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) = withContext(Dispatchers.IO) {
+    val product = productRepository.findByPartOfAndBaseProductIsTrue(vertical)!!
+    val user = userRepository.findById(userId)
 
     enableSaasProduct(product, user!!)
   }

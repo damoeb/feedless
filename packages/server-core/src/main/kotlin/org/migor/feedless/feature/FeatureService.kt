@@ -11,19 +11,18 @@ import org.migor.feedless.generated.types.FeatureIntValueInput
 import org.migor.feedless.plan.PlanRepository
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.user.UserId
+import org.migor.feedless.user.isAdmin
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
 class FeatureService(
-  private val sessionService: SessionService,
   private val planRepository: PlanRepository,
   private val productRepository: ProductRepository,
   private val featureRepository: FeatureRepository,
@@ -65,7 +64,6 @@ class FeatureService(
 //    }
 //  }
 
-  @Transactional
   suspend fun updateFeatureValue(
     id: FeatureValueId,
     intValue: FeatureIntValueInput?,
@@ -73,7 +71,7 @@ class FeatureService(
     productId: ProductId? = null
   ) {
 
-    if (!sessionService.user().admin) {
+    if (!isAdmin()) {
       throw IllegalArgumentException("must be root")
     }
 
@@ -98,7 +96,10 @@ class FeatureService(
     }
   }
 
-  @Transactional
+  private suspend fun isAdmin(): Boolean {
+    return coroutineContext.isAdmin()
+  }
+
   suspend fun assignFeatureValues(
     featureGroup: FeatureGroup,
     features: Map<FeatureName, FeatureValue>, resetFeatureGroup: Boolean = true
@@ -145,9 +146,9 @@ class FeatureService(
     return featureRepository.save(feature)
   }
 
-  @Transactional(readOnly = true)
   suspend fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
     val groups = if (where.id == null) {
+      // todo inherit not used
       featureGroupRepository.findAll()
     } else {
       listOf(featureGroupRepository.findById(FeatureGroupId(where.id!!.eq!!)).orElseThrow())
@@ -156,7 +157,6 @@ class FeatureService(
     return groups
   }
 
-  @Transactional(readOnly = true)
   suspend fun findAllByGroupId(featureGroupId: FeatureGroupId, inherit: Boolean): List<FeatureValue> {
     return if (inherit) {
       featureValueRepository.resolveAllByFeatureGroupId(featureGroupId)

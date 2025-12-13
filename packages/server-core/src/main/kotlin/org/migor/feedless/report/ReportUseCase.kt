@@ -12,9 +12,8 @@ import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.fromDto
-import org.migor.feedless.user.User
-import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -31,26 +30,21 @@ class ReportUseCase(
   private val reportRepository: ReportRepository,
   private val repositoryRepository: RepositoryRepository,
   private val userRepository: UserRepository,
-  private val segmentationService: SegmentationService,
+  private val segmentationRepository: SegmentationRepository,
   private val meterRegistry: MeterRegistry,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
 
-  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput, currentUserId: UserId?): Report =
+  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report =
     withContext(Dispatchers.IO) {
       log.debug("createReport for $repositoryId")
 
-      val repository = repositoryRepository.findById(repositoryId)!!
+      repositoryRepository.findById(repositoryId)!!
 
       val email = segment.recipient.email.email
-      val user = userRepository.findByEmail(email)
 
-      if (currentUserId == null && user != null) {
-        throw IllegalArgumentException() // obscured login request
-      }
-
-      val isOwner = repository.ownerId == user?.id || repository.ownerId == currentUserId?.uuid
+//      val isOwner = repository.ownerId == user?.id || repository.ownerId == resolveUserId()?.uuid
       // todo enable this
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
 //      throw IllegalArgumentException() // obscured access denied
@@ -79,7 +73,7 @@ class ReportUseCase(
         } ?: segmentation
       } ?: segmentation
 
-      segmentationService.saveSegmentation(segmentation)
+      segmentationRepository.save(segmentation)
 
 
       val nextReportedAt = if (interval == ChronoUnit.MONTHS) {
@@ -97,7 +91,7 @@ class ReportUseCase(
         lastRequestedAuthorization = LocalDateTime.now(),
         segmentId = segmentation.id,
         nextReportedAt = nextReportedAt,
-        userId = currentUserId
+        userId = coroutineContext.userId()
       )
 
       meterRegistry.counter(AppMetrics.createReport)
@@ -106,13 +100,12 @@ class ReportUseCase(
       reportRepository.save(report)
     }
 
-
   private suspend fun sendAuthorizationMail(segment: SegmentInput) {
     // todo implement
   }
 
-  suspend fun deleteReport(reportId: ReportId, currentUser: User) = withContext(Dispatchers.IO) {
-    // todo validate user
+  suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {
+    // todo validate groupid
     reportRepository.deleteById(reportId)
   }
 
