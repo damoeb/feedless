@@ -21,6 +21,7 @@ object AppProfiles {
   const val analytics = "analytics"
   const val oauth = "sso"
   const val agent = "agent"
+  const val order = "order"
   const val feed = "feed"
   const val seed = "seed"
   const val mail = "mail"

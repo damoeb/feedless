@@ -13,7 +13,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.secrets.UserSecretUseCase
-import org.migor.feedless.session.PermissionService
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -48,7 +48,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     ServerConfigResolver::class,
     UserSecretUseCase::class,
     UserSecretRepository::class,
-    PermissionService::class,
+    UserGuard::class,
     OAuth2AuthorizedClientService::class
   ]
 )

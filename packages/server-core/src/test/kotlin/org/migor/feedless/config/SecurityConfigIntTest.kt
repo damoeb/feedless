@@ -14,8 +14,8 @@ import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.document.DocumentController
 import org.migor.feedless.feed.FeedService
 import org.migor.feedless.secrets.OneTimePasswordService
-import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionResolver
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -45,7 +45,7 @@ const val actuatorPassword = "password"
     UserUseCase::class,
     SessionResolver::class,
     DocumentController::class,
-    PermissionService::class,
+    UserGuard::class,
     OneTimePasswordService::class,
     OAuth2AuthorizedClientService::class,
     FeedService::class,

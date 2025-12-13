@@ -34,10 +34,12 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageableRequest
-import org.migor.feedless.session.PermissionService
+import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -77,7 +79,7 @@ import java.time.LocalDateTime
     RepositoryHarvester::class,
     AttachmentRepository::class,
     GroupUseCase::class,
-    PermissionService::class,
+    UserGuard::class,
     RepositoryClaimJpaRepository::class,
     StatelessAuthService::class,
   ]
@@ -220,26 +222,28 @@ class DocumentIntTest {
   }
 
   @Test
-  fun `given where is null, findAll filters repoId and status`() = runTest {
-    val documents = documentUseCase.findAllByRepositoryId(
-      repositoryId = repository.id,
-      status = ReleaseStatus.released,
-      pageable = PageRequest.of(0, 10).toPageableRequest(),
-    )
-    assertThat(documents.size).isEqualTo(1)
-  }
+  fun `given where is null, findAll filters repoId and status`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+      val documents = documentUseCase.findAllByRepositoryId(
+        repositoryId = repository.id,
+        status = ReleaseStatus.released,
+        pageable = PageRequest.of(0, 10).toPageableRequest(),
+      )
+      assertThat(documents.size).isEqualTo(1)
+    }
 
   @Test
   @Disabled("fix")
-  fun `given retention by capacity given, delete old items first`() = runTest {
+  fun `given retention by capacity given, delete old items first`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
 
-    `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2())).thenReturn(1)
-    documentUseCase.applyRetentionStrategyByCapacity()
+      `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2())).thenReturn(1)
+      documentUseCase.applyRetentionStrategyByCapacity()
 
-    val documents = documentRepository.findAllByRepositoryId(repository.id)
-    assertThat(documents.size).isEqualTo(3)
-    assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
-    assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
-  }
+      val documents = documentRepository.findAllByRepositoryId(repository.id)
+      assertThat(documents.size).isEqualTo(3)
+      assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
+      assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
+    }
 
 }

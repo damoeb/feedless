@@ -19,8 +19,8 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.SessionService
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -51,7 +51,9 @@ import java.time.LocalDateTime
     PropertyService::class,
     JwtTokenIssuer::class,
     CookieProvider::class,
-    PermissionService::class,
+    UserGuard::class,
+    DocumentGuard::class,
+    DocumentRepository::class,
     OAuth2AuthorizedClientService::class
   ]
 )

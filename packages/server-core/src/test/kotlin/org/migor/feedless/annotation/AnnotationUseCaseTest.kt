@@ -10,6 +10,8 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.argThat
+import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentGuard
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.AnnotationWhereInput
@@ -21,6 +23,8 @@ import org.migor.feedless.generated.types.OneOfAnnotationInput
 import org.migor.feedless.generated.types.RecordUniqueWhereInput
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
@@ -37,6 +41,9 @@ class AnnotationUseCaseTest {
   private lateinit var annotationRepository: AnnotationRepository
   private lateinit var annotationUseCase: AnnotationUseCase
   private lateinit var currentUser: User
+  private lateinit var annotationGuard: AnnotationGuard
+  private lateinit var documentGuard: DocumentGuard
+  private lateinit var repositoryGuard: RepositoryGuard
   private val currentUserId = randomUserId()
   private val documentId = randomDocumentId()
   private val repositoryId = randomRepositoryId()
@@ -47,7 +54,29 @@ class AnnotationUseCaseTest {
     `when`(voteRepository.save(any(Vote::class.java))).thenAnswer { it.arguments[0] }
     textAnnotationRepository = mock(TextAnnotationRepository::class.java)
     annotationRepository = mock(AnnotationRepository::class.java)
-    annotationUseCase = AnnotationUseCase(annotationRepository, voteRepository, textAnnotationRepository)
+    repositoryGuard = mock(RepositoryGuard::class.java)
+    val repository = mock(Repository::class.java)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
+      .thenReturn(repository)
+
+    annotationGuard = mock(AnnotationGuard::class.java)
+    `when`(annotationGuard.requireWrite(any(AnnotationId::class.java)))
+      .thenReturn(mock(Vote::class.java))
+    documentGuard = mock(DocumentGuard::class.java)
+    val document = mock(Document::class.java)
+    `when`(document.id).thenReturn(documentId)
+    `when`(documentGuard.requireWrite(any(DocumentId::class.java)))
+      .thenReturn(document)
+
+    annotationUseCase = AnnotationUseCase(
+      annotationRepository,
+      voteRepository,
+      textAnnotationRepository,
+      annotationGuard,
+      documentGuard,
+      repositoryGuard,
+    )
 
     currentUser = mock(User::class.java)
     `when`(currentUser.id).thenReturn(currentUserId)
@@ -185,6 +214,7 @@ class AnnotationUseCaseTest {
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+        `when`(annotationGuard.requireWrite(any(AnnotationId::class.java))).thenThrow(PermissionDeniedException(""))
         `when`(annotationRepository.findById(any(AnnotationId::class.java))).thenReturn(annotation)
 
         annotationUseCase.deleteAnnotation(
@@ -196,7 +226,7 @@ class AnnotationUseCaseTest {
     }
   }
 
-  private suspend fun mockAnnotationExists(exists: Boolean = true) {
+  private fun mockAnnotationExists(exists: Boolean = true) {
     `when`(
       voteRepository.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
         any(Boolean::class.java),

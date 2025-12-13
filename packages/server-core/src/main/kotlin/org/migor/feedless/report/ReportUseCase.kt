@@ -9,10 +9,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.fromDto
-import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -29,9 +29,10 @@ import java.time.temporal.TemporalAdjusters
 class ReportUseCase(
   private val reportRepository: ReportRepository,
   private val repositoryRepository: RepositoryRepository,
-  private val userRepository: UserRepository,
   private val segmentationRepository: SegmentationRepository,
   private val meterRegistry: MeterRegistry,
+  private val repositoryGuard: RepositoryGuard,
+  private val reportGuard: ReportGuard,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -44,6 +45,7 @@ class ReportUseCase(
 
       val email = segment.recipient.email.email
 
+      repositoryGuard.requireWrite(repositoryId)
 //      val isOwner = repository.ownerId == user?.id || repository.ownerId == resolveUserId()?.uuid
       // todo enable this
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
@@ -105,18 +107,17 @@ class ReportUseCase(
   }
 
   suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {
-    // todo validate groupid
+    reportGuard.requireWrite(reportId)
     reportRepository.deleteById(reportId)
   }
 
   suspend fun updateReportById(reportId: ReportId, authorize: Boolean) = withContext(Dispatchers.IO) {
-    reportRepository.findById(reportId)?.let {
-      reportRepository.save(
-        it.copy(
-          authorized = authorize,
-          authorizedAt = LocalDateTime.now()
-        )
+    val report = reportGuard.requireWrite(reportId)
+    reportRepository.save(
+      report.copy(
+        authorized = authorize,
+        authorizedAt = LocalDateTime.now()
       )
-    }
+    )
   }
 }

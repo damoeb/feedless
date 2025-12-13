@@ -21,7 +21,7 @@ import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.session.PermissionService
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.mock
@@ -56,7 +56,7 @@ import kotlin.time.Duration.Companion.seconds
     DocumentUseCase::class,
     HttpService::class,
     PropertyService::class,
-    PermissionService::class,
+    UserGuard::class,
     UserSecretUseCase::class,
     UserRepository::class,
     OneTimePasswordService::class,

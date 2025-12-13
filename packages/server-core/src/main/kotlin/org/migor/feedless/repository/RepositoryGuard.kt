@@ -1,0 +1,44 @@
+package org.migor.feedless.repository
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.guard.ResourceGuard
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.userId
+import org.springframework.context.annotation.Profile
+import org.springframework.stereotype.Service
+
+@Service
+@Profile("${AppProfiles.repository} & ${AppLayer.service}")
+class RepositoryGuard(
+  private val repositoryRepository: RepositoryRepository,
+  private val userGuard: UserGuard
+) : ResourceGuard<RepositoryId, Repository> {
+
+  override suspend fun requireRead(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
+    val (_, repository) = requireRead(coroutineContext.userId(), id)
+    repository
+  }
+
+  override suspend fun requireWrite(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
+    val (_, repository) = requireRead(coroutineContext.userId(), id)
+    require(repository.ownerId == coroutineContext.userId(), { "must be owner" })
+    repository
+  }
+
+  override suspend fun requireExecute(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
+    val (_, repository) = requireRead(coroutineContext.userId(), id)
+    repository
+  }
+
+  private suspend fun requireRead(userId: UserId, id: RepositoryId): Pair<User, Repository> {
+    val user = userGuard.requireRead(userId)
+    val repository = repositoryRepository.findById(id) ?: throw NotFoundException("Repository $id not found")
+    return Pair(user, repository)
+  }
+}

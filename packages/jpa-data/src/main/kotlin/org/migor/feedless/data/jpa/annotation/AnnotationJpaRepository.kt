@@ -17,8 +17,8 @@ class AnnotationJpaRepository(private val annotationDAO: AnnotationDAO) : Annota
     return annotationDAO.findById(id.uuid).getOrNull()?.toDomain()
   }
 
-  override fun delete(annotation: Annotation) {
-    annotationDAO.delete(annotation.toEntity())
+  override fun deleteById(annotationId: AnnotationId) {
+    annotationDAO.deleteById(annotationId.uuid)
   }
 }
 

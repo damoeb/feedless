@@ -16,8 +16,8 @@ import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.session.AuthService
-import org.migor.feedless.session.PermissionService
 import org.migor.feedless.user.User
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -62,7 +62,7 @@ const val rootSecretKey = "barBarBarKey"
 @MockitoBean(
   types = [
     ServerConfigResolver::class,
-    PermissionService::class,
+    UserGuard::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class)

@@ -9,7 +9,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
@@ -37,7 +36,6 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
@@ -78,11 +76,11 @@ fun Pageable.toPageableRequest(): PageableRequest {
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryUseCase(
   private val repositoryRepository: RepositoryRepository,
-  private val sessionService: SessionService,
   private val planConstraintsService: PlanConstraintsService,
   private val documentUseCase: DocumentUseCase,
   private val propertyService: PropertyService,
   private val sourceUseCase: SourceUseCase,
+  private val repositoryGuard: RepositoryGuard,
 ) : RepositoryProvider {
 
   private val log = LoggerFactory.getLogger(RepositoryUseCase::class.simpleName)
@@ -195,8 +193,7 @@ class RepositoryUseCase(
 
   suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
     // Fetch entity for mutation
-    val existingRepository = repositoryRepository.findById(id)
-      ?: throw NotFoundException("Repository not found")
+    val existingRepository = repositoryGuard.requireWrite(id)
 
     var repository = existingRepository.copy(
       lastUpdatedAt = LocalDateTime.now()

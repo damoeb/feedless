@@ -6,41 +6,39 @@ import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
-import org.migor.feedless.PermissionDeniedException
-import org.migor.feedless.generated.types.UserCreateInput
-import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.product.ProductId
-import org.migor.feedless.user.User
-import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.isAdmin
 import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.time.LocalDateTime
 import kotlin.coroutines.coroutineContext
-import org.migor.feedless.generated.types.PaymentMethod as PaymentMethodDto
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
 class OrderUseCaseImpl(
   private val orderRepository: OrderRepository,
-  private val userRepository: UserRepository
+//  private val userRepository: UserRepository,
+  private val orderGuard: OrderGuard,
+  private val userGuard: UserGuard,
 ) : OrderUseCase {
 
   private val log = LoggerFactory.getLogger(OrderUseCaseImpl::class.simpleName)
 
   override suspend fun findAll(cursor: PageableRequest): List<Order> {
-    val currentUser = userRepository.findById(coroutineContext.userId())!!
+
+    userGuard.requireRead(coroutineContext.userId())
+
     return withContext(Dispatchers.IO) {
-      if (currentUser.admin) {
+      if (coroutineContext.isAdmin()) {
 //      data.where?.id?.let {
 //        orderDAO.findById(UUID.fromString(data.where?.id))
 //      } ?:
         orderRepository.findAll(cursor).toList()
       } else {
-        orderRepository.findAllByUserId(currentUser.id, cursor).toList()
+        orderRepository.findAllByUserId(coroutineContext.userId(), cursor).toList()
       }
     }
   }
@@ -50,6 +48,8 @@ class OrderUseCaseImpl(
     create: OrderCreate?,
     update: OrderUpdate?
   ): Order {
+    userGuard.requireRead(coroutineContext.userId())
+
     return orderId?.let {
       update(orderId, update!!)
     } ?: create(create!!)
@@ -58,7 +58,8 @@ class OrderUseCaseImpl(
   private suspend fun create(create: OrderCreate): Order {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] create $create]")
-    // todo validate capabilities
+
+    userGuard.requireRead(coroutineContext.userId())
 
     val productId = ProductId(create.productId)
 
@@ -91,37 +92,13 @@ class OrderUseCaseImpl(
     }
   }
 
-  private suspend fun createUser(create: UserCreateInput): User {
-    val corrId = coroutineContext.corrId()
-    return withContext(Dispatchers.IO) {
-      userRepository.findByEmail(create.email.trim()) ?: run {
-        log.info("[$corrId] createUser $create]")
-        if (BooleanUtils.isFalse(create.hasAcceptedTerms)) {
-          throw IllegalArgumentException("You have to accept the terms")
-        }
-        userRepository.save(
-          User(
-            email = create.email,
-            firstName = create.firstName,
-            lastName = create.lastName,
-            hasAcceptedTerms = create.hasAcceptedTerms,
-            acceptedTermsAt = LocalDateTime.now(),
-            lastLogin = LocalDateTime.now(),
-          )
-        )
-      }
-    }
-  }
-
   private suspend fun update(orderId: OrderId, update: OrderUpdate): Order {
     val corrId = coroutineContext.corrId()
     log.info("[$corrId] update $update $orderId")
-    if (!coroutineContext.isAdmin()) {
-      throw PermissionDeniedException("must be admin ($corrId)")
-    }
+
+    val order = orderGuard.requireWrite(orderId)
 
     return withContext(Dispatchers.IO) {
-      val order = orderRepository.findById(orderId)!!
 
       orderRepository.save(
         order.copy(
@@ -138,8 +115,8 @@ class OrderUseCaseImpl(
   }
 }
 
-private fun PaymentMethodDto.fromDTO(): PaymentMethod {
-  return when (this) {
-    PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
-  }
-}
+//private fun PaymentMethodDto.fromDTO(): PaymentMethod {
+//  return when (this) {
+//    PaymentMethodDto.CreditCard -> PaymentMethod.CreditCard
+//  }
+//}

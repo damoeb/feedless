@@ -15,6 +15,7 @@ import java.util.*
 @Service
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 @ConfigurationProperties("app")
+@Deprecated("use dedicated properties")
 class PropertyService {
 
   val anonymousEmail: String = "anonymous@localhost"

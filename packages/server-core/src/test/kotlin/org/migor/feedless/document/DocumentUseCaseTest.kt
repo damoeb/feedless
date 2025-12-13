@@ -44,11 +44,11 @@ import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.session.PermissionService
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.User
@@ -79,7 +79,7 @@ class DocumentUseCaseTest {
   private lateinit var propertyService: PropertyService
 
   private lateinit var currentUser: User
-  private lateinit var permissionService: PermissionService
+  private lateinit var documentGuard: DocumentGuard
   private lateinit var planConstraintsService: PlanConstraintsService
   private lateinit var pluginService: PluginService
   private lateinit var filterPlugin: CompositeFilterPlugin
@@ -90,6 +90,7 @@ class DocumentUseCaseTest {
   private lateinit var documentId: DocumentId
   private lateinit var repositoryId: RepositoryId
   private lateinit var document: Document
+  private lateinit var repositoryGuard: RepositoryGuard
 
   private val currentUserId = randomUserId()
 
@@ -101,7 +102,7 @@ class DocumentUseCaseTest {
     userRepository = mock(UserRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
     documentRepository = mock(DocumentRepository::class.java)
-    permissionService = PermissionService(userRepository, repositoryRepository)
+    documentGuard = spy(DocumentGuard(documentRepository))
     planConstraintsService = mock(PlanConstraintsService::class.java)
     telegramBotService = mock(TelegramBotService::class.java)
     messageService = mock(MessageService::class.java)
@@ -118,16 +119,18 @@ class DocumentUseCaseTest {
 //    `when`(pluginService.resolveById<FilterEntityPlugin>(eq(FeedlessPlugins.org_feedless_filter.name))).thenReturn(filterPlugin)
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
 
+    repositoryGuard = mock(RepositoryGuard::class.java)
     documentUseCase = DocumentUseCase(
       documentRepository,
       repositoryRepository,
       planConstraintsService,
       documentPipelineJobRepository,
       pluginService,
-      permissionService,
       Optional.of(telegramBotService),
       messageService,
       propertyService,
+      documentGuard,
+      repositoryGuard,
     )
 
     documentId = randomDocumentId()
@@ -460,28 +463,30 @@ class DocumentUseCaseTest {
     }
 
   @Test
-  fun `create document without permissions fails`() {
+  fun `create document calls repository guard`() {
     val documentId = randomDocumentId()
     val repositoryId = randomRepositoryId()
 
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-        mockUser(currentUserId)
-        mockDocument(documentId = documentId, repositoryId = repositoryId)
-        mockRepository(repositoryId, ownerId = randomUserId())
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockUser(currentUserId)
+      mockDocument(documentId = documentId, repositoryId = repositoryId)
+      `when`(documentGuard.requireWrite(documentId)).thenReturn(document)
+      mockRepository(repositoryId, ownerId = randomUserId())
 
-        mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
-        mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
+      mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+      mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
 
-        val data = CreateRecordInput(
-          title = "foo",
-          publishedAt = Date().time,
-          url = "",
-          text = "",
-          repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
-        )
-        documentUseCase.createDocument(data)
-      }
+      val data = CreateRecordInput(
+        title = "foo",
+        publishedAt = Date().time,
+        url = "",
+        text = "",
+        repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
+      )
+      documentUseCase.createDocument(data)
+
+      verify(repositoryGuard).requireWrite(repositoryId)
+//        verify(documentGuard).requireWrite(documentId)
     }
   }
 
@@ -507,21 +512,21 @@ class DocumentUseCaseTest {
     }
 
   @Test
-  fun `update document without permissions fails`() = runTest {
+  fun `update document calls repository guard`() = runTest {
     val documentId = randomDocumentId()
     val repositoryId = randomRepositoryId()
 
     mockUser(currentUserId)
     mockDocument(documentId = documentId, repositoryId = repositoryId)
 
-    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-        mockRepository(repositoryId, ownerId = randomUserId())
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockRepository(repositoryId, ownerId = randomUserId())
 
-        val data = RecordUpdateInput()
-        val where = DocumentId(documentId.uuid)
-        documentUseCase.updateDocument(data, where)
-      }
+      val data = RecordUpdateInput()
+      val where = DocumentId(documentId.uuid)
+      documentUseCase.updateDocument(data, where)
+
+      verify(repositoryGuard).requireWrite(repositoryId)
     }
   }
 

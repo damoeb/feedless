@@ -31,8 +31,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
-import org.migor.feedless.session.PermissionService
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -49,10 +47,9 @@ import org.migor.feedless.generated.types.StringFilterInput as StringFilterInput
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentResolver(
   private val repositoryUseCase: RepositoryUseCase,
-  private val sessionService: SessionService,
   private val propertyService: PropertyService,
   private val documentUseCase: DocumentUseCase,
-  private val permissionService: PermissionService
+  private val documentGuard: DocumentGuard
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
@@ -64,11 +61,10 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
   ): Record = coroutineScope {
     log.debug("record $data")
-    permissionService.canReadDocument(DocumentId(data.where.id))
-    val document =
-      documentUseCase.findById(DocumentId(data.where.id)) ?: throw NotFoundException("record not found")
+    val documentId = DocumentId(data.where.id)
+    val document = documentGuard.requireRead(documentId)
 
-    DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = DocumentId(data.where.id)
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = documentId
 
     document.toDto(propertyService)
   }

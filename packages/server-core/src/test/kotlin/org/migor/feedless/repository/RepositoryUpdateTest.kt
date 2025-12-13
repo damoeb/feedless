@@ -8,13 +8,11 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
-import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableIntUpdateOperationsInput
 import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput
@@ -37,7 +35,6 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.context.ApplicationContext
 import java.time.LocalDateTime
 
 
@@ -51,30 +48,28 @@ class RepositoryUpdateTest {
   private lateinit var ownerId: UserId
   private lateinit var repository: Repository
   private lateinit var data: RepositoryUpdateDataInput
-  private lateinit var applicationContext: ApplicationContext
   private lateinit var sourceUseCase: SourceUseCase
+  private lateinit var repositoryGuard: RepositoryGuard
   private val currentUserId = randomUserId()
 
   @BeforeEach
-  fun setUp() {
+  fun setUp() = runTest {
     repositoryRepository = mock(RepositoryRepository::class.java)
     sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
-    applicationContext = mock(ApplicationContext::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
 
+    repositoryGuard = mock(RepositoryGuard::class.java)
     repositoryUseCase = spy(
       RepositoryUseCase(
         repositoryRepository,
-        sessionService,
         planConstraintsService,
         mock(DocumentUseCase::class.java),
         mock(PropertyService::class.java),
         sourceUseCase,
+        repositoryGuard,
       )
     )
-
-    `when`(applicationContext.getBean(eq(RepositoryUseCase::class.java))).thenReturn(repositoryUseCase)
 
     repositoryId = randomRepositoryId()
     ownerId = randomUserId()
@@ -88,6 +83,9 @@ class RepositoryUpdateTest {
       sourcesSyncCron = "0 0 * * * *",
       product = Vertical.rssProxy
     )
+
+    `when`(repositoryGuard.requireWrite(repositoryId)).thenReturn(repository)
+
     data = RepositoryUpdateDataInput(
       description = NullableStringUpdateOperationsInput(set = "new-description"),
       refreshCron = NullableStringUpdateOperationsInput(set = "* * * * * *"),
@@ -109,15 +107,6 @@ class RepositoryUpdateTest {
         add = emptyList()
       ),
     )
-  }
-
-  @Test
-  fun `given repo does not exists, update will fail`() {
-    assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
-      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-        repositoryUseCase.updateRepository(repositoryId, data)
-      }
-    }
   }
 
   @Test

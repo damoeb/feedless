@@ -9,11 +9,9 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.product.ProductUseCase
-import org.migor.feedless.user.UserId
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -42,11 +40,7 @@ class PlanResolver {
     dfe: DgsDataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.PLANS_INPUT_ARGUMENT.Cursor) cursor: Cursor
   ): List<PlanDto> = coroutineScope {
-    planUseCase.findAllByUser(userId()).map { it.toDto(productUseCase) }
-  }
-
-  private fun userId(): UserId {
-    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }!!
+    planUseCase.findAllByUser().map { it.toDto(productUseCase) }
   }
 }
 

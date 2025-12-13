@@ -30,11 +30,11 @@ import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.session.PermissionService
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
@@ -57,10 +57,11 @@ class DocumentUseCase(
   private val planConstraintsService: PlanConstraintsService,
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
   private val pluginService: PluginService,
-  private val permissionService: PermissionService,
   private val telegramBotServiceMaybe: Optional<TelegramBotService>,
   private val messageService: MessageService,
   private val propertyService: PropertyService,
+  private val documentGuard: DocumentGuard,
+  private val repositoryGuard: RepositoryGuard,
 ) : DocumentProvider {
 
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
@@ -77,6 +78,9 @@ class DocumentUseCase(
     tags: List<String> = emptyList(),
     pageable: PageableRequest,
   ): List<Document> = withContext(Dispatchers.IO) {
+
+    repositoryGuard.requireRead(repositoryId)
+
     documentRepository.findAllFiltered(repositoryId, filter, orderBy, status, tags, pageable)
   }
 
@@ -84,7 +88,6 @@ class DocumentUseCase(
     repositoryRepository.findAllByLastUpdatedAtBefore(LocalDateTime.now().minusDays(1))
       .forEach { repository ->
         val retentionSize = runBlocking {
-
           planConstraintsService.coerceRetentionMaxCapacity(
             repository.retentionMaxCapacity,
             groupId = repository.groupId
@@ -111,6 +114,8 @@ class DocumentUseCase(
   suspend fun applyRetentionStrategy(repositoryId: RepositoryId) = withContext(Dispatchers.IO) {
     val repository = repositoryRepository.findById(repositoryId)!!
     val corrId = coroutineContext.corrId()
+
+    repositoryGuard.requireRead(repositoryId)
 
     planConstraintsService.coerceRetentionMaxAgeDays(
       repository.retentionMaxAgeDays,
@@ -144,7 +149,9 @@ class DocumentUseCase(
   }
 
   suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
-    log.info("[${coroutineContext.corrId()}] deleteDocuments $documentIds")
+    log.info("deleteDocuments $documentIds")
+
+    repositoryGuard.requireRead(repositoryId)
 
     val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.ownerId != coroutineContext.userId()) {
@@ -181,96 +188,94 @@ class DocumentUseCase(
       val document = documentRepository.findByIdWithSource(documentId)!!
       val logCollector = LogCollector()
 
-      document?.let {
-        try {
-          val repository = repositoryRepository.findById(document.repositoryId)!!
+      try {
+        val repository = repositoryRepository.findById(document.repositoryId)!!
 
-          data class ProcessingState(
-            val currentDocument: Document,
-            val shouldContinue: Boolean,
-            val hasError: Boolean
-          )
+        data class ProcessingState(
+          val currentDocument: Document,
+          val shouldContinue: Boolean,
+          val hasError: Boolean
+        )
 
-          val finalState =
-            jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
-              if (!state.shouldContinue) {
-                return@fold state
-              }
-
-              try {
-                val updatedDocument =
-                  when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
-                    is FilterEntityPlugin<*> -> {
-                      if (!plugin.filterEntity(
-                          state.currentDocument.toJsonItem(
-                            propertyService,
-                            EntityVisibility.isPublic
-                          ),
-                          job.executorParams.paramsJsonString,
-                          0,
-                          logCollector
-                        )
-                      ) {
-                        throw FilterMismatchException()
-                      }
-                      state.currentDocument
-                    }
-
-                    is MapEntityPlugin<*> -> plugin.mapEntity(
-                      state.currentDocument,
-                      repository,
-                      job.executorParams.paramsJsonString,
-                      logCollector
-                    )
-
-                    is ReportPlugin -> {
-                      log.info("[$corrId] ignoring ${plugin.id()} plugin")
-                      state.currentDocument
-                    }
-
-                    else -> {
-                      if (plugin == null) {
-                        log.error(
-                          "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
-                            pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
-                          }]")
-                      } else {
-                        log.warn("[$corrId] resolved unsupported plugin ${plugin}")
-                      }
-                      throw IllegalArgumentException("Invalid plugin")
-                    }
-                  }
-
-                log.debug("[$corrId] executed ${job.pluginId} for $documentId")
-                documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
-                ProcessingState(updatedDocument, true, false)
-              } catch (e: Exception) {
-                if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-                  delayJob(job, e, state.currentDocument)
-                } else {
-                  if (e !is FilterMismatchException) {
-                    log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
-                  } else {
-                    log.info("[$corrId] ${e::class.simpleName} ${e.message}")
-                  }
-                  deleteDocument(state.currentDocument)
-                }
-                ProcessingState(state.currentDocument, false, true)
-              }
+        val finalState =
+          jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
+            if (!state.shouldContinue) {
+              return@fold state
             }
 
-          if (!finalState.hasError) {
-            releaseDocument(finalState.currentDocument, repository)
-            finalState.currentDocument
-          } else {
-            null
+            try {
+              val updatedDocument =
+                when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
+                  is FilterEntityPlugin<*> -> {
+                    if (!plugin.filterEntity(
+                        state.currentDocument.toJsonItem(
+                          propertyService,
+                          EntityVisibility.isPublic
+                        ),
+                        job.executorParams.paramsJsonString,
+                        0,
+                        logCollector
+                      )
+                    ) {
+                      throw FilterMismatchException()
+                    }
+                    state.currentDocument
+                  }
+
+                  is MapEntityPlugin<*> -> plugin.mapEntity(
+                    state.currentDocument,
+                    repository,
+                    job.executorParams.paramsJsonString,
+                    logCollector
+                  )
+
+                  is ReportPlugin -> {
+                    log.info("[$corrId] ignoring ${plugin.id()} plugin")
+                    state.currentDocument
+                  }
+
+                  else -> {
+                    if (plugin == null) {
+                      log.error(
+                        "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
+                          pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
+                        }]")
+                    } else {
+                      log.warn("[$corrId] resolved unsupported plugin ${plugin}")
+                    }
+                    throw IllegalArgumentException("Invalid plugin")
+                  }
+                }
+
+              log.debug("[$corrId] executed ${job.pluginId} for $documentId")
+              documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
+              ProcessingState(updatedDocument, true, false)
+            } catch (e: Exception) {
+              if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+                delayJob(job, e, state.currentDocument)
+              } else {
+                if (e !is FilterMismatchException) {
+                  log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
+                } else {
+                  log.info("[$corrId] ${e::class.simpleName} ${e.message}")
+                }
+                deleteDocument(state.currentDocument)
+              }
+              ProcessingState(state.currentDocument, false, true)
+            }
           }
 
-        } catch (throwable: Throwable) {
-          log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
-          deleteDocument(document)
+        if (!finalState.hasError) {
+          releaseDocument(finalState.currentDocument, repository)
+          finalState.currentDocument
+        } else {
           null
         }
+
+      } catch (throwable: Throwable) {
+        log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
+        deleteDocument(document)
+        null
       }
     }
 
@@ -339,9 +344,7 @@ class DocumentUseCase(
   suspend fun createDocument(data: CreateRecordInput): Document = withContext(Dispatchers.IO) {
     val repositoryId = RepositoryId(data.repositoryId.id)
 
-    val repository = repositoryRepository.findById(repositoryId)!!
-
-    permissionService.canWrite(repository)
+    val repository = repositoryGuard.requireWrite(repositoryId)
 
     val documentId = data.id?.let { DocumentId(data.id!!) } ?: DocumentId()
     val document = Document(
@@ -363,7 +366,7 @@ class DocumentUseCase(
         updatedAt = LocalDateTime.now()
       )
 
-    permissionService.canWrite(document)
+    repositoryGuard.requireWrite(document.repositoryId)
 
     document = data.url?.let {
       document.copy(url = it.set)

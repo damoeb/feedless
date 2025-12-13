@@ -24,6 +24,7 @@ import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.RequestContext
@@ -59,9 +60,10 @@ class ReportUseCaseTest {
     reportUseCase = ReportUseCase(
       reportRepository,
       repositoryRepository,
-      userRepository,
       segmentationRepository,
       mock(MeterRegistry::class.java),
+      mock(RepositoryGuard::class.java),
+      mock(ReportGuard::class.java),
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }

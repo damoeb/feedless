@@ -32,7 +32,6 @@ import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -40,7 +39,6 @@ import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.context.ApplicationContext
 import java.time.Duration
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
@@ -49,38 +47,33 @@ class RepositoryUseCaseTest {
 
   private lateinit var repositoryRepository: RepositoryRepository
 
-  private lateinit var sessionService: SessionService
-
   private lateinit var planConstraintsService: PlanConstraintsService
 
   private lateinit var repositoryUseCase: RepositoryUseCase
   private lateinit var sourceUseCase: SourceUseCase
+  private lateinit var repositoryGuard: RepositoryGuard
 
   private lateinit var userId: UserId
-  private lateinit var applicationContext: ApplicationContext
 
   @BeforeEach
   fun beforeEach() = runTest {
     userId = randomUserId()
     repositoryRepository = mock(RepositoryRepository::class.java)
-    sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
-    applicationContext = mock(ApplicationContext::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
+    repositoryGuard = mock(RepositoryGuard::class.java)
 
     repositoryUseCase = RepositoryUseCase(
       repositoryRepository,
-      sessionService,
       planConstraintsService,
       mock(DocumentUseCase::class.java),
       mock(PropertyService::class.java),
       sourceUseCase,
+      repositoryGuard
     )
-    `when`(applicationContext.getBean(eq(RepositoryUseCase::class.java))).thenReturn(repositoryUseCase)
 
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(userId)
-//    `when`(sessionService.user()).thenReturn(user)
     `when`(repositoryRepository.save(any2()))
       .thenAnswer { it.getArgument(0) }
     `when`(repositoryRepository.countByGroupId(any(GroupId::class.java)))
@@ -201,17 +194,18 @@ class RepositoryUseCaseTest {
   @Test
   fun `given user is not owner, updating repository fails`() {
     val repositoryId = randomRepositoryId()
+    val otherOwnerId = UserId()
     val mockRepository = Repository(
       id = repositoryId,
       title = "test",
-      ownerId = UserId(),
+      ownerId = otherOwnerId,
       groupId = GroupId()
     )
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       val mockInput = RepositoryUpdateDataInput()
       runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
-        `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+        `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
           .thenReturn(mockRepository)
 
         repositoryUseCase.updateRepository(repositoryId, mockInput)
@@ -236,8 +230,9 @@ class RepositoryUseCaseTest {
         groupId = GroupId(),
       )
 
-      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+      `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
         .thenReturn(mockRepository)
+      `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
       // when
       repositoryUseCase.updateRepository(repositoryId, data)
@@ -263,8 +258,9 @@ class RepositoryUseCaseTest {
         groupId = GroupId(),
       )
 
-      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+      `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
         .thenReturn(repository)
+      `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
       // when
       repositoryUseCase.updateRepository(repositoryId, data)
@@ -290,8 +286,9 @@ class RepositoryUseCaseTest {
         groupId = GroupId(),
       )
 
-      `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
+      `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
         .thenReturn(repository)
+      `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
       // when
       repositoryUseCase.updateRepository(repositoryId, data)
