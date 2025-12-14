@@ -53,5 +53,5 @@ abstract class AuthService {
 
   abstract suspend fun findUserById(userId: UserId): User?
   abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret?
-  suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {}
+  abstract suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime)
 }

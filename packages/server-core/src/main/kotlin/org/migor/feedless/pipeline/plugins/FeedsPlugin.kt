@@ -60,8 +60,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     data: HttpResponse,
     logger: LogCollector,
   ): FragmentOutput {
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] transformFragment")
+    log.debug("transformFragment")
 
     val mimeType = data.contentType.lowercase()
     logger.log("Found mimeType=$mimeType")
@@ -79,11 +78,11 @@ class FeedsPlugin : FragmentTransformerPlugin {
       if (mimeType.contains("text/html")) {
         logger.log("extracting feeds")
         val document = HtmlUtil.parseHtml(data.responseBody.toString(StandardCharsets.UTF_8), data.url)
-        log.debug("[$corrId] extracting feeds")
+        log.debug("extracting feeds")
         extractFeeds(document, data.url, logger)
       } else {
         logger.log("unsupported mimeType")
-        log.warn("[$corrId] unsupported mimeType $mimeType")
+        log.warn("unsupported mimeType $mimeType")
         FragmentOutput(
           fragmentName = "generic",
           feeds = ScrapedFeeds(
@@ -107,8 +106,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
     val genericFeeds = genericFeedLocator.locateInDocument(document, url, parserOptions)
     logger.log("found ${genericFeeds.size} generic feeds")
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
+    log.debug("Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
     return FragmentOutput(
       fragmentName = "feeds",

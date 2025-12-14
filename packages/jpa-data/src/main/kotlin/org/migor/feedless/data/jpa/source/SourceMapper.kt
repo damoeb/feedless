@@ -1,7 +1,9 @@
 package org.migor.feedless.data.jpa.source
 
+import org.hibernate.Hibernate
 import org.locationtech.jts.geom.Point
 import org.mapstruct.Mapper
+import org.mapstruct.Mapping
 import org.mapstruct.ReportingPolicy
 import org.mapstruct.factory.Mappers
 import org.migor.feedless.actions.ClickPositionAction
@@ -55,12 +57,16 @@ import org.migor.feedless.source.Source
 )
 interface SourceMapper {
 
+  @Mapping(
+    target = "actions",
+    expression = "java(java.util.Collections.emptyList())"
+  )
   fun toDomain(entity: SourceEntity): Source
   fun toEntity(domain: Source): SourceEntity
 
-  fun mapActions(entities: List<ScrapeActionEntity>): List<ScrapeAction> {
-    return entities.map { it.toDomain() }
-  }
+//  fun mapActions(entities: List<ScrapeActionEntity>): List<ScrapeAction> {
+//    return entities.map { it.toDomain() }
+//  }
 
   fun mapActionsToEntity(actions: List<ScrapeAction>): List<ScrapeActionEntity> {
     return actions.map { it.toEntity() }
@@ -79,7 +85,18 @@ interface SourceMapper {
 
 
 fun SourceEntity.toDomain(): Source {
-  return SourceMapper.INSTANCE.toDomain(this)
+  val mapped = SourceMapper.INSTANCE.toDomain(this)
+  // Override actions with safe mapping to handle lazy-loaded collections
+  val safeActions = try {
+    if (Hibernate.isInitialized(this.actions)) {
+      this.actions.map { it.toDomain() }
+    } else {
+      emptyList()
+    }
+  } catch (e: Exception) {
+    emptyList()
+  }
+  return mapped.copy(actions = safeActions)
 }
 
 fun Source.toEntity(): SourceEntity {

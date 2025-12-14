@@ -3,7 +3,6 @@ package org.migor.feedless.pipeline
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -18,11 +17,9 @@ import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -39,11 +36,10 @@ class DocumentPipelineJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(DocumentPipelineJobExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 2245, initialDelay = 20000)
+  //  @Scheduled(fixedDelay = 2245, initialDelay = 20000)
   @Transactional
   fun processDocumentJobs() {
     try {
-      val corrId = newCorrId()
       val groupedDocuments = documentPipelineRepository.findAllPendingBatched(LocalDateTime.now())
         .groupBy { it.documentId }
 
@@ -57,7 +53,7 @@ class DocumentPipelineJobExecutor internal constructor(
               groupedDocuments.map { groupedDocuments ->
                 try {
                   val userId = getOwnerIdForDocumentId(groupedDocuments.key)
-                  async(RequestContext(userId = userId, corrId = corrId)) {
+                  async(RequestContext(userId = userId, corrId = newCorrId())) {
                     semaphore.acquire()
                     delay(300)
                     try {
@@ -71,9 +67,9 @@ class DocumentPipelineJobExecutor internal constructor(
                 }
               }.awaitAll()
             }
-            log.info("[$corrId] done")
+            log.info("done")
           }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}")
+            log.error("batch refresh done: ${it.message}")
           }
         }
       }
@@ -92,8 +88,7 @@ class DocumentPipelineJobExecutor internal constructor(
     try {
       documentUseCase.processDocumentPlugins(documentId, jobs)
     } catch (t: Throwable) {
-      val corrId = currentCoroutineContext().corrId()
-      log.error("[$corrId] processDocumentPlugins fatal failure", t)
+      log.error("processDocumentPlugins fatal failure", t)
       documentRepository.deleteById(documentId)
     }
   }

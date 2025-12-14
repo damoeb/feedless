@@ -2,7 +2,6 @@ package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
@@ -14,7 +13,6 @@ import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
@@ -100,36 +98,32 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
     index: Int,
     logCollector: LogCollector
   ): Boolean {
-    val corrId = currentCoroutineContext().corrId()!!
-    log.debug("[$corrId] filter ${item.url}")
+    log.debug("filter ${item.url}")
 
     val increment = params.nextItemMinIncrement.coerceAtLeast(0.01)
-    log.info("[$corrId] filter nextItemMinIncrement=$increment")
+    log.info("filter nextItemMinIncrement=$increment")
 
     val previous = getLastReleasedDocumentByRepositoryId(documentUseCase, item.repositoryId!!)
 
     return previous?.let {
       val compareBy = params.compareBy
       compareBy.fragmentNameRef?.let {
-        log.warn("[$corrId] resolving named fragment '${compareBy.fragmentNameRef}' not yet supported. Falling back to document")
+        log.warn("resolving named fragment '${compareBy.fragmentNameRef}' not yet supported. Falling back to document")
       }
       when (compareBy.field) {
         RecordField.text -> compareByText(
-          corrId,
           item.text!!,
           previous.text,
           increment
         )
 
         RecordField.markup -> compareByText(
-          corrId,
           item.html!!,
           previous.html!!,
           increment
         )
 
         RecordField.pixel -> compareByPixel(
-          corrId,
           item,
           previous,
           increment
@@ -156,7 +150,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 //      repository: RepositoryEntity,
 //      mailForward: MailForwardEntity
 //  ): MailData {
-//    log.info("[$corrId] prepare welcome mail")
+//    log.info("prepare welcome mail")
 //    val mailData = MailData()
 //    mailData.subject = "VisualDiff Tracker: ${repository.title}"
 //    val website =
@@ -180,7 +174,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
 //    repository: RepositoryEntity,
 //    params: PluginExecutionParamsInput
 //  ): MailData {
-//    log.info("[$corrId] prepare diff email")
+//    log.info("prepare diff email")
 //
 //    val config = params.org_feedless_diff_email_forward
 //
@@ -258,7 +252,6 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
   }
 
   private fun compareByPixel(
-    corrId: String,
     left: JsonItem,
     right: Document,
     minIncrement: Double
@@ -282,15 +275,15 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
     )
     val total = (width * height)
     val ratio = changes / total.toDouble()
-    log.info("[$corrId] pixelDistance=$changes total=$total ratio=$ratio minIncrement=$minIncrement")
+    log.info("pixelDistance=$changes total=$total ratio=$ratio minIncrement=$minIncrement")
     return ratio > minIncrement
   }
 
-  private fun compareByText(corrId: String, left: String, right: String, minIncrement: Double): Boolean {
+  private fun compareByText(left: String, right: String, minIncrement: Double): Boolean {
     val changes = LevenshteinDistance.getDefaultInstance().apply(left, right)
     val len = left.length.coerceAtLeast(right.length)
     val ratio = changes / len.toDouble()
-    log.info("[$corrId] editDistance=$changes total=$len ratio=$ratio minIncrement=$minIncrement")
+    log.info("editDistance=$changes total=$len ratio=$ratio minIncrement=$minIncrement")
     return ratio > minIncrement
   }
 

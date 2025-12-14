@@ -45,7 +45,9 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
     index: Int,
     logCollector: LogCollector,
   ): Boolean {
-    logCollector.log("applying filters to item #$index url=${item.url}")
+    val msg = "applying filters to item #$index url=${item.url}"
+    log.info(msg)
+    logCollector.log(msg)
     val keep = params?.let { plugins ->
       plugins.all { plugin ->
         plugin.composite?.let {
@@ -83,21 +85,19 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
   }
 
   private suspend fun matchesExpression(expression: String?, item: JsonItem): Boolean {
-    val corrId = currentCoroutineContext().corrId()
     return expression?.let {
       val q = tryConvertFromLegacy(it)
       try {
-        log.debug("[$corrId] expression '${q}'")
+        log.debug("expression '${q}'")
         FilterByExpression(q.reader()).matches(item)
       } catch (e: Exception) {
-        log.warn("[$corrId] matchesExpression failed for expression '${q}'")
+        log.warn("matchesExpression failed for expression '${q}'")
         false
       }
     } != false
   }
 
   private suspend fun tryConvertFromLegacy(legacyExpression: String): String {
-    val corrId = currentCoroutineContext().corrId()
     val fields = mapOf(
       "#body" to "content",
       "#title" to "title",
@@ -112,7 +112,7 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
         .replace(",\"", ", '")
       fields.forEach { (old, new) -> converted = converted.replace(old, new) }
 
-      log.debug("[$corrId] converted expression '$legacyExpression' -> '$converted'")
+      log.debug("converted expression '$legacyExpression' -> '$converted'")
       converted
     } else {
       legacyExpression

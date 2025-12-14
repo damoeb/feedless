@@ -126,7 +126,6 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     imageElement: JsoupElement,
     documentId: DocumentId
   ): Attachment? {
-    val corrId = currentCoroutineContext().corrId()
     return try {
       val url = imageElement.attr("src")
       val response = fetch(url, arrayOf("image/jpeg", "image/png", "image/webp"))
@@ -164,7 +163,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
         null
       }
     } catch (e: IllegalArgumentException) {
-      log.warn("[${corrId}] ${e.message}", e)
+      log.warn("${e.message}", e)
       null
     }
   }
@@ -195,14 +194,13 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     linkElement: JsoupElement,
     documentId: DocumentId
   ): Attachment? {
-    val corrId = currentCoroutineContext().corrId()
     return try {
       val response = fetch(linkElement.attr("href"), arrayOf("application/pdf"))
       val attachment = toAttachment(response, documentId)
       linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
       attachment
     } catch (t: Throwable) {
-      log.debug("[${corrId}] ${t.message}")
+      log.debug("${t.message}")
       null
     }
   }

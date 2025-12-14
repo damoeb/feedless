@@ -42,7 +42,6 @@ class SourcePipelineJobExecutor internal constructor(
   @Transactional
   fun processSourceJobs() {
     try {
-      val corrId = newCorrId()
       val groupedSources = runBlocking {
         val groups = sourcePipelineJobRepository.findAllPendingBatched(LocalDateTime.now())
           .groupBy { it.sourceId }
@@ -72,9 +71,9 @@ class SourcePipelineJobExecutor internal constructor(
                 }
               }.awaitAll()
             }
-            log.info("[$corrId] done")
+            log.info("done")
           }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}", it)
+            log.error("batch refresh done: ${it.message}", it)
           }
         }
       }
@@ -92,12 +91,11 @@ class SourcePipelineJobExecutor internal constructor(
   }
 
   private suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) {
-    val corrId = currentCoroutineContext().corrId()
     try {
       sourceUseCase.processSourcePipeline(sourceId, jobs)
     } catch (t: Throwable) {
       if (t !is ResumableHarvestException) {
-        log.error("[$corrId] processDocumentPlugins fatal failure ${t.message}")
+        log.error("processDocumentPlugins fatal failure ${t.message}")
         sourceRepository.setErrorState(sourceId, true, t.message)
       }
     }

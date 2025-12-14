@@ -5,7 +5,6 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
 import jakarta.annotation.PostConstruct
 import jakarta.validation.Validation
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
@@ -45,7 +44,6 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -90,9 +88,8 @@ class RepositoryHarvester(
   }
 
   suspend fun harvestRepository(repositoryId: RepositoryId) {
-    val corrId = currentCoroutineContext().corrId()
     runCatching {
-      log.info("[${corrId}] handleRepository $repositoryId")
+      log.info("handleRepository $repositoryId")
 
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
@@ -117,7 +114,7 @@ class RepositoryHarvester(
         groupId,
         LocalDateTime.now()
       )
-      log.debug("[$corrId] Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
+      log.debug("Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
       repositoryRepository.save(
         repository.copy(
           triggerScheduledNextAt = scheduledNextAt,
@@ -126,21 +123,20 @@ class RepositoryHarvester(
       )
 
     }.onFailure {
-      log.error("[$corrId] handleRepository failed: ${it.message}", it)
+      log.error("handleRepository failed: ${it.message}", it)
     }
   }
 
   private suspend fun scrapeSources(
     repositoryId: RepositoryId,
   ) {
-    val corrId = currentCoroutineContext().corrId()
     var sources: List<Source>
     var currentPage = 0
     do {
       sources = sourceRepository.findAllByRepositoryIdFiltered(repositoryId, PageableRequest(currentPage++, 5))
         .filter { !it.disabled }
         .distinctBy { it.id }
-      log.info("[$corrId] queueing page $currentPage with ${sources.size} sources")
+      log.info("queueing page $currentPage with ${sources.size} sources")
 
       sources
         .forEachIndexed { index, source ->
@@ -151,7 +147,7 @@ class RepositoryHarvester(
             harvest.startedAt = LocalDateTime.now()
 
             try {
-              log.info("[$corrId] scraping source $currentPage/$index ${source.id}")
+              log.info("scraping source $currentPage/$index ${source.id}")
               val retrieved = scrapeSource(source, logCollector)
 
               val updatedSource = if (source.errorsInSuccession > 0) {
@@ -209,14 +205,13 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ) {
-    val corrId = currentCoroutineContext().corrId()
-    log.error("[$corrId] scrape failed ${e?.message}")
-    logCollector.log("[$corrId] scrape failed ${e?.message}")
+    log.error("scrape failed ${e?.message}")
+    logCollector.log("scrape failed ${e?.message}")
 
     val updatedSource =
       if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
-        logCollector.log("[$corrId] scrape error '${e?.message}'")
-        logCollector.log("[$corrId] error count '${source.errorsInSuccession}'")
+        logCollector.log("scrape error '${e?.message}'")
+        logCollector.log("error count '${source.errorsInSuccession}'")
         log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
 
         meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
@@ -229,7 +224,7 @@ class RepositoryHarvester(
           lastErrorMessage = e?.message
         )
 //      if (source.disabled) {
-//        logCollector.log("[$corrId] disabled source")
+//        logCollector.log("disabled source")
 //        log.info("source ${source.id} disabled")
 //      }
       } else {
@@ -253,8 +248,7 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): Int {
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] importElement")
+    log.debug("importElement")
     val repository = repositoryRepository.findById(repositoryId)!!
     return if (output.outputs.isEmpty()) {
       throw NoItemsRetrievedException()
@@ -301,15 +295,14 @@ class RepositoryHarvester(
     repository: Repository,
     documents: List<Pair<Boolean, Document>>
   ) {
-    val corrId = currentCoroutineContext().corrId()!!
     if (repository.plugins.isNotEmpty()) {
       try {
-        log.debug("[$corrId] delete all document job by documents")
+        log.debug("delete all document job by documents")
         documentPipelineJobRepository.deleteAllByDocumentIdIn(
           documents.filter { (isNew, _) -> !isNew }
             .map { (_, document) -> document.id })
       } catch (e: Exception) {
-        log.warn("[$corrId] deleteAllByDocumentIdIn failed: ${e.message}")
+        log.warn("deleteAllByDocumentIdIn failed: ${e.message}")
       }
     }
     documentPipelineJobRepository.saveAll(
@@ -329,9 +322,8 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): List<Pair<Boolean, Document>> {
-    val corrId = currentCoroutineContext().corrId()!!
 
-    log.info("[${corrId}] importImageElement")
+    log.info("importImageElement")
 
     val updated = fragment.createDocument(repository.id, source)
     val existing =
@@ -355,7 +347,7 @@ class RepositoryHarvester(
 //    repositoryId: UUID,
 //    source: Source
 //  ) {
-//    log.debug("[$corrId] importSelectorElement")
+//    log.debug("importSelectorElement")
 //    scrapedData.fields?.let { fields ->
 //      fields.forEach {
 //        when (it.name) {
@@ -378,7 +370,7 @@ class RepositoryHarvester(
 //    repositoryId: UUID,
 //    source: Source
 //  ) {
-//    log.info("[$corrId] importScrapedData")
+//    log.info("importScrapedData")
 //    val document = scrapedData.as(repositoryId, source.tags)
 //
 //    val repository = repositoryDAO.findById(repositoryId).orElseThrow()
@@ -398,16 +390,15 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): List<Pair<Boolean, Document>> {
-    val corrId = currentCoroutineContext().corrId()!!
     if (items.isEmpty()) {
       throw NoItemsRetrievedException()
     }
 
-    log.info("[$corrId] importItems size=${items.size}")
+    log.info("importItems size=${items.size}")
     if (repository.plugins.isEmpty()) {
-      logCollector.log("[$corrId] importItems size=${items.size}")
+      logCollector.log("importItems size=${items.size}")
     } else {
-      logCollector.log("[$corrId] importItems size=${items.size} with [${repository.plugins.joinToString(", ") { it.id }}]")
+      logCollector.log("importItems size=${items.size} with [${repository.plugins.joinToString(", ") { it.id }}]")
     }
 
     val start = Instant.now()
@@ -430,8 +421,8 @@ class RepositoryHarvester(
             logCollector
           )
         } catch (e: Exception) {
-          logCollector.log("[$corrId] importItems failed: ${e.message}")
-          log.error("[$corrId] importItems failed: ${e.message}", e)
+          logCollector.log("importItems failed: ${e.message}")
+          log.error("importItems failed: ${e.message}", e)
           null
         }
       }
@@ -440,17 +431,17 @@ class RepositoryHarvester(
     documentRepository.saveAll(validNewOrUpdatedDocuments)
 
     if (validNewOrUpdatedDocuments.isNotEmpty()) {
-      log.info("[$corrId] ${repository.id}/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
+      log.info("${repository.id}/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
     }
 
-    log.debug("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
-    logCollector.log("[$corrId] import took ${Duration.between(start, Instant.now()).toMillis()}")
+    log.debug("import took ${Duration.between(start, Instant.now()).toMillis()}")
+    logCollector.log("import took ${Duration.between(start, Instant.now()).toMillis()}")
     val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
         val pageUrls =
           next.filterNot { url -> sourcePipelineJobRepository.existsBySourceIdAndUrl(source.id, url) }
-        log.info("[$corrId] Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
+        log.info("Following ${next.size} pagination urls ${pageUrls.joinToString(", ")}")
         sourcePipelineJobRepository.saveAll(
           pageUrls
             .mapIndexed { index, url ->
@@ -461,7 +452,7 @@ class RepositoryHarvester(
               )
             })
       } else {
-        log.debug("[$corrId] wont follow page urls")
+        log.debug("wont follow page urls")
       }
     }
     return newOrUpdatedDocuments
@@ -477,9 +468,8 @@ class RepositoryHarvester(
           if (validation.isEmpty()) {
             true
           } else {
-            val corrId = currentCoroutineContext().corrId()!!
             log.warn(
-              "[$corrId] document ${
+              "document ${
                 StringUtils.substring(
                   document.second.url,
                   100
@@ -511,8 +501,7 @@ class RepositoryHarvester(
       try {
         el.attr("width").toInt() * el.attr("height").toInt()
       } catch (e: Exception) {
-        val corrId = currentCoroutineContext().corrId()
-        log.debug("[$corrId] during detectMainImageUrl: ${e.message}")
+        log.debug("during detectMainImageUrl: ${e.message}")
         400
       }
     } else {
@@ -526,23 +515,22 @@ class RepositoryHarvester(
     repository: Repository,
     logCollector: LogCollector
   ): Pair<Boolean, Document>? {
-    val corrId = currentCoroutineContext().corrId()
     return try {
       if (existing == null) {
         meterRegistry.counter(AppMetrics.createDocument).increment()
 
         Pair(
           true, if (repository.plugins.isEmpty()) {
-            logCollector.log("[$corrId] released ${document.url}")
+            logCollector.log("released ${document.url}")
             document.copy(status = org.migor.feedless.document.ReleaseStatus.released)
           } else {
-            logCollector.log("[$corrId] queued for post-processing ${document.url}")
+            logCollector.log("queued for post-processing ${document.url}")
             document.copy(status = org.migor.feedless.document.ReleaseStatus.unreleased)
           }
         )
       } else {
         if (repository.plugins.isEmpty()) {
-          logCollector.log("[$corrId] updated item ${document.url}")
+          logCollector.log("updated item ${document.url}")
           Pair(
             false, document.copy(
               title = document.title,
@@ -564,9 +552,9 @@ class RepositoryHarvester(
       }
     } catch (e: Exception) {
       if (e is ResumableHarvestException) {
-        log.debug("[$corrId] ${e.message}")
+        log.debug("${e.message}")
       } else {
-        log.error("[$corrId] createOrUpdate failed: ${e.message}", e)
+        log.error("createOrUpdate failed: ${e.message}", e)
         if (log.isDebugEnabled) {
           e.printStackTrace()
         }

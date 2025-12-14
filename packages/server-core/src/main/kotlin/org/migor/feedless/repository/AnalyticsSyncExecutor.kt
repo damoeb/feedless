@@ -29,8 +29,6 @@ class AnalyticsSyncExecutor internal constructor(
   //  @Scheduled(fixedDelay = 61000, initialDelay = 5000)
   suspend fun syncPullCountForPublicRepos() {
     try {
-      val corrId = newCorrId()
-
       LocalDateTime.now().minusDays(1)
       val pageable = PageRequest.of(0, 50, Sort.by(Sort.Direction.ASC, "lastPullSync"))
       val repos =
@@ -59,7 +57,7 @@ class AnalyticsSyncExecutor internal constructor(
           }
           log.debug("done")
         }.onFailure {
-          log.error("[$corrId] batch refresh done: ${it.message}")
+          log.error("batch refresh done: ${it.message}")
         }
       }
     } catch (e: Exception) {

@@ -26,7 +26,7 @@ class GroupUseCase(
 
   suspend fun addUserToGroup(userId: UserId, group: Group, role: RoleInGroup): UserGroupAssignment =
     withContext(Dispatchers.IO) {
-      log.info("[${coroutineContext.corrId()}] add user $userId to group: ${group.id}")
+      log.info("add user $userId to group: ${group.id}")
       groupGuard.requireWrite(group.id)
 
       val newAssigment = UserGroupAssignment(

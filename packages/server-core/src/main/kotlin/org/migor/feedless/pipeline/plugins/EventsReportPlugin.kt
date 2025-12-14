@@ -31,8 +31,7 @@ class EventsReportPlugin : ReportPlugin {
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ) {
-    val corrId = currentCoroutineContext().corrId()
-    logCollector.log("[$corrId] report ${documents.size}")
+    logCollector.log("report ${documents.size}")
 
   }
 

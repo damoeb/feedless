@@ -1,7 +1,6 @@
 package org.migor.feedless.document
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
@@ -113,7 +112,6 @@ class DocumentUseCase(
 
   suspend fun applyRetentionStrategy(repositoryId: RepositoryId) = withContext(Dispatchers.IO) {
     val repository = repositoryRepository.findById(repositoryId)!!
-    val corrId = coroutineContext.corrId()
 
     repositoryGuard.requireRead(repositoryId)
 
@@ -122,7 +120,7 @@ class DocumentUseCase(
       repository.groupId,
     )
       ?.let { maxAgeDays ->
-        log.info("[$corrId] applying retention with maxAgeDays=$maxAgeDays using field ${repository.retentionMaxAgeDaysReferenceField}")
+        log.info("applying retention with maxAgeDays=$maxAgeDays using field ${repository.retentionMaxAgeDaysReferenceField}")
         val maxDate = LocalDateTime.now().minus(maxAgeDays.toLong(), ChronoUnit.DAYS)
         if (repository.retentionMaxAgeDaysReferenceField == MaxAgeDaysDateField.startingAt) {
           documentRepository.deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
@@ -145,7 +143,7 @@ class DocumentUseCase(
             )
           }
         }
-      } ?: log.debug("[$corrId] no retention with maxAgeDays given")
+      } ?: log.debug("no retention with maxAgeDays given")
   }
 
   suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
@@ -183,8 +181,7 @@ class DocumentUseCase(
 
   suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? =
     withContext(Dispatchers.IO) {
-      val corrId = coroutineContext.corrId()
-      log.debug("[$corrId] ${jobs.size} processPlugins for document $documentId")
+      log.debug("${jobs.size} processPlugins for document $documentId")
       val document = documentRepository.findByIdWithSource(documentId)!!
       val logCollector = LogCollector()
 
@@ -230,24 +227,24 @@ class DocumentUseCase(
                   )
 
                   is ReportPlugin -> {
-                    log.info("[$corrId] ignoring ${plugin.id()} plugin")
+                    log.info("ignoring ${plugin.id()} plugin")
                     state.currentDocument
                   }
 
                   else -> {
                     if (plugin == null) {
                       log.error(
-                        "[$corrId] Invalid pluginId '${job.pluginId}'. Available: [${
+                        "Invalid pluginId '${job.pluginId}'. Available: [${
                           pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
                         }]")
                     } else {
-                      log.warn("[$corrId] resolved unsupported plugin ${plugin}")
+                      log.warn("resolved unsupported plugin ${plugin}")
                     }
                     throw IllegalArgumentException("Invalid plugin")
                   }
                 }
 
-              log.debug("[$corrId] executed ${job.pluginId} for $documentId")
+              log.debug("executed ${job.pluginId} for $documentId")
               documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
               ProcessingState(updatedDocument, true, false)
             } catch (e: Exception) {
@@ -255,9 +252,9 @@ class DocumentUseCase(
                 delayJob(job, e, state.currentDocument)
               } else {
                 if (e !is FilterMismatchException) {
-                  log.warn("[$corrId] ${e::class.simpleName} ${e.message}")
+                  log.warn("${e::class.simpleName} ${e.message}")
                 } else {
-                  log.info("[$corrId] ${e::class.simpleName} ${e.message}")
+                  log.info("${e::class.simpleName} ${e.message}")
                 }
                 deleteDocument(state.currentDocument)
               }
@@ -273,7 +270,7 @@ class DocumentUseCase(
         }
 
       } catch (throwable: Throwable) {
-        log.warn("[$corrId] aborting pipeline for document, cause ${throwable.message}")
+        log.warn("aborting pipeline for document, cause ${throwable.message}")
         deleteDocument(document)
         null
       }
@@ -284,7 +281,7 @@ class DocumentUseCase(
     repository: Repository,
   ) {
 //    forwardToMail(corrId, document, repository)
-    log.info("[${currentCoroutineContext().corrId()}] releasing document ${document.id}")
+    log.info("releasing document ${document.id}")
 
     documentRepository.save(
       document.copy(
@@ -314,7 +311,7 @@ class DocumentUseCase(
   }
 
   private suspend fun deleteDocument(document: Document) = withContext(Dispatchers.IO) {
-    log.info("[${coroutineContext.corrId()}] delete document ${document.id}")
+    log.info("delete document ${document.id}")
     documentRepository.deleteById(document.id)
   }
 
@@ -323,7 +320,7 @@ class DocumentUseCase(
     e: Exception,
     document: Document,
   ) = withContext(Dispatchers.IO) {
-    log.info("[${coroutineContext.corrId()}] delaying ${job.documentId} (${job.pluginId})")
+    log.info("delaying ${job.documentId} (${job.pluginId})")
 
     documentPipelineJobRepository.save(
       job.copy(
@@ -413,15 +410,15 @@ class DocumentUseCase(
 //      val authorizedMailForwards =
 //        mailForwards.filterTo(ArrayList()) { it: MailForwardEntity -> it.authorized }.map { it.email }
 //      if (authorizedMailForwards.isEmpty()) {
-//        log.warn("[$corrId] no authorized mail-forwards available of ${mailForwards.size}")
+//        log.warn("no authorized mail-forwards available of ${mailForwards.size}")
 //      } else {
 //        val (mailFormatter, params) = pluginService.resolveMailFormatter(repository)
-//        log.debug("[$corrId] using formatter ${mailFormatter::class.java.name}")
+//        log.debug("using formatter ${mailFormatter::class.java.name}")
 //
 //        val from = mailService.getNoReplyAddress(repository.product)
 //        val to = authorizedMailForwards.toTypedArray()
 //
-//        log.debug("[$corrId] resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
+//        log.debug("resolved mail recipients [${authorizedMailForwards.joinToString(", ")}]")
 //        mailService.send(
 //          corrId,
 //          from,

@@ -55,8 +55,7 @@ class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
     params: ConditionalTagPluginParams,
     logCollector: LogCollector
   ): Document {
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] mapEntity ${document.url}")
+    log.debug("mapEntity ${document.url}")
     val newTags = params.filter {
       filterPlugin.matches(document.asJsonItem(), it.filter, 0)
     }.map { it.tag }.toMutableSet()

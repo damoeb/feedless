@@ -54,10 +54,9 @@
 //  }
 //
 //  override fun handle(event: Event, context: Context) {
-//    val corrId= newCorrId()
 ////    log.info("${event.name} ${context.migrationInfo}")
 //    if (context.migrationInfo.version.version == "11") {
-//      log.info("[$corrId] Starting filter migration")
+//      log.info("Starting filter migration")
 //      repositoryDAO.saveAll(      repositoryDAO.findAllByLegacyFiltersIsNotNull()
 //        .map { repository -> migrateLegacyFilters(corrId, repository) }
 //)    }

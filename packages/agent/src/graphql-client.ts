@@ -122,6 +122,9 @@ export class GraphqlClient {
             webSocketImpl: WebSocket,
             url,
             on: {
+              connected: (options) => {
+                this.log.log('Connected');
+              },
               error: (err: ErrorEvent) => {
                 this.log.error('graphql ws connection failed', err.error);
                 process.exit(1);

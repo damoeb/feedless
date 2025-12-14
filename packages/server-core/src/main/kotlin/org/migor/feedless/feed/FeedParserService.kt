@@ -46,23 +46,21 @@ class FeedParserService(
   }
 
   suspend fun parseFeed(response: HttpResponse): JsonFeed {
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] Parsing feed")
+    log.debug("Parsing feed")
     val feedType = FeedUtil.detectFeedTypeForResponse(response)!!
-    log.debug("[$corrId] Parse feedType=$feedType")
+    log.debug("Parse feedType=$feedType")
     val bodyParser = feedBodyParsers.first { bodyParser ->
       bodyParser.canProcess(feedType)
     }
     return runCatching {
       bodyParser.process(response)
     }.onFailure {
-      log.info("[${corrId}] bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
+      log.info("bodyParser ${bodyParser::class.simpleName} failed with ${it.message}")
     }.getOrThrow()
   }
 
   suspend fun parseFeedFromUrl(url: String): JsonFeed {
-    val corrId = currentCoroutineContext().corrId()
-    log.debug("[$corrId] parseFeedFromUrl $url")
+    log.debug("parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,
 //      url,
@@ -73,7 +71,7 @@ class FeedParserService(
 //    authHeader?.let {
 //      request.setHeader("Authorization", it)
 //    }
-    log.debug("[$corrId] GET $url")
+    log.debug("GET $url")
     val response = httpService.executeRequest(request, 200)
     return parseFeed(response)
   }

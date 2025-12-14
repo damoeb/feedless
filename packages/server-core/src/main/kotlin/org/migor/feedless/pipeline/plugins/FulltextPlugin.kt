@@ -70,11 +70,10 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     params: FulltextPluginParams,
     logCollector: LogCollector
   ): Document {
-    val corrId = currentCoroutineContext().corrId()
-    logCollector.log("[$corrId] mapEntity ${document.url}")
+    logCollector.log("mapEntity ${document.url}")
 
     return if (StringUtils.isBlank(document.url)) {
-      logCollector.log("[$corrId] skipping, url is empty")
+      logCollector.log("skipping, url is empty")
       document
     } else {
       val request = Source(
@@ -95,7 +94,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
       val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
 
       val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
-        logCollector.log("[$corrId] inheritParams from source")
+        logCollector.log("inheritParams from source")
         request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
       } else {
         request.copy(actions = listOf(fetchAction))
@@ -108,7 +107,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
           val lastOutput = scrapeOutput.outputs.last()
           val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
           if (params.readability || params.summary) {
-            logCollector.log("[$corrId] convert to readability/summary")
+            logCollector.log("convert to readability/summary")
             val readability = webToArticleTransformer.fromHtml(
               html,
               document.url.replace(Regex("#[^/]+$"), ""),
@@ -187,5 +186,5 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
 }
 
 private fun Document.source(sourceRepository: SourceRepository): Source? {
-  return sourceId?.let { sourceRepository.findById(it) }
+  return sourceId?.let { sourceRepository.findByIdWithActions(it) }
 }

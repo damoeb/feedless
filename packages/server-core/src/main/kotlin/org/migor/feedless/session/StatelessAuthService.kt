@@ -6,6 +6,7 @@ import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretType
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -80,5 +81,9 @@ class StatelessAuthService : AuthService() {
     } else {
       throw AccessDeniedException("User does not exist or password invalid")
     }
+  }
+
+  override suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {
+    // ignore
   }
 }

@@ -23,7 +23,6 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.user.corrId
 import org.migor.feedless.user.groupId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
@@ -46,8 +45,7 @@ class SourceUseCase(
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
 
   suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) = withContext(Dispatchers.IO) {
-    val corrId = coroutineContext.corrId()
-    log.info("[$corrId] ${jobs.size} processSourcePipeline for source $sourceId")
+    log.info("${jobs.size} processSourcePipeline for source $sourceId")
 
     val job = jobs.first().copy(
       status = PipelineJobStatus.IN_PROGRESS
@@ -60,16 +58,16 @@ class SourceUseCase(
     val updatedJob = try {
       try {
         repositoryHarvester.scrapeSource(patchRequestUrl(source, job.url), LogCollector())
-        log.info("[$corrId] job ${job.id} done")
+        log.info("job ${job.id} done")
         job.copy(
           status = PipelineJobStatus.SUCCEEDED
         )
       } catch (e: ResumableHarvestException) {
-        log.info("[$corrId] delaying: ${e.message}")
+        log.info("delaying: ${e.message}")
         job.copy(coolDownUntil = LocalDateTime.now().plus(e.nextRetryAfter))
       }
     } catch (e: Exception) {
-      log.warn("[$corrId] aborting scrape job, cause ${e.message}")
+      log.warn("aborting scrape job, cause ${e.message}")
       job.copy(
         status = PipelineJobStatus.FAILED,
         logs = e.message
@@ -78,7 +76,7 @@ class SourceUseCase(
     try {
       sourcePipelineJobRepository.save(updatedJob)
     } catch (e: Exception) {
-      log.warn("[$corrId] ${e.message}]", e)
+      log.warn("${e.message}]", e)
     }
   }
 
@@ -133,7 +131,7 @@ class SourceUseCase(
 
   suspend fun createSources(sourceInputs: List<SourceInput>, repositoryId: RepositoryId) =
     withContext(Dispatchers.IO) {
-      log.info("[${coroutineContext.corrId()}] creating ${sourceInputs.size} sources")
+      log.info("creating ${sourceInputs.size} sources")
 
       val groupId = coroutineContext.groupId()
 
@@ -183,7 +181,7 @@ class SourceUseCase(
 
   suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<SourceUpdateInput>) =
     withContext(Dispatchers.IO) {
-      log.info("[${coroutineContext.corrId()}] updating ${updateInputs.size} sources")
+      log.info("updating ${updateInputs.size} sources")
 
       val repository = repositoryRepository.findById(repositoryId)!!
       if (repository.groupId != coroutineContext.groupId()) {
@@ -266,7 +264,7 @@ class SourceUseCase(
 //      throw IllegalArgumentException("Cannot update a source with a group id '${repository.groupId}'")
 //    }
 
-    log.info("[${coroutineContext.corrId()}] removing ${sourceIds.size} sources")
+    log.info("removing ${sourceIds.size} sources")
     val sources = sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
     sourceRepository.deleteAllById(sources.map { it.id })
   }

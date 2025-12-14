@@ -101,8 +101,14 @@ class StatefulAuthService : AuthService() {
       userSecretRepository.findBySecretKeyValue(secretKey, email)
     }
 
-  override suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) = withContext(Dispatchers.IO) {
-    userSecretRepository.updateLastUsed(id, date)
+  override suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {
+    try {
+      withContext(Dispatchers.IO) {
+        userSecretRepository.updateLastUsed(id, date)
+      }
+    } catch (e: Exception) {
+      log.warn("Exception while updating secret key", e)
+    }
   }
 
   override suspend fun assertToken(request: HttpServletRequest) {

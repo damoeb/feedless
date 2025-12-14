@@ -16,7 +16,6 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.web.context.request.ServletWebRequest
@@ -32,8 +31,7 @@ class MailAuthResolver(
   @DgsMutation(field = DgsConstants.MUTATION.AuthenticateWithCodeViaMail)
   suspend fun authViaMail(@InputArgument(DgsConstants.MUTATION.AUTHENTICATEWITHCODEVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): ConfirmCode =
     coroutineScope {
-      val corrId = CryptUtil.newCorrId()
-      log.debug("[$corrId] authViaMail ${data.product}")
+      log.debug("authViaMail ${data.product}")
       mailAuthenticationService.authenticateUsingMail(data)
     }
 

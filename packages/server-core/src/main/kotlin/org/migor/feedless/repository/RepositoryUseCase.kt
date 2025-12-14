@@ -87,16 +87,16 @@ class RepositoryUseCase(
 
   suspend fun create(data: List<RepositoryCreateInput>): List<Repository> =
     withContext(Dispatchers.IO) {
-      log.info("[${coroutineContext.corrId()}] create repository with ${data.size} sources")
+      log.info("create repository with ${data.size} sources")
 
       val groupId = coroutineContext.groupId()
 
       val totalCount = repositoryRepository.countByGroupId(groupId)
       planConstraintsService.auditRepositoryMaxCount(totalCount, groupId)
       if (planConstraintsService.violatesRepositoriesMaxActiveCount(groupId)) {
-        log.info("[${coroutineContext.corrId()}] violates maxActiveCount")
+        log.info("violates maxActiveCount")
         throw IllegalArgumentException("Too many active repositories")
-//      log.info("[$corrId] violates maxActiveCount, archiving oldest")
+//      log.info("violates maxActiveCount, archiving oldest")
 //      RepositoryDAO.updateArchivedForOldestActive(ownerId)
       }
       data.map { createRepository(it) }
@@ -125,8 +125,7 @@ class RepositoryUseCase(
       ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
-      val corrId = currentCoroutineContext().corrId()
-      log.error("[$corrId] empty result", e)
+      log.error("empty result", e)
       emptyList()
     }
 
@@ -175,7 +174,7 @@ class RepositoryUseCase(
     if (repository.ownerId != currentCoroutineContext().userId()) {
       throw PermissionDeniedException("not authorized")
     }
-    log.info("[${currentCoroutineContext().corrId()}] removing repository $repositoryId")
+    log.info("removing repository $repositoryId")
     repositoryRepository.delete(repository)
   }
 
@@ -199,12 +198,11 @@ class RepositoryUseCase(
       lastUpdatedAt = LocalDateTime.now()
     )
 
-    val corrId = currentCoroutineContext().corrId()
     val userId = currentCoroutineContext().userId()
     if (repository.ownerId != userId) {
       throw PermissionDeniedException("not authorized")
     }
-    log.info("[$corrId] update $id")
+    log.info("update $id")
     repository = data.title?.set?.let { repository.copy(title = it) } ?: repository
     repository = data.description?.set?.let { repository.copy(description = it) } ?: repository
 
@@ -239,7 +237,7 @@ class RepositoryUseCase(
     repository = data.plugins?.let { plugins ->
       val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
       if (newPlugins != repository.plugins) {
-        log.info("[${corrId}] plugins $newPlugins")
+        log.info("plugins $newPlugins")
         repository.copy(plugins = newPlugins)
       } else {
         repository
@@ -253,18 +251,18 @@ class RepositoryUseCase(
         next,
         groupId
       )
-      log.info("[${corrId}] nextUpdateAt $nextAt")
+      log.info("nextUpdateAt $nextAt")
       repository.copy(triggerScheduledNextAt = nextAt)
     } ?: repository
 
     repository = data.retention?.let { retention ->
       var updated = repository
       retention.maxAgeDays?.let {
-        log.info("[${corrId}] retentionMaxAgeDays ${it.set}")
+        log.info("retentionMaxAgeDays ${it.set}")
         updated = updated.copy(retentionMaxAgeDays = it.set)
       }
       retention.maxCapacity?.let {
-        log.info("[${corrId}] retentionMaxItems ${it.set}")
+        log.info("retentionMaxItems ${it.set}")
         updated = updated.copy(retentionMaxCapacity = it.set)
       }
       if (retention.maxAgeDays != null || retention.maxCapacity != null) {

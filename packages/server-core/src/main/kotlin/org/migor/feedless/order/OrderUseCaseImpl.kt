@@ -56,8 +56,7 @@ class OrderUseCaseImpl(
   }
 
   private suspend fun create(create: OrderCreate): Order {
-    val corrId = currentCoroutineContext().corrId()
-    log.info("[$corrId] create $create]")
+    log.info("create $create]")
 
     userGuard.requireRead(currentCoroutineContext().userId())
 
@@ -93,8 +92,7 @@ class OrderUseCaseImpl(
   }
 
   private suspend fun update(orderId: OrderId, update: OrderUpdate): Order {
-    val corrId = currentCoroutineContext().corrId()
-    log.info("[$corrId] update $update $orderId")
+    log.info("update $update $orderId")
 
     val order = orderGuard.requireWrite(orderId)
 

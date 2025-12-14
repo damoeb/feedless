@@ -35,7 +35,6 @@ import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard

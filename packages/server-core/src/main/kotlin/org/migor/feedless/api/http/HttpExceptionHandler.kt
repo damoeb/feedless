@@ -12,8 +12,6 @@ import org.springframework.web.bind.MissingPathVariableException
 import org.springframework.web.bind.annotation.ControllerAdvice
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.context.request.RequestAttributes.SCOPE_REQUEST
-import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 import java.time.LocalDateTime
@@ -28,8 +26,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   fun handleApiException(
     ex: Exception?, request: WebRequest?
   ): ResponseEntity<Any?>? {
-    val corrId = RequestContextHolder.getRequestAttributes()?.getAttribute("corrId", SCOPE_REQUEST)
-    log.error("[$corrId] handleApiException: ${ex?.message}", ex)
+    log.error("handleApiException: ${ex?.message}", ex)
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
       "message" to "${ex?.message}"

@@ -27,7 +27,6 @@ class RepositoryHarvesterExecutor internal constructor(
   //  @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   fun refreshSubscriptions() {
     try {
-      val corrId = newCorrId()
       val reposDue = runBlocking {
         repositoryRepository.findAllWhereNextHarvestIsDue(
           LocalDateTime.now(),
@@ -35,7 +34,7 @@ class RepositoryHarvesterExecutor internal constructor(
         )
       }
 
-      log.debug("[$corrId] batch refresh with ${reposDue.size} repos")
+      log.debug("batch refresh with ${reposDue.size} repos")
       if (reposDue.isNotEmpty()) {
         val semaphore = Semaphore(10)
         runBlocking {
@@ -52,9 +51,9 @@ class RepositoryHarvesterExecutor internal constructor(
                 }
               }.awaitAll()
             }
-            log.info("[$corrId] done")
+            log.info("done")
           }.onFailure {
-            log.error("[$corrId] batch refresh done: ${it.message}", it)
+            log.error("batch refresh done: ${it.message}", it)
           }
         }
       }

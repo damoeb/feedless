@@ -105,12 +105,12 @@ class UserUseCase(
     }
 
     meterRegistry.counter(AppMetrics.userSignup, listOf(Tag.of("type", "user"))).increment()
-    log.debug("[${coroutineContext.corrId()}] create user")
+    log.debug("create user")
     val userId = UserId()
 
     val (user, group) = withContext(Dispatchers.IO) {
       val effectiveEmail = email ?: fallbackEmail(userId)
-      log.info("[${coroutineContext.corrId()}] create user $effectiveEmail -> id: $userId")
+      log.info("create user $effectiveEmail -> id: $userId")
       val user = userRepository.save(
         User(
           id = userId,
@@ -123,7 +123,7 @@ class UserUseCase(
       )
 
       val groupId = GroupId()
-      log.info("[${coroutineContext.corrId()}] create default group for user -> id: $groupId")
+      log.info("create default group for user -> id: $groupId")
       val group = groupRepository.save(
         Group(
           id = groupId,
@@ -135,7 +135,7 @@ class UserUseCase(
     }
 
     if (githubId != null) {
-      log.info("[${currentCoroutineContext().corrId()}] link github account $githubId")
+      log.info("link github account $githubId")
       linkGithubAccount(user.id, githubId)
     }
 
@@ -157,7 +157,7 @@ class UserUseCase(
   }
 
   suspend fun createInboxRepository(userId: UserId): Repository = withContext(Dispatchers.IO) {
-    log.debug("[${coroutineContext.corrId()}] create inbox repository for $userId in group ${coroutineContext.groupId()}")
+    log.debug("create inbox repository for $userId in group ${coroutineContext.groupId()}")
     val r = Repository(
       title = "Notifications",
       description = "",
@@ -184,9 +184,8 @@ class UserUseCase(
 
     var changed = false
 
-    val corrId = coroutineContext.corrId()
     user = data.email?.let {
-      log.info("[$corrId] changing email from ${user.email} to ${it.set}")
+      log.info("changing email from ${user.email} to ${it.set}")
       // todo ask to validate email
       changed = true
       user.copy(
@@ -222,13 +221,13 @@ class UserUseCase(
     user = data.acceptedTermsAndServices?.let {
       changed = true
       if (it.set) {
-        log.debug("[$corrId] accepted terms")
+        log.debug("accepted terms")
         user.copy(
           hasAcceptedTerms = true,
           acceptedTermsAt = LocalDateTime.now()
         )
       } else {
-        log.debug("[$corrId] rejecting hasAcceptedTerms")
+        log.debug("rejecting hasAcceptedTerms")
         user.copy(
           hasAcceptedTerms = false,
           acceptedTermsAt = null
@@ -239,10 +238,10 @@ class UserUseCase(
     user = data.purgeScheduledFor?.let {
       changed = true
       if (it.assignNull) {
-        log.info("[$corrId] unset purgeScheduledFor")
+        log.info("unset purgeScheduledFor")
         user.copy(purgeScheduledFor = null)
       } else {
-        log.info("[$corrId] set purgeScheduledFor")
+        log.info("set purgeScheduledFor")
         user.copy(purgeScheduledFor = LocalDateTime.now().plusDays(30))
       }
     } ?: user
@@ -250,7 +249,7 @@ class UserUseCase(
     if (changed) {
       userRepository.save(user)
     } else {
-      log.debug("[$corrId] unchanged")
+      log.debug("unchanged")
     }
   }
 
@@ -259,7 +258,7 @@ class UserUseCase(
 //  }
 
   suspend fun updateLegacyUser(userId: UserId, githubId: String) = withContext(Dispatchers.IO) {
-    log.info("[${coroutineContext.corrId()}] update legacy user githubId=$githubId")
+    log.info("update legacy user githubId=$githubId")
 
     val isGithubAccountLinked = githubConnectionRepository.existsByUserId(userId)
 

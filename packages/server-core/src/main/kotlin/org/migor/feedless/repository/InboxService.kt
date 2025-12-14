@@ -45,7 +45,7 @@ class InboxService {
 //    source: SourceEntity? = null
 //  ) {
 //    try {
-//      log.debug("[$corrId] append message with '$message'")
+//      log.debug("append message with '$message'")
 //      withContext(Dispatchers.IO) {
 //        val user = userDAO.findById(ownerId).orElseThrow()
 //
@@ -66,7 +66,7 @@ class InboxService {
 //        documentDAO.save(notification)
 //      }
 //    } catch (e: Exception) {
-//      log.error("[$corrId] Failed to create notification: $message", e)
+//      log.error("Failed to create notification: $message", e)
 //    }
 //  }
 
@@ -91,8 +91,7 @@ class InboxService {
         it.copy(documentId = document.id)
       })
     } catch (e: Exception) {
-      val corrId = coroutineContext.corrId()
-      log.error("[$corrId] Failed to append message: ${e.message}", e)
+      log.error("Failed to append message: ${e.message}", e)
     }
   }
 }

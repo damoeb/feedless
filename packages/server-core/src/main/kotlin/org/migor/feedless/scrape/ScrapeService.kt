@@ -3,7 +3,6 @@ package org.migor.feedless.scrape
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -39,7 +38,6 @@ import org.migor.feedless.pipeline.FragmentTransformerPlugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.Source
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -53,7 +51,7 @@ class LogCollector {
   val logs = mutableListOf<LogStatement>()
   fun log(message: String) {
     logs.add(LogStatement(message = message, time = LocalDateTime.now().toMillis()))
-//    log?.debug("[$corrId] $message")
+//    log?.debug("$message")
   }
 }
 
@@ -78,7 +76,6 @@ class ScrapeService {
 
   suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
-      val corrId = coroutineContext.corrId()
       try {
         val scrapeContext = ScrapeContext(logCollector)
 
@@ -116,7 +113,7 @@ class ScrapeService {
             }
           }
 
-        log.debug("[$corrId] scraping done")
+        log.debug("scraping done")
 
         ScrapeOutput(
           context.outputsAsList(),
@@ -125,7 +122,7 @@ class ScrapeService {
       } catch (e: Exception) {
         log.warn("scrape failed " + e.message)
         if (e !is ResumableHarvestException) {
-          log.debug("[$corrId] scrape failed for source ${source.id} ${e.message}")
+          log.debug("scrape failed for source ${source.id} ${e.message}")
         }
         throw e
       }
@@ -146,8 +143,7 @@ class ScrapeService {
     action: ExecuteAction,
     context: ScrapeContext
   ) {
-    val corrId = currentCoroutineContext().corrId()
-    context.log("[$corrId] handlePluginExecution ${action.pluginId}")
+    context.log("handlePluginExecution ${action.pluginId}")
 
     val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
     try {
@@ -194,11 +190,11 @@ class ScrapeService {
           context.setOutputAt(index, result)
         }
 
-        else -> throw IllegalArgumentException("plugin '${action.pluginId}' does not exist ($corrId)")
+        else -> throw IllegalArgumentException("plugin '${action.pluginId}' does not exist")
       }
     } catch (e: Exception) {
       context.log(e.stackTraceToString())
-      log.warn("[$corrId] handlePluginExecution error ${e.message}")
+      log.warn("handlePluginExecution error ${e.message}")
       throw e
     }
   }
@@ -273,7 +269,7 @@ class ScrapeService {
 
 
   private suspend fun handleHeader(action: HeaderAction, context: ScrapeContext) {
-    context.log("[${currentCoroutineContext().corrId()}] handleHeader $action")
+    context.log("handleHeader $action")
     context.headers[action.name] = action.value
   }
 
@@ -283,14 +279,13 @@ class ScrapeService {
     action: FetchAction,
     context: ScrapeContext
   ) {
-    val corrId = currentCoroutineContext().corrId()
-    context.log("[$corrId] handleFetch $action")
+    context.log("handleFetch $action")
     val prerender = needsPrerendering(source, index)
     if (prerender) {
-      context.log("[$corrId] send to agent")
+      context.log("send to agent")
       val response = agentService.prerender(source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
-//        log.info("[$corrId] outputs @$outputIndex")
+//        log.info("outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
       context.logCollector.logs.addAll(response.logs.map {
@@ -299,10 +294,10 @@ class ScrapeService {
           message = "[agent] ${it.message}"
         )
       })
-      context.log("[$corrId] received -> ${response.outputs.size} outputs")
-      log.debug("[$corrId] received -> ${response.outputs.size} outputs")
+      context.log("received -> ${response.outputs.size} outputs")
+      log.debug("received -> ${response.outputs.size} outputs")
     } else {
-      context.log("[$corrId] render static")
+      context.log("render static")
 //      val startTime = System.nanoTime()
       val url = action.resolveUrl()
 //      httpService.guardedHttpResource(
