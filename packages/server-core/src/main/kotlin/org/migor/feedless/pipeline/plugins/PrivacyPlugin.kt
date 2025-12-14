@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import jakarta.annotation.PostConstruct
+import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.Attachment
@@ -28,7 +29,6 @@ import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.util.*
 import javax.imageio.ImageIO
-import kotlin.coroutines.coroutineContext
 import org.jsoup.nodes.Document as JsoupDocument
 import org.jsoup.nodes.Element as JsoupElement
 import org.jsoup.parser.Tag as JsoupTag
@@ -126,7 +126,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     imageElement: JsoupElement,
     documentId: DocumentId
   ): Attachment? {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     return try {
       val url = imageElement.attr("src")
       val response = fetch(url, arrayOf("image/jpeg", "image/png", "image/webp"))
@@ -195,7 +195,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     linkElement: JsoupElement,
     documentId: DocumentId
   ): Attachment? {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     return try {
       val response = fetch(linkElement.attr("href"), arrayOf("application/pdf"))
       val attachment = toAttachment(response, documentId)

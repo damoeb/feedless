@@ -13,6 +13,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.group.GroupEntity
 import org.migor.feedless.data.jpa.product.ProductEntity
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.plan.Plan
@@ -26,6 +27,19 @@ open class PlanEntity : EntityWithUUID() {
 
   @Column(name = StandardJpaFields.userId, nullable = false)
   open lateinit var userId: UUID
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(
+    name = StandardJpaFields.groupId,
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+  )
+  open var group: GroupEntity? = null
+
+  @Column(name = StandardJpaFields.groupId, nullable = false)
+  open lateinit var groupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)

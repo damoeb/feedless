@@ -17,7 +17,6 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.SiteNotFoundException
 import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
@@ -35,7 +34,6 @@ import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.TimeoutException
-import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -100,7 +98,7 @@ class HttpService(
     headers: Map<String, String>? = null
   ): HttpResponse {
     protectFromOverloading(url)
-    log.debug("[${coroutineContext.corrId()}] GET $url")
+    log.debug("GET $url")
     val request = prepareGet(url)
     headers?.let {
       headers.forEach {
@@ -159,12 +157,11 @@ class HttpService(
   )
 
   private suspend fun execute(request: BoundRequestBuilder, expectedStatusCode: Int): Response {
-    val corrId = coroutineContext.corrId()!!
     return try {
       val response = withContext(Dispatchers.IO) {
         request.execute().get(30, TimeUnit.SECONDS)
       }
-      log.debug("[$corrId] -> ${response.statusCode}")
+      log.debug("-> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
         when (response.statusCode) {
           500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
@@ -176,7 +173,7 @@ class HttpService(
           else -> throw FatalHarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
-        log.debug("[$corrId] -> ${response.getHeader("content-type")}")
+        log.debug("-> ${response.getHeader("content-type")}")
       }
       response
     } catch (e: Exception) {

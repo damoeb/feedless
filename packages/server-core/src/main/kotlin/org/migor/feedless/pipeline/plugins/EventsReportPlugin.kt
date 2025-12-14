@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
@@ -13,7 +14,6 @@ import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.scrape} & ${AppLayer.service}")
@@ -31,7 +31,7 @@ class EventsReportPlugin : ReportPlugin {
     params: PluginExecutionParamsInput,
     logCollector: LogCollector
   ) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     logCollector.log("[$corrId] report ${documents.size}")
 
   }

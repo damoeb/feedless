@@ -12,7 +12,6 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
@@ -25,7 +24,7 @@ class RepositoryHarvesterExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(RepositoryHarvesterExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 1345, initialDelay = 5000)
+  //  @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   fun refreshSubscriptions() {
     try {
       val corrId = newCorrId()
@@ -46,7 +45,7 @@ class RepositoryHarvesterExecutor internal constructor(
                 async(RequestContext(userId = it.ownerId)) {
                   semaphore.acquire()
                   try {
-                    repositoryHarvester.handleRepository(it.id)
+                    repositoryHarvester.harvestRepository(it.id)
                   } finally {
                     semaphore.release()
                   }

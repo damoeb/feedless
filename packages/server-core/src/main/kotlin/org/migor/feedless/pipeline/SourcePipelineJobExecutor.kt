@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -21,11 +22,9 @@ import org.migor.feedless.user.corrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
@@ -39,7 +38,7 @@ class SourcePipelineJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(SourcePipelineJobExecutor::class.simpleName)
 
-  @Scheduled(fixedDelay = 3245, initialDelay = 20000)
+  //  @Scheduled(fixedDelay = 3245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     try {
@@ -80,7 +79,7 @@ class SourcePipelineJobExecutor internal constructor(
         }
       }
     } catch (e: Exception) {
-      log.error(e.message)
+      log.error(e.message, e)
     }
   }
 
@@ -93,7 +92,7 @@ class SourcePipelineJobExecutor internal constructor(
   }
 
   private suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     try {
       sourceUseCase.processSourcePipeline(sourceId, jobs)
     } catch (t: Throwable) {

@@ -1,6 +1,7 @@
 package org.migor.feedless.product
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -14,6 +15,7 @@ import org.migor.feedless.pricedProduct.PricedProductRepository
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.groupId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -85,7 +87,8 @@ class ProductUseCaseImpl(
       val plan = Plan(
         productId = product.id,
         userId = user.id,
-        startedAt = now
+        startedAt = now,
+        groupId = currentCoroutineContext().groupId()
       )
       planRepository.save(plan)
     }

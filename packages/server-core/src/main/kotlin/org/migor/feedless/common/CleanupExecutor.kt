@@ -9,7 +9,6 @@ import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -27,7 +26,7 @@ class CleanupExecutor(
 
   private val log = LoggerFactory.getLogger(CleanupExecutor::class.simpleName)
 
-  @Scheduled(cron = "0 0 * * * *")
+  //  @Scheduled(cron = "0 0 * * * *")
   @Transactional
   fun executeCleanup() {
     val now = LocalDateTime.now()

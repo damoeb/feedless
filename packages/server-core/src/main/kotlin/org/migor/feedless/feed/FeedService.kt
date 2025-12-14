@@ -2,6 +2,7 @@ package org.migor.feedless.feed
 
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.apache.commons.lang3.time.DateUtils
@@ -56,7 +57,6 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 typealias ShipFeedItems = Boolean;
 
@@ -364,7 +364,7 @@ class FeedService(
   }
 
   private suspend fun createErrorMessage(t: Throwable, feedUrl: String): JsonItem {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     val article = JsonItem()
     article.id = FeedUtil.toURI("error", DateUtils.truncate(Date(), Calendar.MONTH).time.toString() + t.message)
     article.title = "ALERT: Potential Issue with Feed"

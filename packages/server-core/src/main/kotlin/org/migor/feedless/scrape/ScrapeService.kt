@@ -3,6 +3,7 @@ package org.migor.feedless.scrape
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -47,7 +48,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 
 class LogCollector {
   val logs = mutableListOf<LogStatement>()
@@ -78,7 +78,7 @@ class ScrapeService {
 
   suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
-      val corrId = kotlin.coroutines.coroutineContext.corrId()
+      val corrId = coroutineContext.corrId()
       try {
         val scrapeContext = ScrapeContext(logCollector)
 
@@ -146,7 +146,7 @@ class ScrapeService {
     action: ExecuteAction,
     context: ScrapeContext
   ) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     context.log("[$corrId] handlePluginExecution ${action.pluginId}")
 
     val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
@@ -273,7 +273,7 @@ class ScrapeService {
 
 
   private suspend fun handleHeader(action: HeaderAction, context: ScrapeContext) {
-    context.log("[${coroutineContext.corrId()}] handleHeader $action")
+    context.log("[${currentCoroutineContext().corrId()}] handleHeader $action")
     context.headers[action.name] = action.value
   }
 
@@ -283,7 +283,7 @@ class ScrapeService {
     action: FetchAction,
     context: ScrapeContext
   ) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     context.log("[$corrId] handleFetch $action")
     val prerender = needsPrerendering(source, index)
     if (prerender) {

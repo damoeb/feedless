@@ -20,13 +20,6 @@ import org.migor.feedless.data.jpa.product.ProductEntity
 import org.migor.feedless.feature.FeatureGroup
 import java.util.*
 
-enum class PlanName {
-  system,
-  free,
-  basic,
-}
-
-
 @Entity
 @Table(
   name = "t_feature_group",

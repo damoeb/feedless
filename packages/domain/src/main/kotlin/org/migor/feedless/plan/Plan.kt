@@ -1,5 +1,6 @@
 package org.migor.feedless.plan
 
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.product.Product
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
@@ -9,6 +10,7 @@ import java.time.LocalDateTime
 data class Plan(
   val id: PlanId = PlanId(),
   val userId: UserId,
+  val groupId: GroupId,
   val productId: ProductId,
   val startedAt: LocalDateTime? = null,
   val terminatedAt: LocalDateTime? = null,

@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
+import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.BooleanUtils
 import org.jsoup.nodes.Document
 import org.migor.feedless.AppLayer
@@ -35,7 +36,6 @@ import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -60,7 +60,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     data: HttpResponse,
     logger: LogCollector,
   ): FragmentOutput {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] transformFragment")
 
     val mimeType = data.contentType.lowercase()
@@ -107,7 +107,7 @@ class FeedsPlugin : FragmentTransformerPlugin {
     logger.log("found ${nativeFeeds.size} native feeds $nativeFeeds")
     val genericFeeds = genericFeedLocator.locateInDocument(document, url, parserOptions)
     logger.log("found ${genericFeeds.size} generic feeds")
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] Found feedRules=${genericFeeds.size} nativeFeeds=${nativeFeeds.size}")
 
     return FragmentOutput(

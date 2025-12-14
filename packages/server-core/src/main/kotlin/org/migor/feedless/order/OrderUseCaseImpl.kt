@@ -1,6 +1,7 @@
 package org.migor.feedless.order
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.migor.feedless.AppLayer
@@ -14,7 +15,6 @@ import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.service}")
@@ -29,7 +29,7 @@ class OrderUseCaseImpl(
 
   override suspend fun findAll(cursor: PageableRequest): List<Order> {
 
-    userGuard.requireRead(coroutineContext.userId())
+    userGuard.requireRead(currentCoroutineContext().userId())
 
     return withContext(Dispatchers.IO) {
       if (coroutineContext.isAdmin()) {
@@ -48,7 +48,7 @@ class OrderUseCaseImpl(
     create: OrderCreate?,
     update: OrderUpdate?
   ): Order {
-    userGuard.requireRead(coroutineContext.userId())
+    userGuard.requireRead(currentCoroutineContext().userId())
 
     return orderId?.let {
       update(orderId, update!!)
@@ -56,10 +56,10 @@ class OrderUseCaseImpl(
   }
 
   private suspend fun create(create: OrderCreate): Order {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.info("[$corrId] create $create]")
 
-    userGuard.requireRead(coroutineContext.userId())
+    userGuard.requireRead(currentCoroutineContext().userId())
 
     val productId = ProductId(create.productId)
 
@@ -93,7 +93,7 @@ class OrderUseCaseImpl(
   }
 
   private suspend fun update(orderId: OrderId, update: OrderUpdate): Order {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.info("[$corrId] update $update $orderId")
 
     val order = orderGuard.requireWrite(orderId)

@@ -11,7 +11,6 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -22,7 +21,6 @@ import org.migor.feedless.generated.types.Report as ReportDto
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.report} & ${AppLayer.api}")
 class ReportResolver(
   private val reportUseCase: ReportUseCase,
-  private val sessionService: SessionService
 ) {
 
   private val log = LoggerFactory.getLogger(ReportResolver::class.simpleName)

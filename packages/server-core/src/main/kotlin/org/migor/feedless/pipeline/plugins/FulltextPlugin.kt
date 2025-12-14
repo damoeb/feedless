@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -35,7 +36,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 
 data class FulltextPluginParams(
   @SerializedName("readability") val readability: Boolean,
@@ -70,7 +70,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     params: FulltextPluginParams,
     logCollector: LogCollector
   ): Document {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     logCollector.log("[$corrId] mapEntity ${document.url}")
 
     return if (StringUtils.isBlank(document.url)) {

@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
@@ -25,14 +26,12 @@ import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
 class DocumentPipelineJobExecutor internal constructor(
   val documentPipelineRepository: DocumentPipelineJobRepository,
   val documentRepository: DocumentRepository,
-  val documentPipelineService: DocumentPipelineService,
   val repositoryUseCase: RepositoryUseCase,
   val repositoryRepository: RepositoryRepository,
   val documentUseCase: DocumentUseCase,
@@ -45,13 +44,10 @@ class DocumentPipelineJobExecutor internal constructor(
   fun processDocumentJobs() {
     try {
       val corrId = newCorrId()
-      val groupedDocuments = runBlocking {
-        val grouped = documentPipelineRepository.findAllPendingBatched(LocalDateTime.now())
-          .groupBy { it.documentId }
+      val groupedDocuments = documentPipelineRepository.findAllPendingBatched(LocalDateTime.now())
+        .groupBy { it.documentId }
 
-        documentPipelineService.incrementDocumentJobAttemptCount(grouped)
-        grouped
-      }
+      documentPipelineRepository.incrementAttemptCount(groupedDocuments.values.flatten().map { it.id })
 
       if (groupedDocuments.isNotEmpty()) {
         val semaphore = Semaphore(5)
@@ -82,13 +78,13 @@ class DocumentPipelineJobExecutor internal constructor(
         }
       }
     } catch (e: Exception) {
-      log.error(e.message)
+      log.error(e.message, e)
     }
   }
 
   private suspend fun getOwnerIdForDocumentId(documentId: DocumentId): UserId {
     val repo = repositoryRepository.findByDocumentId(documentId)
-      ?: throw documentPipelineService.failAfterCleaningJobsForDocument(documentId)
+      ?: throw IllegalArgumentException("repo not found for documentId $documentId") // documentPipelineService.failAfterCleaningJobsForDocument(documentId)
     return repo.ownerId
   }
 
@@ -96,7 +92,7 @@ class DocumentPipelineJobExecutor internal constructor(
     try {
       documentUseCase.processDocumentPlugins(documentId, jobs)
     } catch (t: Throwable) {
-      val corrId = coroutineContext.corrId()
+      val corrId = currentCoroutineContext().corrId()
       log.error("[$corrId] processDocumentPlugins fatal failure", t)
       documentRepository.deleteById(documentId)
     }

@@ -10,6 +10,5 @@ data class UserGroupAssignment(
   val userId: UserId,
   val groupId: GroupId,
   val createdAt: LocalDateTime = LocalDateTime.now(),
-) {
-}
+)
 

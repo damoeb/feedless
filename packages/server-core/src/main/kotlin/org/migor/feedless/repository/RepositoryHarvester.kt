@@ -5,6 +5,7 @@ import io.micrometer.core.instrument.Tag
 import io.micrometer.core.instrument.Timer
 import jakarta.annotation.PostConstruct
 import jakarta.validation.Validation
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
@@ -45,7 +46,6 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
-import org.migor.feedless.user.groupId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -60,7 +60,6 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service} & ${AppLayer.scheduler}")
@@ -90,8 +89,8 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
-  suspend fun handleRepository(repositoryId: RepositoryId) {
-    val corrId = coroutineContext.corrId()
+  suspend fun harvestRepository(repositoryId: RepositoryId) {
+    val corrId = currentCoroutineContext().corrId()
     runCatching {
       log.info("[${corrId}] handleRepository $repositoryId")
 
@@ -111,7 +110,7 @@ class RepositoryHarvester(
 
       scrapeSources(repositoryId)
 
-      val groupId = coroutineContext.groupId()
+      val groupId = repository.groupId
 
       val scheduledNextAt = repositoryUseCase.calculateScheduledNextAt(
         repository.sourcesSyncCron,
@@ -134,7 +133,7 @@ class RepositoryHarvester(
   private suspend fun scrapeSources(
     repositoryId: RepositoryId,
   ) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     var sources: List<Source>
     var currentPage = 0
     do {
@@ -210,7 +209,7 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.error("[$corrId] scrape failed ${e?.message}")
     logCollector.log("[$corrId] scrape failed ${e?.message}")
 
@@ -254,7 +253,7 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): Int {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] importElement")
     val repository = repositoryRepository.findById(repositoryId)!!
     return if (output.outputs.isEmpty()) {
@@ -302,7 +301,7 @@ class RepositoryHarvester(
     repository: Repository,
     documents: List<Pair<Boolean, Document>>
   ) {
-    val corrId = coroutineContext.corrId()!!
+    val corrId = currentCoroutineContext().corrId()!!
     if (repository.plugins.isNotEmpty()) {
       try {
         log.debug("[$corrId] delete all document job by documents")
@@ -330,7 +329,7 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): List<Pair<Boolean, Document>> {
-    val corrId = coroutineContext.corrId()!!
+    val corrId = currentCoroutineContext().corrId()!!
 
     log.info("[${corrId}] importImageElement")
 
@@ -399,7 +398,7 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ): List<Pair<Boolean, Document>> {
-    val corrId = coroutineContext.corrId()!!
+    val corrId = currentCoroutineContext().corrId()!!
     if (items.isEmpty()) {
       throw NoItemsRetrievedException()
     }
@@ -478,7 +477,7 @@ class RepositoryHarvester(
           if (validation.isEmpty()) {
             true
           } else {
-            val corrId = coroutineContext.corrId()!!
+            val corrId = currentCoroutineContext().corrId()!!
             log.warn(
               "[$corrId] document ${
                 StringUtils.substring(
@@ -512,7 +511,7 @@ class RepositoryHarvester(
       try {
         el.attr("width").toInt() * el.attr("height").toInt()
       } catch (e: Exception) {
-        val corrId = coroutineContext.corrId()
+        val corrId = currentCoroutineContext().corrId()
         log.debug("[$corrId] during detectMainImageUrl: ${e.message}")
         400
       }
@@ -527,7 +526,7 @@ class RepositoryHarvester(
     repository: Repository,
     logCollector: LogCollector
   ): Pair<Boolean, Document>? {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     return try {
       if (existing == null) {
         meterRegistry.counter(AppMetrics.createDocument).increment()

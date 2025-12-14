@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline.plugins
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -15,7 +16,6 @@ import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import kotlin.coroutines.coroutineContext
 
 data class ItemFilterParams(
   @SerializedName("composite") val composite: CompositeFilterParams? = null,
@@ -83,7 +83,7 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
   }
 
   private suspend fun matchesExpression(expression: String?, item: JsonItem): Boolean {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     return expression?.let {
       val q = tryConvertFromLegacy(it)
       try {
@@ -97,7 +97,7 @@ class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
   }
 
   private suspend fun tryConvertFromLegacy(legacyExpression: String): String {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     val fields = mapOf(
       "#body" to "content",
       "#title" to "title",

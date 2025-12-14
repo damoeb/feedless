@@ -2,6 +2,7 @@ package org.migor.feedless.repository
 
 import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
@@ -56,7 +57,6 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 fun toPageRequest(page: Int?, pageSize: Int?): Pageable {
   val fixedPage = (page ?: 0).coerceAtLeast(0)
@@ -125,7 +125,7 @@ class RepositoryUseCase(
       ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
-      val corrId = coroutineContext.corrId()
+      val corrId = currentCoroutineContext().corrId()
       log.error("[$corrId] empty result", e)
       emptyList()
     }
@@ -172,10 +172,10 @@ class RepositoryUseCase(
 
   suspend fun delete(repositoryId: RepositoryId) {
     val repository = repositoryRepository.findById(repositoryId)!!
-    if (repository.ownerId != coroutineContext.userId()) {
+    if (repository.ownerId != currentCoroutineContext().userId()) {
       throw PermissionDeniedException("not authorized")
     }
-    log.info("[${coroutineContext.corrId()}] removing repository $repositoryId")
+    log.info("[${currentCoroutineContext().corrId()}] removing repository $repositoryId")
     repositoryRepository.delete(repository)
   }
 
@@ -199,8 +199,8 @@ class RepositoryUseCase(
       lastUpdatedAt = LocalDateTime.now()
     )
 
-    val corrId = coroutineContext.corrId()
-    val userId = coroutineContext.userId()
+    val corrId = currentCoroutineContext().corrId()
+    val userId = currentCoroutineContext().userId()
     if (repository.ownerId != userId) {
       throw PermissionDeniedException("not authorized")
     }
@@ -208,7 +208,7 @@ class RepositoryUseCase(
     repository = data.title?.set?.let { repository.copy(title = it) } ?: repository
     repository = data.description?.set?.let { repository.copy(description = it) } ?: repository
 
-    val groupId = coroutineContext.groupId()
+    val groupId = currentCoroutineContext().groupId()
     repository = data.refreshCron?.let {
       it.set?.let {
         repository.copy(
@@ -239,7 +239,7 @@ class RepositoryUseCase(
     repository = data.plugins?.let { plugins ->
       val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
       if (newPlugins != repository.plugins) {
-        log.info("[${coroutineContext.corrId()}] plugins $newPlugins")
+        log.info("[${corrId}] plugins $newPlugins")
         repository.copy(plugins = newPlugins)
       } else {
         repository
@@ -253,18 +253,18 @@ class RepositoryUseCase(
         next,
         groupId
       )
-      log.info("[${coroutineContext.corrId()}] nextUpdateAt $nextAt")
+      log.info("[${corrId}] nextUpdateAt $nextAt")
       repository.copy(triggerScheduledNextAt = nextAt)
     } ?: repository
 
     repository = data.retention?.let { retention ->
       var updated = repository
       retention.maxAgeDays?.let {
-        log.info("[${coroutineContext.corrId()}] retentionMaxAgeDays ${it.set}")
+        log.info("[${corrId}] retentionMaxAgeDays ${it.set}")
         updated = updated.copy(retentionMaxAgeDays = it.set)
       }
       retention.maxCapacity?.let {
-        log.info("[${coroutineContext.corrId()}] retentionMaxItems ${it.set}")
+        log.info("[${corrId}] retentionMaxItems ${it.set}")
         updated = updated.copy(retentionMaxCapacity = it.set)
       }
       if (retention.maxAgeDays != null || retention.maxCapacity != null) {
@@ -317,13 +317,13 @@ class RepositoryUseCase(
   ): Repository {
 
     val product = repoInput.product.fromDto()
-    val groupId = coroutineContext.groupId()
+    val groupId = currentCoroutineContext().groupId()
     var repo = Repository(
       shareKey = newCorrId(9),
       title = repoInput.title,
       description = repoInput.description,
       visibility = planConstraintsService.coerceVisibility(groupId, repoInput.visibility?.fromDto()),
-      ownerId = coroutineContext.userId(),
+      ownerId = currentCoroutineContext().userId(),
       pushNotificationsEnabled = BooleanUtils.isTrue(repoInput.pushNotificationsMuted),
       retentionMaxCapacity =
         planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, groupId),

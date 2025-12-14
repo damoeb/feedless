@@ -1,9 +1,6 @@
 package org.migor.feedless.data
 
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.Vertical
@@ -66,14 +63,14 @@ class Seeder(
     runCatching {
       val root = seedRootUser()
       seedGroups(root)
-      runBlocking {
-        seedProducts(root)
-      }
+      seedProducts(root)
       seedUsers()
     }.onFailure { log.error("Seed failed with ${it.message}", it) }
+      .onSuccess { log.info("Seed successful") }
   }
 
   private fun seedGroups(root: User) {
+    log.info("Seed Groups started")
     val adminGroup = resolveGroup("", root)
 
     userGroupAssignmentRepository.findByUserIdAndGroupId(root.id, adminGroup.id) ?: userGroupAssignmentRepository.save(
@@ -100,6 +97,7 @@ class Seeder(
   }
 
   private fun seedUsers() {
+    log.info("Seed Users started")
     userRepository.findByEmail(propertyService.anonymousEmail) ?: createAnonymousUser()
   }
 
@@ -214,7 +212,8 @@ class Seeder(
     return userRepository.save(user)
   }
 
-  private suspend fun seedProducts(root: User) = withContext(Dispatchers.IO) {
+  private fun seedProducts(root: User) {
+    log.info("Seed Products started")
     val baseFeatureGroup = featureGroupRepository.findByParentFeatureGroupIdIsNull() ?: featureGroupRepository.save(
       FeatureGroup(
         name = "feedless"
@@ -418,9 +417,8 @@ class Seeder(
       )
     )
 
-    runBlocking {
-      featureService.assignFeatureValues(group, features)
-    }
+    featureService.assignFeatureValues(group, features)
+
     return group
   }
 

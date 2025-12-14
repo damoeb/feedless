@@ -1,5 +1,6 @@
 package org.migor.feedless.feed
 
+import kotlinx.coroutines.currentCoroutineContext
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -19,7 +20,6 @@ import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import kotlin.coroutines.coroutineContext
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -46,7 +46,7 @@ class FeedParserService(
   }
 
   suspend fun parseFeed(response: HttpResponse): JsonFeed {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] Parsing feed")
     val feedType = FeedUtil.detectFeedTypeForResponse(response)!!
     log.debug("[$corrId] Parse feedType=$feedType")
@@ -61,7 +61,7 @@ class FeedParserService(
   }
 
   suspend fun parseFeedFromUrl(url: String): JsonFeed {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,

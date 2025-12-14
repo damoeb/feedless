@@ -1,6 +1,7 @@
 package org.migor.feedless.feature
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -16,8 +17,9 @@ import org.migor.feedless.user.isAdmin
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Propagation
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import kotlin.coroutines.coroutineContext
 import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
@@ -97,13 +99,14 @@ class FeatureService(
   }
 
   private suspend fun isAdmin(): Boolean {
-    return coroutineContext.isAdmin()
+    return currentCoroutineContext().isAdmin()
   }
 
-  suspend fun assignFeatureValues(
+  @Transactional(propagation = Propagation.MANDATORY)
+  fun assignFeatureValues(
     featureGroup: FeatureGroup,
     features: Map<FeatureName, FeatureValue>, resetFeatureGroup: Boolean = true
-  ) = withContext(Dispatchers.IO) {
+  ) {
 
     if (resetFeatureGroup) {
       featureValueRepository.deleteAllByFeatureGroupId(featureGroup.id)

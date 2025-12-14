@@ -16,7 +16,6 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.session.SessionService
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
@@ -29,9 +28,7 @@ import org.migor.feedless.generated.types.Repository as RepositoryDto
 @Profile("${AppProfiles.annotation} & ${AppLayer.api}")
 class AnnotationResolver(
   private val annotationUseCase: AnnotationUseCase,
-  private val annotationRepository: AnnotationRepository,
   private val voteRepository: VoteRepository,
-  private val sessionService: SessionService
 ) {
 
   private val log = LoggerFactory.getLogger(AnnotationResolver::class.simpleName)

@@ -7,6 +7,7 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
@@ -35,7 +36,6 @@ import java.time.LocalDateTime
 import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 import kotlin.coroutines.cancellation.CancellationException
-import kotlin.coroutines.coroutineContext
 
 
 @Service
@@ -110,7 +110,7 @@ class AgentService(
 
   //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
   suspend fun prerender(source: Source): AgentResponse {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(source, agentRef)
@@ -122,7 +122,7 @@ class AgentService(
   }
 
   suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.info("[$corrId] handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.ok) {
@@ -146,7 +146,7 @@ class AgentService(
     source: Source,
     agentRef: AgentRef
   ): CompletableDeferred<AgentResponse> {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] preparing")
     val deferred = CompletableDeferred<AgentResponse>()
 

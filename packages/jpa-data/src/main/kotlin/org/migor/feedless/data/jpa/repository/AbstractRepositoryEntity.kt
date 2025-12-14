@@ -144,8 +144,8 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   )
   open var owner: UserEntity? = null
 
-  @Column(name = StandardJpaFields.groupId)
-  open var groupId: UUID? = null
+  @Column(name = StandardJpaFields.groupId, nullable = false)
+  open lateinit var groupId: UUID
 
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(

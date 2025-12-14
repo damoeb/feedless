@@ -29,7 +29,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
-import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
@@ -111,7 +110,7 @@ class TelegramBotService(
     }
   }
 
-  @Scheduled(fixedDelay = 4000)
+  //  @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
     try {
       val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"

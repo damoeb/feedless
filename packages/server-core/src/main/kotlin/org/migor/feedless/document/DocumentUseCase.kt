@@ -1,6 +1,7 @@
 package org.migor.feedless.document
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
@@ -45,7 +46,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 
@@ -284,7 +284,7 @@ class DocumentUseCase(
     repository: Repository,
   ) {
 //    forwardToMail(corrId, document, repository)
-    log.info("[${coroutineContext.corrId()}] releasing document ${document.id}")
+    log.info("[${currentCoroutineContext().corrId()}] releasing document ${document.id}")
 
     documentRepository.save(
       document.copy(

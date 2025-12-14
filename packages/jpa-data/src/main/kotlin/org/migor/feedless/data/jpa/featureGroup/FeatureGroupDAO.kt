@@ -13,4 +13,12 @@ interface FeatureGroupDAO : JpaRepository<FeatureGroupEntity, UUID> {
 
   fun findByParentFeatureGroupIdIsNull(): FeatureGroupEntity?
   fun findByNameEqualsIgnoreCase(name: String): FeatureGroupEntity?
+
+  //  @Query(
+//    """select FG from PlanEntity PL
+//    inner join ProductEntity PR on PR.id = PL.productId
+//    inner join FeatureGroupEntity FG ON FG.id = PR.featureGroupId
+//    WHERE PL.groupId = :id"""
+//  )
+//  fun findByGroupId(groupId: UUID): FeatureGroupEntity?
 }

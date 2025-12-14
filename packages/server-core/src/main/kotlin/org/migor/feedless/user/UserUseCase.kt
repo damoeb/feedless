@@ -3,6 +3,7 @@ package org.migor.feedless.user
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -134,11 +135,11 @@ class UserUseCase(
     }
 
     if (githubId != null) {
-      log.info("[${coroutineContext.corrId()}] link github account $githubId")
+      log.info("[${currentCoroutineContext().corrId()}] link github account $githubId")
       linkGithubAccount(user.id, githubId)
     }
 
-    val newCtx = coroutineContext + RequestContext(
+    val newCtx = currentCoroutineContext() + RequestContext(
       groupId = group.id,
       userId = userId
     )

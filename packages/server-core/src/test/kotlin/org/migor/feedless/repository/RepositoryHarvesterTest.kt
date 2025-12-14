@@ -150,7 +150,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(0)
 
-    repositoryHarvester.handleRepository(repositoryId)
+    repositoryHarvester.harvestRepository(repositoryId)
 
     verify(scrapeService, times(1)).scrape(
       any2(),
@@ -180,7 +180,7 @@ class RepositoryHarvesterTest {
       ScrapeOutput(outputs = emptyList(), time = 0)
     )
 
-    repositoryHarvester.handleRepository(repositoryId)
+    repositoryHarvester.harvestRepository(repositoryId)
 
     verify(sourceRepository, times(1))
       .save(
@@ -204,7 +204,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(4)
 
-    repositoryHarvester.handleRepository(repositoryId)
+    repositoryHarvester.harvestRepository(repositoryId)
 
     verify(scrapeService, times(1)).scrape(
       any(Source::class.java),
@@ -235,7 +235,7 @@ class RepositoryHarvesterTest {
     )
 
     // when
-    repositoryHarvester.handleRepository(repositoryId)
+    repositoryHarvester.harvestRepository(repositoryId)
 
     // then
     assertThat(source.errorsInSuccession).isEqualTo(0)
@@ -282,7 +282,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(documentRepository).saveAll(argThat { it.count() == 3 })
     }
@@ -326,7 +326,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(documentRepository).saveAll(argThat { it.count() == 1 })
     }
@@ -360,7 +360,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(documentRepository).saveAll(argThat { it.count() == 2 })
     }
@@ -403,7 +403,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(documentRepository).saveAll(argThat {
         it.isEmpty()
@@ -458,7 +458,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(documentPipelineJobRepository).deleteAllByDocumentIdIn(argThat {
         it.count() == 1
@@ -510,7 +510,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       // then
       verify(documentUseCase, times(1)).triggerPostReleaseEffects(any2(), any2())
@@ -560,7 +560,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
 //    TODO        verify(existing).title = "updated.title"
 //            verify(existing).text = "updated.text"
@@ -623,7 +623,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.handleRepository(repositoryId)
+      repositoryHarvester.harvestRepository(repositoryId)
 
       verify(sourcePipelineJobRepository).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
     }

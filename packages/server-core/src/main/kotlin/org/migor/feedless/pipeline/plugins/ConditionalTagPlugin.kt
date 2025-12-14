@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -19,7 +20,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
-import kotlin.coroutines.coroutineContext
 
 data class ConditionalTag(
   @SerializedName("tag") val tag: String,
@@ -55,7 +55,7 @@ class ConditionalTagPlugin : MapEntityPlugin<ConditionalTagPluginParams> {
     params: ConditionalTagPluginParams,
     logCollector: LogCollector
   ): Document {
-    val corrId = coroutineContext.corrId()
+    val corrId = currentCoroutineContext().corrId()
     log.debug("[$corrId] mapEntity ${document.url}")
     val newTags = params.filter {
       filterPlugin.matches(document.asJsonItem(), it.filter, 0)

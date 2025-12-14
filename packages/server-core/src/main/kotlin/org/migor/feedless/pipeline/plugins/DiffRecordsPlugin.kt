@@ -2,6 +2,7 @@ package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
@@ -29,7 +30,6 @@ import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.util.*
 import javax.imageio.ImageIO
-import kotlin.coroutines.coroutineContext
 import kotlin.math.abs
 
 
@@ -100,7 +100,7 @@ class DiffRecordsPlugin : FilterEntityPlugin<DiffRecordsParams> {
     index: Int,
     logCollector: LogCollector
   ): Boolean {
-    val corrId = coroutineContext.corrId()!!
+    val corrId = currentCoroutineContext().corrId()!!
     log.debug("[$corrId] filter ${item.url}")
 
     val increment = params.nextItemMinIncrement.coerceAtLeast(0.01)
