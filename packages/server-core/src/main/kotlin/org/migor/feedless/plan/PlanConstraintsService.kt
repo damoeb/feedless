@@ -164,7 +164,7 @@ class PlanConstraintsService(
         featureValueRepository.resolveByFeatureGroupIdAndName(featureGroup.id, featureName.name)
       }
     } catch (e: Exception) {
-      log.error("getFeature featureName=$featureName planId=$groupId failed: ${e.message}")
+      log.error("group $groupId does not have a featureGroup: ${e.message}")
       null
     }
   }

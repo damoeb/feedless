@@ -4,7 +4,6 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
@@ -66,7 +65,6 @@ import java.time.LocalDateTime
 )
 @MockitoBean(
   types = [
-    SessionService::class,
     ProductRepository::class,
     RepositoryUseCase::class,
     HttpService::class,
@@ -232,17 +230,15 @@ class DocumentIntTest {
     }
 
   @Test
-  @Disabled("fix")
-  fun `given retention by capacity given, delete old items first`() =
-    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+  fun `given retention by capacity given, delete old items first`() {
 
-      `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2())).thenReturn(1)
-      documentUseCase.applyRetentionStrategyByCapacity()
+    `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2())).thenReturn(1)
+    documentUseCase.applyRetentionStrategyByCapacity()
 
-      val documents = documentRepository.findAllByRepositoryId(repository.id)
-      assertThat(documents.size).isEqualTo(3)
-      assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
-      assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
-    }
+    val documents = documentRepository.findAllByRepositoryId(repository.id)
+    assertThat(documents.size).isEqualTo(3)
+    assertThat(documents.filter { it.status == ReleaseStatus.unreleased }.size).isEqualTo(2)
+    assertThat(documents.first { it.status == ReleaseStatus.released }.title).isEqualTo("future-released")
+  }
 
 }

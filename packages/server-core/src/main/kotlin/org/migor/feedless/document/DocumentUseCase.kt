@@ -1,7 +1,6 @@
 package org.migor.feedless.document
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
@@ -36,7 +35,6 @@ import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.transport.TelegramBotService
-import org.migor.feedless.user.corrId
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
@@ -83,15 +81,13 @@ class DocumentUseCase(
     documentRepository.findAllFiltered(repositoryId, filter, orderBy, status, tags, pageable)
   }
 
-  suspend fun applyRetentionStrategyByCapacity() = withContext(Dispatchers.IO) {
+  fun applyRetentionStrategyByCapacity() {
     repositoryRepository.findAllByLastUpdatedAtBefore(LocalDateTime.now().minusDays(1))
       .forEach { repository ->
-        val retentionSize = runBlocking {
-          planConstraintsService.coerceRetentionMaxCapacity(
-            repository.retentionMaxCapacity,
-            groupId = repository.groupId
-          )
-        }
+        val retentionSize = planConstraintsService.coerceRetentionMaxCapacity(
+          repository.retentionMaxCapacity,
+          groupId = repository.groupId
+        )
         if (retentionSize != null && retentionSize > 0) {
           log.info("applying retention for repo ${repository.id} with maxItems=$retentionSize")
           documentRepository.deleteAllByRepositoryIdAndStatusWithSkip(

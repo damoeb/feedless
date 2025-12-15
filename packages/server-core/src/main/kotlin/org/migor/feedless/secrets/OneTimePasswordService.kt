@@ -39,7 +39,7 @@ class OneTimePasswordService(
     otp
   }
 
-  suspend fun deleteAllByValidUntilBefore(now: LocalDateTime) = withContext(Dispatchers.IO) {
+  fun deleteAllByValidUntilBefore(now: LocalDateTime) {
     oneTimePasswordRepository.deleteAllByValidUntilBefore(now)
   }
 

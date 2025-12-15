@@ -38,8 +38,7 @@ class FeatureGroupJpaRepository(private val featureGroupDAO: FeatureGroupDAO) : 
   }
 
   override fun findByGroupId(groupId: GroupId): FeatureGroup? {
-    TODO("Not yet implemented")
-//    return featureGroupDAO.findByGroupId(groupId.uuid)?.toDomain()
+    return featureGroupDAO.findByGroupId(groupId.uuid)?.toDomain()
   }
 
 }
