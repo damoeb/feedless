@@ -1,7 +1,6 @@
 package org.migor.feedless.document
 
 import com.google.gson.Gson
-import jakarta.persistence.EntityManager
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
@@ -120,7 +119,6 @@ class DocumentServiceTest {
 
     documentService = DocumentService(
       documentRepository,
-      mock(EntityManager::class.java),
       repositoryRepository,
       planConstraintsService,
       documentPipelineJobRepository,

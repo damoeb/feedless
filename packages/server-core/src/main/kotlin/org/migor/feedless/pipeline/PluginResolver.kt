@@ -36,7 +36,7 @@ class PluginResolver {
 }
 
 
-internal fun FeedlessPlugin.toDto(): Plugin {
+internal fun org.migor.feedless.pipeline.Plugin.toDto(): Plugin {
   return Plugin(
     id = id(),
     name = name(),

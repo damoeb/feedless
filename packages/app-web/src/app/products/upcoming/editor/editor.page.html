@@ -26,17 +26,21 @@
     <!--    ></app-map>-->
 
     <div>
-      @if (repository) { @if (showSources) {
-      <h1 class="ion-margin">All Sources</h1>
+      @if (repository) {
+        @if (showSources) {
+          <h1 class="ion-margin">All Sources</h1>
 
-      <app-sources
-        [repository]="repository"
-        (sourceChange)="onSourceChange($event)"
-        [sourcesFilter]="sourcesFilter"
-      >
-      </app-sources>
-      } @else { documents } } @else {
-      <ion-spinner name="dots"></ion-spinner>
+          <app-sources
+            [repository]="repository"
+            (sourceChange)="onSourceChange($event)"
+            [sourcesFilter]="sourcesFilter"
+          >
+          </app-sources>
+        } @else {
+          documents
+        }
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
       }
     </div>
   </div>

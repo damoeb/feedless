@@ -1,6 +1,5 @@
 package org.migor.feedless.document
 
-import jakarta.persistence.EntityManager
 import kotlinx.coroutines.runBlocking
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
@@ -16,9 +15,9 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.message.MessageService
-import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.pipeline.plugins.StringFilter
@@ -56,7 +55,6 @@ import kotlin.jvm.optionals.getOrNull
 @Profile("${AppProfiles.document} & ${AppLayer.service}")
 class DocumentService(
   private val documentRepository: DocumentRepository,
-  private val entityManager: EntityManager,
   private val repositoryRepository: RepositoryRepository,
   private val planConstraintsService: PlanConstraintsService,
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
@@ -210,7 +208,7 @@ class DocumentService(
 
             try {
               val updatedDocument =
-                when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
+                when (val plugin = pluginService.resolveById<Plugin>(job.pluginId)) {
                   is FilterEntityPlugin<*> -> {
                     if (!plugin.filterEntity(
                         state.currentDocument.toJsonItem(

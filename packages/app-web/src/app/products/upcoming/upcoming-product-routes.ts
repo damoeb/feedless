@@ -159,6 +159,10 @@ export const UPCOMING_ROUTES: Routes = [
         path: toPath(template(upcomingBaseRoute.management)),
         redirectTo: template(upcomingBaseRoute.management.sources),
       },
+      {
+        path: toPath(template(upcomingBaseRoute.management)),
+        redirectTo: template(upcomingBaseRoute.management.sources),
+      },
     ],
   },
   {

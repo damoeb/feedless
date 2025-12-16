@@ -42,10 +42,10 @@ import org.migor.feedless.generated.types.ScrapeExtractResponse
 import org.migor.feedless.generated.types.ScrapeOutputResponse
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.generated.types.ViewPort
-import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
+import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.Source
@@ -163,7 +163,7 @@ class ScrapeService {
         val corrId = coroutineContext.corrId()
         context.log("[$corrId] handlePluginExecution ${action.pluginId}")
 
-        val plugin = pluginService.resolveById<FeedlessPlugin>(action.pluginId)
+    val plugin = pluginService.resolveById<Plugin>(action.pluginId)
         try {
             when (plugin) {
                 is FragmentTransformerPlugin -> {

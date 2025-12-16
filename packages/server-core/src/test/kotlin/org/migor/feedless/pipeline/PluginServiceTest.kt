@@ -9,7 +9,7 @@ class PluginServiceTest {
 
   @Test
   fun `given multiple plugins have the same id, postConstruct will fail`() {
-    val plugin = mock(FeedlessPlugin::class.java)
+    val plugin = mock(Plugin::class.java)
     `when`(plugin.id()).thenReturn("foo")
 
     val pluginService = PluginService(

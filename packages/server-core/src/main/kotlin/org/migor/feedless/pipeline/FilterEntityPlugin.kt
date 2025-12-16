@@ -3,7 +3,7 @@ package org.migor.feedless.pipeline
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.scrape.LogCollector
 
-interface FilterEntityPlugin<T> : FeedlessPlugin {
+interface FilterEntityPlugin<T> : Plugin {
 
   suspend fun filterEntity(
     item: JsonItem,
