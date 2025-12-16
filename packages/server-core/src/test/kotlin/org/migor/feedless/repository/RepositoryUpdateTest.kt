@@ -28,7 +28,6 @@ import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
@@ -42,7 +41,6 @@ class RepositoryUpdateTest {
 
   private lateinit var repositoryUseCase: RepositoryUseCase
   private lateinit var repositoryRepository: RepositoryRepository
-  private lateinit var sessionService: SessionService
   private lateinit var planConstraintsService: PlanConstraintsService
   private lateinit var repositoryId: RepositoryId
   private lateinit var ownerId: UserId
@@ -55,7 +53,6 @@ class RepositoryUpdateTest {
   @BeforeEach
   fun setUp() = runTest {
     repositoryRepository = mock(RepositoryRepository::class.java)
-    sessionService = mock(SessionService::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
 

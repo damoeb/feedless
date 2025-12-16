@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Vertical
 import org.migor.feedless.feature.FeatureGroupId
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.product.Product
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductUseCase
@@ -58,6 +59,7 @@ class PlanResolverTest {
       productId = productId,
       startedAt = startedAt,
       terminatedAt = terminatedAt,
+      groupId = GroupId(),
       createdAt = createdAt
     )
 

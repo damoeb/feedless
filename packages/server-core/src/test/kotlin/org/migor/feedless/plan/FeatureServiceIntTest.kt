@@ -1,5 +1,6 @@
 package org.migor.feedless.plan
 
+import jakarta.transaction.Transactional
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -23,7 +24,6 @@ import org.migor.feedless.feature.FeatureValue
 import org.migor.feedless.feature.FeatureValueRepository
 import org.migor.feedless.feature.FeatureValueType
 import org.migor.feedless.product.ProductRepository
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.StatelessAuthService
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -43,7 +43,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 )
 @MockitoBean(
   types = [
-    SessionService::class,
     ProductRepository::class,
     PlanRepository::class,
     StatelessAuthService::class,
@@ -93,6 +92,7 @@ class FeatureServiceIntTest {
   }
 
   @Test
+  @Transactional
   fun `given a featureGroup inheritance, feature values will be inherited from parent`() = runTest {
     // given
 
@@ -116,6 +116,7 @@ class FeatureServiceIntTest {
   }
 
   @Test
+  @Transactional
   fun `given a featureGroup inheritance, feature values will be overwritten by child`() = runTest {
     // given
     val featureNameA = FeatureName.repositoriesMaxCountActiveInt

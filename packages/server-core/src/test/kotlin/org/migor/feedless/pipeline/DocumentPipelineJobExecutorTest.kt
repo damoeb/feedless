@@ -43,7 +43,6 @@ class DocumentPipelineJobExecutorTest {
     documentPipelineJobExecutor = DocumentPipelineJobExecutor(
       documentPipelineJobRepository,
       documentRepository,
-      documentPipelineService,
       repositoryUseCase,
       repositoryRepository,
       documentUseCase,

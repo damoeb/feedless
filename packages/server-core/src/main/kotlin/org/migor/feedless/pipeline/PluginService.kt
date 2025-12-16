@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 class PluginService(
   private val entityPlugins: List<MapEntityPlugin<*>>,
   private val transformerPlugins: List<FragmentTransformerPlugin>,
-  @Lazy val plugins: List<FeedlessPlugin>
+  @Lazy val plugins: List<Plugin>
 ) {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
@@ -45,14 +45,14 @@ class PluginService(
     }
   }
 
-  suspend fun findAll(): List<FeedlessPlugin> {
+  suspend fun findAll(): List<Plugin> {
     return withContext(Dispatchers.IO) {
       entityPlugins.plus(transformerPlugins)
     }
   }
 
-  final inline suspend fun <reified T : FeedlessPlugin> resolveById(id: String): T? {
-    return plugins.filterTo(ArrayList()) { it: FeedlessPlugin -> it.id() == id }
+  final inline suspend fun <reified T : Plugin> resolveById(id: String): T? {
+    return plugins.filterTo(ArrayList()) { it: Plugin -> it.id() == id }
       .filterIsInstance<T>()
       .firstOrNull()
   }

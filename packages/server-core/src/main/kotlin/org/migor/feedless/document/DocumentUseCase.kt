@@ -16,9 +16,9 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.message.MessageService
-import org.migor.feedless.pipeline.FeedlessPlugin
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.pipeline.plugins.StringFilter
@@ -198,7 +198,7 @@ class DocumentUseCase(
 
             try {
               val updatedDocument =
-                when (val plugin = pluginService.resolveById<FeedlessPlugin>(job.pluginId)) {
+                when (val plugin = pluginService.resolveById<Plugin>(job.pluginId)) {
                   is FilterEntityPlugin<*> -> {
                     if (!plugin.filterEntity(
                         state.currentDocument.toJsonItem(

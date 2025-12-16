@@ -1,6 +1,6 @@
 package org.migor.feedless.pipeline
 
-interface FeedlessPlugin {
+interface Plugin {
   fun id(): String
 
   fun name(): String

@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import jakarta.transaction.Transactional
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -230,6 +231,7 @@ class DocumentIntTest {
     }
 
   @Test
+  @Transactional
   fun `given retention by capacity given, delete old items first`() {
 
     `when`(planConstraintsService.coerceRetentionMaxCapacity(any2(), any2())).thenReturn(1)

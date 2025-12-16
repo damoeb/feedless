@@ -39,7 +39,6 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.session.RequestContext
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.user.User
@@ -87,9 +86,6 @@ class RepositoryUseCaseIntTest {
 
   @Autowired
   private lateinit var scrapeActionDAO: ScrapeActionDAO
-
-  @MockitoBean
-  private lateinit var sessionService: SessionService
 
   @Autowired
   private lateinit var userUseCase: UserUseCase

@@ -32,7 +32,6 @@ import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
-import org.migor.feedless.session.SessionService
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
@@ -82,9 +81,6 @@ RepositoryEntityPluginsDeserializationIntTest {
 
   @Autowired
   private lateinit var groupRepository: GroupRepository
-
-  @MockitoBean
-  private lateinit var sessionService: SessionService
 
   @MockitoBean
   private lateinit var featureService: FeatureService
