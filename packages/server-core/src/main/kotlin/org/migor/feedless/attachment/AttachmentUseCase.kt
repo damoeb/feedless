@@ -22,12 +22,14 @@ class AttachmentUseCase(
   private val log = LoggerFactory.getLogger(AttachmentUseCase::class.simpleName)
 
   suspend fun findById(attachmentId: AttachmentId): Attachment? = withContext(Dispatchers.IO) {
+    log.info("findById attachmentId=$attachmentId")
     attachmentGuard.requireRead(attachmentId)
   }
 
   @Deprecated("thats trash")
   suspend fun findByIdWithData(attachmentId: AttachmentId): Pair<Optional<Attachment>, ByteArray?> =
     withContext(Dispatchers.IO) {
+      log.info("findByIdWithData attachmentId=$attachmentId")
       val entityOpt = attachmentRepository.findById(attachmentId)
       if (entityOpt != null) {
         val entity = entityOpt
@@ -39,12 +41,14 @@ class AttachmentUseCase(
 
   suspend fun createAttachment(documentId: DocumentId, attachment: Attachment): Attachment =
     withContext(Dispatchers.IO) {
+      log.info("createAttachment documentId=$documentId")
       documentGuard.requireWrite(documentId)
 
       attachmentRepository.save(attachment.copy(documentId = documentId))
     }
 
   suspend fun deleteAttachment(attachmentId: AttachmentId) = withContext(Dispatchers.IO) {
+    log.info("deleteAttachment attachmentId=$attachmentId")
     attachmentGuard.requireWrite(attachmentId)
 
     attachmentRepository.deleteById(attachmentId)

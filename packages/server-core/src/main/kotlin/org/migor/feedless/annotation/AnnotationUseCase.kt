@@ -30,7 +30,10 @@ class AnnotationUseCase(
   private val repositoryGuard: RepositoryGuard
 ) {
 
+  private val log = org.slf4j.LoggerFactory.getLogger(AnnotationUseCase::class.simpleName)
+
   suspend fun createAnnotation(data: CreateAnnotationInput): Annotation {
+    log.info("createAnnotation")
 
     return data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set) }
       ?: data.annotation.text?.let { createTextAnnotation(data.where, it) }
@@ -40,7 +43,7 @@ class AnnotationUseCase(
   }
 
   suspend fun deleteAnnotation(data: DeleteAnnotationInput) = withContext(Dispatchers.IO) {
-
+    log.info("deleteAnnotation id=${data.where.id}")
     val annotation = annotationGuard.requireWrite(AnnotationId(data.where.id))
 
     annotationRepository.deleteById(annotation.id)

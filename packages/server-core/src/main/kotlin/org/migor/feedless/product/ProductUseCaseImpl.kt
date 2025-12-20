@@ -33,7 +33,7 @@ class ProductUseCaseImpl(
   private val log = LoggerFactory.getLogger(ProductUseCaseImpl::class.simpleName)
 
   suspend fun findAll(data: ProductsWhereInput): List<Product> = withContext(Dispatchers.IO) {
-
+    log.info("findAll")
     val products = data.id?.eq?.let {
       listOf(productRepository.findById(ProductId(it))!!)
     } ?: data.id?.`in`?.let { ids ->
@@ -47,6 +47,7 @@ class ProductUseCaseImpl(
 
   override suspend fun resolvePriceForProduct(productId: ProductId, userId: UserId?): Double =
     withContext(Dispatchers.IO) {
+      log.info("resolvePriceForProduct productId=$productId userId=$userId")
       val product = productRepository.findById(productId)!!
 
       val prices = product.prices(pricedProductRepository).filter { it.validTo?.isAfter(LocalDateTime.now()) ?: true }
@@ -95,6 +96,7 @@ class ProductUseCaseImpl(
   }
 
   override suspend fun enableDefaultSaasProduct(vertical: Vertical, userId: UserId) = withContext(Dispatchers.IO) {
+    log.info("enableDefaultSaasProduct vertical=$vertical userId=$userId")
     val product = productRepository.findByPartOfAndBaseProductIsTrue(vertical)!!
     val user = userRepository.findById(userId)
 
@@ -102,10 +104,12 @@ class ProductUseCaseImpl(
   }
 
   override suspend fun findAllByProductId(productId: ProductId): List<PricedProduct> = withContext(Dispatchers.IO) {
+    log.info("findAllByProductId productId=$productId")
     pricedProductRepository.findAllByProductId(productId)
   }
 
   override suspend fun findById(productId: ProductId): Product? = withContext(Dispatchers.IO) {
+    log.info("findById productId=$productId")
     productRepository.findById(productId)
   }
 }

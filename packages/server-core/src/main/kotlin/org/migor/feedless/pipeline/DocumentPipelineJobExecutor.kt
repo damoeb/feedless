@@ -20,6 +20,7 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -36,7 +37,7 @@ class DocumentPipelineJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(DocumentPipelineJobExecutor::class.simpleName)
 
-  //  @Scheduled(fixedDelay = 2245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 2245, initialDelay = 2000)
   @Transactional
   fun processDocumentJobs() {
     try {

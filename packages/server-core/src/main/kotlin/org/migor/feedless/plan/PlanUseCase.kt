@@ -16,6 +16,7 @@ class PlanUseCase(private val planRepository: PlanRepository) {
   private val log = LoggerFactory.getLogger(PlanUseCase::class.simpleName)
 
   suspend fun findById(id: PlanId): Plan? = withContext(Dispatchers.IO) {
+    log.info("findById id=$id")
     val plan = planRepository.findById(id)
 
     plan?.let {
@@ -28,6 +29,7 @@ class PlanUseCase(private val planRepository: PlanRepository) {
   }
 
   suspend fun findAllByUser(): List<Plan> = withContext(Dispatchers.IO) {
+    log.info("findAllByUser")
     planRepository.findAllByUser(coroutineContext.userId())
   }
 }

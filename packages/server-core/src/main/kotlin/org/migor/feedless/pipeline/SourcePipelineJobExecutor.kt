@@ -1,15 +1,17 @@
 package org.migor.feedless.pipeline
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.repository.RepositoryRepository
@@ -18,10 +20,9 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.corrId
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
@@ -38,17 +39,15 @@ class SourcePipelineJobExecutor internal constructor(
 
   private val log = LoggerFactory.getLogger(SourcePipelineJobExecutor::class.simpleName)
 
-  //  @Scheduled(fixedDelay = 3245, initialDelay = 20000)
+  @Scheduled(fixedDelay = 3245, initialDelay = 20000)
   @Transactional
   fun processSourceJobs() {
     try {
-      val groupedSources = runBlocking {
-        val groups = sourcePipelineJobRepository.findAllPendingBatched(LocalDateTime.now())
-          .groupBy { it.sourceId }
+      val groupedSources = sourcePipelineJobRepository.findAllPendingBatched(LocalDateTime.now())
+        .groupBy { it.sourceId }
 
-        sourcePipelineService.incrementSourceJobAttemptCount(groups)
-        groups
-      }
+      sourcePipelineJobRepository.incrementAttemptCount(groupedSources.values.flatMap { it.map { it.id } }.distinct())
+
       if (groupedSources.isNotEmpty()) {
         val semaphore = Semaphore(5)
         runBlocking {
@@ -56,8 +55,8 @@ class SourcePipelineJobExecutor internal constructor(
             coroutineScope {
               groupedSources.map { groupedSources ->
                 try {
-                  val userId = getOwnerIdForSourceId(groupedSources.key)
-                  async(RequestContext(userId = userId)) {
+                  val (userId, groupId) = getOwnerIdsForSourceId(groupedSources.key)
+                  async(RequestContext(userId = userId, groupId = groupId)) {
                     semaphore.acquire()
                     delay(300)
                     try {
@@ -82,12 +81,12 @@ class SourcePipelineJobExecutor internal constructor(
     }
   }
 
-  private suspend fun getOwnerIdForSourceId(sourceId: SourceId): UserId {
+  private suspend fun getOwnerIdsForSourceId(sourceId: SourceId): Pair<UserId, GroupId> = withContext(Dispatchers.IO) {
     val repo =
       repositoryRepository.findBySourceId(sourceId) ?: throw sourcePipelineService.failAfterCleaningJobsForSource(
         sourceId
       )
-    return repo.ownerId
+    Pair(repo.ownerId, repo.groupId)
   }
 
   private suspend fun processSourcePipeline(sourceId: SourceId, jobs: List<SourcePipelineJob>) {

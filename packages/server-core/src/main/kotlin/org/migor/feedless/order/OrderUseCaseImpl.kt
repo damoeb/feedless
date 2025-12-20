@@ -28,7 +28,7 @@ class OrderUseCaseImpl(
   private val log = LoggerFactory.getLogger(OrderUseCaseImpl::class.simpleName)
 
   override suspend fun findAll(cursor: PageableRequest): List<Order> {
-
+    log.info("findAll")
     userGuard.requireRead(currentCoroutineContext().userId())
 
     return withContext(Dispatchers.IO) {
@@ -48,6 +48,7 @@ class OrderUseCaseImpl(
     create: OrderCreate?,
     update: OrderUpdate?
   ): Order {
+    log.info("upsert orderId=$orderId")
     userGuard.requireRead(currentCoroutineContext().userId())
 
     return orderId?.let {
@@ -109,6 +110,7 @@ class OrderUseCaseImpl(
   }
 
   override fun findById(orderID: OrderId): Order {
+    log.info("findById orderID=$orderID")
     return orderRepository.findById(orderID)!!
   }
 }

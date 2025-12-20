@@ -64,6 +64,7 @@ class DocumentUseCase(
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
 
   suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
+    log.info("findById id=$id")
     documentRepository.findById(id)
   }
 
@@ -75,6 +76,7 @@ class DocumentUseCase(
     tags: List<String> = emptyList(),
     pageable: PageableRequest,
   ): List<Document> = withContext(Dispatchers.IO) {
+    log.info("findAllByRepositoryId repositoryId=$repositoryId")
 
     repositoryGuard.requireRead(repositoryId)
 
@@ -82,6 +84,7 @@ class DocumentUseCase(
   }
 
   fun applyRetentionStrategyByCapacity() {
+    log.info("applyRetentionStrategyByCapacity")
     repositoryRepository.findAllByLastUpdatedAtBefore(LocalDateTime.now().minusDays(1))
       .forEach { repository ->
         val retentionSize = planConstraintsService.coerceRetentionMaxCapacity(
@@ -107,6 +110,7 @@ class DocumentUseCase(
   }
 
   suspend fun applyRetentionStrategy(repositoryId: RepositoryId) = withContext(Dispatchers.IO) {
+    log.info("applyRetentionStrategy repositoryId=$repositoryId")
     val repository = repositoryRepository.findById(repositoryId)!!
 
     repositoryGuard.requireRead(repositoryId)
@@ -172,12 +176,13 @@ class DocumentUseCase(
     where: DocumentsFilter,
     groupBy: DocumentDateField,
   ): List<DocumentFrequency> = withContext(Dispatchers.IO) {
+    log.info("getRecordFrequency groupBy=$groupBy")
     documentRepository.getRecordFrequency(where, groupBy)
   }
 
   suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? =
     withContext(Dispatchers.IO) {
-      log.debug("${jobs.size} processPlugins for document $documentId")
+      log.info("processDocumentPlugins documentId=$documentId jobs=${jobs.size}")
       val document = documentRepository.findByIdWithSource(documentId)!!
       val logCollector = LogCollector()
 
@@ -246,6 +251,8 @@ class DocumentUseCase(
             } catch (e: Exception) {
               if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
                 delayJob(job, e, state.currentDocument)
+
+
               } else {
                 if (e !is FilterMismatchException) {
                   log.warn("${e::class.simpleName} ${e.message}")
@@ -292,6 +299,7 @@ class DocumentUseCase(
     documents: List<Document>,
     repository: Repository,
   ) {
+    log.info("triggerPostReleaseEffects documents=${documents.size} repositoryId=${repository.id}")
     if (repository.pushNotificationsEnabled) {
       telegramBotServiceMaybe.getOrNull()?.let { telegramBot ->
         telegramBot.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { telegramLink ->
@@ -331,10 +339,12 @@ class DocumentUseCase(
   }
 
   suspend fun countByRepositoryId(repositoryId: RepositoryId): Long = withContext(Dispatchers.IO) {
+    log.info("countByRepositoryId repositoryId=$repositoryId")
     documentRepository.countByRepositoryId(repositoryId)
   }
 
   suspend fun createDocument(data: CreateRecordInput): Document = withContext(Dispatchers.IO) {
+    log.info("createDocument repositoryId=${data.repositoryId.id}")
     val repositoryId = RepositoryId(data.repositoryId.id)
 
     val repository = repositoryGuard.requireWrite(repositoryId)
@@ -354,6 +364,7 @@ class DocumentUseCase(
   }
 
   suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document = withContext(Dispatchers.IO) {
+    log.info("updateDocument id=$id")
     var document = documentRepository.findById(id)!!
       .copy(
         updatedAt = LocalDateTime.now()
@@ -381,10 +392,12 @@ class DocumentUseCase(
     url: String,
     repositoryId: RepositoryId
   ): Document? = withContext(Dispatchers.IO) {
+    log.info("findFirstByContentHashOrUrlAndRepositoryId repositoryId=$repositoryId")
     documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
   }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {
+    log.info("expectsCapabilities capabilityId=$capabilityId")
     return UserCapability.ID === capabilityId
   }
 
@@ -394,6 +407,7 @@ class DocumentUseCase(
     filter: DocumentsFilter,
     order: RecordOrderBy,
   ): List<Document> {
+    log.info("provideAll")
     val userCapability = UserCapability.resolve(capability)
     return findAllByRepositoryId(filter.repository, filter, order, pageable = pageable)
   }

@@ -34,6 +34,7 @@ class UserSecretUseCase(
   private val log = LoggerFactory.getLogger(UserSecretUseCase::class.simpleName)
 
   suspend fun createUserSecret(): UserSecret = withContext(Dispatchers.IO) {
+    log.info("createUserSecret")
     val userId = coroutineContext.userId()
     val user = userRepository.findById(userId)!!
     val token = jwtTokenIssuer.createJwtForApi(user)
@@ -54,6 +55,7 @@ class UserSecretUseCase(
   }
 
   suspend fun deleteUserSecret(userSecretId: UserSecretId) = withContext(Dispatchers.IO) {
+    log.info("deleteUserSecret userSecretId=$userSecretId")
     val secret = userSecretRepository.findById(userSecretId)!!
     if (secret.ownerId == coroutineContext.userId()) { // todo should be group
       userSecretRepository.deleteById(secret.id)

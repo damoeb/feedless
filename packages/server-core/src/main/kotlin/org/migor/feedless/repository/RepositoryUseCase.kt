@@ -109,6 +109,7 @@ class RepositoryUseCase(
     filter: DocumentsFilter?,
     order: RecordOrderBy?,
   ): JsonFeed {
+    log.info("getFeedByRepositoryId repositoryId=$repositoryId page=$page")
     val repository = repositoryRepository.findById(repositoryId)
       ?: throw IllegalArgumentException("Repository not found")
 
@@ -161,11 +162,12 @@ class RepositoryUseCase(
     where: RepositoriesFilter?,
     userId: UserId?
   ): List<Repository> {
-    log.debug("userId=$userId")
+    log.info("findAllByUserId userId=$userId")
     return repositoryRepository.findAll(pageable, where, userId)
   }
 
   suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
+    log.info("findById repositoryId=$repositoryId")
     repositoryRepository.findById(repositoryId)
   }
 
@@ -183,6 +185,7 @@ class RepositoryUseCase(
     groupId: GroupId,
     after: LocalDateTime
   ): LocalDateTime {
+    log.info("calculateScheduledNextAt cron=$cron groupId=$groupId")
     return planConstraintsService.coerceMinScheduledNextAt(
       LocalDateTime.now(),
       nextCronDate(cron, after),
@@ -288,12 +291,14 @@ class RepositoryUseCase(
   }
 
   suspend fun countAll(userId: UserId?, product: Vertical): Int {
+    log.info("countAll userId=$userId product=$product")
     return userId
       ?.let { repositoryRepository.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryRepository.countAllByVisibility(EntityVisibility.isPublic)
   }
 
   suspend fun updatePullsFromAnalytics(repositoryId: RepositoryId, pulls: Int) {
+    log.info("updatePullsFromAnalytics repositoryId=$repositoryId pulls=$pulls")
     val repository = repositoryRepository.findById(repositoryId)!!
     repositoryRepository.save(
       repository.copy(
@@ -392,10 +397,12 @@ class RepositoryUseCase(
     now: LocalDateTime,
     pageable: PageRequest
   ): List<Repository> {
+    log.info("findAllByVisibilityAndLastPullSyncBefore visibility=$visibility")
     return repositoryRepository.findAllByVisibilityAndLastPullSyncBefore(visibility, now, pageable.toPageableRequest())
   }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {
+    log.info("expectsCapabilities capabilityId=$capabilityId")
     TODO("Not yet implemented")
   }
 
@@ -404,6 +411,7 @@ class RepositoryUseCase(
     pageable: PageableRequest,
     where: RepositoriesFilter?
   ): List<Repository> {
+    log.info("provideAll")
     TODO("Not yet implemented")
   }
 }

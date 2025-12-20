@@ -4,7 +4,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
@@ -19,11 +18,6 @@ class SourcePipelineService internal constructor(
 
   private val log = LoggerFactory.getLogger(SourcePipelineService::class.simpleName)
 
-  suspend fun incrementSourceJobAttemptCount(groupedSources: Map<SourceId, List<SourcePipelineJob>>) =
-    withContext(Dispatchers.IO) {
-      sourcePipelineJobRepository.incrementAttemptCount(groupedSources.values.flatMap { it.map { it.id } }.distinct())
-    }
-
   suspend fun failAfterCleaningJobsForSource(sourceId: SourceId): IllegalArgumentException =
     withContext(Dispatchers.IO) {
       try {
@@ -34,20 +28,4 @@ class SourcePipelineService internal constructor(
 
       IllegalArgumentException("repo not found by sourceId=$sourceId")
     }
-
-//  suspend fun findAllPendingBatched(now: LocalDateTime): List<SourcePipelineJob> = withContext(Dispatchers.IO) {
-//    sourcePipelineJobRepository.findAllPendingBatched(now)
-//  }
-//
-//  suspend fun deleteAllByCreatedAtBefore(refDate: LocalDateTime) = withContext(Dispatchers.IO) {
-//    sourcePipelineJobRepository.deleteAllByCreatedAtBefore(refDate)
-//  }
-//
-//  suspend fun existsBySourceIdAndUrl(id: SourceId, url: String): Boolean = withContext(Dispatchers.IO) {
-//    sourcePipelineJobRepository.existsBySourceIdAndUrl(id, url)
-//  }
-//
-//  suspend fun saveAll(jobs: List<SourcePipelineJob>): List<SourcePipelineJob> = withContext(Dispatchers.IO) {
-//    sourcePipelineJobRepository.saveAll(jobs)
-//  }
 }

@@ -215,18 +215,22 @@ class LicenseUseCase { // todo split up into provider and usecase
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   fun getLicensePayload(): LicensePayload? {
+    log.info("getLicensePayload")
     return license
   }
 
   fun getBuildDate(): Long {
+    log.info("getBuildDate")
     return buildTimestamp!!.toLong()
   }
 
   fun hasValidLicenseOrLicenseNotNeeded(): Boolean {
+    log.info("hasValidLicenseOrLicenseNotNeeded")
     return hasValidLicense() || isLicenseNotNeeded()
   }
 
   fun isLicenseNotNeeded(): Boolean {
+    log.info("isLicenseNotNeeded")
     val now = LocalDateTime.now()
     val buildAge = now.minus(Duration.of(getBuildDate(), ChronoUnit.MILLIS))
     val licensePeriodExceeded = buildAge > now.plusDays(365 * 2)
@@ -239,18 +243,22 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   fun hasValidLicense(): Boolean {
+    log.info("hasValidLicense")
     return license != null
   }
 
   fun getTrialUntil(): Long {
+    log.info("getTrialUntil")
     return buildTimestamp!!.toLong() + getTrialDuration()
   }
 
   fun getTrialDuration(): Long {
+    log.info("getTrialDuration")
     return DateUtils.MILLIS_PER_DAY * 28 * 2
   }
 
   fun isTrial(): Boolean {
+    log.info("isTrial")
     return getTrialUntil() > LocalDateTime.now().toMillis()
   }
 
@@ -275,6 +283,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   suspend fun createLicense(payload: LicensePayload, rsaJWK: RSAKey): String {
+    log.info("createLicense")
     val signer: JWSSigner = RSASSASigner(rsaJWK)
     val jwsObject = createJwsObject(rsaJWK, gson().toJson(payload))
     jwsObject.sign(signer)
@@ -282,6 +291,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   fun verifyTokenAgainstPubKey(licenseToken: String, rsaPublicJWK: RSAPublicKey): Boolean {
+    log.info("verifyTokenAgainstPubKey")
     return try {
       val verifier: JWSVerifier = RSASSAVerifier(rsaPublicJWK)
       val jwsObject = JWSObject.parse(licenseToken.removeHeaders())
@@ -300,6 +310,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   )
 
   fun decodePublicKey(publicKeyString: String): RSAPublicKey {
+    log.info("decodePublicKey")
     val publicKeyByte: ByteArray = Base64.getDecoder().decode(publicKeyString.removeHeaders())
 
     val keyFactory = KeyFactory.getInstance("RSA")
@@ -307,6 +318,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   fun isLicensedForProduct(product: Vertical): Boolean {
+    log.info("isLicensedForProduct product=$product")
 //    return this.license?.let {
 //      (it.scope === product || it.scope == ProductCategory.feedless) &&
 //        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&

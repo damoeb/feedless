@@ -70,6 +70,7 @@ class SecurityConfig {
   @Autowired(required = false)
   private var userUseCase: UserUseCase? = null
 
+  @Autowired
   private lateinit var userRepository: UserRepository
 
   @Autowired

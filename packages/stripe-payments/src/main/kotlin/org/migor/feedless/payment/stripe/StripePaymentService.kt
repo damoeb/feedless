@@ -54,7 +54,7 @@ class StripeUseCase(
     metadata: Map<String, String>
   ): PaymentSession = withContext(Dispatchers.IO) {
     try {
-      log.debug("Creating payment session for orderId=$orderId, userId=$userId, priceId=$priceId")
+      log.info("createPaymentSession orderId=$orderId userId=$userId priceId=$priceId")
 
       // Build metadata including system IDs
       val sessionMetadata = mutableMapOf(
@@ -104,7 +104,7 @@ class StripeUseCase(
    */
   override suspend fun getPaymentSession(sessionId: String): PaymentSession = withContext(Dispatchers.IO) {
     try {
-      log.debug("Retrieving payment session: $sessionId")
+      log.info("getPaymentSession sessionId=$sessionId")
 
       val session = Session.retrieve(sessionId)
 
@@ -129,6 +129,7 @@ class StripeUseCase(
    */
   override suspend fun handleWebhook(payload: String, signature: String): WebhookEvent = withContext(Dispatchers.IO) {
     try {
+      log.info("handleWebhook")
       // Verify webhook signature
       val event = Webhook.constructEvent(payload, signature, webhookSecret)
 
@@ -158,7 +159,7 @@ class StripeUseCase(
   override suspend fun getPaymentsByOrderId(orderId: OrderId): List<PaymentTransaction> =
     withContext(Dispatchers.IO) {
       try {
-        log.debug("Retrieving payments for order: $orderId")
+        log.info("getPaymentsByOrderId orderId=$orderId")
 
         // Search for checkout sessions with matching order ID in metadata
         val sessions = Session.list(
@@ -189,14 +190,17 @@ class StripeUseCase(
     }
 
   override suspend fun handlePaymentCallback(orderId: OrderId) {
+    log.info("handlePaymentCallback orderId=$orderId")
     TODO("Not yet implemented")
   }
 
   override suspend fun handlePaymentFailureCallback(orderId: OrderId) {
+    log.info("handlePaymentFailureCallback orderId=$orderId")
     TODO("Not yet implemented")
   }
 
   override suspend fun handlePaymentCancelCallback(orderId: OrderId) {
+    log.info("handlePaymentCancelCallback orderId=$orderId")
     TODO("Not yet implemented")
   }
 

@@ -51,7 +51,6 @@ class SourceUseCase(
       status = PipelineJobStatus.IN_PROGRESS
     )
 
-
     sourcePipelineJobRepository.save(job)
     val source = sourceRepository.findByIdWithActions(sourceId)!!
 

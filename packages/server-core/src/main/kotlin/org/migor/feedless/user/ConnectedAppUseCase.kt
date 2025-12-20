@@ -14,7 +14,10 @@ import org.springframework.stereotype.Service
 @Profile("${AppProfiles.user} & ${AppLayer.service}")
 class ConnectedAppUseCase(private val connectedAppRepository: ConnectedAppRepository) {
 
+  private val log = org.slf4j.LoggerFactory.getLogger(ConnectedAppUseCase::class.simpleName)
+
   suspend fun findAllByUserId(userId: UserId): List<ConnectedApp> = withContext(Dispatchers.IO) {
+    log.info("findAllByUserId userId=$userId")
     connectedAppRepository.findAllByUserId(userId)
   }
 

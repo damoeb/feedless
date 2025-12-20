@@ -72,12 +72,14 @@ class UserUseCase(
     email: String?,
     githubId: String? = null,
   ): User = withContext(Dispatchers.IO) {
+    log.info("createUser email=$email")
     createUser(UserCreate(email = email, githubId = githubId))
   }
 
   suspend fun createUser(
     userCreate: UserCreate,
   ): User {
+    log.info("createUser userCreate=$userCreate")
     if (featureService.isDisabled(FeatureName.canCreateUser, null)) {
       throw BadRequestException("sign-up is deactivated")
     }
@@ -157,7 +159,7 @@ class UserUseCase(
   }
 
   suspend fun createInboxRepository(userId: UserId): Repository = withContext(Dispatchers.IO) {
-    log.debug("create inbox repository for $userId in group ${coroutineContext.groupId()}")
+    log.info("createInboxRepository userId=$userId groupId=${coroutineContext.groupId()}")
     val r = Repository(
       title = "Notifications",
       description = "",
@@ -180,6 +182,7 @@ class UserUseCase(
   }
 
   suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) = withContext(Dispatchers.IO) {
+    log.info("updateUser userId=$userId")
     var user = userRepository.findById(userId) ?: throw NotFoundException("user not found")
 
     var changed = false
@@ -281,7 +284,7 @@ class UserUseCase(
 
   suspend fun getConnectedAppByUserAndId(userId: UserId, connectedAppId: ConnectedAppId): ConnectedApp =
     withContext(Dispatchers.IO) {
-
+      log.info("getConnectedAppByUserAndId userId=$userId connectedAppId=$connectedAppId")
       connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
         ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
         ?: throw IllegalArgumentException("not found")
@@ -289,6 +292,7 @@ class UserUseCase(
 
   suspend fun updateConnectedApp(userId: UserId, connectedAppId: ConnectedAppId, authorize: Boolean) =
     withContext(Dispatchers.IO) {
+      log.info("updateConnectedApp userId=$userId connectedAppId=$connectedAppId authorize=$authorize")
       val app = connectedAppRepository.findByIdAndUserIdEquals(connectedAppId, userId)
         ?: connectedAppRepository.findByIdAndAuthorizedEqualsAndUserIdIsNull(connectedAppId, false)
         ?: throw IllegalArgumentException("not found")
@@ -319,6 +323,7 @@ class UserUseCase(
     }
 
   suspend fun deleteConnectedApp(currentUserId: UserId, connectedAppId: ConnectedAppId) = withContext(Dispatchers.IO) {
+    log.info("deleteConnectedApp currentUserId=$currentUserId connectedAppId=$connectedAppId")
     val app =
       connectedAppRepository.findByIdAndAuthorizedEquals(connectedAppId, true)
         ?: throw IllegalArgumentException("not found")

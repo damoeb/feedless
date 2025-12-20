@@ -39,6 +39,7 @@ class GroupUseCase(
     }
 
   suspend fun removeUserFromGroup(user: User, group: Group) = withContext(Dispatchers.IO) {
+    log.info("removeUserFromGroup userId=${user.id} groupId=${group.id}")
     groupGuard.requireWrite(group.id)
 
     val assigment = userGroupAssignmentRepository.findByUserIdAndGroupId(user.id, group.id)
@@ -47,6 +48,7 @@ class GroupUseCase(
   }
 
   suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment> = withContext(Dispatchers.IO) {
+    log.info("findAllByUserId userId=$userId")
     userGroupAssignmentRepository.findAllByUserId(userId)
   }
 

@@ -39,7 +39,7 @@ class ReportUseCase(
 
   suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report =
     withContext(Dispatchers.IO) {
-      log.debug("createReport for $repositoryId")
+      log.info("createReport repositoryId=$repositoryId")
 
       repositoryRepository.findById(repositoryId)!!
 
@@ -107,11 +107,13 @@ class ReportUseCase(
   }
 
   suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {
+    log.info("deleteReport reportId=$reportId")
     reportGuard.requireWrite(reportId)
     reportRepository.deleteById(reportId)
   }
 
   suspend fun updateReportById(reportId: ReportId, authorize: Boolean) = withContext(Dispatchers.IO) {
+    log.info("updateReportById reportId=$reportId authorize=$authorize")
     val report = reportGuard.requireWrite(reportId)
     reportRepository.save(
       report.copy(
