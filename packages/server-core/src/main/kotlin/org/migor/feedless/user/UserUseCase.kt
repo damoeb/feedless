@@ -14,6 +14,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.connectedApp.ConnectedApp
 import org.migor.feedless.connectedApp.ConnectedAppId
 import org.migor.feedless.connectedApp.ConnectedAppRepository
@@ -33,7 +34,6 @@ import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.slf4j.LoggerFactory
@@ -45,7 +45,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
 import kotlin.coroutines.CoroutineContext
-import kotlin.coroutines.coroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 @Service

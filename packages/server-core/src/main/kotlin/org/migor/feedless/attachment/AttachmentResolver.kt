@@ -4,7 +4,7 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -13,6 +13,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateAttachmentFieldsInput
 import org.migor.feedless.generated.types.CreateAttachmentInput
 import org.migor.feedless.generated.types.DeleteAttachmentInput
+import org.migor.feedless.session.createRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
@@ -34,7 +35,7 @@ class AttachmentResolver(
   suspend fun createAttachment(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAttachmentInput
-  ): AttachmentDto = coroutineScope {
+  ): AttachmentDto = withContext(context = createRequestContext()) {
     log.debug("createAttachment $data")
     val file: MultipartFile = dfe.getArgument<MultipartFile>("input")!!
     val attachment = data.attachment.toDomain(file)
@@ -47,7 +48,7 @@ class AttachmentResolver(
   suspend fun deleteAttachment(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAttachmentInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.debug("deleteAttachment $data")
     attachmentUseCase.deleteAttachment(AttachmentId(data.where.id))
     true

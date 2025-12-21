@@ -10,6 +10,7 @@ import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.dataloader.DataLoader
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -31,6 +32,7 @@ import org.migor.feedless.license.LicenseRepository
 import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductUseCase
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.user.UserCreate
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserUseCase
@@ -56,24 +58,37 @@ class OrderResolver(
   suspend fun orders(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.ORDERS_INPUT_ARGUMENT.Data) data: OrdersInput
-  ): List<OrderDto> = coroutineScope {
+  ): List<OrderDto> = withContext(context = createRequestContext()) {
     log.debug("orders $data")
     orderUseCase.findAll(data.cursor.toPageableRequest()).map { it.toDto(productUseCase) }
-  }
-
-  private fun Cursor.toPageableRequest(): PageableRequest {
-    return PageableRequest(pageNumber = page, pageSize = pageSize ?: 10)
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpsertOrder)
   suspend fun upsertOrder(
     @InputArgument(DgsConstants.MUTATION.UPSERTORDER_INPUT_ARGUMENT.Data) data: UpsertOrderInput,
   ): OrderDto =
-    coroutineScope {
+    withContext(context = createRequestContext()) {
       log.debug("upsertOrder $data")
       orderUseCase.upsert(data.where?.id?.let { OrderId(it) }, data.create?.toDomain(), data.update?.toDomain())
         .toDto(productUseCase)
     }
+
+  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
+  suspend fun product(dfe: DgsDataFetchingEnvironment): ProductDto = coroutineScope {
+    val order: OrderDto = dfe.getRoot()
+    val dataLoader: DataLoader<ProductId, ProductDto> = dfe.getDataLoader<ProductId, ProductDto>("product")!!
+    dataLoader.load(ProductId(order.productId)).await()
+  }
+
+  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
+  suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
+    val order: OrderDto = dfe.getRoot()
+    licenseRepository.findAllByOrderId(OrderId(order.id)).map { toDto() }
+  }
+
+  private fun Cursor.toPageableRequest(): PageableRequest {
+    return PageableRequest(pageNumber = page, pageSize = pageSize ?: 10)
+  }
 
   private fun OrderCreateInput.toDomain(): OrderCreate {
 
@@ -122,20 +137,6 @@ class OrderResolver(
       isRejected = isRejected?.set,
     )
   }
-
-  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
-  suspend fun product(dfe: DgsDataFetchingEnvironment): ProductDto = coroutineScope {
-    val order: OrderDto = dfe.getRoot()
-    val dataLoader: DataLoader<ProductId, ProductDto> = dfe.getDataLoader<ProductId, ProductDto>("product")!!
-    dataLoader.load(ProductId(order.productId)).await()
-  }
-
-  @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
-  suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
-    val order: OrderDto = dfe.getRoot()
-    licenseRepository.findAllByOrderId(OrderId(order.id)).map { toDto() }
-  }
-
 }
 
 private fun toDto(): License {

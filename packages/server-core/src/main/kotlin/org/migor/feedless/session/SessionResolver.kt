@@ -8,7 +8,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -35,7 +35,7 @@ class SessionResolver(
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
 
   @DgsQuery
-  suspend fun session(dfe: DataFetchingEnvironment): Session = coroutineScope {
+  suspend fun session(dfe: DataFetchingEnvironment): Session = withContext(context = createRequestContext()) {
     unsetSessionCookie(dfe)
     val defaultSession = Session(
       isLoggedIn = false,
@@ -68,7 +68,7 @@ class SessionResolver(
   suspend fun authUser(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.AUTHUSER_INPUT_ARGUMENT.Data) data: AuthUserInput,
-  ): Authentication = coroutineScope {
+  ): Authentication = withContext(context = createRequestContext()) {
     log.debug("authUser")
     try {
       val jwt = authService.authenticateUser(data.email, data.secretKey)
@@ -87,7 +87,7 @@ class SessionResolver(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun logout(
     dfe: DataFetchingEnvironment,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.debug("logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true

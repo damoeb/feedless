@@ -17,6 +17,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -31,12 +32,13 @@ class SecretsResolver(
 ) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME, field = DgsConstants.USER.Secrets)
-  suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> = coroutineScope {
-    val user: User = dfe.getSourceOrThrow()
-    withContext(Dispatchers.IO) {
-      userSecretRepository.findAllByOwnerId(UserId(user.id)).map { it.toDto() }
+  suspend fun secrets(dfe: DgsDataFetchingEnvironment): List<UserSecret> =
+    coroutineScope {
+      val user: User = dfe.getSourceOrThrow()
+      withContext(Dispatchers.IO) {
+        userSecretRepository.findAllByOwnerId(UserId(user.id)).map { it.toDto() }
+      }
     }
-  }
 
 
   @Throttled
@@ -44,7 +46,7 @@ class SecretsResolver(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun createUserSecret(
     dfe: DataFetchingEnvironment,
-  ): UserSecret = coroutineScope {
+  ): UserSecret = withContext(context = createRequestContext()) {
     userSecretUseCase.createUserSecret().toDto(false)
   }
 
@@ -55,7 +57,7 @@ class SecretsResolver(
   suspend fun deleteUserSecret(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEUSERSECRET_INPUT_ARGUMENT.Data) data: DeleteUserSecretInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     userSecretUseCase.deleteUserSecret(
       UserSecretId(data.where.`eq`)
     )

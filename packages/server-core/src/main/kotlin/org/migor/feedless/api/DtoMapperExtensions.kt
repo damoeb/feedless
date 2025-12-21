@@ -113,12 +113,6 @@ class DtoMapperFacade(
     userSecretMapper.toDto(userSecret, mask)
 
 
-//    fun toDto(harvest: Harvest): HarvestDto = repositoryMapper.harvestToDto(harvest)
-//    fun toDto(input: FeedParamsInputDto): FeedParamsDto = repositoryMapper.feedParamsInputToDto(input)
-
-//    fun toDto(repository: Repository, currentUserIsOwner: Boolean): RepositoryDto =
-//        repositoryMapper.toDto(repository, currentUserIsOwner)
-
   fun toDto(source: Source): SourceDto = source.toDto()
   fun fromDto(input: SourceInputDto): Source = input.toSource()
 
@@ -182,12 +176,6 @@ fun FeatureValueEntity.toDto(): FeatureValueDto =
 
 fun UserSecret.toDto(mask: Boolean = true): UserSecretDto =
   DtoMapperFacade.getInstance().toDto(this, mask)
-
-//fun Repository.toDto(currentUserIsOwner: Boolean): RepositoryDto =
-//    DtoMapperFacade.getInstance().toDto(this, currentUserIsOwner)
-
-//fun Harvest.toDto(): HarvestDto = DtoMapperFacade.getInstance().toDto(this)
-//fun FeedParamsInputDto.toDto(): FeedParamsDto = DtoMapperFacade.getInstance().toDto(this)
 
 // Source and ScrapeAction extension functions are now directly defined in their mapper files
 

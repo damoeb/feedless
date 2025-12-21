@@ -7,7 +7,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.session.RequestContext
+import org.migor.feedless.capability.RequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -41,7 +41,7 @@ class RepositoryHarvesterExecutor internal constructor(
           runCatching {
             coroutineScope {
               reposDue.map {
-                async(RequestContext(userId = it.ownerId)) {
+                async(RequestContext(userId = it.ownerId, groupId = it.groupId)) {
                   semaphore.acquire()
                   try {
                     repositoryHarvester.harvestRepository(it.id)

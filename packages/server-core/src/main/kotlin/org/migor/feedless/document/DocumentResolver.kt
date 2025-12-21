@@ -9,6 +9,7 @@ import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
@@ -31,6 +32,7 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -59,7 +61,7 @@ class DocumentResolver(
   suspend fun record(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
-  ): Record = coroutineScope {
+  ): Record = withContext(context = createRequestContext()) {
     log.debug("record $data")
     val documentId = DocumentId(data.where.id)
     val document = documentGuard.requireRead(documentId)
@@ -74,7 +76,7 @@ class DocumentResolver(
   suspend fun records(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
-  ): List<Record> = coroutineScope {
+  ): List<Record> = withContext(context = createRequestContext()) {
     log.debug("records $data")
     val repositoryId = RepositoryId(data.where.repository.id)
 
@@ -108,7 +110,7 @@ class DocumentResolver(
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     documentUseCase.deleteDocuments(
       RepositoryId(data.where.repository.id),
       data.where.id!!.toDomain()
@@ -121,7 +123,7 @@ class DocumentResolver(
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
-  ): List<Record> = coroutineScope {
+  ): List<Record> = withContext(context = createRequestContext()) {
     records.map { documentUseCase.createDocument(it).toDto(propertyService) }
   }
 
@@ -130,7 +132,7 @@ class DocumentResolver(
   suspend fun updateRecord(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
     true
   }
@@ -139,7 +141,7 @@ class DocumentResolver(
   suspend fun recordsFrequency(
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInputDto,
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
-  ): List<RecordFrequency> = coroutineScope {
+  ): List<RecordFrequency> = withContext(context = createRequestContext()) {
     documentUseCase.getRecordFrequency(where.toDomain(), groupBy.toDomain()).map { it.toDto() }
   }
 

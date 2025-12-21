@@ -16,13 +16,13 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.api.ApiParams.corrId
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDto
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.Source
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId

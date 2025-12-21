@@ -8,6 +8,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
@@ -15,7 +16,6 @@ import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory

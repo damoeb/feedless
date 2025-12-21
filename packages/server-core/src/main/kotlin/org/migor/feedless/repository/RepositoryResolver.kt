@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
@@ -16,7 +17,6 @@ import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.toDomain
@@ -32,11 +32,12 @@ import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceOrderBy
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourcesFilter
-import org.migor.feedless.user.UserId
+import org.migor.feedless.user.userId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -73,10 +74,10 @@ class RepositoryResolver(
   suspend fun repositories(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoriesInput,
-  ): List<RepositoryDto> = coroutineScope {
+  ): List<RepositoryDto> = withContext(context = createRequestContext()) {
     log.debug("repositories $data")
 
-    val userId = userId()!!
+    val userId = coroutineContext.userId()
     val pageable = data.cursor.toPageable().toPageableRequest()
     if (pageable.pageSize == 0) {
       emptyList()
@@ -102,13 +103,9 @@ class RepositoryResolver(
   suspend fun countRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.COUNTREPOSITORIES_INPUT_ARGUMENT.Data) data: CountRepositoriesInput,
-  ): Int = coroutineScope {
+  ): Int = withContext(context = createRequestContext()) {
     log.debug("countRepositories")
-    repositoryUseCase.countAll(userId(), data.product.fromDto())
-  }
-
-  private fun userId(): UserId? {
-    return capabilityService.getCapability(UserCapability.ID)?.let { UserCapability.resolve(it) }
+    repositoryUseCase.countAll(coroutineContext.userId(), data.product.fromDto())
   }
 
   @Throttled
@@ -116,11 +113,11 @@ class RepositoryResolver(
   suspend fun repository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
-  ): RepositoryDto = coroutineScope {
+  ): RepositoryDto = withContext(context = createRequestContext()) {
     log.debug("repository $data")
     val repository = repositoryRepository.findById(RepositoryId(data.where.id))
       ?: throw IllegalArgumentException("Repository not found")
-    repository.toDto(repository.ownerId == userId()?.uuid)
+    repository.toDto(repository.ownerId == coroutineContext.userId().uuid)
   }
 
   @Throttled
@@ -129,9 +126,9 @@ class RepositoryResolver(
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
-  ): List<RepositoryDto> = coroutineScope {
+  ): List<RepositoryDto> = withContext(context = createRequestContext()) {
     log.debug("createRepositories $data")
-    repositoryUseCase.create(data).map { it.toDto(it.ownerId == userId()?.uuid) }
+    repositoryUseCase.create(data).map { it.toDto(it.ownerId == coroutineContext.userId().uuid) }
   }
 
   @Throttled
@@ -140,7 +137,7 @@ class RepositoryResolver(
   suspend fun updateRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
-  ) = coroutineScope {
+  ) = withContext(context = createRequestContext()) {
     log.debug("updateRepository $data")
     repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data)
     true
@@ -152,7 +149,7 @@ class RepositoryResolver(
   suspend fun deleteRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUniqueWhereInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.debug("deleteRepository $data")
     repositoryUseCase.delete(RepositoryId(data.id))
     true
@@ -165,7 +162,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Where) where: SourcesWhereInput?,
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Order) order: List<SourceOrderByInput>?,
     dfe: DgsDataFetchingEnvironment,
-  ): List<SourceDto> = coroutineScope {
+  ): List<SourceDto> = withContext(context = createRequestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     if (repository.currentUserIsOwner) {
       val pageable = cursor.toPageable(10)

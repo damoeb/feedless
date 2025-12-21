@@ -15,12 +15,15 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
+import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.RoleInGroup
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
@@ -87,6 +90,9 @@ class SecurityConfig {
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
 
   @Autowired
   private lateinit var environment: Environment
@@ -215,7 +221,9 @@ class SecurityConfig {
   }
 
   private fun createGroupCapability(user: User): GroupCapability {
-    return GroupCapability(emptyList());
+    val group = userGroupAssignmentRepository.findAllByUserId(user.id)
+      .firstOrNull { it.role == RoleInGroup.owner }!!
+    return GroupCapability(GroupAndRole(group.groupId, group.role))
   }
 
   private fun createGithubCapability(authToken: String): GithubCapability {

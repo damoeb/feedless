@@ -11,11 +11,11 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase

@@ -30,6 +30,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 
 @Component
+@Deprecated("use DataFetchingEnvironment directly instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtRequestFilter : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)

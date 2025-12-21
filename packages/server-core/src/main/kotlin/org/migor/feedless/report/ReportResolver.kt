@@ -4,13 +4,14 @@ import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -32,7 +33,7 @@ class ReportResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.RepositoryId) repositoryId: String,
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.Segmentation) segmentation: SegmentInput
-  ): ReportDto = coroutineScope {
+  ): ReportDto = withContext(context = createRequestContext()) {
     log.debug("createReport")
     reportUseCase.createReport(RepositoryId(repositoryId), segmentation).toDto()
   }
@@ -43,7 +44,7 @@ class ReportResolver(
   suspend fun deleteReport(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPORT_INPUT_ARGUMENT.ReportId) reportId: String,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.debug("deleteReport $reportId")
     reportUseCase.deleteReport(ReportId(reportId))
     true

@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -16,6 +17,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.session.createRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
@@ -39,7 +41,7 @@ class AnnotationResolver(
   suspend fun createAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
-  ): AnnotationDto = coroutineScope {
+  ): AnnotationDto = withContext(context = createRequestContext()) {
     log.debug("createAnnotation $data")
     annotationUseCase.createAnnotation(data).toDto()
   }
@@ -50,7 +52,7 @@ class AnnotationResolver(
   suspend fun deleteAnnotation(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.debug("deleteAnnotation $data")
     annotationUseCase.deleteAnnotation(data)
     true

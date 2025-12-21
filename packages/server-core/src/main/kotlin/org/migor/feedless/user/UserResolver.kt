@@ -22,6 +22,7 @@ import org.migor.feedless.connectedApp.GithubConnection
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.session.createRequestContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -49,7 +50,7 @@ class UserResolver(
   suspend fun updateCurrentUser(
     dfe: DataFetchingEnvironment,
     @InputArgument data: UpdateCurrentUserInput,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.info("updateCurrentUser ${userId()} $data")
     userUseCase.updateUser(userId()!!, data)
     true
@@ -62,7 +63,7 @@ class UserResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
     @InputArgument authorize: Boolean,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.info("updateConnectedApp ${userId()}")
     userUseCase.updateConnectedApp(userId()!!, ConnectedAppId(id), authorize)
     true
@@ -74,7 +75,7 @@ class UserResolver(
   suspend fun deleteConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
-  ): Boolean = coroutineScope {
+  ): Boolean = withContext(context = createRequestContext()) {
     log.info("deleteConnectedApp ${userId()}")
     userUseCase.deleteConnectedApp(userId()!!, ConnectedAppId(id))
     true
@@ -90,32 +91,35 @@ class UserResolver(
   suspend fun getConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,
-  ): ConnectedAppDto = coroutineScope {
+  ): ConnectedAppDto = withContext(context = createRequestContext()) {
     log.info("connectedApp ${userId()} ")
     userUseCase.getConnectedAppByUserAndId(userId()!!, ConnectedAppId(id)).toDto()
   }
 
   @DgsData(field = DgsConstants.SESSION.User, parentType = DgsConstants.SESSION.TYPE_NAME)
-  suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): UserDto? = coroutineScope {
-    val session: SessionDto = dfe.getSourceOrThrow()
-    session.userId?.let { withContext(Dispatchers.IO) { userRepository.findById(UserId(it))!!.toDto() } }
-  }
+  suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): UserDto? =
+    coroutineScope {
+      val session: SessionDto = dfe.getSourceOrThrow()
+      session.userId?.let { withContext(Dispatchers.IO) { userRepository.findById(UserId(it))!!.toDto() } }
+    }
 
 
   @DgsData(field = DgsConstants.USER.ConnectedApps, parentType = DgsConstants.USER.TYPE_NAME)
-  suspend fun getConnectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedAppDto> = coroutineScope {
-    val user: UserDto = dfe.getSourceOrThrow()
-    connectedAppUseCase.findAllByUserId(UserId(user.id)).filterIsInstance<TelegramConnection>()
-      .map { it.toDto() }
-  }
+  suspend fun getConnectedApps(dfe: DgsDataFetchingEnvironment): List<ConnectedAppDto> =
+    coroutineScope {
+      val user: UserDto = dfe.getSourceOrThrow()
+      connectedAppUseCase.findAllByUserId(UserId(user.id)).filterIsInstance<TelegramConnection>()
+        .map { it.toDto() }
+    }
 
   @DgsData(field = DgsConstants.USER.Features, parentType = DgsConstants.USER.TYPE_NAME)
-  suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<FeatureDto> = coroutineScope {
-    val user: UserDto = dfe.getSourceOrThrow()
+  suspend fun getFeatures(dfe: DgsDataFetchingEnvironment): List<FeatureDto> =
+    coroutineScope {
+      val user: UserDto = dfe.getSourceOrThrow()
 
 //  todo fix this  featureService.findAllByProductAndUserId(Vertical.feedless, UserId(user.id)).map { it.toDto() }
-    emptyList()
-  }
+      emptyList()
+    }
 
   @DgsData(field = DgsConstants.ORDER.User, parentType = DgsConstants.ORDER.TYPE_NAME)
   suspend fun userForOrder(dfe: DgsDataFetchingEnvironment): UserDto = coroutineScope {

@@ -23,17 +23,18 @@ class GroupResolver(
 ) {
 
   @DgsData(parentType = DgsConstants.USER.TYPE_NAME)
-  suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignmentDto> = coroutineScope {
-    val user: UserDto = dfe.getSourceOrThrow()
-    groupUseCase.findAllByUserId(UserId(user.id))
-      .map {
-        GroupAssignmentDto(
-          id = it.groupId.toString(),
-          name = it.group()?.name ?: "-",
-          role = it.role.toDto()
-        )
-      }
-  }
+  suspend fun groups(dfe: DgsDataFetchingEnvironment): List<GroupAssignmentDto> =
+    coroutineScope {
+      val user: UserDto = dfe.getSourceOrThrow()
+      groupUseCase.findAllByUserId(UserId(user.id))
+        .map {
+          GroupAssignmentDto(
+            id = it.groupId.toString(),
+            name = it.group()?.name ?: "-",
+            role = it.role.toDto()
+          )
+        }
+    }
 
   private suspend fun UserGroupAssignment.group(): Group? {
     return groupRepository.findById(groupId)

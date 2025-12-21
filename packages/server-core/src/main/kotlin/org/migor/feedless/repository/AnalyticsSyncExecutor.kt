@@ -8,7 +8,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.analytics.AnalyticsService
-import org.migor.feedless.session.RequestContext
+import org.migor.feedless.capability.RequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -44,7 +44,7 @@ class AnalyticsSyncExecutor internal constructor(
         runCatching {
           coroutineScope {
             repos.map { repo ->
-              async(RequestContext(userId = repo.ownerId)) {
+              async(RequestContext(userId = repo.ownerId, groupId = repo.groupId)) {
                 semaphore.acquire()
                 try {
                   val views = analyticsService.getUniquePageViewsForRepository(repo.id)

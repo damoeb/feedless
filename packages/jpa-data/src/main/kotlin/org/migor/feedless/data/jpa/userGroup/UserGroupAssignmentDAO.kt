@@ -16,7 +16,7 @@ interface UserGroupAssignmentDAO : JpaRepository<UserGroupAssignmentEntity, UUID
   @Query(
     """SELECT DISTINCT m FROM UserGroupAssignmentEntity m
     LEFT JOIN FETCH m.group
-    WHERE m.id = :id"""
+    WHERE m.userId = :id"""
   )
   fun findAllByUserId(@Param("id") userId: UUID): List<UserGroupAssignmentEntity>
   fun findByUserIdAndGroupId(userId: UUID, groupId: UUID): UserGroupAssignmentEntity?

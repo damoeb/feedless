@@ -7,7 +7,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.HttpServletResponse
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
@@ -16,6 +16,7 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
+import org.migor.feedless.session.createRequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.web.context.request.ServletWebRequest
@@ -30,7 +31,7 @@ class MailAuthResolver(
 
   @DgsMutation(field = DgsConstants.MUTATION.AuthenticateWithCodeViaMail)
   suspend fun authViaMail(@InputArgument(DgsConstants.MUTATION.AUTHENTICATEWITHCODEVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): ConfirmCode =
-    coroutineScope {
+    withContext(context = createRequestContext()) {
       log.debug("authViaMail ${data.product}")
       mailAuthenticationService.authenticateUsingMail(data)
     }
@@ -40,7 +41,7 @@ class MailAuthResolver(
   suspend fun confirmAuthCode(
     @InputArgument(DgsConstants.MUTATION.AUTHCONFIRMCODE_INPUT_ARGUMENT.Data) data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
-  ): Authentication = coroutineScope {
+  ): Authentication = withContext(context = createRequestContext()) {
     log.debug("confirmAuthCode")
     mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
   }
