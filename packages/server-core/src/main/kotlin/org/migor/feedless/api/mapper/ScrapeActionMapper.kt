@@ -27,6 +27,7 @@ import org.migor.feedless.generated.types.WaitForActionInput
 import org.migor.feedless.pipeline.plugins.CompareBy
 import org.migor.feedless.pipeline.plugins.ConditionalTag
 import org.migor.feedless.pipeline.plugins.DiffRecordsParams
+import org.migor.feedless.pipeline.plugins.FeedPluginParams
 import org.migor.feedless.pipeline.plugins.FulltextPluginParams
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.repository.toParams
@@ -212,8 +213,15 @@ private fun org.migor.feedless.actions.PluginExecutionJson.toDto(pluginId: Strin
         ).toList().map { it.toDto() }
       )
 
+      FeedlessPlugins.org_feedless_feed.name -> PluginExecutionParamsDto(
+        org_feedless_feed = Gson().fromJson(
+          this.paramsJsonString,
+          FeedPluginParams::class.java
+        ).toDto()
+      )
+
       else -> {
-        log.warn("Unsupported plugin type for conversion to DTO: $pluginId, using jsonData")
+        log.warn("Unsupported plugin type for conversion to DTO: $pluginId, using jsonDataFar9f")
         PluginExecutionParamsDto(jsonData = this.paramsJsonString)
       }
     }
@@ -227,6 +235,21 @@ fun FulltextPluginParams.toDto(): org.migor.feedless.generated.types.FulltextPlu
     readability = this.readability,
     summary = this.summary,
     inheritParams = this.inheritParams
+  )
+}
+
+fun FeedPluginParams.toDto(): org.migor.feedless.generated.types.FeedParams {
+  return org.migor.feedless.generated.types.FeedParams(
+    generic = generic?.let {
+      org.migor.feedless.generated.types.Selectors(
+        contextXPath = it.contextXPath,
+        dateIsStartOfEvent = it.dateIsStartOfEvent,
+        dateXPath = it.dateXPath ?: "",
+        extendContext = it.extendContext.toDto(),
+        paginationXPath = it.paginationXPath ?: "",
+        linkXPath = it.linkXPath,
+      )
+    }
   )
 }
 
@@ -302,6 +325,8 @@ private fun ConditionalTag.toDto(): org.migor.feedless.generated.types.Condition
 // DTO to Domain conversion
 fun ScrapeFlowInput.fromDto(): MutableList<ScrapeAction> {
   return this.sequence.mapNotNull { actionDto ->
+
+
     actionDto.fetch?.let { it.toAction() }
       ?: actionDto.waitFor?.let { it.toAction() }
       ?: actionDto.header?.let { it.toAction() }
