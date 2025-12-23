@@ -33,8 +33,8 @@ fun Repository.toDto(currentUserIsOwner: Boolean): RepositoryDto {
     refreshCron = sourcesSyncCron,
     tags = tags.asList(),
     documentCount = documentCountSinceCreation.toLong(),
-    sourcesCount = 0, // todo implementx
-    sourcesCountWithProblems = 0, // todo implementx
+    sourcesCount = 0, // todo implement
+    sourcesCountWithProblems = 0, // todo implement
     annotations = null,
     archived = archived,
     description = description,

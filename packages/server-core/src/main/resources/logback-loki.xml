@@ -9,6 +9,9 @@
       <customFields>{"version": "${APP_VERSION:-}", "commit": "${APP_GIT_COMMIT:-1}", "app":"feedless-core"}
       </customFields>
       <includeMdcKeyName>version</includeMdcKeyName>
+      <includeMdcKeyName>corrId</includeMdcKeyName>
+      <includeMdcKeyName>userId</includeMdcKeyName>
+      <includeMdcKeyName>groupId</includeMdcKeyName>
     </encoder>
   </appender>
 

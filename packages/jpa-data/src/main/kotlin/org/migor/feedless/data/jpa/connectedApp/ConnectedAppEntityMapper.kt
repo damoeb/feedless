@@ -16,6 +16,6 @@ fun ConnectedApp.toEntity(): ConnectedAppEntity {
   return when (this) {
     is TelegramConnection -> this.toEntity()
     is GithubConnection -> this.toEntity()
-    else -> throw IllegalArgumentException("Unknown ConnectedApp type: ${this::class.simpleName}")
+//    else -> throw IllegalArgumentException("Unknown ConnectedApp type: ${this::class.simpleName}")
   }
 }

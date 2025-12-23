@@ -164,22 +164,18 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): List<SourceDto> = withContext(context = createRequestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    if (repository.currentUserIsOwner) {
-      val pageable = cursor.toPageable(10)
-      if (pageable.pageSize == 0) {
-        emptyList()
-      } else {
-        sourceRepository.findAllByRepositoryIdFiltered(
-          RepositoryId(repository.id),
-          pageable.toPageableRequest(),
-          where?.toDomain(),
-          order?.map { it.toDomain() }
-        )
-          .toList()
-          .map { it.toDto() }
-      }
-    } else {
+    val pageable = cursor.toPageable(10)
+    if (pageable.pageSize == 0) {
       emptyList()
+    } else {
+      sourceRepository.findAllByRepositoryIdFiltered(
+        RepositoryId(repository.id),
+        pageable.toPageableRequest(),
+        where?.toDomain(),
+        order?.map { it.toDomain() }
+      )
+        .toList()
+        .map { it.toDto() }
     }
   }
 
@@ -188,11 +184,7 @@ class RepositoryResolver(
     dfe: DgsDataFetchingEnvironment,
   ): Long = coroutineScope {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    if (repository.currentUserIsOwner) {
-      sourceRepository.countByRepositoryId(RepositoryId(repository.id))
-    } else {
-      0
-    }
+    sourceRepository.countByRepositoryId(RepositoryId(repository.id))
   }
 
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.RecordCount)

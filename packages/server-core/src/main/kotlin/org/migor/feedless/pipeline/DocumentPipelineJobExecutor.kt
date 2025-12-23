@@ -14,10 +14,9 @@ import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
-import org.migor.feedless.user.UserId
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
@@ -53,8 +52,8 @@ class DocumentPipelineJobExecutor internal constructor(
             coroutineScope {
               groupedDocuments.map { groupedDocuments ->
                 try {
-                  val userId = getOwnerIdForDocumentId(groupedDocuments.key)
-                  async(RequestContext(userId = userId, corrId = newCorrId())) {
+                  val repository = getRepositoryForDocumentId(groupedDocuments.key)
+                  async(RequestContext(userId = repository.ownerId, groupId = repository.groupId)) {
                     semaphore.acquire()
                     delay(300)
                     try {
@@ -79,10 +78,9 @@ class DocumentPipelineJobExecutor internal constructor(
     }
   }
 
-  private suspend fun getOwnerIdForDocumentId(documentId: DocumentId): UserId {
-    val repo = repositoryRepository.findByDocumentId(documentId)
+  private suspend fun getRepositoryForDocumentId(documentId: DocumentId): Repository {
+    return repositoryRepository.findByDocumentId(documentId)
       ?: throw IllegalArgumentException("repo not found for documentId $documentId") // documentPipelineService.failAfterCleaningJobsForDocument(documentId)
-    return repo.ownerId
   }
 
   private suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>) {

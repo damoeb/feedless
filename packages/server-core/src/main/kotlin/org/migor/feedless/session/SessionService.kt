@@ -18,15 +18,13 @@ private fun OAuth2AuthenticationToken.getGroupCapability(): GroupCapability? {
 }
 
 fun createRequestContext(): RequestContext {
-  val context = RequestContext(corrId = newCorrId())
-
-  runCatching {
-    context.userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+  return runCatching {
+    val userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
       (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).getUserCapability()?.userId
     } else {
       null
     }
-    context.groupId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
+    val groupId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
       val groupCapability: GroupCapability? =
         (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).getGroupCapability()
       groupCapability?.group?.groupId
@@ -34,15 +32,9 @@ fun createRequestContext(): RequestContext {
       null
     }
 
-//    context.product = runCatching {
-//      RequestContextHolder.currentRequestAttributes().getAttribute("product", RequestAttributes.SCOPE_REQUEST)
-//        ?.let {
-//          Vertical.valueOf(it as String)
-//        }
-//    }.getOrNull()
+    RequestContext(userId = userId, groupId = groupId)
 
   }.onFailure {
     println(it.message)
-  }
-  return context
+  }.getOrDefault(RequestContext(corrId = newCorrId()))
 }

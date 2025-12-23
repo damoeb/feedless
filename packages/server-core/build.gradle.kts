@@ -75,6 +75,7 @@ dependencies {
   implementation(libs.kotlin.reflect)
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.slf4j)
   testImplementation(libs.kotlinx.coroutines.test)
   implementation(libs.kotlinx.coroutines.reactor)
 //  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")

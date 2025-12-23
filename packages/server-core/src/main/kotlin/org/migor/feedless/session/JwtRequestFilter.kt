@@ -11,10 +11,11 @@ import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.Vertical
 import org.migor.feedless.api.ApiParams
+import org.migor.feedless.capability.MdcKeys
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
+import org.slf4j.MDC
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.core.GrantedAuthority
@@ -50,8 +51,10 @@ class JwtRequestFilter : Filter {
       val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()
       attributes.setAttribute("corrId", corrId, RequestAttributes.SCOPE_REQUEST)
 
-      val product = StringUtils.trimToNull(request.getHeader(ApiParams.product)) ?: Vertical.feedless.name
-      attributes.setAttribute("product", product, RequestAttributes.SCOPE_REQUEST)
+      MDC.put(MdcKeys.CORR_ID, corrId)
+
+//      val product = StringUtils.trimToNull(request.getHeader(ApiParams.product)) ?: Vertical.feedless.name
+//      attributes.setAttribute("product", product, RequestAttributes.SCOPE_REQUEST)
 
       RequestContextHolder.setRequestAttributes(attributes)
     }
@@ -61,7 +64,7 @@ class JwtRequestFilter : Filter {
 
   private fun toOAuth2AuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
     val attributes = mapOf("dummy" to "wef")
-    var authorities: List<GrantedAuthority> = jwtToken.capabilities()
+    val authorities: List<GrantedAuthority> = jwtToken.capabilities()
 
     val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
     val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
