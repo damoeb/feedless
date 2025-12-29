@@ -13,6 +13,7 @@ include("packages:stripe-payments")
 include("packages:jpa-data")
 include("packages:feed-parser")
 include("packages:frontend")
+include("packages:document-classifier")
 
 pluginManagement {
   plugins {

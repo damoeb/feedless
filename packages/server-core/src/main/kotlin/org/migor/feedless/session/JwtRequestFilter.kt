@@ -16,7 +16,6 @@ import org.migor.feedless.capability.MdcKeys
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -33,11 +32,8 @@ import org.springframework.web.context.request.ServletRequestAttributes
 @Component
 @Deprecated("use DataFetchingEnvironment directly instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-class JwtRequestFilter : Filter {
+class JwtRequestFilter(private val authService: AuthService) : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
-
-  @Autowired
-  private lateinit var authService: AuthService
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
     if (request is HttpServletRequest && response is HttpServletResponse) {
