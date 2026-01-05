@@ -1,0 +1,165 @@
+@use '../upcoming-mixins';
+
+.desc {
+  font-size: 1.1rem;
+  line-height: 2rem;
+  margin: 1rem 0;
+  color: var(--ion-color-dark);
+}
+
+// SEO enhancements for event page
+.event-link {
+  margin: 1rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  ion-button {
+    align-self: flex-start;
+  }
+
+  ion-note {
+    font-size: 0.8rem;
+
+    a {
+      color: var(--ion-color-primary);
+      text-decoration: none;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.event-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+
+  ion-badge {
+    font-size: 0.8rem;
+  }
+}
+
+.event-datetime {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+
+  time {
+    font-weight: 500;
+    color: var(--ion-color-primary);
+  }
+}
+
+h1 {
+  margin-bottom: 1rem;
+
+  a {
+    color: var(--ion-color-dark);
+    text-decoration: none;
+
+    &:hover {
+      color: var(--ion-color-primary);
+    }
+  }
+}
+
+section {
+  margin: 2rem 0;
+
+  h2 {
+    margin-bottom: 1rem;
+    color: var(--ion-color-dark);
+  }
+}
+
+.event-html {
+  margin: 1rem 0;
+  line-height: 1.6;
+
+  // Style HTML content
+  p {
+    margin: 0.5rem 0;
+  }
+
+  ul,
+  ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.event-image {
+  margin: 1rem 0;
+
+  img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.event-attachments {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .attachment {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    background: var(--ion-color-light);
+    border-radius: 4px;
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--ion-color-dark);
+      text-decoration: none;
+
+      &:hover {
+        color: var(--ion-color-primary);
+      }
+    }
+
+    ion-icon {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+.event-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    strong {
+      min-width: 120px;
+      color: var(--ion-color-medium);
+    }
+
+    time {
+      color: var(--ion-color-dark);
+    }
+  }
+}

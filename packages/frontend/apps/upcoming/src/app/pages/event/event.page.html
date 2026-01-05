@@ -1,0 +1,154 @@
+@if (date && location) {
+<app-upcoming-header [date]="date" [perimeter]="10" [location]="location"></app-upcoming-header>
+}
+<ion-content>
+  <div class="events">
+    @if (loading) {
+    <ion-spinner></ion-spinner>
+    } @if (!loading) {
+    <app-inline-calendar
+      [date]="date"
+      [dateUrlFactory]="getDateUrlFactory()"
+      [minDate]="minDate"
+      [maxDate]="maxDate"
+      [paddingLeft]="1"
+      (changeDate)="changeDate($event)"
+      [paddingRight]="5"
+    >
+    </app-inline-calendar>
+    <article
+      itemscope
+      itemtype="https://schema.org/Event"
+      style="margin-top: 50px"
+      class="ion-padding"
+    >
+      <ion-toolbar style="--background: transparent">
+        <ion-buttons slot="start">
+          <ion-button routerLink="..">
+            <ion-icon name="arrow-back-outline" slot="start"></ion-icon>
+            Alle Events anzeigen
+          </ion-button>
+        </ion-buttons>
+        <ion-buttons slot="end">
+          <!--          <ion-button>-->
+          <!--            <ion-icon name="star-outline"></ion-icon>-->
+          <!--          </ion-button>-->
+        </ion-buttons>
+      </ion-toolbar>
+      <!-- see https://dev.to/daniellimae/best-guide-to-seo-for-devs-6ma -->
+      <header>
+        <h1 itemprop="name">
+          @if (event.url) {
+          <a [href]="event.url" target="_blank" rel="noopener" itemprop="url">{{ event.title }}</a>
+          } @else { {{ event.title }} }
+        </h1>
+        @if (event.url) {
+        <div class="event-link">
+          <ion-button
+            [href]="event.url"
+            target="_blank"
+            rel="noopener"
+            fill="outline"
+            color="primary"
+          >
+            <ion-icon name="open-outline" slot="start"></ion-icon>
+            Zur Veranstaltungsseite
+          </ion-button>
+          <ion-note>
+            <a [href]="event.url" target="_blank" rel="noopener">{{ event.url }}</a>
+          </ion-note>
+        </div>
+        } @if (event.tags && event.tags.length > 0) {
+        <div class="event-tags" itemprop="keywords" [attr.content]="event.tags.join(', ')">
+          @for (tag of event.tags; track tag) {
+          <ion-badge color="secondary">{{ tag }}</ion-badge>
+          }
+        </div>
+        } @if (event.text) {
+        <p class="desc" itemprop="description">{{ event.text }}</p>
+        } @if (event.html) {
+        <div class="event-html" [innerHTML]="event.html"></div>
+        }
+      </header>
+      @if (event?.latLng) {
+      <section>
+        <h2>Ort</h2>
+        <address itemprop="location" itemscope itemtype="https://schema.org/Place">
+          <span itemprop="name">{{ location.displayName }}, {{ location.area }}</span>
+          <!--          <p>Bahnhofstrasse 1, 8001 Zürich, Switzerland</p>-->
+          <div itemprop="geo" itemscope itemtype="https://schema.org/GeoCoordinates">
+            <meta itemprop="latitude" [content]="event.latLng.lat" />
+            <meta itemprop="longitude" [content]="event.latLng.lng" />
+          </div>
+        </address>
+      </section>
+      }
+      <section>
+        <h2>Datum und Uhrzeit</h2>
+        <div class="event-datetime">
+          <time itemprop="startDate" [attr.datetime]="event.startingAt"
+            >{{ formatDate(event.startingAt, 'dddd, DD. MMMM YYYY [um]HH:mm[Uhr]') }}
+          </time>
+          <ion-button (click)="downloadIcs()" class="ion-margin-start">
+            <ion-icon name="calendar-number-outline" slot="start"></ion-icon>
+            Zum Kalender hinzufügen
+          </ion-button>
+        </div>
+      </section>
+
+      @if (event.imageUrl) {
+      <section>
+        <h2>Bild</h2>
+        <div class="event-image">
+          <img [src]="event.imageUrl" [alt]="event.title" itemprop="image" />
+        </div>
+      </section>
+      }
+
+      <section>
+        <h2>Weitere Informationen</h2>
+        <div class="event-meta">
+          <div class="meta-item">
+            <strong>Erstellt:</strong>
+            <time [attr.datetime]="event.createdAt">
+              {{ formatDate(event.createdAt, 'DD.MM.YYYY HH:mm') }}
+            </time>
+          </div>
+          @if (event.publishedAt) {
+          <div class="meta-item">
+            <strong>Veröffentlicht:</strong>
+            <time [attr.datetime]="event.publishedAt">
+              {{ formatDate(event.publishedAt, 'DD.MM.YYYY HH:mm') }}
+            </time>
+          </div>
+          } @if (event.updatedAt && event.updatedAt !== event.createdAt) {
+          <div class="meta-item">
+            <strong>Aktualisiert:</strong>
+            <time [attr.datetime]="event.updatedAt">
+              {{ formatDate(event.updatedAt, 'DD.MM.YYYY HH:mm') }}
+            </time>
+          </div>
+          }
+        </div>
+      </section>
+
+      <!-- Hidden structured data -->
+      <meta itemprop="eventStatus" content="EventScheduled" />
+      <meta itemprop="eventAttendanceMode" content="OfflineEventAttendanceMode" />
+      @if (event.tags && event.tags.length > 0) {
+      <meta itemprop="keywords" [content]="event.tags.join(', ')" />
+      }
+      <!--  <footer>-->
+      <!--    <p>-->
+      <!--      For tickets, visit our-->
+      <!--      <a href="https://example.com/tickets"-->
+      <!--        >official ticket page</a-->
+      <!--      >.-->
+      <!--    </p>-->
+      <!--  </footer>-->
+    </article>
+    }
+  </div>
+
+  <app-upcoming-footer [location]="location" [perimeter]="10"></app-upcoming-footer>
+</ion-content>

@@ -15,7 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@org.feedless/graphql-api": ["libs/graphql-api/src/index.ts"]
+      "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

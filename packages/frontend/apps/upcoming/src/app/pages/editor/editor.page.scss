@@ -1,0 +1,27 @@
+@use '../upcoming-mixins';
+
+p {
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  color: var(--ion-color-medium);
+}
+
+.sources {
+  display: flex;
+  //flex-direction: column;
+  column-gap: 10px;
+  flex: 1;
+
+  app-map {
+    flex: 2;
+  }
+
+  div {
+    flex: 4;
+  }
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
