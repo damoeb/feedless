@@ -1,29 +1,29 @@
 {
   "name": "upcoming",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
   "prefix": "app",
-  "sourceRoot": "upcoming/src",
+  "sourceRoot": "apps/upcoming/src",
   "tags": [],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/upcoming",
-        "browser": "upcoming/src/main.ts",
-        "tsConfig": "upcoming/tsconfig.app.json",
+        "outputPath": "dist/apps/upcoming",
+        "browser": "apps/upcoming/src/main.ts",
+        "tsConfig": "apps/upcoming/tsconfig.app.json",
         "inlineStyleLanguage": "scss",
         "assets": [
           {
             "glob": "**/*",
-            "input": "upcoming/public"
+            "input": "apps/upcoming/public"
           }
         ],
-        "styles": ["upcoming/src/styles.scss"],
-        "server": "upcoming/src/main.server.ts",
+        "styles": ["apps/upcoming/src/styles.scss"],
+        "server": "apps/upcoming/src/main.server.ts",
         "ssr": {
-          "entry": "upcoming/src/server.ts"
+          "entry": "apps/upcoming/src/server.ts"
         },
         "outputMode": "server"
       },
@@ -77,7 +77,7 @@
       "options": {
         "buildTarget": "upcoming:build",
         "port": 4200,
-        "staticFilePath": "dist/upcoming/browser",
+        "staticFilePath": "dist/apps/upcoming/browser",
         "spa": true
       }
     }
