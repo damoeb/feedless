@@ -1,0 +1,120 @@
+/*
+ * App Global CSS
+ * ----------------------------------------------------------------------------
+ * Put style rules here that you want to apply globally. These styles are for
+ * the entire app and not just one component. Additionally, this file can be
+ * used as an entry point to import other CSS/Sass files to be included in the
+ * output CSS.
+ * For more information on global stylesheets, visit the documentation:
+ * https://ionicframework.com/docs/layout/global-stylesheets
+ */
+
+/* Core CSS required for Ionic components to work properly */
+@import '@ionic/angular/css/core.css';
+
+/* Basic CSS for apps built with Ionic */
+@import '@ionic/angular/css/normalize.css';
+@import '@ionic/angular/css/structure.css';
+@import '@ionic/angular/css/typography.css';
+@import '@ionic/angular/css/display.css';
+
+/* Optional CSS utils that can be commented out */
+@import '@ionic/angular/css/padding.css';
+@import '@ionic/angular/css/float-elements.css';
+@import '@ionic/angular/css/text-alignment.css';
+@import '@ionic/angular/css/text-transformation.css';
+@import '@ionic/angular/css/flex-utils.css';
+
+/* Ionic breakpoints: https://ionicframework.com/docs/layout/css-utilities#ionic-breakpoints */
+@media only screen and (min-width: 992px) {
+  ion-modal {
+    --width: 900px;
+    --height: 900px;
+  }
+}
+
+@media only screen and (min-width: 768px) and (max-width: 992px) {
+  ion-modal {
+    --width: 100%;
+    --height: 100%;
+  }
+}
+
+@media only screen and (max-height: 768px) {
+  ion-modal {
+    --width: 100%;
+    --height: 100%;
+  }
+}
+
+.flex {
+  display: flex;
+  flex: 1;
+
+  &__column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+  }
+
+  &__row {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--ion-item-background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--ion-color-dark);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--ion-color-dark-shade);
+}
+
+.hidden {
+  display: none !important;
+}
+
+a {
+  color: var(--ion-color-dark);
+  cursor: pointer;
+
+  &:hover {
+    border-bottom-style: none;
+    text-decoration: none;
+  }
+}
+
+.dark {
+  --app-background: black;
+  --app-foreground: white;
+  --app-background-rgb: 0, 0, 0;
+  --app-foreground-rgb: 255, 255, 255;
+}
+
+.light {
+  --app-background: white;
+  --app-foreground: black;
+  --app-background-rgb: 255, 255, 255;
+  --app-foreground-rgb: 0, 0, 0;
+}
+
+ion-modal {
+  --backdrop-opacity: 0.5 !important;
+}
+
+.menu-content-open {
+  filter: grayscale(0.4) brightness(0.4);
+  transition: filter 0.5s ease-in-out;
+}
+

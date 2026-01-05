@@ -20,7 +20,12 @@
             "input": "apps/upcoming/public"
           }
         ],
-        "styles": ["apps/upcoming/src/styles.scss"],
+        "styles": [
+          "apps/upcoming/src/theme/variables.scss",
+          "apps/upcoming/src/global.scss",
+          "apps/upcoming/src/styles.scss"
+        ],
+        "polyfills": ["zone.js"],
         "server": "apps/upcoming/src/main.server.ts",
         "ssr": {
           "entry": "apps/upcoming/src/server.ts"
