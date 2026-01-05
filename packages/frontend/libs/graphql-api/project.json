@@ -1,0 +1,17 @@
+{
+  "name": "graphql-api",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/graphql-api/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project graphql-api --web",
+  "targets": {
+    "codegen": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "graphql-codegen --config codegen.yml",
+        "cwd": "libs/graphql-api"
+      }
+    }
+  }
+}

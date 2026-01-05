@@ -1,0 +1,119 @@
+mutation createRepositories($data: [RepositoryCreateInput!]!) {
+  createRepositories(data: $data) {
+    ...RepositoryFragment
+  }
+}
+
+mutation deleteRepository($data: RepositoryUniqueWhereInput!) {
+  deleteRepository(data: $data)
+}
+
+query listRepositories($data: RepositoriesInput!) {
+  repositories(data: $data) {
+    ...RepositoryFragment
+    frequency(groupBy: createdAt) {
+      count
+      group
+    }
+  }
+}
+query listPublicRepositories($data: RepositoriesInput!) {
+  repositories(data: $data) {
+    id
+    ownerId
+    title
+    description
+    product
+    visibility
+    tags
+    createdAt
+    lastUpdatedAt
+    nextUpdateAt
+    refreshCron
+    pullsPerMonth
+    disabledFrom
+    archived
+    documentCount
+  }
+}
+
+query countRepositories($data: CountRepositoriesInput!) {
+  countRepositories(data: $data)
+}
+
+query repositoryById(
+  $repository: RepositoryWhereInput!
+  $cursor: Cursor!
+  $where: SourcesWhereInput
+) {
+  repository(data: $repository) {
+    ...RepositoryFragment
+    frequency(groupBy: createdAt) {
+      count
+      group
+    }
+    sourcesCount
+    sources(cursor: $cursor, where: $where) {
+      ...SourceFragment
+    }
+    annotations {
+      votes {
+        id
+        flag {
+          value
+        }
+        upVote {
+          value
+        }
+        downVote {
+          value
+        }
+      }
+    }
+  }
+}
+
+query sourcesByRepository(
+  $repository: RepositoryWhereInput!
+  $cursor: Cursor!
+  $where: SourcesWhereInput
+  $order: [SourceOrderByInput!]
+) {
+  repository(data: $repository) {
+    sources(cursor: $cursor, where: $where, order: $order) {
+      ...SourceFragment
+    }
+  }
+}
+
+query lastHarvestsFromSourcesByRepository($repositoryId: ID!, $sourceId: String!) {
+  repository(data: { where: { id: $repositoryId } }) {
+    sources(where: { id: { eq: $sourceId } }, cursor: { page: 0 }) {
+      harvests {
+        startedAt
+        finishedAt
+        itemsAdded
+        itemsIgnored
+        logs
+        ok
+      }
+    }
+  }
+}
+
+query sourcesWithFlowByRepository(
+  $repository: RepositoryWhereInput!
+  $cursor: Cursor!
+  $where: SourcesWhereInput
+) {
+  repository(data: $repository) {
+    sources(cursor: $cursor, where: $where) {
+      ...SourceFragment
+      ...ScrapeFlowFragment
+    }
+  }
+}
+
+mutation updateRepository($data: RepositoryUpdateInput!) {
+  updateRepository(data: $data)
+}

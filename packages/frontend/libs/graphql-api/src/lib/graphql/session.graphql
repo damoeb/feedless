@@ -1,0 +1,76 @@
+fragment PlanFragment on Plan {
+  id
+  productId
+  startedAt
+  terminatedAt
+  product {
+    ...ProductFragment
+  }
+}
+
+fragment UserFragment on User {
+  id
+  hasAcceptedTerms
+  hasCompletedSignup
+  email
+  emailValidated
+  firstName
+  lastName
+  country
+  createdAt
+  notificationRepositoryId
+  purgeScheduledFor
+  features {
+    ...FeatureFragment
+  }
+  connectedApps {
+    id
+    authorized
+    authorizedAt
+    app
+  }
+  secrets {
+    ...SecretFragment
+  }
+}
+query session {
+  session {
+    isLoggedIn
+    user {
+      ...UserFragment
+    }
+  }
+}
+
+mutation updateCurrentUser($data: UpdateCurrentUserInput!) {
+  updateCurrentUser(data: $data)
+}
+
+mutation logout {
+  logout
+}
+
+fragment SecretFragment on UserSecret {
+  id
+  validUntil
+  type
+  lastUsed
+  value
+  valueMasked
+}
+
+mutation createUserSecret {
+  createUserSecret {
+    ...SecretFragment
+  }
+}
+
+mutation deleteUserSecret($data: DeleteUserSecretInput!) {
+  deleteUserSecret(data: $data)
+}
+
+mutation issueAnonymousFeedToken($url: String!) {
+  issueAnonymousFeedToken(url: $url) {
+    token
+  }
+}

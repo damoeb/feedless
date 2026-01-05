@@ -1,0 +1,18 @@
+mutation createAnnotation($data: CreateAnnotationInput!) {
+  createAnnotation(data: $data) {
+    id
+    upVote {
+      value
+    }
+    downVote {
+      value
+    }
+    flag {
+      value
+    }
+  }
+}
+
+mutation deleteAnnotation($data: DeleteAnnotationInput!) {
+  deleteAnnotation(data: $data)
+}

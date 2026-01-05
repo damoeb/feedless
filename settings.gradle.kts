@@ -12,6 +12,7 @@ include("packages:github-connector")
 include("packages:stripe-payments")
 include("packages:jpa-data")
 include("packages:feed-parser")
+include("packages:frontend")
 
 pluginManagement {
   plugins {

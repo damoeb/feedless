@@ -1,0 +1,22 @@
+fragment LicenseFragment on License {
+  name
+  email
+  version
+  createdAt
+  scope
+}
+fragment LocalizedLicenseFragment on LocalizedLicense {
+  isValid
+  isLocated
+  trialUntil
+  isTrial
+  data {
+    ...LicenseFragment
+  }
+}
+
+mutation updateLicense($data: UpdateLicenseInput!) {
+  updateLicense(data: $data) {
+    ...LocalizedLicenseFragment
+  }
+}

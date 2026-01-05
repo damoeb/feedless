@@ -1,0 +1,10 @@
+query agents {
+  agents {
+    addedAt
+    name
+    openInstance
+    ownerId
+    secretKeyId
+    version
+  }
+}

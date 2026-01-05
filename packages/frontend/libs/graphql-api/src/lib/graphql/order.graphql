@@ -1,0 +1,24 @@
+fragment OrderFragment on Order {
+  id
+  product {
+    ...ProductFragment
+  }
+  createdAt
+  isOffer
+  isPaid
+  paymentMethod
+  invoiceRecipientEmail
+  invoiceRecipientName
+}
+
+query orders($data: OrdersInput!) {
+  orders(data: $data) {
+    ...OrderFragment
+  }
+}
+
+mutation upsertOrder($data: UpsertOrderInput!) {
+  upsertOrder(data: $data) {
+    ...OrderFragment
+  }
+}

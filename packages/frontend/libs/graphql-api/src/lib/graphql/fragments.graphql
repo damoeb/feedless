@@ -1,0 +1,303 @@
+fragment StringFilterParamsFragment on StringFilterParams {
+  operator
+  value
+}
+fragment CompositeFieldFilterParamsFragment on CompositeFieldFilterParams {
+  index {
+    operator
+    value
+  }
+  title {
+    ...StringFilterParamsFragment
+  }
+  content {
+    ...StringFilterParamsFragment
+  }
+  link {
+    ...StringFilterParamsFragment
+  }
+}
+
+fragment SelectorsFragment on Selectors {
+  contextXPath
+  linkXPath
+  extendContext
+  dateXPath
+  paginationXPath
+  dateIsStartOfEvent
+}
+
+fragment CompositeFilterParamsFragment on CompositeFilterParams {
+  exclude {
+    ...CompositeFieldFilterParamsFragment
+  }
+  include {
+    ...CompositeFieldFilterParamsFragment
+  }
+}
+
+fragment ConditionalTagFragment on ConditionalTag {
+  tag
+  filter {
+    ...CompositeFieldFilterParamsFragment
+  }
+}
+
+fragment DiffRecordsParamsFragment on DiffRecordsParams {
+  inlineDiffImage
+  inlineLatestImage
+  inlinePreviousImage
+  compareBy {
+    field
+    fragmentNameRef
+  }
+  nextItemMinIncrement
+}
+
+fragment PluginExecutionParamsFragment on PluginExecutionParams {
+  org_feedless_feed {
+    generic {
+      ...SelectorsFragment
+    }
+  }
+  org_feedless_diff_records {
+    ...DiffRecordsParamsFragment
+  }
+  org_feedless_filter {
+    composite {
+      ...CompositeFilterParamsFragment
+    }
+    expression
+  }
+  org_feedless_fulltext {
+    readability
+    summary
+    inheritParams
+  }
+  org_feedless_conditional_tag {
+    ...ConditionalTagFragment
+  }
+  jsonData
+}
+
+fragment SourceFragment on Source {
+  id
+  disabled
+  tags
+  latLng {
+    lat
+    lng
+  }
+  lastErrorMessage
+  recordCount
+  lastRefreshedAt
+  lastRecordsRetrieved
+  title
+}
+
+fragment RepositoryFragment on Repository {
+  id
+  ownerId
+  title
+  description
+  product
+  visibility
+  tags
+  createdAt
+  lastUpdatedAt
+  nextUpdateAt
+  plugins {
+    pluginId
+    params {
+      ...PluginExecutionParamsFragment
+    }
+  }
+  annotations {
+    downVotes
+    upVotes
+  }
+  refreshCron
+  sourcesCount
+  sourcesCountWithProblems
+  pushNotificationsEnabled
+  shareKey
+  disabledFrom
+  archived
+  documentCount
+  retention {
+    maxAgeDays
+    maxCapacity
+  }
+}
+
+fragment ViewportFragment on ViewPort {
+  height
+  width
+  isLandscape
+  isMobile
+}
+
+fragment ActionFragment on ScrapeAction {
+  execute {
+    pluginId
+    params {
+      ...PluginExecutionParamsFragment
+    }
+  }
+  extract {
+    fragmentName
+    selectorBased {
+      fragmentName
+      emit
+      xpath {
+        value
+      }
+      max
+    }
+    imageBased {
+      boundingBox {
+        x
+        y
+        h
+        w
+      }
+    }
+  }
+  type {
+    element {
+      value
+    }
+  }
+  fetch {
+    get {
+      ...HttpGetRequestFragment
+    }
+  }
+  click {
+    position {
+      x
+      y
+    }
+    element {
+      xpath {
+        value
+      }
+      name {
+        value
+      }
+    }
+  }
+  header {
+    value
+    name
+  }
+  select {
+    element {
+      value
+    }
+    selectValue
+  }
+  #  wait {
+  #    element {
+  #      name {
+  #        value
+  #      }
+  #      xpath {
+  #        value
+  #      }
+  #    }
+  #  }
+}
+fragment HttpGetRequestFragment on HttpGetRequest {
+  url {
+    literal
+    variable
+  }
+  timeout
+  viewport {
+    ...ViewportFragment
+  }
+  forcePrerender
+  additionalWaitSec
+  language
+  waitUntil
+}
+
+fragment ScrapeFlowFragment on Source {
+  flow {
+    sequence {
+      ...ActionFragment
+    }
+  }
+}
+
+fragment FeatureFragment on Feature {
+  id
+  name
+  value {
+    id
+    numVal {
+      value
+    }
+    boolVal {
+      value
+    }
+  }
+}
+
+fragment PaginationFragment on Pagination {
+  page
+  isLast
+  isFirst
+  isEmpty
+}
+
+fragment RecordFragment on Record {
+  id
+  tags
+  title
+  rawMimeType
+  rawBase64
+  html
+  text
+  url
+  imageUrl
+  createdAt
+  publishedAt
+  updatedAt
+  startingAt
+  tags
+  latLng {
+    lat
+    lng
+  }
+  attachments {
+    ...AttachmentFragment
+  }
+}
+
+fragment AttachmentFragment on Attachment {
+  size
+  duration
+  type
+  url
+}
+
+fragment NativeFeedFragment on NativeFeed {
+  title
+  description
+  domain
+  imageUrl
+  iconUrl
+  websiteUrl
+  feedUrl
+  status
+  lastCheckedAt
+  errorMessage
+  lastChangedAt
+  streamId
+  lat
+  lng
+  ownerId
+  createdAt
+}

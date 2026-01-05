@@ -1,0 +1,30 @@
+fragment AuthenticationFragment on Authentication {
+  token
+  corrId
+}
+
+mutation authAnonymous {
+  authAnonymous {
+    ...AuthenticationFragment
+  }
+}
+
+mutation authUser($data: AuthUserInput!) {
+  authUser(data: $data) {
+    ...AuthenticationFragment
+  }
+}
+
+mutation authUsingMail($data: AuthViaMailInput!) {
+  authenticateWithCodeViaMail(data: $data) {
+    length
+    otpId
+  }
+}
+
+mutation confirmCode($data: ConfirmAuthCodeInput!) {
+  authConfirmCode(data: $data) {
+    corrId
+    token
+  }
+}

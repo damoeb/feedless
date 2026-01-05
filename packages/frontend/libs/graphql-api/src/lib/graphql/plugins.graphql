@@ -1,0 +1,14 @@
+fragment PluginFragment on Plugin {
+  id
+  name
+  listed
+}
+
+query listPlugins {
+  plugins {
+    id
+    name
+    type
+    listed
+  }
+}

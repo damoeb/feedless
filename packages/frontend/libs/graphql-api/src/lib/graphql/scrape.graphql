@@ -1,0 +1,89 @@
+fragment ScrapeExtractFragmentFragment on ScrapeExtractFragment {
+  data {
+    mimeType
+    data
+  }
+  text {
+    data
+  }
+  html {
+    data
+  }
+}
+
+fragment RemoteNativeFeedFragment on RemoteNativeFeed {
+  title
+  description
+  websiteUrl
+  tags
+  feedUrl
+  nextPageUrls
+  items {
+    ...RecordFragment
+  }
+}
+
+fragment ScrapeExtractResponseFragment on ScrapeExtractResponse {
+  fragmentName
+  items {
+    ...RecordFragment
+  }
+  feeds {
+    nativeFeeds {
+      ...RemoteNativeFeedFragment
+    }
+    genericFeeds {
+      count
+      hash
+      score
+      selectors {
+        ...SelectorsFragment
+      }
+    }
+  }
+  fragments {
+    ...ScrapeExtractFragmentFragment
+    extracts {
+      fragmentName
+      fragments {
+        ...ScrapeExtractFragmentFragment
+      }
+    }
+  }
+}
+
+query scrape($data: SourceInput!) {
+  scrape(data: $data) {
+    outputs {
+      index
+      response {
+        extract {
+          ...ScrapeExtractResponseFragment
+        }
+        fetch {
+          data
+          debug {
+            console
+            contentType
+            cookies
+            corrId
+            screenshot
+            statusCode
+            viewport {
+              ...ViewportFragment
+            }
+          }
+        }
+        extract {
+          ...ScrapeExtractResponseFragment
+        }
+      }
+    }
+    ok
+    logs {
+      time
+      message
+    }
+    errorMessage
+  }
+}
