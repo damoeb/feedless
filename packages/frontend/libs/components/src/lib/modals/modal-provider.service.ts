@@ -1,39 +1,36 @@
 import { inject, Injectable, Type } from '@angular/core';
 import { ModalController } from '@ionic/angular/standalone';
 import { ActivatedRoute, Router } from '@angular/router';
-import {
-  FeedBuilderModalComponent,
-  FeedBuilderModalComponentProps,
-} from '../modals/feed-builder-modal/feed-builder-modal.component';
-import {
-  FeedBuilderModalComponentExitRole,
-  FeedOrRepository,
-} from '../components/feed-builder/feed-builder.component';
-import {
-  RepositoryModalComponent,
-  RepositoryModalComponentProps,
-} from '../modals/repository-modal/repository-modal.component';
-import {
-  TrackerEditModalComponent,
-  TrackerEditModalComponentProps,
-} from '../products/change-tracker/tracker-edit/tracker-edit-modal.component';
-import {
-  TagsModalComponent,
-  TagsModalComponentProps,
-} from '../modals/tags-modal/tags-modal.component';
+// import {
+//   TrackerEditModalComponent,
+//   TrackerEditModalComponentProps,
+// } from '../products/change-tracker/tracker-edit/tracker-edit-modal.component';
 import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
-} from '../modals/code-editor-modal/code-editor-modal.component';
-import { NamedLatLon, Nullable } from '../types';
+} from './code-editor-modal/code-editor-modal.component';
 import {
-  SelectionModalComponent,
-  SelectionModalComponentProps,
-} from '../modals/selection-modal/selection-modal.component';
+  FeedBuilderModalComponent,
+  FeedBuilderModalComponentProps,
+} from './feed-builder-modal/feed-builder-modal.component';
 import {
   FlowModalComponent,
   FlowModalComponentProps,
-} from '../modals/flow-modal/flow-modal.component';
+} from './flow-modal/flow-modal.component';
+import {
+  RepositoryModalComponent,
+  RepositoryModalComponentProps,
+} from './repository-modal/repository-modal.component';
+import {
+  SelectionModalComponent,
+  SelectionModalComponentProps,
+} from './selection-modal/selection-modal.component';
+import {
+  TagsModalComponent,
+  TagsModalComponentProps,
+} from './tags-modal/tags-modal.component';
+import { FeedBuilderModalComponentExitRole, FeedOrRepository } from '../components/feed-builder/feed-builder.component';
+import { NamedLatLon, Nullable } from '@feedless/shared-types';
 
 export enum ModalName {
   editRepository = 'EditRepository',
@@ -47,7 +44,7 @@ export enum ModalName {
 @Injectable({
   providedIn: 'root',
 })
-export class ModalService {
+export class ModalProvider {
   private readonly modalCtrl = inject(ModalController);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -223,21 +220,21 @@ export class ModalService {
     }
   }
 
-  async openTrackerEditor(
-    component: Type<TrackerEditModalComponent>,
-    componentProps: TrackerEditModalComponentProps,
-  ) {
-    await this.updateUrlParams(ModalName.editTracker);
-    const modal = await this.modalCtrl.create({
-      component,
-      cssClass: 'fullscreen-modal',
-      componentProps,
-    });
-
-    await modal.present();
-    await modal.onDidDismiss();
-    await this.updateUrlParams();
-  }
+  // async openTrackerEditor(
+  //   component: Type<TrackerEditModalComponent>,
+  //   componentProps: TrackerEditModalComponentProps,
+  // ) {
+  //   await this.updateUrlParams(ModalName.editTracker);
+  //   const modal = await this.modalCtrl.create({
+  //     component,
+  //     cssClass: 'fullscreen-modal',
+  //     componentProps,
+  //   });
+  //
+  //   await modal.present();
+  //   await modal.onDidDismiss();
+  //   await this.updateUrlParams();
+  // }
 
   private async updateUrlParams(modal: ModalName | undefined = undefined) {
     await this.router.navigate(this.activatedRoute.snapshot.url, {

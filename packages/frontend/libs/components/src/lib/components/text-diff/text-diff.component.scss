@@ -1,0 +1,11 @@
+.text-diff {
+  display: flex;
+  column-gap: 10px;
+  max-height: 400px;
+  overflow-y: auto;
+
+  & > * {
+    flex: 1;
+    max-width: 48%;
+  }
+}

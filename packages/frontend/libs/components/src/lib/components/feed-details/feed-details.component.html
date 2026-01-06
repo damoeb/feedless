@@ -1,0 +1,362 @@
+@if (!repository()) {
+  <ion-spinner name="dots"></ion-spinner>
+} @else {
+  <ion-row style="margin-top: 50px">
+    <h2 class="ion-no-margin" style="display: inline">
+      {{ repository().title }}
+    </h2>
+    @if (repository().visibility === GqlVisibility.IsPrivate) {
+      <ion-chip (click)="editRepository(['privacy'])">Private</ion-chip>
+    }
+    @if (repository().visibility === GqlVisibility.IsPublic) {
+      <ion-chip (click)="editRepository(['privacy'])">Public</ion-chip>
+    }
+    @if (repository().pushNotificationsEnabled) {
+      <ion-chip (click)="editRepository(['notifications'])">Push Notifications </ion-chip>
+    }
+  </ion-row>
+  <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
+    <ion-buttons slot="end">
+      @if (isOwner) {
+        <ion-modal #sourcesModalRef class="fullscreen-modal">
+          <ng-template>
+            <ion-header>
+              <ion-toolbar>
+                <ion-title>Sources of {{ repository().title }}</ion-title>
+                <ion-buttons slot="end">
+                  <ion-button (click)="dismissModal()">
+                    <ion-icon name="close-outline"></ion-icon>
+                  </ion-button>
+                </ion-buttons>
+              </ion-toolbar>
+            </ion-header>
+            <ion-content class="ion-padding">
+              <app-sources #sources [repository]="repository()"></app-sources>
+            </ion-content>
+          </ng-template>
+        </ion-modal>
+        <ion-button (click)="openSourcesModal()">
+          <ion-icon name="git-branch-outline" slot="start"></ion-icon>
+          <ion-label> Sources</ion-label>
+          <ion-badge color="light" style="margin-left: 5px"
+            >{{ repository().sourcesCount }}
+            @if (repository().sourcesCountWithProblems > 0) {
+              <span>
+                /
+                <span style="color: var(--ion-color-danger)">
+                  {{ repository().sourcesCountWithProblems }}
+                </span>
+              </span>
+            }
+          </ion-badge>
+        </ion-button>
+      }
+      @if (!isOwner) {
+        <ion-button appDev routerLink="report">
+          <ion-icon name="flag-outline" slot="start"></ion-icon>
+          <ion-label> Report</ion-label>
+        </ion-button>
+      }
+      <!--      <ion-button>-->
+      <!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
+      <!--        Visit website-->
+      <!--      </ion-button>-->
+      <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
+      <!--      <ion-icon-->
+      <!--        name="arrow-down-outline"-->
+      <!--        color="primary"-->
+      <!--        slot="start"-->
+      <!--      ></ion-icon>-->
+      <!--      Pull 2.3k-->
+      <!--    </ion-button>-->
+      @if (!hasCurrentUserStarred()) {
+        <ion-button (click)="starRepository()">
+          <ion-icon name="star-outline" slot="start"></ion-icon>
+          Star
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
+        </ion-button>
+      }
+      @if (hasCurrentUserStarred()) {
+        <ion-button (click)="unstarRepository()">
+          <ion-icon name="star" slot="start"></ion-icon>
+          Starred
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
+        </ion-button>
+      }
+      <ion-button [href]="feedUrl" color="primary" fill="solid">
+        <ion-icon name="logo-rss" slot="start"></ion-icon>
+        Feed
+      </ion-button>
+      <ion-button [id]="settingsModalId">
+        <ion-icon name="settings-outline"></ion-icon>
+      </ion-button>
+      <ion-popover
+        [showBackdrop]="false"
+        [trigger]="settingsModalId"
+        alignment="end"
+        side="bottom"
+        size="auto"
+        triggerAction="click"
+      >
+        <ng-template>
+          <ion-content>
+            <ion-list>
+              <ion-item appDev button="true" (click)="showCode()">
+                <ion-icon name="code-outline" slot="start"></ion-icon>
+                <ion-label>Code</ion-label>
+              </ion-item>
+              <ion-item (click)="exportRepository()" button="true">
+                <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+                <ion-label>Download as JSON</ion-label>
+              </ion-item>
+              <input
+                #jsonPicker
+                (change)="appendSourcesFromJson($event)"
+                accept="application/json"
+                style="display: none"
+                type="file"
+              />
+              <ion-item (click)="jsonPicker.click()" button="true">
+                <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+                <ion-label>Import JSON</ion-label>
+              </ion-item>
+              <ion-item (click)="editRepository()" button="true">
+                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                <ion-label>Edit</ion-label>
+              </ion-item>
+              <ion-item (click)="deleteRepository()" button="true">
+                <ion-icon name="trash-outline" slot="start"></ion-icon>
+                <ion-label>Delete</ion-label>
+              </ion-item>
+            </ion-list>
+          </ion-content>
+        </ng-template>
+      </ion-popover>
+    </ion-buttons>
+  </ion-toolbar>
+  <div [ngClass]="{ 'description--flat': !showFullDescription }" class="description">
+    <ion-row>
+      <ion-col>
+        <strong>Description</strong>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col> {{ repository().description }}</ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>
+        <dl>
+          <!--          <dt>Filters</dt>-->
+          <!--          <dd>{{ getPluginsOfRepository(repository) }}</dd>-->
+          <dt>Created</dt>
+          <dd>{{ repository().createdAt | date: dateFormat }}</dd>
+          @if (repository().refreshCron) {
+            <dt>Last Updated</dt>
+            <dd>{{ fromNow(repository().lastUpdatedAt) }} ago</dd>
+          }
+          @if (isOwner && repository().refreshCron) {
+            <dt>Next Update</dt>
+            <dd>
+              {{ fromNow(repository().nextUpdateAt) }}
+              <ion-button
+                (click)="forceSync()"
+                [disabled]="repository().sources.length === 0"
+                class="ion-margin-start"
+                shape="round"
+                size="small"
+                title="Trigger Refresh"
+              >
+                <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                Trigger Refresh
+              </ion-button>
+            </dd>
+          }
+          @if (isOwner) {
+            <dt>Capacity and Retention</dt>
+            <dd>
+              {{ repository().documentCount }} of
+              {{ getRetentionStrategy() }}
+              @if (isOwner) {
+                <ion-button
+                  (click)="editRepository(['storage'])"
+                  class="ion-margin-start"
+                  shape="round"
+                  size="small"
+                >
+                  <ion-icon name="pencil-outline" slot="start"></ion-icon>
+                  Edit
+                </ion-button>
+              }
+            </dd>
+          }
+        </dl>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-button
+        (click)="showFullDescription = !showFullDescription; $event.stopPropagation()"
+        color="dark"
+        fill="clear"
+        style="margin: auto"
+      >
+        @if (showFullDescription) {
+          <span>Show less</span>
+        }
+        @if (!showFullDescription) {
+          <span>Show more</span>
+        }
+      </ion-button>
+    </ion-row>
+  </div>
+  <div style="border-radius: 8px">
+    <div class="ion-padding" style="margin-top: 50px; display: flex">
+      <h3 style="flex: 1">
+        @if (viewModeFc.value === viewModeList) {
+          <span>Available items</span>
+        }
+        @if (viewModeFc.value === viewModeDiff) {
+          <span>Changes</span>
+        }
+        @if (viewModeFc.value === viewModeHistogram) {
+          <span>Activity</span>
+        }
+      </h3>
+      <div style="align-content: center">
+        <div style="display: flex">
+          <ion-segment [formControl]="viewModeFc" mode="ios" style="max-width: 300px">
+            <ion-segment-button [value]="viewModeList">List</ion-segment-button>
+            <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
+            @if (repository().product === GqlProductName.VisualDiff) {
+              <ion-segment-button [value]="viewModeDiff">Diff </ion-segment-button>
+            }
+          </ion-segment>
+          @if (supportTable && isOwner) {
+            <ion-button size="small" (click)="openDataModal()" appDev> Data </ion-button>
+          }
+        </div>
+      </div>
+    </div>
+    @if (loading) {
+      <ion-spinner name="dots"></ion-spinner>
+    }
+    @if (!loading) {
+      @if (viewModeFc.value === viewModeHistogram) {
+        <div style="position: relative">
+          <app-histogram [data]="repository().frequency"></app-histogram>
+        </div>
+      }
+      @if (viewModeFc.value === viewModeDiff) {
+        @if (documents.length === 0) {
+          <ion-item>
+            <ion-label>No items yet.</ion-label>
+          </ion-item>
+        }
+        @if (compareByField === compareByPixel) {
+          @if (documents.length === 1) {
+            <app-image-diff [before]="documents[0]"></app-image-diff>
+          }
+          @if (documents.length > 1) {
+            @for (pair of getDocumentPairs(); track pair) {
+              <div>
+                <app-image-diff [after]="pair.b" [before]="pair.a"></app-image-diff>
+              </div>
+            }
+          }
+        }
+        @if (compareByField !== compareByPixel) {
+          @if (documents.length === 1) {
+            <app-text-diff [before]="documents[0]"></app-text-diff>
+          }
+          @if (documents.length > 1) {
+            @for (pair of getDocumentPairs(); track pair) {
+              <div>
+                <app-text-diff [after]="pair.b" [before]="pair.a"></app-text-diff>
+              </div>
+            }
+          }
+        }
+      }
+      @if (viewModeFc.value === viewModeList) {
+        <ion-list style="border-radius: 8px">
+          @if (isOwner) {
+            <ion-toolbar style="padding-left: 15px">
+              <ion-buttons slot="start">
+                <ion-checkbox [formControl]="selectAllFc" aria-label="toggle all"></ion-checkbox>
+                <div class="ion-padding-horizontal flex">
+                  @if (selectedCount === 0) {
+                    <ion-text class="ion-margin-end" style="align-content: center"
+                      >Select All
+                    </ion-text>
+                  }
+                  @if (selectedCount > 0) {
+                    <ion-text class="ion-margin-end" style="align-content: center"
+                      >({{ selectedCount }})
+                    </ion-text>
+                  }
+                  @if (selectedCount > 0) {
+                    <ion-button (click)="deleteAllSelected()" color="danger" fill="solid">
+                      Delete selected
+                    </ion-button>
+                  }
+                </div>
+              </ion-buttons>
+            </ion-toolbar>
+          }
+          @if (documents.length === 0) {
+            <ion-item>
+              <ion-label>No items yet</ion-label>
+            </ion-item>
+          }
+          @for (document of documents; track document) {
+            <div>
+              <ion-item lines="full">
+                @if (isOwner) {
+                  <ion-checkbox
+                    [formControl]="document.fc"
+                    aria-label="toggle document"
+                    class="doc__checkbox"
+                    slot="start"
+                  ></ion-checkbox>
+                }
+                <ion-label>
+                  <ion-toolbar style="--background: transparent">
+                    <ion-buttons>
+                      <ion-note
+                        >{{ fromNow(document.publishedAt) }} on
+                        {{ hostname(document.url) }}
+                        <!--                      https://www.openstreetmap.org/#map=14/-->
+                        @if (document.latLng) {
+                          <ion-icon name="location-outline"></ion-icon>
+                        }
+                      </ion-note>
+                      @if (document.tags.length > 0) {
+                        <ion-note>
+                          <em class="ion-padding-start">{{ getTags(document) }}</em>
+                        </ion-note>
+                      }
+                    </ion-buttons>
+                  </ion-toolbar>
+                  <h2 style="padding-bottom: 5px">
+                    <a
+                      [href]="getDocumentUrl(document)"
+                      referrerpolicy="no-referrer"
+                      target="_blank"
+                    >
+                      {{ document.title }}
+                    </a>
+                  </h2>
+                  <p class="content">{{ getText(document) }}</p>
+                  <app-player (playback)="playAudio(document)" [document]="document"></app-player>
+                </ion-label>
+              </ion-item>
+            </div>
+          }
+        </ion-list>
+        <app-pagination
+          (pageChange)="fetchPage($event)"
+          [currentPage]="currentDocumentsPage"
+        ></app-pagination>
+      }
+    }
+  </div>
+}

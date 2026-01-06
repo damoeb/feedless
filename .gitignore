@@ -5,7 +5,6 @@ bazel-*
 
 # Ignore Gradle build output directory
 build
-package-lock.json
 *.log
 docs/inspiration
 docs/network.dia

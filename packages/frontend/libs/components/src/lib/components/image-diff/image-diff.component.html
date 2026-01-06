@@ -1,0 +1,25 @@
+@if (after()) {
+  <div>
+    <div>
+      Snapshots {{ before().title }}
+      <ion-icon name="arrow-forward-outline"></ion-icon>
+      {{ after().title }}
+    </div>
+    <img-comparison-slider style="width: auto; margin: auto">
+      <img [src]="'data:image/png;base64, ' + before().rawBase64" alt="" slot="first" />
+      <img [src]="safeDiffImageUrl" alt="" slot="second" />
+    </img-comparison-slider>
+    <div>After</div>
+    <img [src]="'data:image/png;base64, ' + after().rawBase64" alt="" />
+    <div>Before</div>
+    <img [src]="'data:image/png;base64, ' + before().rawBase64" alt="" />
+  </div>
+} @else {
+  <div>
+    <p>
+      Snapshot {{ before().title }} from
+      {{ before().createdAt | date: dateTimeFormat }}
+    </p>
+    <img [src]="'data:image/png;base64, ' + before().rawBase64" alt="" />
+  </div>
+}

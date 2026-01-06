@@ -1,0 +1,54 @@
+<ion-header [translucent]="true">
+  @if (session?.user?.purgeScheduledFor) {
+    <ion-toolbar color="danger" style="padding-right: 5px; padding-left: 5px">
+      <ion-label>
+        This account is scheduled to be deleted in
+        {{ fromNow(session.user?.purgeScheduledFor) }}
+      </ion-label>
+      <ion-button (click)="cancelAccountDeletion()" color="dark" slot="end">
+        Cancel Deletion
+      </ion-button>
+    </ion-toolbar>
+  }
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-menu-button></ion-menu-button>
+    </ion-buttons>
+
+    <div class="title">
+      <div routerLink="/" style="cursor: pointer">
+        <span [innerHtml]="productConfig?.titleHtml"></span>
+      </div>
+
+      <ion-buttons class="ion-margin-horizontal">
+        @if (serverConfig.isSaas()) {
+          <app-repositories-button name="Directory" link="/directory"></app-repositories-button>
+        }
+        <app-repositories-button link="/feeds" name="Feeds"></app-repositories-button>
+        <ion-button
+          href="https://join.slack.com/t/feedlesshq/shared_invite/zt-2vvcn5r2r-v9Zo_uornz~pl9RbrXQs6w"
+          target="_blank"
+        >
+          <ion-icon name="logo-slack" slot="icon-only"></ion-icon>
+        </ion-button>
+        <ion-button href="https://github.com/damoeb/feedless" target="_blank">
+          <ion-icon name="logo-github" slot="icon-only"></ion-icon>
+        </ion-button>
+      </ion-buttons>
+    </div>
+
+    <ion-buttons slot="end">
+      <ion-button color="primary" fill="solid" routerLink="/feed-builder" routerLinkActive="hidden">
+        Create Feed
+      </ion-button>
+      <ion-button routerLink="/notifications" appDev>
+        <ion-icon name="notifications-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+      <app-dark-mode-button></app-dark-mode-button>
+      <!--      <ion-button routerLink="/plans">-->
+      <!--        <ion-label> Pricing </ion-label>-->
+      <!--      </ion-button>-->
+      <app-profile-button></app-profile-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>

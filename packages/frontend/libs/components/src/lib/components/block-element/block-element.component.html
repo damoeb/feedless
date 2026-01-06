@@ -1,0 +1,16 @@
+<div
+  style="
+    position: absolute;
+    display: flex;
+    left: 0;
+    top: 0;
+    z-index: 1001;
+    height: 100%;
+    width: 100%;
+  "
+  [ngClass]="{ blocking: blocking(), nonBlocking: !blocking() }"
+>
+  <div style="margin: auto; pointer-events: all">
+    <ng-content></ng-content>
+  </div>
+</div>

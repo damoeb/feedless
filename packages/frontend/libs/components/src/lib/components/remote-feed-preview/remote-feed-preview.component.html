@@ -1,0 +1,26 @@
+<div class="flex__row">
+  @if (!noMetaColumn()) {
+    <div class="flex__column" style="max-width: 600px">
+      <ng-content></ng-content>
+    </div>
+  }
+  <div style="display: flex; flex-direction: column; flex: 1">
+    <div style="position: relative; overflow-y: auto; overflow-x: auto; flex: 1">
+      @if (items()) {
+        <ion-list style="position: absolute; width: 100%; opacity: 0.6">
+          @if (items().length === 0) {
+            <ion-item>
+              <ion-label>Feed is empty</ion-label>
+            </ion-item>
+          }
+          @for (item of items(); track item; let feedIndex = $index) {
+            <app-remote-feed-item
+              [feedItemIndex]="feedIndex + 1"
+              [feedItem]="item"
+            ></app-remote-feed-item>
+          }
+        </ion-list>
+      }
+    </div>
+  </div>
+</div>

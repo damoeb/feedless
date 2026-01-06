@@ -1,0 +1,44 @@
+<div #scrollpane class="flex" style="overflow: hidden">
+  <ion-grid class="flex__column ion-no-padding">
+    <ion-row style="flex: 1; flex-wrap: nowrap">
+      <ion-col
+        class="flex ion-no-padding"
+        size-lg="5"
+        size-md="6"
+        size-sm="10"
+        size-xl="4"
+        size-xs="10"
+      >
+        <ng-content select="[left]"></ng-content>
+      </ion-col>
+
+      <ion-col
+        class="flex ion-no-padding"
+        size-lg="7"
+        size-md="6"
+        size-sm="10"
+        size-xl="8"
+        size-xs="10"
+      >
+        <ng-content select="[right]"></ng-content>
+      </ion-col>
+
+      <ion-col
+        [offset]="scrollpane.scrollLeft === 0 ? 10 : 0"
+        class="flex ion-hide-md-up"
+        size="2"
+        style="position: absolute; height: 100%"
+      >
+        <div (click)="triggerSlider(scrollpane)" class="slider-button">
+          <div class="slider-button__bg"></div>
+          @if (scrollpane.scrollLeft === 0) {
+            <ion-icon name="chevron-forward-outline" size="large"></ion-icon>
+          }
+          @if (scrollpane.scrollLeft !== 0) {
+            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+          }
+        </div>
+      </ion-col>
+    </ion-row>
+  </ion-grid>
+</div>

@@ -1,0 +1,33 @@
+<div class="url-form flex__row">
+  <form (ngSubmit)="triggerUpdate()">
+    <ion-input
+      [formControl]="queryFc"
+      [placeholder]="placeholder()"
+      class="cy-searchbar-input"
+      fill="outline"
+      slot="secondary"
+      style="--padding-start: 10px"
+    ></ion-input>
+
+    <ng-content></ng-content>
+
+    @if (loading()) {
+      <ion-button color="danger">
+        <ion-spinner class="ion-margin-end" name="crescent"></ion-spinner>
+        Busy
+      </ion-button>
+    } @else {
+      <ion-button
+        (click)="triggerUpdate()"
+        [color]="color() ?? 'light'"
+        class="cy-searchbar-button"
+        type="submit"
+      >
+        <span style="white-space: nowrap">
+          {{ buttonText() }}
+        </span>
+        <ion-icon [slot]="buttonText() ? 'end' : ''" name="chevron-forward-outline"></ion-icon>
+      </ion-button>
+    }
+  </form>
+</div>

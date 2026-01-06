@@ -1,0 +1,16 @@
+.suggestion {
+  --background: var(--app-body-background);
+  position: relative;
+
+  &.active {
+    //--background: var(--app-foreground);
+    text-decoration: underline;
+  }
+
+  .suggestion-body {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    width: 300px;
+  }
+}

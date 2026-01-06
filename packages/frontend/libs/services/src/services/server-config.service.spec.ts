@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AppTestModule } from '../app-test.module';
+import { AppTestModule } from '@feedless/test';
 import { ServerConfigService } from './server-config.service';
 
 describe('ServerConfigService', () => {

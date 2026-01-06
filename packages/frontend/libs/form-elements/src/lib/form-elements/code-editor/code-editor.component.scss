@@ -1,0 +1,111 @@
+.cm-line:has(.cm-blockquote) {
+  //": {paddingLeft: '1.5em'},
+  background: #efefef;
+  border-left: 4px solid #cccccc;
+}
+
+.cm-activeLine {
+  [class*='-mark'] {
+    color: blue;
+  }
+}
+
+.hl-line {
+  background: color-mix(in srgb, red 30%, var(--app-background));
+  color: color-mix(in srgb, red 30%, var(--app-foreground));
+}
+
+.editor-wrapper {
+  --app-border-color: rgba(var(--ion-color-medium-rgb), 0.5);
+  --app-border-color-hover: rgba(var(--ion-color-primary-rgb), 0.5);
+  --app-border-color-focus: rgba(var(--ion-color-primary-rgb), 1);
+  //border: 2px solid var(--app-border-color);
+  position: relative;
+  overflow-y: auto;
+  display: flex;
+  flex: 1;
+  background: var(--app-background);
+
+  &:hover {
+    border-color: var(--app-border-color-hover);
+  }
+
+  &:has(.cm-focused) {
+    border-color: var(--app-border-color-focus);
+  }
+}
+
+.editor {
+  flex: 1;
+  display: flex;
+
+  .cm-editor.cm-focused .cm-selectionBackground,
+  .cm-editor .cm-selectionBackground,
+  ::selection {
+    background: var(--ion-color-primary) !important;
+    opacity: 0.3;
+  }
+
+  .cm-editor {
+    flex: 1;
+  }
+
+  .cm-scroller {
+    scrollbar-width: thin;
+  }
+
+  &--ctrl-pressed {
+    .cm-url,
+    .cm-hashtag {
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}
+
+.note-link {
+  margin-left: 2px;
+  margin-right: 2px;
+  border-radius: 5px;
+  text-decoration: underline;
+  min-width: 30px;
+
+  color: var(--color);
+  background: var(--background);
+  //border: 1px solid var(--border-color);
+
+  &:hover {
+    text-decoration: none;
+    //  border-color: var(--ion-color-primary);
+  }
+
+  &--invalid {
+    --border-color: rgba(var(--ion-color-danger-rgb), 0.4);
+    --color: var(--ion-color-danger);
+    --background: rgba(var(--ion-color-danger-rgb), 0.2);
+  }
+
+  &--valid {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.4);
+    --color: var(--ion-color-primary);
+    --background: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+}
+
+ion-toolbar {
+  --background: var(--background);
+  border-bottom: 1px solid rgba(var(--ion-color-medium-rgb), 0.3);
+  padding-left: 10px;
+}
+
+.cm-tag-name,
+.cm-property-name {
+  color: rgba(var(--ion-color-tertiary-rgb), 0.8);
+}
+
+.cm-attribute-name {
+  color: rgba(var(--ion-color-danger-rgb), 0.8);
+}

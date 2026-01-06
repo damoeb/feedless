@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>{{ modalTitle }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <app-feed-builder
+    (selectedFeedChanged)="handleFeed($event)"
+    (selectedRepositoryChanged)="handleRepository($event)"
+    [hideCustomizeFeed]="true"
+    [hideSearchBar]="false"
+    [source]="source"
+    [submitButtonText]="submitButtonText"
+  ></app-feed-builder>
+</ion-content>

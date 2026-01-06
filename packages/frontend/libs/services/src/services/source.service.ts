@@ -4,13 +4,13 @@ import {
   GqlSourceInput,
 } from '@feedless/graphql-api';
 import {
+  ModalProvider,
   SelectableEntity,
   SelectionModalComponent,
-} from '../modals/selection-modal/selection-modal.component';
+} from '@feedless/components';
 import { sortBy } from 'lodash-es';
 import { FileService } from './file.service';
 import { RepositoryService } from './repository.service';
-import { ModalService } from './modal.service';
 import { ToastController } from '@ionic/angular/standalone';
 import { Nullable } from '@feedless/shared-types';
 
@@ -20,7 +20,7 @@ import { Nullable } from '@feedless/shared-types';
 export class SourceService {
   private readonly fileService = inject(FileService);
   private readonly repositoryService = inject(RepositoryService);
-  private readonly modalService = inject(ModalService);
+  private readonly modalProvider = inject(ModalProvider);
   private readonly toastCtrl = inject(ToastController);
 
   async uploadFeedlessJson(uploadEvent: Event, repositoryId: Nullable<string>) {
@@ -39,14 +39,15 @@ export class SourceService {
       (selectable) => selectable.entity.title,
     );
 
-    const selected = await this.modalService.openSelectionModal<GqlSourceInput>(
-      SelectionModalComponent<GqlSourceInput>,
-      {
-        selectables,
-        title: 'Import Sources',
-        description: 'Select those sources you want to import',
-      },
-    );
+    const selected =
+      await this.modalProvider.openSelectionModal<GqlSourceInput>(
+        SelectionModalComponent<GqlSourceInput>,
+        {
+          selectables,
+          title: 'Import Sources',
+          description: 'Select those sources you want to import',
+        },
+      );
 
     if (selected.length > 0) {
       console.log(

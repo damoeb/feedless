@@ -1,0 +1,18 @@
+ion-content::part(scroll) {
+  display: flex;
+}
+
+.generic-feed-score {
+  position: absolute;
+  height: 100%;
+  bottom: 0;
+  min-width: 5px;
+  background: rgba(var(--ion-color-dark-rgb), 0.2);
+}
+
+.marked-border-top {
+  box-shadow: 0px -20px 25px -8px var(--ion-item-background);
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+  border-top: 2px solid var(--app-foreground);
+}

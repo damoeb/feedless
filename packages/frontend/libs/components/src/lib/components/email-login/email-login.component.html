@@ -1,0 +1,78 @@
+<ion-card>
+  <ion-card-content>
+    <ion-list>
+      <form (ngSubmit)="initiateSession()">
+        <ion-item>
+          <ion-input
+            [formControl]="emailFc"
+            [readonly]="mode === modeConfirmCode"
+            label="Email"
+            labelPlacement="stacked"
+            name="email"
+            placeholder="Enter your email"
+            type="email"
+          ></ion-input>
+        </ion-item>
+
+        <ion-item>
+          <ion-input
+            [formControl]="botChallengeFc"
+            [label]="botChallengeLabel"
+            [readonly]="mode === modeConfirmCode"
+            labelPlacement="floating"
+            name="botChallenge"
+            placeholder="Type here"
+            type="number"
+          ></ion-input>
+        </ion-item>
+
+        @if (errorMessage) {
+          <ion-item>
+            <ion-label color="danger">
+              {{ errorMessage }}
+            </ion-label>
+          </ion-item>
+        }
+        @if (mode === modeEnterMail) {
+          <ion-item
+            (click)="initiateSession()"
+            [button]="true"
+            [color]="busy ? 'medium' : 'primary'"
+            class="ion-margin-top"
+            type="submit"
+          >
+            Send Code to Mail
+            @if (!busy) {
+              <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+            }
+            @if (busy) {
+              <ion-spinner name="dots" slot="end"></ion-spinner>
+            }
+          </ion-item>
+        }
+      </form>
+      @if (mode === modeConfirmCode) {
+        <form (ngSubmit)="sendConfirmationCode()">
+          <ion-item>
+            <ion-input
+              [formControl]="confirmationCodeFc"
+              label="Email Code"
+              labelPlacement="stacked"
+              name="confirmationCode"
+              placeholder="Type here"
+            ></ion-input>
+          </ion-item>
+          <ion-item
+            (click)="sendConfirmationCode()"
+            [button]="true"
+            class="ion-margin-top"
+            color="primary"
+          >
+            Authenticate
+            <ion-icon name="arrow-forward-outline" slot="end"></ion-icon>
+          </ion-item>
+        </form>
+      }
+    </ion-list>
+  </ion-card-content>
+</ion-card>

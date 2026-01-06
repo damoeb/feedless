@@ -1,0 +1,15 @@
+.filters {
+  display: flex;
+  column-gap: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+
+  ion-select {
+    border-radius: 8px;
+  }
+}
+
+ion-searchbar {
+  border: 2px solid var(--ion-color-medium);
+  border-radius: 8px;
+}

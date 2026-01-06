@@ -3,7 +3,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { getCachedLocations } from '../products/upcoming/places';
 import { compact, omit } from 'lodash-es';
-import { NamedLatLon } from '../types';
+import { NamedLatLon } from '@feedless/shared-types';
 
 interface OsmMatch {
   lat: string;
@@ -74,9 +74,12 @@ export class OpenStreetMapService {
     countryCode,
     place,
     area,
-  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<NamedLatLon[]> {
+  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<
+    NamedLatLon[]
+  > {
     const matches = getCachedLocations().filter(
-      (p) => p.countryCode === countryCode && p.place === place && p.area === area
+      (p) =>
+        p.countryCode === countryCode && p.place === place && p.area === area,
     );
     if (matches.length > 0) {
       return matches;
@@ -88,16 +91,21 @@ export class OpenStreetMapService {
   async searchByQuery(query: string): Promise<NamedLatLon[]> {
     // const url = `/osm/search?q=${encodeURIComponent(
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
-      query
+      query,
     )}&format=json&polygon=1&addressdetails=1&category=boundary&limit=5&addressdetails=1`;
-    return firstValueFrom(this.httpClient.get<OsmMatch[]>(url)).then((matches) =>
-      matches.map<NamedLatLon>(convertOsmMatchToNamedLatLon)
+    return firstValueFrom(this.httpClient.get<OsmMatch[]>(url)).then(
+      (matches) => matches.map<NamedLatLon>(convertOsmMatchToNamedLatLon),
     );
   }
 
-  async reverseSearch(lat: number | string, lon: number | string): Promise<NamedLatLon> {
+  async reverseSearch(
+    lat: number | string,
+    lon: number | string,
+  ): Promise<NamedLatLon> {
     // const url = `/osm/reverse?lat=${lat}&lon=${lon}&format=json`;
     const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`;
-    return firstValueFrom(this.httpClient.get<OsmMatch>(url)).then(convertOsmMatchToNamedLatLon);
+    return firstValueFrom(this.httpClient.get<OsmMatch>(url)).then(
+      convertOsmMatchToNamedLatLon,
+    );
   }
 }

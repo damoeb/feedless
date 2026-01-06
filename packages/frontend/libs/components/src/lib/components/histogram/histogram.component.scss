@@ -1,0 +1,31 @@
+.histogram {
+  position: absolute;
+  display: flex;
+  flex-direction: row;
+  width: 200px;
+  height: 100%;
+  right: 0;
+  top: 0;
+  align-items: center;
+
+  .chart {
+    fill: transparent;
+    stroke-width: 2px;
+    stroke: var(--ion-color-dark);
+    flex: 1;
+  }
+
+  .rate {
+    font-size: 0.9rem;
+  }
+
+  //&.stalling {
+  //  .chart {
+  //    stroke: var(--ion-color-warning);
+  //  }
+  //  .rate {
+  //    color: var(--ion-color-warning);
+  //    font-weight: bold;
+  //  }
+  //}
+}

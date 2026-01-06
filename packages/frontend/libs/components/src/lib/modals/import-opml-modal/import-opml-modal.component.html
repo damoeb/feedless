@@ -1,0 +1,86 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Import OPML</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="cancel()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="selectAll()"> Select All</ion-button>
+      <ion-button (click)="selectNone()"> Select None</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    @for (outlineRoot of fcOutlines; track outlineRoot) {
+      <ion-item slot="header">
+        @if (outlineRoot.xmlUrl) {
+          <ion-checkbox
+            [formControl]="outlineRoot.fc"
+            aria-label="check"
+            slot="start"
+          ></ion-checkbox>
+        }
+        <ion-label>
+          {{ outlineRoot.title }}
+        </ion-label>
+      </ion-item>
+      <ion-list>
+        @for (outlineChild of outlineRoot.outlines; track outlineChild) {
+          <ion-item class="ion-padding-start">
+            @if (outlineChild.xmlUrl) {
+              <ion-checkbox [formControl]="outlineChild.fc" label-placement="end" slot="start">
+                <p>{{ outlineChild.title }}</p>
+                <p>{{ outlineChild.xmlUrl }}</p>
+              </ion-checkbox>
+            }
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </ion-list>
+</ion-content>
+<ion-footer>
+  <ion-list>
+    <ion-item>
+      <ion-label>Activate Plugins</ion-label>
+    </ion-item>
+
+    <ion-item>
+      <ion-checkbox
+        [formControl]="formFg.controls.applyFulltextPlugin"
+        justify="start"
+        labelPlacement="end"
+      >
+        Fulltext
+        <ion-note class="ion-padding-horizontal"
+          >Fetch Fulltext for every Item (static only)
+        </ion-note>
+      </ion-checkbox>
+    </ion-item>
+    <ion-item>
+      <ion-checkbox
+        [formControl]="formFg.controls.applyPrivacyPlugin"
+        justify="start"
+        labelPlacement="end"
+      >
+        Privacy & Robustness
+        <ion-note class="ion-padding-horizontal"
+          >Inlines images (base64) and unwinds tracking urls
+        </ion-note>
+      </ion-checkbox>
+    </ion-item>
+  </ion-list>
+
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      <ion-button (click)="importSelected()" color="primary" fill="solid">
+        Import Feeds
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

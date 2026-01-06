@@ -1,0 +1,178 @@
+<div class="flex__column" style="max-width: 900px">
+  <ion-toolbar color="danger">
+    <ion-label class="ion-padding-horizontal ion-text-wrap">
+      <strong>Feature Preview.</strong> Build elaborate web-based workflows
+    </ion-label>
+  </ion-toolbar>
+  <div class="flex__row" style="column-gap: 15px">
+    <div style="flex: 1">
+      <div class="ion-no-padding preview" style="display: flex; flex-direction: column">
+        <ion-toolbar style="--background: transparent">
+          <div style="display: flex; align-items: center; column-gap: 10px">
+            <ion-text class="ion-margin-start">Source:</ion-text>
+            <ion-input value="heise.de"></ion-input>
+          </div>
+          <ion-buttons slot="end">
+            <ion-button (click)="zoomIn()">
+              <ion-icon name="remove-outline"></ion-icon>
+            </ion-button>
+            <ion-range
+              [(ngModel)]="scaleFactor"
+              [label]="parseInt(scaleFactor * 100 + '') + '%'"
+              [max]="maxScaleFactor"
+              [min]="minScaleFactor"
+              [step]="0.05"
+              style="width: 100px"
+            ></ion-range>
+            <ion-button (click)="zoomOut()">
+              <ion-icon name="add-outline"></ion-icon>
+            </ion-button>
+          </ion-buttons>
+        </ion-toolbar>
+        <div style="height: 40vh; position: relative">
+          <!--          <div style="position: absolute; width: 100%; height: 100%; background: rgba(var(&#45;&#45;app-background-rgb), 0.3); z-index: 100;"></div>-->
+          <iframe
+            [ngStyle]="{
+              transform: 'scale(' + scaleFactor + ')',
+              width: 100 / scaleFactor + '%',
+              height: 100 / scaleFactor + '%',
+            }"
+            src="http://localhost:4200"
+            style="border: none; transform-origin: top left; position: absolute"
+          ></iframe>
+        </div>
+      </div>
+
+      <div class="ion-margin-vertical ion-text-center">
+        <ion-button shape="round" size="small">Add Source</ion-button>
+      </div>
+    </div>
+
+    <!--    <div class="controls" style="width: 300px">-->
+    <!--      &lt;!&ndash;    <ion-button color="success" expand="full" class="ion-no-margin">&ndash;&gt;-->
+    <!--      &lt;!&ndash;      <ion-icon name="play-outline" slot="start"></ion-icon>&ndash;&gt;-->
+    <!--      &lt;!&ndash;      Run All&ndash;&gt;-->
+    <!--      &lt;!&ndash;    </ion-button>&ndash;&gt;-->
+    <!--      <ion-item>-->
+    <!--        <ion-input-->
+    <!-- label="Title"-->
+    <!-- labelPlacement="floating"-->
+    <!-- placeholder="default"-->
+    <!--        ></ion-input>-->
+    <!--        &lt;!&ndash;      <div slot="helper">Enter an email</div>&ndash;&gt;-->
+    <!--        &lt;!&ndash;      <div slot="error">Please enter a valid email</div>&ndash;&gt;-->
+    <!--      </ion-item>-->
+    <!--      <ion-item>-->
+    <!--        <ion-input-->
+    <!--          label="Description"-->
+    <!--          labelPlacement="floating"-->
+    <!--          placeholder="default"-->
+    <!--        ></ion-input>-->
+    <!--      </ion-item>-->
+    <!--      <ion-accordion-group class="first-level">-->
+    <!--        <ion-accordion value="trigger">-->
+    <!--          <ion-item slot="header">-->
+    <!--            <ion-label> Trigger</ion-label>-->
+    <!--          </ion-item>-->
+    <!--          <ion-list class="ion-no-padding" slot="content">-->
+    <!--            <ion-item>-->
+    <!--              <ion-input label="Webhook" labelPlacement="start"></ion-input>-->
+    <!--            </ion-item>-->
+    <!--            <ion-item> Scheduled</ion-item>-->
+    <!--          </ion-list>-->
+    <!--        </ion-accordion>-->
+    <!--        <ion-accordion value="sources">-->
+    <!--          <ion-item slot="header">-->
+    <!--            <ion-label> Sources</ion-label>-->
+    <!--          </ion-item>-->
+    <!--          <ion-accordion-group class="second-level" slot="content">-->
+    <!--            <ion-accordion value="trigger">-->
+    <!--              <ion-item slot="header">-->
+    <!--                <ion-label>-->
+    <!--                  Source: heise.de-->
+    <!--                  <app-bubble color="red"></app-bubble>-->
+    <!--                </ion-label>-->
+    <!--              </ion-item>-->
+    <!--              <ion-accordion-group class="third-level" slot="content">-->
+    <!--                &lt;!&ndash;            <ion-item>&ndash;&gt;-->
+    <!--                &lt;!&ndash;              <ion-button color="light" expand="block">&ndash;&gt;-->
+    <!--                &lt;!&ndash;                <ion-icon name="play-outline" color="success" slot="start"></ion-icon>&ndash;&gt;-->
+    <!--                &lt;!&ndash;                Run&ndash;&gt;-->
+    <!--                &lt;!&ndash;              </ion-button>&ndash;&gt;-->
+    <!--                &lt;!&ndash;              <ion-button color="light" expand="block">&ndash;&gt;-->
+    <!--                &lt;!&ndash;                <ion-icon name="trash-outline" color="danger" slot="start"></ion-icon>&ndash;&gt;-->
+    <!--                &lt;!&ndash;                Delete&ndash;&gt;-->
+    <!--                &lt;!&ndash;              </ion-button>&ndash;&gt;-->
+    <!--                &lt;!&ndash;            </ion-item>&ndash;&gt;-->
+    <!--                <ion-item> Tags</ion-item>-->
+    <!--                <ion-item> Localization</ion-item>-->
+    <!--                <ion-accordion value="actions">-->
+    <!--                  <ion-item slot="header">-->
+    <!--                    <ion-label>Actions</ion-label>-->
+    <!--                    <ion-text class="helper-text helper-text&#45;&#45;changed"-->
+    <!-->3 Clicks-->
+    <!--                    </ion-text>-->
+    <!--                  </ion-item>-->
+    <!--                  <ion-list slot="content">-->
+    <!--                    <ion-item [button]="true">-->
+    <!--                      <ion-icon name="add-outline" slot="start"></ion-icon>-->
+    <!--                      Add Action-->
+    <!--                    </ion-item>-->
+    <!--                    <ion-item [button]="true">-->
+    <!--                      <ion-icon name="ellipse" slot="start"></ion-icon>-->
+    <!--                      Record Actions-->
+    <!--                    </ion-item>-->
+    <!--                  </ion-list>-->
+    <!--                </ion-accordion>-->
+    <!--                <ion-accordion value="emit">-->
+    <!--                  <ion-item slot="header">-->
+    <!--                    <ion-label> Emit</ion-label>-->
+    <!--                    <ion-text class="helper-text">None</ion-text>-->
+    <!--                  </ion-item>-->
+    <!--                  <ion-list slot="content"></ion-list>-->
+    <!--                </ion-accordion>-->
+    <!--                <ion-accordion value="distinct">-->
+    <!--                  <ion-item slot="header">-->
+    <!--                    <ion-label> Distinct By</ion-label>-->
+    <!--                  </ion-item>-->
+    <!--                  <ion-list slot="content"></ion-list>-->
+    <!--                </ion-accordion>-->
+    <!--              </ion-accordion-group>-->
+    <!--            </ion-accordion>-->
+    <!--            <ion-item [button]="true">-->
+    <!--              <ion-icon name="add-outline" slot="start"></ion-icon>-->
+    <!--              Add Source-->
+    <!--            </ion-item>-->
+    <!--          </ion-accordion-group>-->
+    <!--        </ion-accordion>-->
+
+    <!--        <ion-accordion value="refine">-->
+    <!--          <ion-item slot="header">-->
+    <!--            <ion-label> Refine</ion-label>-->
+    <!--          </ion-item>-->
+    <!--          <ion-list class="ion-no-padding" slot="content">-->
+    <!--            <ion-item> Fulltext</ion-item>-->
+    <!--            <ion-item> Privacy</ion-item>-->
+    <!--          </ion-list>-->
+    <!--        </ion-accordion>-->
+
+    <!--        <ion-accordion value="storage">-->
+    <!--          <ion-item slot="header">-->
+    <!--            <ion-label> Storage</ion-label>-->
+    <!--          </ion-item>-->
+    <!--          <ion-list class="ion-no-padding" slot="content">-->
+    <!--            <ion-item>-->
+    <!--              <ion-input-->
+    <!--                label="Capacity"-->
+    <!--                labelPlacement="floating"-->
+    <!--                placeholder="default"-->
+    <!--              ></ion-input>-->
+    <!--            </ion-item>-->
+    <!--            <ion-item> Retention</ion-item>-->
+    <!--            <ion-item> Forward</ion-item>-->
+    <!--          </ion-list>-->
+    <!--        </ion-accordion>-->
+    <!--      </ion-accordion-group>-->
+    <!--    </div>-->
+  </div>
+</div>

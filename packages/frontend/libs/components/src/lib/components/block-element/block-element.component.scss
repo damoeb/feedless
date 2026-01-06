@@ -1,0 +1,6 @@
+.blocking {
+  background: rgba(var(--app-background-rgb), 0.4);
+}
+.nonBlocking {
+  pointer-events: none;
+}

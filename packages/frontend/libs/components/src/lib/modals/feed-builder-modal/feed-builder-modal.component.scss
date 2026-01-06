@@ -1,0 +1,9 @@
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}
+
+app-feed-builder {
+  display: flex;
+  flex: 1;
+}

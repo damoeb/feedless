@@ -1,0 +1,62 @@
+dl {
+  dt {
+    font-weight: bold;
+    margin-top: 10px;
+    margin-bottom: 5px;
+  }
+
+  dd {
+    margin: 0;
+    color: rgba(var(--ion-color-dark), 0.7);
+    display: flex;
+    align-items: center;
+  }
+}
+
+.content {
+  max-height: 120px;
+  line-height: 1.3rem;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  font-size: 1.02em;
+  opacity: 0.8;
+}
+
+.description {
+  border-radius: 8px;
+  padding: 10px;
+  background: rgba(var(--app-foreground-rgb), 0.1);
+  margin-bottom: 20px;
+
+  &.description--flat {
+    dt,
+    dd {
+      display: inline;
+      padding-right: 4px;
+
+      ion-button {
+        display: none;
+      }
+    }
+  }
+}
+
+.doc__checkbox {
+  align-self: flex-start;
+  margin-top: 70px;
+}
+
+ion-col {
+  align-content: center;
+}
+
+app-sources {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}

@@ -1,0 +1,21 @@
+<div class="plan">
+  <ng-content></ng-content>
+
+  @if (featureGroups && !imploded()) {
+    <div class="features">
+      @for (featureGroup of featureGroups(); track featureGroup) {
+        @if (featureGroup.features.length > 0) {
+          <div class="feature__group">
+            {{ featureGroup.groupLabel }}
+          </div>
+          @for (feature of featureGroup.features; track feature) {
+            <app-feature [feature]="feature"></app-feature>
+          }
+        }
+      }
+    </div>
+  }
+  <div class="plan__action ion-margin-top">
+    <ng-content select="[planAction]"></ng-content>
+  </div>
+</div>

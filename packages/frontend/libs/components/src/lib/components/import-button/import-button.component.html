@@ -1,0 +1,39 @@
+<ion-button [color]="color()" [expand]="expand()" [fill]="fill()" id="open-import-modal">
+  <ion-label>Import</ion-label>
+</ion-button>
+
+<ion-popover
+  [animated]="false"
+  [showBackdrop]="true"
+  alignment="start"
+  side="bottom"
+  trigger="open-import-modal"
+>
+  <ng-template>
+    <ion-content>
+      <ion-list>
+        <input
+          #opmlPicker
+          (change)="importOpml($event)"
+          style="display: none"
+          accept="text/xml, application/opml"
+          type="file"
+        />
+        <ion-item appDev (click)="openFilePicker(opmlPicker)" [button]="true">
+          Import OPML
+        </ion-item>
+        <input
+          #jsonPicker
+          (change)="createRepositoriesFromJson($event)"
+          accept="application/json"
+          style="display: none"
+          type="file"
+        />
+        <ion-item (click)="openFilePicker(jsonPicker)" [button]="true"> Import JSON </ion-item>
+        <!--        <ion-item [button]="true" (click)="openUrlImporter()">-->
+        <!--          Import Urls-->
+        <!--        </ion-item>-->
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-popover>

@@ -1,0 +1,25 @@
+@if (sFeature) {
+  <ion-row class="feature">
+    <ion-col class="feature__name" size-md="8">
+      <span class="feature__title">
+        {{ sFeature.title }}
+      </span>
+      @if (sFeature.subtitle) {
+        <span class="feature__subtitle">({{ sFeature.subtitle }})</span>
+      }
+    </ion-col>
+    <ion-col class="feature__value" size-md="4">
+      @if (sFeature.valueHtml) {
+        <div [innerHTML]="sFeature.valueHtml"></div>
+      }
+      @if (sFeature.valueBool) {
+        @if (sFeature.valueBool.value) {
+          <ion-icon color="success" name="checkmark-outline"></ion-icon>
+        }
+        @if (!sFeature.valueBool.value) {
+          <ion-icon color="danger" name="close-outline"></ion-icon>
+        }
+      }
+    </ion-col>
+  </ion-row>
+}

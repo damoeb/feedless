@@ -1,0 +1,458 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Options</ion-title>
+    <ion-buttons slot="end">
+      @if (isLoggedIn) {
+        <ion-button
+          (click)="createOrUpdateFeed()"
+          [disabled]="loading"
+          color="primary"
+          fill="solid"
+        >
+          <ion-label>
+            @if (isUpdate()) {
+              <span>Save Changes</span>
+            }
+            @if (!isUpdate()) {
+              <span>Create</span>
+            }
+          </ion-label>
+        </ion-button>
+      } @else {
+        <ion-button
+          [routerLink]="'/login?redirectUrl=' + getPathname()"
+          [disabled]="loading"
+          color="primary"
+          fill="solid"
+        >
+          <ion-label>Login to continue</ion-label>
+        </ion-button>
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-list>
+    <ion-row>
+      <ion-col class="ion-align-self-center ion-text-right" size="3"> Title </ion-col>
+      <ion-col size="9">
+        <ion-input
+          [formControl]="formFg.controls.title"
+          aria-label="Title"
+          fill="outline"
+          placeholder="Type a title"
+        ></ion-input>
+        @for (error of formFg.controls.title.errors | keyvalue; track error) {
+          <p class="errors">
+            {{ error.value | json }}
+          </p>
+        }
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col class="ion-align-self-center ion-text-right" size="3">
+        Description (optional)
+      </ion-col>
+      <ion-col size="9">
+        <ion-textarea
+          [autoGrow]="true"
+          [counter]="true"
+          [formControl]="formFg.controls.description"
+          aria-label="Describe the feed with #tags and urls"
+          fill="outline"
+          placeholder="#tags, urls,..."
+          rows="3"
+        ></ion-textarea>
+        @for (error of formFg.controls.description.errors | keyvalue; track error) {
+          <p class="errors">
+            {{ error.value | json }}
+          </p>
+        }
+      </ion-col>
+    </ion-row>
+
+    <app-fetch-rate-accordion
+      [formControl]="formFg.controls.fetchFrequency"
+    ></app-fetch-rate-accordion>
+  </ion-list>
+
+  <ion-accordion-group [multiple]="true" [value]="openAccordions">
+    <ion-accordion toggleIconSlot="start" value="enrich">
+      <ion-item slot="header">
+        <ion-label>
+          Fulltext
+          <ion-note class="ion-margin-start">
+            @if (formFg.value.applyFulltextPlugin) {
+              Enabled
+              @switch (formFg.value.fulltextTransformer) {
+                @case (readabilityTransformer) {
+                  Readability
+                }
+                @case (summaryTransformer) {
+                  Summary
+                }
+                @case (noTransformer) {
+                  raw
+                }
+              }
+            }
+          </ion-note>
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <!-- -- FULLTEXT ------------------------------------------------- -->
+
+        <ion-item>
+          <ion-checkbox
+            [formControl]="formFg.controls.applyFulltextPlugin"
+            aria-label=""
+            aria-labelledby="applyFulltextPlugin__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
+          ></ion-checkbox>
+          <ion-label class="ion-text-left" id="applyFulltextPlugin__label" style="flex: 9">
+            Fetch Fulltext for every item
+          </ion-label>
+        </ion-item>
+
+        <ion-radio-group [formControl]="formFg.controls.fulltextTransformer">
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="readabilityTransformer"
+              aria-label=""
+              aria-labelledby="readability__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+
+            <ion-label class="ion-text-left" id="readability__label" style="flex: 9">
+              Transform to readability
+            </ion-label>
+          </ion-item>
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="summaryTransformer"
+              aria-label=""
+              aria-labelledby="summary__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+            <ion-label class="ion-text-left" id="summary__label" style="flex: 9">
+              Transform to summary (opengraph, jsonld, meta...)
+            </ion-label>
+          </ion-item>
+          <ion-item [disabled]="!formFg.value.applyFulltextPlugin">
+            <ion-radio
+              [value]="noTransformer"
+              aria-label=""
+              aria-labelledby="no_transformer__label"
+              class="ion-margin-end"
+              justify="end"
+              style="flex: 3"
+            ></ion-radio>
+            <ion-label class="ion-text-left" id="no_transformer__label" style="flex: 9">
+              No Transformer
+            </ion-label>
+          </ion-item>
+        </ion-radio-group>
+
+        <ion-item>
+          <ion-checkbox
+            [formControl]="formFg.controls.applyPrivacyPlugin"
+            aria-label=""
+            aria-labelledby="applyPrivacyPlugin__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
+          ></ion-checkbox>
+          <ion-label class="ion-text-left" id="applyPrivacyPlugin__label" style="flex: 9">
+            Inline Images
+          </ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-accordion>
+
+    <ion-accordion [value]="accordionStorage" toggleIconSlot="start">
+      <ion-item slot="header">
+        <ion-label>
+          Storage
+          @if (
+            formFg.controls.maxAgeDays.invalid ||
+            formFg.controls.ageReferenceField.invalid ||
+            formFg.controls.maxCapacity.invalid
+          ) {
+            <app-bubble color="red"></app-bubble>
+          }
+          <ion-note class="ion-margin-start">
+            @if (formFg.value.maxCapacity) {
+              max {{ formFg.value.maxCapacity }} items
+            }
+          </ion-note>
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-row>
+          <ion-col class="ion-align-self-center ion-text-right" size="3"
+            >Delete after days
+          </ion-col>
+          <ion-col size="9">
+            <ion-input
+              [clearInput]="true"
+              [formControl]="formFg.controls.maxAgeDays"
+              aria-label=""
+              fill="outline"
+              placeholder="<Auto>"
+            ></ion-input>
+            @for (error of formFg.controls.maxAgeDays.errors | keyvalue; track error) {
+              <p class="errors">
+                {{ error.value | json }}
+              </p>
+            }
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col class="ion-align-self-center ion-text-right" size="3"> Date Field </ion-col>
+          <ion-col size="9">
+            <ion-select
+              [formControl]="formFg.controls.ageReferenceField"
+              fill="outline"
+              interface="popover"
+            >
+              <ion-select-option [value]="GqlRecordDateField.CreatedAt"
+                >CreatedAt
+              </ion-select-option>
+              <ion-select-option [value]="GqlRecordDateField.PublishedAt"
+                >PublishedAt
+              </ion-select-option>
+              <ion-select-option [value]="GqlRecordDateField.StartingAt"
+                >StartingAt
+              </ion-select-option>
+            </ion-select>
+          </ion-col>
+        </ion-row>
+        <ion-row>
+          <ion-col class="ion-align-self-center ion-text-right" size="3">Capacity </ion-col>
+          <ion-col size="9">
+            <ion-input
+              [clearInput]="true"
+              [formControl]="formFg.controls.maxCapacity"
+              aria-label=""
+              fill="outline"
+              placeholder="<Auto>"
+            ></ion-input>
+            @for (error of formFg.controls.maxCapacity.errors | keyvalue; track error) {
+              <p class="errors">
+                {{ error.value | json }}
+              </p>
+            }
+            @if (repositoryMaxItemsUpperLimit < formFg.value.maxCapacity) {
+              <p>
+                <ion-text color="warning">
+                  <em
+                    >Your setting will be overrules to {{ repositoryMaxItemsUpperLimit }} as per
+                    your plan</em
+                  >
+                </ion-text>
+              </p>
+            }
+          </ion-col>
+        </ion-row>
+      </ion-list>
+    </ion-accordion>
+
+    <ion-accordion [value]="accordionPrivacy" toggleIconSlot="start">
+      <ion-item slot="header">
+        <ion-label>
+          Privacy
+          @if (formFg.value.isPublic) {
+            <ion-note class="ion-margin-start">Visible to everyone </ion-note>
+          }
+          @if (!formFg.value.isPublic) {
+            <ion-note class="ion-margin-start">Visible to you </ion-note>
+          }
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-item>
+          <ion-checkbox
+            [formControl]="formFg.controls.isPublic"
+            aria-label=""
+            aria-labelledby="isPublic__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
+          ></ion-checkbox>
+          <ion-label class="ion-text-left" id="isPublic__label" style="flex: 9">
+            Public Listing
+            <ion-note> Others can find your feed.</ion-note>
+            @if (formFg.value.isPublic) {
+              <ion-note>
+                This enables analytics, but only ships limited content until you verify source
+                authority.
+              </ion-note>
+            }
+          </ion-label>
+        </ion-item>
+        @if (formFg.controls.isPublic.errors) {
+          <ion-item>
+            <ion-label color="danger">
+              @for (error of formFg.controls.isPublic.errors | keyvalue; track error) {
+                <p>
+                  {{ error.value }}
+                </p>
+              }
+            </ion-label>
+          </ion-item>
+        }
+      </ion-list>
+    </ion-accordion>
+
+    <ion-accordion [value]="accordionNotifications" toggleIconSlot="start">
+      <ion-item slot="header">
+        <ion-label>
+          Push Notifications
+          <ion-note class="ion-margin-start">
+            @if (formFg.value.enabledPushNotifications) {
+              Enabled
+            }
+            @if (!formFg.value.enabledPushNotifications) {
+              Disabled
+            }
+          </ion-note>
+        </ion-label>
+      </ion-item>
+      <ion-list slot="content">
+        <ion-item>
+          <ion-checkbox
+            [formControl]="formFg.controls.enabledPushNotifications"
+            aria-label=""
+            aria-labelledby="enablePushNotifications__label"
+            class="ion-margin-end"
+            justify="end"
+            style="flex: 3"
+          ></ion-checkbox>
+          <ion-label class="ion-text-left" id="enablePushNotifications__label" style="flex: 9">
+            <h3>Push to Telegram</h3>
+          </ion-label>
+          <ion-button routerLink="/docs/telegram" target="_blank"> Setup Instructions </ion-button>
+        </ion-item>
+        <!--        <ion-row>-->
+        <!--          <ion-col push="3" size="8">-->
+        <!--            Webhooks, Email Forwards or WebSub are not yet fully implemented.-->
+        <!--          </ion-col>-->
+        <!--        </ion-row>-->
+      </ion-list>
+    </ion-accordion>
+
+    @if (showExpertOptions) {
+      <ion-item-divider></ion-item-divider>
+      <div>
+        <ion-text color="medium"> Expert Options </ion-text>
+      </div>
+      <ion-accordion toggleIconSlot="start" value="contentTags" appDev>
+        <ion-item slot="header">
+          <ion-label>
+            Content-based Tags
+            <!--          <ion-note class="ion-margin-start">Improve feed items</ion-note>-->
+          </ion-label>
+        </ion-item>
+        <ion-list slot="content">
+          <!-- -- CONDITIONAL TAGS ----------------------------------------- -->
+
+          <ion-row>
+            <ion-col size="3" style="align-content: center" class="ion-text-right">
+              Conditional Tags
+            </ion-col>
+            <ion-col size="9">
+              <ion-button
+                [color]="conditionalTags.length === 0 ? 'primary' : 'medium'"
+                (click)="addConditionalTag()"
+                [disabled]="conditionalTags.length >= 4"
+              >
+                <ion-icon name="add-outline" slot="start"></ion-icon>
+                Add Tag
+              </ion-button>
+            </ion-col>
+          </ion-row>
+
+          <ion-row>
+            <ion-col>
+              @for (conditionalTag of conditionalTags; track conditionalTag; let i = $index) {
+                <div class="flex ion-align-items-center">
+                  <ion-text class="ion-padding-end">{{ i + 1 }}.</ion-text>
+                  <ion-input
+                    [formControl]="conditionalTag.controls.tag"
+                    placeholder="Tag"
+                    fill="outline"
+                  ></ion-input>
+                  <ion-text class="ion-padding-horizontal">if</ion-text>
+                  <ion-select
+                    [formControl]="conditionalTag.controls.field"
+                    fill="outline"
+                    interface="popover"
+                    [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
+                  >
+                    <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
+                    <ion-select-option [value]="FilterFieldTitle">title </ion-select-option>
+                    <ion-select-option [value]="FilterFieldContent">content </ion-select-option>
+                  </ion-select>
+                  <ion-select
+                    [formControl]="conditionalTag.controls.operator"
+                    fill="outline"
+                    class="ion-margin-horizontal"
+                    interface="popover"
+                    [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
+                  >
+                    <ion-select-option [value]="GqlStringFilterOperator.Contains"
+                      >contains
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlStringFilterOperator.Matches"
+                      >matches
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
+                      >starts with
+                    </ion-select-option>
+                    <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
+                      >ends with
+                    </ion-select-option>
+                  </ion-select>
+                  <ion-input
+                    [formControl]="conditionalTag.controls.value"
+                    placeholder="Type a value"
+                    fill="outline"
+                  ></ion-input>
+                  <ion-button (click)="removeConditionalTag(i)" color="medium" fill="clear">
+                    <ion-icon name="trash-outline"></ion-icon>
+                  </ion-button>
+                </div>
+              }
+            </ion-col>
+          </ion-row>
+        </ion-list>
+      </ion-accordion>
+      <app-filter-feed-accordion
+        (filterChange)="handleFilterChange($event)"
+        [filterPlugin]="getFilterPlugin()"
+        [hideIfEmpty]="!showExpertOptions"
+        labelPrefix="Repository"
+      ></app-filter-feed-accordion>
+
+      <ion-item appDev [button]="true" (click)="openFlowModal()">
+        <ion-icon name="flask-outline" slot="start"></ion-icon>
+        Flow
+      </ion-item>
+    } @else {
+      <ion-item [button]="true" (click)="showExpertOptions = !showExpertOptions">
+        <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
+      </ion-item>
+    }
+  </ion-accordion-group>
+</ion-content>

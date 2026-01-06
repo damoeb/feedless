@@ -1,0 +1,157 @@
+<div style="display: flex; flex: 1; flex-direction: column">
+  <input
+    #jsonPicker
+    (change)="importFeedlessJson($event)"
+    accept="application/json"
+    style="display: none"
+    type="file"
+  />
+  <ion-toolbar style="padding-left: 5px; --background: transparent" class="ion-margin-bottom">
+    <ion-searchbar [formControl]="queryFc" placeholder="Search url or title"></ion-searchbar>
+    <ion-buttons slot="end">
+      <!--      <ion-button-->
+      <!--        (click)="fetchCurrentPage('network-only')"-->
+      <!--        [disabled]="repository().sources.length === 0"-->
+      <!--        class="ion-margin-start"-->
+      <!--        shape="round"-->
+      <!--        size="small"-->
+      <!--        title="Trigger Refresh"-->
+      <!--      >-->
+      <!--        <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
+      <!--        Reload-->
+      <!--      </ion-button>-->
+      <ion-button
+        (click)="forceSync()"
+        [disabled]="repository().sources.length === 0"
+        class="ion-margin-start"
+        shape="round"
+        size="small"
+        title="Force Sync"
+      >
+        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        Sync
+      </ion-button>
+      <ion-button (click)="jsonPicker.click()">
+        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        <ion-label>Import</ion-label>
+      </ion-button>
+      <ion-button (click)="editOrAddSource()">
+        <ion-icon name="add-outline" slot="start"></ion-icon>
+        Add
+        @if (repository().sourcesCount === 0) {
+          <app-bubble color="red" slot="end"></app-bubble>
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <!--<ion-toolbar>-->
+  <!--  <div class="filters">-->
+  <!--    <ion-select label="Status" fill="outline">-->
+
+  <!--    </ion-select>-->
+  <!--    <ion-select label="Geo Tag" fill="outline">-->
+
+  <!--    </ion-select>-->
+  <!--  </div>-->
+
+  <!--</ion-toolbar>-->
+  <ion-list style="flex: 1; display: flex; flex-direction: column">
+    @if (repository().sourcesCount === 0) {
+      <ion-item>
+        <ion-label>No sources defined</ion-label>
+      </ion-item>
+    }
+
+    <ion-row style="opacity: 0.5">
+      <ion-col size="1" class="ion-text-center">Status</ion-col>
+      <ion-col size="6" class="ion-padding-start">Description</ion-col>
+      <ion-col size="3">Refreshed Last</ion-col>
+    </ion-row>
+    @if (loadingSources) {
+      <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
+    }
+
+    @for (source of sources; track source.id) {
+      <ion-row>
+        <ion-col size="1" class="ion-text-center">
+          <app-bubble [color]="getHealthColorForSource(source)"></app-bubble>
+        </ion-col>
+        <ion-col size="6">
+          <div style="padding-left: 10px">
+            {{ source.title }}
+          </div>
+          <ion-buttons>
+            <ion-button
+              (click)="editTags(source)"
+              [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
+              fill="clear"
+              >{{ stringifyTags(source) }}
+            </ion-button>
+            <ion-button
+              (click)="editLatLon(source)"
+              [color]="source.latLng ? 'medium' : 'primary'"
+              fill="clear"
+              >{{ stringifyLocalization(source) }}
+            </ion-button>
+          </ion-buttons>
+
+          @if (source.disabled) {
+            <p>
+              <ion-label color="danger"> Disabled.</ion-label>
+            </p>
+          }
+        </ion-col>
+        <ion-col size="3" style="align-content: center" class="nowrap">
+          @if (source.lastRefreshedAt) {
+            <ion-text
+              title="last retrieval"
+              [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
+            >
+              {{ source.lastRecordsRetrieved }} items
+              <ion-text color="medium"> ({{ fromNow(source.lastRefreshedAt) }}) </ion-text>
+            </ion-text>
+
+            <p>
+              <ion-label [color]="source.disabled ? 'danger' : 'medium'">
+                {{ source.lastErrorMessage }}
+              </ion-label>
+            </p>
+          } @else {
+            <ion-text class="nowrap" title="last fetch" color=""> Never </ion-text>
+          }
+        </ion-col>
+        <ion-col size="2">
+          <ion-buttons [collapse]="true" style="justify-self: flex-end">
+            @if (source.disabled) {
+              <ion-button
+                (click)="setDisabledForSource(source, false)"
+                color="success"
+                fill="solid"
+              >
+                Enable
+              </ion-button>
+            }
+            <ion-button fill="solid" color="light" (click)="editOrAddSource(source)">
+              Edit
+            </ion-button>
+            @if (source.lastRefreshedAt !== null) {
+              <ion-button fill="solid" color="light" (click)="showLogs(source)">Logs </ion-button>
+            }
+            <ion-button fill="solid" color="light" (click)="showSourceOptions(source)">
+              More
+            </ion-button>
+          </ion-buttons>
+        </ion-col>
+      </ion-row>
+    }
+
+    <app-pagination
+      (pageChange)="fetchSources($event)"
+      (pageSizeChange)="handlePageSizeChange($event)"
+      [currentPage]="currentSourcesPage"
+      [isLastPage]="sources.length === 0"
+      [pageSize]="pageSize"
+      [showPageSize]="true"
+    ></app-pagination>
+  </ion-list>
+</div>

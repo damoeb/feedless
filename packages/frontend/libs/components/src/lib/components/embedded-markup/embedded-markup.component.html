@@ -1,0 +1,25 @@
+@if (embed()) {
+  <div
+    class="flex__column highlight-border"
+    [ngClass]="{ 'highlight-border': !!pickElement }"
+    style="overflow: auto; display: flex"
+  >
+    <iframe
+      #iframeElement
+      (load)="loadedDocument()"
+      [hidden]="embed()?.mimeType?.startsWith('image/')"
+      [ngStyle]="{ width: getWidth(), height: getHeight() }"
+      sandbox="allow-scripts"
+      style="position: relative; border-width: 0; flex: 1"
+    ></iframe>
+    <!--  <div style="display: flex; column-gap: 5px; padding: 2px 3px">-->
+    <!--    <span style="align-content: center">xpath:</span>-->
+    <!--    <input-->
+    <!--      style="flex: 1; border: none"-->
+    <!--      placeholder="Click in website to see xpath"-->
+    <!--      [value]="currentXpath"-->
+    <!--      readonly-->
+    <!--    />-->
+    <!--  </div>-->
+  </div>
+}

@@ -1,0 +1,540 @@
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  viewChild,
+} from '@angular/core';
+import {
+  Annotation,
+  GqlFeedlessPlugins,
+  GqlRecordField,
+  GqlVertical,
+  GqlVisibility,
+  Record,
+  RepositoryFull,
+} from '@feedless/graphql-api';
+import {
+  CodeEditorModalComponent,
+  ModalName,
+  ModalProvider,
+  RepositoryModalAccordion,
+  RepositoryModalComponent,
+  RepositoryModalComponentProps,
+} from '@feedless/components';
+
+import {
+  AlertController,
+  IonBadge,
+  IonButton,
+  IonButtons,
+  IonCheckbox,
+  IonChip,
+  IonCol,
+  IonContent,
+  IonHeader,
+  IonIcon,
+  IonItem,
+  IonLabel,
+  IonList,
+  IonModal,
+  IonNote,
+  IonPopover,
+  IonRow,
+  IonSegment,
+  IonSegmentButton,
+  IonSpinner,
+  IonText,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+  PopoverController,
+  ToastController,
+} from '@ionic/angular/standalone';
+import { tagsToString } from '../feed-builder/feed-builder.component';
+import {
+  AnnotationService,
+  AuthGuardService,
+  dateFormat,
+  RecordService,
+  RepositoryService,
+  ServerConfigService,
+  SessionService,
+  SourceService,
+} from '@feedless/services';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { isUndefined, without } from 'lodash-es';
+import { Subscription } from 'rxjs';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { relativeTimeOrElse } from '../agents/agents.component';
+import { FetchPolicy } from '@apollo/client/core';
+import { addIcons } from 'ionicons';
+import {
+  addOutline,
+  closeOutline,
+  cloudDownloadOutline,
+  cloudUploadOutline,
+  codeOutline,
+  flagOutline,
+  gitBranchOutline,
+  listOutline,
+  locationOutline,
+  logoRss,
+  pencilOutline,
+  pulseOutline,
+  refreshOutline,
+  settingsOutline,
+  star,
+  starOutline,
+  trashOutline,
+} from 'ionicons/icons';
+import { DatePipe, NgClass } from '@angular/common';
+import { PaginationComponent } from '../pagination/pagination.component';
+import { RemoveIfProdDirective } from '@feedless/directives';
+import { HistogramComponent } from '../histogram/histogram.component';
+import { ImageDiffComponent } from '../image-diff/image-diff.component';
+import { TextDiffComponent } from '../text-diff/text-diff.component';
+import { PlayerComponent } from '../player/player.component';
+import { SourcesComponent } from '../sources/sources.component';
+
+export type RecordWithFornmControl = Record & {
+  fc: FormControl<boolean>;
+};
+
+type ViewMode = 'list' | 'diff' | 'histogram';
+
+type Pair<A, B> = {
+  a: A;
+  b: B;
+};
+
+@Component({
+  selector: 'app-feed-details',
+  templateUrl: './feed-details.component.html',
+  styleUrls: ['./feed-details.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonSpinner,
+    IonRow,
+    IonChip,
+    IonToolbar,
+    IonButtons,
+    IonModal,
+    IonHeader,
+    IonTitle,
+    IonButton,
+    IonIcon,
+    IonLabel,
+    IonContent,
+    IonList,
+    IonItem,
+    IonNote,
+    IonText,
+    PaginationComponent,
+    IonBadge,
+    RemoveIfProdDirective,
+    RouterLink,
+    IonPopover,
+    NgClass,
+    IonCol,
+    IonSegment,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSegmentButton,
+    HistogramComponent,
+    ImageDiffComponent,
+    TextDiffComponent,
+    IonCheckbox,
+    PlayerComponent,
+    DatePipe,
+    SourcesComponent,
+  ],
+  standalone: true,
+})
+export class FeedDetailsComponent implements OnInit, OnDestroy {
+  private readonly modalProvider = inject(ModalProvider);
+  private readonly authGuard = inject(AuthGuardService);
+  private readonly alertCtrl = inject(AlertController);
+  private readonly annotationService = inject(AnnotationService);
+  private readonly popoverCtrl = inject(PopoverController);
+  private readonly recordService = inject(RecordService);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly toastCtrl = inject(ToastController);
+  private readonly router = inject(Router);
+  protected readonly serverConfig = inject(ServerConfigService);
+  private readonly sessionService = inject(SessionService);
+  private readonly repositoryService = inject(RepositoryService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly sourceService = inject(SourceService);
+
+  readonly repository = input.required<RepositoryFull>();
+  readonly sourcesModal = viewChild<IonModal>('sourcesModalRef');
+  readonly sources = viewChild<SourcesComponent>('sources');
+
+  readonly track = input<boolean>();
+  readonly supportTable = input<boolean>(false);
+
+  protected documents: RecordWithFornmControl[] = [];
+  protected feedUrl: string;
+
+  protected readonly GqlVisibility = GqlVisibility;
+  protected readonly dateFormat = dateFormat;
+  showFullDescription = false;
+  protected playDocument: Record;
+  private currentUserId: string;
+  private subscriptions: Subscription[] = [];
+  currentDocumentsPage: number;
+  // currentSourcesPage: number = 0;
+  // sources: ArrayElement<RepositoryFull['sources']>[];
+
+  fromNow = relativeTimeOrElse;
+
+  protected loading: boolean;
+  protected isOwner: boolean;
+  protected selectAllFc = new FormControl<boolean>(false);
+  protected selectedCount = 0;
+  viewModeFc = new FormControl<ViewMode>('list');
+  viewModeList: ViewMode = 'list';
+  viewModeHistogram: ViewMode = 'histogram';
+  viewModeDiff: ViewMode = 'diff';
+  protected compareByField: GqlRecordField | undefined;
+  protected readonly GqlProductName = GqlVertical;
+  protected readonly compareByPixel: GqlRecordField = GqlRecordField.Pixel;
+
+  private seed = Math.random();
+  // harvestsModalId: string = `open-harvests-modal-${this.seed}`;
+  settingsModalId = `open-settings-modal-${this.seed}`;
+
+  // protected loadingSources: boolean = false;
+
+  constructor() {
+    addIcons({
+      closeOutline,
+      addOutline,
+      listOutline,
+      pulseOutline,
+      gitBranchOutline,
+      flagOutline,
+      starOutline,
+      star,
+      logoRss,
+      settingsOutline,
+      codeOutline,
+      cloudDownloadOutline,
+      trashOutline,
+      refreshOutline,
+      pencilOutline,
+      locationOutline,
+      cloudUploadOutline,
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  async ngOnInit() {
+    await this.fetchRepository();
+    this.subscriptions.push(
+      this.sessionService.getSession().subscribe((session) => {
+        this.currentUserId = session.user?.id;
+        this.assessIsOwner();
+      }),
+      this.activatedRoute.queryParams.subscribe((queryParams) => {
+        if (queryParams.modal) {
+          if (queryParams.modal === ModalName.editRepository) {
+            this.editRepository(
+              queryParams.accordion ? [queryParams.accordion] : [],
+            );
+          }
+        }
+      }),
+      this.selectAllFc.valueChanges.subscribe((isChecked) => {
+        this.documents.forEach((document) =>
+          document.fc.setValue(isChecked, { emitEvent: false }),
+        );
+        if (isChecked) {
+          this.selectedCount = this.documents.length;
+        } else {
+          this.selectedCount = 0;
+        }
+        this.changeRef.detectChanges();
+      }),
+    );
+    await this.fetchPage();
+    this.changeRef.detectChanges();
+  }
+
+  private async fetchRepository(fetchPolicy: FetchPolicy = 'cache-first') {
+    const repository = this.repository();
+    if (repository.product === GqlVertical.VisualDiff) {
+      this.viewModeFc.setValue('diff');
+    }
+    this.compareByField = repository.plugins.find(
+      (plugin) => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffRecords,
+    )?.params?.org_feedless_diff_records?.compareBy?.field;
+
+    if (
+      repository.visibility === GqlVisibility.IsPrivate &&
+      repository.shareKey?.length > 0
+    ) {
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
+    } else {
+      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom`;
+    }
+    this.changeRef.detectChanges();
+  }
+
+  hostname(url: string): string {
+    try {
+      return new URL(url).hostname;
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+  async editRepository(accordions: RepositoryModalAccordion[] = []) {
+    const componentProps: RepositoryModalComponentProps = {
+      repository: this.repository(),
+      openAccordions: accordions,
+    };
+    await this.modalProvider.openRepositoryEditor(
+      RepositoryModalComponent,
+      componentProps,
+    );
+    await this.popoverCtrl.dismiss();
+  }
+
+  dismissModal() {
+    this.modalCtrl.dismiss();
+  }
+
+  protected async fetchPage(page = 0) {
+    this.currentDocumentsPage = page;
+    this.selectAllFc.setValue(false);
+    this.loading = true;
+    this.changeRef.detectChanges();
+    const documents = await this.recordService.findAllByRepositoryId(
+      {
+        cursor: {
+          page,
+          pageSize: 10,
+        },
+        where: {
+          repository: {
+            id: this.repository().id,
+          },
+        },
+      },
+      'network-only',
+    );
+    this.documents = documents.map((document) => {
+      const fc = new FormControl<boolean>(false);
+      this.subscriptions.push(
+        fc.valueChanges.subscribe((isChecked) => {
+          if (isChecked) {
+            this.selectedCount++;
+          } else {
+            this.selectedCount--;
+          }
+          this.selectAllFc.setValue(this.selectedCount !== 0, {
+            emitEvent: false,
+          });
+        }),
+      );
+      return {
+        ...document,
+        fc: fc,
+      };
+    });
+    this.loading = false;
+    this.changeRef.detectChanges();
+  }
+
+  getRetentionStrategy(): string {
+    const repository = this.repository();
+    if (repository.retention.maxAgeDays || repository.retention.maxCapacity) {
+      if (repository.retention.maxAgeDays && repository.retention.maxCapacity) {
+        return `${repository.retention.maxAgeDays} days, ${repository.retention.maxCapacity} items`;
+      } else {
+        if (repository.retention.maxAgeDays) {
+          return `${repository.retention.maxAgeDays} days`;
+        } else {
+          return `${repository.retention.maxCapacity} items`;
+        }
+      }
+    } else {
+      return 'Auto';
+    }
+  }
+
+  async deleteRepository() {
+    await this.popoverCtrl.dismiss();
+    const alert = await this.alertCtrl.create({
+      header: 'Delete Feed?',
+      message: `You won't be able to recover it.`,
+      buttons: [
+        {
+          text: 'Cancel',
+          role: 'cancel',
+        },
+        {
+          text: 'Yes, Delete',
+          role: 'confirm',
+          cssClass: 'confirm-button',
+          handler: async () => {
+            await this.repositoryService.deleteRepository({
+              id: this.repository().id,
+            });
+            await this.router.navigateByUrl('/feeds?reload=true');
+          },
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  getTags(document: Record) {
+    return tagsToString(document.tags);
+  }
+
+  playAudio(document: Record): void {
+    this.playDocument = document;
+  }
+
+  getDocumentUrl(document: Record): string {
+    if (this.track()) {
+      return `${this.serverConfig.apiUrl}/article/${document.id}`;
+    } else {
+      return document.url;
+    }
+  }
+
+  private assessIsOwner() {
+    this.isOwner = this.repository()?.ownerId === this.currentUserId;
+    this.changeRef.detectChanges();
+  }
+
+  async deleteAllSelected() {
+    const selected = this.documents.filter((document) => document.fc.value);
+    await this.recordService.removeById({
+      where: {
+        repository: {
+          id: this.repository().id,
+        },
+        id: {
+          in: selected.map((document) => document.id),
+        },
+      },
+    });
+    this.documents = without(this.documents, ...selected);
+    this.selectAllFc.setValue(false);
+    this.fetchPage(this.currentDocumentsPage);
+    this.changeRef.detectChanges();
+  }
+
+  getDocumentPairs() {
+    const pairs: Pair<Record, Record>[] = [];
+    for (let i = 0; i < this.documents.length - 1; i++) {
+      pairs.push({
+        a: this.documents[i + 1],
+        b: this.documents[i],
+      });
+    }
+    return pairs;
+  }
+
+  async forceSync() {
+    await this.repositoryService.forceSourceSync(this.repository().id);
+  }
+
+  async showCode() {
+    await this.modalProvider.openCodeEditorModal(CodeEditorModalComponent, {
+      title: 'JSON Editor',
+      text: JSON.stringify(
+        await this.repositoryService.getRepositoryInputWithSourcesAndFlow(
+          this.repository(),
+        ),
+        null,
+        2,
+      ),
+      contentType: 'json',
+    });
+    // todo use editor data
+  }
+
+  async starRepository() {
+    await this.authGuard.assertLoggedIn();
+    await this.annotationService.createAnnotation({
+      where: {
+        repository: {
+          id: this.repository().id,
+        },
+      },
+      annotation: {
+        upVote: {
+          set: true,
+        },
+      },
+    });
+    await this.fetchRepository('network-only');
+  }
+
+  async unstarRepository() {
+    await this.annotationService.deleteAnnotation({
+      where: {
+        id: this.getUpvoteAnnotation().id,
+      },
+    });
+    await this.fetchRepository('network-only');
+  }
+
+  getStartCount(): string | number {
+    const upVotes = this.repository()?.annotations?.upVotes || 0;
+    if (upVotes >= 1000) {
+      return (upVotes / 1000.0).toFixed(1) + 'k';
+    } else {
+      return upVotes;
+    }
+  }
+
+  hasCurrentUserStarred(): boolean {
+    return !isUndefined(this.getUpvoteAnnotation());
+  }
+
+  private getUpvoteAnnotation(): Annotation | undefined {
+    return this.repository().annotations?.votes?.find((v) => v.upVote);
+  }
+
+  getText(document: Record) {
+    if (this.currentUserId) {
+      return document.text;
+    } else {
+      return document.text.substring(0, 150);
+    }
+  }
+
+  async exportRepository() {
+    await this.repositoryService.downloadRepositories(
+      [this.repository()],
+      `feedless-repo-${this.repository().id}.json`,
+    );
+  }
+
+  async openSourcesModal() {
+    await this.sourcesModal().present();
+  }
+
+  async appendSourcesFromJson(uploadEvent: Event) {
+    return this.sourceService.uploadFeedlessJson(
+      uploadEvent,
+      this.repository().id,
+    );
+  }
+
+  async openDataModal() {}
+}

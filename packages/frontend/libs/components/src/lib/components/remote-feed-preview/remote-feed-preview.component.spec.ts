@@ -1,0 +1,23 @@
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+
+import { RemoteFeedPreviewComponent } from './remote-feed-preview.component';
+import { AppTestModule } from '@feedless/test';
+
+describe('RemoteFeedPreviewComponent', () => {
+  let component: RemoteFeedPreviewComponent;
+  let fixture: ComponentFixture<RemoteFeedPreviewComponent>;
+
+  beforeEach(waitForAsync(async () => {
+    await TestBed.configureTestingModule({
+      imports: [AppTestModule.withDefaults(), RemoteFeedPreviewComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(RemoteFeedPreviewComponent);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+  }));
+
+  it('should create', () => {
+    expect(component).toBeTruthy();
+  });
+});

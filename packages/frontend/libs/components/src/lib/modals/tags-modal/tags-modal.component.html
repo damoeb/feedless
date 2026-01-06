@@ -1,0 +1,36 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Tags</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <ion-list>
+    <app-searchbar
+      (querySubmit)="addTag($event)"
+      buttonText="Add Tag"
+      color="primary"
+      placeholder="Type a tag"
+    ></app-searchbar>
+
+    @if (!tags) {
+      <ion-item>
+        <ion-label>
+          <em>No tags yet</em>
+        </ion-label>
+      </ion-item>
+    }
+    @for (tag of tags; track tag) {
+      <ion-item>
+        #{{ tag }}
+        <ion-button (click)="removeTag(tag)" fill="clear" slot="end" title="Remove">
+          <ion-icon color="danger" name="trash-outline"></ion-icon>
+        </ion-button>
+      </ion-item>
+    }
+  </ion-list>
+</ion-content>

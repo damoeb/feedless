@@ -1,0 +1,213 @@
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+} from '@angular/core';
+import { filter } from 'lodash-es';
+import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
+import {
+  FeatureService,
+  Plan,
+  PlanService,
+  ProductService,
+} from '@feedless/services';
+import {
+  FeatureGroup,
+  GqlFeatureName,
+  GqlPricedProduct,
+  GqlRecurringPaymentInterval,
+  GqlVertical,
+  Product,
+} from '@feedless/graphql-api';
+import {
+  PlanColumnComponent,
+  StringFeatureGroup,
+} from '../plan-column/plan-column.component';
+
+import {
+  IonButton,
+  IonCol,
+  IonLabel,
+  IonNote,
+  IonRow,
+  IonSegment,
+  IonSegmentButton,
+} from '@ionic/angular/standalone';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+
+type TargetGroup = 'organization' | 'individual' | 'other';
+type ServiceFlavor = 'selfHosting' | 'saas';
+type PaymentInterval = GqlRecurringPaymentInterval;
+
+type ProductWithFeatureGroups = Product & {
+  stringifiedFeatureGroups: StringFeatureGroup[];
+  featureGroups: FeatureGroup[];
+};
+
+@Component({
+  selector: 'app-pricing',
+  templateUrl: './pricing.component.html',
+  styleUrls: ['./pricing.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [
+    IonSegment,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSegmentButton,
+    IonLabel,
+    PlanColumnComponent,
+    IonRow,
+    IonCol,
+    IonNote,
+    IonButton,
+    RemoveIfProdDirective,
+  ],
+  standalone: true,
+})
+export class PricingComponent implements OnInit {
+  private readonly featureService = inject(FeatureService);
+  private readonly productService = inject(ProductService);
+  private readonly changeRef = inject(ChangeDetectorRef);
+  private readonly planService = inject(PlanService);
+
+  targetGroupFc = new FormControl<TargetGroup>('individual');
+  paymentIntervalFc = new FormControl<PaymentInterval>(
+    GqlRecurringPaymentInterval.Yearly,
+  );
+  serviceFlavorFc = new FormControl<ServiceFlavor>('saas');
+  serviceFlavorSelf: ServiceFlavor = 'selfHosting';
+  serviceFlavorCloud: ServiceFlavor = 'saas';
+  targetGroupOrganization: TargetGroup = 'organization';
+  targetGroupIndividual: TargetGroup = 'individual';
+  targetGroupOther: TargetGroup = 'other';
+  paymentIntervalMonthly: PaymentInterval = GqlRecurringPaymentInterval.Monthly;
+  paymentIntervalYearly: PaymentInterval = GqlRecurringPaymentInterval.Yearly;
+  private products: ProductWithFeatureGroups[];
+
+  readonly vertical = input.required<GqlVertical>();
+
+  readonly serviceFlavor = input<ServiceFlavor>();
+
+  readonly hideServiceFlavor = input<boolean>();
+
+  readonly selectionChange = output<Product>();
+  protected subscribedPlans: Plan[] = [];
+
+  async ngOnInit() {
+    const serviceFlavor = this.serviceFlavor();
+    if (serviceFlavor) {
+      this.serviceFlavorFc.setValue(serviceFlavor);
+    }
+    const products = await this.productService.listProducts({
+      vertical: this.vertical(),
+    });
+
+    this.subscribedPlans = await this.planService.fetchPlans({ page: 0 });
+
+    this.products = await Promise.all(
+      products.map<Promise<ProductWithFeatureGroups>>(async (p) => {
+        const featureGroups = p.featureGroupId
+          ? await this.featureService.findAll(
+              { id: { eq: p.featureGroupId } },
+              true,
+            )
+          : [];
+        return {
+          ...p,
+          stringifiedFeatureGroups:
+            featureGroups.length > 0
+              ? [await this.stringifyFeatureGroup(featureGroups)]
+              : [],
+          featureGroups: featureGroups.length > 0 ? featureGroups : [],
+        };
+      }),
+    );
+    this.changeRef.detectChanges();
+  }
+
+  filteredProducts(): ProductWithFeatureGroups[] {
+    if (!this.products) {
+      return [];
+    }
+    return filter<ProductWithFeatureGroups>(this.products, this.filterParams());
+  }
+
+  private filterParams() {
+    if (this.serviceFlavorFc.value === 'saas') {
+      return {
+        isCloud: true,
+      };
+    }
+    if (this.targetGroupFc.value === 'individual') {
+      return {
+        individual: true,
+      };
+    }
+    if (this.targetGroupFc.value === 'organization') {
+      return {
+        enterprise: true,
+      };
+    }
+    if (this.targetGroupFc.value === 'other') {
+      return {
+        other: true,
+      };
+    }
+  }
+
+  filteredPrices(prices: GqlPricedProduct[]): GqlPricedProduct[] {
+    return filter<GqlPricedProduct>(prices)
+      .filter((price) => price.price >= 0)
+      .filter(
+        (price) => price.recurringInterval === this.paymentIntervalFc.value,
+      );
+  }
+
+  private async stringifyFeatureGroup(
+    featureGroups: FeatureGroup[],
+  ): Promise<StringFeatureGroup> {
+    return {
+      groupLabel: 'Features',
+      features: featureGroups[0].features,
+    };
+  }
+
+  checkout(product: Product) {
+    this.selectionChange.emit(product);
+  }
+
+  getProductActionLabel(product: ProductWithFeatureGroups) {
+    if (product.isCloud) {
+      const features = product.featureGroups.flatMap((fg) => fg.features);
+      const canActivate = features
+        .filter((feature) => feature.name === GqlFeatureName.CanActivatePlan)
+        .some((feature) => feature.value.boolVal.value === true);
+      if (canActivate) {
+        return 'Subscribe';
+      } else {
+        return 'Notify me';
+      }
+    } else {
+      return 'Buy';
+    }
+  }
+
+  formatPrice(price: number) {
+    return price.toFixed(2);
+  }
+
+  hasSubscribed(product: ProductWithFeatureGroups): boolean {
+    return (
+      product.isCloud &&
+      this.subscribedPlans.some(
+        (subscribedPlan) => subscribedPlan.productId === product.id,
+      )
+    );
+  }
+
+  cancelSubscription(product: ProductWithFeatureGroups) {}
+}

@@ -1,0 +1,9 @@
+app-transform-website-to-feed {
+  display: flex;
+  flex: 1;
+}
+
+ion-content::part(scroll) {
+  display: flex;
+  flex-direction: column;
+}

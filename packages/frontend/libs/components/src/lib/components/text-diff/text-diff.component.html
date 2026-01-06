@@ -1,0 +1,10 @@
+<div class="text-diff">
+  <app-code-editor [lineWrapping]="false" [readOnly]="true" [text]="textBefore"></app-code-editor>
+  <app-code-editor
+    #diffEditor
+    [highlightedLines]="highlightedLines"
+    [lineWrapping]="false"
+    [readOnly]="true"
+    [text]="textAfter"
+  ></app-code-editor>
+</div>

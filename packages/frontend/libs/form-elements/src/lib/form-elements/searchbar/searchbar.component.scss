@@ -1,0 +1,45 @@
+@use '../../../mixins';
+
+.url-form {
+  --border-color: rgba(var(--ion-color-medium-rgb), 0.4);
+  --box-shadow: none;
+  --border-width: 2px;
+  background: var(--app-background);
+
+  margin: auto;
+  border: var(--border-width) solid var(--border-color);
+  border-radius: 8px;
+  max-width: var(--width);
+
+  ion-button {
+    margin-right: 5px;
+  }
+
+  @include mixins.search-form();
+
+  ion-searchbar {
+    text-align: left;
+    margin-left: 5px;
+    background: var(--app-background);
+    --box-shadow: none;
+    padding-left: 0;
+
+    input {
+      padding-right: 0 !important;
+    }
+  }
+
+  &:has(ion-input.has-focus) {
+    --border-color: rgba(var(--ion-color-primary-rgb), 1);
+  }
+
+  &:hover {
+    --border-color: rgba(var(--ion-color-primary-rgb), 0.6);
+  }
+
+  ion-input {
+    --border-style: none;
+  }
+
+  //padding-right: 10px;
+}

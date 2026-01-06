@@ -1,0 +1,23 @@
+<ion-row>
+  <ion-col size="2"></ion-col>
+  <ion-col size="8" style="align-content: center">
+    <ion-buttons class="ion-justify-content-center">
+      @if (currentPage() !== 0) {
+        <ion-button (click)="pageChange.emit(currentPage() - 1)"> Previous </ion-button>
+      }
+      <ion-button>{{ currentPage() + 1 }}</ion-button>
+      @if (!isLastPage()) {
+        <ion-button (click)="pageChange.emit(currentPage() + 1)"> Next </ion-button>
+      }
+    </ion-buttons>
+  </ion-col>
+  <ion-col size="2">
+    @if (showPageSize()) {
+      <ion-select label="Page size" labelPlacement="start" [formControl]="pageSizeFc">
+        <ion-select-option [value]="10">10</ion-select-option>
+        <ion-select-option [value]="20">20</ion-select-option>
+        <ion-select-option [value]="50">50</ion-select-option>
+      </ion-select>
+    }
+  </ion-col>
+</ion-row>

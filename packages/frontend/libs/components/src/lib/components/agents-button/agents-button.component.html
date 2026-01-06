@@ -1,0 +1,11 @@
+<ion-button fill="clear" routerLink="/agents">
+  <ion-label>
+    Agents
+    @if (isLoggedIn && agentCount === 0) {
+      <app-bubble color="red" style="margin-right: 10px"></app-bubble>
+    }
+  </ion-label>
+  @if (isLoggedIn && agentCount > 0) {
+    <ion-chip>{{ agentCount }}</ion-chip>
+  }
+</ion-button>

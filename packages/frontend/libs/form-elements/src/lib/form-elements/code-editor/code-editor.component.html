@@ -1,0 +1,11 @@
+<div
+  (keydown)="handleCtrlDown($event)"
+  (keydown.arrowDown)="$event.stopPropagation()"
+  (keydown.arrowUp)="$event.stopPropagation()"
+  (keydown.enter)="$event.stopPropagation()"
+  (keyup)="handleCtrlUp($event)"
+  class="editor-wrapper"
+>
+  <ng-content select="[controls]"></ng-content>
+  <div #editor [ngClass]="{ 'editor--ctrl-pressed': ctrlPressed }" class="editor"></div>
+</div>

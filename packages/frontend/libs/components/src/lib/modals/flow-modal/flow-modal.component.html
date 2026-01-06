@@ -1,0 +1,32 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="chevron-back-outline" slot="icon-only"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>Flow</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <div style="flex: 1; display: flex">
+    <div style="flex: 1">
+      <ion-reorder-group [disabled]="false">
+        <ion-item>
+          <ion-label> Item 1 </ion-label>
+          <ion-reorder slot="start"></ion-reorder>
+        </ion-item>
+
+        <ion-item [button]="true">
+          <ion-label> Item 2 </ion-label>
+          <ion-reorder slot="start"></ion-reorder>
+        </ion-item>
+      </ion-reorder-group>
+
+      <ion-button color="primary">
+        <ion-label>Add Plugin</ion-label>
+      </ion-button>
+    </div>
+    <div style="flex: 2">Details</div>
+  </div>
+</ion-content>

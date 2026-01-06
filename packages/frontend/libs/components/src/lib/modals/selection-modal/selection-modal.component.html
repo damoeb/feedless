@@ -1,0 +1,49 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="closeModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+    <ion-title>{{ title }}</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="importSelected()" color="primary" fill="solid">
+        Import Selected
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  <p>
+    {{ description }}
+  </p>
+  <ion-list>
+    <ion-item lines="full">
+      <ion-checkbox [formControl]="selectAllFormControl" labelPlacement="end"
+        >Select
+        @if (selectAllFormControl.value) {
+          None
+        } @else {
+          All
+        }
+      </ion-checkbox>
+    </ion-item>
+    @for (ref of entitiesWithFormControl; track createTrackById(ref)) {
+      <div>
+        <ion-item lines="full" [disabled]="ref.entity.disabled">
+          <ion-checkbox
+            [formControl]="ref.formControl"
+            aria-label="toggle entity"
+            slot="start"
+          ></ion-checkbox>
+          <ion-label>
+            <p class="content">{{ ref.entity.label }}</p>
+            @if (ref.entity.note) {
+              <ion-note color="warning">{{ ref.entity.note }}</ion-note>
+            }
+          </ion-label>
+        </ion-item>
+      </div>
+    }
+  </ion-list>
+</ion-content>

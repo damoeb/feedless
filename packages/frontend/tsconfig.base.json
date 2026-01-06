@@ -18,7 +18,12 @@
       "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"],
       "@feedless/services": ["libs/services/src/index.ts"],
       "@feedless/components": ["libs/components/src/index.ts"],
-      "@feedless/shared-types": ["libs/shared-types/src/index.ts"]
+      "@feedless/shared-types": ["libs/shared-types/src/index.ts"],
+      "@feedless/modals": ["libs/modals/src/index.ts"],
+      "@feedless/guards": ["libs/guards/src/index.ts"],
+      "@feedless/form-elements": ["libs/form-elements/src/index.ts"],
+      "@feedless/directives": ["libs/directives/src/index.ts"],
+      "@feedless/test": ["libs/test/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

@@ -1,0 +1,102 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Interactive Website</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()">
+        <ion-icon name="close-outline"></ion-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <ion-row class="website flex_column">
+    <app-interactive-website [sourceBuilder]="sourceBuilder" style="flex: 1; display: flex">
+    </app-interactive-website>
+  </ion-row>
+
+  <ion-row class="actions">
+    <ion-list [ngClass]="{ 'hide-non-ui-actions': hideNonUiActions }" class="flex__column">
+      <!--      <ion-reorder-group [disabled]="false" (ionItemReorder)="handleActionReorder($any($event))">-->
+      @for (action of getActionFgs(); track action; let i = $index) {
+        <ion-item [ngClass]="{ action__raw: !!action.value.raw }">
+          <!--          <ion-reorder slot="start"></ion-reorder>-->
+          <div class="flex__row" style="column-gap: 5px">
+            <div>
+              <ion-select
+                [formControl]="action.controls.type"
+                fill="outline"
+                interface="popover"
+                placeholder="Action"
+              >
+                @for (action of actionTypes; track action) {
+                  <ion-select-option [value]="action">
+                    {{ action }}
+                  </ion-select-option>
+                }
+              </ion-select>
+            </div>
+            @if (action.value.raw) {
+              <div>
+                {{ action.value.raw | json }}
+              </div>
+            }
+            @if (action.value.type === 'click') {
+              <ion-button
+                (click)="pickPosition(action)"
+                [ngClass]="{ 'ng-invalid': action.invalid }"
+                color="medium"
+                expand="block"
+                fill="outline"
+              >
+                {{ getPositionLabel(action) }}
+              </ion-button>
+            }
+            @if (action.value.type === 'header') {
+              <app-input placeholder="Header Name"> </app-input>
+              <app-input placeholder="Header Value"> </app-input>
+            }
+            <div class="filler"></div>
+            <ion-button (click)="removeAction(i)" color="medium" fill="clear">
+              <ion-icon name="trash-outline"></ion-icon>
+            </ion-button>
+          </div>
+        </ion-item>
+      }
+      <!--      </ion-reorder-group>-->
+      @if (actionsFg.length < 4) {
+        <ion-item [disabled]="actionsFg.invalid">
+          <ion-label>
+            <a (click)="addAction()" href="javascript:void(0)">Add Action</a>
+          </ion-label>
+        </ion-item>
+      }
+    </ion-list>
+  </ion-row>
+  <!--  </form>-->
+</ion-content>
+<ion-footer>
+  <ion-toolbar>
+    <ion-buttons slot="start">
+      <ion-button (click)="hideNonUiActions = !hideNonUiActions">
+        @if (hideNonUiActions) {
+          <ion-label color="medium">Debug Mode Off </ion-label>
+        }
+        @if (!hideNonUiActions) {
+          <span>Debug Mode On</span>
+        }
+      </ion-button>
+    </ion-buttons>
+    <ion-buttons slot="end">
+      <ion-button (click)="dismissModal()"> Cancel</ion-button>
+      <ion-button
+        (click)="applyChanges()"
+        [disabled]="actionsFg.invalid || !sourceBuilder.response"
+        color="success"
+        expand="full"
+        fill="solid"
+      >
+        Apply
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-footer>

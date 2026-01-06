@@ -1,0 +1,5 @@
+@use '../../../mixins';
+
+.builder-label {
+  @include mixins.builder-label;
+}

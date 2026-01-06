@@ -1,0 +1,69 @@
+<div class="flex__column">
+  <div
+    [ngClass]="{ 'highlight-border': mode === 'position' || mode === 'mark' }"
+    style="position: relative; flex: 1; overflow: auto"
+  >
+    <div
+      (mousedown)="handleMouseDown($event)"
+      (mousemove)="handleMouseMove($event)"
+      (mouseout)="handleMouseOut()"
+      (mouseup)="handleMouseUp($event)"
+      draggable="false"
+      style="position: absolute"
+    >
+      <svg #svgContainer class="annotation-svg">
+        <!--        <defs>-->
+        <!--          <mask id="annotationMask">-->
+        <!--            <rect width="100%" height="100%" fill="white"/>-->
+        <!--            @if (box) {-->
+        <!--              <rect-->
+        <!--                [attr.x]="box.x"-->
+        <!--                [attr.y]="box.y"-->
+        <!--                [attr.width]="box.w"-->
+        <!--                [attr.height]="box.h"-->
+        <!--                fill="black"-->
+        <!--              />-->
+        <!--            }-->
+        <!--          </mask>-->
+        <!--        </defs>-->
+
+        <!-- Background image -->
+        <image
+          #backgroundImage
+          [attr.href]="imageUrl"
+          [attr.width]="imageWidth"
+          [attr.height]="imageHeight"
+          class="background-image"
+        />
+
+        @if (box) {
+          <!-- Bounding box outline -->
+          <g>
+            <rect
+              [attr.x]="box.x"
+              [attr.y]="box.y"
+              [attr.width]="box.w"
+              [attr.height]="box.h"
+              class="bounding-box"
+              (click)="deleteBox()"
+            />
+          </g>
+        }
+
+        <!-- Position marker -->
+        @if (position) {
+          <g>
+            <circle
+              [attr.cx]="position.x"
+              [attr.cy]="position.y"
+              r="20"
+              [attr.stroke]="strokeStyle()"
+              class="position-marker"
+              (click)="deletePosition()"
+            />
+          </g>
+        }
+      </svg>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,36 @@
+<ion-searchbar
+  placeholder="Search your Notebook"
+  #searchbar
+  autofocus
+  (ionFocus)="onFocus()"
+  [formControl]="queryControl"
+></ion-searchbar>
+<ion-list style="background: transparent">
+  <!--  @if (busy) {-->
+  <!--    <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>-->
+  <!--  }-->
+  <!--  @if (getSuggestions().length === 0) {-->
+  <!--    <ion-item>-->
+  <!--      <ion-label>No matches</ion-label>-->
+  <!--    </ion-item>-->
+  <!--  }-->
+  @for (suggestion of getSuggestions(); track suggestion; let i = $index) {
+    <ion-item
+      (click)="pickSuggestion(suggestion)"
+      (mouseenter)="focussedMatchIndex = i"
+      [button]="true"
+      [ngClass]="{
+        active: i === focussedMatchIndex,
+      }"
+      class="suggestion"
+      tabindex="-1"
+    >
+      <ion-label class="suggestion-body ion-text-nowrap">
+        <h3>
+          <strong class="ion-padding-end">{{ suggestion.title }}</strong>
+          <span [innerHTML]="suggestion.highlightedTitle"></span>
+        </h3>
+      </ion-label>
+    </ion-item>
+  }
+</ion-list>

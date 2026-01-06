@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { UploadService } from './upload.service';
-import { AppTestModule } from '../app-test.module';
+import { AppTestModule } from '@feedless/test';
 
 describe('UploadService', () => {
   let service: UploadService;
