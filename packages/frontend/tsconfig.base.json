@@ -15,7 +15,10 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"]
+      "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"],
+      "@feedless/services": ["libs/services/src/index.ts"],
+      "@feedless/components": ["libs/components/src/index.ts"],
+      "@feedless/shared-types": ["libs/shared-types/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]
