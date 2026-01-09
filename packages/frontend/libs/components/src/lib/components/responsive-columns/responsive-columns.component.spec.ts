@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ResponsiveColumnsComponent } from './responsive-columns.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('ResponsiveColumnsComponent', () => {
   let component: ResponsiveColumnsComponent;

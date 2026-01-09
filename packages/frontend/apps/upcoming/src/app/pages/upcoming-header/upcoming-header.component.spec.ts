@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UpcomingHeaderComponent } from './upcoming-header.component';
-import { AppTestModule, mockEvents } from '../../../app-test.module';
+import { AppTestModule, mockEvents } from '@feedless/test';
 import dayjs from 'dayjs';
-import { getCachedLocations } from '../places';
-import { AppConfigService } from '../../../services/app-config.service';
+import { getCachedLocations } from '../../../../../../libs/geo/src/lib/places';
+import { AppConfigService } from '@feedless/services';
 import { of } from 'rxjs';
 
 describe('UpcomingHeaderComponent', () => {

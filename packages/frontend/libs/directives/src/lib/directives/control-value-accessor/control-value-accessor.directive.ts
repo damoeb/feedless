@@ -13,9 +13,12 @@ import { distinctUntilChanged, startWith, Subject, takeUntil, tap } from 'rxjs';
 // source https://github.com/DevBySeb/DevBySeb/pull/3/files#diff-7f95321ed3e891b3a7308fb1c46eacfd2007f9aec2da0b47d430a80c9aa2e6cd
 @Directive({
   selector: '[appControlValueAccessor]',
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone: false,
 })
-export class ControlValueAccessorDirective<T> implements ControlValueAccessor, OnInit {
+export class ControlValueAccessorDirective<T>
+  implements ControlValueAccessor, OnInit
+{
   control: FormControl<T> | undefined;
   isRequired = false;
 
@@ -23,6 +26,7 @@ export class ControlValueAccessorDirective<T> implements ControlValueAccessor, O
   private _destroy$ = new Subject<void>();
   private _onTouched!: () => T;
 
+  // eslint-disable-next-line @angular-eslint/prefer-inject
   constructor(private injector: Injector) {}
 
   ngOnInit() {
@@ -41,7 +45,8 @@ export class ControlValueAccessorDirective<T> implements ControlValueAccessor, O
             .getControl(formControl as FormControlName);
           break;
         default:
-          this.control = (formControl as FormControlDirective).form as FormControl;
+          this.control = (formControl as FormControlDirective)
+            .form as FormControl;
           break;
       }
     } catch (err) {
@@ -50,7 +55,7 @@ export class ControlValueAccessorDirective<T> implements ControlValueAccessor, O
   }
 
   writeValue(value: T): void {
-    if (value !== this.control.value) {
+    if (this.control && value !== this.control.value) {
       this.control.setValue(value);
     }
   }
@@ -61,7 +66,7 @@ export class ControlValueAccessorDirective<T> implements ControlValueAccessor, O
         takeUntil(this._destroy$),
         startWith(this.control.value),
         distinctUntilChanged(),
-        tap((val) => fn(val))
+        tap((val) => fn(val)),
       )
       .subscribe(() => this.control?.markAsUntouched());
   }

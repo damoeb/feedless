@@ -5,7 +5,7 @@ import {
   mockPlugins,
   mockRecords,
   mockRepository,
-} from '@feedless/test';
+} from '@feedless/testing';
 import { FeedBuilderComponent } from './feed-builder.component';
 import {
   standaloneV1WebToFeedRoute,

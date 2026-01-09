@@ -29,7 +29,7 @@ export const decorateBlockquote = ViewPlugin.fromClass(
     getDecorations(view: EditorView): DecorationSet {
       const builder: Range<Decoration>[] = [];
 
-      for (let { from, to } of view.visibleRanges) {
+      for (const { from, to } of view.visibleRanges) {
         let line = view.state.doc.lineAt(from);
         while (line.from <= to) {
           if (line.text.trimStart().startsWith('>')) {

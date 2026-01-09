@@ -60,13 +60,14 @@ import {
   RepositoryFull,
 } from '@feedless/graphql-api';
 import { Router, RouterLink } from '@angular/router';
-import { environment } from '../../../environments/environment';
 import {
   ArrayElement,
+  DEFAULT_FETCH_CRON,
+  environment,
   isDefined,
   Nullable,
   TypedFormGroup,
-} from '@feedless/shared-types';
+} from '@feedless/core';
 import { omit, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import {
@@ -74,18 +75,17 @@ import {
   ellipsisHorizontalOutline,
   flaskOutline,
 } from 'ionicons/icons';
-import { DEFAULT_FETCH_CRON } from '../../defaults';
+import { BubbleComponent } from '../../components/bubble/bubble.component';
+import { FetchRateAccordionComponent } from '../../components/fetch-rate-accordion/fetch-rate-accordion.component';
 import {
-  BubbleComponent,
-  FetchRateAccordionComponent,
   FilterField,
   FilterItemsAccordionComponent,
   FilterOperator,
-} from '@feedless/components';
+} from '../../components/filter-items-accordion/filter-items-accordion.component';
 import { RemoveIfProdDirective } from '@feedless/directives';
 import { JsonPipe, KeyValuePipe } from '@angular/common';
 import { FlowModalComponent } from '../flow-modal/flow-modal.component';
-import { ModalProvider } from '../../modal-provider.service';
+import { ModalProvider } from '../modal-provider.service';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;

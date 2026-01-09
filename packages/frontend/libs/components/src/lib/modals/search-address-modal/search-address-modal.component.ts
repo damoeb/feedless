@@ -12,13 +12,12 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ModalCancel } from '../../app.module';
-import { OpenStreetMapService } from '@feedless/services';
 import { GqlGeoPoint } from '@feedless/graphql-api';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { NamedLatLon } from '../../types';
+import { NamedLatLon, Nullable } from '@feedless/core';
 import { SearchbarComponent } from '@feedless/form-elements';
+import { OpenStreetMapService } from '@feedless/geo';
 
 @Component({
   selector: 'app-search-address-modal',
@@ -52,7 +51,7 @@ export class SearchAddressModalComponent {
   }
 
   async closeModal() {
-    const response: ModalCancel = {
+    const response = {
       cancel: true,
     };
 
@@ -70,7 +69,7 @@ export class SearchAddressModalComponent {
     await this.modalCtrl.dismiss(match);
   }
 
-  private parsePoint(query: string): GqlGeoPoint | undefined {
+  private parsePoint(query: string): Nullable<GqlGeoPoint> {
     try {
       const parts = query.trim().split(/[, ]+/);
       const lat = parseFloat(parts[0]);
@@ -78,7 +77,10 @@ export class SearchAddressModalComponent {
       if (!isNaN(lat) && !isNaN(lng)) {
         return { lat, lng };
       }
-    } catch (e) {}
+    } catch (e) {
+      // ignore
+    }
+    return null;
   }
 
   pickLatLon() {

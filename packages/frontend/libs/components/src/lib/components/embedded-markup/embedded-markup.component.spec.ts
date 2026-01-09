@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EmbeddedMarkupComponent } from './embedded-markup.component';
-import { AppTestModule } from '@feedless/test';
-import { SourceBuilder } from '../interactive-website/source-builder';
+import { AppTestModule } from '@feedless/testing';
+import { SourceBuilder } from '@feedless/source';
 import { ScrapeService } from '@feedless/services';
 
 describe('EmbeddedMarkupComponent', () => {

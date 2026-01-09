@@ -1,10 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AppTestModule, mockRepository } from '../../../app-test.module';
+import { AppTestModule, mockRepository } from '@feedless/test';
 import { EditorPage } from './editor.page';
-import { AppConfigService } from '../../../services/app-config.service';
-import { PageService } from '../../../services/page.service';
+import { AppConfigService, PageService } from '@feedless/services';
 
-describe('ManagementPage', () => {
+describe('EditorPage', () => {
   let component: EditorPage;
   let fixture: ComponentFixture<EditorPage>;
 

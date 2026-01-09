@@ -10,6 +10,4 @@ import { ProductHeadlineComponent } from '../product-headline/product-headline.c
 })
 export class ProductHeaderComponent {
   readonly productTitle = input.required<string>();
-
-  constructor() {}
 }

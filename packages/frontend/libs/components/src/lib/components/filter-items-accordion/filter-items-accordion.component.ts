@@ -17,7 +17,7 @@ import {
 import { dateFormat } from '@feedless/services';
 import { debounce, interval, merge, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
-import { ArrayElement, TypedFormGroup } from '@feedless/shared-types';
+import { ArrayElement, TypedFormGroup } from '@feedless/core';
 import { addIcons } from 'ionicons';
 import { addOutline, trashOutline } from 'ionicons/icons';
 

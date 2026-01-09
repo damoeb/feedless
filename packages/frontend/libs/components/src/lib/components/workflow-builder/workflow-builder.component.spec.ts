@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { WorkflowBuilderComponent } from './workflow-builder.component';
-import { AppTestModule, mockRepositories } from '@feedless/test';
+import { AppTestModule, mockRepositories } from '@feedless/testing';
 
 describe('WorkflowBuilderComponent', () => {
   let component: WorkflowBuilderComponent;

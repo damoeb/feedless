@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { TableComponent } from './table.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('TableComponent', () => {
   let component: TableComponent<any>;

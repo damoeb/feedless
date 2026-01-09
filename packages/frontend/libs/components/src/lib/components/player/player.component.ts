@@ -6,6 +6,7 @@ import { addIcons } from 'ionicons';
 import { playOutline } from 'ionicons/icons';
 
 import { IonButton, IonIcon, IonNote } from '@ionic/angular/standalone';
+import { Nullable } from '@feedless/core';
 
 type Enclosure = GetElementType<Record['attachments']>;
 
@@ -33,11 +34,12 @@ export class PlayerComponent {
     return document.attachments?.some((e) => e.type.startsWith('audio/'));
   }
 
-  firstAudioStream(document: Record): SafeResourceUrl {
+  firstAudioStream(document: Record): Nullable<SafeResourceUrl> {
     const audioStream = this.firstAudioEnclosure(document);
     if (audioStream) {
       return this.domSanitizer.bypassSecurityTrustResourceUrl(audioStream.url);
     }
+    return undefined;
   }
 
   private firstAudioEnclosure(document: Record): Enclosure {
@@ -55,6 +57,7 @@ export class PlayerComponent {
         return `${parseInt(`${audioStream.duration / 60}`)}  Min.`;
       }
     }
+    return '';
   }
 
   playAudio() {

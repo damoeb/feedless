@@ -49,8 +49,6 @@ export class SegmentedOutputComponent implements OnInit {
 
   // timeSegments: KeyLabelOption<number>[] = this.getTimeSegments();
 
-  constructor() {}
-
   ngOnInit() {
     // if (this.segmented) {
     //   this.segmented = {

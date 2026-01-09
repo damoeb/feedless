@@ -26,21 +26,20 @@ import {
   ModalController,
   ToastController
 } from '@ionic/angular/standalone';
-import {
-  ApolloAbortControllerService,
-  AppConfigService,
-  ScrapeService,
-  ServerConfigService,
-  SessionService,
-  VerticalSpecWithRoutes
-} from '@feedless/services';
+import { ApolloAbortControllerService, AppConfigService, ScrapeService, ServerConfigService, SessionService } from '@feedless/services';
 import { ActivatedRoute, Router } from '@angular/router';
-import { InteractiveWebsiteModalComponent, SearchAddressModalComponent, TagsModalComponent } from './feed-builder.component';
-import { ModalProvider } from '../console-button/console-button.component';
 
-import { fixUrl, isValidUrl } from '../../app.module';
+import {
+  fixUrl,
+  isValidUrl,
+  LatLng,
+  Nullable,
+  standaloneV1WebToFeedRoute,
+  standaloneV2FeedTransformRoute,
+  standaloneV2WebToFeedRoute
+} from '@feedless/core';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
-import { SourceBuilder } from '../interactive-website/source-builder';
+import { SourceBuilder } from '@feedless/source';
 import { addIcons } from 'ionicons';
 import {
   arrowRedoOutline,
@@ -53,12 +52,17 @@ import {
 } from 'ionicons/icons';
 import { SearchbarComponent } from '@feedless/form-elements';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
-import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
-import { LatLng, Nullable } from '@feedless/shared-types';
 import { RemoveIfProdDirective } from '@feedless/directives';
 import { assignIn, first, isArray } from 'lodash-es';
 import { parseQuery, renderPath, renderQuery } from 'typesafe-routes';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import {
+  InteractiveWebsiteModalComponent,
+  InteractiveWebsiteModalComponentProps,
+  ModalProvider,
+  SearchAddressModalComponent,
+  TagsModalComponent
+} from '../../modals';
 
 /**
  * IDEEN
@@ -164,7 +168,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   readonly source = input<GqlSourceInput>();
 
   selectedFeed: NativeOrGenericFeed;
-  productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   errorMessage: string;
 
@@ -211,15 +214,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
 
     this.subscriptions.push(
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
       this.activatedRoute.queryParams.subscribe(async (params) => {
-        if (params.url?.length > 0) {
-          await this.receiveUrl(params.url);
+        if (params['url']?.length > 0) {
+          await this.receiveUrl(params['url']);
         }
       }),
     );
@@ -486,7 +483,6 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
     setTimeout(async () => {
       if (params.context) {
-        debugger;
         await this.webToFeedTransformerComponent().pickGenericFeed({
           selectors: {
             contextXPath: params.context,
@@ -672,6 +668,7 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
         }
       }
     }
+    return null;
   }
 
   reset() {
@@ -696,4 +693,5 @@ export function tagsToString(tags: string[]): string {
   if (tags) {
     return tags.map((tag) => `#${tag}`).join(' ');
   }
+  return '';
 }

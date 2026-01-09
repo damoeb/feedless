@@ -9,8 +9,6 @@ import { IonHeader, IonToolbar } from '@ionic/angular/standalone';
   standalone: true,
 })
 export class PromotionHeaderComponent {
-  constructor() {}
-
   isRoot(): boolean {
     return location.pathname === '/';
   }

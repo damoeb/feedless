@@ -6,7 +6,7 @@ import {
   AppTestModule,
   mocks,
   mockServerSettings,
-} from '@feedless/test';
+} from '@feedless/testing';
 import { ServerConfigService } from '@feedless/services';
 import { ApolloClient } from '@apollo/client/core';
 

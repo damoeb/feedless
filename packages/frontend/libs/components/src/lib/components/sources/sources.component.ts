@@ -34,7 +34,7 @@ import {
   RepositorySource,
 } from '@feedless/graphql-api';
 import { FetchPolicy } from '@apollo/client/core';
-import { ArrayElement, Nullable } from '@feedless/shared-types';
+import { ArrayElement, Nullable } from '@feedless/core';
 import { cloneDeep } from 'lodash-es';
 import {
   FeedOrRepository,
@@ -53,7 +53,7 @@ import {
   ModalProvider,
   SearchAddressModalComponent,
   TagsModalComponent,
-} from '@feedless/components';
+} from '../../modals';
 
 @Component({
   selector: 'app-sources',
@@ -319,6 +319,7 @@ export class SourcesComponent implements OnInit {
           ),
         );
       }
+      throw new Error('Source not provided');
     };
 
     await this.modalProvider.openFeedBuilder(

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 import { FeedBuilderModalComponent } from './feed-builder-modal.component';
 
 describe('FeedBuilderModalComponent', () => {

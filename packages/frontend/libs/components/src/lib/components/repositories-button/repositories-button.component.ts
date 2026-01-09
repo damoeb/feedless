@@ -14,6 +14,4 @@ export class RepositoriesButtonComponent {
   readonly name = input.required<string>();
 
   readonly link = input.required<string>();
-
-  constructor() {}
 }

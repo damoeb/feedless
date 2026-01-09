@@ -21,7 +21,7 @@ class InlineImageWidget extends WidgetType {
   override toDOM() {
     const wrap = document.createElement('div');
     wrap.setAttribute('aria-hidden', 'true');
-    let image = wrap.appendChild(document.createElement('img'));
+    const image = wrap.appendChild(document.createElement('img'));
     image.src = this.url;
     image.className = 'cm-inline-image';
     return wrap;
@@ -33,8 +33,8 @@ class InlineImageWidget extends WidgetType {
 }
 
 function inlineImages(view: EditorView) {
-  let widgets: any[] = [];
-  for (let { from, to } of view.visibleRanges) {
+  const widgets: any[] = [];
+  for (const { from, to } of view.visibleRanges) {
     syntaxTree(view.state).iterate({
       from,
       to,

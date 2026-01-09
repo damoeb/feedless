@@ -42,8 +42,8 @@ export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
   private subscriptions: Subscription[] = [];
   queryControl: FormControl<string> = new FormControl<string>('');
   // busy: boolean = false;
-  focussedMatchIndex: number = -1;
-  protected isFocussed: boolean = false;
+  focussedMatchIndex = -1;
+  protected isFocussed = false;
 
   async ngOnInit() {
     this.subscriptions.push(
@@ -73,7 +73,7 @@ export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   @HostListener('window:keydown.arrowup', ['$event'])
-  handleKeyUp(event: KeyboardEvent) {
+  handleKeyUp(event: Event) {
     console.log('up', this.focussedMatchIndex);
     if (this.focussedMatchIndex === 0) {
       return;
@@ -91,7 +91,7 @@ export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   @HostListener('window:keydown.arrowdown', ['$event'])
-  handleKeyDown(event: KeyboardEvent) {
+  handleKeyDown(event: Event) {
     console.log('down', this.focussedMatchIndex);
     if (this.focussedMatchIndex === this.getSuggestions().length - 1) {
       return;
@@ -105,7 +105,7 @@ export class TypeheadComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   @HostListener('window:keydown.enter', ['$event'])
-  async handleEnter(event: KeyboardEvent) {
+  async handleEnter(event: Event) {
     console.log('handleEnter', this.focussedMatchIndex);
     if (this.focussedMatchIndex >= 0 && this.getSuggestions().length > 0) {
       const searchResult = this.getSuggestions()[this.focussedMatchIndex];

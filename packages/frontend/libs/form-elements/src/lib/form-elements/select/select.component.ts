@@ -1,6 +1,6 @@
 import { Component, forwardRef, input, OnInit } from '@angular/core';
 import { isNull, isUndefined } from 'lodash-es';
-import { NG_VALUE_ACCESSOR } from '@angular/forms';
+import { FormControl, NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '@feedless/directives';
 import { MenuComponent } from '../menu/menu.component';
 
@@ -28,6 +28,8 @@ export class SelectComponent<T>
   extends ControlValueAccessorDirective<T>
   implements OnInit
 {
+  declare control: FormControl<T>;
+
   readonly hideFilter = input<boolean>(false);
 
   readonly placeholder = input<string>('Empty');
@@ -38,7 +40,7 @@ export class SelectComponent<T>
 
   readonly items = input.required<KeyLabelOption<T>[]>();
 
-  ngOnInit() {
+  override ngOnInit() {
     super.ngOnInit();
   }
 
@@ -53,5 +55,9 @@ export class SelectComponent<T>
 
   setValue(value: T) {
     this.control.setValue(value);
+  }
+
+  selectedItem(): KeyLabelOption<T> | undefined {
+    return this.items().find((item) => item.key === this.control?.value);
   }
 }

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { RemoteFeedItemComponent } from './remote-feed-item.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 import { AppConfigService } from '@feedless/services';
 
 describe('RemoteFeedItemComponent', () => {

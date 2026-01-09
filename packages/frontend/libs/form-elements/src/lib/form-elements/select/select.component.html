@@ -2,12 +2,12 @@
   (valueChanged)="setValue($event.key)"
   [color]="color()"
   [disabled]="disabled()"
-  [error]="control.invalid"
+  [error]="control?.invalid"
   [hideFilter]="hideFilter()"
   [items]="items()"
   [labelFn]="'label'"
   [placeholder]="placeholder()"
-  [value]="control.value"
+  [value]="selectedItem()"
 >
   {{ label() }}
 </app-menu>

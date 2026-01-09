@@ -1,17 +1,22 @@
 import { Component, inject } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
-import { bodyOutline, closeOutline, mailOutline, sendOutline, trashOutline } from 'ionicons/icons';
+import {
+  bodyOutline,
+  closeOutline,
+  mailOutline,
+  sendOutline,
+  trashOutline,
+} from 'ionicons/icons';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { createEmailFormControl } from '../../../form-controls';
-import { GqlFeedlessPlugins, GqlIntervalUnit } from '../../../../generated/graphql';
+import { createEmailFormControl, NamedLatLon, Nullable } from '@feedless/core';
+import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 import dayjs from 'dayjs';
-import { ReportService } from '../../../services/report.service';
-import { NamedLatLon } from '../../../types';
+import { ReportService } from '@feedless/services';
 
 export interface SubmitModalComponentProps {
   repositoryId: string;
-  location: NamedLatLon;
+  location: Nullable<NamedLatLon>;
 }
 
 type ReportFrequency = 'week' | 'month';
@@ -36,7 +41,10 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
     frequency: new FormControl<ReportFrequency>('week'),
     acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
     email: createEmailFormControl(''),
-    name: new FormControl<string>('', [Validators.minLength(3), Validators.required]),
+    name: new FormControl<string>('', [
+      Validators.minLength(3),
+      Validators.required,
+    ]),
   });
 
   constructor() {
@@ -54,7 +62,9 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
   }
 
   async createMailSubscription() {
-    Object.values<FormControl>(this.formGroup.controls).forEach((fc) => fc.markAllAsTouched());
+    Object.values<FormControl>(this.formGroup.controls).forEach((fc) =>
+      fc.markAllAsTouched(),
+    );
     if (this.formGroup.valid) {
       await this.reportService.createReport(this.repositoryId, {
         what: {

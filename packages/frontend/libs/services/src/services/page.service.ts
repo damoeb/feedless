@@ -1,8 +1,9 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 import { Dayjs } from 'dayjs';
 import { BreadcrumbList, Event, WebPage } from 'schema-dts';
-import { LatLng } from '@feedless/shared-types';
+import { LatLng } from '@feedless/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export type PageTags = {
   title: string;
@@ -31,8 +32,12 @@ export type PageTags = {
 export class PageService {
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
+  private readonly platformId = inject(PLATFORM_ID);
 
   setMetaTags(options: PageTags) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     // Clear existing meta tags to prevent duplicates
     this.clearMetaTags();
 
@@ -206,6 +211,9 @@ export class PageService {
   }
 
   setJsonLdData(data: WebPage | BreadcrumbList | Event) {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
     // Add structured data with caching to prevent duplicates
     const dataString = JSON.stringify(data, null, 2);
     const existingScript = document.querySelector(

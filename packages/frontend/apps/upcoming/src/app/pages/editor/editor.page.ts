@@ -16,16 +16,19 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
-import { ProfileButtonComponent } from '../../../components/profile-button/profile-button.component';
-import { MapComponent } from '../../../components/map/map.component';
-import { LatLng, Nullable } from '../../../types';
-import { SourcesComponent } from '../../../components/sources/sources.component';
-import { RepositoryService, Source } from '../../../services/repository.service';
-import { AppConfigService } from '../../../services/app-config.service';
-import { RepositoryFull } from '../../../graphql/types';
-import { GqlSourcesWhereInput } from '../../../../generated/graphql';
-import { marker } from 'leaflet';
+import {
+  DarkModeButtonComponent,
+  MapComponent,
+  ProfileButtonComponent,
+  SourcesComponent,
+} from '@feedless/components';
+import { LatLng, Nullable } from '@feedless/core';
+import {
+  AppConfigService,
+  RepositoryService,
+  Source,
+} from '@feedless/services';
+import { GqlSourcesWhereInput, RepositoryFull } from '@feedless/graphql-api';
 
 @Component({
   selector: 'app-management-page',
@@ -63,20 +66,18 @@ export class EditorPage implements OnInit {
   sourcesFilter: Nullable<GqlSourcesWhereInput> = null;
   protected showSources: boolean;
 
-  constructor() {}
-
   async ngOnInit() {
     this.repository = await this.repositoryService.getRepositoryById(
       this.getRepositoryId(),
       { page: 0 },
-      null
+      null,
     );
-    this.showSources = this.activatedRoute.snapshot.data.sources == true;
+    this.showSources = this.activatedRoute.snapshot.data['sources'] == true;
     this.changeRef.detectChanges();
   }
 
   private getRepositoryId(): string {
-    return this.appConfigService.customProperties.eventRepositoryId as any;
+    return this.appConfigService.customProperties['eventRepositoryId'] as any;
   }
 
   onMapChange(event: { northEast: LatLng; southWest: LatLng }) {
@@ -94,8 +95,9 @@ export class EditorPage implements OnInit {
     this.changeRef.detectChanges();
   }
 
-  onSourceChange(sources: Source[]) {
+  async onSourceChange(sources: Source[]) {
+    const L = await import('leaflet');
     const map = this.map().getNativeMap();
-    sources.map((s) => marker(s.latLng).addTo(map));
+    sources.map((s) => L.marker(s.latLng).addTo(map));
   }
 }

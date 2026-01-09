@@ -49,14 +49,14 @@ export type Selectors = Pick<
 >;
 
 export type ScrapedReadability = Record;
-export type User = Session['user'];
+export type User = SessionResponse['user'];
 // export type ScrapedOutput = GetElementType<ScrapeResponse['outputs']>;
 export type ScrapeResponse = GqlScrapeQuery['scrape'];
 export type FeatureGroup = GetElementType<
   GqlFeatureGroupsQuery['featureGroups']
 >;
 export type Feature = GetElementType<FeatureGroup['features']>;
-export type Session = GqlSessionQuery['session'];
+export type SessionResponse = GqlSessionQuery['session'];
 export type UserSecret = GqlCreateUserSecretMutation['createUserSecret'];
 export type FeedlessPlugin = GetElementType<GqlListPluginsQuery['plugins']>;
 export type LocalizedLicense =

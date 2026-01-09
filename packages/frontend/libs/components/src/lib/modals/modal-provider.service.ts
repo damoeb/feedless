@@ -29,8 +29,11 @@ import {
   TagsModalComponent,
   TagsModalComponentProps,
 } from './tags-modal/tags-modal.component';
-import { FeedBuilderModalComponentExitRole, FeedOrRepository } from '../components/feed-builder/feed-builder.component';
-import { NamedLatLon, Nullable } from '@feedless/shared-types';
+import {
+  FeedBuilderModalComponentExitRole,
+  FeedOrRepository,
+} from '../components/feed-builder/feed-builder.component';
+import { NamedLatLon, Nullable } from '@feedless/core';
 
 export enum ModalName {
   editRepository = 'EditRepository',

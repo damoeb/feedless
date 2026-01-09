@@ -1,15 +1,17 @@
-import { LayerGroup, layerGroup, Map, tileLayer } from 'leaflet';
-
 import {
   AfterViewInit,
   Component,
   ElementRef,
+  inject,
   input,
   output,
+  PLATFORM_ID,
   viewChild,
   ViewEncapsulation,
 } from '@angular/core';
-import { LatLng } from '@feedless/shared-types';
+import { LatLng } from '@feedless/core';
+import { isPlatformBrowser } from '@angular/common';
+import type { LayerGroup, Map } from 'leaflet';
 
 export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
 
@@ -22,6 +24,7 @@ export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
 })
 export class MapComponent implements AfterViewInit {
   readonly mapElement = viewChild<ElementRef>('map');
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly position = input.required<LatLng>();
 
@@ -34,25 +37,30 @@ export class MapComponent implements AfterViewInit {
   readonly positionChange = output<LatLng>();
 
   private map: Map;
-  private markersLayer: LayerGroup<any> = layerGroup();
+  private markersLayer: LayerGroup<any>;
   // private marker: Marker<any>;
   // private circle: Circle<any>;
 
-  constructor() {}
+  async ngAfterViewInit() {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
 
-  ngAfterViewInit() {
     try {
       const position = this.position();
       if (!position) {
         console.warn('Position not provided to map component');
         return;
       }
+
+      const L = await import('leaflet');
+
       const lat = position.lat;
       const lng = position.lng;
       const minZoom = this.minZoom();
       const maxZoom = this.maxZoom();
-      this.markersLayer = layerGroup();
-      this.map = new Map(this.mapElement().nativeElement)
+      this.markersLayer = L.layerGroup();
+      this.map = new L.Map(this.mapElement().nativeElement)
         .setMinZoom(minZoom)
         .setMaxZoom(maxZoom)
         .setZoom(11)
@@ -64,7 +72,7 @@ export class MapComponent implements AfterViewInit {
 
       // https://stackoverflow.com/questions/18388288/how-do-you-add-marker-to-map-using-leaflet-map-onclick-function-event-handl
 
-      tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         noWrap: true,
         keepBuffer: 4,
         minZoom,

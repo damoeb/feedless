@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { HistogramComponent } from './histogram.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('HistogramComponent', () => {
   let component: HistogramComponent;

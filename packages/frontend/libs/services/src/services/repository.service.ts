@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import {
   CountRepositories,
   CreateRepositories,
@@ -51,8 +51,9 @@ import { zenToRx } from './agent.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import dayjs from 'dayjs';
-import { ArrayElement } from '@feedless/shared-types';
+import { ArrayElement } from '@feedless/core';
 import { ToastController } from '@ionic/angular/standalone';
+import { isPlatformBrowser } from '@angular/common';
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
 export type Harvest = ArrayElement<
@@ -70,6 +71,7 @@ export class RepositoryService {
   private readonly router = inject(Router);
   private readonly sessionService = inject(SessionService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly platformId = inject(PLATFORM_ID);
 
   async createRepositories(
     data: GqlRepositoryCreateInput[],
@@ -88,6 +90,7 @@ export class RepositoryService {
         .then((response) => response.data!.createRepositories!);
     } else {
       await this.router.navigateByUrl('/login');
+      return [];
     }
   }
 
@@ -109,32 +112,34 @@ export class RepositoryService {
     repositories: RepositoryFull[],
     fileName: string | null = null,
   ) {
-    const a = window.document.createElement('a');
-    a.href = window.URL.createObjectURL(
-      new Blob(
-        [
-          JSON.stringify(
-            await Promise.all(
-              repositories.map((it) =>
-                this.getRepositoryInputWithSourcesAndFlow(it),
+    if (isPlatformBrowser(this.platformId)) {
+      const a = window.document.createElement('a');
+      a.href = window.URL.createObjectURL(
+        new Blob(
+          [
+            JSON.stringify(
+              await Promise.all(
+                repositories.map((it) =>
+                  this.getRepositoryInputWithSourcesAndFlow(it),
+                ),
               ),
+              null,
+              2,
             ),
-            null,
-            2,
-          ),
-        ],
-        {
-          type: 'application/json',
-        },
-      ),
-    );
-    a.download =
-      fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
+          ],
+          {
+            type: 'application/json',
+          },
+        ),
+      );
+      a.download =
+        fileName || `feedless-backup-${dayjs().format('YYYY-MM-DD')}.json`;
 
-    document.body.appendChild(a);
-    a.click();
+      document.body.appendChild(a);
+      a.click();
 
-    document.body.removeChild(a);
+      document.body.removeChild(a);
+    }
   }
 
   updateRepository(data: GqlRepositoryUpdateInput): Promise<void> {

@@ -34,7 +34,7 @@ export class RecordService {
   findAllByRepositoryId(
     data: GqlRecordsInput,
     fetchPolicy: FetchPolicy = 'cache-first',
-    context: DefaultContext,
+    context: DefaultContext = {},
   ): Promise<Record[]> {
     return this.apollo
       .query<GqlRecordByIdsQuery, GqlRecordByIdsQueryVariables>({

@@ -1,5 +1,5 @@
 import { Directive, ElementRef, inject, OnInit, Renderer2 } from '@angular/core';
-import { environment } from '../../../environments/environment';
+import { environment } from '@feedless/core';
 
 @Directive({ selector: '[appDev]', standalone: true })
 export class RemoveIfProdDirective implements OnInit {

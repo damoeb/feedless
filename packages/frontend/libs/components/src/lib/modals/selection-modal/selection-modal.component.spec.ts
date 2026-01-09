@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SelectionModalComponent } from './selection-modal.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('SelectionModalComponent', () => {
   let component: SelectionModalComponent<string>;

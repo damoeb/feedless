@@ -19,8 +19,9 @@ import {
   IonList,
   IonSpinner,
 } from '@ionic/angular/standalone';
-import { Nullable } from '@feedless/shared-types';
+import { Nullable } from '@feedless/core';
 import { min } from 'lodash-es';
+import { GqlVertical } from '@feedless/graphql-api';
 
 type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
 
@@ -96,6 +97,7 @@ export class EmailLoginComponent {
 
       const confirmCode = await this.authService.authorizeUserViaMail(
         this.emailFc.value,
+        GqlVertical.Feedless,
       );
       this.confirmationCodeSpec = confirmCode;
       this.mode = 'enterConfirmationCode';

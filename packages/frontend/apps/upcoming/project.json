@@ -21,6 +21,7 @@
           }
         ],
         "styles": [
+          "node_modules/leaflet/dist/leaflet.css",
           "apps/upcoming/src/theme/variables.scss",
           "apps/upcoming/src/global.scss",
           "apps/upcoming/src/styles.scss"
@@ -30,15 +31,23 @@
         "ssr": {
           "entry": "apps/upcoming/src/server.ts"
         },
-        "outputMode": "server"
+        "outputMode": "server",
+        "allowedCommonJsDependencies": [
+          "dayjs",
+          "dayjs/locale/de",
+          "dayjs/plugin/weekday",
+          "dayjs/plugin/relativeTime",
+          "leaflet"
+        ]
       },
       "configurations": {
         "production": {
+          "optimization": true,
           "budgets": [
             {
               "type": "initial",
-              "maximumWarning": "500kb",
-              "maximumError": "1mb"
+              "maximumWarning": "1mb",
+              "maximumError": "3mb"
             },
             {
               "type": "anyComponentStyle",

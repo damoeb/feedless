@@ -5,16 +5,22 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
-import { RecordService } from '../../../services/record.service';
-import { Record } from '../../../graphql/types';
+import {
+  AppConfigService,
+  PageService,
+  PageTags,
+  RecordService,
+} from '@feedless/services';
+import { Record } from '@feedless/graphql-api';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { AppConfigService } from '../../../services/app-config.service';
-import { PageService, PageTags } from '../../../services/page.service';
 import dayjs, { Dayjs } from 'dayjs';
-import { OpenStreetMapService } from '../../../services/open-street-map.service';
-import { parseDateFromUrl, parseLocationFromUrl } from '../upcoming-product-routes';
+import {
+  parseDateFromUrl,
+  parseLocationFromUrl,
+} from '../../upcoming-product-routes';
 import { WebPage } from 'schema-dts';
 import { createBreadcrumbsSchema } from '../events/events.page';
 import { addIcons } from 'ionicons';
@@ -24,7 +30,7 @@ import {
   documentOutline,
   openOutline,
 } from 'ionicons/icons';
-import { NamedLatLon } from '../../../types';
+import { NamedLatLon } from '@feedless/core';
 
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
@@ -39,6 +45,8 @@ import {
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
+import { OpenStreetMapService } from '@feedless/geo';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-event-page',
@@ -68,8 +76,9 @@ export class EventPage implements OnInit, OnDestroy {
   private readonly openStreetMapService = inject(OpenStreetMapService);
   private readonly appConfigService = inject(AppConfigService);
   private readonly recordService = inject(RecordService);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  loading: boolean = true;
+  loading = true;
   date: Dayjs;
   location: NamedLatLon;
   event: Record;
@@ -93,7 +102,7 @@ export class EventPage implements OnInit, OnDestroy {
         try {
           this.location = await parseLocationFromUrl(
             this.activatedRoute,
-            this.openStreetMapService
+            this.openStreetMapService,
           );
           this.date = parseDateFromUrl(params);
           this.changeRef.detectChanges();
@@ -102,17 +111,19 @@ export class EventPage implements OnInit, OnDestroy {
             {
               where: {
                 repository: {
-                  id: this.appConfigService.customProperties.eventRepositoryId as any,
+                  id: this.appConfigService.customProperties[
+                    'eventRepositoryId'
+                  ] as any,
                 },
                 id: {
-                  eq: params.eventId,
+                  eq: params['eventId'],
                 },
               },
               cursor: {
                 page: 0,
               },
             },
-            'cache-first'
+            'cache-first',
           );
           this.event = event[0];
           this.loading = false;
@@ -122,7 +133,7 @@ export class EventPage implements OnInit, OnDestroy {
         } catch (e) {
           console.error(e);
         }
-      })
+      }),
     );
   }
 
@@ -141,7 +152,8 @@ export class EventPage implements OnInit, OnDestroy {
       mainEntity: {
         '@type': 'Event',
         name: this.event.title,
-        description: this.event.text || `Veranstaltung in ${this.location?.displayName}`,
+        description:
+          this.event.text || `Veranstaltung in ${this.location?.displayName}`,
         startDate: startDate.toISOString(),
         eventStatus: 'EventScheduled',
         eventAttendanceMode: 'OfflineEventAttendanceMode',
@@ -202,7 +214,7 @@ export class EventPage implements OnInit, OnDestroy {
       description: `${this.event.text || 'Veranstaltung in ' + this.location?.displayName} am ${startDate.format('DD.MM.YYYY')}. Erfahre mehr über dieses Event in ${this.location?.displayName}, ${this.location?.area}.`,
       publisher: 'lokale.events',
       category: 'Event',
-      url: document.location.href,
+      url: this.getCurrentUrl(),
       region: this.location?.area,
       place: this.location?.displayName,
       lang: 'de',
@@ -212,8 +224,15 @@ export class EventPage implements OnInit, OnDestroy {
       keywords,
       author: 'lokale.events Team',
       robots: 'index, follow',
-      canonicalUrl: document.location.href,
+      canonicalUrl: this.getCurrentUrl(),
     };
+  }
+
+  private getCurrentUrl(): string {
+    if (isPlatformBrowser(this.platformId)) {
+      return document.location.href;
+    }
+    return '';
   }
 
   ngOnDestroy(): void {
@@ -242,7 +261,7 @@ END:VCALENDAR`;
     const element = document.createElement('a');
     element.setAttribute(
       'href',
-      'data:text/calendar;charset=UTF-8,' + encodeURIComponent(calendarEntry)
+      'data:text/calendar;charset=UTF-8,' + encodeURIComponent(calendarEntry),
     );
     element.setAttribute('download', 'foo.ics');
 

@@ -11,7 +11,7 @@ import {
 const urlDecoration = Decoration.mark({ class: 'cm-url', inclusive: true });
 
 const urlMatchDecorator = new MatchDecorator({
-  regexp: /(https?:\/\/[.a-zA-Z0-9_\-]+\.[a-zA-Z0-9_\-]+[^ )\]]*)/g,
+  regexp: /(https?:\/\/[.a-zA-Z0-9_-]+\.[a-zA-Z0-9_-]+[^ )\]]*)/g,
   decoration: urlDecoration,
 });
 
@@ -29,5 +29,5 @@ export const urlDecorator = ViewPlugin.fromClass(
   },
   {
     decorations: (instance) => instance.decorations,
-  }
+  },
 );

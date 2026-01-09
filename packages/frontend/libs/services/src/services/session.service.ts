@@ -1,4 +1,5 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import {
   CreateUserSecret,
   DeleteUserSecret,
@@ -22,7 +23,7 @@ import {
   Logout,
   Product,
   Session as SessionQuery,
-  Session,
+  SessionResponse,
   UpdateCurrentUser,
   UserSecret,
 } from '@feedless/graphql-api';
@@ -30,7 +31,7 @@ import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import { AuthService } from './auth.service';
 import { BehaviorSubject, filter, Observable, ReplaySubject } from 'rxjs';
 import { AppConfigService } from './app-config.service';
-import { isNonNull, Nullable } from '@feedless/shared-types';
+import { isNonNull, Nullable } from '@feedless/core';
 
 export const dateFormat = 'dd.MM.yyyy';
 export const dateTimeFormat = 'HH:mm, dd.MM.yyyy';
@@ -43,18 +44,19 @@ export class SessionService {
   private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly authService = inject(AuthService);
   private readonly appConfigService = inject(AppConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  private session: Session = {} as any;
+  private session: SessionResponse = {} as any;
   private darkModePipe: ReplaySubject<boolean>;
-  private sessionPipe: BehaviorSubject<Nullable<Session>>;
+  private sessionPipe: BehaviorSubject<Nullable<SessionResponse>>;
 
   constructor() {
     this.darkModePipe = new ReplaySubject<boolean>(1);
-    this.sessionPipe = new BehaviorSubject<Nullable<Session>>(null);
+    this.sessionPipe = new BehaviorSubject<Nullable<SessionResponse>>(null);
     this.detectColorScheme();
   }
 
-  getSession(): Observable<Session> {
+  getSession(): Observable<SessionResponse> {
     return this.sessionPipe.asObservable().pipe(filter(isNonNull));
   }
 
@@ -183,10 +185,14 @@ export class SessionService {
   }
 
   private detectColorScheme() {
-    const isDarkMode = window.matchMedia(
-      '(prefers-color-scheme: dark)',
-    ).matches;
-    this.darkModePipe.next(isDarkMode);
+    if (isPlatformBrowser(this.platformId)) {
+      const isDarkMode = window.matchMedia(
+        '(prefers-color-scheme: dark)',
+      ).matches;
+      this.darkModePipe.next(isDarkMode);
+    } else {
+      this.darkModePipe.next(false);
+    }
   }
 
   private getBrowserDateTimeFormats() {

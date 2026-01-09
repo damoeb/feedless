@@ -6,14 +6,13 @@ import {
   OnInit,
 } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
-import { GqlVertical, Session } from '@feedless/graphql-api';
+import { GqlVertical, SessionResponse } from '@feedless/graphql-api';
 import {
   AppConfigService,
   Authentication,
   AuthService,
   ServerConfigService,
   SessionService,
-  VerticalSpecWithRoutes,
 } from '@feedless/services';
 import { Subscription } from 'rxjs';
 import {
@@ -32,7 +31,7 @@ import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.co
 import { ProfileButtonComponent } from '../profile-button/profile-button.component';
 import { addIcons } from 'ionicons';
 import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
-import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { RemoveIfProdDirective } from '@feedless/directives';
 
 @Component({
   selector: 'app-feedless-header',
@@ -61,12 +60,10 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
   readonly serverConfig = inject(ServerConfigService);
   private readonly sessionService = inject(SessionService);
   private readonly changeRef = inject(ChangeDetectorRef);
-  readonly profile = inject(SessionService);
 
-  protected productConfig: VerticalSpecWithRoutes;
   private subscriptions: Subscription[] = [];
   protected authorization: Authentication;
-  protected session: Session;
+  protected session: SessionResponse;
   protected readonly GqlProductName = GqlVertical;
   protected fromNow = relativeTimeOrElse;
 
@@ -86,12 +83,6 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
       this.authService.authorizationChange().subscribe((authorization) => {
         this.authorization = authorization;
       }),
-      this.appConfigService
-        .getActiveProductConfigChange()
-        .subscribe((productConfig) => {
-          this.productConfig = productConfig;
-          this.changeRef.detectChanges();
-        }),
     );
   }
 

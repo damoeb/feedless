@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ConsoleButtonComponent } from './console-button.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('ConsoleButtonComponent', () => {
   let component: ConsoleButtonComponent;

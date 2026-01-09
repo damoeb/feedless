@@ -13,7 +13,7 @@ export const lineHighlightField = StateField.define({
   },
   update(lines, tr) {
     lines = lines.map(tr.changes);
-    for (let e of tr.effects) {
+    for (const e of tr.effects) {
       if (e.is(addLineHighlight)) {
         lines = lines.update({ add: [lineHighlightMark.range(e.value)] });
       }

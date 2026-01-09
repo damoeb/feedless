@@ -46,6 +46,7 @@ export class TextDiffComponent implements OnInit {
         if (line !== textBeforeLines[index]) {
           return index + 1;
         }
+        return undefined;
       })
       .filter((lineNr) => !isUndefined(lineNr));
 

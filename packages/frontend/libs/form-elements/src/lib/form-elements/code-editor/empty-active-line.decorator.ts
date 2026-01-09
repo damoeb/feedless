@@ -16,7 +16,7 @@ class EmptyLineSpanWidget extends WidgetType {
     return span;
   }
 
-  ignoreEvent() {
+  override ignoreEvent() {
     return true;
   }
 }

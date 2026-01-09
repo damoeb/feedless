@@ -5,7 +5,7 @@ import {
   ApolloMockController,
   AppTestModule,
   mockServerSettings,
-} from '@feedless/test';
+} from '@feedless/testing';
 import {
   Agents,
   GqlAgentsQuery,

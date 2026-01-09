@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CodeEditorComponent } from './code-editor.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe.skip('CodeEditorComponent', () => {
   let component: CodeEditorComponent;
@@ -63,6 +63,4 @@ describe.skip('CodeEditorComponent', () => {
       `<span class="cm-url">http://example.com</span>`,
     );
   });
-
-  describe('markdown', () => {});
 });

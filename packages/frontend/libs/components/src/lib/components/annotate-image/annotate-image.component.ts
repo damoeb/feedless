@@ -11,28 +11,16 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import { GqlBoundingBoxInput, GqlXyPosition } from '@feedless/graphql-api';
 import { debounce, DebouncedFunc } from 'lodash-es';
-import { SourceBuilder } from '../interactive-website/source-builder';
+import { SourceBuilder } from '@feedless/source';
 import { firstValueFrom, Subscription } from 'rxjs';
-import { Nullable } from '@feedless/shared-types';
+import { BoundingBox, Embeddable, Nullable, XyPosition } from '@feedless/core';
 import { NgClass } from '@angular/common';
-
-export type XyPosition = GqlXyPosition;
 
 interface Viewport {
   width: number;
   height: number;
 }
-
-export interface Embeddable {
-  mimeType: string;
-  data: string;
-  url: string;
-  viewport?: Viewport;
-}
-
-export type BoundingBox = GqlBoundingBoxInput;
 
 type OperatorMode = 'move' | 'mark' | 'position';
 
@@ -216,11 +204,7 @@ export class AnnotateImageComponent
     this.changeRef.detectChanges();
   }
 
-  private b64toBlob(
-    b64Data: string,
-    contentType: string,
-    sliceSize = 512,
-  ) {
+  private b64toBlob(b64Data: string, contentType: string, sliceSize = 512) {
     const byteCharacters = atob(b64Data);
     const byteArrays: BlobPart[] = [];
 

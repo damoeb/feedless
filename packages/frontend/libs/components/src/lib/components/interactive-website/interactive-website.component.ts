@@ -17,13 +17,10 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { SourceBuilder } from './source-builder';
+import { SourceBuilder } from '@feedless/source';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
 import { ServerConfigService } from '@feedless/services';
-import {
-  AnnotateImageComponent,
-  Embeddable,
-} from '../annotate-image/annotate-image.component';
+import { AnnotateImageComponent } from '../annotate-image/annotate-image.component';
 import { addIcons } from 'ionicons';
 import { addOutline, removeOutline } from 'ionicons/icons';
 import {
@@ -46,6 +43,7 @@ import { NgStyle } from '@angular/common';
 import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 import { BlockElementComponent } from '../block-element/block-element.component';
+import { Embeddable } from '@feedless/core';
 
 type ViewMode = 'markup' | 'image';
 

@@ -35,20 +35,15 @@ import { BubbleComponent } from '../bubble/bubble.component';
     IonRange,
     FormsModule,
     NgStyle,
-    IonItem,
-    IonAccordionGroup,
-    IonAccordion,
-    IonList,
-    BubbleComponent,
   ],
   standalone: true,
 })
 export class WorkflowBuilderComponent {
   private readonly changeRef = inject(ChangeDetectorRef);
 
-  scaleFactor: number = 0.7;
-  minScaleFactor: number = 0.5;
-  maxScaleFactor: number = 1.3;
+  scaleFactor = 0.7;
+  minScaleFactor = 0.5;
+  maxScaleFactor = 1.3;
 
   constructor() {
     addIcons({ removeOutline, addOutline, ellipse });

@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { CodeEditorModalComponent } from './code-editor-modal.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('CodeEditorModalComponent', () => {
   let component: CodeEditorModalComponent;

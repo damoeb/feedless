@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ImageDiffComponent } from './image-diff.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('ImageDiffComponent', () => {
   let component: ImageDiffComponent;

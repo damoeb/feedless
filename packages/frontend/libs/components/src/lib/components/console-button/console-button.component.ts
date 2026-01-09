@@ -5,12 +5,12 @@ import {
   input,
 } from '@angular/core';
 import { GqlLogStatement } from '@feedless/graphql-api';
+import { IonButton } from '@ionic/angular/standalone';
 import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
   ModalProvider,
-} from '@feedless/components';
-import { IonButton } from '@ionic/angular/standalone';
+} from '../../modals';
 
 @Component({
   selector: 'app-console-button',

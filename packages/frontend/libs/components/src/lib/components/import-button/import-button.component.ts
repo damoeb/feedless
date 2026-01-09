@@ -21,15 +21,15 @@ import {
   ModalController,
   ToastController,
 } from '@ionic/angular/standalone';
+import { firstValueFrom } from 'rxjs';
+import { GqlRepositoryCreateInput } from '@feedless/graphql-api';
+import { RemoveIfProdDirective } from '@feedless/directives';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,
   ModalProvider,
   SelectionModalComponent,
-} from '@feedless/components';
-import { firstValueFrom } from 'rxjs';
-import { GqlRepositoryCreateInput } from '@feedless/graphql-api';
-import { RemoveIfProdDirective } from '@feedless/directives';
+} from '../../modals';
 
 @Component({
   selector: 'app-import-button',

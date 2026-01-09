@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { NotificationsButtonComponent } from './notifications-button.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('DarkModeButtonComponent', () => {
   let component: NotificationsButtonComponent;

@@ -13,17 +13,19 @@
     "lib": ["es2020", "dom"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
+    "strictNullChecks": false,
     "baseUrl": ".",
     "paths": {
       "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"],
       "@feedless/services": ["libs/services/src/index.ts"],
       "@feedless/components": ["libs/components/src/index.ts"],
-      "@feedless/shared-types": ["libs/shared-types/src/index.ts"],
-      "@feedless/modals": ["libs/modals/src/index.ts"],
       "@feedless/guards": ["libs/guards/src/index.ts"],
       "@feedless/form-elements": ["libs/form-elements/src/index.ts"],
       "@feedless/directives": ["libs/directives/src/index.ts"],
-      "@feedless/test": ["libs/test/src/index.ts"]
+      "@feedless/core": ["libs/core/src/index.ts"],
+      "@feedless/testing": ["libs/testing/src/index.ts"],
+      "@feedless/source": ["libs/source/src/index.ts"],
+      "@feedless/geo": ["libs/geo/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

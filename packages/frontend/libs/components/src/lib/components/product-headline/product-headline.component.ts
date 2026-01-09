@@ -8,6 +8,4 @@ import { Component, input } from '@angular/core';
 })
 export class ProductHeadlineComponent {
   readonly title = input.required<string>();
-
-  constructor() {}
 }

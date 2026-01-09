@@ -1,5 +1,5 @@
 import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
-import { NamedLatLon } from '../../../types';
+import { NamedLatLon } from '@feedless/core';
 import {
   ActionSheetController,
   AlertController,
@@ -8,7 +8,7 @@ import {
   IonIcon,
   ModalController,
 } from '@ionic/angular/standalone';
-import { AppConfigService } from '../../../services/app-config.service';
+import { AppConfigService, ServerConfigService } from '@feedless/services';
 import { addIcons } from 'ionicons';
 import {
   calendarNumberOutline,
@@ -23,18 +23,17 @@ import {
   SubmitModalComponent,
   SubmitModalComponentProps,
 } from '../submit-modal/submit-modal.component';
-import { GeoService } from '../../../services/geo.service';
 import { Subscription } from 'rxjs';
 
-import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
+import { RemoveIfProdDirective } from '@feedless/directives';
 import { RouterLink } from '@angular/router';
 import { SubmitModalModule } from '../submit-modal/submit-modal.module';
 import {
   GqlRecordOrderByInput,
   GqlRecordsWhereInput,
   GqlSortOrder,
-} from '../../../../generated/graphql';
-import { ServerConfigService } from '../../../services/server-config.service';
+} from '@feedless/graphql-api';
+import { GeoService } from '@feedless/geo';
 
 type SubscriptionType = 'cal' | 'atom';
 
@@ -42,7 +41,14 @@ type SubscriptionType = 'cal' | 'atom';
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [IonFooter, IonButton, IonIcon, RemoveIfProdDirective, RouterLink, SubmitModalModule],
+  imports: [
+    IonFooter,
+    IonButton,
+    IonIcon,
+    RemoveIfProdDirective,
+    RouterLink,
+    SubmitModalModule,
+  ],
   standalone: true,
 })
 export class UpcomingFooterComponent implements OnInit, OnDestroy {
@@ -70,7 +76,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   }
 
   private getRepositoryId(): string {
-    return this.appConfigService.customProperties.eventRepositoryId as any;
+    return this.appConfigService.customProperties['eventRepositoryId'] as any;
   }
 
   async createMailSubscription() {
@@ -102,7 +108,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
             readonly: true,
           },
           type: 'text',
-          value: this.appConfigService.customProperties.operatorName,
+          value: this.appConfigService.customProperties['operatorName'],
         },
         {
           label: 'Adresse',
@@ -110,7 +116,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
             readonly: true,
           },
           type: 'text',
-          value: this.appConfigService.customProperties.operatorAddress,
+          value: this.appConfigService.customProperties['operatorAddress'],
         },
         {
           label: 'Email',
@@ -118,7 +124,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
             readonly: true,
           },
           type: 'text',
-          value: this.appConfigService.customProperties.operatorEmail,
+          value: this.appConfigService.customProperties['operatorEmail'],
         },
       ],
       buttons: [
@@ -132,7 +138,11 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.subscriptions.push(this.geoService.getCurrentLatLon().subscribe((location) => {}));
+    this.subscriptions.push(
+      this.geoService.getCurrentLatLon().subscribe((location) => {
+        // ignore
+      }),
+    );
   }
 
   ngOnDestroy(): void {
@@ -197,6 +207,10 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   }
 
   private createCalenderOrFeedSubscription(type: SubscriptionType) {
+    const currentLocation = this.location();
+    if (!currentLocation) {
+      return;
+    }
     const where: GqlRecordsWhereInput = {
       repository: {
         id: this.getRepositoryId(),
@@ -207,8 +221,8 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
       latLng: {
         near: {
           point: {
-            lat: this.location().lat,
-            lng: this.location().lng,
+            lat: currentLocation.lat,
+            lng: currentLocation.lng,
           },
           distanceKm: this.perimeter(),
         },

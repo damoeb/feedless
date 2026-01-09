@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 import { ScrapeService } from './scrape.service';
 
 describe('ScrapeService', () => {

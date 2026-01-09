@@ -7,16 +7,22 @@ import {
   OnChanges,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   SimpleChanges,
 } from '@angular/core';
-import { AppConfigService, VerticalSpecWithRoutes } from '../../../services/app-config.service';
+import { AppConfigService } from '@feedless/services';
 import dayjs, { Dayjs } from 'dayjs';
-import { compact, debounce as debounceLD, DebouncedFunc, uniqBy } from 'lodash-es';
+import {
+  compact,
+  debounce as debounceLD,
+  DebouncedFunc,
+  uniqBy,
+} from 'lodash-es';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { getCachedLocations } from '../places';
+import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
 import { addIcons } from 'ionicons';
 import {
   calendarOutline,
@@ -25,10 +31,12 @@ import {
   footstepsOutline,
   locationOutline,
 } from 'ionicons/icons';
-import { LatLng, NamedLatLon, Nullable } from '../../../types';
-import { parseLocationFromUrl, upcomingBaseRoute } from '../upcoming-product-routes';
+import { LatLng, NamedLatLon, Nullable } from '@feedless/core';
+import {
+  parseLocationFromUrl,
+  upcomingBaseRoute,
+} from '../../upcoming-product-routes';
 import { getPreviousLocations } from '../events/events.page';
-import { OpenStreetMapService } from '../../../services/open-street-map.service';
 import {
   IonButton,
   IonButtons,
@@ -42,9 +50,10 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
-import { DarkModeButtonComponent } from '../../../components/dark-mode-button/dark-mode-button.component';
-import { RemoveIfProdDirective } from '../../../directives/remove-if-prod/remove-if-prod.directive';
+import { DarkModeButtonComponent } from '@feedless/components';
+import { RemoveIfProdDirective } from '@feedless/directives';
 import { renderPath, safeParsePath } from 'typesafe-routes';
+import { isPlatformBrowser } from '@angular/common';
 
 type SiteLocale = 'de' | 'en';
 type LocationSuggestion = {
@@ -84,8 +93,8 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly openStreetMapService = inject(OpenStreetMapService);
   private readonly appConfigService = inject(AppConfigService);
   private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly platformId = inject(PLATFORM_ID);
 
-  productConfig: VerticalSpecWithRoutes;
   locationFc = new FormControl<string>('');
   private readonly subscriptions: Subscription[] = [];
   protected currentDate: Dayjs;
@@ -109,8 +118,8 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   protected perimeterFc = new FormControl<number>(10);
   // protected categoriesFc = new FormControl<string[]>([]);
   // protected categories = ['Algemein', 'Kinder', 'Sport', 'Veranstaltung'];
-  protected locationSuggestions: LocationSuggestion[];
-  protected locationNotAvailable: boolean = true;
+  protected locationSuggestions: LocationSuggestion[] = [];
+  protected locationNotAvailable = true;
   protected currentLocation: NamedLatLon;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
   protected locale: SiteLocale = 'de';
@@ -122,9 +131,11 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   constructor() {
     dayjs.extend(weekday);
     this.fetchEventOverviewDebounced = debounceLD(
-      () => {},
+      () => {
+        // ignore
+      },
       //   this.fetchEventOverview.bind(this),
-      500
+      500,
     );
     addIcons({
       calendarOutline,
@@ -151,25 +162,25 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         this.changeRef.detectChanges();
       }),
       this.locationFc.valueChanges.subscribe(this.fetchSuggestions.bind(this)),
-      this.appConfigService.getActiveProductConfigChange().subscribe((productConfig) => {
-        this.productConfig = productConfig;
-      })
     );
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.perimeter?.currentValue) {
-      this.perimeterFc.setValue(changes.perimeter.currentValue, {
+    if (changes['perimeter']?.currentValue) {
+      this.perimeterFc.setValue(changes['perimeter'].currentValue, {
         emitEvent: false,
       });
     }
-    if (changes.date?.currentValue) {
-      this.changeDate(changes.date.currentValue, false);
+    if (changes['date']?.currentValue) {
+      this.changeDate(changes['date'].currentValue, false);
     }
-    if (changes.location?.currentValue) {
-      this.locationFc.setValue(changes.location.currentValue.displayName || '', {
-        emitEvent: false,
-      });
+    if (changes['location']?.currentValue) {
+      this.locationFc.setValue(
+        changes['location'].currentValue.displayName || '',
+        {
+          emitEvent: false,
+        },
+      );
     }
   }
 
@@ -224,7 +235,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         return {
           url: this.getUrlForLocation(match),
           labelHtml: tokens.reduce((hl, token) => {
-            return hl.replace(new RegExp(token, 'i'), `<strong>${token}</strong>`);
+            return hl.replace(
+              new RegExp(token, 'i'),
+              `<strong>${token}</strong>`,
+            );
           }, match.displayName),
         };
       });
@@ -236,7 +250,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.expand = 'suggestions';
     if (query.length === 0) {
       const previousLocations = matchHighlighter(
-        uniqBy(getPreviousLocations(), (l) => `${l.lat}:${l.lng}`)
+        uniqBy(
+          getPreviousLocations(isPlatformBrowser(this.platformId)),
+          (l) => `${l.lat}:${l.lng}`,
+        ),
       );
       const breadcrumbs: LocationSuggestion[] = this.getBreadcrumbs();
       this.locationSuggestions = [...previousLocations, ...breadcrumbs];
@@ -244,7 +261,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       this.locationSuggestions = matchHighlighter(
         getCachedLocations()
           .filter((p) => tokens.every((token) => p.index.indexOf(token) > -1))
-          .filter((_, index) => index < 6)
+          .filter((_, index) => index < 6),
       );
     }
 
@@ -392,7 +409,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   return days.filter((day) => day.isFirstWeek);
   // }
 
-  async changeLocation(location: Nullable<NamedLatLon>, triggerUrlUpdate = true) {
+  async changeLocation(
+    location: Nullable<NamedLatLon>,
+    triggerUrlUpdate = true,
+  ) {
     this.expand = null;
     this.currentLocation = location;
     if (location) {
@@ -411,7 +431,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.changeRef.detectChanges();
   }
 
-  async changeDate(date: Dayjs, triggerUpdate: boolean = true) {
+  async changeDate(date: Dayjs, triggerUpdate = true) {
     this.currentDate = date;
     if (triggerUpdate) {
       await this.patchUrl();
@@ -426,17 +446,20 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       console.log('patchUrl');
       const { countryCode, area, place } = await parseLocationFromUrl(
         this.activatedRoute,
-        this.openStreetMapService
+        this.openStreetMapService,
       );
-      const url = renderPath(upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter, {
-        countryCode,
-        region: area,
-        place,
-        year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-        month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-        day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-        perimeter: this.perimeterFc.value,
-      });
+      const url = renderPath(
+        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+        {
+          countryCode,
+          region: area,
+          place,
+          year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
+          month: parseInt(this.currentDate.locale(this.locale).format('MM')),
+          day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+          perimeter: this.perimeterFc.value,
+        },
+      );
 
       await this.router.navigateByUrl(url, { replaceUrl: true });
     } catch (e) {
@@ -474,28 +497,39 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   // }
 
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
-    return renderPath(upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter, {
-      countryCode,
-      region: area,
-      place,
-      year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-      month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-      day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-      perimeter: this.perimeter(),
-    });
+    return renderPath(
+      upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+      {
+        countryCode,
+        region: area,
+        place,
+        year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
+        month: parseInt(this.currentDate.locale(this.locale).format('MM')),
+        day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+        perimeter: this.perimeter(),
+      },
+    );
   }
 
   private getBreadcrumbs(): LocationSuggestion[] {
-    const withCountryCode = safeParsePath(upcomingBaseRoute.events.countryCode, location.pathname);
+    if (!isPlatformBrowser(this.platformId)) {
+      return [];
+    }
+    const withCountryCode = safeParsePath(
+      upcomingBaseRoute.events.countryCode,
+      location.pathname,
+    );
     const withRegion = safeParsePath(
       upcomingBaseRoute.events.countryCode.region,
-      location.pathname
+      location.pathname,
     );
 
     if (withRegion.success) {
       return getCachedLocations()
         .filter(
-          (l) => l.countryCode == withRegion.data.countryCode && l.area == withRegion.data.region
+          (l) =>
+            l.countryCode == withRegion.data.countryCode &&
+            l.area == withRegion.data.region,
         )
         .map<LocationSuggestion>((l) => ({
           url: this.getUrlForLocation(l),
@@ -504,8 +538,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     } else {
       if (withCountryCode.success) {
         return uniqBy(
-          getCachedLocations().filter((l) => l.countryCode == withCountryCode.data.countryCode),
-          'area'
+          getCachedLocations().filter(
+            (l) => l.countryCode == withCountryCode.data.countryCode,
+          ),
+          'area',
         ).map<LocationSuggestion>(({ countryCode, area }) => ({
           url: renderPath(upcomingBaseRoute.events.countryCode.region, {
             countryCode,
@@ -514,14 +550,15 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           labelHtml: `${countryCode} ${area}...`,
         }));
       } else {
-        return uniqBy<NamedLatLon>(getCachedLocations(), 'countryCode').map<LocationSuggestion>(
-          ({ countryCode }) => ({
-            url: renderPath(upcomingBaseRoute.events.countryCode, {
-              countryCode,
-            }),
-            labelHtml: `${countryCode} ...`,
-          })
-        );
+        return uniqBy<NamedLatLon>(
+          getCachedLocations(),
+          'countryCode',
+        ).map<LocationSuggestion>(({ countryCode }) => ({
+          url: renderPath(upcomingBaseRoute.events.countryCode, {
+            countryCode,
+          }),
+          labelHtml: `${countryCode} ...`,
+        }));
       }
     }
   }

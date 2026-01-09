@@ -1,0 +1,5 @@
+{
+    "apiUrl": "http://localhost:8080",
+    "product": "upcoming",
+    "offlineSupport": false
+  }

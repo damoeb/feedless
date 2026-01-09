@@ -60,5 +60,6 @@ export class FeatureComponent {
       case GqlFeatureName.SourceMaxCountPerRepositoryInt:
         return 'Sources per Feed';
     }
+    return '';
   }
 }

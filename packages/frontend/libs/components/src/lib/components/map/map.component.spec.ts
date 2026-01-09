@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { MapComponent } from './map.component';
-import { AppTestModule } from '@feedless/test';
-import { LatLng } from '@feedless/shared-types';
+import { AppTestModule } from '@feedless/testing';
+import { LatLng } from '@feedless/core';
 
 describe('MapComponent', () => {
   let component: MapComponent;

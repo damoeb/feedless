@@ -2,7 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SelectComponent } from './select.component';
 
-import { AppTestModule } from '@feedless/test';
+
+import { AppTestModule } from '@feedless/testing';
 
 describe('SelectComponent', () => {
   let component: SelectComponent<any>;

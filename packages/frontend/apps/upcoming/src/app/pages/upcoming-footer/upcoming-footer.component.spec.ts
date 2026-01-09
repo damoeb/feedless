@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UpcomingFooterComponent } from './upcoming-footer.component';
-import { AppTestModule } from '../../../app-test.module';
+import { AppTestModule } from '@feedless/testing';
 
 describe('UpcomingFooterComponent', () => {
   let component: UpcomingFooterComponent;

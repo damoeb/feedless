@@ -12,7 +12,7 @@ import {
   UpsertOrder,
 } from '@feedless/graphql-api';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { Nullable, Order } from '@feedless/shared-types';
+import { Nullable, Order } from '@feedless/core';
 
 @Injectable({
   providedIn: 'root',

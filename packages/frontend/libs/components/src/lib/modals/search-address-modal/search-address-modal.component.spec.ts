@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SearchAddressModalComponent } from './search-address-modal.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('SearchAddressModalComponent', () => {
   let component: SearchAddressModalComponent;

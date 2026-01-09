@@ -1,13 +1,15 @@
-@use '../upcoming-mixins';
+@use '../../upcoming-mixins';
 
 ul {
   display: flex;
   padding: 0;
 }
+
 li {
   flex: 1;
   text-align: center;
   display: block;
+
   a {
     color: rgba(var(--app-foreground-rgb), 0.5);
 

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AppTestModule } from '../../../app-test.module';
+import { AppTestModule } from '@feedless/testing';
 import { AboutUsPage } from './about-us.page';
 
 describe('AboutUsPage', () => {

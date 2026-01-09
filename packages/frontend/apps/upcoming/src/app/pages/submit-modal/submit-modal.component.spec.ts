@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SubmitModalComponent } from './submit-modal.component';
 import { SubmitModalModule } from './submit-modal.module';
-import { AppTestModule } from '../../../app-test.module';
+import { AppTestModule } from '@feedless/testing';
 
 describe('SubmitModalComponent', () => {
   let component: SubmitModalComponent;

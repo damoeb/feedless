@@ -1,12 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EventsPage } from './events.page';
-import { AppTestModule, mockEvents, mockFullRecords, mockRecords } from '../../../app-test.module';
+import {
+  AppTestModule,
+  mockEvents,
+  mockFullRecords,
+  mockRecords,
+} from '@feedless/test';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
-import { EventService } from '../event.service';
-import { AppConfigService } from '../../../services/app-config.service';
+import { EventService } from '../../event.service';
+import { AppConfigService } from '@feedless/services';
 import { of } from 'rxjs';
-import { LatLng } from '../../../types';
+import { LatLng } from '@feedless/core';
 
 describe('EventsPage', () => {
   let component: EventsPage;
@@ -69,7 +74,9 @@ describe('EventsPage', () => {
   });
 
   it('#cleanTitle', () => {
-    expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(' Mittagessen');
+    expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
+      ' Mittagessen',
+    );
   });
 
   it('#fetchEventsBetweenDates uses minDate start and maxDate end', () => {

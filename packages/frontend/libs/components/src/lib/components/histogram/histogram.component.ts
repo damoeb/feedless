@@ -17,8 +17,6 @@ export class HistogramComponent implements OnInit {
   path: string;
   rate: number;
 
-  constructor() {}
-
   ngOnInit() {
     const currentDate = dayjs();
     const maxPerDay = 5;

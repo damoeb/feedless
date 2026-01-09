@@ -51,7 +51,7 @@ import { inlineImagePlugin } from './inline-image.widget';
 import { IterMode } from '@lezer/common';
 import { addLineHighlight, lineHighlightField } from './line.decorator';
 import { NG_VALUE_ACCESSOR } from '@angular/forms';
-import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
+import { ControlValueAccessorDirective } from '@feedless/directives';
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
 import { NgClass } from '@angular/common';
@@ -109,7 +109,10 @@ export type ContentType = 'json' | 'text' | 'html' | 'markdown';
 
 //   {label: "match", apply: 'karli'},
 //   {label: "hello", info: "(World)"},
-export type AutoSuggestionsProvider = (query: string, type: string) => Promise<Completion[]>;
+export type AutoSuggestionsProvider = (
+  query: string,
+  type: string,
+) => Promise<Completion[]>;
 
 @Component({
   selector: 'app-code-editor',
@@ -158,7 +161,9 @@ export class CodeEditorComponent
 
   readonly triggerQuery = output<string>();
 
-  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() => Promise.resolve([]));
+  readonly autoSuggestionsProvider = input<AutoSuggestionsProvider>(() =>
+    Promise.resolve([]),
+  );
 
   private editorView: EditorView;
   ctrlPressed: boolean;
@@ -229,7 +234,9 @@ export class CodeEditorComponent
       //   // }
       // }),
       EditorView.domEventHandlers({
-        keyup: (event, view) => {},
+        keyup: (event, view) => {
+          // ignore
+        },
         click: (event, editorView) => {
           if (!event.ctrlKey) {
             return;
@@ -279,7 +286,9 @@ export class CodeEditorComponent
         aboveCursor: false,
         closeOnBlur: false,
         override: [
-          async (context: CompletionContext): Promise<CompletionResult | null> => {
+          async (
+            context: CompletionContext,
+          ): Promise<CompletionResult | null> => {
             const token = context.matchBefore(/[^ ]*/).text[0];
             const node = syntaxTree(context.state).resolve(context.pos).node;
             const cursor = node.cursor(IterMode.ExcludeBuffers);
@@ -307,13 +316,17 @@ export class CodeEditorComponent
 
               const from = selection?.from || context.pos;
 
-              const options = await this.autoSuggestionsProvider()(resolveQuery(), node.name);
+              const options = await this.autoSuggestionsProvider()(
+                resolveQuery(),
+                node.name,
+              );
               return {
                 from: from - 1,
                 filter: false,
                 options,
               };
             }
+            return null;
             // }
           },
         ],
@@ -377,8 +390,8 @@ export class CodeEditorComponent
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.text?.currentValue) {
-      this.setText(changes.text.currentValue);
+    if (changes['text']?.currentValue) {
+      this.setText(changes['text'].currentValue);
     }
     // const scrollLeft = changes.scrollLeft?.currentValue;
     // if (scrollLeft && this.editorView?.scrollDOM) {

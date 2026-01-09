@@ -37,7 +37,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
-import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { RemoveIfProdDirective } from '@feedless/directives';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -157,6 +157,9 @@ export class PricingComponent implements OnInit {
         other: true,
       };
     }
+    return {
+      individual: true,
+    };
   }
 
   filteredPrices(prices: GqlPricedProduct[]): GqlPricedProduct[] {

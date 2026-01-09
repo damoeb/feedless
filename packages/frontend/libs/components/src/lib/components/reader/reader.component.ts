@@ -8,15 +8,14 @@ import {
   SimpleChanges,
   ViewEncapsulation,
 } from '@angular/core';
-import {
-  ReaderLinkTarget,
-  ReaderTextTransform,
-} from '../../products/reader/reader-product.page';
 import { isUndefined } from 'lodash-es';
 import { ServerConfigService } from '@feedless/services';
-import { isDefined } from '@feedless/shared-types';
+import { isDefined, Nullable } from '@feedless/core';
 import { NgClass } from '@angular/common';
 import { IonCol, IonRow } from '@ionic/angular/standalone';
+
+export type ReaderTextTransform = 'normal' | 'bionic';
+export type ReaderLinkTarget = 'reader' | 'blank';
 
 @Component({
   selector: 'app-reader',
@@ -47,20 +46,23 @@ export class ReaderComponent implements OnChanges {
   private showLinksHostname: boolean;
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    if (changes.linkTarget && changes.linkTarget.currentValue) {
+    if (changes['linkTarget'] && changes['linkTarget'].currentValue) {
       const currentLinkTarget: ReaderLinkTarget =
-        changes.linkTarget.currentValue;
+        changes['linkTarget'].currentValue;
       this.openLinkInReader = currentLinkTarget === 'reader';
     }
 
-    if (changes.textTransform && changes.textTransform.currentValue) {
+    if (changes['textTransform'] && changes['textTransform'].currentValue) {
       const currentTextTransform: ReaderTextTransform =
-        changes.textTransform.currentValue;
+        changes['textTransform'].currentValue;
       this.useBionic = currentTextTransform === 'bionic';
     }
 
-    if (changes.verboseLink && !isUndefined(changes.verboseLink.currentValue)) {
-      this.showLinksHostname = changes.verboseLink.currentValue;
+    if (
+      changes['verboseLink'] &&
+      !isUndefined(changes['verboseLink'].currentValue)
+    ) {
+      this.showLinksHostname = changes['verboseLink'].currentValue;
     }
 
     this.content = this.getContent();
@@ -71,7 +73,7 @@ export class ReaderComponent implements OnChanges {
     return isDefined(this.html);
   }
 
-  private getContent(): string {
+  private getContent(): Nullable<string> {
     if (this.hasReadability()) {
       const document = new DOMParser().parseFromString(
         this.html(),
@@ -138,5 +140,6 @@ export class ReaderComponent implements OnChanges {
 
       return document.body.innerHTML;
     }
+    return null;
   }
 }

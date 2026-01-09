@@ -31,7 +31,7 @@ export class InputComponent<T>
 
   readonly color = input<string>('light');
 
-  ngOnInit() {
+  override ngOnInit() {
     super.ngOnInit();
   }
 

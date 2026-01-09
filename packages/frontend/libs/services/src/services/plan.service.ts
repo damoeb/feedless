@@ -6,7 +6,7 @@ import {
   Plans,
 } from '@feedless/graphql-api';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
-import { ArrayElement } from '@feedless/shared-types';
+import { ArrayElement } from '@feedless/core';
 
 export type Plan = ArrayElement<GqlPlansQuery['plans']>;
 

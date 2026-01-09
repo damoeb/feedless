@@ -12,7 +12,8 @@ import { sortBy } from 'lodash-es';
 import { FileService } from './file.service';
 import { RepositoryService } from './repository.service';
 import { ToastController } from '@ionic/angular/standalone';
-import { Nullable } from '@feedless/shared-types';
+
+import { Nullable } from '@feedless/core';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +21,7 @@ import { Nullable } from '@feedless/shared-types';
 export class SourceService {
   private readonly fileService = inject(FileService);
   private readonly repositoryService = inject(RepositoryService);
-  private readonly modalProvider = inject(ModalProvider);
+  private readonly modalProvider = inject(ModalProvider); // todo use event bus
   private readonly toastCtrl = inject(ToastController);
 
   async uploadFeedlessJson(uploadEvent: Event, repositoryId: Nullable<string>) {

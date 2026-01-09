@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
-import { AppTestModule, mockRepositories, mockScrape } from '@feedless/test';
-import { SourceBuilder } from '../interactive-website/source-builder';
+import { AppTestModule, mockRepositories, mockScrape } from '@feedless/testing';
+import { SourceBuilder } from '@feedless/source';
 import { ScrapeService } from '@feedless/services';
 
 // const jsonFeed = {

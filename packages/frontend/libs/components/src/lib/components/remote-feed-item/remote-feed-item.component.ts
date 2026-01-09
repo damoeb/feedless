@@ -24,8 +24,6 @@ export class RemoteFeedItemComponent {
   readonly feedItem = input.required<Record>();
   readonly feedItemIndex = input.required<number>();
 
-  constructor() {}
-
   toDate(date: FieldWrapper<Scalars['Long']['output']>): Date {
     return new Date(date);
   }

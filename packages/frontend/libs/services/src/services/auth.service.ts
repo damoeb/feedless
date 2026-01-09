@@ -27,7 +27,7 @@ import {
 } from 'rxjs';
 import { jwtDecode } from 'jwt-decode';
 import { Router } from '@angular/router';
-import { Nullable } from '@feedless/shared-types';
+import { Nullable } from '@feedless/core';
 import { ServerConfigService } from './server-config.service';
 
 export type ConfirmCode =

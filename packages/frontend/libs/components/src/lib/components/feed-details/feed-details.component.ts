@@ -17,14 +17,6 @@ import {
   Record,
   RepositoryFull,
 } from '@feedless/graphql-api';
-import {
-  CodeEditorModalComponent,
-  ModalName,
-  ModalProvider,
-  RepositoryModalAccordion,
-  RepositoryModalComponent,
-  RepositoryModalComponentProps,
-} from '@feedless/components';
 
 import {
   AlertController,
@@ -99,6 +91,14 @@ import { ImageDiffComponent } from '../image-diff/image-diff.component';
 import { TextDiffComponent } from '../text-diff/text-diff.component';
 import { PlayerComponent } from '../player/player.component';
 import { SourcesComponent } from '../sources/sources.component';
+import {
+  CodeEditorModalComponent,
+  ModalName,
+  ModalProvider,
+  RepositoryModalAccordion,
+  RepositoryModalComponent,
+  RepositoryModalComponentProps,
+} from '../../modals';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -245,10 +245,10 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
         this.assessIsOwner();
       }),
       this.activatedRoute.queryParams.subscribe((queryParams) => {
-        if (queryParams.modal) {
-          if (queryParams.modal === ModalName.editRepository) {
+        if (queryParams['modal']) {
+          if (queryParams['modal'] === ModalName.editRepository) {
             this.editRepository(
-              queryParams.accordion ? [queryParams.accordion] : [],
+              queryParams['accordion'] ? [queryParams['accordion']] : [],
             );
           }
         }
@@ -536,5 +536,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     );
   }
 
-  async openDataModal() {}
+  async openDataModal() {
+    // ignore
+  }
 }

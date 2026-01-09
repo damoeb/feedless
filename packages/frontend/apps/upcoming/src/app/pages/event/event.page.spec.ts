@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { EventPage } from './event.page';
-import { AppTestModule, mockFullRecords } from '../../../app-test.module';
+import { AppTestModule, mockFullRecords } from '@feedless/test';
 
 describe('EventPage', () => {
   let component: EventPage;

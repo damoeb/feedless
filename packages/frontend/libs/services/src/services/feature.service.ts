@@ -59,7 +59,7 @@ export class FeatureService {
     if (feature) {
       return feature.value.numVal!.value;
     }
-    return;
+    return undefined;
   }
 
   getFeatureValueBool(featureName: GqlFeatureName): boolean {

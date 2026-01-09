@@ -45,8 +45,8 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes.date?.currentValue) {
-      this.createDateWindow(changes.date?.currentValue);
+    if (changes['date']?.currentValue) {
+      this.createDateWindow(changes['date']?.currentValue);
     }
   }
 
@@ -112,7 +112,9 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   }
 
   isDateInCalendar(date: Dayjs) {
-    return this.dateWindow.some((d) => this.isSameDate(date, d.date, ['year', 'month', 'day']));
+    return this.dateWindow.some((d) =>
+      this.isSameDate(date, d.date, ['year', 'month', 'day']),
+    );
   }
 
   shiftDateWindow(offset: number, event: MouseEvent) {

@@ -11,8 +11,7 @@ import {
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
-import { environment } from '../../environments/environment';
-import { VerticalAppConfig } from '@feedless/shared-types';
+import { environment, VerticalAppConfig } from '@feedless/core';
 
 export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
 
@@ -68,10 +67,7 @@ export class ServerConfigService {
 
       if (product) {
         console.log(`enabling product ${product}`);
-        const products: GqlVertical[] = Object.keys(GqlVertical).map(
-          // @ts-ignore
-          (p) => GqlVertical[p],
-        );
+        const products: GqlVertical[] = Object.values(GqlVertical);
         console.log(`Know products ${products.join(', ')}`);
         if (!products.some((otherProduct) => otherProduct == product)) {
           const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
@@ -92,6 +88,7 @@ export class ServerConfigService {
         retryable: true,
       });
       console.error(error);
+      throw error;
     }
   }
 

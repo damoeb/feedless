@@ -1,5 +1,5 @@
 import { Component, inject, OnInit } from '@angular/core';
-import { Outline } from '../../services/opml.service';
+import { Outline, RepositoryService } from '@feedless/services';
 import {
   IonButton,
   IonButtons,
@@ -22,7 +22,6 @@ import {
   FormsModule,
   ReactiveFormsModule,
 } from '@angular/forms';
-import { RepositoryService } from '@feedless/services';
 import {
   GqlFeedlessPlugins,
   GqlPluginExecutionInput,

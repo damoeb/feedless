@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FeedlessHeaderComponent } from './feedless-header.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('FeedlessHeaderComponent', () => {
   let component: FeedlessHeaderComponent;

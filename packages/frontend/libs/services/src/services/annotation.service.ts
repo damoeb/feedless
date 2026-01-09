@@ -13,7 +13,7 @@ import {
 import { ApolloClient } from '@apollo/client/core';
 import { SessionService } from './session.service';
 import { Router } from '@angular/router';
-import { Nullable } from '@feedless/shared-types';
+import { Nullable } from '@feedless/core';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +40,7 @@ export class AnnotationService {
         .then((response) => response.data!.createAnnotation);
     } else {
       await this.router.navigateByUrl('/login');
+      return null;
     }
   }
 

@@ -11,7 +11,7 @@ import {
 } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { LatLng } from '@feedless/shared-types';
+import { LatLng } from '@feedless/core';
 import { MapComponent } from '../../components/map/map.component';
 
 export interface MapModalComponentProps {

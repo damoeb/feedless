@@ -15,7 +15,7 @@ import {
 import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
-import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
+import { SearchbarComponent } from '@feedless/form-elements';
 
 export interface TagsModalComponentProps {
   tags: string[];

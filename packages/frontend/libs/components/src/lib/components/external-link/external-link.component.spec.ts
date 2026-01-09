@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExternalLinkComponent } from './external-link.component';
-import { AppTestModule } from '@feedless/test';
+import { AppTestModule } from '@feedless/testing';
 
 describe('ExternalLinkComponent', () => {
   let component: ExternalLinkComponent;

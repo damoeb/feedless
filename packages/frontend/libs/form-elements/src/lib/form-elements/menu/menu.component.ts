@@ -1,4 +1,11 @@
-import { Component, inject, input, OnInit, output, viewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  viewChild,
+} from '@angular/core';
 import {
   IonButton,
   IonContent,
@@ -14,7 +21,10 @@ import { isFunction, isObject, isString } from 'lodash-es';
 import { NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
-export function labelProvider<T>(value: T, labelFn: keyof T | ((value: T) => string)): string {
+export function labelProvider<T>(
+  value: T,
+  labelFn: keyof T | ((value: T) => string),
+): string {
   if (isFunction(labelFn)) {
     return labelFn(value);
   } else {
@@ -71,7 +81,7 @@ export class MenuComponent<T> implements OnInit {
 
   readonly searchbarElement = viewChild<IonSearchbar>('searchbar');
 
-  currentValue: T;
+  currentValue: T | undefined;
   query = '';
   indexInFocus = -1;
 
@@ -105,7 +115,7 @@ export class MenuComponent<T> implements OnInit {
     if (this.query) {
       this.query = '';
     } else {
-      return this.dismiss();
+      this.dismiss();
     }
   }
 
@@ -127,14 +137,15 @@ export class MenuComponent<T> implements OnInit {
 
   pickInFocus() {
     if (this.indexInFocus > -1) {
-      return this.pick(this.items()[this.indexInFocus]);
+      this.pick(this.items()[this.indexInFocus]);
     }
   }
 
   focusSearchbar() {
-    if (!this.hideFilter()) {
+    const element = this.searchbarElement();
+    if (!this.hideFilter() && element) {
       setTimeout(() => {
-        this.searchbarElement().setFocus();
+        element.setFocus();
       }, 1);
     }
   }

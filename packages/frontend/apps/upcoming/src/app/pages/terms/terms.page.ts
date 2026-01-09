@@ -1,6 +1,11 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  OnInit,
+} from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
-import { PageService, PageTags } from '../../../services/page.service';
+import { PageService, PageTags } from '@feedless/services';
 import dayjs from 'dayjs';
 
 @Component({
@@ -13,8 +18,6 @@ import dayjs from 'dayjs';
 })
 export class TermsPage implements OnInit {
   private readonly pageService = inject(PageService);
-
-  constructor() {}
 
   ngOnInit() {
     this.pageService.setMetaTags(this.getPageTags());
