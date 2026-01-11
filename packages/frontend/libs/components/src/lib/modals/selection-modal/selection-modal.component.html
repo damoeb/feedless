@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
-        <ion-icon name="close-outline"></ion-icon>
+        <app-icon name="close-outline"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>{{ title }}</ion-title>
@@ -20,7 +20,7 @@
   <ion-list>
     <ion-item lines="full">
       <ion-checkbox [formControl]="selectAllFormControl" labelPlacement="end"
-        >Select
+      >Select
         @if (selectAllFormControl.value) {
           None
         } @else {

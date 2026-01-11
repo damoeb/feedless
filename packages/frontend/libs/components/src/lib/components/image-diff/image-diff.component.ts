@@ -7,6 +7,7 @@ import {
   input,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import pixelmatch from 'pixelmatch';
 import { Record } from '@feedless/graphql-api';
@@ -14,8 +15,8 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { dateFormat, dateTimeFormat } from '@feedless/services';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
-import { DatePipe } from '@angular/common';
-import { IonIcon } from '@ionic/angular/standalone';
+import { DatePipe, isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 type ImageSize = {
   width: number;
@@ -28,7 +29,7 @@ type ImageSize = {
   styleUrls: ['./image-diff.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  imports: [IonIcon, DatePipe],
+  imports: [IconComponent, DatePipe],
   standalone: true,
 })
 export class ImageDiffComponent implements OnInit, OnDestroy {
@@ -41,9 +42,12 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
 
   safeDiffImageUrl: SafeResourceUrl;
   private diffImageUrl: string;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ arrowForwardOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ arrowForwardOutline });
+    }
   }
 
   ngOnDestroy(): void {

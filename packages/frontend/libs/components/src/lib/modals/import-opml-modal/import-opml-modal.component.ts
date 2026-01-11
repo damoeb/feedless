@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
 import { Outline, RepositoryService } from '@feedless/services';
 import {
   IonButton,
@@ -7,7 +7,6 @@ import {
   IonContent,
   IonFooter,
   IonHeader,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -31,6 +30,8 @@ import {
 } from '@feedless/graphql-api';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface ImportOpmlModalComponentProps {
   outlines: Outline[];
@@ -56,7 +57,7 @@ type FcOutline = {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     IonList,
     IonItem,
@@ -83,9 +84,12 @@ export class ImportOpmlModalComponent
   });
 
   private formControls: FormControl<boolean>[] = [];
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline });
+    }
   }
 
   ngOnInit() {

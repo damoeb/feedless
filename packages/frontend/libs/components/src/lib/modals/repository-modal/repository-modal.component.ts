@@ -4,6 +4,7 @@ import {
   Component,
   inject,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import {
   IonAccordion,
@@ -14,7 +15,6 @@ import {
   IonCol,
   IonContent,
   IonHeader,
-  IonIcon,
   IonInput,
   IonItem,
   IonItemDivider,
@@ -83,9 +83,10 @@ import {
   FilterOperator,
 } from '../../components/filter-items-accordion/filter-items-accordion.component';
 import { RemoveIfProdDirective } from '@feedless/directives';
-import { JsonPipe, KeyValuePipe } from '@angular/common';
+import { isPlatformBrowser, JsonPipe, KeyValuePipe } from '@angular/common';
 import { FlowModalComponent } from '../flow-modal/flow-modal.component';
 import { ModalProvider } from '../modal-provider.service';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;
@@ -139,7 +140,7 @@ type RepositoryFormGroupDef = {
     IonToolbar,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonTitle,
     IonLabel,
     IonContent,
@@ -211,9 +212,12 @@ export class RepositoryModalComponent
 
   private filterParams: GqlItemFilterParamsInput[] = [];
   protected repositoryMaxItemsUpperLimit: Nullable<number> = null;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ closeOutline, ellipsisHorizontalOutline, flaskOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline, ellipsisHorizontalOutline, flaskOutline });
+    }
   }
 
   closeModal() {

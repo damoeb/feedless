@@ -1,10 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import {
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -18,6 +17,8 @@ import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '@feedless/core';
 import { SearchbarComponent } from '@feedless/form-elements';
 import { OpenStreetMapService } from '@feedless/geo';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../../components/icon/icon.component';
 
 @Component({
   selector: 'app-search-address-modal',
@@ -30,7 +31,7 @@ import { OpenStreetMapService } from '@feedless/geo';
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     SearchbarComponent,
     IonList,
@@ -41,13 +42,16 @@ import { OpenStreetMapService } from '@feedless/geo';
 export class SearchAddressModalComponent {
   private readonly modalCtrl = inject(ModalController);
   private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   matches: NamedLatLon[];
   loading = false;
   protected latLon: GqlGeoPoint;
 
   constructor() {
-    addIcons({ closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline });
+    }
   }
 
   async closeModal() {

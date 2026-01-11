@@ -1,12 +1,14 @@
-import { Component, inject, input, output } from '@angular/core';
+import { Component, inject, input, output, PLATFORM_ID } from '@angular/core';
 import { GetElementType, Record } from '@feedless/graphql-api';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { playOutline } from 'ionicons/icons';
 
-import { IonButton, IonIcon, IonNote } from '@ionic/angular/standalone';
+import { IonButton, IonNote } from '@ionic/angular/standalone';
 import { Nullable } from '@feedless/core';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 type Enclosure = GetElementType<Record['attachments']>;
 
@@ -14,7 +16,7 @@ type Enclosure = GetElementType<Record['attachments']>;
   selector: 'app-player',
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.scss'],
-  imports: [IonButton, IonIcon, IonNote],
+  imports: [IonButton, IconComponent, IonNote],
   standalone: true,
 })
 export class PlayerComponent {
@@ -25,9 +27,12 @@ export class PlayerComponent {
   protected isPlaying = false;
 
   readonly playback = output<void>();
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ playOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ playOutline });
+    }
   }
 
   hasAudioStream(document: Record): boolean {

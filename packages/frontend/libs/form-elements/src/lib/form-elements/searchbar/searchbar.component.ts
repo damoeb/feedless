@@ -1,9 +1,11 @@
 import {
   Component,
+  inject,
   input,
   OnChanges,
   OnInit,
   output,
+  PLATFORM_ID,
   SimpleChanges,
 } from '@angular/core';
 import {
@@ -14,12 +16,9 @@ import {
 } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
-import {
-  IonButton,
-  IonIcon,
-  IonInput,
-  IonSpinner,
-} from '@ionic/angular/standalone';
+import { IonButton, IonInput, IonSpinner } from '@ionic/angular/standalone';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '@feedless/components';
 
 @Component({
   selector: 'app-searchbar',
@@ -30,12 +29,13 @@ import {
     IonInput,
     ReactiveFormsModule,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonSpinner,
   ],
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {
+  private readonly platformId = inject(PLATFORM_ID);
   readonly value = input<string>();
 
   readonly loading = input<boolean>();
@@ -53,7 +53,9 @@ export class SearchbarComponent implements OnInit, OnChanges {
   queryFc = new FormControl<string>('', [Validators.required]);
 
   constructor() {
-    addIcons({ chevronForwardOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ chevronForwardOutline });
+    }
   }
 
   triggerUpdate() {

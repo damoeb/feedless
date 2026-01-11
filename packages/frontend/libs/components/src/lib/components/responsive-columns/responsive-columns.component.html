@@ -32,10 +32,10 @@
         <div (click)="triggerSlider(scrollpane)" class="slider-button">
           <div class="slider-button__bg"></div>
           @if (scrollpane.scrollLeft === 0) {
-            <ion-icon name="chevron-forward-outline" size="large"></ion-icon>
+            <app-icon name="chevron-forward-outline" size="large"></app-icon>
           }
           @if (scrollpane.scrollLeft !== 0) {
-            <ion-icon name="chevron-back-outline" size="large"></ion-icon>
+            <app-icon name="chevron-back-outline" size="large"></app-icon>
           }
         </div>
       </ion-col>

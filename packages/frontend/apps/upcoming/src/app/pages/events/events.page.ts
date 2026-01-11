@@ -160,7 +160,9 @@ export class EventsPage implements OnInit, OnDestroy {
   loadingDay = true;
 
   constructor() {
-    addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ arrowBackOutline, arrowForwardOutline, sendOutline });
+    }
   }
 
   async ngOnInit(): Promise<void> {

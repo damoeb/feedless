@@ -6,19 +6,19 @@
 >
   @if (label()) {
     @if (darkMode) {
-      <ion-icon name="sunny-outline" slot="start"></ion-icon>
+      <app-icon name="sunny-outline" slot="start"></app-icon>
     }
     @if (!darkMode) {
-      <ion-icon name="moon-outline" slot="start"></ion-icon>
+      <app-icon name="moon-outline" slot="start"></app-icon>
     }
     {{ label() }}
   }
   @if (!label()) {
     @if (darkMode) {
-      <ion-icon name="sunny-outline" slot="icon-only"></ion-icon>
+      <app-icon name="sunny-outline" slot="icon-only"></app-icon>
     }
     @if (!darkMode) {
-      <ion-icon name="moon-outline" slot="icon-only"></ion-icon>
+      <app-icon name="moon-outline" slot="icon-only"></app-icon>
     }
   }
 </ion-button>

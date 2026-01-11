@@ -1,10 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import {
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonTitle,
   IonToolbar,
   ModalController,
@@ -13,6 +12,8 @@ import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { LatLng } from '@feedless/core';
 import { MapComponent } from '../../components/map/map.component';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface MapModalComponentProps {
   position: LatLng;
@@ -30,20 +31,23 @@ export interface MapModalComponentProps {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     MapComponent,
   ],
 })
 export class MapModalComponent implements MapModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
+  private readonly platformId = inject(PLATFORM_ID);
 
   position: LatLng;
 
   perimeter: number;
 
   constructor() {
-    addIcons({ closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline });
+    }
   }
 
   closeModal() {

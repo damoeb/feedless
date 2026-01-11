@@ -1,9 +1,11 @@
-import { Component, effect, input } from '@angular/core';
+import { Component, effect, inject, input, PLATFORM_ID } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
-import { IonCol, IonIcon, IonRow } from '@ionic/angular/standalone';
+import { IonCol, IonRow } from '@ionic/angular/standalone';
 import { Feature, GqlFeatureName } from '@feedless/graphql-api';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 type StringFeature = {
   title: string;
@@ -18,16 +20,19 @@ type StringFeature = {
   selector: 'app-feature',
   templateUrl: './feature.component.html',
   styleUrls: ['./feature.component.scss'],
-  imports: [IonRow, IonIcon, IonCol],
+  imports: [IonRow, IconComponent, IonCol],
   standalone: true,
 })
 export class FeatureComponent {
   readonly feature = input.required<Feature>();
 
   protected sFeature: StringFeature;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ checkmarkOutline, closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ checkmarkOutline, closeOutline });
+    }
 
     effect(() => {
       const title = this.localise(this.feature().name);

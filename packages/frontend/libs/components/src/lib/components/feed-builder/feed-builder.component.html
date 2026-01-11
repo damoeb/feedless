@@ -13,7 +13,7 @@
         >
           @if (url?.length > 0) {
             <ion-button title="Clear" fill="clear" color="dark" (click)="reset()">
-              <ion-icon name="close-outline" slot="icon-only"></ion-icon>
+              <app-icon name="close-outline" slot="icon-only"></app-icon>
             </ion-button>
           }
           <input
@@ -24,7 +24,7 @@
             type="file"
           />
           <ion-button title="Upload" color="light" appDev (click)="filePicker.click()">
-            <ion-icon name="attach-outline" slot="icon-only"></ion-icon>
+            <app-icon name="attach-outline" slot="icon-only"></app-icon>
           </ion-button>
         </app-searchbar>
         @if (errorMessage) {
@@ -76,10 +76,10 @@
         >
           @if (needsJavaScript()) {
             <ion-label color="dark"> Enabled JavaScript</ion-label>
-            <ion-icon color="success" name="logo-javascript" slot="end"></ion-icon>
+            <app-icon color="success" name="logo-javascript" slot="end"></app-icon>
           } @else {
             <ion-label color="medium">Disabled JavaScript</ion-label>
-            <ion-icon color="medium" name="logo-javascript" slot="end"></ion-icon>
+            <app-icon color="medium" name="logo-javascript" slot="end"></app-icon>
           }
         </ion-item>
         <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="meta">
@@ -136,27 +136,27 @@
         <!--        <ion-label>-->
         <!--          Inherit categories-->
         <!--        </ion-label>-->
-        <!--        <ion-icon-->
+        <!--        <app-icon-->
         <!--          name="link-outline"-->
         <!--          color="primary"-->
         <!--          slot="end"-->
-        <!--        ></ion-icon>-->
+        <!--        ></app-icon>-->
         <!--      </ion-item>-->
         <ion-list bottomSlot>
           @if (allowDraft()) {
             <ion-item appDev (click)="createOrRefineFeed(false, true)" [button]="true">
               <ion-label> Save as Draft</ion-label>
-              <ion-icon name="checkmark-outline" slot="end"></ion-icon>
+              <app-icon name="checkmark-outline" slot="end"></app-icon>
             </ion-item>
           }
           @if (!hideCustomizeFeed()) {
             <ion-item (click)="createOrRefineFeed(true)" [button]="true" [disabled]="!hasValidFeed">
               @if (standaloneFeedMode()) {
                 <ion-label>Save Feed</ion-label>
-                <ion-icon name="arrow-redo-outline" slot="end"></ion-icon>
+                <app-icon name="arrow-redo-outline" slot="end"></app-icon>
               } @else {
                 <ion-label>Create Feed with Options</ion-label>
-                <ion-icon name="arrow-redo-outline" slot="end"></ion-icon>
+                <app-icon name="arrow-redo-outline" slot="end"></app-icon>
               }
             </ion-item>
           }
@@ -168,7 +168,7 @@
               [disabled]="!hasValidFeed || needsJavaScript()"
             >
               <ion-label> Show Feed URL</ion-label>
-              <ion-icon name="checkmark-done-outline" slot="end"></ion-icon>
+              <app-icon name="checkmark-done-outline" slot="end"></app-icon>
             </ion-item>
           } @else {
             <ion-item
@@ -179,7 +179,7 @@
               <ion-label>
                 {{ submitButtonText() }}
               </ion-label>
-              <ion-icon name="checkmark-done-outline" slot="end"></ion-icon>
+              <app-icon name="checkmark-done-outline" slot="end"></app-icon>
             </ion-item>
           }
         </ion-list>

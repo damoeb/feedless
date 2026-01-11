@@ -11,13 +11,13 @@
     <!--          color="light"-->
     <!--          (click)="$event.preventDefault(); $event.stopImmediatePropagation(); moveCalendarWindow(-3)"-->
     <!--        >-->
-    <!--          <ion-icon name="arrow-back-outline" slot="icon-only"></ion-icon>-->
+    <!--          <app-icon name="arrow-back-outline" slot="icon-only"></app-icon>-->
     <!--        </ion-button>-->
     <!--      </a>-->
     <!--    </div>-->
     <div class="calendar-days">
       <!--      <ion-button>-->
-      <!--        <ion-icon name="calendar-number-outline" slot="icon-only"></ion-icon>-->
+      <!--        <app-icon name="calendar-number-outline" slot="icon-only"></app-icon>-->
       <!--      </ion-button>-->
 
       @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
@@ -48,11 +48,11 @@
       @if (isValidOffset(4)) {
         <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
           <ion-button size="expand" color="light" (click)="shiftDateWindow(4, $event)">
-            <ion-icon
+            <app-icon
               aria-label="Weiter im Kalender"
               name="arrow-forward-outline"
               slot="icon-only"
-            ></ion-icon>
+            ></app-icon>
           </ion-button>
         </a>
       } @else {
@@ -62,14 +62,14 @@
           [disabled]="true"
           color="light"
         >
-          <ion-icon name="arrow-forward-outline" slot="icon-only"></ion-icon>
+          <app-icon name="arrow-forward-outline" slot="icon-only"></app-icon>
         </ion-button>
       }
     </div>
   </div>
   @if (!isDateInCalendar(now)) {
     <div style="justify-self: center">
-      <ion-button size="small" (click)="changeDate.emit(now)">Heute anzeigen </ion-button>
+      <ion-button size="small" (click)="changeDate.emit(now)">Heute anzeigen</ion-button>
     </div>
   }
 </div>

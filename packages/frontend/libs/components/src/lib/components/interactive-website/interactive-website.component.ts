@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   output,
+  PLATFORM_ID,
 } from '@angular/core';
 import { first, last, parseInt } from 'lodash-es';
 import { GqlLogStatement, ScrapeResponse } from '@feedless/graphql-api';
@@ -27,7 +28,6 @@ import {
   IonButton,
   IonButtons,
   IonCol,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -39,11 +39,12 @@ import {
   IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { NgStyle } from '@angular/common';
+import { isPlatformBrowser, NgStyle } from '@angular/common';
 import { EmbeddedMarkupComponent } from '../embedded-markup/embedded-markup.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 import { BlockElementComponent } from '../block-element/block-element.component';
 import { Embeddable } from '@feedless/core';
+import { IconComponent } from '../icon/icon.component';
 
 type ViewMode = 'markup' | 'image';
 
@@ -63,7 +64,7 @@ type ViewMode = 'markup' | 'image';
     IonSegmentButton,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonRange,
     IonLabel,
     IonText,
@@ -124,9 +125,12 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   protected logs: GqlLogStatement[];
 
   protected readonly parseInt = parseInt;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ removeOutline, addOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ removeOutline, addOutline });
+    }
   }
 
   viewModeFc = new FormControl<ViewMode | string>('markup');

@@ -6,6 +6,7 @@ import {
   input,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
   viewChild,
 } from '@angular/core';
 import {
@@ -28,7 +29,6 @@ import {
   IonCol,
   IonContent,
   IonHeader,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -83,7 +83,7 @@ import {
   starOutline,
   trashOutline,
 } from 'ionicons/icons';
-import { DatePipe, NgClass } from '@angular/common';
+import { DatePipe, isPlatformBrowser, NgClass } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { RemoveIfProdDirective } from '@feedless/directives';
 import { HistogramComponent } from '../histogram/histogram.component';
@@ -99,6 +99,7 @@ import {
   RepositoryModalComponent,
   RepositoryModalComponentProps,
 } from '../../modals';
+import { IconComponent } from '../icon/icon.component';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -126,7 +127,7 @@ type Pair<A, B> = {
     IonHeader,
     IonTitle,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonLabel,
     IonContent,
     IonList,
@@ -210,27 +211,30 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   settingsModalId = `open-settings-modal-${this.seed}`;
 
   // protected loadingSources: boolean = false;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({
-      closeOutline,
-      addOutline,
-      listOutline,
-      pulseOutline,
-      gitBranchOutline,
-      flagOutline,
-      starOutline,
-      star,
-      logoRss,
-      settingsOutline,
-      codeOutline,
-      cloudDownloadOutline,
-      trashOutline,
-      refreshOutline,
-      pencilOutline,
-      locationOutline,
-      cloudUploadOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        closeOutline,
+        addOutline,
+        listOutline,
+        pulseOutline,
+        gitBranchOutline,
+        flagOutline,
+        starOutline,
+        star,
+        logoRss,
+        settingsOutline,
+        codeOutline,
+        cloudDownloadOutline,
+        trashOutline,
+        refreshOutline,
+        pencilOutline,
+        locationOutline,
+        cloudUploadOutline,
+      });
+    }
   }
 
   ngOnDestroy(): void {

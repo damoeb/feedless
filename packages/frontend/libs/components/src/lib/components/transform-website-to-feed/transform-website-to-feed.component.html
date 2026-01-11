@@ -22,7 +22,7 @@
                     class="feed"
                   >
                     <ion-label> Native {{ nativeFeed?.title }}</ion-label>
-                    <ion-icon name="chevron-forward"></ion-icon>
+                    <app-icon name="chevron-forward"></app-icon>
                   </ion-item>
                 }
 
@@ -33,12 +33,12 @@
                     [color]="currentGenericFeed?.hash === genericFeed.hash ? 'primary' : undefined"
                   >
                     <ion-label
-                      >Generic with {{ genericFeed.count }} items
+                    >Generic with {{ genericFeed.count }} items
                       @if (genericFeed.selectors.dateXPath) {
                         <span>+date</span>
                       }
                     </ion-label>
-                    <ion-icon name="chevron-forward"></ion-icon>
+                    <app-icon name="chevron-forward"></app-icon>
                     <div
                       [ngStyle]="{ width: getRelativeScore(genericFeed) + '%' }"
                       class="generic-feed-score"
@@ -87,12 +87,12 @@
                   color="light"
                   slot="end"
                 >
-                  <ion-icon name="search-outline"></ion-icon>
+                  <app-icon name="search-outline"></app-icon>
                 </ion-button>
               </ion-item>
               <ion-item>
                 <ion-note
-                  >The URL will be used to avoid duplicate feed items. If the URL isn't available,
+                >The URL will be used to avoid duplicate feed items. If the URL isn't available,
                   the title will be used instead.
                 </ion-note>
               </ion-item>
@@ -131,7 +131,7 @@
                   color="light"
                   slot="end"
                 >
-                  <ion-icon name="search-outline"></ion-icon>
+                  <app-icon name="search-outline"></app-icon>
                 </ion-button>
               </ion-item>
               @if (genFeedXpathsFg.value.dateXPath) {
@@ -140,7 +140,7 @@
                     [formControl]="genFeedXpathsFg.controls.dateIsStartOfEvent"
                     labelPlacement="end"
                     name="dateIsStartOfEvent"
-                    >Item Date is Start Date (Event)
+                  >Item Date is Start Date (Event)
                   </ion-checkbox>
                 </ion-item>
               }
@@ -168,7 +168,7 @@
                 <ion-label class="ion-text-right" color="medium">
                   <ion-note>
                     <a href="https://github.com/code4craft/xsoup" target="_blank"
-                      >xpath syntax reference</a
+                    >xpath syntax reference</a
                     >
                   </ion-note>
                 </ion-label>
@@ -186,7 +186,7 @@
         @if (shouldRefresh && selectedFeed) {
           <app-bubble color="red"></app-bubble>
         }
-        <ion-icon name="eye-outline" slot="end"></ion-icon>
+        <app-icon name="eye-outline" slot="end"></app-icon>
       </ion-item>
       <ng-content select="[bottomSlot]"></ng-content>
     </ion-list>
@@ -217,7 +217,7 @@
               <app-block-element>
                 <ion-button (click)="fetchFeedPreview(false)" size="small">
                   <ion-label>
-                    <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                    <app-icon name="refresh-outline" slot="start"></app-icon>
                     Refresh Feed
                   </ion-label>
                 </ion-button>

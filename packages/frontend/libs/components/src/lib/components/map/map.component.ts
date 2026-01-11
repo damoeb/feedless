@@ -18,7 +18,7 @@ export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
-  styleUrls: ['./map.component.scss'],
+  // styleUrls: ['./map.component.scss'],
   encapsulation: ViewEncapsulation.None,
   standalone: true,
 })

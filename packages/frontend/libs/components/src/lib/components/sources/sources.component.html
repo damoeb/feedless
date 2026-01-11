@@ -17,7 +17,7 @@
       <!--        size="small"-->
       <!--        title="Trigger Refresh"-->
       <!--      >-->
-      <!--        <ion-icon name="refresh-outline" slot="start"></ion-icon>-->
+      <!--        <app-icon name="refresh-outline" slot="start"></app-icon>-->
       <!--        Reload-->
       <!--      </ion-button>-->
       <ion-button
@@ -28,15 +28,15 @@
         size="small"
         title="Force Sync"
       >
-        <ion-icon name="refresh-outline" slot="start"></ion-icon>
+        <app-icon name="refresh-outline" slot="start"></app-icon>
         Sync
       </ion-button>
       <ion-button (click)="jsonPicker.click()">
-        <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+        <app-icon name="cloud-upload-outline" slot="start"></app-icon>
         <ion-label>Import</ion-label>
       </ion-button>
       <ion-button (click)="editOrAddSource()">
-        <ion-icon name="add-outline" slot="start"></ion-icon>
+        <app-icon name="add-outline" slot="start"></app-icon>
         Add
         @if (repository().sourcesCount === 0) {
           <app-bubble color="red" slot="end"></app-bubble>
@@ -85,13 +85,13 @@
               (click)="editTags(source)"
               [color]="source.tags?.length > 0 ? 'medium' : 'primary'"
               fill="clear"
-              >{{ stringifyTags(source) }}
+            >{{ stringifyTags(source) }}
             </ion-button>
             <ion-button
               (click)="editLatLon(source)"
               [color]="source.latLng ? 'medium' : 'primary'"
               fill="clear"
-              >{{ stringifyLocalization(source) }}
+            >{{ stringifyLocalization(source) }}
             </ion-button>
           </ion-buttons>
 
@@ -108,7 +108,7 @@
               [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
             >
               {{ source.lastRecordsRetrieved }} items
-              <ion-text color="medium"> ({{ fromNow(source.lastRefreshedAt) }}) </ion-text>
+              <ion-text color="medium"> ({{ fromNow(source.lastRefreshedAt) }})</ion-text>
             </ion-text>
 
             <p>
@@ -117,7 +117,7 @@
               </ion-label>
             </p>
           } @else {
-            <ion-text class="nowrap" title="last fetch" color=""> Never </ion-text>
+            <ion-text class="nowrap" title="last fetch" color=""> Never</ion-text>
           }
         </ion-col>
         <ion-col size="2">
@@ -135,7 +135,7 @@
               Edit
             </ion-button>
             @if (source.lastRefreshedAt !== null) {
-              <ion-button fill="solid" color="light" (click)="showLogs(source)">Logs </ion-button>
+              <ion-button fill="solid" color="light" (click)="showLogs(source)">Logs</ion-button>
             }
             <ion-button fill="solid" color="light" (click)="showSourceOptions(source)">
               More

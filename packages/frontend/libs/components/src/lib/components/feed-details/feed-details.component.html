@@ -12,7 +12,7 @@
       <ion-chip (click)="editRepository(['privacy'])">Public</ion-chip>
     }
     @if (repository().pushNotificationsEnabled) {
-      <ion-chip (click)="editRepository(['notifications'])">Push Notifications </ion-chip>
+      <ion-chip (click)="editRepository(['notifications'])">Push Notifications</ion-chip>
     }
   </ion-row>
   <ion-toolbar class="ion-margin-vertical" style="--background: transparent">
@@ -25,7 +25,7 @@
                 <ion-title>Sources of {{ repository().title }}</ion-title>
                 <ion-buttons slot="end">
                   <ion-button (click)="dismissModal()">
-                    <ion-icon name="close-outline"></ion-icon>
+                    <app-icon name="close-outline"></app-icon>
                   </ion-button>
                 </ion-buttons>
               </ion-toolbar>
@@ -36,10 +36,10 @@
           </ng-template>
         </ion-modal>
         <ion-button (click)="openSourcesModal()">
-          <ion-icon name="git-branch-outline" slot="start"></ion-icon>
+          <app-icon name="git-branch-outline" slot="start"></app-icon>
           <ion-label> Sources</ion-label>
           <ion-badge color="light" style="margin-left: 5px"
-            >{{ repository().sourcesCount }}
+          >{{ repository().sourcesCount }}
             @if (repository().sourcesCountWithProblems > 0) {
               <span>
                 /
@@ -53,42 +53,42 @@
       }
       @if (!isOwner) {
         <ion-button appDev routerLink="report">
-          <ion-icon name="flag-outline" slot="start"></ion-icon>
+          <app-icon name="flag-outline" slot="start"></app-icon>
           <ion-label> Report</ion-label>
         </ion-button>
       }
       <!--      <ion-button>-->
-      <!--        <ion-icon name="globe-outline" color="primary" slot="start"></ion-icon>-->
+      <!--        <app-icon name="globe-outline" color="primary" slot="start"></app-icon>-->
       <!--        Visit website-->
       <!--      </ion-button>-->
       <!--    <ion-button title="Pulls per week" *ngIf="!serverConfig.isSelfHosted()">-->
-      <!--      <ion-icon-->
+      <!--      <app-icon-->
       <!--        name="arrow-down-outline"-->
       <!--        color="primary"-->
       <!--        slot="start"-->
-      <!--      ></ion-icon>-->
+      <!--      ></app-icon>-->
       <!--      Pull 2.3k-->
       <!--    </ion-button>-->
       @if (!hasCurrentUserStarred()) {
         <ion-button (click)="starRepository()">
-          <ion-icon name="star-outline" slot="start"></ion-icon>
+          <app-icon name="star-outline" slot="start"></app-icon>
           Star
-          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }}</ion-badge>
         </ion-button>
       }
       @if (hasCurrentUserStarred()) {
         <ion-button (click)="unstarRepository()">
-          <ion-icon name="star" slot="start"></ion-icon>
+          <app-icon name="star" slot="start"></app-icon>
           Starred
-          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }} </ion-badge>
+          <ion-badge color="light" style="margin-left: 5px">{{ getStartCount() }}</ion-badge>
         </ion-button>
       }
       <ion-button [href]="feedUrl" color="primary" fill="solid">
-        <ion-icon name="logo-rss" slot="start"></ion-icon>
+        <app-icon name="logo-rss" slot="start"></app-icon>
         Feed
       </ion-button>
       <ion-button [id]="settingsModalId">
-        <ion-icon name="settings-outline"></ion-icon>
+        <app-icon name="settings-outline"></app-icon>
       </ion-button>
       <ion-popover
         [showBackdrop]="false"
@@ -102,11 +102,11 @@
           <ion-content>
             <ion-list>
               <ion-item appDev button="true" (click)="showCode()">
-                <ion-icon name="code-outline" slot="start"></ion-icon>
+                <app-icon name="code-outline" slot="start"></app-icon>
                 <ion-label>Code</ion-label>
               </ion-item>
               <ion-item (click)="exportRepository()" button="true">
-                <ion-icon name="cloud-download-outline" slot="start"></ion-icon>
+                <app-icon name="cloud-download-outline" slot="start"></app-icon>
                 <ion-label>Download as JSON</ion-label>
               </ion-item>
               <input
@@ -117,15 +117,15 @@
                 type="file"
               />
               <ion-item (click)="jsonPicker.click()" button="true">
-                <ion-icon name="cloud-upload-outline" slot="start"></ion-icon>
+                <app-icon name="cloud-upload-outline" slot="start"></app-icon>
                 <ion-label>Import JSON</ion-label>
               </ion-item>
               <ion-item (click)="editRepository()" button="true">
-                <ion-icon name="settings-outline" slot="start"></ion-icon>
+                <app-icon name="settings-outline" slot="start"></app-icon>
                 <ion-label>Edit</ion-label>
               </ion-item>
               <ion-item (click)="deleteRepository()" button="true">
-                <ion-icon name="trash-outline" slot="start"></ion-icon>
+                <app-icon name="trash-outline" slot="start"></app-icon>
                 <ion-label>Delete</ion-label>
               </ion-item>
             </ion-list>
@@ -166,7 +166,7 @@
                 size="small"
                 title="Trigger Refresh"
               >
-                <ion-icon name="refresh-outline" slot="start"></ion-icon>
+                <app-icon name="refresh-outline" slot="start"></app-icon>
                 Trigger Refresh
               </ion-button>
             </dd>
@@ -183,7 +183,7 @@
                   shape="round"
                   size="small"
                 >
-                  <ion-icon name="pencil-outline" slot="start"></ion-icon>
+                  <app-icon name="pencil-outline" slot="start"></app-icon>
                   Edit
                 </ion-button>
               }
@@ -227,11 +227,11 @@
             <ion-segment-button [value]="viewModeList">List</ion-segment-button>
             <!--        <ion-segment-button [value]="viewModeHistogram">Activity</ion-segment-button>-->
             @if (repository().product === GqlProductName.VisualDiff) {
-              <ion-segment-button [value]="viewModeDiff">Diff </ion-segment-button>
+              <ion-segment-button [value]="viewModeDiff">Diff</ion-segment-button>
             }
           </ion-segment>
           @if (supportTable && isOwner) {
-            <ion-button size="small" (click)="openDataModal()" appDev> Data </ion-button>
+            <ion-button size="small" (click)="openDataModal()" appDev> Data</ion-button>
           }
         </div>
       </div>
@@ -285,12 +285,12 @@
                 <div class="ion-padding-horizontal flex">
                   @if (selectedCount === 0) {
                     <ion-text class="ion-margin-end" style="align-content: center"
-                      >Select All
+                    >Select All
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
                     <ion-text class="ion-margin-end" style="align-content: center"
-                      >({{ selectedCount }})
+                    >({{ selectedCount }})
                     </ion-text>
                   }
                   @if (selectedCount > 0) {
@@ -322,11 +322,11 @@
                   <ion-toolbar style="--background: transparent">
                     <ion-buttons>
                       <ion-note
-                        >{{ fromNow(document.publishedAt) }} on
+                      >{{ fromNow(document.publishedAt) }} on
                         {{ hostname(document.url) }}
                         <!--                      https://www.openstreetmap.org/#map=14/-->
                         @if (document.latLng) {
-                          <ion-icon name="location-outline"></ion-icon>
+                          <app-icon name="location-outline"></app-icon>
                         }
                       </ion-note>
                       @if (document.tags.length > 0) {

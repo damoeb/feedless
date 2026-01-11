@@ -7,6 +7,7 @@ import {
   input,
   OnInit,
   output,
+  PLATFORM_ID,
 } from '@angular/core';
 
 import {
@@ -15,7 +16,6 @@ import {
   IonButton,
   IonButtons,
   IonCol,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -54,6 +54,8 @@ import {
   SearchAddressModalComponent,
   TagsModalComponent,
 } from '../../modals';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-sources',
@@ -72,7 +74,7 @@ import {
     IonRow,
     IonText,
     PaginationComponent,
-    IonIcon,
+    IconComponent,
     IonToolbar,
     IonSearchbar,
     ReactiveFormsModule,
@@ -97,13 +99,16 @@ export class SourcesComponent implements OnInit {
   protected readonly fromNow = relativeTimeOrElse;
   protected pageSize = 10;
   protected queryFc = new FormControl<string>('');
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({
-      addOutline,
-      cloudUploadOutline,
-      refreshOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        addOutline,
+        cloudUploadOutline,
+        refreshOutline,
+      });
+    }
     effect(() => {
       console.log('change', this.sourcesFilter());
       this.fetchCurrentPage();

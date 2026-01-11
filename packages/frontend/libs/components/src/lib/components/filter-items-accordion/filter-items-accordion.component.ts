@@ -1,4 +1,11 @@
-import { Component, input, OnInit, output } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  PLATFORM_ID,
+} from '@angular/core';
 import {
   FormControl,
   FormGroup,
@@ -26,7 +33,6 @@ import {
   IonButton,
   IonCheckbox,
   IonChip,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -36,6 +42,8 @@ import {
   IonText,
   IonTextarea,
 } from '@ionic/angular/standalone';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 export type FilterOperator = GqlStringFilterOperator;
 export type FilterField = keyof GqlCompositeFieldFilterParamsInput;
@@ -72,7 +80,7 @@ type GeneralFilterParams = ArrayElement<
     IonSelectOption,
     IonInput,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonTextarea,
   ],
   standalone: true,
@@ -108,9 +116,12 @@ export class FilterItemsAccordionComponent implements OnInit {
   protected FilterFieldLink: FilterField = 'link';
   protected FilterFieldTitle: FilterField = 'title';
   protected FilterFieldContent: FilterField = 'content';
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ trashOutline, addOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ trashOutline, addOutline });
+    }
   }
 
   addGeneralFilter(params: GeneralFilterParams = null, isNew = true) {

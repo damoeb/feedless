@@ -38,7 +38,6 @@ import {
   IonButton,
   IonButtons,
   IonContent,
-  IonIcon,
   IonNote,
   IonSpinner,
   IonToolbar,
@@ -47,6 +46,7 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 import { OpenStreetMapService } from '@feedless/geo';
 import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '@feedless/components';
 
 @Component({
   selector: 'app-event-page',
@@ -61,7 +61,7 @@ import { isPlatformBrowser } from '@angular/common';
     IonButtons,
     IonButton,
     RouterLink,
-    IonIcon,
+    IconComponent,
     IonNote,
     IonBadge,
     UpcomingFooterComponent,
@@ -88,12 +88,14 @@ export class EventPage implements OnInit, OnDestroy {
   readonly maxDate: Dayjs = dayjs().add(2, 'month');
 
   constructor() {
-    addIcons({
-      arrowBackOutline,
-      calendarNumberOutline,
-      documentOutline,
-      openOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        arrowBackOutline,
+        calendarNumberOutline,
+        documentOutline,
+        openOutline,
+      });
+    }
   }
 
   async ngOnInit() {

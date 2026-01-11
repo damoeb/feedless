@@ -3,18 +3,14 @@ import { RenderMode, ServerRoute } from '@angular/ssr';
 export const serverRoutes: ServerRoute[] = [
   {
     path: 'agb',
-    renderMode: RenderMode.Prerender,
+    renderMode: RenderMode.Server,
   },
   {
     path: 'ueber-uns',
-    renderMode: RenderMode.Prerender,
-  },
-  {
-    path: '',
-    renderMode: RenderMode.Prerender,
+    renderMode: RenderMode.Server,
   },
   {
     path: '**',
-    renderMode: RenderMode.Server,
+    renderMode: RenderMode.Client,
   },
 ];

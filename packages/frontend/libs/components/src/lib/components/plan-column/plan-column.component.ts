@@ -1,8 +1,9 @@
-import { Component, input } from '@angular/core';
+import { Component, inject, input, PLATFORM_ID } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 import { FeatureComponent } from '../feature/feature.component';
 import { Feature } from '@feedless/graphql-api';
+import { isPlatformBrowser } from '@angular/common';
 
 export type StringFeatureGroup = {
   groupLabel: string;
@@ -24,8 +25,11 @@ export class PlanColumnComponent {
   readonly featureGroups = input<StringFeatureGroup[]>();
 
   readonly pricePerUnit = input<string>('/ Month');
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ checkmarkOutline, closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ checkmarkOutline, closeOutline });
+    }
   }
 }

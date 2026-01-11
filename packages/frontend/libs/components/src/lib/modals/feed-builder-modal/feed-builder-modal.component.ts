@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import {
   FeedBuilderComponent,
   FeedWithRequest,
@@ -8,7 +8,6 @@ import {
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonTitle,
   IonToolbar,
   ModalController,
@@ -16,6 +15,8 @@ import {
 import { GqlSourceInput, RepositoryWithFrequency } from '@feedless/graphql-api';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface FeedBuilderModalComponentProps {
   source?: GqlSourceInput;
@@ -34,7 +35,7 @@ export interface FeedBuilderModalComponentProps {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     FeedBuilderComponent,
   ],
@@ -43,13 +44,16 @@ export class FeedBuilderModalComponent
   implements FeedBuilderModalComponentProps
 {
   private readonly modalCtrl = inject(ModalController);
+  private readonly platformId = inject(PLATFORM_ID);
 
   source: GqlSourceInput;
   modalTitle = 'Feed Builder';
   submitButtonText = 'Save Feed';
 
   constructor() {
-    addIcons({ closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline });
+    }
   }
 
   closeModal() {

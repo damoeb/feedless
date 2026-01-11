@@ -3,7 +3,7 @@
     <ion-title>Gratis Email Abo erstellen</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
-        <ion-icon name="close-outline"></ion-icon>
+        <app-icon name="close-outline"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -44,12 +44,12 @@
       <ion-item style="--background: transparent">
         <ion-label>
           <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyWeek"
-            >Wöchentlich
+          >Wöchentlich
           </ion-radio>
         </ion-label>
         <ion-label>
           <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyMonth"
-            >Monatlich
+          >Monatlich
           </ion-radio>
           <!--          <ion-note> Static tracking based on one URL</ion-note>-->
         </ion-label>
@@ -70,7 +70,7 @@
         <ion-label class="ion-text-wrap">
           Ich stimme den
           <a href="/agb" target="_blank" (click)="$event.stopPropagation()"
-            >Datenschutzrichtlinien und den AGBs</a
+          >Datenschutzrichtlinien und den AGBs</a
           >
           zu
         </ion-label>
@@ -79,7 +79,7 @@
     <div style="display: flex">
       <ion-button style="flex: 1" color="primary" expand="block" (click)="createMailSubscription()">
         Jetzt Abonnieren
-        <ion-icon name="send-outline" slot="end"></ion-icon>
+        <app-icon name="send-outline" slot="end"></app-icon>
       </ion-button>
     </div>
   </ion-list>

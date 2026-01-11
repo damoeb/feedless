@@ -21,6 +21,7 @@ export * from './lib/components/import-button/import-button.component';
 export * from './lib/components/interactive-website/interactive-website.component';
 export * from './lib/components/login-button/login-button.component';
 export * from './lib/components/map/map.component';
+export * from './lib/components/icon/icon.component';
 export * from './lib/components/native-feed/native-feed.component';
 // export * from './lib/components/note-details/note-details.component';
 // export * from './lib/components/notebook-settings/notebook-settings.component';

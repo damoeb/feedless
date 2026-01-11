@@ -5,8 +5,9 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
-import { JsonPipe, NgClass } from '@angular/common';
+import { isPlatformBrowser, JsonPipe, NgClass } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { GqlSourceInput } from '@feedless/graphql-api';
 import {
@@ -15,7 +16,6 @@ import {
   IonContent,
   IonFooter,
   IonHeader,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -32,6 +32,7 @@ import { InteractiveWebsiteComponent } from '../../components/interactive-websit
 import { InputComponent } from '@feedless/form-elements';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export type InteractiveWebsiteModalComponentProps = {
   source: GqlSourceInput;
@@ -49,7 +50,7 @@ export type InteractiveWebsiteModalComponentProps = {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     IonRow,
     InteractiveWebsiteComponent,
@@ -78,10 +79,13 @@ export class InteractiveWebsiteModalComponent
   declare source: GqlSourceInput;
 
   hideNonUiActions = true;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
     super();
-    addIcons({ closeOutline, trashOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline, trashOutline });
+    }
   }
 
   ngOnInit(): void {

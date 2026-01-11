@@ -8,6 +8,7 @@ import {
   input,
   OnChanges,
   output,
+  PLATFORM_ID,
   SimpleChanges,
   viewChild,
   ViewEncapsulation,
@@ -54,7 +55,7 @@ import { NG_VALUE_ACCESSOR } from '@angular/forms';
 import { ControlValueAccessorDirective } from '@feedless/directives';
 import { addIcons } from 'ionicons';
 import { linkOutline, listOutline } from 'ionicons/icons';
-import { NgClass } from '@angular/common';
+import { isPlatformBrowser, NgClass } from '@angular/common';
 import { checkboxDecorator } from './checkbox.decorator';
 import { decorateFirstLine } from './headline.decorator';
 import { decorateBlockquote } from './blockquote.decorator';
@@ -133,6 +134,7 @@ export class CodeEditorComponent
   extends ControlValueAccessorDirective<string>
   implements AfterViewInit, OnChanges
 {
+  private readonly platformId = inject(PLATFORM_ID);
   readonly editor = viewChild.required<ElementRef<HTMLDivElement>>('editor');
 
   readonly text = input<string>();
@@ -170,7 +172,9 @@ export class CodeEditorComponent
 
   constructor() {
     super(inject<Injector>(Injector));
-    addIcons({ listOutline, linkOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ listOutline, linkOutline });
+    }
   }
 
   ngAfterViewInit() {

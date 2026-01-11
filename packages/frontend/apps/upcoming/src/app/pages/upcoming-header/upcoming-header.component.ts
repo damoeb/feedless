@@ -41,7 +41,6 @@ import {
   IonButton,
   IonButtons,
   IonHeader,
-  IonIcon,
   IonItem,
   IonList,
   IonSearchbar,
@@ -50,7 +49,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
-import { DarkModeButtonComponent } from '@feedless/components';
+import { DarkModeButtonComponent, IconComponent } from '@feedless/components';
 import { RemoveIfProdDirective } from '@feedless/directives';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
@@ -80,7 +79,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     DarkModeButtonComponent,
     IonList,
     IonItem,
-    IonIcon,
+    IconComponent,
     RouterLink,
     IonSearchbar,
     RemoveIfProdDirective,
@@ -137,13 +136,15 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
       //   this.fetchEventOverview.bind(this),
       500,
     );
-    addIcons({
-      calendarOutline,
-      locationOutline,
-      chevronBackOutline,
-      chevronForwardOutline,
-      footstepsOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        calendarOutline,
+        locationOutline,
+        chevronBackOutline,
+        chevronForwardOutline,
+        footstepsOutline,
+      });
+    }
   }
 
   async ngOnInit() {

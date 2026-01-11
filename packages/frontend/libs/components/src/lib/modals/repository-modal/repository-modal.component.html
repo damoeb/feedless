@@ -2,7 +2,7 @@
   <ion-toolbar>
     <ion-buttons slot="start">
       <ion-button (click)="closeModal()">
-        <ion-icon name="close-outline"></ion-icon>
+        <app-icon name="close-outline"></app-icon>
       </ion-button>
     </ion-buttons>
     <ion-title>Options</ion-title>
@@ -39,7 +39,7 @@
 <ion-content>
   <ion-list>
     <ion-row>
-      <ion-col class="ion-align-self-center ion-text-right" size="3"> Title </ion-col>
+      <ion-col class="ion-align-self-center ion-text-right" size="3"> Title</ion-col>
       <ion-col size="9">
         <ion-input
           [formControl]="formFg.controls.title"
@@ -184,11 +184,9 @@
       <ion-item slot="header">
         <ion-label>
           Storage
-          @if (
-            formFg.controls.maxAgeDays.invalid ||
-            formFg.controls.ageReferenceField.invalid ||
-            formFg.controls.maxCapacity.invalid
-          ) {
+          @if (formFg.controls.maxAgeDays.invalid ||
+          formFg.controls.ageReferenceField.invalid ||
+          formFg.controls.maxCapacity.invalid) {
             <app-bubble color="red"></app-bubble>
           }
           <ion-note class="ion-margin-start">
@@ -201,7 +199,7 @@
       <ion-list slot="content">
         <ion-row>
           <ion-col class="ion-align-self-center ion-text-right" size="3"
-            >Delete after days
+          >Delete after days
           </ion-col>
           <ion-col size="9">
             <ion-input
@@ -219,7 +217,7 @@
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col class="ion-align-self-center ion-text-right" size="3"> Date Field </ion-col>
+          <ion-col class="ion-align-self-center ion-text-right" size="3"> Date Field</ion-col>
           <ion-col size="9">
             <ion-select
               [formControl]="formFg.controls.ageReferenceField"
@@ -227,19 +225,19 @@
               interface="popover"
             >
               <ion-select-option [value]="GqlRecordDateField.CreatedAt"
-                >CreatedAt
+              >CreatedAt
               </ion-select-option>
               <ion-select-option [value]="GqlRecordDateField.PublishedAt"
-                >PublishedAt
+              >PublishedAt
               </ion-select-option>
               <ion-select-option [value]="GqlRecordDateField.StartingAt"
-                >StartingAt
+              >StartingAt
               </ion-select-option>
             </ion-select>
           </ion-col>
         </ion-row>
         <ion-row>
-          <ion-col class="ion-align-self-center ion-text-right" size="3">Capacity </ion-col>
+          <ion-col class="ion-align-self-center ion-text-right" size="3">Capacity</ion-col>
           <ion-col size="9">
             <ion-input
               [clearInput]="true"
@@ -257,7 +255,7 @@
               <p>
                 <ion-text color="warning">
                   <em
-                    >Your setting will be overrules to {{ repositoryMaxItemsUpperLimit }} as per
+                  >Your setting will be overrules to {{ repositoryMaxItemsUpperLimit }} as per
                     your plan</em
                   >
                 </ion-text>
@@ -273,10 +271,10 @@
         <ion-label>
           Privacy
           @if (formFg.value.isPublic) {
-            <ion-note class="ion-margin-start">Visible to everyone </ion-note>
+            <ion-note class="ion-margin-start">Visible to everyone</ion-note>
           }
           @if (!formFg.value.isPublic) {
-            <ion-note class="ion-margin-start">Visible to you </ion-note>
+            <ion-note class="ion-margin-start">Visible to you</ion-note>
           }
         </ion-label>
       </ion-item>
@@ -342,7 +340,7 @@
           <ion-label class="ion-text-left" id="enablePushNotifications__label" style="flex: 9">
             <h3>Push to Telegram</h3>
           </ion-label>
-          <ion-button routerLink="/docs/telegram" target="_blank"> Setup Instructions </ion-button>
+          <ion-button routerLink="/docs/telegram" target="_blank"> Setup Instructions</ion-button>
         </ion-item>
         <!--        <ion-row>-->
         <!--          <ion-col push="3" size="8">-->
@@ -355,7 +353,7 @@
     @if (showExpertOptions) {
       <ion-item-divider></ion-item-divider>
       <div>
-        <ion-text color="medium"> Expert Options </ion-text>
+        <ion-text color="medium"> Expert Options</ion-text>
       </div>
       <ion-accordion toggleIconSlot="start" value="contentTags" appDev>
         <ion-item slot="header">
@@ -377,7 +375,7 @@
                 (click)="addConditionalTag()"
                 [disabled]="conditionalTags.length >= 4"
               >
-                <ion-icon name="add-outline" slot="start"></ion-icon>
+                <app-icon name="add-outline" slot="start"></app-icon>
                 Add Tag
               </ion-button>
             </ion-col>
@@ -401,8 +399,8 @@
                     [interfaceOptions]="{ subHeader: 'Field', size: 'auto' }"
                   >
                     <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
-                    <ion-select-option [value]="FilterFieldTitle">title </ion-select-option>
-                    <ion-select-option [value]="FilterFieldContent">content </ion-select-option>
+                    <ion-select-option [value]="FilterFieldTitle">title</ion-select-option>
+                    <ion-select-option [value]="FilterFieldContent">content</ion-select-option>
                   </ion-select>
                   <ion-select
                     [formControl]="conditionalTag.controls.operator"
@@ -412,16 +410,16 @@
                     [interfaceOptions]="{ subHeader: 'Operator', size: 'auto' }"
                   >
                     <ion-select-option [value]="GqlStringFilterOperator.Contains"
-                      >contains
+                    >contains
                     </ion-select-option>
                     <ion-select-option [value]="GqlStringFilterOperator.Matches"
-                      >matches
+                    >matches
                     </ion-select-option>
                     <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-                      >starts with
+                    >starts with
                     </ion-select-option>
                     <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-                      >ends with
+                    >ends with
                     </ion-select-option>
                   </ion-select>
                   <ion-input
@@ -430,7 +428,7 @@
                     fill="outline"
                   ></ion-input>
                   <ion-button (click)="removeConditionalTag(i)" color="medium" fill="clear">
-                    <ion-icon name="trash-outline"></ion-icon>
+                    <app-icon name="trash-outline"></app-icon>
                   </ion-button>
                 </div>
               }
@@ -446,12 +444,12 @@
       ></app-filter-feed-accordion>
 
       <ion-item appDev [button]="true" (click)="openFlowModal()">
-        <ion-icon name="flask-outline" slot="start"></ion-icon>
+        <app-icon name="flask-outline" slot="start"></app-icon>
         Flow
       </ion-item>
     } @else {
       <ion-item [button]="true" (click)="showExpertOptions = !showExpertOptions">
-        <ion-icon name="ellipsis-horizontal-outline" slot="start"></ion-icon>
+        <app-icon name="ellipsis-horizontal-outline" slot="start"></app-icon>
       </ion-item>
     }
   </ion-accordion-group>

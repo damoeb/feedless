@@ -1,4 +1,9 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  PLATFORM_ID,
+} from '@angular/core';
 import { AuthService, ConfirmCode, SessionService } from '@feedless/services';
 import { Router } from '@angular/router';
 import {
@@ -12,7 +17,6 @@ import { arrowForwardOutline } from 'ionicons/icons';
 import {
   IonCard,
   IonCardContent,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -22,6 +26,8 @@ import {
 import { Nullable } from '@feedless/core';
 import { min } from 'lodash-es';
 import { GqlVertical } from '@feedless/graphql-api';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
 
@@ -38,7 +44,7 @@ type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
     IonInput,
     ReactiveFormsModule,
     IonLabel,
-    IonIcon,
+    IconComponent,
     IonSpinner,
   ],
   standalone: true,
@@ -67,9 +73,12 @@ export class EmailLoginComponent {
   confirmationCodeFc: FormControl<string>;
   private confirmationCodeSpec: Nullable<ConfirmCode> = null;
   errorMessage: string;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ arrowForwardOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ arrowForwardOutline });
+    }
     this.initBotChallenge();
   }
 

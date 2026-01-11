@@ -8,7 +8,6 @@ import {
   IonContent,
   IonFooter,
   IonHeader,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -18,6 +17,7 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+import { IconComponent } from '@feedless/components';
 
 @NgModule({
   declarations: [SubmitModalComponent],
@@ -28,7 +28,7 @@ import {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     IonItem,
     IonInput,

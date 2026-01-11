@@ -3,7 +3,7 @@
     <ion-title>Tags</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="closeModal()">
-        <ion-icon name="close-outline"></ion-icon>
+        <app-icon name="close-outline"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -28,7 +28,7 @@
       <ion-item>
         #{{ tag }}
         <ion-button (click)="removeTag(tag)" fill="clear" slot="end" title="Remove">
-          <ion-icon color="danger" name="trash-outline"></ion-icon>
+          <app-icon color="danger" name="trash-outline"></app-icon>
         </ion-button>
       </ion-item>
     }

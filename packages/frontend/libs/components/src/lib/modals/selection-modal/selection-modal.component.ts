@@ -5,6 +5,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import {
   IonButton,
@@ -12,7 +13,6 @@ import {
   IonCheckbox,
   IonContent,
   IonHeader,
-  IonIcon,
   IonItem,
   IonLabel,
   IonList,
@@ -26,6 +26,8 @@ import { closeOutline, trashOutline } from 'ionicons/icons';
 import { relativeTimeOrElse } from '../../components/agents/agents.component';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface SelectionModalComponentProps<T> {
   selectables: SelectableEntity<T>[];
@@ -56,7 +58,7 @@ type EntityWithFormControl<T> = {
     IonToolbar,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonTitle,
     IonContent,
     IonList,
@@ -80,9 +82,12 @@ export class SelectionModalComponent<T>
   selectAllFormControl: FormControl<boolean> = new FormControl(false);
   entitiesWithFormControl: EntityWithFormControl<T>[] = [];
   private subscriptions: Subscription[] = [];
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ closeOutline, trashOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline, trashOutline });
+    }
   }
 
   closeModal() {
@@ -98,10 +103,12 @@ export class SelectionModalComponent<T>
           entityWithFormControl.formControl.setValue(selectAll);
           this.changeRef.markForCheck();
         });
-      })
+      }),
     );
     this.entitiesWithFormControl = this.selectables.map((selectable) => {
-      const formControl = new FormControl<boolean>(selectable.selected ?? false);
+      const formControl = new FormControl<boolean>(
+        selectable.selected ?? false,
+      );
       if (selectable.disabled) {
         formControl.disable();
       }
@@ -121,7 +128,7 @@ export class SelectionModalComponent<T>
     return this.modalCtrl.dismiss(
       this.entitiesWithFormControl
         .filter((ewf) => ewf.formControl.value)
-        .map((ewf) => ewf.entity.entity)
+        .map((ewf) => ewf.entity.entity),
     );
   }
 

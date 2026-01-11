@@ -6,6 +6,7 @@ import {
   input,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
 import {
@@ -14,17 +15,19 @@ import {
   SessionService,
 } from '@feedless/services';
 
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonButton } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { addIcons } from 'ionicons';
 import { logOutOutline } from 'ionicons/icons';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-login-button',
   templateUrl: './login-button.component.html',
   styleUrls: ['./login-button.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, RouterLink, IonIcon],
+  imports: [IonButton, RouterLink, IconComponent],
   standalone: true,
 })
 export class LoginButtonComponent implements OnInit, OnDestroy {
@@ -38,9 +41,12 @@ export class LoginButtonComponent implements OnInit, OnDestroy {
   readonly label = input<string>();
   readonly expand = input<string>();
   readonly color = input<string>();
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({ logOutOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ logOutOutline });
+    }
   }
 
   async ngOnInit(): Promise<void> {

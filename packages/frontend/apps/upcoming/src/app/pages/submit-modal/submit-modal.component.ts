@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import { AlertController, ModalController } from '@ionic/angular/standalone';
 import { addIcons } from 'ionicons';
 import {
@@ -13,6 +13,7 @@ import { createEmailFormControl, NamedLatLon, Nullable } from '@feedless/core';
 import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 import dayjs from 'dayjs';
 import { ReportService } from '@feedless/services';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface SubmitModalComponentProps {
   repositoryId: string;
@@ -31,6 +32,7 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
   private readonly alertCtrl = inject(AlertController);
   private readonly reportService = inject(ReportService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   repositoryId: string;
   location: NamedLatLon;
@@ -48,13 +50,15 @@ export class SubmitModalComponent implements SubmitModalComponentProps {
   });
 
   constructor() {
-    addIcons({
-      closeOutline,
-      trashOutline,
-      mailOutline,
-      bodyOutline,
-      sendOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        closeOutline,
+        trashOutline,
+        mailOutline,
+        bodyOutline,
+        sendOutline,
+      });
+    }
   }
 
   closeModal() {

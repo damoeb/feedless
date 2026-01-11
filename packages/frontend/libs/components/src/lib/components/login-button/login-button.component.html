@@ -1,6 +1,6 @@
 @if (authorization?.loggedIn) {
   <ion-button (click)="logout()">
-    <ion-icon name="log-out-outline" slot="icon-only"></ion-icon>
+    <app-icon name="log-out-outline" slot="icon-only"></app-icon>
   </ion-button>
 } @else {
   <ion-button [color]="color()" [expand]="expand()" routerLink="/login"> Login</ion-button>

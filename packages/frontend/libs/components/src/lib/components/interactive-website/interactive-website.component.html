@@ -9,10 +9,10 @@
 
           <ion-segment [formControl]="viewModeFc" mode="ios">
             @if (hasScreenshot) {
-              <ion-segment-button [value]="viewModeImage">Image </ion-segment-button>
+              <ion-segment-button [value]="viewModeImage">Image</ion-segment-button>
             }
             @if (hasMarkup) {
-              <ion-segment-button [value]="viewModeMarkup">Markup </ion-segment-button>
+              <ion-segment-button [value]="viewModeMarkup">Markup</ion-segment-button>
             }
             <ng-content select="[segmentButton]"></ng-content>
           </ion-segment>
@@ -22,7 +22,7 @@
         @if (viewModeFc.value === viewModeMarkup || viewModeFc.value === viewModeImage) {
           <ion-buttons>
             <ion-button (click)="zoomIn()">
-              <ion-icon name="remove-outline"></ion-icon>
+              <app-icon name="remove-outline"></app-icon>
             </ion-button>
             <ion-range
               [(ngModel)]="scaleFactor"
@@ -34,7 +34,7 @@
               style="width: 100px"
             ></ion-range>
             <ion-button (click)="zoomOut()">
-              <ion-icon name="add-outline"></ion-icon>
+              <app-icon name="add-outline"></app-icon>
             </ion-button>
           </ion-buttons>
         }
@@ -45,7 +45,7 @@
     @if (errorMessage) {
       <ion-toolbar color="danger">
         <ion-label class="ion-margin-horizontal"
-          >{{ errorMessage }}.
+        >{{ errorMessage }}.
           @if (!serverConfig.isSelfHosted()) {
             <span>Please try later.</span>
           }
@@ -57,7 +57,7 @@
       <app-block-element [blocking]="false">
         <ion-button (click)="scrape()" size="small" color="danger">
           <ion-label>
-            <ion-icon name="refresh-outline" slot="start"></ion-icon>
+            <app-icon name="refresh-outline" slot="start"></app-icon>
             Reload to see changes
           </ion-label>
         </ion-button>
@@ -132,20 +132,20 @@
         <app-console-button [logs]="logs"></app-console-button>
       }
       <!--      <div>-->
-      <!--        <ion-button shape="round" size="small">Console</ion-button>-->
-      <!--      </div>-->
-      <!--      <app-code-editor-->
-      <!--        *ngIf="viewModeFc.value === viewLogs"-->
-      <!--        [controls]="false"-->
-      <!--        [text]="logs"-->
-      <!--      >-->
-      <!--      </app-code-editor>-->
+        <!--        <ion-button shape="round" size="small">Console</ion-button>-->
+        <!--      </div>-->
+        <!--      <app-code-editor-->
+        <!--        *ngIf="viewModeFc.value === viewLogs"-->
+        <!--        [controls]="false"-->
+        <!--        [text]="logs"-->
+        <!--      >-->
+        <!--      </app-code-editor>-->
       <ng-content select="[segmentBody]"></ng-content>
       @if (pickMode) {
         <ion-row>
           <ion-item color="primary" style="width: 100%">
             <ion-label> Click on your element of choice</ion-label>
-            <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel </ion-button>
+            <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel</ion-button>
           </ion-item>
         </ion-row>
       }

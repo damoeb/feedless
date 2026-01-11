@@ -4,7 +4,7 @@
       <ion-label [color]="hasCompositeFilters() ? 'dark' : 'medium'">
         {{ labelPrefix() }} Filters
         @if (countValidFilters() > 0) {
-          <ion-chip>{{ countValidFilters() }} </ion-chip>
+          <ion-chip>{{ countValidFilters() }}</ion-chip>
         }
         <ion-note>Compose filter</ion-note>
       </ion-label>
@@ -45,8 +45,8 @@
                   fill="outline"
                   interface="popover"
                 >
-                  <ion-select-option [value]="FilterTypeInclude">include </ion-select-option>
-                  <ion-select-option [value]="FilterTypeExclude">exclude </ion-select-option>
+                  <ion-select-option [value]="FilterTypeInclude">include</ion-select-option>
+                  <ion-select-option [value]="FilterTypeExclude">exclude</ion-select-option>
                 </ion-select>
                 <ion-text>if</ion-text>
                 <ion-select
@@ -55,9 +55,9 @@
                   fill="outline"
                   interface="popover"
                 >
-                  <ion-select-option [value]="FilterFieldLink">link </ion-select-option>
-                  <ion-select-option [value]="FilterFieldTitle">title </ion-select-option>
-                  <ion-select-option [value]="FilterFieldContent">content </ion-select-option>
+                  <ion-select-option [value]="FilterFieldLink">link</ion-select-option>
+                  <ion-select-option [value]="FilterFieldTitle">title</ion-select-option>
+                  <ion-select-option [value]="FilterFieldContent">content</ion-select-option>
                 </ion-select>
                 <ion-select
                   [formControl]="filter.controls.operator"
@@ -66,16 +66,16 @@
                   interface="popover"
                 >
                   <ion-select-option [value]="GqlStringFilterOperator.Contains"
-                    >contains
+                  >contains
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.Matches"
-                    >matches
+                  >matches
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.StartsWidth"
-                    >starts with
+                  >starts with
                   </ion-select-option>
                   <ion-select-option [value]="GqlStringFilterOperator.EndsWith"
-                    >ends with
+                  >ends with
                   </ion-select-option>
                 </ion-select>
               </div>
@@ -86,7 +86,7 @@
               ></ion-input>
             </div>
             <ion-button (click)="removeFilter(i)" color="medium" fill="clear">
-              <ion-icon name="trash-outline"></ion-icon>
+              <app-icon name="trash-outline"></app-icon>
             </ion-button>
           </div>
         </div>
@@ -99,7 +99,7 @@
         class="ion-margin-top"
       >
         Add Filter
-        <ion-icon name="add-outline" slot="end"></ion-icon>
+        <app-icon name="add-outline" slot="end"></app-icon>
       </ion-item>
     </div>
   </ion-accordion>

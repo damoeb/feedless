@@ -1,10 +1,9 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, PLATFORM_ID } from '@angular/core';
 import {
   IonButton,
   IonButtons,
   IonContent,
   IonHeader,
-  IonIcon,
   IonTitle,
   IonToolbar,
   ModalController,
@@ -12,8 +11,9 @@ import {
 import { CodeEditorComponent, ContentType } from '@feedless/form-elements';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { CommonModule } from '@angular/common';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { IconComponent } from '../../components/icon/icon.component';
 
 export interface CodeEditorModalComponentProps {
   text: string;
@@ -37,20 +37,20 @@ export interface CodeEditorModalComponentProps {
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
+    IconComponent,
     IonContent,
     IonHeader,
     IonToolbar,
     IonTitle,
     IonButtons,
     IonButton,
-    IonIcon,
     IonContent,
     CodeEditorComponent,
   ],
 })
 export class CodeEditorModalComponent implements CodeEditorModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
+  private readonly platformId = inject(PLATFORM_ID);
 
   text: string;
   title: string;
@@ -58,7 +58,9 @@ export class CodeEditorModalComponent implements CodeEditorModalComponentProps {
   readOnly: boolean;
 
   constructor() {
-    addIcons({ closeOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ closeOutline });
+    }
   }
 
   cancel() {

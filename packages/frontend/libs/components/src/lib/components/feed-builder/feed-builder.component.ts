@@ -1,5 +1,16 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild } from '@angular/core';
-import { Location } from '@angular/common';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  output,
+  PLATFORM_ID,
+  viewChild
+} from '@angular/core';
+import { isPlatformBrowser, Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   GqlExtendContentOptions,
@@ -15,7 +26,6 @@ import {
   AlertController,
   IonAccordion,
   IonButton,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -63,6 +73,7 @@ import {
   SearchAddressModalComponent,
   TagsModalComponent
 } from '../../modals';
+import { IconComponent } from '../icon/icon.component';
 
 /**
  * IDEEN
@@ -130,7 +141,7 @@ export type StandaloneUrlParams = {
     IonItem,
     TransformWebsiteToFeedComponent,
     IonLabel,
-    IonIcon,
+    IconComponent,
     IonAccordion,
     IonNote,
     FilterItemsAccordionComponent,
@@ -188,17 +199,20 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({
-      logoJavascript,
-      settingsOutline,
-      checkmarkOutline,
-      checkmarkDoneOutline,
-      attachOutline,
-      closeOutline,
-      arrowRedoOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        logoJavascript,
+        settingsOutline,
+        checkmarkOutline,
+        checkmarkDoneOutline,
+        attachOutline,
+        closeOutline,
+        arrowRedoOutline,
+      });
+    }
   }
 
   async ngOnInit() {

@@ -7,23 +7,25 @@ import {
   OnChanges,
   OnInit,
   output,
+  PLATFORM_ID,
   SimpleChanges,
 } from '@angular/core';
 import dayjs, { Dayjs, OpUnitType } from 'dayjs';
 import { RouterLink } from '@angular/router';
-import { NgClass } from '@angular/common';
+import { isPlatformBrowser, NgClass } from '@angular/common';
 import 'dayjs/locale/de';
-import { IonButton, IonIcon } from '@ionic/angular/standalone';
+import { IonButton } from '@ionic/angular/standalone';
 import { DateWindowItem, formatDate, getWeekday } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
+import { IconComponent } from '@feedless/components';
 
 @Component({
   selector: 'app-inline-calendar',
   templateUrl: './inline-calendar.component.html',
   styleUrls: ['./inline-calendar.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [IonButton, IonIcon, NgClass, RouterLink],
+  imports: [IonButton, IconComponent, NgClass, RouterLink],
   standalone: true,
 })
 export class InlineCalendarComponent implements OnInit, OnChanges {
@@ -37,11 +39,14 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   readonly minDate = input.required<Dayjs>();
   readonly maxDate = input.required<Dayjs>();
   readonly dateUrlFactory = input.required<(date: Dayjs) => string>();
+  private readonly platformId = inject(PLATFORM_ID);
 
   dateWindow: DateWindowItem[] = [];
 
   constructor() {
-    addIcons({ calendarNumberOutline });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ calendarNumberOutline });
+    }
   }
 
   ngOnChanges(changes: SimpleChanges): void {

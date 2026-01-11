@@ -3,7 +3,7 @@
     <ion-title>Interactive Website</ion-title>
     <ion-buttons slot="end">
       <ion-button (click)="dismissModal()">
-        <ion-icon name="close-outline"></ion-icon>
+        <app-icon name="close-outline"></app-icon>
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
@@ -52,12 +52,12 @@
               </ion-button>
             }
             @if (action.value.type === 'header') {
-              <app-input placeholder="Header Name"> </app-input>
-              <app-input placeholder="Header Value"> </app-input>
+              <app-input placeholder="Header Name"></app-input>
+              <app-input placeholder="Header Value"></app-input>
             }
             <div class="filler"></div>
             <ion-button (click)="removeAction(i)" color="medium" fill="clear">
-              <ion-icon name="trash-outline"></ion-icon>
+              <app-icon name="trash-outline"></app-icon>
             </ion-button>
           </div>
         </ion-item>
@@ -79,7 +79,7 @@
     <ion-buttons slot="start">
       <ion-button (click)="hideNonUiActions = !hideNonUiActions">
         @if (hideNonUiActions) {
-          <ion-label color="medium">Debug Mode Off </ion-label>
+          <ion-label color="medium">Debug Mode Off</ion-label>
         }
         @if (!hideNonUiActions) {
           <span>Debug Mode On</span>

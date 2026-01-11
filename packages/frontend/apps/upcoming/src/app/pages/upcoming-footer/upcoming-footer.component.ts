@@ -1,11 +1,17 @@
-import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+} from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
 import {
   ActionSheetController,
   AlertController,
   IonButton,
   IonFooter,
-  IonIcon,
   ModalController,
 } from '@ionic/angular/standalone';
 import { AppConfigService, ServerConfigService } from '@feedless/services';
@@ -34,6 +40,8 @@ import {
   GqlSortOrder,
 } from '@feedless/graphql-api';
 import { GeoService } from '@feedless/geo';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '@feedless/components';
 
 type SubscriptionType = 'cal' | 'atom';
 
@@ -44,7 +52,7 @@ type SubscriptionType = 'cal' | 'atom';
   imports: [
     IonFooter,
     IonButton,
-    IonIcon,
+    IconComponent,
     RemoveIfProdDirective,
     RouterLink,
     SubmitModalModule,
@@ -58,21 +66,24 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   private readonly geoService = inject(GeoService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly serverConfig = inject(ServerConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly location = input<NamedLatLon>();
   readonly perimeter = input<number>(10);
   private subscriptions: Subscription[] = [];
 
   constructor() {
-    addIcons({
-      sendOutline,
-      heart,
-      locateOutline,
-      mailOutline,
-      calendarNumberOutline,
-      logoRss,
-      closeOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        sendOutline,
+        heart,
+        locateOutline,
+        mailOutline,
+        calendarNumberOutline,
+        logoRss,
+        closeOutline,
+      });
+    }
   }
 
   private getRepositoryId(): string {
@@ -170,7 +181,9 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   // }
 
   useUsersPosition() {
-    this.geoService.requestLocationFromBrowser();
+    if (isPlatformBrowser(this.platformId)) {
+      this.geoService.requestLocationFromBrowser();
+    }
   }
 
   async createSubscription() {

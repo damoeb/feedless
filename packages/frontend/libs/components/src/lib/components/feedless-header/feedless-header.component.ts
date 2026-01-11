@@ -4,6 +4,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical, SessionResponse } from '@feedless/graphql-api';
@@ -19,7 +20,6 @@ import {
   IonButton,
   IonButtons,
   IonHeader,
-  IonIcon,
   IonLabel,
   IonMenuButton,
   IonToolbar,
@@ -32,6 +32,8 @@ import { ProfileButtonComponent } from '../profile-button/profile-button.compone
 import { addIcons } from 'ionicons';
 import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
 import { RemoveIfProdDirective } from '@feedless/directives';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '../icon/icon.component';
 
 @Component({
   selector: 'app-feedless-header',
@@ -48,7 +50,7 @@ import { RemoveIfProdDirective } from '@feedless/directives';
     RepositoriesButtonComponent,
     DarkModeButtonComponent,
     ProfileButtonComponent,
-    IonIcon,
+    IconComponent,
     RouterLinkActive,
     RemoveIfProdDirective,
   ],
@@ -66,13 +68,16 @@ export class FeedlessHeaderComponent implements OnInit, OnDestroy {
   protected session: SessionResponse;
   protected readonly GqlProductName = GqlVertical;
   protected fromNow = relativeTimeOrElse;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({
-      logoSlack,
-      logoGithub,
-      notificationsOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        logoSlack,
+        logoGithub,
+        notificationsOutline,
+      });
+    }
   }
 
   async ngOnInit() {

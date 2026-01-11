@@ -7,6 +7,7 @@ import {
   OnDestroy,
   OnInit,
   output,
+  PLATFORM_ID,
   viewChild,
 } from '@angular/core';
 import {
@@ -37,7 +38,7 @@ import { ConsoleButtonComponent } from '../console-button/console-button.compone
 
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Location, NgStyle } from '@angular/common';
+import { isPlatformBrowser, Location, NgStyle } from '@angular/common';
 import { addIcons } from 'ionicons';
 import {
   chevronForward,
@@ -52,7 +53,6 @@ import {
   IonAccordionGroup,
   IonButton,
   IonCheckbox,
-  IonIcon,
   IonInput,
   IonItem,
   IonLabel,
@@ -71,6 +71,7 @@ import {
   CodeEditorModalComponentProps,
   ModalProvider,
 } from '../../modals';
+import { IconComponent } from '../icon/icon.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -89,7 +90,7 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonAccordion,
     IonItem,
     IonLabel,
-    IonIcon,
+    IconComponent,
     NgStyle,
     IonInput,
     FormsModule,
@@ -170,15 +171,18 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   activeSegment: string;
   private customSelectorsFgChangeSubscription: Subscription;
   protected loadingFeedPreview: boolean;
+  private readonly platformId = inject(PLATFORM_ID);
 
   constructor() {
-    addIcons({
-      chevronForward,
-      searchOutline,
-      chevronForwardOutline,
-      refreshOutline,
-      eyeOutline,
-    });
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        chevronForward,
+        searchOutline,
+        chevronForwardOutline,
+        refreshOutline,
+        eyeOutline,
+      });
+    }
   }
 
   async ngOnInit() {
