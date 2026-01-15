@@ -19,6 +19,7 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
@@ -49,7 +50,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId

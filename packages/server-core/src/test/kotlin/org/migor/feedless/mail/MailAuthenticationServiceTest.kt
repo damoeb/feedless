@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.Mother.randomOneTimePassword
 import org.migor.feedless.Mother.randomUser
 import org.migor.feedless.any2
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
@@ -16,7 +17,6 @@ import org.migor.feedless.oneTimePassword.OneTimePasswordRepository
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
 import org.mockito.InjectMocks

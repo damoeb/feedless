@@ -13,8 +13,8 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.eq
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId

@@ -292,7 +292,7 @@ class RepositoryResolverTest {
     )
 
     val expected = SourceDto(
-      id = sourceId.toString(),
+      id = sourceId.uuid.toString(),
       title = title,
       disabled = disabled,
       lastErrorMessage = lastErrorMessage,

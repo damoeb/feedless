@@ -1,11 +1,13 @@
 package org.migor.feedless.pipeline
 
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.sync.Semaphore
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
@@ -79,7 +81,7 @@ class DocumentPipelineJobExecutor internal constructor(
   }
 
   private suspend fun getRepositoryForDocumentId(documentId: DocumentId): Repository {
-    return repositoryRepository.findByDocumentId(documentId)
+    return withContext(Dispatchers.IO) { repositoryRepository.findByDocumentId(documentId) }
       ?: throw IllegalArgumentException("repo not found for documentId $documentId") // documentPipelineService.failAfterCleaningJobsForDocument(documentId)
   }
 

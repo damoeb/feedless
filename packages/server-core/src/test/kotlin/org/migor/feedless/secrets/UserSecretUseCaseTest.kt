@@ -7,9 +7,9 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.session.JwtTokenIssuer
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository

@@ -10,6 +10,7 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
 import org.migor.feedless.generated.types.DOMElementByXPathInput
@@ -33,7 +34,6 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify

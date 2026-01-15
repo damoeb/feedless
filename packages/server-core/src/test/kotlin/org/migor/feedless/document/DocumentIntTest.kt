@@ -14,6 +14,7 @@ import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentRepository
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.JtsUtil
@@ -34,7 +35,6 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageableRequest
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard

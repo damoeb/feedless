@@ -10,6 +10,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentGuard
 import org.migor.feedless.document.DocumentId
@@ -26,7 +27,6 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock

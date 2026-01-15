@@ -24,6 +24,8 @@ import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.oneTimePassword.OneTimePasswordRepository
 import org.migor.feedless.report.ReportUseCase
 import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -57,6 +59,8 @@ import java.util.*
     OneTimePasswordRepository::class,
     ReportUseCase::class,
     MailService::class,
+    UserRepository::class,
+    UserGroupAssignmentRepository::class,
     OAuth2AuthorizedClientService::class
   ]
 )

@@ -12,6 +12,7 @@ import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
 import org.migor.feedless.any2
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
@@ -38,7 +39,6 @@ import org.migor.feedless.order.OrderRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.user.User

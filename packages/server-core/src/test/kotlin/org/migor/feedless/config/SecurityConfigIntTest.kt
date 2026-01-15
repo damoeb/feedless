@@ -18,6 +18,7 @@ import org.migor.feedless.session.SessionResolver
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecretRepository
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -49,6 +50,7 @@ const val actuatorPassword = "password"
     OneTimePasswordService::class,
     OAuth2AuthorizedClientService::class,
     FeedService::class,
+    UserGroupAssignmentRepository::class,
     AnalyticsService::class
   ]
 )

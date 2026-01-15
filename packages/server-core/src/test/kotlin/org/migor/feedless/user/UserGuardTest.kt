@@ -6,6 +6,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.Document
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupId
@@ -13,7 +14,6 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.RequestContext
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 

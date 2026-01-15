@@ -83,9 +83,10 @@ class SourcePipelineJobExecutor internal constructor(
 
   private suspend fun getOwnerIdsForSourceId(sourceId: SourceId): Pair<UserId, GroupId> = withContext(Dispatchers.IO) {
     val repo =
-      repositoryRepository.findBySourceId(sourceId) ?: throw sourcePipelineService.failAfterCleaningJobsForSource(
-        sourceId
-      )
+      withContext(Dispatchers.IO) { repositoryRepository.findBySourceId(sourceId) }
+        ?: throw sourcePipelineService.failAfterCleaningJobsForSource(
+          sourceId
+        )
     Pair(repo.ownerId, repo.groupId)
   }
 

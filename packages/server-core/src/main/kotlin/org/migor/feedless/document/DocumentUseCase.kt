@@ -316,7 +316,9 @@ class DocumentUseCase(
 
   private suspend fun deleteDocument(document: Document) = withContext(Dispatchers.IO) {
     log.info("delete document ${document.id}")
-    documentRepository.deleteById(document.id)
+    withContext(Dispatchers.IO) {
+      documentRepository.deleteById(document.id)
+    }
   }
 
   private suspend fun delayJob(
@@ -393,7 +395,9 @@ class DocumentUseCase(
     repositoryId: RepositoryId
   ): Document? = withContext(Dispatchers.IO) {
     log.info("findFirstByContentHashOrUrlAndRepositoryId repositoryId=$repositoryId")
-    documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
+    withContext(Dispatchers.IO) {
+      documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
+    }
   }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {

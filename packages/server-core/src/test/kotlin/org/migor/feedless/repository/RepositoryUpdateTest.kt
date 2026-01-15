@@ -11,6 +11,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.generated.types.BoolUpdateOperationsInput
@@ -27,7 +28,6 @@ import org.migor.feedless.generated.types.Visibility
 import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock

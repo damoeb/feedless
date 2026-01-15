@@ -19,6 +19,7 @@ import org.migor.feedless.session.AuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretRepository
 import org.mockito.ArgumentMatchers.anyString
@@ -62,6 +63,7 @@ const val rootSecretKey = "barBarBarKey"
 @MockitoBean(
   types = [
     ServerConfigResolver::class,
+    UserGroupAssignmentRepository::class,
     UserGuard::class,
   ]
 )

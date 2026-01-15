@@ -9,10 +9,10 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.Mother.randomDocumentId
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.session.RequestContext
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyString
@@ -22,13 +22,13 @@ import org.springframework.util.ResourceUtils
 
 internal class PrivacyPluginTest {
 
-    lateinit var plugin: PrivacyPlugin
-    lateinit var mockHttpService: HttpService
+  lateinit var plugin: PrivacyPlugin
+  lateinit var mockHttpService: HttpService
 
-    private val pdfUrl = "https://some.pdf/2405.06631"
+  private val pdfUrl = "https://some.pdf/2405.06631"
 
-    private val document = Jsoup.parse(
-        """<html><body><div class="article-layout__header-container">
+  private val document = Jsoup.parse(
+    """<html><body><div class="article-layout__header-container">
   <header class="a-article-header">
     <h1 class="a-article-header__title">
       Missing Link: Was es mit der radikalen Theorie zur Dunklen Energie auf sich hat
@@ -53,83 +53,83 @@ internal class PrivacyPluginTest {
   </header>
 </div></body></html>
 """.trimIndent(),
-        "https://www.heise.de/hintergrund/Missing-Link-Was-es-mit-der-radikalen-Theorie-zur-Dunklen-Energie-auf-sich-hat-8988403.html"
+    "https://www.heise.de/hintergrund/Missing-Link-Was-es-mit-der-radikalen-Theorie-zur-Dunklen-Energie-auf-sich-hat-8988403.html"
+  )
+
+
+  @BeforeEach
+  fun setUp() {
+    plugin = PrivacyPlugin()
+    val mockPropertyService = mock(PropertyService::class.java)
+    `when`(mockPropertyService.apiGatewayUrl).thenReturn("https://localhost:8080/")
+    plugin.propertyService = mockPropertyService
+    mockHttpService = mock(HttpService::class.java)
+    plugin.httpService = mockHttpService
+  }
+
+  @Disabled
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "png",
+      "jpeg",
+      "webp",
+    ]
+  )
+  fun inlineImages(inputImageType: String) = runTest {
+    val mockHttpResponse = HttpResponse(
+      contentType = "image/$inputImageType",
+      url = "",
+      statusCode = 200,
+      responseBody = ResourceUtils.getFile("classpath:images//sample.$inputImageType").readBytes(),
     )
 
+    `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull()))
+      .thenAnswer { mockHttpResponse }
 
-    @BeforeEach
-    fun setUp() {
-        plugin = PrivacyPlugin()
-        val mockPropertyService = mock(PropertyService::class.java)
-        `when`(mockPropertyService.apiGatewayUrl).thenReturn("https://localhost:8080/")
-        plugin.propertyService = mockPropertyService
-        mockHttpService = mock(HttpService::class.java)
-        plugin.httpService = mockHttpService
-    }
+    val (markup, _) = plugin.extractAttachments(randomDocumentId(), document)
+    val images = Jsoup.parse(markup).select("img[src]")
+    Assertions.assertTrue(images.isNotEmpty())
+    val src = images.first()!!.attr("src")
+    Assertions.assertTrue(src.startsWith("data:image/"))
+    Assertions.assertTrue(src.length > 50)
+  }
 
-    @Disabled
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "png",
-            "jpeg",
-            "webp",
-        ]
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "pdf",
+    ]
+  )
+  fun attachPdf(inputFileType: String) = runTest(context = RequestContext()) {
+    val mockPdfResponse = HttpResponse(
+      contentType = "application/$inputFileType",
+      url = "",
+      statusCode = 200,
+      responseBody = ResourceUtils.getFile("classpath:images//sample.$inputFileType").readBytes(),
     )
-    fun inlineImages(inputImageType: String) = runTest {
-        val mockHttpResponse = HttpResponse(
-            contentType = "image/$inputImageType",
-            url = "",
-            statusCode = 200,
-            responseBody = ResourceUtils.getFile("classpath:images//sample.$inputImageType").readBytes(),
-        )
 
-        `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull()))
-            .thenAnswer { mockHttpResponse }
-
-        val (markup, _) = plugin.extractAttachments(randomDocumentId(), document)
-        val images = Jsoup.parse(markup).select("img[src]")
-        Assertions.assertTrue(images.isNotEmpty())
-        val src = images.first()!!.attr("src")
-        Assertions.assertTrue(src.startsWith("data:image/"))
-        Assertions.assertTrue(src.length > 50)
-    }
-
-    @ParameterizedTest
-    @CsvSource(
-        value = [
-            "pdf",
-        ]
+    val mockHtmlResponse = HttpResponse(
+      contentType = "text/html",
+      url = "",
+      statusCode = 200,
+      responseBody = "".toByteArray(),
     )
-    fun attachPdf(inputFileType: String) = runTest(context = RequestContext()) {
-        val mockPdfResponse = HttpResponse(
-            contentType = "application/$inputFileType",
-            url = "",
-            statusCode = 200,
-            responseBody = ResourceUtils.getFile("classpath:images//sample.$inputFileType").readBytes(),
-        )
 
-        val mockHtmlResponse = HttpResponse(
-            contentType = "text/html",
-            url = "",
-            statusCode = 200,
-            responseBody = "".toByteArray(),
-        )
-
-        `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull())).thenAnswer { input ->
-            if (input.arguments[0] == pdfUrl) {
-                mockPdfResponse
-            } else {
-                mockHtmlResponse
-            }
-        }
-
-        val (markup, attachments) = plugin.extractAttachments(randomDocumentId(), document)
-        assertThat(attachments.size).isEqualTo(1)
-        val attachment = attachments[0]
-        assertThat(attachment.mimeType).isEqualTo("application/pdf")
-
-        assertThat(markup).doesNotContain(pdfUrl)
-        assertThat(markup).containsSequence(attachment.id.uuid.toString())
+    `when`(mockHttpService.httpGet(anyString(), anyInt(), Mockito.isNull())).thenAnswer { input ->
+      if (input.arguments[0] == pdfUrl) {
+        mockPdfResponse
+      } else {
+        mockHtmlResponse
+      }
     }
+
+    val (markup, attachments) = plugin.extractAttachments(randomDocumentId(), document)
+    assertThat(attachments.size).isEqualTo(1)
+    val attachment = attachments[0]
+    assertThat(attachment.mimeType).isEqualTo("application/pdf")
+
+    assertThat(markup).doesNotContain(pdfUrl)
+    assertThat(markup).containsSequence(attachment.id.uuid.toString())
+  }
 }

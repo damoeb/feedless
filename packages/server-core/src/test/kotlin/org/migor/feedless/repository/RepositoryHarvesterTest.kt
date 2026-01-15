@@ -18,6 +18,7 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentRepository
@@ -42,7 +43,6 @@ import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
-import org.migor.feedless.session.RequestContext
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository

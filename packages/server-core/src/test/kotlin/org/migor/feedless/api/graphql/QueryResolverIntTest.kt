@@ -16,6 +16,7 @@ import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecretRepository
 import org.mockito.Mockito
 import org.mockito.Mockito.`when`
@@ -49,6 +50,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     UserSecretUseCase::class,
     UserSecretRepository::class,
     UserGuard::class,
+    UserGroupAssignmentRepository::class,
     OAuth2AuthorizedClientService::class
   ]
 )

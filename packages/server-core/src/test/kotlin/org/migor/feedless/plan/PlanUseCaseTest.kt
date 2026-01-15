@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
-import org.migor.feedless.session.RequestContext
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
