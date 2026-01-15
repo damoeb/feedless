@@ -11,7 +11,6 @@ import {
   template,
 } from 'typesafe-routes';
 import { OpenStreetMapService } from '@feedless/geo';
-// import { FeedlessMenuComponent } from '@feedless/components';
 
 export const perimeterUnit = 'Km';
 
@@ -121,7 +120,7 @@ export const upcomingBaseRoute = createRoutes({
   },
 });
 
-function toPath(url: string): string {
+export function toPath(url: string): string {
   return url.substring(1);
 }
 

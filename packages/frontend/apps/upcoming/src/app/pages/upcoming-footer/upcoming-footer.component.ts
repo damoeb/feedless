@@ -56,6 +56,8 @@ type SubscriptionType = 'cal' | 'atom';
     RemoveIfProdDirective,
     RouterLink,
     SubmitModalModule,
+    IonFooter,
+    IonButton,
   ],
   standalone: true,
 })
@@ -71,6 +73,7 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   readonly location = input<NamedLatLon>();
   readonly perimeter = input<number>(10);
   private subscriptions: Subscription[] = [];
+  protected isBrowser = isPlatformBrowser(this.platformId);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
@@ -149,11 +152,12 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.subscriptions.push(
-      this.geoService.getCurrentLatLon().subscribe((location) => {
-        // ignore
-      }),
-    );
+    this.subscriptions
+      .push
+      // this.geoService.getCurrentLatLon().subscribe((location) => {
+      //   // ignore
+      // }),
+      ();
   }
 
   ngOnDestroy(): void {
