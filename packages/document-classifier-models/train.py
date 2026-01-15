@@ -15,21 +15,16 @@ from transformers import (
 
 
 class TextClassifier:
-  def __init__(self, model_name="distilbert-base-uncased", num_labels=4, label_names=None):
+  def __init__(self, model_name="distilbert-base-uncased", num_labels=None, label_names=None):
     """Initialize the text classifier with a pre-trained model."""
     self.model_name = model_name
-    self.num_labels = num_labels
 
-    # Default label names for 4-class classification
+    # Set label names and num_labels
     if label_names is None:
-      self.label_names = {
-        0: "Technology",
-        1: "Food/Restaurant",
-        2: "Movies/Entertainment",
-        3: "Shopping/Products"
-      }
-    else:
-      self.label_names = label_names
+      raise ValueError("label_names must be provided")
+
+    self.label_names = label_names
+    self.num_labels = num_labels if num_labels is not None else len(label_names)
 
     # Set up device with MPS fallback for Apple Silicon compatibility
     self.device = self._get_device()
@@ -182,9 +177,16 @@ class TextClassifier:
 
     self.trainer.train()
 
+    # Update model config with meaningful label names before saving
+    id2label = {str(k): v for k, v in self.label_names.items()}
+    label2id = {v: k for k, v in self.label_names.items()}
+    self.model.config.id2label = id2label
+    self.model.config.label2id = label2id
+
     # Save the model
     self.trainer.save_model(f"{output_dir}/best_model")
     print(f"Model saved to {output_dir}/best_model")
+    print(f"Labels configured: {list(self.label_names.values())}")
 
     return self.trainer
 
@@ -251,17 +253,44 @@ class TextClassifier:
     return accuracy, report
 
 
-def main():
-  """Main function to demonstrate the text classifier."""
+def load_labels(labels_file):
+  """Load label names from a text file, one label per line."""
+  if not os.path.exists(labels_file):
+    raise FileNotFoundError(f"Labels file not found: {labels_file}")
+
+  with open(labels_file, 'r', encoding='utf-8') as f:
+    labels = [line.strip() for line in f if line.strip()]
+
+  # Create label mapping: index -> label name
+  label_names = {i: label for i, label in enumerate(labels)}
+  return label_names, len(labels)
+
+
+def train_classifier(training_data_folder="training-data/event-categories", output_dir="./results"):
+  """
+  Train a text classifier from a training data folder.
+
+  Args:
+    training_data_folder: Path to folder containing data.csv and labels.txt
+    output_dir: Directory where the trained model will be saved
+  """
   print("Multi-Class Text Classification with DistilBERT")
   print("=" * 50)
 
-  # Initialize classifier for 4 categories
-  classifier = TextClassifier(num_labels=4)
+  # Load labels from labels.txt
+  labels_file = os.path.join(training_data_folder, "labels.txt")
+  data_file = os.path.join(training_data_folder, "data.csv")
+
+  print(f"Loading labels from {labels_file}...")
+  label_names, num_labels = load_labels(labels_file)
+  print(f"Found {num_labels} labels: {list(label_names.values())}")
+
+  # Initialize classifier with dynamic labels
+  classifier = TextClassifier(num_labels=num_labels, label_names=label_names)
 
   # Load data
-  print("Loading data...")
-  df = classifier.load_data("sample_data.csv")
+  print(f"Loading data from {data_file}...")
+  df = classifier.load_data(data_file)
   print(f"Loaded {len(df)} samples")
 
   # Prepare datasets
@@ -270,7 +299,7 @@ def main():
 
   # Train the model
   print("Training model...")
-  classifier.train(train_dataset, val_dataset)
+  classifier.train(train_dataset, val_dataset, output_dir=output_dir)
 
   # Example predictions with diverse categories
   print("\nMaking example predictions...")
@@ -294,7 +323,3 @@ def main():
     print(f"Category: {pred['category']}")
     print(f"Confidence: {pred['confidence']:.4f}")
     print("-" * 70)
-
-
-if __name__ == "__main__":
-  main()

@@ -1,6 +1,7 @@
-# DistilBERT Text Classification Project
+# DistilBERT Document Classification
 
-This project provides a complete setup for training and using a DistilBERT model to classify short texts into categories.
+This project provides a complete setup for training and using a DistilBERT model to classify short texts into
+categories.
 
 ## Setup
 

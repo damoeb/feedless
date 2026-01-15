@@ -26,8 +26,11 @@ dependencies {
   testImplementation(libs.spring.boot.test)
   implementation(libs.commons.lang3)
 
-  // Tensorflow
-  implementation("org.tensorflow:tensorflow-core-platform:1.1.0")
+  // ONNX Runtime
+  implementation("com.microsoft.onnxruntime:onnxruntime:1.20.0")
+
+  // JSON parsing for config
+  implementation(libs.json)
 
   // Logging
   implementation("org.slf4j:slf4j-api:2.0.16")
