@@ -26,11 +26,11 @@ dependencies {
   testImplementation(libs.spring.boot.test)
   implementation(libs.commons.lang3)
 
-  // ONNX Runtime
-  implementation("com.microsoft.onnxruntime:onnxruntime:1.20.0")
-
   // JSON parsing for config
   implementation(libs.json)
+
+  // FastText JNI
+  implementation("com.github.vinhkhuc:jfasttext:0.5")
 
   // Logging
   implementation("org.slf4j:slf4j-api:2.0.16")

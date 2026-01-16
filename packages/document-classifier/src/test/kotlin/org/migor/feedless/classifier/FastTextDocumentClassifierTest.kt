@@ -5,17 +5,18 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentClassifierModel
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.repository.RepositoryId
 import java.util.*
 
-class OnnxDocumentClassifierTest {
+class FastTextDocumentClassifierTest {
 
-  private lateinit var classifier: OnnxDocumentClassifier
+  private lateinit var classifier: FastTextDocumentClassifier
 
   @BeforeEach
   fun setUp() {
-    classifier = OnnxDocumentClassifier()
+    classifier = FastTextDocumentClassifier()
   }
 
   @Test
@@ -29,11 +30,11 @@ class OnnxDocumentClassifierTest {
       contentHash = UUID.randomUUID().toString()
     )
 
-    val result = classifier.classify(document)
+    val results = classifier.classify(document, DocumentClassifierModel("test"))
 
-    assertThat(result).isNotNull()
-    assertThat(result.category).isNotEmpty()
-    assertThat(result.probability).isBetween(0.0, 1.0)
+    assertThat(results).isNotEmpty()
+    assertThat(results.first().category).isNotEmpty()
+    assertThat(results.first().probability).isBetween(0.0, 1.0)
   }
 
 }

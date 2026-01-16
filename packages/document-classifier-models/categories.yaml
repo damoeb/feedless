@@ -1,0 +1,109 @@
+veranstaltungen:
+  inhalt:
+    gottesdienst_und_spiritualitaet:
+      name: "Gottesdienst & Spiritualität"
+      unterkategorien:
+        - Gottesdienst
+        - Andacht & Gebet
+        - Meditation & Achtsamkeit
+        - Spirituelle Impulse
+        - Religiöse Feiern
+
+    bildung_und_arbeit:
+      name: "Bildung & Arbeit"
+      unterkategorien:
+        - Workshop
+        - Seminar
+        - Kurs
+        - Vortrag
+        - Gesprächs- & Lernkreis
+
+    begegnung_und_austausch:
+      name: "Begegnung & Austausch"
+      unterkategorien:
+        - Offenes Treffen
+        - Kennenlernen & Vernetzung
+        - Gesprächsrunde
+        - Austauschformat
+        - Begegnungscafé
+
+    feiern_und_freizeit:
+      name: "Feiern & Freizeit"
+      unterkategorien:
+        - Fest & Feier
+        - Gemeinsames Essen
+        - Ausflug & Unternehmung
+        - Spiele & Freizeit
+        - Jahresfeste
+
+    kultur_und_kreativitaet:
+      name: "Kultur & Kreativität"
+      unterkategorien:
+        - Musik & Konzert
+        - Theater & Aufführung
+        - Kreativworkshop
+        - Kunst & Gestaltung
+        - Offene Bühne
+
+    gesundheit_und_bewegung:
+      name: "Gesundheit & Bewegung"
+      unterkategorien:
+        - Bewegung & Sport
+        - Entspannung
+        - Naturerlebnis
+        - Spaziergang & Wanderung
+        - Wohlbefinden
+
+    soziales_und_engagement:
+      name: "Soziales & Engagement"
+      unterkategorien:
+        - Ehrenamtstreffen
+        - Hilfsaktion
+        - Beratung
+        - Selbsthilfegruppe
+        - Integration & Inklusion
+
+    beziehungen_und_leben:
+      name: "Beziehungen & Leben"
+      unterkategorien:
+        - Kennenlernen
+        - Dating (nicht-kommerziell)
+        - Freundschaft
+        - Partnerschaft
+        - Lebens- & Beziehungsthemen
+
+  zielgruppe:
+    altersgruppen:
+      name: "Altersgruppen"
+      unterkategorien:
+        - Kinder
+        - Jugendliche
+        - Junge Erwachsene
+        - Erwachsene
+        - Senioren
+
+    familienformen:
+      name: "Familien & Lebensformen"
+      unterkategorien:
+        - Familien
+        - Alleinerziehende
+        - Paare
+        - Singles
+        - Mehrgenerationen
+
+    lebenslagen:
+      name: "Lebenslagen"
+      unterkategorien:
+        - Neu Zugezogene
+        - Menschen in Übergangsphasen
+        - Trauernde
+        - Suchende & Fragende
+        - Menschen mit Unterstützungsbedarf
+
+    offenheit:
+      name: "Offenheit"
+      unterkategorien:
+        - Offen für alle
+        - Gemeindemitglieder
+        - Geschlossene Gruppe
+        - Einladung erforderlich
