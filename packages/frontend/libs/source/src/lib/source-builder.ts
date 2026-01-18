@@ -12,6 +12,7 @@ import {
   ScrapeResponse,
 } from '@feedless/graphql-api';
 import { ReplaySubject } from 'rxjs';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ScrapeService } from '@feedless/services';
 import { cloneDeep, first, pick } from 'lodash-es';
 import { FormControl, FormGroup } from '@angular/forms';
@@ -126,7 +127,6 @@ export class SourceBuilder {
   ) {
     const fetchAction = getFirstFetch(this.flow);
 
-    // @ts-ignore
     Object.keys(params).forEach((key) => (fetchAction.get[key] = params[key]));
     this.events.stateChange.next('DIRTY');
     return this;

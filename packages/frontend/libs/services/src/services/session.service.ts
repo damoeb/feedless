@@ -69,7 +69,7 @@ export class SessionService {
   }
 
   getFeature(featureName: GqlFeatureName): Nullable<Feature> {
-    return this.session?.user?.features.find((ft) => ft.name === featureName)!;
+    return this.session?.user?.features.find((ft) => ft.name === featureName);
   }
 
   requestAnonymousFeedToken(url: string): Promise<string> {

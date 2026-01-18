@@ -8,10 +8,7 @@
       </ul>
     </div>
   }
-  <div
-    class="note"
-    [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }"
-  >
+  <div class="note" [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }">
     <div class="note-header" (click)="toggle()">
       <div class="flex ion-nowrap">
         {{ title() | async }}

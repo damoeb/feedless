@@ -3,7 +3,7 @@ import { Meta, MetaDefinition, Title } from '@angular/platform-browser';
 import { Dayjs } from 'dayjs';
 import { BreadcrumbList, Event, WebPage } from 'schema-dts';
 import { LatLng } from '@feedless/core';
-import { isPlatformBrowser } from '@angular/common';
+import { DOCUMENT, isPlatformBrowser } from '@angular/common';
 
 export type PageTags = {
   title: string;
@@ -33,19 +33,20 @@ export class PageService {
   private readonly meta = inject(Meta);
   private readonly title = inject(Title);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly document = inject(DOCUMENT);
 
   setMetaTags(options: PageTags) {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
+    // Angular's Meta and Title services work in both browser and SSR
     // Clear existing meta tags to prevent duplicates
     this.clearMetaTags();
 
     this.title.setTitle(options.title);
-    document
-      .getElementsByTagName('html')
-      .item(0)
-      .setAttribute('lang', options.lang);
+
+    // Set lang attribute - works in SSR via DOCUMENT injection
+    const htmlElement = this.document.getElementsByTagName('html').item(0);
+    if (htmlElement) {
+      htmlElement.setAttribute('lang', options.lang);
+    }
 
     // Basic meta tags
     const basicTags: MetaDefinition[] = [
@@ -166,66 +167,83 @@ export class PageService {
 
   private clearMetaTags() {
     // Remove existing meta tags to prevent duplicates
-    const existingTags = document.querySelectorAll(
-      'meta[name], meta[property]',
-    );
-    existingTags.forEach((tag) => {
-      const name = tag.getAttribute('name') || tag.getAttribute('property');
-      if (
-        name &&
-        (name.startsWith('og:') ||
-          name.startsWith('twitter:') ||
-          [
-            'description',
-            'keywords',
-            'author',
-            'robots',
-            'geo.region',
-            'geo.placename',
-            'geo.position',
-            'ICBM',
-          ].includes(name))
-      ) {
-        tag.remove();
-      }
-    });
+    // Only clear in browser to avoid issues during SSR
+    if (isPlatformBrowser(this.platformId)) {
+      const existingTags = this.document.querySelectorAll(
+        'meta[name], meta[property]',
+      );
+      existingTags.forEach((tag) => {
+        const name = tag.getAttribute('name') || tag.getAttribute('property');
+        if (
+          name &&
+          (name.startsWith('og:') ||
+            name.startsWith('twitter:') ||
+            [
+              'description',
+              'keywords',
+              'author',
+              'robots',
+              'geo.region',
+              'geo.placename',
+              'geo.position',
+              'ICBM',
+            ].includes(name))
+        ) {
+          tag.remove();
+        }
+      });
 
-    // Remove existing JSON-LD scripts
-    const existingJsonLd = document.querySelectorAll(
-      'script[type="application/ld+json"]',
-    );
-    existingJsonLd.forEach((script) => script.remove());
+      // Remove existing JSON-LD scripts
+      const existingJsonLd = this.document.querySelectorAll(
+        'script[type="application/ld+json"]',
+      );
+      existingJsonLd.forEach((script) => script.remove());
 
-    // Remove existing canonical links
-    const existingCanonical = document.querySelectorAll(
-      'link[rel="canonical"]',
-    );
-    existingCanonical.forEach((link) => link.remove());
+      // Remove existing canonical links
+      const existingCanonical = this.document.querySelectorAll(
+        'link[rel="canonical"]',
+      );
+      existingCanonical.forEach((link) => link.remove());
+    }
   }
 
   private setCanonicalUrl(url: string) {
-    const link = document.createElement('link');
+    const link = this.document.createElement('link');
     link.setAttribute('rel', 'canonical');
     link.setAttribute('href', url);
-    document.head.append(link);
+    this.document.head.appendChild(link);
   }
 
   setJsonLdData(data: WebPage | BreadcrumbList | Event) {
-    if (!isPlatformBrowser(this.platformId)) {
-      return;
-    }
-    // Add structured data with caching to prevent duplicates
+    // Add structured data - works in both browser and SSR
     const dataString = JSON.stringify(data, null, 2);
-    const existingScript = document.querySelector(
-      `script[type="application/ld+json"][data-content="${btoa(dataString)}"]`,
-    );
 
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.setAttribute('type', 'application/ld+json');
-      script.setAttribute('data-content', btoa(dataString)); // Base64 encode for comparison
-      script.textContent = dataString;
-      document.head.append(script);
+    // Helper to encode to base64 (works in both browser and Node.js)
+    const encodeBase64 = (str: string): string => {
+      if (isPlatformBrowser(this.platformId)) {
+        return btoa(str);
+      } else {
+        // Node.js environment
+        return Buffer.from(str, 'utf-8').toString('base64');
+      }
+    };
+
+    const encodedContent = encodeBase64(dataString);
+
+    // Only check for duplicates in browser (during SSR, we want to add it)
+    if (isPlatformBrowser(this.platformId)) {
+      const existingScript = this.document.querySelector(
+        `script[type="application/ld+json"][data-content="${encodedContent}"]`,
+      );
+      if (existingScript) {
+        return;
+      }
     }
+
+    const script = this.document.createElement('script');
+    script.setAttribute('type', 'application/ld+json');
+    script.setAttribute('data-content', encodedContent); // Base64 encode for comparison
+    script.textContent = dataString;
+    this.document.head.appendChild(script);
   }
 }

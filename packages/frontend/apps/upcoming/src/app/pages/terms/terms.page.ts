@@ -4,6 +4,7 @@ import {
   inject,
   OnInit,
 } from '@angular/core';
+import { Location } from '@angular/common';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
 import { PageService, PageTags } from '@feedless/services';
 import dayjs from 'dayjs';
@@ -18,6 +19,7 @@ import dayjs from 'dayjs';
 })
 export class TermsPage implements OnInit {
   private readonly pageService = inject(PageService);
+  private readonly location = inject(Location);
 
   ngOnInit() {
     this.pageService.setMetaTags(this.getPageTags());
@@ -30,7 +32,7 @@ export class TermsPage implements OnInit {
         'Allgemeine Geschäftsbedingungen und Datenschutzerklärung von lokale.events. Informationen zum Datenschutz und zur Nutzung der Plattform.',
       publisher: 'lokale.events',
       category: 'Rechtliches',
-      url: document.location.href,
+      url: this.location.path(),
       lang: 'de',
       publishedAt: dayjs(),
       keywords: [

@@ -1,5 +1,15 @@
 import { inject, Injectable } from '@angular/core';
-import { firstValueFrom, forkJoin, map, Observable, of, OperatorFunction, ReplaySubject, switchMap, zip, } from 'rxjs';
+import {
+  firstValueFrom,
+  forkJoin,
+  map,
+  Observable,
+  of,
+  OperatorFunction,
+  ReplaySubject,
+  switchMap,
+  zip,
+} from 'rxjs';
 import { Document } from 'flexsearch';
 import { AlertController, ToastController } from '@ionic/angular/standalone';
 import { get, map as mapObj, orderBy, slice, uniq } from 'lodash-es';

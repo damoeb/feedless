@@ -19,6 +19,10 @@ import { DateWindowItem, formatDate, getWeekday } from '../events/events.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
 import { IconComponent } from '@feedless/components';
+import {
+  RelativeDate,
+  relativeDateIncrement,
+} from '../../upcoming-product-routes';
 
 @Component({
   selector: 'app-inline-calendar',
@@ -133,5 +137,18 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
       this.date().add(offset, 'day').isAfter(this.minDate()) &&
       this.date().add(offset, 'day').isBefore(this.maxDate())
     );
+  }
+
+  getSeoLinkAttributes(date: Dayjs): string {
+    const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
+    const diff = dayjs().diff(date, 'day');
+    const relativeDateExpressionMaybe = relativeDates.find(
+      (relativeDate) => relativeDateIncrement[relativeDate] === diff,
+    );
+    if (relativeDateExpressionMaybe) {
+      return ['follow', 'index'].join(' ');
+    } else {
+      return ['follow', 'no-index'].join(' ');
+    }
   }
 }

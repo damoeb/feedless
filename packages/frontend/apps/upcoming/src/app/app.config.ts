@@ -30,7 +30,6 @@ import {
 } from '@angular/common/http';
 import {
   ApolloAbortControllerService,
-  AppConfigService,
   HttpErrorInterceptorService,
   ServerConfigService,
 } from '@feedless/services';
@@ -39,10 +38,8 @@ import {
   ApolloLink,
   HttpLink,
   InMemoryCache,
-  split,
 } from '@apollo/client/core';
 import { environment } from '@feedless/core';
-import { getMainDefinition } from '@apollo/client/utilities';
 import { AppLoadModule } from './app-load.module';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -80,14 +77,12 @@ export const appConfig: ApplicationConfig = {
       deps: [
         HttpErrorInterceptorService,
         ServerConfigService,
-        AppConfigService,
         ApolloAbortControllerService,
         PLATFORM_ID,
       ],
       useFactory: (
         httpErrorInterceptorService: HttpErrorInterceptorService,
         serverConfig: ServerConfigService,
-        appConfig: AppConfigService,
         abortController: ApolloAbortControllerService,
         platformId: object,
       ): ApolloClient<any> => {
@@ -105,43 +100,27 @@ export const appConfig: ApplicationConfig = {
               },
             },
           },
-          link: split(
-            ({ query }) => {
-              const definition = getMainDefinition(query);
-              return (
-                definition.kind === 'OperationDefinition' &&
-                definition.operation === 'subscription'
-              );
-            },
-            // new GraphQLWsLink(
-            //   createClient({
-            //     url: wsUrl,
-            //   })
-            // ),
-            ApolloLink.from([
-              removeTypenameFromVariables(),
-              onError(({ graphQLErrors, networkError }) => {
-                if (networkError) {
-                  httpErrorInterceptorService.interceptNetworkError(
-                    networkError,
-                  );
-                }
-                if (graphQLErrors) {
-                  httpErrorInterceptorService.interceptGraphQLErrors(
-                    graphQLErrors,
-                  );
-                }
-              }),
-              new HttpLink({
-                uri: `${serverConfig.apiUrl}/graphql`,
-                credentials: 'include',
-                headers: {
-                  'x-corr-id': corrId,
-                  // 'x-product': appConfig.activeProductConfig.product,
-                },
-              }),
-            ]),
-          ),
+          link: ApolloLink.from([
+            removeTypenameFromVariables(),
+            onError(({ graphQLErrors, networkError }) => {
+              if (networkError) {
+                httpErrorInterceptorService.interceptNetworkError(networkError);
+              }
+              if (graphQLErrors) {
+                httpErrorInterceptorService.interceptGraphQLErrors(
+                  graphQLErrors,
+                );
+              }
+            }),
+            new HttpLink({
+              uri: `${serverConfig.apiUrl}/graphql`,
+              credentials: 'include',
+              headers: {
+                'x-corr-id': corrId,
+                // 'x-product': appConfig.activeProductConfig.product,
+              },
+            }),
+          ]),
           cache: new InMemoryCache(),
         });
       },

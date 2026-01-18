@@ -1,12 +1,14 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { GraphQLFormattedError } from 'graphql/error';
+import { isPlatformBrowser } from '@angular/common';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpErrorInterceptorService {
   private readonly toastCtrl = inject(ToastController);
+  private readonly platformId = inject(PLATFORM_ID);
 
   interceptNetworkError(
     networkError:
@@ -16,7 +18,7 @@ export class HttpErrorInterceptorService {
           response: Response;
           result: Record<string, any>;
           statusCode: number;
-        })
+        }),
   ): void {
     const message = `[Network error]: ${networkError}`;
     console.error(message);
@@ -33,19 +35,23 @@ export class HttpErrorInterceptorService {
   }
 
   private promptToast(message: string) {
-    this.toastCtrl
-      .create({
-        message,
-        color: 'danger',
-        duration: 5000,
-        buttons: [
-          {
-            icon: 'close-outline',
-            side: 'end',
-            role: 'cancel',
-          },
-        ],
-      })
-      .then((toast) => toast.present());
+    if (isPlatformBrowser(this.platformId)) {
+      this.toastCtrl
+        .create({
+          message,
+          color: 'danger',
+          duration: 5000,
+          buttons: [
+            {
+              icon: 'close-outline',
+              side: 'end',
+              role: 'cancel',
+            },
+          ],
+        })
+        .then((toast) => toast.present());
+    } else {
+      console.error(message);
+    }
   }
 }

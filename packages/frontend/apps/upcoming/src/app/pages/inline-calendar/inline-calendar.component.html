@@ -23,10 +23,12 @@
       @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
         <a
           [routerLink]="'/' + getDateUrl(d.date)"
+          [attr.rel]="getSeoLinkAttributes(d.date)"
           [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length - 4 }"
         >
           <div
             class="calendar-day"
+            tabindex="0"
             (click)="
               $event.preventDefault(); $event.stopImmediatePropagation(); changeDate.emit(d.date)
             "
@@ -37,7 +39,7 @@
           >
             <div>{{ getWeekday(d.date) }}</div>
             <h3 style="font-size: 1.5rem">{{ formatDate(d.date, 'D') }}</h3>
-            @if (i == 0 || d.date.date() === 1) {
+            @if (i === 0 || d.date.date() === 1) {
               <div class="nowrap">{{ formatDate(d.date, 'MMM YY') }}</div>
             }
           </div>

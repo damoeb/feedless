@@ -21,5 +21,9 @@ module.exports = {
   consoleDevWarn: () => {},
   consoleDevInfo: () => {},
   consoleError: () => {},
+  getAssetPath: () => {},
+  render: () => {},
+  setAssetPath: () => {},
+  setNonce: () => {},
+  setPlatformOptions: () => {},
 };
-

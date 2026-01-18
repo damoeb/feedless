@@ -1,5 +1,6 @@
 {
-    "apiUrl": "http://localhost:8080",
-    "product": "upcoming",
-    "offlineSupport": false
-  }
+  "apiUrl": "http://localhost:8080",
+  "product": "upcoming",
+  "offlineSupport": false,
+  "eventRepositoryId": "3387ab99-028d-4490-bda5-c3c0a5fa4a91"
+}

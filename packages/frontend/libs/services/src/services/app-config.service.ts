@@ -40,7 +40,7 @@ export class AppConfigService {
   public customProperties!: { [p: string]: number | boolean | string };
 
   async activateUserInterface(appConfig: VerticalAppConfig) {
-    console.log('appConfig', appConfig);
+    // console.log('appConfig', appConfig);
     const product = appConfig.product;
     const customProperties = omit(
       appConfig,
@@ -48,9 +48,9 @@ export class AppConfigService {
       'offlineSupport',
       'apiUrl',
     );
-    console.log(
-      `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`,
-    );
+    // console.log(
+    //   `activateUserInterface ${product} with customProperties ${JSON.stringify(customProperties)}`,
+    // );
     environment.product = product;
     environment.offlineSupport = appConfig.offlineSupport === true;
     // const appConfigFull = await this.resolveAppConfig(product);

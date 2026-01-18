@@ -17,6 +17,8 @@ import { isPlatformBrowser, Location, NgClass } from '@angular/common';
 import {
   parseDateFromUrl,
   parseLocationFromUrl,
+  RelativeDate,
+  relativeDateIncrement,
   upcomingBaseRoute,
 } from '../../upcoming-product-routes';
 import { Subscription } from 'rxjs';
@@ -38,7 +40,7 @@ import {
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
-import { parsePath, renderPath } from 'typesafe-routes';
+import { renderPath } from 'typesafe-routes';
 import { ExternalLinkComponent } from '@feedless/components';
 import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
 
@@ -150,7 +152,7 @@ export class EventsPage implements OnInit, OnDestroy {
   readonly maxDate: Dayjs = dayjs().add(2, 'month');
   perimeter = 10;
   latLon: Nullable<LatLng>;
-  location: Nullable<NamedLatLon>;
+  namedLatLon: Nullable<NamedLatLon>;
   loading = true;
   private subscriptions: Subscription[] = [];
 
@@ -171,29 +173,41 @@ export class EventsPage implements OnInit, OnDestroy {
     this.subscriptions.push(
       this.activatedRoute.params.subscribe(async (params) => {
         try {
-          this.location = await parseLocationFromUrl(
+          this.namedLatLon = await parseLocationFromUrl(
             this.activatedRoute,
             this.openStreetMapService,
           );
-          this.saveLocation(this.location);
+          this.saveLocation(this.namedLatLon);
 
-          this.latLon = this.location;
+          this.latLon = this.namedLatLon;
 
-          const { perimeter } = parsePath(
-            upcomingBaseRoute.events.countryCode.region.place.dateTime
-              .perimeter,
-            params,
-          );
+          // Try to parse perimeter from absolute date route
 
-          this.perimeter = perimeter || 10;
-          const dateFromUrl = parseDateFromUrl(params);
-          if (
-            dateFromUrl.isBefore(this.minDate) ||
-            dateFromUrl.isAfter(this.maxDate)
-          ) {
-            await this.redirectToToday();
+          this.perimeter = 10;
+
+          // Check if date is present in URL
+          const hasDateInUrl =
+            params['year'] ||
+            params['month'] ||
+            params['day'] ||
+            params['relativeDate'];
+
+          const { date: dateFromUrl, relative } = parseDateFromUrl(params);
+
+          if (hasDateInUrl) {
+            // Only validate and redirect if date was explicitly in URL
+            if (
+              dateFromUrl.isBefore(this.minDate) ||
+              dateFromUrl.isAfter(this.maxDate)
+            ) {
+              await this.redirectToToday();
+            } else {
+              await this.changeDate(dateFromUrl);
+            }
           } else {
-            await this.changeDate(dateFromUrl);
+            // No date in URL - just show today without redirecting
+            this.date = dateFromUrl;
+            await this.fetchEvents(this.date);
           }
 
           this.changeRef.detectChanges();
@@ -218,7 +232,7 @@ export class EventsPage implements OnInit, OnDestroy {
     );
 
     if (
-      !this.location &&
+      !this.namedLatLon &&
       Object.keys(this.activatedRoute.snapshot.params).length === 0
     ) {
       const savedLocations: NamedLatLon[] = this.getSavedLocations();
@@ -240,7 +254,7 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   private getPageTags(): PageTags {
-    const location = this.location;
+    const location = this.namedLatLon;
     const dateStr = this.date ? this.formatDate(this.date, 'DD.MM.YYYY') : '';
 
     if (location) {
@@ -527,17 +541,17 @@ export class EventsPage implements OnInit, OnDestroy {
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
       temporalCoverage: `${this.date.subtract(2, 'months').toISOString()}/${this.date.add(1, 'week').toISOString()}`,
-      url: location.href,
+      url: 'this.locationService.href',
       inLanguage: 'de-DE',
       about: {
         '@type': 'Thing',
-        name: `Events in ${this.location?.displayName || 'deiner Nähe'}`,
+        name: `Events in ${this.namedLatLon?.displayName || 'deiner Nähe'}`,
         description: tags.description,
       },
-      breadcrumb: createBreadcrumbsSchema(this.location),
+      breadcrumb: createBreadcrumbsSchema(this.namedLatLon),
       mainEntity: {
         '@type': 'ItemList',
-        name: `Events in ${this.location?.displayName || 'deiner Nähe'}`,
+        name: `Events in ${this.namedLatLon?.displayName || 'deiner Nähe'}`,
         description: `Liste der aktuellen Veranstaltungen${this.date ? ' am ' + this.formatDate(this.date, 'DD.MM.YYYY') : ''}`,
         itemListElement: events.map((event, index) => ({
           '@type': 'ListItem',
@@ -597,28 +611,49 @@ export class EventsPage implements OnInit, OnDestroy {
     location: Nullable<NamedLatLon> = null,
   ): string {
     const { countryCode, region, place } = this.getLocationOrElse(location);
-    const { year, month, day } = this.getDateOrElse(date);
 
-    return renderUrl(
-      countryCode,
-      region,
-      place,
-      year,
-      month,
-      day,
-      this.perimeter,
-    );
+    const now = dayjs().startOf('day');
+    const diffInDays = date.startOf('day').diff(now, 'day');
+
+    const hasRelativeDateExpression = Object.values<number>(
+      relativeDateIncrement,
+    ).includes(diffInDays);
+    if (hasRelativeDateExpression) {
+      const relativeDates = Object.keys(
+        relativeDateIncrement,
+      ) as RelativeDate[];
+      const relativeDateParam = relativeDates.find(
+        (relativeDate) => relativeDateIncrement[relativeDate] === diffInDays,
+      );
+
+      return renderUrlWithRelativeDate(
+        countryCode,
+        region,
+        place,
+        relativeDateParam,
+      );
+    } else {
+      const { year, month, day } = this.getDateOrElse(date);
+
+      return renderUrlWithAbsoluteDate(
+        countryCode,
+        region,
+        place,
+        year,
+        month,
+        day,
+      );
+    }
   }
 
   createUrl(location: NamedLatLon, date: Dayjs): string {
-    return renderUrl(
+    return renderUrlWithAbsoluteDate(
       location.countryCode,
       location.area,
       location.place,
       parseInt(date.format('YYYY')),
       parseInt(date.format('MM')),
       parseInt(date.format('DD')),
-      10,
     );
   }
 
@@ -643,18 +678,15 @@ export class EventsPage implements OnInit, OnDestroy {
   getPlaceUrl(location: NamedLatLon): string {
     if (location) {
       const { countryCode, area, place } = location;
-      const { year, month, day } = parsePath(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime,
-        this.activatedRoute.snapshot.params,
-      );
-      return renderUrl(
+      // Use parseDateFromUrl to handle both absolute and relative dates
+      const { date } = parseDateFromUrl(this.activatedRoute.snapshot.params);
+      return renderUrlWithAbsoluteDate(
         countryCode,
         area,
         place,
-        year,
-        month,
-        day,
-        this.perimeter,
+        parseInt(date.format('YYYY')),
+        parseInt(date.format('MM')),
+        parseInt(date.format('DD')),
       );
     }
     return '';
@@ -677,13 +709,16 @@ export class EventsPage implements OnInit, OnDestroy {
 
   async changeDate(date: Dayjs) {
     this.date = date;
-    this.patchUrlInAddressBar();
+    // this.patchUrlInAddressBar();
     await this.fetchEvents(this.date);
     this.changeRef.detectChanges();
   }
 
   patchUrlInAddressBar() {
-    this.locationService.replaceState(this.createUrl(this.location, this.date));
+    console.log('patchUrlInAddressBar');
+    this.locationService.replaceState(
+      this.createUrl(this.namedLatLon, this.date),
+    );
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
@@ -799,17 +834,16 @@ export function formatDate(date: Dayjs, format: string) {
   return date?.locale('de')?.format(format);
 }
 
-export function renderUrl(
+export function renderUrlWithAbsoluteDate(
   countryCode: string,
   region: string,
   place: string,
   year: number,
   month: number,
   day: number,
-  perimeter: number,
 ) {
   return renderPath(
-    upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+    upcomingBaseRoute.events.countryCode.region.place.dateTime,
     {
       countryCode,
       region,
@@ -817,7 +851,23 @@ export function renderUrl(
       year,
       month,
       day,
-      perimeter,
+    },
+  );
+}
+
+export function renderUrlWithRelativeDate(
+  countryCode: string,
+  region: string,
+  place: string,
+  relativeDate: RelativeDate,
+) {
+  return renderPath(
+    upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
+    {
+      countryCode,
+      region,
+      place,
+      relativeDate,
     },
   );
 }

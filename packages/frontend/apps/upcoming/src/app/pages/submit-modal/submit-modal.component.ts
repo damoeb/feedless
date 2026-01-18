@@ -26,6 +26,7 @@ type ReportFrequency = 'week' | 'month';
   selector: 'app-submit-modal',
   templateUrl: './submit-modal.component.html',
   styleUrls: ['./submit-modal.component.scss'],
+  // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone: false,
 })
 export class SubmitModalComponent implements SubmitModalComponentProps {

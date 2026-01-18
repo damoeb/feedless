@@ -14,7 +14,59 @@ import { OpenStreetMapService } from '@feedless/geo';
 
 export const perimeterUnit = 'Km';
 
-export function parseDateFromUrl(params: Params): Dayjs {
+export type RelativeDate =
+  | 'gestern'
+  | 'heute'
+  | 'morgen'
+  | 'kommendes-wochenende';
+
+export const relativeDateIncrement: Record<RelativeDate, number> = {
+  gestern: -1,
+  heute: 0,
+  morgen: 1,
+  'kommendes-wochenende': (6 - dayjs().day() + 7) % 7 || 7,
+};
+
+export function parseRelativeDate(keyword: RelativeDate): Dayjs {
+  const today = dayjs().startOf('day');
+  switch (keyword) {
+    case 'gestern':
+      return today.add(-1, 'day');
+    case 'heute':
+      return today.add(0, 'day');
+    case 'morgen':
+      return today.add(1, 'days');
+    case 'kommendes-wochenende': {
+      // Find next friday
+      const daysUntilSaturday = (6 - today.day() + 7) % 7 || 7;
+      return today.add(daysUntilSaturday, 'days');
+    }
+    default:
+      return today;
+  }
+}
+
+export function parseDateFromUrl(params: Params): {
+  date: Dayjs;
+  relative: boolean;
+} {
+  // Try to parse relative date first
+  try {
+    const { relativeDate } = parsePath(
+      upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
+      params,
+    );
+    if (relativeDate) {
+      return {
+        date: parseRelativeDate(relativeDate as RelativeDate),
+        relative: true,
+      };
+    }
+  } catch (e) {
+    // ignore, try absolute date
+  }
+
+  // Try to parse absolute date
   try {
     const { year, month, day } = parsePath(
       upcomingBaseRoute.events.countryCode.region.place.dateTime,
@@ -22,12 +74,12 @@ export function parseDateFromUrl(params: Params): Dayjs {
     );
     const date = dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
     if (date?.isValid()) {
-      return date;
+      return { date, relative: false };
     }
   } catch (e) {
     // ignore
   }
-  return dayjs();
+  return { date: dayjs(), relative: false };
 }
 
 export async function parseLocationFromUrl(
@@ -66,6 +118,18 @@ export const perimeterParser = param<number>({
   serialize: (value: number) => `${value}${perimeterUnit}`,
 });
 
+export const relativeDateParser = param<RelativeDate>({
+  parse: (value: string) => {
+    const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
+
+    if (relativeDates.includes(value as RelativeDate)) {
+      return value as RelativeDate;
+    }
+    throw new Error(`Invalid relative date keyword: ${value}`);
+  },
+  serialize: (value: RelativeDate) => value,
+});
+
 export const upcomingBaseRoute = createRoutes({
   terms: {
     path: ['agb'],
@@ -102,9 +166,20 @@ export const upcomingBaseRoute = createRoutes({
                   dateTime: {
                     path: ['am', int('year'), int('month'), int('day')],
                     children: {
-                      perimeter: {
-                        path: ['innerhalb', perimeterParser('perimeter')],
+                      //   perimeter: {
+                      //     path: ['innerhalb', perimeterParser('perimeter')],
+                      //   },
+                      eventId: {
+                        path: [int('eventId')],
                       },
+                    },
+                  },
+                  relativeDateTime: {
+                    path: [relativeDateParser('relativeDate')],
+                    children: {
+                      // perimeter: {
+                      //   path: ['innerhalb', perimeterParser('perimeter')],
+                      // },
                       eventId: {
                         path: [int('eventId')],
                       },
@@ -198,15 +273,34 @@ export const UPCOMING_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
   },
+  // {
+  //   path: toPath(
+  //     template(
+  //       upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+  //     ),
+  //   ),
+  //   loadComponent: () =>
+  //     import('./pages/events/events.page').then((m) => m.EventsPage),
+  // },
   {
     path: toPath(
       template(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+        upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
       ),
     ),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
   },
+  // {
+  //   path: toPath(
+  //     template(
+  //       upcomingBaseRoute.events.countryCode.region.place.relativeDateTime
+  //         .perimeter,
+  //     ),
+  //   ),
+  //   loadComponent: () =>
+  //     import('./pages/events/events.page').then((m) => m.EventsPage),
+  // },
   {
     // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
     path: toPath(

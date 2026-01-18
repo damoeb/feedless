@@ -366,6 +366,10 @@ fun CoroutineContext.userId(): UserId {
   return this[RequestContext]?.userId!!
 }
 
+fun CoroutineContext.userIdMaybe(): UserId? {
+  return this[RequestContext]?.userId
+}
+
 fun CoroutineContext.groupId(): GroupId {
   return this[RequestContext]?.groupId!!
 }

@@ -18,6 +18,7 @@ import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
 import { IonButton, IonInput, IonSpinner } from '@ionic/angular/standalone';
 import { isPlatformBrowser } from '@angular/common';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { IconComponent } from '@feedless/components';
 
 @Component({

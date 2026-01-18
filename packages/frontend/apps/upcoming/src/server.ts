@@ -4,9 +4,12 @@ import {
   isMainModule,
   writeResponseToNodeResponse,
 } from '@angular/ssr/node';
-import express from 'express';
+import express, { Request } from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { renderPath, safeParsePath } from 'typesafe-routes';
+import { upcomingBaseRoute } from './app/upcoming-product-routes';
+import dayjs from 'dayjs';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');
@@ -37,10 +40,50 @@ app.use(
   }),
 );
 
+function checkOutdated(req: Request):
+  | { outdated: false }
+  | {
+      outdated: true;
+      params?: {
+        day: number;
+        month: number;
+        year: number;
+        countryCode: string;
+        region: string;
+        place: string;
+      };
+    } {
+  const maxAge = dayjs().subtract(7, 'days');
+  const routeWithoutPerimeter = safeParsePath(
+    upcomingBaseRoute.events.countryCode.region.place.dateTime,
+    req.path,
+  );
+  if (routeWithoutPerimeter.success) {
+    const { day, month, year, countryCode, region, place } =
+      routeWithoutPerimeter.data;
+    return {
+      outdated: dayjs().year(year).month(month).day(day).isBefore(maxAge),
+      params: { day, month, year, countryCode, region, place },
+    };
+  }
+
+  return { outdated: false };
+}
+
 /**
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
+  const outdated = checkOutdated(req);
+  if (outdated.outdated) {
+    return res.redirect(
+      renderPath(
+        upcomingBaseRoute.events.countryCode.region.place.dateTime,
+        outdated.params,
+      ),
+    );
+  }
+
   angularApp
     .handle(req)
     .then((response) =>

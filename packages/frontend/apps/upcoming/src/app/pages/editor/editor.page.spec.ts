@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { AppTestModule, mockRepository } from '@feedless/test';
+import { AppTestModule, mockRepository } from '@feedless/testing';
 import { EditorPage } from './editor.page';
 import { AppConfigService, PageService } from '@feedless/services';
 

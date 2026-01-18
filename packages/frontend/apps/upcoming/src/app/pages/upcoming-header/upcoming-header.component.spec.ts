@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { UpcomingHeaderComponent } from './upcoming-header.component';
-import { AppTestModule, mockEvents } from '@feedless/test';
+import { AppTestModule, mockEvents } from '@feedless/testing';
 import dayjs from 'dayjs';
-import { getCachedLocations } from '../../../../../../libs/geo/src/lib/places';
+import { getCachedLocations } from '@feedless/geo';
 import { AppConfigService } from '@feedless/services';
 import { of } from 'rxjs';
 

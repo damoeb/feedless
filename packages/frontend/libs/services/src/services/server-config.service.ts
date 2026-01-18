@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import {
   GqlAuthType,
   GqlProfileName,
@@ -9,9 +9,10 @@ import {
   ServerSettings,
 } from '@feedless/graphql-api';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, firstValueFrom, Observable } from 'rxjs';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 import { ApolloClient, HttpLink, InMemoryCache } from '@apollo/client/core';
 import { environment, VerticalAppConfig } from '@feedless/core';
+import { isPlatformBrowser } from '@angular/common';
 
 export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
 
@@ -27,6 +28,7 @@ export interface ConfigError {
 })
 export class ServerConfigService {
   private readonly httpClient = inject(HttpClient);
+  private readonly platformId = inject(PLATFORM_ID);
 
   apiUrl!: string;
   private profiles!: GqlProfileName[];
@@ -42,8 +44,8 @@ export class ServerConfigService {
   private readonly systemErrorSubject = new BehaviorSubject<ConfigError | null>(
     null,
   );
-  public readonly systemError$: Observable<ConfigError | null> =
-    this.systemErrorSubject.asObservable();
+  // public readonly systemError$: Observable<ConfigError | null> =
+  //   this.systemErrorSubject.asObservable();
 
   async fetchConfig(): Promise<VerticalAppConfig> {
     try {
@@ -66,9 +68,9 @@ export class ServerConfigService {
       };
 
       if (product) {
-        console.log(`enabling product ${product}`);
+        // console.log(`enabling product ${product}`);
         const products: GqlVertical[] = Object.values(GqlVertical);
-        console.log(`Know products ${products.join(', ')}`);
+        // console.log(`Known products ${products.join(', ')}`);
         if (!products.some((otherProduct) => otherProduct == product)) {
           const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
           throwInvalidConfigError(message);
@@ -103,7 +105,7 @@ export class ServerConfigService {
           query: ServerSettings,
           variables: {
             data: {
-              host: location.host,
+              host: this.getHost(),
               product: environment.product,
             },
           },
@@ -165,5 +167,13 @@ export class ServerConfigService {
 
   setLicense(license: LocalizedLicense) {
     this.license = license;
+  }
+
+  private getHost(): string {
+    if (isPlatformBrowser(this.platformId)) {
+      return location.host;
+    } else {
+      return 'localhost';
+    }
   }
 }

@@ -106,7 +106,7 @@ export class EventPage implements OnInit, OnDestroy {
             this.activatedRoute,
             this.openStreetMapService,
           );
-          this.date = parseDateFromUrl(params);
+          this.date = parseDateFromUrl(params).date;
           this.changeRef.detectChanges();
 
           const event = await this.recordService.findAllFullByRepositoryId(

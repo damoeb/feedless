@@ -5,7 +5,7 @@ import {
   mockEvents,
   mockFullRecords,
   mockRecords,
-} from '@feedless/test';
+} from '@feedless/testing';
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { EventService } from '../../event.service';

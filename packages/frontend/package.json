@@ -13,7 +13,7 @@
     "start:upcoming:prod": "ng serve -c production",
     "start:visual-diff": "nx serve apps:visual-diff",
     "build": "nx run-many -t build",
-    "build:prod": "ng build -c production && yarn generate-verticals-data",
+    "build:prod": "nx run-many -t build --configuration=production",
     "test": "nx run-many -t test",
     "test:ci": "#jest --ci --coverage --watchAll=false",
     "test:watch": "#jest --watch",
@@ -21,6 +21,7 @@
     "codegen": "npx nx run-many -t codegen",
     "clean": "npx nx reset"
   },
+  "packageManager": "npm",
   "private": true,
   "dependencies": {
     "@angular-devkit/build-angular": "~21.0.0",

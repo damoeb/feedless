@@ -1,5 +1,5 @@
-import { inject, NgModule, PLATFORM_ID, provideAppInitializer } from '@angular/core';
-import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { inject, NgModule, provideAppInitializer } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
@@ -11,12 +11,6 @@ import { AppConfigService, ServerConfigService } from '@feedless/services';
   imports: [CommonModule],
   providers: [
     provideAppInitializer(() => {
-      const platformId = inject(PLATFORM_ID);
-
-      if (!isPlatformBrowser(platformId)) {
-        return Promise.resolve();
-      }
-
       const initializerFn = (
         (
           serverConfig: ServerConfigService,

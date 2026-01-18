@@ -10,7 +10,6 @@ import {
   PLATFORM_ID,
   SimpleChanges,
 } from '@angular/core';
-import { AppConfigService } from '@feedless/services';
 import dayjs, { Dayjs } from 'dayjs';
 import {
   compact,
@@ -90,7 +89,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly router = inject(Router);
   private readonly openStreetMapService = inject(OpenStreetMapService);
-  private readonly appConfigService = inject(AppConfigService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly platformId = inject(PLATFORM_ID);
 
@@ -122,6 +120,13 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   protected currentLocation: NamedLatLon;
   private readonly fetchEventOverviewDebounced: DebouncedFunc<any>;
   protected locale: SiteLocale = 'de';
+
+  perimeterOptions = {
+    header: 'Umkreissuche',
+    translucent: true,
+  };
+  protected isBrowser = isPlatformBrowser(this.platformId);
+
   // selectCategoriesOptions = {
   //   header: 'Kategorien',
   //   subHeader: 'Select your favorite color',
@@ -444,13 +449,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   private async patchUrl() {
     try {
-      console.log('patchUrl');
       const { countryCode, area, place } = await parseLocationFromUrl(
         this.activatedRoute,
         this.openStreetMapService,
       );
       const url = renderPath(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+        upcomingBaseRoute.events.countryCode.region.place.dateTime,
         {
           countryCode,
           region: area,
@@ -458,7 +462,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
           month: parseInt(this.currentDate.locale(this.locale).format('MM')),
           day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-          perimeter: this.perimeterFc.value,
         },
       );
 
@@ -482,11 +485,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   //   }
   //   return '';
   // }
-  perimeterOptions = {
-    header: 'Umkreissuche',
-    translucent: true,
-  };
-
   // getLabelForCalendar(): string {
   //   if (this.currentDate) {
   //     if (this.currentDate.year() != dayjs().year()) {
@@ -499,7 +497,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
     return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
+      upcomingBaseRoute.events.countryCode.region.place.dateTime,
       {
         countryCode,
         region: area,
@@ -507,7 +505,6 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
         month: parseInt(this.currentDate.locale(this.locale).format('MM')),
         day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-        perimeter: this.perimeter(),
       },
     );
   }
