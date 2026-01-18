@@ -138,7 +138,6 @@ private fun ConnectedApp.toDto(): ConnectedAppDto {
     app = when (this) {
       is TelegramConnection -> "Telegram"
       is GithubConnection -> "Github"
-      else -> "Unknown"
     }
   )
 }

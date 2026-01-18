@@ -47,9 +47,9 @@ open class TextAnnotationEntity : AnnotationEntity() {
 }
 
 fun TextAnnotationEntity.toDomain(): TextAnnotation {
-  return TextAnnotationMapper.Companion.INSTANCE.toDomain(this)
+  return TextAnnotationMapper.INSTANCE.toDomain(this)
 }
 
 fun TextAnnotation.toEntity(): TextAnnotationEntity {
-  return TextAnnotationMapper.Companion.INSTANCE.toEntity(this)
+  return TextAnnotationMapper.INSTANCE.toEntity(this)
 }

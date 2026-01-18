@@ -1,6 +1,11 @@
 package org.migor.feedless.document
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.migor.feedless.AppLayer
@@ -10,6 +15,7 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.capability.CapabilityId
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
@@ -180,104 +186,169 @@ class DocumentUseCase(
     documentRepository.getRecordFrequency(where, groupBy)
   }
 
-  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? =
-    withContext(Dispatchers.IO) {
-      log.info("processDocumentPlugins documentId=$documentId jobs=${jobs.size}")
-      val document = documentRepository.findByIdWithSource(documentId)!!
-      val logCollector = LogCollector()
+  suspend fun processDocumentPlugins(documentId: DocumentId, jobs: List<DocumentPipelineJob>): Document? {
+    log.info("processDocumentPlugins documentId=$documentId jobs=${jobs.size}")
+    val document = withContext(Dispatchers.IO) {
+      documentRepository.findByIdWithSource(documentId)!!
+    }
+    val logCollector = LogCollector()
 
-      try {
-        val repository = repositoryRepository.findById(document.repositoryId)!!
+    return try {
+      val repository = withContext(Dispatchers.IO) {
+        repositoryRepository.findById(document.repositoryId)!!
+      }
 
-        data class ProcessingState(
-          val currentDocument: Document,
-          val shouldContinue: Boolean,
-          val hasError: Boolean
-        )
+      data class ProcessingState(
+        val currentDocument: Document,
+        val shouldContinue: Boolean,
+        val hasError: Boolean
+      )
 
-        val finalState =
-          jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
-            if (!state.shouldContinue) {
-              return@fold state
-            }
-
-            try {
-              val updatedDocument =
-                when (val plugin = pluginService.resolveById<Plugin>(job.pluginId)) {
-                  is FilterEntityPlugin<*> -> {
-                    if (!plugin.filterEntity(
-                        state.currentDocument.toJsonItem(
-                          propertyService,
-                          EntityVisibility.isPublic
-                        ),
-                        job.executorParams.paramsJsonString,
-                        0,
-                        logCollector
-                      )
-                    ) {
-                      throw FilterMismatchException()
-                    }
-                    state.currentDocument
-                  }
-
-                  is MapEntityPlugin<*> -> plugin.mapEntity(
-                    state.currentDocument,
-                    repository,
-                    job.executorParams.paramsJsonString,
-                    logCollector
-                  )
-
-                  is ReportPlugin -> {
-                    log.info("ignoring ${plugin.id()} plugin")
-                    state.currentDocument
-                  }
-
-                  else -> {
-                    if (plugin == null) {
-                      log.error(
-                        "Invalid pluginId '${job.pluginId}'. Available: [${
-                          pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
-                        }]")
-                    } else {
-                      log.warn("resolved unsupported plugin ${plugin}")
-                    }
-                    throw IllegalArgumentException("Invalid plugin")
-                  }
-                }
-
-              log.debug("executed ${job.pluginId} for $documentId")
-              documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
-              ProcessingState(updatedDocument, true, false)
-            } catch (e: Exception) {
-              if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-                delayJob(job, e, state.currentDocument)
-
-
-              } else {
-                if (e !is FilterMismatchException) {
-                  log.warn("${e::class.simpleName} ${e.message}")
-                } else {
-                  log.info("${e::class.simpleName} ${e.message}")
-                }
-                deleteDocument(state.currentDocument)
-              }
-              ProcessingState(state.currentDocument, false, true)
-            }
+      val finalState =
+        jobs.fold(ProcessingState(document, shouldContinue = true, hasError = false)) { state, job ->
+          if (!state.shouldContinue) {
+            return@fold state
           }
 
-        if (!finalState.hasError) {
-          releaseDocument(finalState.currentDocument, repository)
-          finalState.currentDocument
-        } else {
-          null
+          try {
+            val updatedDocument =
+              when (val plugin = pluginService.resolveById<Plugin>(job.pluginId)) {
+                is FilterEntityPlugin<*> -> {
+                  if (!plugin.filterEntity(
+                      state.currentDocument.toJsonItem(
+                        propertyService,
+                        EntityVisibility.isPublic
+                      ),
+                      job.executorParams.paramsJsonString,
+                      0,
+                      logCollector
+                    )
+                  ) {
+                    throw FilterMismatchException()
+                  }
+                  state.currentDocument
+                }
+
+                is MapEntityPlugin<*> -> plugin.mapEntity(
+                  state.currentDocument,
+                  repository,
+                  job.executorParams.paramsJsonString,
+                  logCollector
+                )
+
+                is ReportPlugin -> {
+                  log.info("ignoring ${plugin.id()} plugin")
+                  state.currentDocument
+                }
+
+                else -> {
+                  if (plugin == null) {
+                    log.error(
+                      "Invalid pluginId '${job.pluginId}'. Available: [${
+                        pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
+                      }]")
+                  } else {
+                    log.warn("resolved unsupported plugin $plugin")
+                  }
+                  throw IllegalArgumentException("Invalid plugin")
+                }
+              }
+
+            log.info("executed ${job.pluginId} for $documentId")
+            finalizeJob(job)
+
+            ProcessingState(updatedDocument, true, false)
+          } catch (e: Exception) {
+            if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+              delayJob(job, e, state.currentDocument)
+
+
+            } else {
+              if (e !is FilterMismatchException) {
+                log.warn("${e::class.simpleName} ${e.message}")
+              } else {
+                log.info("${e::class.simpleName} ${e.message}")
+              }
+              deleteDocument(state.currentDocument)
+            }
+            ProcessingState(state.currentDocument, false, true)
+          }
         }
 
-      } catch (throwable: Throwable) {
-        log.warn("aborting pipeline for document, cause ${throwable.message}")
-        deleteDocument(document)
+      if (!finalState.hasError) {
+        releaseDocument(finalState.currentDocument, repository)
+        finalState.currentDocument
+      } else {
         null
       }
+
+    } catch (throwable: Throwable) {
+      log.warn("aborting pipeline for document, cause ${throwable.message}")
+      deleteDocument(document)
+      null
     }
+  }
+
+  suspend fun processDocumentJobs() {
+    try {
+      val groupedDocuments = withContext(Dispatchers.IO) {
+        documentPipelineJobRepository.findAllPendingBatched(LocalDateTime.now())
+          .groupBy { it.documentId }
+      }
+
+      // todo fix and use
+//      withContext(Dispatchers.IO) {
+//        documentPipelineRepository.incrementAttemptCount(groupedDocuments.values.flatten().map { it.id })
+//      }
+
+      if (groupedDocuments.isNotEmpty()) {
+        val semaphore = Semaphore(5)
+        runCatching {
+          coroutineScope {
+            groupedDocuments.map { groupedDocuments ->
+              try {
+                val repository = getRepositoryForDocumentId(groupedDocuments.key)
+                async(RequestContext(userId = repository.ownerId, groupId = repository.groupId)) {
+                  semaphore.acquire()
+                  delay(300)
+                  try {
+                    processDocumentPlugins(groupedDocuments.key, groupedDocuments.value)
+                  } catch (t: Throwable) {
+                    log.error("processDocumentPlugins fatal failure", t)
+                    withContext(Dispatchers.IO) {
+                      documentRepository.deleteById(groupedDocuments.key)
+                    }
+                  } finally {
+                    semaphore.release()
+                  }
+                }
+              } catch (e: Exception) {
+                async {}
+              }
+            }.awaitAll()
+          }
+          log.info("done")
+        }.onFailure {
+          log.error("batch refresh done: ${it.message}")
+        }
+      }
+    } catch (e: Exception) {
+      log.error(e.message, e)
+    }
+  }
+
+  private suspend fun getRepositoryForDocumentId(documentId: DocumentId): Repository {
+    return withContext(Dispatchers.IO) { repositoryRepository.findByDocumentId(documentId) }
+      ?: throw IllegalArgumentException("repo not found for documentId $documentId") // documentPipelineService.failAfterCleaningJobsForDocument(documentId)
+  }
+
+  private suspend fun finalizeJob(job: DocumentPipelineJob) {
+    log.info("finish job ${job.id}")
+    withContext(Dispatchers.IO) {
+      documentPipelineJobRepository.save(job.copy(status = PipelineJobStatus.SUCCEEDED))
+      log.info("finished job ${job.id}")
+    }
+  }
 
   private suspend fun releaseDocument(
     document: Document,
@@ -286,11 +357,13 @@ class DocumentUseCase(
 //    forwardToMail(corrId, document, repository)
     log.info("releasing document ${document.id}")
 
-    documentRepository.save(
-      document.copy(
-        status = ReleaseStatus.released
+    withContext(Dispatchers.IO) {
+      documentRepository.save(
+        document.copy(
+          status = ReleaseStatus.released
+        )
       )
-    )
+    }
 
     triggerPostReleaseEffects(listOf(document), repository)
   }
@@ -314,7 +387,7 @@ class DocumentUseCase(
     }
   }
 
-  private suspend fun deleteDocument(document: Document) = withContext(Dispatchers.IO) {
+  private suspend fun deleteDocument(document: Document) {
     log.info("delete document ${document.id}")
     withContext(Dispatchers.IO) {
       documentRepository.deleteById(document.id)
@@ -325,19 +398,21 @@ class DocumentUseCase(
     job: DocumentPipelineJob,
     e: Exception,
     document: Document,
-  ) = withContext(Dispatchers.IO) {
+  ) {
     log.info("delaying ${job.documentId} (${job.pluginId})")
 
-    documentPipelineJobRepository.save(
-      job.copy(
-        coolDownUntil = if (e is ResumableHarvestException) {
-          LocalDateTime.now().plus(e.nextRetryAfter)
-        } else {
-          LocalDateTime.now().plusSeconds(120)
-        }
+    withContext(Dispatchers.IO) {
+      documentPipelineJobRepository.save(
+        job.copy(
+          coolDownUntil = if (e is ResumableHarvestException) {
+            LocalDateTime.now().plus(e.nextRetryAfter)
+          } else {
+            LocalDateTime.now().plusSeconds(120)
+          }
+        )
       )
-    )
-    documentRepository.save(document) // todo still needed?
+      documentRepository.save(document) // todo still needed?
+    }
   }
 
   suspend fun countByRepositoryId(repositoryId: RepositoryId): Long = withContext(Dispatchers.IO) {
@@ -345,7 +420,7 @@ class DocumentUseCase(
     documentRepository.countByRepositoryId(repositoryId)
   }
 
-  suspend fun createDocument(data: CreateRecordInput): Document = withContext(Dispatchers.IO) {
+  suspend fun createDocument(data: CreateRecordInput): Document {
     log.info("createDocument repositoryId=${data.repositoryId.id}")
     val repositoryId = RepositoryId(data.repositoryId.id)
 
@@ -362,7 +437,9 @@ class DocumentUseCase(
       contentHash = CryptUtil.sha1(data.rawBase64 ?: documentId.uuid.toString())
     )
 
-    documentRepository.save(document)
+    return withContext(Dispatchers.IO) {
+      documentRepository.save(document)
+    }
   }
 
   suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document = withContext(Dispatchers.IO) {
@@ -395,9 +472,7 @@ class DocumentUseCase(
     repositoryId: RepositoryId
   ): Document? = withContext(Dispatchers.IO) {
     log.info("findFirstByContentHashOrUrlAndRepositoryId repositoryId=$repositoryId")
-    withContext(Dispatchers.IO) {
-      documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
-    }
+    documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
   }
 
   override suspend fun expectsCapabilities(capabilityId: CapabilityId): Boolean {

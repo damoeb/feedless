@@ -21,54 +21,54 @@ import java.util.*
 @Table(name = "t_agent")
 open class AgentEntity : EntityWithUUID() {
 
-    @Column(nullable = false, name = "connection_id")
-    open lateinit var connectionId: String
+  @Column(nullable = false, name = "connection_id")
+  open lateinit var connectionId: String
 
-    @Column(nullable = false, name = "version")
-    open lateinit var version: String
+  @Column(nullable = false, name = "version")
+  open lateinit var version: String
 
-    @Column(name = "open_instance", nullable = false)
-    open var openInstance: Boolean = false
+  @Column(name = "open_instance", nullable = false)
+  open var openInstance: Boolean = false
 
-    @Column(name = "name", nullable = false)
-    open lateinit var name: String
+  @Column(name = "name", nullable = false)
+  open lateinit var name: String
 
-    @Column(name = "last_synced_at", nullable = false)
-    open lateinit var lastSyncedAt: LocalDateTime
+  @Column(name = "last_synced_at", nullable = false)
+  open lateinit var lastSyncedAt: LocalDateTime
 
-    @Column(name = "secret_id", nullable = false)
-    open var secretKeyId: UUID? = null
+  @Column(name = "secret_id", nullable = false)
+  open var secretKeyId: UUID? = null
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(
-        name = "secret_id",
-        referencedColumnName = "id",
-        insertable = false,
-        updatable = false,
-        foreignKey = ForeignKey(name = "fk_agent__to__secret")
-    )
-    open var secretKey: UserSecretEntity? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(
+    name = "secret_id",
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_agent__to__secret")
+  )
+  open var secretKey: UserSecretEntity? = null
 
-    @Column(name = StandardJpaFields.ownerId, nullable = false)
-    open lateinit var ownerId: UUID
+  @Column(name = StandardJpaFields.ownerId, nullable = false)
+  open lateinit var ownerId: UUID
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(
-        name = StandardJpaFields.ownerId,
-        referencedColumnName = "id",
-        insertable = false,
-        updatable = false,
-        foreignKey = ForeignKey(name = "fk_agent__to__user")
-    )
-    open var owner: UserEntity? = null
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(
+    name = StandardJpaFields.ownerId,
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_agent__to__user")
+  )
+  open var owner: UserEntity? = null
 }
 
-fun AgentEntity.toDomain(): org.migor.feedless.agent.Agent {
-    return AgentMapper.Companion.INSTANCE.toDomain(this)
+fun AgentEntity.toDomain(): Agent {
+  return AgentMapper.INSTANCE.toDomain(this)
 }
 
 fun Agent.toEntity(): AgentEntity {
-    return AgentMapper.Companion.INSTANCE.toEntity(this)
+  return AgentMapper.INSTANCE.toEntity(this)
 }

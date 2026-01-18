@@ -60,6 +60,7 @@ logging:
   level:
     root: ERROR
     com.netflix: ERROR
+    org.hibernate.persister.entity.AbstractEntityPersister: ERROR
     # org.springframework.security: DEBUG
     # org.springframework.web: DEBUG
 

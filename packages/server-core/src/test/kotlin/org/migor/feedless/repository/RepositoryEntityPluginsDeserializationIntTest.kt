@@ -24,6 +24,7 @@ import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.order.OrderRepository
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
 import org.migor.feedless.pipeline.plugins.DiffRecordsPlugin
@@ -67,6 +68,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     AttachmentRepository::class,
     OrderRepository::class,
     StatelessAuthService::class,
+    SourcePipelineService::class,
   ]
 )
 class

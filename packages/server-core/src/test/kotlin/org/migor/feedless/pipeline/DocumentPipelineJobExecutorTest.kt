@@ -8,13 +8,10 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.any
 import org.migor.feedless.data.jpa.document.DocumentEntity
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PipelineJobId
-import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.repository.RepositoryUseCase
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.scheduling.annotation.Scheduled
@@ -24,27 +21,15 @@ import java.util.*
 class DocumentPipelineJobExecutorTest {
 
   private lateinit var documentPipelineJobExecutor: DocumentPipelineJobExecutor
-  private lateinit var documentPipelineService: DocumentPipelineService
-  private lateinit var repositoryUseCase: RepositoryUseCase
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
-  private lateinit var documentRepository: DocumentRepository
-  private lateinit var repositoryRepository: RepositoryRepository
 
   @BeforeEach
   fun setUp() = runTest {
-    documentPipelineService = mock(DocumentPipelineService::class.java)
-    repositoryUseCase = mock(RepositoryUseCase::class.java)
-    documentUseCase = mock(DocumentUseCase::class.java)
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
-    documentRepository = mock(DocumentRepository::class.java)
-    repositoryRepository = mock(RepositoryRepository::class.java)
+    documentUseCase = mock(DocumentUseCase::class.java)
 
     documentPipelineJobExecutor = DocumentPipelineJobExecutor(
-      documentPipelineJobRepository,
-      documentRepository,
-      repositoryUseCase,
-      repositoryRepository,
       documentUseCase,
     )
 

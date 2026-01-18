@@ -19,7 +19,6 @@ import org.migor.feedless.util.FeedUtil
 import org.migor.feedless.util.HtmlUtil.parseHtml
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import us.codecraft.xsoup.Xsoup
@@ -140,11 +139,8 @@ enum class ExtendContext(val value: String) {
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToFeedTransformer(
-  @Autowired
   private var propertyService: PropertyService,
-  @Autowired
   private var webToTextTransformer: WebToTextTransformer,
-  @Autowired
   private var webExtractService: WebExtractService
 ) {
 

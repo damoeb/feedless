@@ -9,9 +9,7 @@ import org.migor.feedless.any
 import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
-import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -21,26 +19,16 @@ import java.time.LocalDateTime
 class SourcePipelineJobExecutorTest {
 
   private lateinit var sourcePipelineJobExecutor: SourcePipelineJobExecutor
-  private lateinit var sourcePipelineService: SourcePipelineService
-  private lateinit var repositoryRepository: RepositoryRepository
   private lateinit var sourceUseCase: SourceUseCase
-  private lateinit var sourceRepository: SourceRepository
   private lateinit var sourcePipelineJobRepository: SourcePipelineJobRepository
 
   @BeforeEach
   fun setUp() = runTest {
-    sourcePipelineService = mock(SourcePipelineService::class.java)
-    repositoryRepository = mock(RepositoryRepository::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
-    sourceRepository = mock(SourceRepository::class.java)
     sourcePipelineJobRepository = mock(SourcePipelineJobRepository::class.java)
 
     sourcePipelineJobExecutor = SourcePipelineJobExecutor(
-      sourcePipelineService,
-      sourcePipelineJobRepository,
       sourceUseCase,
-      repositoryRepository,
-      sourceRepository,
     )
 
     val id1 = SourceId()

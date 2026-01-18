@@ -36,6 +36,7 @@ import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.order.OrderRepository
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
@@ -75,6 +76,7 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
     StatelessAuthService::class,
     OrderRepository::class,
     AgentService::class,
+    SourcePipelineService::class,
   ]
 )
 class RepositoryUseCaseIntTest {

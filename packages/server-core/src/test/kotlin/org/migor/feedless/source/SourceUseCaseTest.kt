@@ -28,6 +28,7 @@ import org.migor.feedless.generated.types.SourceUpdateDataInput
 import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
@@ -61,6 +62,7 @@ class SourceUseCaseTest {
       mock(PlanConstraintsService::class.java),
       scrapeActionRepository,
       repositoryRepository,
+      mock(SourcePipelineService::class.java)
     )
 
     repository = mock(Repository::class.java)

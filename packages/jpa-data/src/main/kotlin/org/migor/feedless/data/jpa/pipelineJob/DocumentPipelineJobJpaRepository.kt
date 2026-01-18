@@ -28,7 +28,6 @@ class DocumentPipelineJobJpaRepository(private val documentPipelineJobDAO: Docum
 
   override fun incrementAttemptCount(jobIds: List<PipelineJobId>) {
     documentPipelineJobDAO.incrementAttemptCount(jobIds.map { it.uuid })
-
   }
 
   override fun save(job: DocumentPipelineJob): DocumentPipelineJob {

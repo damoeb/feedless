@@ -13,7 +13,7 @@ object MdcKeys {
 }
 
 data class RequestContext(
-  val corrId: String? = newCorrId(),
+  val corrId: String = newCorrId(),
   val isAdmin: Boolean? = false, // todo not yet resolved
   var userId: UserId? = null,
   var groupId: GroupId? = null
@@ -23,7 +23,7 @@ data class RequestContext(
   override val key: CoroutineContext.Key<*> = Key
 
   init {
-    corrId?.let { MDC.put(MdcKeys.CORR_ID, it) }
+    MDC.put(MdcKeys.CORR_ID, corrId)
     userId?.let { MDC.put(MdcKeys.USER_ID, it.uuid.toString()) }
     groupId?.let { MDC.put(MdcKeys.GROUP_ID, it.uuid.toString()) }
   }

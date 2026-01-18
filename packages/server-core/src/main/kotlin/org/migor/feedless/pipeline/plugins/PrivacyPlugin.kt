@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import jakarta.annotation.PostConstruct
-import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.Attachment
@@ -15,7 +14,6 @@ import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

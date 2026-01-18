@@ -2,6 +2,12 @@ package org.migor.feedless.source
 
 import jakarta.validation.Validation
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -10,11 +16,14 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.api.mapper.fromDto
 import org.migor.feedless.api.mapper.toSource
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.data.jpa.source.toDomain
 import org.migor.feedless.data.jpa.source.toEntity
 import org.migor.feedless.generated.types.SourceInput
 import org.migor.feedless.generated.types.SourceUpdateInput
 import org.migor.feedless.geo.LatLonPoint
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
@@ -23,6 +32,7 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
@@ -39,7 +49,8 @@ class SourceUseCase(
   @Lazy private val repositoryHarvester: RepositoryHarvester,
   private val planConstraintsService: PlanConstraintsService,
   private val scrapeActionRepository: ScrapeActionRepository,
-  private val repositoryRepository: RepositoryRepository
+  private val repositoryRepository: RepositoryRepository,
+  private val sourcePipelineService: SourcePipelineService
 ) {
 
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
@@ -94,39 +105,60 @@ class SourceUseCase(
     return newSource
   }
 
-//  suspend fun countProblematicSourcesByRepositoryId(repositoryId: RepositoryId): Int {
-//
-////      sourceDAO.countByRepositoryIdAndDisabledTrue(repositoryId)
-//    return sourceRepository.countByRepositoryIdAndLastRecordsRetrieved(repositoryId, 0)
-//
-//  }
+  fun processSourceJobs() {
+    try {
+      val groupedSources = sourcePipelineJobRepository.findAllPendingBatched(LocalDateTime.now())
+        .groupBy { it.sourceId }
 
-//  suspend fun countDocumentsBySourceId(sourceId: SourceId): Int {
-//    return documentRepository.countBySourceId(sourceId)
-//  }
-//
-//  suspend fun setErrorState(sourceId: SourceId, erroneous: Boolean, message: String?) {
-//    sourceRepository.setErrorState(sourceId, erroneous, message)
-//  }
+//      sourcePipelineJobRepository.incrementAttemptCount(groupedSources.values.flatMap { it.map { it.id } }.distinct())
 
-//  suspend fun save(source: Source): Source = withContext(Dispatchers.IO) {
-//    sourceRepository.save(source)
-//  }
+      if (groupedSources.isNotEmpty()) {
+        val semaphore = Semaphore(5)
+        runBlocking {
+          runCatching {
+            coroutineScope {
+              groupedSources.map { groupedSources ->
+                try {
+                  val (userId, groupId) = getOwnerIdsForSourceId(groupedSources.key)
+                  async(RequestContext(userId = userId, groupId = groupId)) {
+                    semaphore.acquire()
+                    delay(300)
+                    try {
+                      processSourcePipeline(groupedSources.key, groupedSources.value)
+                    } catch (t: Throwable) {
+                      if (t !is ResumableHarvestException) {
+                        log.error("processDocumentPlugins fatal failure ${t.message}")
+                        sourceRepository.setErrorState(groupedSources.key, true, t.message)
+                      }
+                    } finally {
+                      semaphore.release()
+                    }
+                  }
+                } catch (e: Exception) {
+                  async {}
+                }
+              }.awaitAll()
+            }
+            log.info("done")
+          }.onFailure {
+            log.error("batch refresh done: ${it.message}", it)
+          }
+        }
+      }
+    } catch (e: Exception) {
+      log.error(e.message, e)
+    }
+  }
 
-//  suspend fun countAllByRepositoryId(id: RepositoryId): Long {
-//    return withContext(Dispatchers.IO) {
-//      sourceRepository.countByRepositoryId(id)
-//    }
-//  }
+  private suspend fun getOwnerIdsForSourceId(sourceId: SourceId): Pair<UserId, GroupId> = withContext(Dispatchers.IO) {
+    val repo =
+      withContext(Dispatchers.IO) { repositoryRepository.findBySourceId(sourceId) }
+        ?: throw sourcePipelineService.failAfterCleaningJobsForSource(
+          sourceId
+        )
+    Pair(repo.ownerId, repo.groupId)
+  }
 
-//  suspend fun findAllByRepositoryIdFiltered(
-//    repositoryId: RepositoryId,
-//    pageable: PageableRequest,
-//    where: SourcesFilter? = null,
-//    orders: List<SourceOrderBy>? = null
-//  ): List<Source> = withContext(Dispatchers.IO) {
-//    sourceRepository.findAllByRepositoryIdFiltered(repositoryId, pageable, where, orders)
-//  }
 
   suspend fun createSources(sourceInputs: List<SourceInput>, repositoryId: RepositoryId) =
     withContext(Dispatchers.IO) {

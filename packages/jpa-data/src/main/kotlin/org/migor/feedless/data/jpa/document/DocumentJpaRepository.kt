@@ -108,7 +108,8 @@ class DocumentJpaRepository(private val documentDAO: DocumentDAO, private val en
     url: String,
     repositoryId: RepositoryId
   ): Document? {
-    return documentDAO.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId.uuid)?.toDomain()
+    return documentDAO.findAllByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId.uuid).firstOrNull()
+      ?.toDomain()
   }
 
   override fun findAllWithAttachmentsByIdIn(ids: List<DocumentId>): List<Document> {

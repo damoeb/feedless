@@ -263,3 +263,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
 tasks.register("bundle") {
   dependsOn(dockerAmdBuild)
 }
+val compileKotlin: KotlinCompile by tasks
+compileKotlin.compilerOptions {
+  freeCompilerArgs.set(listOf("-Xannotation-default-target=param-property"))
+}
