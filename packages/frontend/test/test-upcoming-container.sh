@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-CONTAINER_NAME="feedless-app-web-test"
+CONTAINER_NAME="feedless-upcoming-latest-test"
 PORT="8080"
 BASE_URL="http://localhost:${PORT}"
 
@@ -35,7 +35,7 @@ trap cleanup EXIT
 
 
 echo "Starting container..."
-docker run -d --name $CONTAINER_NAME -p $PORT:80 damoeb/feedless:app-latest
+docker run -d --name $CONTAINER_NAME -p $PORT:80 damoeb/feedless:app-upcoming-latest
 
 echo "Waiting for container to be ready..."
 sleep 5
@@ -94,7 +94,7 @@ echo "Old date (8 days ago): $OLD_DATE"
 
 # Test 1: URL with old date should redirect (302)
 test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}/innerhalb/10Km" \
+    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}" \
     "302" \
     "Old date should redirect to today"
 
@@ -106,14 +106,14 @@ test_redirect \
 
 # Test 3: URL with today's date should not redirect (200)
 test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${TODAY_YEAR}/${TODAY_MONTH}/${TODAY_DAY}/innerhalb/10Km" \
+    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${TODAY_YEAR}/${TODAY_MONTH}/${TODAY_DAY}" \
     "200" \
     "Today's date should not redirect"
 
 # Test 4: URL with future date should not redirect (200)
 FUTURE_YEAR=$((TODAY_YEAR + 1))
 test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${FUTURE_YEAR}/${TODAY_MONTH}/${TODAY_DAY}/innerhalb/10Km" \
+    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${FUTURE_YEAR}/${TODAY_MONTH}/${TODAY_DAY}" \
     "200" \
     "Future date should not redirect"
 
@@ -125,7 +125,7 @@ test_redirect \
 
 # Test 6: Events URL without date should not redirect (200)
 test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/innerhalb/10Km" \
+    "${BASE_URL}/events/in/CH/ZH/Zürich" \
     "200" \
     "Events URL without date should not redirect"
 

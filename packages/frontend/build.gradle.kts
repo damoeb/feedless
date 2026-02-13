@@ -39,8 +39,15 @@ val buildTask = tasks.register<NpmTask>("build") {
   args.set(listOf("run", "build:prod"))
 }
 
+val verifyContainer = tasks.register("verify", Exec::class) {
+  commandLine(
+    "./test/test-upcoming-container.sh"
+  )
+}
+
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
+  finalizedBy(verifyContainer)
   val semver = findProperty("feedlessVersion") as String
   val gitHash = grgit.head().id.take(7)
   val baseTag = findProperty("dockerImageTag")
@@ -56,8 +63,4 @@ tasks.register("bundle", Exec::class) {
     "-t", "$baseTag:app-upcoming-$gitHash",
     "."
   )
-}
-
-val cleanTask = tasks.register<NpmTask>("clean") {
-  args.set(listOf("clean"))
 }

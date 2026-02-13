@@ -1,0 +1,26 @@
+# Dependencies (not needed; we copy dist and run npm ci in image)
+node_modules
+.nx
+.angular
+
+# Git and IDE
+.git
+.gitignore
+.vscode
+.idea
+*.md
+
+# Tests and coverage (not needed for production build)
+coverage
+__screenshots__
+*.spec.ts
+*.spec.tsx
+*.test.ts
+*.test.tsx
+e2e
+
+# Misc
+.DS_Store
+*.log
+.env
+.env.*
