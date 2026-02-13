@@ -1,9 +1,21 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnInit } from '@angular/core';
-import { ScrapeService } from '@feedless/services';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  inject,
+  input,
+  OnInit,
+} from '@angular/core';
+import { ScrapeService } from '../../services';
 import { GqlFeedlessPlugins, Record } from '@feedless/graphql-api';
 import { last } from 'lodash-es';
 
-import { IonItem, IonLabel, IonList, IonSpinner } from '@ionic/angular/standalone';
+import {
+  IonItem,
+  IonLabel,
+  IonList,
+  IonSpinner,
+} from '@ionic/angular/standalone';
 import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.component';
 
 @Component({

@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { Agent, AgentService, ServerConfigService } from '@feedless/services';
+import { Agent, AgentService, ServerConfigService } from '../../services';
 import { Subscription } from 'rxjs';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';

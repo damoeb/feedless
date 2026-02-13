@@ -14,7 +14,12 @@ import {
   IonFooter,
   ModalController,
 } from '@ionic/angular/standalone';
-import { AppConfigService, ServerConfigService } from '@feedless/services';
+import {
+  AppConfigService,
+  IconComponent,
+  RemoveIfProdDirective,
+  ServerConfigService,
+} from '@feedless/components';
 import { addIcons } from 'ionicons';
 import {
   calendarNumberOutline,
@@ -30,8 +35,6 @@ import {
   SubmitModalComponentProps,
 } from '../submit-modal/submit-modal.component';
 import { Subscription } from 'rxjs';
-
-import { RemoveIfProdDirective } from '@feedless/directives';
 import { RouterLink } from '@angular/router';
 import { SubmitModalModule } from '../submit-modal/submit-modal.module';
 import {
@@ -41,7 +44,6 @@ import {
 } from '@feedless/graphql-api';
 import { GeoService } from '@feedless/geo';
 import { isPlatformBrowser } from '@angular/common';
-import { IconComponent } from '@feedless/components';
 
 type SubscriptionType = 'cal' | 'atom';
 

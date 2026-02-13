@@ -1,6 +1,6 @@
 import { ActivatedRoute, Params, Routes } from '@angular/router';
 import dayjs, { Dayjs } from 'dayjs';
-import { AuthGuardService } from '@feedless/services';
+import { AuthGuardService } from '@feedless/components';
 import { NamedLatLon, upperCaseStringParser } from '@feedless/core';
 import {
   createRoutes,

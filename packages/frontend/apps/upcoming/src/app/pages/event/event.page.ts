@@ -9,10 +9,11 @@ import {
 } from '@angular/core';
 import {
   AppConfigService,
+  IconComponent,
   PageService,
   PageTags,
   RecordService,
-} from '@feedless/services';
+} from '@feedless/components';
 import { Record } from '@feedless/graphql-api';
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -46,7 +47,6 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 import { OpenStreetMapService } from '@feedless/geo';
 import { isPlatformBrowser } from '@angular/common';
-import { IconComponent } from '@feedless/components';
 
 @Component({
   selector: 'app-event-page',

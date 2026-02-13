@@ -18,9 +18,8 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { SourceBuilder } from '@feedless/source';
 import { debounce, interval, map, merge, Subscription } from 'rxjs';
-import { ServerConfigService } from '@feedless/services';
+import { ServerConfigService } from '../../services';
 import { AnnotateImageComponent } from '../annotate-image/annotate-image.component';
 import { addIcons } from 'ionicons';
 import { addOutline, removeOutline } from 'ionicons/icons';
@@ -45,6 +44,7 @@ import { ConsoleButtonComponent } from '../console-button/console-button.compone
 import { BlockElementComponent } from '../block-element/block-element.component';
 import { Embeddable } from '@feedless/core';
 import { IconComponent } from '../icon/icon.component';
+import { SourceBuilder } from '../../source/source-builder';
 
 type ViewMode = 'markup' | 'image';
 

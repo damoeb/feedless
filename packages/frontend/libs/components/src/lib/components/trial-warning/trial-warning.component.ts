@@ -5,9 +5,9 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { LicenseService, ServerConfigService } from '@feedless/services';
+import { LicenseService, ServerConfigService } from '../../services';
 import { GqlServerSettingsQuery } from '@feedless/graphql-api';
-import dayjs from 'dayjs';
+import dayjs, { extend } from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Subscription } from 'rxjs';
 import { IonButton, IonText, IonToolbar } from '@ionic/angular/standalone';
@@ -31,7 +31,7 @@ export class TrialWarningComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription[] = [];
 
   async ngOnInit() {
-    dayjs.extend(relativeTime);
+    extend(relativeTime);
     this.subscriptions.push(
       this.licenseService.licenseChange.subscribe((license) => {
         this.license = license;

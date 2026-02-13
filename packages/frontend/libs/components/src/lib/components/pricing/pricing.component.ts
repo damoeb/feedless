@@ -14,7 +14,7 @@ import {
   Plan,
   PlanService,
   ProductService,
-} from '@feedless/services';
+} from '../../services';
 import {
   FeatureGroup,
   GqlFeatureName,
@@ -37,7 +37,7 @@ import {
   IonSegment,
   IonSegmentButton,
 } from '@ionic/angular/standalone';
-import { RemoveIfProdDirective } from '@feedless/directives';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 
 type TargetGroup = 'organization' | 'individual' | 'other';
 type ServiceFlavor = 'selfHosting' | 'saas';
@@ -212,5 +212,7 @@ export class PricingComponent implements OnInit {
     );
   }
 
-  cancelSubscription(product: ProductWithFeatureGroups) {}
+  cancelSubscription(_product: ProductWithFeatureGroups): void {
+    // Placeholder for future subscription cancellation
+  }
 }

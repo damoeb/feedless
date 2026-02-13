@@ -1,15 +1,9 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnInit,
-} from '@angular/core';
+
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnInit } from '@angular/core';
 import { GqlRecordField, Record } from '@feedless/graphql-api';
-import { dateFormat } from '@feedless/services';
+import { dateFormat } from '../../services';
 import { isUndefined } from 'lodash-es';
-import { CodeEditorComponent } from '@feedless/form-elements';
+import { CodeEditorComponent } from '../../form-elements/code-editor/code-editor.component';
 
 @Component({
   selector: 'app-text-diff',
@@ -77,7 +71,7 @@ export class TextDiffComponent implements OnInit {
 
       result += indent + '<' + element + '>\r\n';
 
-      if (element.match(/^<?\w[^>]*[^\/]$/) && !element.startsWith('input')) {
+      if (element.match(/^<?\w[^>]*[^/]$/) && !element.startsWith('input')) {
         indent += tab;
       }
     });

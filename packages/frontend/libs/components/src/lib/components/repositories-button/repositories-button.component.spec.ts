@@ -5,13 +5,13 @@ import {
   ApolloMockController,
   AppTestModule,
   mockServerSettings,
-} from '@feedless/core';
+} from '@feedless/testing';
 import {
   Agents,
   GqlAgentsQuery,
   GqlAgentsQueryVariables,
 } from '@feedless/graphql-api';
-import { ServerConfigService } from '@feedless/services';
+import { ServerConfigService } from '../../services';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('RepositoriesButtonComponent', () => {

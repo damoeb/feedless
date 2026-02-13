@@ -9,11 +9,7 @@ import {
   PLATFORM_ID,
 } from '@angular/core';
 import { Subscription } from 'rxjs';
-import {
-  Authentication,
-  AuthService,
-  SessionService,
-} from '@feedless/services';
+import { Authentication, AuthService, SessionService } from '../../services';
 
 import { IonButton } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';

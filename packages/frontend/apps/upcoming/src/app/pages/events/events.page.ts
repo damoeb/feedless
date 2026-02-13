@@ -8,7 +8,12 @@ import {
   PLATFORM_ID,
   viewChild,
 } from '@angular/core';
-import { AppConfigService, PageService, PageTags } from '@feedless/services';
+import {
+  AppConfigService,
+  ExternalLinkComponent,
+  PageService,
+  PageTags,
+} from '@feedless/components';
 import dayjs, { Dayjs } from 'dayjs';
 import { groupBy, sortBy, times, unionBy, uniqBy } from 'lodash-es';
 import { BreadcrumbList, Event as SchemaEvent, WebPage } from 'schema-dts';
@@ -41,7 +46,6 @@ import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.comp
 import { EventService, LocalizedEvent } from '../../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 import { renderPath } from 'typesafe-routes';
-import { ExternalLinkComponent } from '@feedless/components';
 import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };

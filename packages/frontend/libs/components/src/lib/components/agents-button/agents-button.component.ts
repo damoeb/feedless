@@ -6,11 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {
-  AgentService,
-  AuthService,
-  ServerConfigService,
-} from '@feedless/services';
+import { AgentService, AuthService, ServerConfigService } from '../../services';
 import { Subscription } from 'rxjs';
 import { IonButton, IonChip, IonLabel } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';

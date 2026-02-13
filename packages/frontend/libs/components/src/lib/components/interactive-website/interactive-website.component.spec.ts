@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { InteractiveWebsiteComponent } from './interactive-website.component';
 import { AppTestModule, mockScrape } from '@feedless/testing';
-import { SourceBuilder } from '@feedless/source';
-import { ScrapeService } from '@feedless/services';
+import { ScrapeService } from '../../services';
+import { SourceBuilder } from '../../source/source-builder';
 
 describe('InteractiveWebsiteComponent', () => {
   let component: InteractiveWebsiteComponent;

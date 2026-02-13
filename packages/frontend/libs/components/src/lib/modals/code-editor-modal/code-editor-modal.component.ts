@@ -8,12 +8,15 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import { CodeEditorComponent, ContentType } from '@feedless/form-elements';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { IconComponent } from '../../components/icon/icon.component';
+import {
+  CodeEditorComponent,
+  ContentType,
+} from '../../form-elements/code-editor/code-editor.component';
 
 export interface CodeEditorModalComponentProps {
   text: string;

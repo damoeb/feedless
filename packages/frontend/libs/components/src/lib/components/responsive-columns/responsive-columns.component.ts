@@ -34,10 +34,12 @@ export class ResponsiveColumnsComponent implements AfterViewInit {
     }
   }
 
-  triggerSlider(scrollpane: HTMLDivElement) {
-    scrollpane.scrollLeft === 0
-      ? (scrollpane.scrollLeft = scrollpane.scrollWidth)
-      : (scrollpane.scrollLeft = 0);
+  triggerSlider(scrollpane: HTMLDivElement): void {
+    if (scrollpane.scrollLeft === 0) {
+      scrollpane.scrollLeft = scrollpane.scrollWidth;
+    } else {
+      scrollpane.scrollLeft = 0;
+    }
   }
 
   ngAfterViewInit(): void {

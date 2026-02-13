@@ -26,13 +26,13 @@ import {
   IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import { ScrapeService, ServerConfigService } from '@feedless/services';
+import { ScrapeService, ServerConfigService } from '../../services';
 import { InteractiveWebsiteController } from './interactive-website-controller';
 import { InteractiveWebsiteComponent } from '../../components/interactive-website/interactive-website.component';
-import { InputComponent } from '@feedless/form-elements';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
 import { IconComponent } from '../../components/icon/icon.component';
+import { InputComponent } from '../../form-elements/input/input.component';
 
 export type InteractiveWebsiteModalComponentProps = {
   source: GqlSourceInput;

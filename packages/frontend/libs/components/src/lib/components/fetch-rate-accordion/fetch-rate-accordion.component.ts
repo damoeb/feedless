@@ -1,8 +1,22 @@
-import { ChangeDetectionStrategy, Component, forwardRef, OnInit } from '@angular/core';
-import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
-import { ControlValueAccessorDirective } from '@feedless/directives';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  forwardRef,
+  OnInit,
+} from '@angular/core';
+import {
+  FormsModule,
+  NG_VALUE_ACCESSOR,
+  ReactiveFormsModule,
+} from '@angular/forms';
 import { KeyValue } from '@angular/common';
-import { IonCol, IonRow, IonSelect, IonSelectOption } from '@ionic/angular/standalone';
+import {
+  IonCol,
+  IonRow,
+  IonSelect,
+  IonSelectOption,
+} from '@ionic/angular/standalone';
+import { ControlValueAccessorDirective } from '../../directives';
 
 @Component({
   selector: 'app-fetch-rate-accordion',
@@ -16,7 +30,14 @@ import { IonCol, IonRow, IonSelect, IonSelectOption } from '@ionic/angular/stand
       multi: true,
     },
   ],
-  imports: [IonRow, IonCol, IonSelect, FormsModule, ReactiveFormsModule, IonSelectOption],
+  imports: [
+    IonRow,
+    IonCol,
+    IonSelect,
+    FormsModule,
+    ReactiveFormsModule,
+    IonSelectOption,
+  ],
   standalone: true,
 })
 export class FetchRateAccordionComponent

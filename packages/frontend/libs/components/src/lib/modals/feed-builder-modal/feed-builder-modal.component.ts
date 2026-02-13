@@ -1,8 +1,6 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
-import {
-  FeedBuilderComponent,
-  FeedWithRequest,
-} from '../../components/feed-builder/feed-builder.component';
+import { FeedBuilderComponent } from '../../components/feed-builder/feed-builder.component';
+import { FeedWithRequest } from '../../components/feed-builder/feed-builder.types';
 import {
   IonButton,
   IonButtons,

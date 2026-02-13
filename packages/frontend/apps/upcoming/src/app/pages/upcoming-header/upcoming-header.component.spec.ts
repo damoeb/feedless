@@ -3,7 +3,7 @@ import { UpcomingHeaderComponent } from './upcoming-header.component';
 import { AppTestModule, mockEvents } from '@feedless/testing';
 import dayjs from 'dayjs';
 import { getCachedLocations } from '@feedless/geo';
-import { AppConfigService } from '@feedless/services';
+import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
 
 describe('UpcomingHeaderComponent', () => {

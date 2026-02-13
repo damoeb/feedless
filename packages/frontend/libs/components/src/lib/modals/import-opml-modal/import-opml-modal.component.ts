@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
-import { Outline, RepositoryService } from '@feedless/services';
+import { Outline, RepositoryService } from '../../services';
 import {
   IonButton,
   IonButtons,

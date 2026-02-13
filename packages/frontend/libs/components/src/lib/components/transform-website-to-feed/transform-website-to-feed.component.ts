@@ -30,10 +30,9 @@ import {
 } from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
-import { ScrapeService } from '@feedless/services';
-import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
+import { ScrapeService } from '../../services';
+import { NativeOrGenericFeed } from '../feed-builder/feed-builder.types';
 import { debounce as rxDebounce, interval, Subscription } from 'rxjs';
-import { SourceBuilder } from '@feedless/source';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
@@ -69,9 +68,10 @@ import { BlockElementComponent } from '../block-element/block-element.component'
 import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
-  ModalProvider,
-} from '../../modals';
+} from '../../modals/code-editor-modal/code-editor-modal.component';
+import { ModalProvider } from '../../modals/modal-provider.service';
 import { IconComponent } from '../icon/icon.component';
+import { SourceBuilder } from '../../source/source-builder';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;

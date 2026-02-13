@@ -2,8 +2,17 @@
 // This prevents Jest from loading the actual Stencil runtime
 
 module.exports = {
-  Build: { isBrowser: false, isDev: true },
+  Build: {
+    isBrowser: typeof window !== 'undefined',
+    isDev: true,
+  },
+  createEvent: () => ({ emit: () => {} }),
   Host: {},
+  HTMLElement:
+    typeof globalThis !== 'undefined' && globalThis.HTMLElement
+      ? globalThis.HTMLElement
+      : class HTMLElement {},
+  proxyCustomElement: (C) => C,
   h: () => null,
   getElement: () => null,
   forceUpdate: () => {},
@@ -21,9 +30,10 @@ module.exports = {
   consoleDevWarn: () => {},
   consoleDevInfo: () => {},
   consoleError: () => {},
-  getAssetPath: () => {},
-  render: () => {},
+  getAssetPath: () => '',
+  render: () => null,
   setAssetPath: () => {},
   setNonce: () => {},
   setPlatformOptions: () => {},
 };
+

@@ -1,6 +1,8 @@
-import { Component, input, OnInit, output } from '@angular/core';
-import { InputComponent, KeyLabelOption } from '@feedless/form-elements';
+
+import { Component, input, output } from '@angular/core';
 import { IonButton, IonCol, IonGrid, IonRow } from '@ionic/angular/standalone';
+import { InputComponent } from '../../form-elements/input/input.component';
+import { KeyLabelOption } from '../../form-elements/select/select.component';
 
 type SortDirection = 'asc' | 'desc';
 
@@ -29,33 +31,12 @@ export type SegmentedOutput = {
   imports: [IonGrid, IonRow, IonCol, IonButton, InputComponent],
   standalone: true,
 })
-export class SegmentedOutputComponent implements OnInit {
+export class SegmentedOutputComponent {
   readonly segmented = input.required<SegmentedOutput>();
 
   readonly fields = input.required<Field[]>();
 
   readonly segmentedChanged = output<SegmentedOutput>();
-
-  // sortDirection: KeyLabelOption<SortDirection>[] = [
-  //   {
-  //     key: 'asc',
-  //     label: 'Ascending',
-  //   },
-  //   {
-  //     key: 'desc',
-  //     label: 'Descending',
-  //   },
-  // ];
-
-  // timeSegments: KeyLabelOption<number>[] = this.getTimeSegments();
-
-  ngOnInit() {
-    // if (this.segmented) {
-    //   this.segmented = {
-    //     // todo fill
-    //   };
-    // }
-  }
 
   private getTimeSegments(): KeyLabelOption<number>[] {
     const hour = 60;

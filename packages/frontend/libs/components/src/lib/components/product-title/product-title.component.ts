@@ -6,7 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { AppConfigService } from '@feedless/services';
+import { AppConfigService } from '../../services';
 import { Subscription } from 'rxjs';
 import { RouterLink } from '@angular/router';
 

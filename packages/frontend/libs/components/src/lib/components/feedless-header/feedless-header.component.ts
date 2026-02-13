@@ -14,7 +14,7 @@ import {
   AuthService,
   ServerConfigService,
   SessionService,
-} from '@feedless/services';
+} from '../../services';
 import { Subscription } from 'rxjs';
 import {
   IonButton,
@@ -31,9 +31,9 @@ import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.co
 import { ProfileButtonComponent } from '../profile-button/profile-button.component';
 import { addIcons } from 'ionicons';
 import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
-import { RemoveIfProdDirective } from '@feedless/directives';
 import { isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../icon/icon.component';
+import { RemoveIfProdDirective } from '../../directives';
 
 @Component({
   selector: 'app-feedless-header',

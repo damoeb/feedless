@@ -29,7 +29,14 @@
         size="2"
         style="position: absolute; height: 100%"
       >
-        <div (click)="triggerSlider(scrollpane)" class="slider-button">
+        <div
+          role="button"
+          tabindex="0"
+          class="slider-button"
+          (click)="triggerSlider(scrollpane)"
+          (keydown.enter)="triggerSlider(scrollpane)"
+          (keydown.space)="triggerSlider(scrollpane); $event.preventDefault()"
+        >
           <div class="slider-button__bg"></div>
           @if (scrollpane.scrollLeft === 0) {
             <app-icon name="chevron-forward-outline" size="large"></app-icon>

@@ -9,7 +9,7 @@ import {
   FileService,
   OpmlService,
   RepositoryService,
-} from '@feedless/services';
+} from '../../services';
 import { Router } from '@angular/router';
 import {
   IonButton,
@@ -23,13 +23,13 @@ import {
 } from '@ionic/angular/standalone';
 import { firstValueFrom } from 'rxjs';
 import { GqlRepositoryCreateInput } from '@feedless/graphql-api';
-import { RemoveIfProdDirective } from '@feedless/directives';
 import {
   ImportOpmlModalComponent,
   ImportOpmlModalComponentProps,
   ModalProvider,
   SelectionModalComponent,
 } from '../../modals';
+import { RemoveIfProdDirective } from '../../directives';
 
 @Component({
   selector: 'app-import-button',

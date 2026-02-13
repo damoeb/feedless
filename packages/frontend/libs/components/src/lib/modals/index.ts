@@ -9,3 +9,4 @@ export * from './search-address-modal/search-address-modal.component';
 export * from './selection-modal/selection-modal.component';
 export * from './tags-modal/tags-modal.component';
 export * from './modal-provider.service';
+export * from './source-import.service';

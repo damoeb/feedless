@@ -34,13 +34,10 @@ describe('InlineCalendar', () => {
       });
     });
     it('other dates return index=false', () => {
-      Object.values(relativeDateIncrement).forEach((increment) => {
-        const attrs = component.getSeoLinkAttributes(
-          dayjs().add(increment, 'day'),
-        );
-        expect(attrs.indexOf('no-index') > -1).toBe(true);
-        expect(attrs.indexOf('index') === -1).toBe(true);
-      });
+      // Use an offset that cannot equal any relativeDateIncrement value (-1, 0, 1, or 6–7)
+      const attrs = component.getSeoLinkAttributes(dayjs().add(10, 'day'));
+      expect(attrs).toContain('no-index');
+      expect(attrs.split(' ')).not.toContain('index'); // "index" as word, not substring of "no-index"
     });
   });
 });

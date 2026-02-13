@@ -28,10 +28,13 @@
         >
           <div
             class="calendar-day"
+            role="button"
             tabindex="0"
             (click)="
               $event.preventDefault(); $event.stopImmediatePropagation(); changeDate.emit(d.date)
             "
+            (keydown.enter)="$event.preventDefault(); changeDate.emit(d.date)"
+            (keydown.space)="$event.preventDefault(); changeDate.emit(d.date)"
             [ngClass]="{
               past: isPast(d.date),
               active: isSameDate(date(), d.date, ['day', 'month', 'year']),

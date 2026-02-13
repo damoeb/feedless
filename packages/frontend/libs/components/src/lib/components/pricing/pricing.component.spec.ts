@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { PricingComponent } from './pricing.component';
-import { AppTestModule, mockPlans, mockProducts } from '@feedless/core';
+import { AppTestModule, mockPlans, mockProducts } from '@feedless/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { AppConfigService } from '@feedless/services';
+import { AppConfigService } from '../../services';
 import { GqlVertical } from '@feedless/graphql-api';
 
 describe('PricingComponent', () => {

@@ -32,7 +32,7 @@ import {
   ApolloAbortControllerService,
   HttpErrorInterceptorService,
   ServerConfigService,
-} from '@feedless/services';
+} from '@feedless/components';
 import {
   ApolloClient,
   ApolloLink,

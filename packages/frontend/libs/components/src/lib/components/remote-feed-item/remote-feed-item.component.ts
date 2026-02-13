@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 import { FieldWrapper, Record, Scalars } from '@feedless/graphql-api';
-import { dateFormat } from '@feedless/services';
+import { dateFormat } from '../../services';
 import {
   IonBadge,
   IonChip,

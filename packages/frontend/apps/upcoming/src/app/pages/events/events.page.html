@@ -49,10 +49,14 @@
 
           <h3
             class="event-description"
+            tabindex="0"
+            role="button"
             [ngClass]="{
               'event-description--collapsed': collapsedDescription
               }"
             (click)="collapsedDescription = !collapsedDescription"
+            (keydown.enter)="collapsedDescription = !collapsedDescription"
+            (keydown.space)="collapsedDescription = !collapsedDescription; $event.preventDefault()"
           >
             Du suchst nach Events in {{ namedLatLon.displayName }}? Hier findest du eine bunte Mischung aus
             lokalen Veranstaltungen – oft klein, charmant und echte Geheimtipps. Ideal zum Stöbern und

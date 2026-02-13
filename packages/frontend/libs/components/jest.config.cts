@@ -2,6 +2,10 @@ module.exports = {
   displayName: 'components',
   preset: '../../jest.preset.js',
   setupFilesAfterEnv: ['<rootDir>/src/test-setup.ts'],
+  moduleNameMapper: {
+    '@stencil/core/internal/client':
+      '<rootDir>/../../__mocks__/stencil-client.mock.js',
+  },
   coverageDirectory: '../../coverage/libs/components',
   transform: {
     '^.+\\.(ts|mjs|js|html)$': [
@@ -12,7 +16,9 @@ module.exports = {
       },
     ],
   },
-  transformIgnorePatterns: ['node_modules/(?!lodash-es|.*\\.mjs$)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!lodash-es|@ionic|ionicons|d3-|internmap|pixelmatch|.*\\.mjs$)',
+  ],
   snapshotSerializers: [
     'jest-preset-angular/build/serializers/no-ng-attributes',
     'jest-preset-angular/build/serializers/ng-snapshot',

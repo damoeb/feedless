@@ -40,7 +40,7 @@ import {
   FeedOrRepository,
   tagsToString,
 } from '../feed-builder/feed-builder.component';
-import { RepositoryService, Source, SourceService } from '@feedless/services';
+import { RepositoryService, Source } from '../../services';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
 import { addOutline, cloudUploadOutline, refreshOutline } from 'ionicons/icons';
@@ -52,6 +52,7 @@ import {
   FeedBuilderModalComponent,
   ModalProvider,
   SearchAddressModalComponent,
+  SourceImportService,
   TagsModalComponent,
 } from '../../modals';
 import { isPlatformBrowser } from '@angular/common';
@@ -87,7 +88,7 @@ export class SourcesComponent implements OnInit {
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly modalProvider = inject(ModalProvider);
   private readonly actionSheetCtrl = inject(ActionSheetController);
-  private readonly sourceService = inject(SourceService);
+  private readonly sourceImportService = inject(SourceImportService);
   sourceChange = output<Source[]>();
 
   readonly repository = input.required<RepositoryFull>();
@@ -125,7 +126,7 @@ export class SourcesComponent implements OnInit {
   }
 
   async importFeedlessJson(uploadEvent: Event) {
-    return this.sourceService.uploadFeedlessJson(
+    return this.sourceImportService.uploadFeedlessJson(
       uploadEvent,
       this.repository().id,
     );
@@ -324,7 +325,7 @@ export class SourcesComponent implements OnInit {
           ),
         );
       }
-      throw new Error('Source not provided');
+      return undefined;
     };
 
     await this.modalProvider.openFeedBuilder(

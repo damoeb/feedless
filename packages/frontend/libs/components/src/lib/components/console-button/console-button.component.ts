@@ -9,8 +9,8 @@ import { IonButton } from '@ionic/angular/standalone';
 import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
-  ModalProvider,
-} from '../../modals';
+} from '../../modals/code-editor-modal/code-editor-modal.component';
+import { ModalProvider } from '../../modals/modal-provider.service';
 
 @Component({
   selector: 'app-console-button',

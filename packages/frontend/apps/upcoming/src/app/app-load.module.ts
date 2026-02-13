@@ -4,7 +4,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-import { AppConfigService, ServerConfigService } from '@feedless/services';
+import { AppConfigService, ServerConfigService } from '@feedless/components';
 
 @NgModule({
   declarations: [],

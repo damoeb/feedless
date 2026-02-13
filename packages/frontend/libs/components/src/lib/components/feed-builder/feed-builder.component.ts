@@ -36,7 +36,7 @@ import {
   ModalController,
   ToastController
 } from '@ionic/angular/standalone';
-import { ApolloAbortControllerService, AppConfigService, ScrapeService, ServerConfigService, SessionService } from '@feedless/services';
+import { ApolloAbortControllerService, AppConfigService, ScrapeService, ServerConfigService, SessionService } from '../../services';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
@@ -49,7 +49,6 @@ import {
   standaloneV2WebToFeedRoute
 } from '@feedless/core';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
-import { SourceBuilder } from '@feedless/source';
 import { addIcons } from 'ionicons';
 import {
   arrowRedoOutline,
@@ -60,20 +59,21 @@ import {
   logoJavascript,
   settingsOutline
 } from 'ionicons/icons';
-import { SearchbarComponent } from '@feedless/form-elements';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
-import { RemoveIfProdDirective } from '@feedless/directives';
 import { assignIn, first, isArray } from 'lodash-es';
 import { parseQuery, renderPath, renderQuery } from 'typesafe-routes';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import {
   InteractiveWebsiteModalComponent,
   InteractiveWebsiteModalComponentProps,
-  ModalProvider,
-  SearchAddressModalComponent,
-  TagsModalComponent
-} from '../../modals';
+} from '../../modals/interactive-website-modal/interactive-website-modal.component';
+import { ModalProvider } from '../../modals/modal-provider.service';
+import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
+import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
 import { IconComponent } from '../icon/icon.component';
+import { SearchbarComponent } from '../../form-elements/searchbar/searchbar.component';
+import { RemoveIfProdDirective } from '../../directives';
+import { SourceBuilder } from '../../source/source-builder';
 
 /**
  * IDEEN
@@ -91,30 +91,23 @@ import { IconComponent } from '../icon/icon.component';
  *     create just the feed sink
  */
 
-export interface NativeOrGenericFeed {
-  genericFeed?: GqlTransientGenericFeed;
-  nativeFeed?: GqlRemoteNativeFeed;
-}
+import type {
+  FeedOrRepository,
+  FeedWithRequest,
+  NativeOrGenericFeed,
+} from './feed-builder.types';
+export type { NativeOrGenericFeed } from './feed-builder.types';
+export {
+  FeedBuilderModalComponentExitRole,
+  type FeedOrRepository,
+  type FeedWithRequest,
+} from './feed-builder.types';
 
-export enum FeedBuilderModalComponentExitRole {
-  dismiss = 'dismiss',
-  login = 'login',
-}
-
-export type Source = {
+// todo obsolete?
+type Source = {
   // output?: ScrapeField | ScrapeField[]
   request: GqlSourceInput;
   response?: ScrapeResponse;
-};
-
-export type FeedOrRepository = {
-  feed: FeedWithRequest;
-  repository: RepositoryWithFrequency;
-};
-export type FeedWithRequest = {
-  source: GqlSourceInput;
-  feed: NativeOrGenericFeed;
-  refine: boolean;
 };
 
 export type StandaloneUrlParams = {
@@ -647,7 +640,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     }
   }
 
-  uploadFile($event: Event) {}
+  uploadFile(_$event: Event): void {
+    // Placeholder for file upload
+  }
 
   getFeed(): Nullable<NativeOrGenericFeed> {
     if (this.source()) {

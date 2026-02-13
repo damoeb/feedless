@@ -14,9 +14,9 @@ import {
 import { sortedUniq, without } from 'lodash-es';
 import { addIcons } from 'ionicons';
 import { closeOutline, trashOutline } from 'ionicons/icons';
-import { SearchbarComponent } from '@feedless/form-elements';
 import { isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../../components/icon/icon.component';
+import { SearchbarComponent } from '../../form-elements/searchbar/searchbar.component';
 
 export interface TagsModalComponentProps {
   tags: string[];

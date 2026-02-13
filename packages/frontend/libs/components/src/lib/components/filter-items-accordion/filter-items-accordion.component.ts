@@ -21,7 +21,7 @@ import {
   RepositoryFull,
   RepositoryWithFrequency,
 } from '@feedless/graphql-api';
-import { dateFormat } from '@feedless/services';
+import { dateFormat } from '../../services';
 import { debounce, interval, merge, ReplaySubject } from 'rxjs';
 import { without } from 'lodash-es';
 import { ArrayElement, TypedFormGroup } from '@feedless/core';
@@ -145,20 +145,20 @@ export class FilterItemsAccordionComponent implements OnInit {
     if (params?.composite) {
       const data = params.composite;
       const type = Object.keys(data).find(
-        // @ts-ignore
+        // @ts-expect-error - dynamic composite key access
         (field) => field != '__typename' && !!data[field],
       );
-      // @ts-ignore
+      // @ts-expect-error - dynamic composite key access
       const field = Object.keys(data[type]).find(
-        // @ts-ignore
+        // @ts-expect-error - dynamic composite key access
         (field) => field != '__typename' && !!data[type][field],
       );
       filter.patchValue({
-        type: type as any,
-        field: field as any,
-        // @ts-ignore
+        type: type as never,
+        field: field as never,
+        // @ts-expect-error - dynamic composite key access
         value: data[type][field].value,
-        // @ts-ignore
+        // @ts-expect-error - dynamic composite key access
         operator: data[type][field].operator,
       });
     }

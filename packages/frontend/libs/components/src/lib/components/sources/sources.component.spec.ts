@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { SourcesComponent } from './sources.component';
 import { AppTestModule } from '@feedless/testing';
-import { ModalProvider } from '../console-button/console-button.component';
-import { RepositoryService } from '@feedless/services';
+import { ModalProvider } from '../../modals';
+import { RepositoryService } from '../../services';
 import { RepositorySource } from '@feedless/graphql-api';
 
 describe('SourcesComponent', () => {
@@ -13,6 +13,12 @@ describe('SourcesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SourcesComponent, AppTestModule.withDefaults()],
+      providers: [
+        {
+          provide: ModalProvider,
+          useValue: { openFeedBuilder: jest.fn().mockResolvedValue(undefined) },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SourcesComponent);

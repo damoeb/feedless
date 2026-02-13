@@ -13,7 +13,7 @@ import {
   Authentication,
   AuthService,
   ServerConfigService,
-} from '@feedless/services';
+} from '../../services';
 
 import { IonButton } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';

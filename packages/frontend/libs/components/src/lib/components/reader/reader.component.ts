@@ -9,7 +9,7 @@ import {
   ViewEncapsulation,
 } from '@angular/core';
 import { isUndefined } from 'lodash-es';
-import { ServerConfigService } from '@feedless/services';
+import { ServerConfigService } from '../../services';
 import { isDefined, Nullable } from '@feedless/core';
 import { NgClass } from '@angular/common';
 import { IonCol, IonRow } from '@ionic/angular/standalone';

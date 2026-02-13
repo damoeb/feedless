@@ -17,17 +17,15 @@ import {
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import {
+  AppConfigService,
   DarkModeButtonComponent,
   MapComponent,
   ProfileButtonComponent,
+  RepositoryService,
+  Source,
   SourcesComponent,
 } from '@feedless/components';
 import { LatLng, Nullable } from '@feedless/core';
-import {
-  AppConfigService,
-  RepositoryService,
-  Source,
-} from '@feedless/services';
 import { GqlSourcesWhereInput, RepositoryFull } from '@feedless/graphql-api';
 
 @Component({

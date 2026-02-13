@@ -11,7 +11,7 @@ import {
   GqlAgentsQuery,
   GqlAgentsQueryVariables,
 } from '@feedless/graphql-api';
-import { ServerConfigService } from '@feedless/services';
+import { ServerConfigService } from '../../services';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('ImportButtonComponent', () => {

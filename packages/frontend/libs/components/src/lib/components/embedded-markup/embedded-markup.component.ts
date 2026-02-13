@@ -14,9 +14,9 @@ import {
   viewChild,
 } from '@angular/core';
 import { Embeddable } from '@feedless/core';
-import { SourceBuilder } from '@feedless/source';
 import { debounce, distinct, interval, Subscription } from 'rxjs';
 import { isPlatformBrowser, NgClass, NgStyle } from '@angular/common';
+import { SourceBuilder } from '../../source/source-builder';
 
 export function transformXpathToCssPath(xpath: string): string {
   const cssPath = xpath

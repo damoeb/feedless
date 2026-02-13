@@ -12,7 +12,9 @@ module.exports = {
       },
     ],
   },
-  transformIgnorePatterns: ['node_modules/(?!lodash-es|.*\\.mjs$)'],
+  transformIgnorePatterns: [
+    'node_modules/(?!lodash-es|@ionic|ionicons|d3-|internmap|pixelmatch|.*\\.mjs$)',
+  ],
   snapshotSerializers: [
     'jest-preset-angular/build/serializers/no-ng-attributes',
     'jest-preset-angular/build/serializers/ng-snapshot',

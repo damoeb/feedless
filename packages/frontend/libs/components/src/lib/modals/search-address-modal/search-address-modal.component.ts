@@ -15,10 +15,10 @@ import { GqlGeoPoint } from '@feedless/graphql-api';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
 import { NamedLatLon, Nullable } from '@feedless/core';
-import { SearchbarComponent } from '@feedless/form-elements';
 import { OpenStreetMapService } from '@feedless/geo';
 import { isPlatformBrowser } from '@angular/common';
 import { IconComponent } from '../../components/icon/icon.component';
+import { SearchbarComponent } from '../../form-elements/searchbar/searchbar.component';
 
 @Component({
   selector: 'app-search-address-modal',

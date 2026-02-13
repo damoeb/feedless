@@ -5,8 +5,8 @@ import {
   ApolloMockController,
   AppTestModule,
   mockServerSettings,
-} from '@feedless/core';
-import { ServerConfigService } from '@feedless/services';
+} from '@feedless/testing';
+import { ServerConfigService } from '../../services';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('FilterItemsAccordionComponent', () => {

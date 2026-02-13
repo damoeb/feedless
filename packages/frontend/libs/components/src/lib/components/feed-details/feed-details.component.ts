@@ -49,14 +49,12 @@ import {
 import { tagsToString } from '../feed-builder/feed-builder.component';
 import {
   AnnotationService,
-  AuthGuardService,
   dateFormat,
   RecordService,
   RepositoryService,
   ServerConfigService,
   SessionService,
-  SourceService,
-} from '@feedless/services';
+} from '../../services';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { isUndefined, without } from 'lodash-es';
 import { Subscription } from 'rxjs';
@@ -85,7 +83,6 @@ import {
 } from 'ionicons/icons';
 import { DatePipe, isPlatformBrowser, NgClass } from '@angular/common';
 import { PaginationComponent } from '../pagination/pagination.component';
-import { RemoveIfProdDirective } from '@feedless/directives';
 import { HistogramComponent } from '../histogram/histogram.component';
 import { ImageDiffComponent } from '../image-diff/image-diff.component';
 import { TextDiffComponent } from '../text-diff/text-diff.component';
@@ -98,8 +95,11 @@ import {
   RepositoryModalAccordion,
   RepositoryModalComponent,
   RepositoryModalComponentProps,
+  SourceImportService,
 } from '../../modals';
 import { IconComponent } from '../icon/icon.component';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
+import { AuthGuardService } from '../../guards';
 
 export type RecordWithFornmControl = Record & {
   fc: FormControl<boolean>;
@@ -170,7 +170,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   private readonly repositoryService = inject(RepositoryService);
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly modalCtrl = inject(ModalController);
-  private readonly sourceService = inject(SourceService);
+  private readonly sourceImportService = inject(SourceImportService);
 
   readonly repository = input.required<RepositoryFull>();
   readonly sourcesModal = viewChild<IonModal>('sourcesModalRef');
@@ -534,7 +534,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async appendSourcesFromJson(uploadEvent: Event) {
-    return this.sourceService.uploadFeedlessJson(
+    return this.sourceImportService.uploadFeedlessJson(
       uploadEvent,
       this.repository().id,
     );

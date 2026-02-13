@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AnnotateImageComponent } from './annotate-image.component';
 import { AppTestModule } from '@feedless/testing';
-import { SourceBuilder } from '@feedless/source';
-import { ScrapeService } from '@feedless/services';
+import { ScrapeService } from '../../services';
+import { SourceBuilder } from '../../source/source-builder';
 
 describe('EmbeddedImageComponent', () => {
   let component: AnnotateImageComponent;

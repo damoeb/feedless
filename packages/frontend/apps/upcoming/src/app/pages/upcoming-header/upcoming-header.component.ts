@@ -48,8 +48,11 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
-import { DarkModeButtonComponent, IconComponent } from '@feedless/components';
-import { RemoveIfProdDirective } from '@feedless/directives';
+import {
+  DarkModeButtonComponent,
+  IconComponent,
+  RemoveIfProdDirective,
+} from '@feedless/components';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
 

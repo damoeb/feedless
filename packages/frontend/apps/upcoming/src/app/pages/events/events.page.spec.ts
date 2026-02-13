@@ -9,7 +9,7 @@ import {
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { EventService } from '../../event.service';
-import { AppConfigService } from '@feedless/services';
+import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
 import { LatLng } from '@feedless/core';
 

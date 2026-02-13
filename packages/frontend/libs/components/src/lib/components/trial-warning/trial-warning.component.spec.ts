@@ -6,7 +6,7 @@ import {
   AppTestModule,
   mockServerSettings,
 } from '@feedless/testing';
-import { ServerConfigService } from '@feedless/services';
+import { ServerConfigService } from '../../services';
 import { ApolloClient } from '@apollo/client/core';
 
 describe('TrialWarningComponent', () => {

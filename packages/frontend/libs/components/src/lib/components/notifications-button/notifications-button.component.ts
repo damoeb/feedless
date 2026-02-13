@@ -5,7 +5,7 @@ import {
   OnInit,
   PLATFORM_ID,
 } from '@angular/core';
-import { SessionService } from '@feedless/services';
+import { SessionService } from '../../services';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
 import { notificationsOutline } from 'ionicons/icons';

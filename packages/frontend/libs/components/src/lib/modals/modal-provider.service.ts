@@ -9,7 +9,7 @@ import {
   CodeEditorModalComponent,
   CodeEditorModalComponentProps,
 } from './code-editor-modal/code-editor-modal.component';
-import {
+import type {
   FeedBuilderModalComponent,
   FeedBuilderModalComponentProps,
 } from './feed-builder-modal/feed-builder-modal.component';
@@ -32,7 +32,7 @@ import {
 import {
   FeedBuilderModalComponentExitRole,
   FeedOrRepository,
-} from '../components/feed-builder/feed-builder.component';
+} from '../components/feed-builder/feed-builder.types';
 import { NamedLatLon, Nullable } from '@feedless/core';
 
 export enum ModalName {

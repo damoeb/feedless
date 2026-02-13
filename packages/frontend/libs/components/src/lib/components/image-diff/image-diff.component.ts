@@ -12,7 +12,7 @@ import {
 import pixelmatch from 'pixelmatch';
 import { Record } from '@feedless/graphql-api';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { dateFormat, dateTimeFormat } from '@feedless/services';
+import { dateFormat, dateTimeFormat } from '../../services';
 import { addIcons } from 'ionicons';
 import { arrowForwardOutline } from 'ionicons/icons';
 import { DatePipe, isPlatformBrowser } from '@angular/common';
@@ -51,7 +51,9 @@ export class ImageDiffComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    URL.revokeObjectURL(this.diffImageUrl);
+    if (this.diffImageUrl) {
+      URL.revokeObjectURL(this.diffImageUrl);
+    }
   }
 
   async ngOnInit() {

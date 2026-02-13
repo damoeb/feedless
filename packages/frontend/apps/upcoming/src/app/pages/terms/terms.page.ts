@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { Location } from '@angular/common';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
-import { PageService, PageTags } from '@feedless/services';
+import { PageService, PageTags } from '@feedless/components';
 import dayjs from 'dayjs';
 
 @Component({

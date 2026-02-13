@@ -12,10 +12,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { debounce, DebouncedFunc } from 'lodash-es';
-import { SourceBuilder } from '@feedless/source';
 import { firstValueFrom, Subscription } from 'rxjs';
 import { BoundingBox, Embeddable, Nullable, XyPosition } from '@feedless/core';
 import { NgClass } from '@angular/common';
+import { SourceBuilder } from '../../source/source-builder';
 
 interface Viewport {
   width: number;

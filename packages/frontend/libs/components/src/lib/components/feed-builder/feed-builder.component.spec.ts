@@ -10,10 +10,10 @@ import { FeedBuilderComponent } from './feed-builder.component';
 import {
   standaloneV1WebToFeedRoute,
   standaloneV2WebToFeedRoute,
-} from '../../router-utils';
+} from '@feedless/core';
 import { renderPath, renderQuery } from 'typesafe-routes';
 import { GqlExtendContentOptions } from '@feedless/graphql-api';
-import { ServerConfigService, SessionService } from '@feedless/services';
+import { ServerConfigService, SessionService } from '../../services';
 
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;

@@ -6,8 +6,8 @@ import {
   GqlSourceInput,
   GqlXyPosition,
 } from '@feedless/graphql-api';
-import { ScrapeService, ServerConfigService } from '@feedless/services';
-import { SourceBuilder } from '@feedless/source';
+import { ScrapeService, ServerConfigService } from '../../services';
+import { SourceBuilder } from '../../source/source-builder';
 
 export type BrowserActionType = keyof GqlScrapeActionInput;
 

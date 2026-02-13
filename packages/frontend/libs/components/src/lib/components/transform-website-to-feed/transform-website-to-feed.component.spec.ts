@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TransformWebsiteToFeedComponent } from './transform-website-to-feed.component';
 import { AppTestModule, mockRepositories, mockScrape } from '@feedless/testing';
-import { SourceBuilder } from '@feedless/source';
-import { ScrapeService } from '@feedless/services';
+import { ScrapeService } from '../../services';
+import { SourceBuilder } from '../../source/source-builder';
 
 // const jsonFeed = {
 //   description: 'Nachrichten nicht nur aus der Welt der Computer',

@@ -4,7 +4,7 @@ import {
   inject,
   PLATFORM_ID,
 } from '@angular/core';
-import { AuthService, ConfirmCode, SessionService } from '@feedless/services';
+import { AuthService, ConfirmCode, SessionService } from '../../services';
 import { Router } from '@angular/router';
 import {
   FormControl,

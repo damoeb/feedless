@@ -12,7 +12,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl, NamedLatLon, Nullable } from '@feedless/core';
 import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 import dayjs from 'dayjs';
-import { ReportService } from '@feedless/services';
+import { ReportService } from '@feedless/components';
 import { isPlatformBrowser } from '@angular/common';
 
 export interface SubmitModalComponentProps {

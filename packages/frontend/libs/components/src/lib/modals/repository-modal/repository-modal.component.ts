@@ -46,7 +46,7 @@ import {
   RepositoryService,
   ServerConfigService,
   SessionService,
-} from '@feedless/services';
+} from '../../services';
 import {
   GqlConditionalTagInput,
   GqlFeatureName,
@@ -82,11 +82,11 @@ import {
   FilterItemsAccordionComponent,
   FilterOperator,
 } from '../../components/filter-items-accordion/filter-items-accordion.component';
-import { RemoveIfProdDirective } from '@feedless/directives';
 import { isPlatformBrowser, JsonPipe, KeyValuePipe } from '@angular/common';
 import { FlowModalComponent } from '../flow-modal/flow-modal.component';
 import { ModalProvider } from '../modal-provider.service';
 import { IconComponent } from '../../components/icon/icon.component';
+import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 
 export interface RepositoryModalComponentProps {
   repository: RepositoryFull;

@@ -485,6 +485,7 @@ export async function mockServerSettings(
           isTrial: true,
           isValid: true,
         },
+        auth: [],
       };
       return {
         data: {
@@ -506,4 +507,3 @@ export async function mockServerSettings(
   // await serverSettingsService.fetchServerSettings();
   return apolloMockController;
 }
-
