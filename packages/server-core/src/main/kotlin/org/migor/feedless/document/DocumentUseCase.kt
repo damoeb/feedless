@@ -471,7 +471,6 @@ class DocumentUseCase(
     url: String,
     repositoryId: RepositoryId
   ): Document? = withContext(Dispatchers.IO) {
-    log.info("findFirstByContentHashOrUrlAndRepositoryId repositoryId=$repositoryId")
     documentRepository.findFirstByContentHashOrUrlAndRepositoryId(contentHash, url, repositoryId)
   }
 
