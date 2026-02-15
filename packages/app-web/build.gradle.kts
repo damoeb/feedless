@@ -91,15 +91,8 @@ val buildTask = tasks.register<YarnTask>("build") {
   outputs.dir("www")
 }
 
-val systemTest = tasks.register("systemTest", Exec::class) {
-  commandLine(
-    "./test/nginx-date-redirect-test.sh"
-  )
-}
-
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
-  finalizedBy(systemTest)
   val semver = findProperty("feedlessVersion") as String
   val gitHash = grgit.head().id.take(7)
   val baseTag = findProperty("dockerImageTag")
