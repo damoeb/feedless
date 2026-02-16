@@ -9,6 +9,12 @@
     "build": {
       "executor": "@angular/build:application",
       "outputs": ["{options.outputPath}"],
+      "dependsOn": [
+        {
+          "projects": ["graphql-api"],
+          "target": "codegen"
+        }
+      ],
       "options": {
         "outputPath": "dist/apps/upcoming",
         "browser": "apps/upcoming/src/main.ts",
@@ -84,6 +90,12 @@
     "test": {
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "dependsOn": [
+        {
+          "projects": ["graphql-api"],
+          "target": "codegen"
+        }
+      ],
       "options": {
         "jestConfig": "apps/upcoming/jest.config.cts",
         "tsConfig": "apps/upcoming/tsconfig.spec.json"
@@ -92,6 +104,12 @@
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
+      "dependsOn": [
+        {
+          "projects": ["graphql-api"],
+          "target": "codegen"
+        }
+      ],
       "options": {
         "buildTarget": "upcoming:build",
         "port": 4200,
