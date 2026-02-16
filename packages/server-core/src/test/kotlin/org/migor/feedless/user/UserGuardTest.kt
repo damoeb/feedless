@@ -66,6 +66,7 @@ class UserGuardTest {
 
   @Test
   fun `canWrite repository for non-owner fails`() {
+    mockRepository(repositoryId, ownerId = currentUserId)
     assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
       runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
         repositoryGuard.requireWrite(repositoryId)
