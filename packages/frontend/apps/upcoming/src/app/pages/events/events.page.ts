@@ -200,14 +200,14 @@ export class EventsPage implements OnInit, OnDestroy {
 
           if (hasDateInUrl) {
             // Only validate and redirect if date was explicitly in URL
-            if (
-              dateFromUrl.isBefore(this.minDate) ||
-              dateFromUrl.isAfter(this.maxDate)
-            ) {
-              await this.redirectToToday();
-            } else {
-              await this.changeDate(dateFromUrl);
-            }
+            // if (
+            //   dateFromUrl.isBefore(this.minDate) ||
+            //   dateFromUrl.isAfter(this.maxDate)
+            // ) {
+            //   await this.redirectToToday();
+            // } else {
+            await this.changeDate(dateFromUrl);
+            // }
           } else {
             // No date in URL - just show today without redirecting
             this.date = dateFromUrl;

@@ -1,5 +1,4 @@
 import {
-  ChangeDetectorRef,
   Component,
   inject,
   OnDestroy,
@@ -9,7 +8,6 @@ import {
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical, SessionResponse } from '@feedless/graphql-api';
 import {
-  AppConfigService,
   Authentication,
   AuthService,
   ServerConfigService,
@@ -57,11 +55,9 @@ import { RemoveIfProdDirective } from '../../directives';
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {
-  private readonly appConfigService = inject(AppConfigService);
   private readonly authService = inject(AuthService);
   readonly serverConfig = inject(ServerConfigService);
   private readonly sessionService = inject(SessionService);
-  private readonly changeRef = inject(ChangeDetectorRef);
 
   private subscriptions: Subscription[] = [];
   protected authorization: Authentication;

@@ -7,9 +7,9 @@ import {
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { checkOutdated } from './server-utils';
 import { renderPath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
-import { checkOutdated } from './server-utils';
 
 const serverDistFolder = dirname(fileURLToPath(import.meta.url));
 const browserDistFolder = resolve(serverDistFolder, '../browser');

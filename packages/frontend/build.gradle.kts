@@ -39,7 +39,7 @@ val buildTask = tasks.register<NpmTask>("build") {
   args.set(listOf("run", "build:prod"))
 }
 
-val verifyContainer = tasks.register("verify", Exec::class) {
+val systemTest = tasks.register("systemTest", Exec::class) {
   commandLine(
     "./test/test-upcoming-container.sh"
   )
@@ -47,7 +47,7 @@ val verifyContainer = tasks.register("verify", Exec::class) {
 
 tasks.register("bundle", Exec::class) {
   dependsOn(buildTask)
-  finalizedBy(verifyContainer)
+  finalizedBy(systemTest)
   val semver = findProperty("feedlessVersion") as String
   val gitHash = grgit.head().id.take(7)
   val baseTag = findProperty("dockerImageTag")

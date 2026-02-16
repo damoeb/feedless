@@ -1,4 +1,4 @@
-import { inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
 import {
   GqlAuthType,
   GqlProfileName,
@@ -49,9 +49,7 @@ export class ServerConfigService {
 
   async fetchConfig(): Promise<VerticalAppConfig> {
     try {
-      const config = await firstValueFrom(
-        this.httpClient.get<VerticalAppConfig>('/config.json'),
-      );
+      const config = await this.fetchConfigViaHttp();
 
       this.apiUrl = config.apiUrl;
 
@@ -68,17 +66,16 @@ export class ServerConfigService {
       };
 
       if (product) {
-        // console.log(`enabling product ${product}`);
         const products: GqlVertical[] = Object.values(GqlVertical);
-        // console.log(`Known products ${products.join(', ')}`);
         if (!products.some((otherProduct) => otherProduct == product)) {
           const message = `Product '${product}' does not exist. Know products are ${products.join(', ')}`;
           throwInvalidConfigError(message);
         }
       } else {
-        throwInvalidConfigError(
-          `Cannot map hostname ${location.hostname} to product`,
-        );
+        const hostname = isPlatformBrowser(this.platformId)
+          ? location.hostname
+          : 'localhost';
+        throwInvalidConfigError(`Cannot map hostname ${hostname} to product`);
       }
 
       return config;
@@ -91,6 +88,20 @@ export class ServerConfigService {
       });
       console.error(error);
       throw error;
+    }
+  }
+
+  private async fetchConfigViaHttp(): Promise<VerticalAppConfig> {
+    return firstValueFrom(
+      this.httpClient.get<VerticalAppConfig>(this.getConfigJsonUrl()),
+    );
+  }
+
+  private getConfigJsonUrl() {
+    if (isPlatformBrowser(this.platformId) || isDevMode()) {
+      return '/config.json';
+    } else {
+      return 'http://localhost:80/config.json';
     }
   }
 

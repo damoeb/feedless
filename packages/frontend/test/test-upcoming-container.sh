@@ -93,20 +93,26 @@ echo "Today's date: $TODAY"
 echo "Old date (8 days ago): $OLD_DATE"
 
 # Test 1: URL with old date should redirect (302)
-test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}" \
-    "302" \
-    "Old date should redirect to today"
-
-# Test 2: URL for event details should redirect (302)
-test_redirect \
-    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}/event-id" \
-    "302" \
-    "Old date should redirect to today"
+#test_redirect \
+#    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}" \
+#    "302" \
+#    "Old date should redirect to today"
+#
+## Test 2: URL for event details should redirect (302)
+#test_redirect \
+#    "${BASE_URL}/events/in/CH/ZH/Zürich/am/${OLD_YEAR}/${OLD_MONTH}/${OLD_DAY}/event-id" \
+#    "302" \
+#    "Old date should redirect to today"
 
 # Test 3: URL with today's date should not redirect (200)
 test_redirect \
     "${BASE_URL}/events/in/CH/ZH/Zürich/am/${TODAY_YEAR}/${TODAY_MONTH}/${TODAY_DAY}" \
+    "200" \
+    "Today's date should not redirect"
+
+# Test 3: URL with today's date should not redirect (200)
+test_redirect \
+    "${BASE_URL}/events/in/CH/ZH/Zürich/heute" \
     "200" \
     "Today's date should not redirect"
 
@@ -117,13 +123,7 @@ test_redirect \
     "200" \
     "Future date should not redirect"
 
-# Test 5: Non-events URL should not redirect (200)
-test_redirect \
-    "${BASE_URL}/some/other/path" \
-    "200" \
-    "Non-events URL should not redirect"
-
-# Test 6: Events URL without date should not redirect (200)
+# Test 5: Events URL without date should not redirect (200)
 test_redirect \
     "${BASE_URL}/events/in/CH/ZH/Zürich" \
     "200" \

@@ -8,7 +8,7 @@ import {
   OnInit,
   output,
   PLATFORM_ID,
-  viewChild
+  viewChild,
 } from '@angular/core';
 import { isPlatformBrowser, Location } from '@angular/common';
 import { Subscription } from 'rxjs';
@@ -16,11 +16,9 @@ import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
   GqlItemFilterParamsInput,
-  GqlRemoteNativeFeed,
   GqlSourceInput,
-  GqlTransientGenericFeed,
   RepositoryWithFrequency,
-  ScrapeResponse
+  ScrapeResponse,
 } from '@feedless/graphql-api';
 import {
   AlertController,
@@ -34,9 +32,14 @@ import {
   IonProgressBar,
   IonToolbar,
   ModalController,
-  ToastController
+  ToastController,
 } from '@ionic/angular/standalone';
-import { ApolloAbortControllerService, AppConfigService, ScrapeService, ServerConfigService, SessionService } from '../../services';
+import {
+  ApolloAbortControllerService,
+  ScrapeService,
+  ServerConfigService,
+  SessionService,
+} from '../../services';
 import { ActivatedRoute, Router } from '@angular/router';
 
 import {
@@ -46,7 +49,7 @@ import {
   Nullable,
   standaloneV1WebToFeedRoute,
   standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute
+  standaloneV2WebToFeedRoute,
 } from '@feedless/core';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { addIcons } from 'ionicons';
@@ -57,7 +60,7 @@ import {
   checkmarkOutline,
   closeOutline,
   logoJavascript,
-  settingsOutline
+  settingsOutline,
 } from 'ionicons/icons';
 import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { assignIn, first, isArray } from 'lodash-es';
@@ -90,12 +93,11 @@ import { SourceBuilder } from '../../source/source-builder';
  *     create feed activate tracking
  *     create just the feed sink
  */
-
 import type {
-  FeedOrRepository,
   FeedWithRequest,
   NativeOrGenericFeed,
 } from './feed-builder.types';
+
 export type { NativeOrGenericFeed } from './feed-builder.types';
 export {
   FeedBuilderModalComponentExitRole,
@@ -147,7 +149,6 @@ export type StandaloneUrlParams = {
 })
 export class FeedBuilderComponent implements OnInit, OnDestroy {
   private readonly activatedRoute = inject(ActivatedRoute);
-  private readonly appConfigService = inject(AppConfigService);
   private readonly apolloAbortController = inject(ApolloAbortControllerService);
   private readonly scrapeService = inject(ScrapeService);
   private readonly modalProvider = inject(ModalProvider);
