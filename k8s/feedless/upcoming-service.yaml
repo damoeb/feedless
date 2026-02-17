@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: upcoming-service
+spec:
+  selector:
+    app: upcoming-service
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: upcoming-service
+  labels:
+    app: upcoming-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: upcoming-service
+  template:
+    metadata:
+      labels:
+        app: upcoming-service
+    spec:
+      containers:
+        - name: upcoming-service
+          image: localhost:5000/damoeb/feedless:upcoming-latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: upcoming-config-json-volume
+              mountPath: /usr/share/nginx/html/server/public/config.json
+              subPath: config.json
+      volumes:
+        - name: upcoming-config-json-volume
+          configMap:
+            name: upcoming-config-json

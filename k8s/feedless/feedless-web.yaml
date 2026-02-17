@@ -32,11 +32,3 @@ spec:
         - name: feedless-web
           image: localhost:5000/damoeb/feedless:app-latest
           imagePullPolicy: Always
-          volumeMounts:
-            - name: upcoming-config-json-volume
-              mountPath: /usr/share/nginx/html/verticals-data/upcoming/config.json
-              subPath: config.json
-      volumes:
-        - name: upcoming-config-json-volume
-          configMap:
-            name: upcoming-config-json
