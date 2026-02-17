@@ -13,6 +13,7 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userId
 import org.migor.feedless.user.userIdMaybe
 import org.springframework.context.annotation.Profile
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
 
 @Service
@@ -43,7 +44,8 @@ class RepositoryGuard(
     if (repository.visibility === EntityVisibility.isPublic) {
       return Pair(null, repository)
     } else {
-      val user = userGuard.requireRead(userId!!)
+      val user =
+        userGuard.requireRead(userId ?: throw AccessDeniedException("Repository $id is private, you are not logged in"))
       return Pair(user, repository)
     }
   }
