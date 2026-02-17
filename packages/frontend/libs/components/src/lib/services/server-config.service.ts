@@ -101,7 +101,7 @@ export class ServerConfigService {
     if (isPlatformBrowser(this.platformId) || isDevMode()) {
       return '/config.json';
     } else {
-      return 'http://localhost:80/config.json';
+      return 'https://lokale.events/config.json';
     }
   }
 
