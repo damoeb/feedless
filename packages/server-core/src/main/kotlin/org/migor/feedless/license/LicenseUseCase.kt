@@ -215,22 +215,22 @@ class LicenseUseCase { // todo split up into provider and usecase
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   fun getLicensePayload(): LicensePayload? {
-    log.info("getLicensePayload")
+    log.debug("getLicensePayload")
     return license
   }
 
   fun getBuildDate(): Long {
-    log.info("getBuildDate")
+    log.debug("getBuildDate")
     return buildTimestamp!!.toLong()
   }
 
   fun hasValidLicenseOrLicenseNotNeeded(): Boolean {
-    log.info("hasValidLicenseOrLicenseNotNeeded")
+    log.debug("hasValidLicenseOrLicenseNotNeeded")
     return hasValidLicense() || isLicenseNotNeeded()
   }
 
   fun isLicenseNotNeeded(): Boolean {
-    log.info("isLicenseNotNeeded")
+    log.debug("isLicenseNotNeeded")
     val now = LocalDateTime.now()
     val buildAge = now.minus(Duration.of(getBuildDate(), ChronoUnit.MILLIS))
     val licensePeriodExceeded = buildAge > now.plusDays(365 * 2)
@@ -243,22 +243,22 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   fun hasValidLicense(): Boolean {
-    log.info("hasValidLicense")
+    log.debug("hasValidLicense")
     return license != null
   }
 
   fun getTrialUntil(): Long {
-    log.info("getTrialUntil")
+    log.debug("getTrialUntil")
     return buildTimestamp!!.toLong() + getTrialDuration()
   }
 
   fun getTrialDuration(): Long {
-    log.info("getTrialDuration")
+    log.debug("getTrialDuration")
     return DateUtils.MILLIS_PER_DAY * 28 * 2
   }
 
   fun isTrial(): Boolean {
-    log.info("isTrial")
+    log.debug("isTrial")
     return getTrialUntil() > LocalDateTime.now().toMillis()
   }
 
@@ -310,7 +310,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   )
 
   fun decodePublicKey(publicKeyString: String): RSAPublicKey {
-    log.info("decodePublicKey")
+    log.debug("decodePublicKey")
     val publicKeyByte: ByteArray = Base64.getDecoder().decode(publicKeyString.removeHeaders())
 
     val keyFactory = KeyFactory.getInstance("RSA")
@@ -318,7 +318,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   fun isLicensedForProduct(product: Vertical): Boolean {
-    log.info("isLicensedForProduct product=$product")
+    log.debug("isLicensedForProduct product=$product")
 //    return this.license?.let {
 //      (it.scope === product || it.scope == ProductCategory.feedless) &&
 //        (it.validUntil == null || it.validUntil.isAfter(LocalDateTime.now())) &&
@@ -328,7 +328,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   suspend fun createLicenseForProduct(product: Product, order: Order): License {
-    log.info("createLicenseForProduct ${product.name}")
+    log.debug("createLicenseForProduct ${product.name}")
     if (product.saas) {
       throw IllegalArgumentException("cloud product cannot be licenced")
     }
