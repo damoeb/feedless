@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
 import { compact, omit } from 'lodash-es';
 import { NamedLatLon } from '@feedless/core';
 import { getCachedLocations } from '../lib/places';
+import { GeoSearchService } from './geo-search.interface';
 
 interface OsmMatch {
   lat: string;
@@ -66,7 +67,7 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
 @Injectable({
   providedIn: 'root',
 })
-export class OpenStreetMapService {
+export class OpenStreetMapService implements GeoSearchService {
   private readonly httpClient = inject(HttpClient);
 
   // https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
