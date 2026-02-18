@@ -10,7 +10,7 @@
  */
 
 /* Core CSS required for Ionic components to work properly */
-@import '@ionic/angular/css/core.css';
+//@import '@ionic/angular/css/core.css';
 
 /* Basic CSS for apps built with Ionic */
 @import '@ionic/angular/css/normalize.css';
@@ -96,17 +96,17 @@ a {
 }
 
 .dark {
-  --app-background: black;
-  --app-foreground: white;
-  --app-background-rgb: 0, 0, 0;
-  --app-foreground-rgb: 255, 255, 255;
+  --app-background: #1d1c18;
+  --app-foreground: #f9f8f4;
+  --app-background-rgb: 11.4, 11, 9.4;
+  --app-foreground-rgb: 97.6, 97.3, 95.7;
 }
 
 .light {
-  --app-background: white;
-  --app-foreground: black;
-  --app-background-rgb: 255, 255, 255;
-  --app-foreground-rgb: 0, 0, 0;
+  --app-background: #f9f8f4;
+  --app-foreground: #1d1c18;
+  --app-background-rgb: 97.6, 97.3, 95.7;
+  --app-foreground-rgb: 11.4, 11, 9.4;
 }
 
 ion-modal {
@@ -118,3 +118,26 @@ ion-modal {
   transition: filter 0.5s ease-in-out;
 }
 
+@font-face {
+  font-family: 'DM Serif Display Regular';
+  font-style: normal;
+  font-weight: normal;
+  src: local('DM Serif Display Regular'), url('/fonts/DMSerifDisplay-Regular.woff') format('woff');
+}
+
+@font-face {
+  font-family: 'DM Serif Display Italic';
+  font-style: normal;
+  font-weight: normal;
+  src: local('DM Serif Display Italic'), url('/fonts/DMSerifDisplay-Italic.woff') format('woff');
+}
+
+app-external-link {
+  a {
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}

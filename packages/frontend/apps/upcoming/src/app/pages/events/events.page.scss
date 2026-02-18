@@ -86,14 +86,26 @@ h2 {
 }
 
 .localized-event {
-  background: rgba(var(--app-foreground-rgb), 0.05);
-  padding: 6px;
+  //background: rgba(var(--app-foreground-rgb), 0.5);
+  background: #fbf2ed;
+  padding: 5px;
   border-radius: 8px;
   margin-bottom: 8px;
 
   h3 {
-    line-height: 1.8rem;
+    color: #704523;
+    line-height: 1.3rem;
     margin: 0;
+    font-size: 0.9rem;
   }
 }
 
+h2 {
+  font-size: 1.2rem
+}
+
+.distance {
+  --background: #e7ecf0;
+  --color: #5d7a8a;
+  font-size: 0.9rem;
+}

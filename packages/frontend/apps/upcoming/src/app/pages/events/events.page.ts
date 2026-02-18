@@ -37,8 +37,8 @@ import {
 import { isDefined, LatLng, NamedLatLon, Nullable } from '@feedless/core';
 import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
 import {
+  IonChip,
   IonContent,
-  IonNote,
   IonSpinner,
   IonText,
 } from '@ionic/angular/standalone';
@@ -131,11 +131,11 @@ interface EventGroupsPerDay {
     NgClass,
     IonSpinner,
     RouterLink,
-    IonNote,
     UpcomingFooterComponent,
     IonText,
     InlineCalendarComponent,
     ExternalLinkComponent,
+    IonChip,
   ],
   standalone: true,
 })

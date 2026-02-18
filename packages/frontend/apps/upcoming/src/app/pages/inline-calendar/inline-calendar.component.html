@@ -41,7 +41,7 @@
             }"
           >
             <div>{{ getWeekday(d.date) }}</div>
-            <h3 style="font-size: 1.5rem">{{ formatDate(d.date, 'D') }}</h3>
+            <h3 style="font-size: 1.8rem; font-weight: 600;">{{ formatDate(d.date, 'D') }}</h3>
             @if (i === 0 || d.date.date() === 1) {
               <div class="nowrap">{{ formatDate(d.date, 'MMM YY') }}</div>
             }
@@ -51,30 +51,23 @@
     </div>
     <div style="font-size: 2rem; align-content: center">
       @if (isValidOffset(4)) {
-        <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))">
-          <ion-button size="expand" color="light" (click)="shiftDateWindow(4, $event)">
-            <app-icon
-              aria-label="Weiter im Kalender"
-              name="arrow-forward-outline"
-              slot="icon-only"
-            ></app-icon>
-          </ion-button>
+        <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))" (click)="shiftDateWindow(4, $event)">
+          <app-icon
+            aria-label="Weiter im Kalender"
+            name="arrow-forward-outline"
+            slot="icon-only"
+          ></app-icon>
         </a>
       } @else {
-        <ion-button
-          size="expand"
-          aria-label="Weiter im Kalender (Ende erreicht)"
-          [disabled]="true"
-          color="light"
-        >
-          <app-icon name="arrow-forward-outline" slot="icon-only"></app-icon>
-        </ion-button>
+        <app-icon name="arrow-forward-outline"
+                  aria-label="Weiter im Kalender (Ende erreicht)"
+                  slot="icon-only"></app-icon>
       }
     </div>
   </div>
   @if (!isDateInCalendar(now)) {
     <div style="justify-self: center">
-      <ion-button size="small" (click)="changeDate.emit(now)">Heute anzeigen</ion-button>
+      <ion-button fill="outline" (click)="changeDate.emit(now)">Heute anzeigen</ion-button>
     </div>
   }
 </div>

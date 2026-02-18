@@ -72,12 +72,12 @@
                 <div class="calendar-day">
                   <div>
                     <header>
-                      <h2 style="font-size: 1.2rem">
+                      <h2>
                         <time [attr.datetime]="day.date.toDate().toISOString()">
                           {{ getWeekday(day.date) }}, {{ formatDate(day.date, 'DD.MM.YYYY') }}
                         </time>
                         @if (getRelativeDateLabel(day.date)) {
-                          <div class="ion-margin-top">
+                          <div class="ion-margin-top" style="opacity: 0.7">
                             <span class="badge">{{ getRelativeDateLabel(day.date) }} </span>
                           </div>
                         }
@@ -100,13 +100,13 @@
                                 <a
                                   [routerLink]="getPlaceUrl(place?.place)"
                                   [title]="'Wechsle nach ' + place?.place?.place"
-                                  style="color: var(--ion-color-dark)"
+                                  style="color: var(--ion-color-dark);"
                                   itemprop="url"
                                 >
                                   <span itemprop="name">{{ place?.place?.place }}</span></a
                                 >
                                 @if (placesGroup?.distance && placesGroup.distance > 0) {
-                                  <ion-note> ~ {{ placesGroup.distance }} Km</ion-note>
+                                  <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
                                 }
                               </h2>
                               <div>
