@@ -1,32 +1,53 @@
-import {
-  AngularNodeAppEngine,
-  createNodeRequestHandler,
-  isMainModule,
-  writeResponseToNodeResponse,
-} from '@angular/ssr/node';
+import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkOutdated } from './server-utils';
+import { checkOutdated, createAccessLogLine } from './server-utils';
 import { renderPath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
-
-const serverDistFolder = dirname(fileURLToPath(import.meta.url));
-const browserDistFolder = resolve(serverDistFolder, '../browser');
 
 const app = express();
 const angularApp = new AngularNodeAppEngine();
 
-/**
- * Serve static files from /browser
- */
-app.use(
-  express.static(browserDistFolder, {
-    maxAge: '1y',
-    index: false,
-    redirect: false,
-  }),
-);
+function createRequestLogger() {
+  app.use((req, res, next) => {
+    res.on('finish', () => {
+      const requestLog = createAccessLogLine(req, res);
+      if (!requestLog.url.endsWith('.js')) {
+        process.stdout.write(Object.values(requestLog).join(' ') + '\n');
+      }
+    });
+    next();
+  });
+}
+
+function serveStatic() {
+  const serverDistFolder = dirname(fileURLToPath(import.meta.url));
+  const browserDistFolder = resolve(serverDistFolder, '../browser');
+  app.use(
+    express.static(browserDistFolder, {
+      maxAge: '1y',
+      index: false,
+      redirect: false,
+    }),
+  );
+}
+
+function handleSignals() {
+  process.on('SIGINT', () => {
+    console.log('SIGINT received. Shutting down...');
+    process.exit(0);
+  });
+
+  process.on('SIGTERM', () => {
+    console.log('SIGTERM received. Shutting down...');
+    process.exit(0);
+  });
+}
+
+handleSignals();
+createRequestLogger();
+serveStatic();
 
 /**
  * Handle all other requests by rendering the Angular application.

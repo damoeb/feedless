@@ -20,15 +20,24 @@ export type RelativeDate =
   | 'morgen'
   | 'kommendes-wochenende';
 
+function getToday() {
+  return dayjs().startOf('day');
+}
+
+function getDaysUntilSaturday() {
+  const today = getToday();
+  return (6 - today.day() + 7) % 7 || 7;
+}
+
 export const relativeDateIncrement: Record<RelativeDate, number> = {
   gestern: -1,
   heute: 0,
   morgen: 1,
-  'kommendes-wochenende': (6 - dayjs().day() + 7) % 7 || 7,
+  'kommendes-wochenende': getDaysUntilSaturday(),
 };
 
 export function parseRelativeDate(keyword: RelativeDate): Dayjs {
-  const today = dayjs().startOf('day');
+  const today = getToday();
   switch (keyword) {
     case 'gestern':
       return today.add(-1, 'day');
@@ -38,8 +47,7 @@ export function parseRelativeDate(keyword: RelativeDate): Dayjs {
       return today.add(1, 'days');
     case 'kommendes-wochenende': {
       // Find next friday
-      const daysUntilSaturday = (6 - today.day() + 7) % 7 || 7;
-      return today.add(daysUntilSaturday, 'days');
+      return today.add(getDaysUntilSaturday(), 'days');
     }
     default:
       return today;
