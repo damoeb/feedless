@@ -494,14 +494,12 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
 
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
     return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime,
+      upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
       {
         countryCode,
         region: area,
         place,
-        year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-        month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-        day: parseInt(this.currentDate.locale(this.locale).format('DD')),
+        relativeDate: 'heute',
       },
     );
   }
