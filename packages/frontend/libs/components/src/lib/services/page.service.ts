@@ -218,22 +218,10 @@ export class PageService {
     // Add structured data - works in both browser and SSR
     const dataString = JSON.stringify(data, null, 2);
 
-    // Helper to encode to base64 (works in both browser and Node.js)
-    const encodeBase64 = (str: string): string => {
-      if (isPlatformBrowser(this.platformId)) {
-        return btoa(str);
-      } else {
-        // Node.js environment
-        return Buffer.from(str, 'utf-8').toString('base64');
-      }
-    };
-
-    const encodedContent = encodeBase64(dataString);
-
     // Only check for duplicates in browser (during SSR, we want to add it)
     if (isPlatformBrowser(this.platformId)) {
       const existingScript = this.document.querySelector(
-        `script[type="application/ld+json"][data-content="${encodedContent}"]`,
+        `script[type="application/ld+json"]`,
       );
       if (existingScript) {
         return;
@@ -242,7 +230,6 @@ export class PageService {
 
     const script = this.document.createElement('script');
     script.setAttribute('type', 'application/ld+json');
-    script.setAttribute('data-content', encodedContent); // Base64 encode for comparison
     script.textContent = dataString;
     this.document.head.appendChild(script);
   }
