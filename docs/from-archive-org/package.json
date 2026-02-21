@@ -9,7 +9,7 @@
   "dependencies": {
     "body-parser": "^1.18.3",
     "cors": "^2.8.5",
-    "dompurify": "^2.0.7",
+    "dompurify": "^3.2.4",
     "express": "^4.16.3",
     "feedparser": "^2.2.9",
     "iconv": "^2.3.5",
