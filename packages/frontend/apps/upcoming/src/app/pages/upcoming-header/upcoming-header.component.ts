@@ -259,7 +259,10 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         ),
       );
       const breadcrumbs: LocationSuggestion[] = this.getBreadcrumbs();
-      this.locationSuggestions = [...previousLocations, ...breadcrumbs];
+      this.locationSuggestions = uniqBy(
+        [...previousLocations, ...breadcrumbs],
+        'url',
+      );
     } else {
       this.locationSuggestions = matchHighlighter(
         getCachedLocations()

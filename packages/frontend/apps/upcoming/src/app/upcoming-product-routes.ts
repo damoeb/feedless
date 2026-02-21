@@ -203,10 +203,6 @@ export const upcomingBaseRoute = createRoutes({
   },
 });
 
-export function toPath(url: string): string {
-  return url.substring(1);
-}
-
 export const UPCOMING_ROUTES: Routes = [
   // {
   //   path: '',
@@ -214,12 +210,12 @@ export const UPCOMING_ROUTES: Routes = [
   //   component: FeedlessMenuComponent,
   // },
   {
-    path: toPath(template(upcomingBaseRoute.about)),
+    path: template(upcomingBaseRoute._.about),
     loadComponent: () =>
       import('./pages/about-us/about-us.page').then((m) => m.AboutUsPage),
   },
   {
-    path: toPath(template(upcomingBaseRoute.terms)),
+    path: template(upcomingBaseRoute._.terms),
     loadComponent: () =>
       import('./pages/terms/terms.page').then((m) => m.TermsPage),
   },
@@ -239,44 +235,44 @@ export const UPCOMING_ROUTES: Routes = [
     canActivate: [AuthGuardService],
     children: [
       {
-        path: toPath(template(upcomingBaseRoute.management.sources)),
+        path: template(upcomingBaseRoute._.management.sources),
         data: { sources: true },
         loadComponent: () =>
           import('./pages/editor/editor.page').then((m) => m.EditorPage),
       },
       {
-        path: toPath(template(upcomingBaseRoute.management.documents)),
+        path: template(upcomingBaseRoute._.management.documents),
         loadComponent: () =>
           import('./pages/editor/editor.page').then((m) => m.EditorPage),
       },
       {
-        path: toPath(template(upcomingBaseRoute.management)),
+        path: template(upcomingBaseRoute._.management),
         redirectTo: template(upcomingBaseRoute.management.sources),
       },
       {
-        path: toPath(template(upcomingBaseRoute.management)),
+        path: template(upcomingBaseRoute._.management),
         redirectTo: template(upcomingBaseRoute.management.sources),
       },
     ],
   },
   {
-    path: toPath(template(upcomingBaseRoute.events.countryCode)),
+    path: template(upcomingBaseRoute._.events.countryCode),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
   },
   {
-    path: toPath(template(upcomingBaseRoute.events.countryCode.region)),
+    path: template(upcomingBaseRoute._.events.countryCode.region),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
   },
   {
-    path: toPath(template(upcomingBaseRoute.events.countryCode.region.place)),
+    path: template(upcomingBaseRoute._.events.countryCode.region.place),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
   },
   {
-    path: toPath(
-      template(upcomingBaseRoute.events.countryCode.region.place.dateTime),
+    path: template(
+      upcomingBaseRoute._.events.countryCode.region.place.dateTime,
     ),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
@@ -291,10 +287,8 @@ export const UPCOMING_ROUTES: Routes = [
   //     import('./pages/events/events.page').then((m) => m.EventsPage),
   // },
   {
-    path: toPath(
-      template(
-        upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
-      ),
+    path: template(
+      upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime,
     ),
     loadComponent: () =>
       import('./pages/events/events.page').then((m) => m.EventsPage),
@@ -311,10 +305,8 @@ export const UPCOMING_ROUTES: Routes = [
   // },
   {
     // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
-    path: toPath(
-      template(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId,
-      ),
+    path: template(
+      upcomingBaseRoute._.events.countryCode.region.place.dateTime.eventId,
     ),
     loadComponent: () =>
       import('./pages/event/event.page').then((m) => m.EventPage),
