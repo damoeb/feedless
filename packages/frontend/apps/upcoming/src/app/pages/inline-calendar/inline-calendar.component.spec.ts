@@ -25,9 +25,9 @@ describe('InlineCalendar', () => {
 
   describe('#getSeoLinkAttributes', () => {
     Object.values(relativeDateIncrement).forEach((increment) => {
-      xit(`relative dates for increment ${increment} return index=true`, () => {
+      it(`relative dates for increment ${increment} return index=true`, () => {
         const attrs = component.getSeoLinkAttributes(
-          dayjs().add(increment, 'day'),
+          dayjs().startOf('day').add(increment, 'day'),
         );
         expect(attrs.indexOf('index') > -1).toBe(true);
         expect(attrs.indexOf('no-index') === -1).toBe(true);

@@ -141,7 +141,7 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
 
   getSeoLinkAttributes(date: Dayjs): string {
     const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
-    const diff = date.diff(dayjs(), 'day');
+    const diff = date.startOf('day').diff(dayjs().startOf('day'), 'day');
     const relativeDateExpressionMaybe = relativeDates.find(
       (relativeDate) => relativeDateIncrement[relativeDate] === diff,
     );

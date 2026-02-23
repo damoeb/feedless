@@ -11,7 +11,6 @@ Object.defineProperty(window, 'matchMedia', {
 // Stub Ionic/Stencil custom elements so they don't run __registerHost in jsdom
 const ionTags = [
   'ion-app',
-  'ion-router-outlet',
   'ion-content',
   'ion-header',
   'ion-footer',

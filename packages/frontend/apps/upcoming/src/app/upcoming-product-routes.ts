@@ -304,11 +304,18 @@ export const UPCOMING_ROUTES: Routes = [
   //     import('./pages/events/events.page').then((m) => m.EventsPage),
   // },
   {
-    // event/in/CH/Zurich/Affoltern%2520a.A./am/2024/11/02/details/7f2bee6c-be92-49b3-bbbe-aab1e207fa5c
     path: template(
       upcomingBaseRoute._.events.countryCode.region.place.dateTime.eventId,
     ),
     loadComponent: () =>
-      import('./pages/event/event.page').then((m) => m.EventPage),
+      import('./pages/events/events.page').then((m) => m.EventsPage),
+  },
+  {
+    path: template(
+      upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime
+        .eventId,
+    ),
+    loadComponent: () =>
+      import('./pages/events/events.page').then((m) => m.EventsPage),
   },
 ];

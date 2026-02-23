@@ -5,7 +5,7 @@ metadata:
   labels:
     app: feedless-agent
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: feedless-agent
