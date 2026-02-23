@@ -102,6 +102,7 @@ dependencies {
   implementation(project(":packages:stripe-payments"))
   implementation(project(":packages:jpa-data"))
   implementation(project(":packages:feed-parser"))
+  implementation(project(":packages:ollama-engine"))
   api(project(":packages:graphql-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")

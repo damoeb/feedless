@@ -20,6 +20,7 @@
             <option value="$PROJECT_DIR$/packages/github-connector" />
             <option value="$PROJECT_DIR$/packages/graphql-api" />
             <option value="$PROJECT_DIR$/packages/jpa-data" />
+            <option value="$PROJECT_DIR$/packages/ollama-engine" />
             <option value="$PROJECT_DIR$/packages/mail-adapter" />
             <option value="$PROJECT_DIR$/packages/nominatim-proxy" />
             <option value="$PROJECT_DIR$/packages/server-core" />

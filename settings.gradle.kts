@@ -14,6 +14,7 @@ include("packages:jpa-data")
 include("packages:feed-parser")
 include("packages:frontend")
 include("packages:document-classifier")
+include("packages:ollama-engine")
 
 pluginManagement {
   plugins {
