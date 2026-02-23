@@ -1,9 +1,10 @@
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { NamedLatLon, Nullable } from '@feedless/core';
 import { OpenStreetMapService } from './open-street-map.service';
 import { getCachedLocations } from '../lib/places';
+import { isPlatformBrowser } from '@angular/common';
 
 export interface GeoJsResponse {
   longitude: string;
@@ -29,6 +30,7 @@ export interface GeoJsResponse {
 export class GeoService {
   private readonly httpClient = inject(HttpClient);
   private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   private currentPosition: Subject<NamedLatLon>;
 
@@ -37,9 +39,11 @@ export class GeoService {
     this.currentPosition = new BehaviorSubject<Nullable<NamedLatLon>>(
       supported[Math.floor(Math.random() * supported.length + 1)],
     );
-    this.getLocationFromIp().subscribe((value) =>
-      this.currentPosition.next(value),
-    );
+    if (isPlatformBrowser(this.platformId)) {
+      this.getLocationFromIp().subscribe((value) =>
+        this.currentPosition.next(value),
+      );
+    }
   }
 
   private getLocationFromIp(): Observable<NamedLatLon> {
