@@ -52,7 +52,10 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
-import { DarkModeButtonComponent } from '@feedless/components';
+import {
+  DarkModeButtonComponent,
+  ProfileButtonComponent,
+} from '@feedless/components';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -83,6 +86,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonItem,
     RouterLink,
     IonSearchbar,
+    ProfileButtonComponent,
   ],
   standalone: true,
 })

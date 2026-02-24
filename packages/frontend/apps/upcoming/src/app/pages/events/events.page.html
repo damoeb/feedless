@@ -7,6 +7,15 @@
   ></app-upcoming-header>
 }
 <ion-content>
+  @if (isBrowser && false) {
+    <app-page-sidebar>
+      <ion-list lines="none">
+        <ion-list-header>
+          <ion-label>Email Abos</ion-label>
+        </ion-list-header>
+      </ion-list>
+    </app-page-sidebar>
+  }
   <div class="events">
     @if (namedLatLon) {
       <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
@@ -111,15 +120,16 @@
                               </h2>
                               <div>
                                 @for (event of place.events; track event) {
-                                  <div class="localized-event">
-                                    <app-external-link [href]="event.url">
-                                      <article itemscope itemtype="https://schema.org/Event">
-                                        <header>
-                                          <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
-                                        </header>
-                                      </article>
-                                    </app-external-link>
-                                  </div>
+                                  <a
+                                    [routerLink]="createEventUrl(event)"
+                                    class="localized-event localized-event--clickable"
+                                  >
+                                    <article itemscope itemtype="https://schema.org/Event">
+                                      <header>
+                                        <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
+                                      </header>
+                                    </article>
+                                  </a>
                                 }
                               </div>
                             }

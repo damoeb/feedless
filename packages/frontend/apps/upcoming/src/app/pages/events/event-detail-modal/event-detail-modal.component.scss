@@ -1,0 +1,46 @@
+.edit-form {
+  ion-item {
+    --background: transparent;
+  }
+}
+
+.desc {
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 1rem 0;
+  color: var(--ion-color-dark);
+}
+
+.event-link {
+  margin: 1rem 0;
+
+  ion-button {
+    align-self: flex-start;
+  }
+}
+
+.event-tags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 1rem 0;
+
+  ion-badge {
+    font-size: 0.8rem;
+  }
+}
+
+h1 {
+  font-size: 1.25rem;
+  margin-bottom: 0.5rem;
+}
+
+section {
+  margin: 1.5rem 0;
+
+  h2 {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: var(--ion-color-dark);
+  }
+}

@@ -2,6 +2,7 @@
 
 ion-content::part(scroll) {
   display: flex;
+  flex-direction: column;
 }
 
 .calendar-row {
@@ -91,12 +92,24 @@ h2 {
   padding: 5px;
   border-radius: 8px;
   margin-bottom: 8px;
+  display: block;
+  text-decoration: none;
+  color: inherit;
 
   h3 {
     color: #704523;
     line-height: 1.3rem;
     margin: 0;
     font-size: 0.9rem;
+  }
+
+  &--clickable {
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &:hover {
+      background: #f5e6de;
+    }
   }
 }
 

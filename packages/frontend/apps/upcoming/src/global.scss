@@ -113,6 +113,11 @@ ion-modal {
   --backdrop-opacity: 0.5 !important;
 }
 
+ion-modal.event-detail-sheet {
+  --width: 100%;
+  --max-width: 700px;
+}
+
 .menu-content-open {
   filter: grayscale(0.4) brightness(0.4);
   transition: filter 0.5s ease-in-out;

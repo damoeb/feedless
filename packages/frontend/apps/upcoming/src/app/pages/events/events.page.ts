@@ -10,9 +10,9 @@ import {
 } from '@angular/core';
 import {
   AppConfigService,
-  ExternalLinkComponent,
   PageService,
   PageTags,
+  RecordService,
 } from '@feedless/components';
 import dayjs, { Dayjs } from 'dayjs';
 import { groupBy, sortBy, times, unionBy, uniqBy } from 'lodash-es';
@@ -39,14 +39,20 @@ import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.comp
 import {
   IonChip,
   IonContent,
+  IonLabel,
+  IonList,
+  IonListHeader,
   IonSpinner,
   IonText,
+  ModalController,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../../event.service';
 import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
 import { renderPath } from 'typesafe-routes';
 import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
+import { EventDetailModalComponent } from './event-detail-modal/event-detail-modal.component';
+import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
@@ -134,8 +140,11 @@ interface EventGroupsPerDay {
     UpcomingFooterComponent,
     IonText,
     InlineCalendarComponent,
-    ExternalLinkComponent,
     IonChip,
+    PageSidebarComponent,
+    IonList,
+    IonLabel,
+    IonListHeader,
   ],
   standalone: true,
 })
@@ -149,6 +158,9 @@ export class EventsPage implements OnInit, OnDestroy {
   private readonly appConfigService = inject(AppConfigService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly modalCtrl = inject(ModalController);
+  private readonly recordService = inject(RecordService);
+  protected isBrowser = isPlatformBrowser(this.platformId);
 
   date: Dayjs = dayjs();
   readonly now: Dayjs = dayjs();
@@ -158,6 +170,7 @@ export class EventsPage implements OnInit, OnDestroy {
   latLon: Nullable<LatLng>;
   namedLatLon: Nullable<NamedLatLon>;
   loading = true;
+  dateIsFromRelativeUrl = false;
   private subscriptions: Subscription[] = [];
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
@@ -196,7 +209,8 @@ export class EventsPage implements OnInit, OnDestroy {
             params['day'] ||
             params['relativeDate'];
 
-          const { date: dateFromUrl, relative } = parseDateFromUrl(params);
+          const { date: dateFromUrl } = parseDateFromUrl(params);
+          this.dateIsFromRelativeUrl = !!params['relativeDate'];
 
           if (hasDateInUrl) {
             // Only validate and redirect if date was explicitly in URL
@@ -219,6 +233,11 @@ export class EventsPage implements OnInit, OnDestroy {
           this.pageService.setMetaTags(this.getPageTags());
 
           await this.fetchEvents(this.date);
+
+          const eventId = params['eventId'];
+          if (eventId != null) {
+            await this.openEventModalForId(String(eventId));
+          }
         } catch (e) {
           // todo save and retrieve last place window.localStorage.getItem('lastPlace')
           // const currentLocation = await firstValueFrom(
@@ -248,20 +267,21 @@ export class EventsPage implements OnInit, OnDestroy {
     }
   }
 
-  private async redirectToToday() {
-    const url = this.createDateUrl(dayjs())!;
-    await this.router.navigateByUrl(url, { replaceUrl: true });
-  }
-
   formatDate(date: Dayjs, format: string) {
     return date?.locale('de')?.format(format);
   }
 
   private getPageTags(): PageTags {
     const location = this.namedLatLon;
-    const dateStr = this.date ? this.formatDate(this.date, 'DD.MM.YYYY') : '';
+    const robots = this.activatedRoute.snapshot.params['eventId']
+      ? 'noindex, follow'
+      : 'index, follow';
 
     if (location) {
+      const dateTitlePart = this.dateIsFromRelativeUrl
+        ? this.getRelativeDateLabel(this.date)
+        : `am ${this.formatDate(this.date, 'DD.MM.YYYY')}`;
+
       const keywords = [
         'Events',
         'Veranstaltungen',
@@ -274,12 +294,11 @@ export class EventsPage implements OnInit, OnDestroy {
         'Sport',
         'Kultur',
         'Freizeit',
-        dateStr,
-      ].filter(Boolean);
+      ];
 
       return {
-        title: `Events in ${location.displayName}, ${location.area} | lokale.events`,
-        description: `Entdecke aktuelle Veranstaltungen in ${location.displayName}, ${location.area}${dateStr ? ' am ' + dateStr : ''}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
+        title: `Events ${dateTitlePart} in ${location.displayName}, ${location.area} | lokale.events`,
+        description: `Entdecke aktuelle Veranstaltungen in ${location.displayName}, ${location.area}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
         publisher: 'lokale.events',
         category: 'Events',
         url: this.getCurrentUrl(),
@@ -291,8 +310,8 @@ export class EventsPage implements OnInit, OnDestroy {
         keywords,
         expiresAt: this.date,
         author: 'lokale.events Team',
-        robots: 'index, follow',
-        canonicalUrl: `https://lokale.events${this.createUrl(location, this.date)}`,
+        robots,
+        canonicalUrl: `https://lokale.events${this.createDateUrl(this.date, location)}`,
       };
     } else {
       return {
@@ -314,7 +333,6 @@ export class EventsPage implements OnInit, OnDestroy {
           'Freizeit',
         ],
         author: 'lokale.events Team',
-        expiresAt: this.date,
         robots: 'index, follow',
         canonicalUrl: 'https://lokale.events/',
       };
@@ -650,33 +668,9 @@ export class EventsPage implements OnInit, OnDestroy {
     }
   }
 
-  createUrl(location: NamedLatLon, date: Dayjs): string {
-    return renderUrlWithAbsoluteDate(
-      location.countryCode,
-      location.area,
-      location.place,
-      parseInt(date.format('YYYY')),
-      parseInt(date.format('MM')),
-      parseInt(date.format('DD')),
-    );
-  }
-
   createEventUrl(event: LocalizedEvent): string {
-    const { countryCode, region, place, year, month, day } =
-      this.activatedRoute.snapshot.params;
-
-    return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime.eventId,
-      {
-        countryCode,
-        region,
-        place,
-        year,
-        month,
-        day,
-        eventId: (event as any).id,
-      },
-    );
+    const baseUrl = this.createDateUrl(this.date, this.namedLatLon);
+    return baseUrl ? `${baseUrl}/${(event as any).id}` : '';
   }
 
   getPlaceUrl(location: NamedLatLon): string {
@@ -716,13 +710,6 @@ export class EventsPage implements OnInit, OnDestroy {
     // this.patchUrlInAddressBar();
     await this.fetchEvents(this.date);
     this.changeRef.detectChanges();
-  }
-
-  patchUrlInAddressBar() {
-    console.log('patchUrlInAddressBar');
-    this.locationService.replaceState(
-      this.createUrl(this.namedLatLon, this.date),
-    );
   }
 
   private saveLocation(location: Nullable<NamedLatLon>) {
@@ -806,6 +793,90 @@ export class EventsPage implements OnInit, OnDestroy {
     return title
       .replace(/[0-9]{1,2}\.[ .]?[a-z]{3,10}[ .]?[0-9]{2,4}/gi, '')
       .replace(/[0-9]{1,2}\.[ .]?[0-9]{1,2}[ .]?[0-9]{2,4}/gi, '');
+  }
+
+  async openEventModal(
+    event: LocalizedEvent,
+    place: NamedLatLon,
+  ): Promise<void> {
+    const eventUrl = this.createEventUrl(event);
+    if (eventUrl && isPlatformBrowser(this.platformId)) {
+      this.locationService.replaceState(eventUrl);
+    }
+    const modal = await this.modalCtrl.create({
+      component: EventDetailModalComponent,
+      componentProps: {
+        event,
+        place,
+        repositoryId: this.getRepositoryId(),
+      },
+      breakpoints: [0, 0.25, 0.5, 0.75, 1],
+      initialBreakpoint: 0.75,
+      backdropBreakpoint: 0.5,
+      cssClass: 'event-detail-sheet',
+    });
+    await modal.present();
+    const result = await modal.onDidDismiss();
+    if (result.data?.saved === true || result.data?.deleted === true) {
+      await this.fetchEvents(this.date);
+    }
+    const listUrl = this.createDateUrl(this.date, this.namedLatLon);
+    if (listUrl && isPlatformBrowser(this.platformId)) {
+      this.locationService.replaceState(listUrl);
+    }
+    this.changeRef.detectChanges();
+  }
+
+  private async openEventModalForId(eventId: string): Promise<void> {
+    const found = this.findEventAndPlace(eventId);
+    if (found) {
+      await this.openEventModal(found.event, found.place);
+    } else {
+      console.error('Unable to find event with id ' + eventId);
+    }
+  }
+
+  private findEventAndPlace(
+    eventId: string,
+  ): { event: LocalizedEvent; place: NamedLatLon } | null {
+    for (const day of this.placesByDistancePerDay) {
+      for (const group of day.eventGroups) {
+        for (const { place, events } of group.places) {
+          const event = events.find((e) => String((e as any).id) === eventId);
+          if (event) {
+            return { event, place };
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+  private async resolvePlaceFromLatLon(latLng: {
+    lat: number;
+    lng: number;
+  }): Promise<NamedLatLon> {
+    const named = getCachedLocations().find(
+      (p) =>
+        roundLatLon(p.lat) === roundLatLon(latLng.lat) &&
+        roundLatLon(p.lng) === roundLatLon(latLng.lng),
+    );
+    if (named) {
+      return named;
+    }
+    const result = await this.openStreetMapService
+      .reverseSearch(latLng.lat, latLng.lng)
+      .catch((): null => null);
+    return (
+      result ?? {
+        lat: latLng.lat,
+        lng: latLng.lng,
+        place: '',
+        displayName: 'Unbekannt',
+        area: '',
+        countryCode: '',
+      }
+    );
   }
 
   getDateUrlFactory() {

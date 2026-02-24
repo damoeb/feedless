@@ -4,34 +4,24 @@ veranstaltungen:
       name: "Gottesdienst & Spiritualität"
       unterkategorien:
         - Gottesdienst
-        - Andacht & Gebet
-        - Meditation & Achtsamkeit
-        - Spirituelle Impulse
         - Religiöse Feiern
 
     bildung_und_arbeit:
       name: "Bildung & Arbeit"
       unterkategorien:
-        - Workshop
-        - Seminar
-        - Kurs
+        - Workshop / Kurs
         - Vortrag
-        - Gesprächs- & Lernkreis
 
     begegnung_und_austausch:
       name: "Begegnung & Austausch"
       unterkategorien:
-        - Offenes Treffen
         - Kennenlernen & Vernetzung
-        - Gesprächsrunde
-        - Austauschformat
         - Begegnungscafé
 
     feiern_und_freizeit:
       name: "Feiern & Freizeit"
       unterkategorien:
         - Fest & Feier
-        - Gemeinsames Essen
         - Ausflug & Unternehmung
         - Spiele & Freizeit
         - Jahresfeste
@@ -41,9 +31,7 @@ veranstaltungen:
       unterkategorien:
         - Musik & Konzert
         - Theater & Aufführung
-        - Kreativworkshop
         - Kunst & Gestaltung
-        - Offene Bühne
 
     gesundheit_und_bewegung:
       name: "Gesundheit & Bewegung"
@@ -76,6 +64,7 @@ veranstaltungen:
     altersgruppen:
       name: "Altersgruppen"
       unterkategorien:
+        - Alle
         - Kinder
         - Jugendliche
         - Junge Erwachsene
@@ -96,14 +85,10 @@ veranstaltungen:
       unterkategorien:
         - Neu Zugezogene
         - Menschen in Übergangsphasen
-        - Trauernde
-        - Suchende & Fragende
         - Menschen mit Unterstützungsbedarf
 
     offenheit:
       name: "Offenheit"
       unterkategorien:
-        - Offen für alle
-        - Gemeindemitglieder
-        - Geschlossene Gruppe
+        - Mitglieder
         - Einladung erforderlich

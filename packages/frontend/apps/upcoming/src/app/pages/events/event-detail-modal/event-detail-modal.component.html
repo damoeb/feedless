@@ -1,0 +1,101 @@
+<ion-header style="box-shadow: none;">
+  <ion-toolbar>
+    <ion-buttons slot="end">
+      @if (editMode) {
+        <ion-button (click)="confirmDelete()" color="danger" appDev>
+          <app-icon name="trash-outline"></app-icon>
+        </ion-button>
+        <ion-button (click)="save()" appDev>Speichern</ion-button>
+      } @else {
+        <ion-button (click)="toggleEditMode()" appDev>Bearbeiten</ion-button>
+      }
+      <ion-button (click)="close()" [attr.aria-label]="'Schließen'">
+        <app-icon name="close-outline"></app-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+<ion-content class="ion-padding">
+  @if (editMode) {
+    <form class="edit-form" (ngSubmit)="save()">
+      <ion-item>
+        <ion-input
+          [formControl]="editForm.controls.title"
+          label="Titel"
+          labelPlacement="stacked"
+          placeholder="Titel der Veranstaltung"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-textarea
+          [formControl]="editForm.controls.body"
+          label="Beschreibung"
+          labelPlacement="stacked"
+          placeholder="Beschreibungstext"
+          [autoGrow]="true"
+        ></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="editForm.controls.tagsStr"
+          label="Tags (kommagetrennt)"
+          labelPlacement="stacked"
+          placeholder="z.B. Konzert, Open Air"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="editForm.controls.startingAtStr"
+          label="Datum und Uhrzeit"
+          labelPlacement="stacked"
+          type="datetime-local"
+        ></ion-input>
+      </ion-item>
+    </form>
+  } @else {
+    <article itemscope itemtype="https://schema.org/Event">
+      <header>
+        <h1 itemprop="name">{{ getTitle() }}</h1>
+
+        @if (event.tags && event.tags.length > 0) {
+          <div class="event-tags">
+            @for (tag of event.tags; track tag) {
+              <ion-badge color="secondary">{{ tag }}</ion-badge>
+            }
+          </div>
+        }
+
+        @if (event.text) {
+          <p class="desc" itemprop="description">{{ event.text }}</p>
+        }
+      </header>
+
+      @if (place; as location) {
+        <section>
+          <h2>Ort</h2>
+          <address itemprop="location" itemscope itemtype="https://schema.org/Place">
+            <strong itemprop="name">{{ location.displayName }}, {{ location.area }}</strong>
+          </address>
+        </section>
+      }
+
+      <section>
+        <h2>Datum und Uhrzeit</h2>
+        <div>
+          <strong>
+            <time itemprop="startDate" [attr.datetime]="event.startingAt">
+              {{ formatDate(event.startingAt, 'dddd, DD. MMMM YYYY') }}
+            </time>
+          </strong>
+        </div>
+      </section>
+
+      @if (event.url) {
+        <ion-button (click)="openEventUrl(event.url)">
+          Zur Veranstaltungsseite
+        </ion-button>
+      }
+
+    </article>
+  }
+</ion-content>
