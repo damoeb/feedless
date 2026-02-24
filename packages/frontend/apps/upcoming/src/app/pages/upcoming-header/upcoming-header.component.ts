@@ -21,7 +21,11 @@ import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
 import weekday from 'dayjs/plugin/weekday';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
+import {
+  AdminGeoService,
+  getCachedLocations,
+  OpenStreetMapService,
+} from '@feedless/geo';
 import { addIcons } from 'ionicons';
 import {
   calendarOutline,
@@ -88,6 +92,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly openStreetMapService = inject(OpenStreetMapService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly adminGeoService = inject(AdminGeoService);
 
   locationFc = new FormControl<string>('');
   private readonly subscriptions: Subscription[] = [];
@@ -239,8 +244,8 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
           url: this.getUrlForLocation(match),
           labelHtml: tokens.reduce((hl, token) => {
             return hl.replace(
-              new RegExp(token, 'i'),
-              `<strong>${token}</strong>`,
+              new RegExp(`(${token})`, 'i'),
+              `<strong>$1</strong>`,
             );
           }, match.displayName),
         };
@@ -264,11 +269,8 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         'url',
       );
     } else {
-      this.locationSuggestions = matchHighlighter(
-        getCachedLocations()
-          .filter((p) => tokens.every((token) => p.index.indexOf(token) > -1))
-          .filter((_, index) => index < 6),
-      );
+      const results = await this.adminGeoService.searchByQuery(query);
+      this.locationSuggestions = matchHighlighter(results);
     }
 
     this.changeRef.detectChanges();

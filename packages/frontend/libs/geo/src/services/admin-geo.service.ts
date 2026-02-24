@@ -5,7 +5,8 @@ import { NamedLatLon } from '@feedless/core';
 import { getCachedLocations } from '../lib/places';
 import { GeoSearchService } from './geo-search.interface';
 
-const SEARCH_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/SearchServer';
+const SEARCH_SERVER =
+  'https://api3.geo.admin.ch/rest/services/ech/SearchServer';
 const MAP_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/MapServer';
 
 interface SearchResultAttrs {
@@ -48,7 +49,10 @@ interface IdentifyResponse {
 }
 
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
+  return html
+    .replace(/<[^>]*>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
 }
 
 @Injectable({
@@ -61,7 +65,9 @@ export class AdminGeoService implements GeoSearchService {
     countryCode,
     place,
     area,
-  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<NamedLatLon[]> {
+  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<
+    NamedLatLon[]
+  > {
     const matches = getCachedLocations().filter(
       (p) =>
         p.countryCode === countryCode && p.place === place && p.area === area,
@@ -81,7 +87,8 @@ export class AdminGeoService implements GeoSearchService {
     });
     const url = `${SEARCH_SERVER}?${params.toString()}`;
     return firstValueFrom(this.httpClient.get<SearchServerResponse>(url)).then(
-      (res) => (res.results ?? []).map((r) => this.mapSearchResultToNamedLatLon(r)),
+      (res) =>
+        (res.results ?? []).map((r) => this.mapSearchResultToNamedLatLon(r)),
     );
   }
 
@@ -113,15 +120,13 @@ export class AdminGeoService implements GeoSearchService {
     const lat = a.lat ?? a.y ?? 0;
     const lng = a.lon ?? a.x ?? 0;
     const detail = a.detail ?? '';
-    const label = a.label ? stripHtml(a.label) : detail;
-    const displayName = label || `CH ${detail}`;
     return {
       lat: typeof lat === 'number' ? lat : parseFloat(String(lat)),
       lng: typeof lng === 'number' ? lng : parseFloat(String(lng)),
       countryCode: 'ch',
       place: detail.split(' ')[0] ?? detail,
       area: detail.split(' ')[1] ?? '',
-      displayName: `CH, ${displayName}`,
+      displayName: a.label,
     };
   }
 
@@ -136,7 +141,8 @@ export class AdminGeoService implements GeoSearchService {
     let zip: string | undefined;
 
     const gemeinde = results.find(
-      (r) => r.layerBodId === 'ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill',
+      (r) =>
+        r.layerBodId === 'ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill',
     );
     const plzLayer = results.find(
       (r) => r.layerBodId === 'ch.swisstopo-vd.ortschaftenverzeichnis_plz',
@@ -147,7 +153,9 @@ export class AdminGeoService implements GeoSearchService {
       area = gemeinde.attributes.kanton ?? '';
     }
     if (plzLayer?.attributes) {
-      zip = plzLayer.attributes.plz ?? plzLayer.attributes.ortbez as string | undefined;
+      zip =
+        plzLayer.attributes.plz ??
+        (plzLayer.attributes.ortbez as string | undefined);
       if (!place && plzLayer.attributes.ortbez) {
         place = String(plzLayer.attributes.ortbez);
       }
