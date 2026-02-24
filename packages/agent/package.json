@@ -60,7 +60,7 @@
     "@types/supertest": "2.0.16",
     "@types/winston": "^2.4.4",
     "@types/ws": "^8.18.1",
-    "jest": "30.0.5",
+    "jest": "30.2.0",
     "prettier": "3.6.2",
     "source-map-support": "0.5.21",
     "supertest": "7.1.4",
