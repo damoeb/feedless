@@ -52,20 +52,6 @@ export class AppConfigService {
       ],
     },
     {
-      id: 'upcoming',
-      sideMenu: {
-        width: 200,
-        breakpoint: 'xs',
-      },
-      routes: [
-        {
-          path: '',
-          loadChildren: () =>
-            import('../products/upcoming/upcoming-product-routes').then((m) => m.UPCOMING_ROUTES),
-        },
-      ],
-    },
-    {
       id: 'changeTracker',
       routes: [
         {

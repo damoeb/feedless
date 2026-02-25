@@ -1,7 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { getCachedLocations } from '../products/upcoming/places';
 import { compact, omit } from 'lodash-es';
 import { NamedLatLon } from '../types';
 
@@ -68,22 +67,6 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
 })
 export class OpenStreetMapService {
   private readonly httpClient = inject(HttpClient);
-
-  // https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
-  async searchByObject({
-    countryCode,
-    place,
-    area,
-  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<NamedLatLon[]> {
-    const matches = getCachedLocations().filter(
-      (p) => p.countryCode === countryCode && p.place === place && p.area === area
-    );
-    if (matches.length > 0) {
-      return matches;
-    } else {
-      return this.searchByQuery(`${countryCode} ${area} ${place}`);
-    }
-  }
 
   async searchByQuery(query: string): Promise<NamedLatLon[]> {
     // const url = `/osm/search?q=${encodeURIComponent(

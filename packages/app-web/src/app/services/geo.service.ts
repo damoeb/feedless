@@ -3,7 +3,6 @@ import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
 import { NamedLatLon, Nullable } from '../types';
 import { OpenStreetMapService } from './open-street-map.service';
-import { getCachedLocations } from '../products/upcoming/places';
 
 export interface GeoJsResponse {
   longitude: string;
@@ -33,7 +32,7 @@ export class GeoService {
   private currentPosition: Subject<NamedLatLon>;
 
   constructor() {
-    const supported = getCachedLocations();
+    const supported: NamedLatLon[] = [];
     this.currentPosition = new BehaviorSubject<Nullable<NamedLatLon>>(
       supported[Math.floor(Math.random() * supported.length + 1)]
     );

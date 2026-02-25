@@ -1,5 +1,4 @@
 import { GqlVertical } from '../generated/graphql';
-import { upcomingVerticals } from './products/upcoming/upcoming';
 import { feedless } from './products/feedless/feedless';
 import { untold } from './products/untold-notes/untold';
 import { reader } from './products/reader/reader';
@@ -11,7 +10,6 @@ export type VerticalId =
   | 'rss-proxy'
   | 'visual-diff'
   | 'reader'
-  | 'upcoming'
   | 'digest'
   | 'untold'
   | 'feedless';
@@ -94,7 +92,6 @@ export const allVerticals: AllVerticals = {
     //   localSetupBash: ``,
     // },
     feedless,
-    upcomingVerticals,
     // {
     //   id: 'changeTracker',
     //   product: GqlProductCategory.PageChangeTracker,
