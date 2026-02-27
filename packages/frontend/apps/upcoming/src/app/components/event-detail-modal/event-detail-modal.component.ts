@@ -10,6 +10,7 @@ import {
   IonTextarea,
   ModalController,
 } from '@ionic/angular/standalone';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { RecordService } from '@feedless/components';
 import { addIcons } from 'ionicons';
 import {

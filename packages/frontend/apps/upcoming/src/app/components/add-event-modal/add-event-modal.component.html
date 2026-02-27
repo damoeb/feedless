@@ -1,0 +1,189 @@
+<ion-header style="box-shadow: none;">
+  <ion-toolbar>
+    <ion-title>Neues Event</ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="close()" [attr.aria-label]="'Schließen'">
+        <app-icon name="close-outline"></app-icon>
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+  <ion-toolbar class="wizard-steps">
+    <ion-buttons>
+      @for (step of [1, 2, 3, 4]; track step) {
+        <ion-button
+          shape="round"
+          [class.active]="currentStep() === step"
+          [class.done]="currentStep() > step"
+          [attr.aria-current]="currentStep() === step ? 'step' : null"
+          (click)="goToStep(step)"
+        >
+          <span class="step-number">{{ step }}</span>
+        </ion-button>
+        @if (step < 4) {
+          <span class="step-connector"></span>
+        }
+      }
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2 class="step-title">{{ stepTitles[currentStep() - 1] }}</h2>
+  <!-- Step 1: Single Event or Series -->
+  @if (currentStep() === 1) {
+    <ion-list lines="none" class="wizard-list">
+      <ion-radio-group [formControl]="eventForm.controls.eventType">
+        <ion-item button detail="false" class="option-card">
+          <ion-radio value="single" labelPlacement="end" justify="start">
+            <ion-label>
+              <strong>Single Event</strong>
+              <p>Ein einmaliges Ereignis</p>
+            </ion-label>
+          </ion-radio>
+        </ion-item>
+        <ion-item button detail="false" class="option-card">
+          <ion-radio value="series" labelPlacement="end" justify="start">
+            <ion-label>
+              <strong>Series of Events</strong>
+              <p>Wiederkehrende Veranstaltung</p>
+            </ion-label>
+          </ion-radio>
+        </ion-item>
+      </ion-radio-group>
+    </ion-list>
+  }
+
+  <!-- Step 2: Title, description, place, date, time, duration -->
+  @if (currentStep() === 2) {
+    <form class="wizard-form">
+      <ion-item>
+        <ion-input
+          [formControl]="eventForm.controls.title"
+          label="Titel"
+          labelPlacement="stacked"
+          placeholder="Titel der Veranstaltung"
+          [errorText]="eventForm.controls.title.hasError('required') ? 'Pflichtfeld' : ''"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-textarea
+          [formControl]="eventForm.controls.description"
+          label="Beschreibung"
+          labelPlacement="stacked"
+          placeholder="Kurze Beschreibung"
+          [autoGrow]="true"
+          [errorText]="eventForm.controls.description.hasError('required') ? 'Pflichtfeld' : ''"
+        ></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="eventForm.controls.place"
+          label="Ort (optional)"
+          labelPlacement="stacked"
+          placeholder="Veranstaltungsort"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="eventForm.controls.date"
+          label="Datum"
+          labelPlacement="stacked"
+          type="date"
+          [errorText]="eventForm.controls.date.hasError('required') ? 'Pflichtfeld' : ''"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="eventForm.controls.startTime"
+          label="Startzeit"
+          labelPlacement="stacked"
+          type="time"
+          [errorText]="eventForm.controls.startTime.hasError('required') ? 'Pflichtfeld' : ''"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          [formControl]="eventForm.controls.duration"
+          label="Dauer (Minuten)"
+          labelPlacement="stacked"
+          type="number"
+          min="1"
+          placeholder="60"
+          [errorText]="eventForm.controls.duration.hasError('required') ? 'Pflichtfeld' : ''"
+        ></ion-input>
+      </ion-item>
+    </form>
+  }
+
+  <!-- Step 3: Audience, commercial (price) or not -->
+  @if (currentStep() === 3) {
+    <ion-list lines="none" class="wizard-list">
+      <ion-item>
+        <ion-label>
+          <p>Ist die Veranstaltung kostenpflichtig?</p>
+        </ion-label>
+      </ion-item>
+      <ion-radio-group [formControl]="eventForm.controls.isCommercial">
+        <ion-item button detail="false" class="option-card">
+          <ion-radio [value]="false" labelPlacement="end" justify="start">
+            <ion-label>
+              <strong>Kostenlos</strong>
+              <p>Eintritt frei</p>
+            </ion-label>
+          </ion-radio>
+        </ion-item>
+        <ion-item button detail="false" class="option-card">
+          <ion-radio [value]="true" labelPlacement="end" justify="start">
+            <ion-label>
+              <strong>Kostenpflichtig</strong>
+              <p>Preis angeben</p>
+            </ion-label>
+          </ion-radio>
+        </ion-item>
+      </ion-radio-group>
+      @if (eventForm.controls.isCommercial.value) {
+        <ion-item>
+          <ion-input
+            [formControl]="eventForm.controls.price"
+            label="Preis (€)"
+            labelPlacement="stacked"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+          ></ion-input>
+        </ion-item>
+      }
+    </ion-list>
+  }
+
+  <!-- Step 4: Customize Promotion -->
+  @if (currentStep() === 4) {
+    <form class="wizard-form">
+      <ion-item>
+        <ion-textarea
+          [formControl]="eventForm.controls.promotionText"
+          label="Promo-Text (optional)"
+          labelPlacement="stacked"
+          placeholder="Kurzer Text für Social Media oder E-Mail"
+          [autoGrow]="true"
+        ></ion-textarea>
+      </ion-item>
+      <ion-item>
+        <ion-label>
+          <p>Weitere Promotion-Optionen können hier ergänzt werden.</p>
+        </ion-label>
+      </ion-item>
+    </form>
+  }
+
+  <div class="wizard-actions">
+    @if (!isFirstStep()) {
+      <ion-button fill="outline" (click)="prev()">Zurück</ion-button>
+    }
+    <span class="spacer"></span>
+    <ion-button (click)="next()" [disabled]="!canGoNext()">
+      {{ isLastStep() ? 'Fertig' : 'Weiter' }}
+    </ion-button>
+  </div>
+</ion-content>

@@ -26,6 +26,19 @@ import {
   getCachedLocations,
   OpenStreetMapService,
 } from '@feedless/geo';
+import {
+  IonButton,
+  IonButtons,
+  IonHeader,
+  IonItem,
+  IonList,
+  IonSearchbar,
+  IonSelect,
+  IonSelectOption,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular/standalone';
+import { AddEventModalComponent } from '../add-event-modal/add-event-modal.component';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
@@ -40,19 +53,13 @@ import {
   parseLocationFromUrl,
   upcomingBaseRoute,
 } from '../../upcoming-product-routes';
-import {
-  IonButton,
-  IonButtons,
-  IonHeader,
-  IonItem,
-  IonList,
-  IonSearchbar,
-  IonSelect,
-  IonSelectOption,
-  IonToolbar,
-} from '@ionic/angular/standalone';
 
-import { IconComponent, ProfileButtonComponent } from '@feedless/components';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import {
+  IconComponent,
+  ProfileButtonComponent,
+  RemoveIfProdDirective,
+} from '@feedless/components';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
 import { getPreviousLocations } from '../../pages/events/events.page';
@@ -85,6 +92,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonSearchbar,
     ProfileButtonComponent,
     IconComponent,
+    RemoveIfProdDirective,
   ],
   standalone: true,
 })
@@ -95,6 +103,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly adminGeoService = inject(AdminGeoService);
+  private readonly modalCtrl = inject(ModalController);
 
   locationFc = new FormControl<string>('');
   private readonly subscriptions: Subscription[] = [];
@@ -568,5 +577,14 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     this.expand = 'suggestions';
     const input = searchbar.getInputElement();
     input.then((el) => el.select());
+  }
+
+  async openAddEventModal(): Promise<void> {
+    const modal = await this.modalCtrl.create({
+      component: AddEventModalComponent,
+      cssClass: 'medium-modal',
+    });
+    await modal.present();
+    await modal.onDidDismiss();
   }
 }

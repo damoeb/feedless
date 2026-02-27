@@ -22,6 +22,7 @@ import {
 } from '../../pages/events/events.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { IconComponent } from '@feedless/components';
 import {
   RelativeDate,

@@ -3,6 +3,7 @@ import { UpcomingHeaderComponent } from './upcoming-header.component';
 import { AppTestModule, mockEvents } from '@feedless/testing';
 import dayjs from 'dayjs';
 import { getCachedLocations } from '@feedless/geo';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
 

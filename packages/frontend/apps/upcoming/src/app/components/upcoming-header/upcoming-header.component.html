@@ -83,9 +83,10 @@
         <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
         <!--      </ion-title>-->
         <ion-buttons>
-          <ion-button color="primary" fill="outline" shape="round">
+          <ion-button appDev color="primary" fill="outline" shape="round" (click)="openAddEventModal()">
             <app-icon name="add-outline" slot="start"></app-icon>
             Event
+            <!-- Add Event -->
           </ion-button>
           <!--          <app-dark-mode-button></app-dark-mode-button>-->
           <app-profile-button></app-profile-button>

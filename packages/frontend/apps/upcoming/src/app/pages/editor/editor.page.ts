@@ -16,6 +16,7 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { ActivatedRoute, RouterLink } from '@angular/router';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   AppConfigService,
   DarkModeButtonComponent,

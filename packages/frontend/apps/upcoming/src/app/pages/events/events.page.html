@@ -7,7 +7,7 @@
   ></app-upcoming-header>
 }
 <ion-content>
-  @if (isBrowser) {
+  @if (isBrowser && false) {
     <app-page-sidebar style="position: absolute; left: 0; height: 100%">
       <ion-list lines="none">
         <ion-list-header>
@@ -146,10 +146,6 @@
       </div>
     }
   </div>
+  <app-search-abo-button [location]="namedLatLon"></app-search-abo-button>
   <app-upcoming-footer style="margin-top: 100px" [location]="namedLatLon" [perimeter]="perimeter"></app-upcoming-footer>
 </ion-content>
-<ion-footer>
-  @if (namedLatLon) {
-    <app-search-abo-button [location]="namedLatLon" [perimeter]="perimeter"></app-search-abo-button>
-  }
-</ion-footer>

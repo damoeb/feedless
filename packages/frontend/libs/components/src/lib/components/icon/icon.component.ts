@@ -11,6 +11,7 @@ import { isPlatformBrowser } from '@angular/common';
 export class IconComponent {
   private readonly platformId = inject(PLATFORM_ID);
   readonly name = input.required<string>();
+  readonly size = input<string>();
   readonly slot = input<string>();
 
   readonly isBrowser = isPlatformBrowser(this.platformId);

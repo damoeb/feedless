@@ -28,6 +28,7 @@ import {
   withFetch,
   withInterceptorsFromDi,
 } from '@angular/common/http';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   ApolloAbortControllerService,
   HttpErrorInterceptorService,

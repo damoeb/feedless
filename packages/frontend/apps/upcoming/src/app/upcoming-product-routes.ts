@@ -1,5 +1,6 @@
 import { ActivatedRoute, Params, Routes } from '@angular/router';
 import dayjs, { Dayjs } from 'dayjs';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AuthGuardService } from '@feedless/components';
 import { NamedLatLon, upperCaseStringParser } from '@feedless/core';
 import {

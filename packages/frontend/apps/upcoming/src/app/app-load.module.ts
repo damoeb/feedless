@@ -4,6 +4,7 @@ import {
   provideHttpClient,
   withInterceptorsFromDi,
 } from '@angular/common/http';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService, ServerConfigService } from '@feedless/components';
 
 @NgModule({

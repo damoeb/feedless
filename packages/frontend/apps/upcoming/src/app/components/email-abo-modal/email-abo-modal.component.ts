@@ -12,6 +12,7 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { createEmailFormControl, NamedLatLon, Nullable } from '@feedless/core';
 import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 import dayjs from 'dayjs';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { ReportService } from '@feedless/components';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -24,12 +25,12 @@ type ReportFrequency = 'week' | 'month';
 
 @Component({
   selector: 'app-submit-modal',
-  templateUrl: './submit-modal.component.html',
-  styleUrls: ['./submit-modal.component.scss'],
+  templateUrl: './email-abo-modal.component.html',
+  styleUrls: ['./email-abo-modal.component.scss'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone: false,
 })
-export class SubmitModalComponent implements SubmitModalComponentProps {
+export class EmailAboModalComponent implements SubmitModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
   private readonly alertCtrl = inject(AlertController);
   private readonly reportService = inject(ReportService);

@@ -9,6 +9,7 @@ import {
 import { Router } from '@angular/router';
 import dayjs from 'dayjs';
 import { EventService } from '../../event.service';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
 import { LatLng } from '@feedless/core';

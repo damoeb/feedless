@@ -1,6 +1,7 @@
 import { Component, inject, input, PLATFORM_ID } from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
 import { AlertController, IonButton } from '@ionic/angular/standalone';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService } from '@feedless/components';
 import { addIcons } from 'ionicons';
 import {
@@ -13,7 +14,7 @@ import {
   sendOutline,
 } from 'ionicons/icons';
 import { RouterLink } from '@angular/router';
-import { SubmitModalModule } from '../submit-modal/submit-modal.module';
+import { SubmitModalModule } from '../email-abo-modal/submit-modal.module';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({

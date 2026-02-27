@@ -1,19 +1,19 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SubmitModalComponent } from './submit-modal.component';
+import { EmailAboModalComponent } from './email-abo-modal.component';
 import { SubmitModalModule } from './submit-modal.module';
 import { AppTestModule } from '@feedless/testing';
 
-describe('SubmitModalComponent', () => {
-  let component: SubmitModalComponent;
-  let fixture: ComponentFixture<SubmitModalComponent>;
+describe('EmailAboModalComponent', () => {
+  let component: EmailAboModalComponent;
+  let fixture: ComponentFixture<EmailAboModalComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SubmitModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(SubmitModalComponent);
+    fixture = TestBed.createComponent(EmailAboModalComponent);
     component = fixture.componentInstance;
     component.location = {} as any;
     fixture.detectChanges();

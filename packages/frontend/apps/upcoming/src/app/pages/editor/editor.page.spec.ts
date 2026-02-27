@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AppTestModule, mockRepository } from '@feedless/testing';
 import { EditorPage } from './editor.page';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService, PageService } from '@feedless/components';
 
 describe('EditorPage', () => {

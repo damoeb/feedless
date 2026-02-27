@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { SubmitModalComponent } from './submit-modal.component';
+import { EmailAboModalComponent } from './email-abo-modal.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {
   IonButton,
@@ -17,11 +17,12 @@ import {
   IonTitle,
   IonToolbar,
 } from '@ionic/angular/standalone';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { IconComponent } from '@feedless/components';
 
 @NgModule({
-  declarations: [SubmitModalComponent],
-  exports: [SubmitModalComponent],
+  declarations: [EmailAboModalComponent],
+  exports: [EmailAboModalComponent],
   imports: [
     IonHeader,
     IonToolbar,

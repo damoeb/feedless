@@ -5,6 +5,7 @@ import {
   IonButton,
   ModalController,
 } from '@ionic/angular/standalone';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   AppConfigService,
   IconComponent,
@@ -13,10 +14,10 @@ import {
 import { addIcons } from 'ionicons';
 import { notificationsOutline } from 'ionicons/icons';
 import {
-  SubmitModalComponent,
+  EmailAboModalComponent,
   SubmitModalComponentProps,
-} from '../submit-modal/submit-modal.component';
-import { SubmitModalModule } from '../submit-modal/submit-modal.module';
+} from '../email-abo-modal/email-abo-modal.component';
+import { SubmitModalModule } from '../email-abo-modal/submit-modal.module';
 import {
   GqlRecordOrderByInput,
   GqlRecordsWhereInput,
@@ -64,7 +65,7 @@ export class SearchAboButtonComponent {
       location: this.location(),
     };
     const modal = await this.modalCtrl.create({
-      component: SubmitModalComponent,
+      component: EmailAboModalComponent,
       componentProps,
       cssClass: 'medium-modal',
       backdropDismiss: false,

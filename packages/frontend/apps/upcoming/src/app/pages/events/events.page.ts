@@ -8,6 +8,7 @@ import {
   PLATFORM_ID,
   viewChild,
 } from '@angular/core';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   AppConfigService,
   PageService,
@@ -39,7 +40,6 @@ import { UpcomingHeaderComponent } from '../../components/upcoming-header/upcomi
 import {
   IonChip,
   IonContent,
-  IonFooter,
   IonLabel,
   IonList,
   IonListHeader,
@@ -148,7 +148,6 @@ interface EventGroupsPerDay {
     IonLabel,
     IonListHeader,
     SearchAboButtonComponent,
-    IonFooter,
   ],
   standalone: true,
 })

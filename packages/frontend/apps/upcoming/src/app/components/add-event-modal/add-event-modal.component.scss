@@ -1,0 +1,12 @@
+.step-connector {
+  flex: 1;
+  max-width: 24px;
+  height: 2px;
+  background: var(--ion-color-light-shade);
+  margin: 0 2px;
+}
+
+.wizard-list,
+.wizard-form {
+  margin-bottom: 24px;
+}

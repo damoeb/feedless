@@ -6,6 +6,7 @@ import {
 } from '@angular/core';
 import { IonContent, IonHeader } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { PageService, PageTags } from '@feedless/components';
 import dayjs from 'dayjs';
 
