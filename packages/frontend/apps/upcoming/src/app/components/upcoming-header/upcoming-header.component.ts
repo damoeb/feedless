@@ -28,6 +28,7 @@ import {
 } from '@feedless/geo';
 import { addIcons } from 'ionicons';
 import {
+  addOutline,
   calendarOutline,
   chevronBackOutline,
   chevronForwardOutline,
@@ -39,7 +40,6 @@ import {
   parseLocationFromUrl,
   upcomingBaseRoute,
 } from '../../upcoming-product-routes';
-import { getPreviousLocations } from '../events/events.page';
 import {
   IonButton,
   IonButtons,
@@ -52,12 +52,10 @@ import {
   IonToolbar,
 } from '@ionic/angular/standalone';
 
-import {
-  DarkModeButtonComponent,
-  ProfileButtonComponent,
-} from '@feedless/components';
+import { IconComponent, ProfileButtonComponent } from '@feedless/components';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
+import { getPreviousLocations } from '../../pages/events/events.page';
 
 type SiteLocale = 'de' | 'en';
 type LocationSuggestion = {
@@ -81,12 +79,12 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
     IonSelect,
     IonSelectOption,
     IonButtons,
-    DarkModeButtonComponent,
     IonList,
     IonItem,
     RouterLink,
     IonSearchbar,
     ProfileButtonComponent,
+    IconComponent,
   ],
   standalone: true,
 })
@@ -154,6 +152,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         chevronBackOutline,
         chevronForwardOutline,
         footstepsOutline,
+        addOutline,
       });
     }
   }

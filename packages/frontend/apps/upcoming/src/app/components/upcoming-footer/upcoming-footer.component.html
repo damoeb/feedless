@@ -1,0 +1,10 @@
+@if (isBrowser) {
+  <div class="ion-no-border">
+    <div style="opacity: 0.8; text-align: center">
+      <ion-button fill="clear" routerLink="/ueber-uns"> Über uns</ion-button>
+      <ion-button fill="clear" href="mailto:markus@lokale.events"> Kontakt</ion-button>
+      <ion-button fill="clear" (click)="showAttribution()"> Impressum</ion-button>
+      <ion-button fill="clear" routerLink="/management" rel="nofollow"> ...</ion-button>
+    </div>
+  </div>
+}

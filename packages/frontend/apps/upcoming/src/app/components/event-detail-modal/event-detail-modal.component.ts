@@ -4,20 +4,13 @@ import {
   AlertController,
   IonBadge,
   IonButton,
-  IonButtons,
   IonContent,
-  IonHeader,
   IonInput,
   IonItem,
   IonTextarea,
-  IonToolbar,
   ModalController,
 } from '@ionic/angular/standalone';
-import {
-  IconComponent,
-  RecordService,
-  RemoveIfProdDirective,
-} from '@feedless/components';
+import { RecordService } from '@feedless/components';
 import { addIcons } from 'ionicons';
 import {
   calendarNumberOutline,
@@ -28,8 +21,8 @@ import {
 import { isPlatformBrowser } from '@angular/common';
 import dayjs from 'dayjs';
 import 'dayjs/locale/de';
-import { LocalizedEvent } from '../../../event.service';
 import { NamedLatLon } from '@feedless/core';
+import { LocalizedEvent } from '../../event.service';
 
 @Component({
   selector: 'app-event-detail-modal',
@@ -38,17 +31,12 @@ import { NamedLatLon } from '@feedless/core';
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    IonHeader,
-    IonToolbar,
-    IonButtons,
     IonButton,
-    IconComponent,
     IonContent,
     IonBadge,
     IonItem,
     IonInput,
     IonTextarea,
-    RemoveIfProdDirective,
   ],
 })
 export class EventDetailModalComponent {

@@ -35,10 +35,11 @@ import {
   sendOutline,
 } from 'ionicons/icons';
 import { isDefined, LatLng, NamedLatLon, Nullable } from '@feedless/core';
-import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.component';
+import { UpcomingHeaderComponent } from '../../components/upcoming-header/upcoming-header.component';
 import {
   IonChip,
   IonContent,
+  IonFooter,
   IonLabel,
   IonList,
   IonListHeader,
@@ -46,13 +47,14 @@ import {
   IonText,
   ModalController,
 } from '@ionic/angular/standalone';
-import { UpcomingFooterComponent } from '../upcoming-footer/upcoming-footer.component';
+import { UpcomingFooterComponent } from '../../components/upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../../event.service';
-import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.component';
+import { InlineCalendarComponent } from '../../components/inline-calendar/inline-calendar.component';
 import { renderPath } from 'typesafe-routes';
 import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
-import { EventDetailModalComponent } from './event-detail-modal/event-detail-modal.component';
+import { EventDetailModalComponent } from '../../components/event-detail-modal/event-detail-modal.component';
 import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
+import { SearchAboButtonComponent } from '../../components/search-abo-button/search-abo-button.component';
 
 type Distance2Events = { [distance: string]: LocalizedEvent[] };
 type EventsByDistance = {
@@ -145,6 +147,8 @@ interface EventGroupsPerDay {
     IonList,
     IonLabel,
     IonListHeader,
+    SearchAboButtonComponent,
+    IonFooter,
   ],
   standalone: true,
 })

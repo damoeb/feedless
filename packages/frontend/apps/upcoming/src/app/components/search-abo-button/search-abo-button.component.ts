@@ -1,41 +1,21 @@
-import {
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  PLATFORM_ID,
-} from '@angular/core';
+import { Component, inject, input, PLATFORM_ID } from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
 import {
   ActionSheetController,
-  AlertController,
   IonButton,
-  IonFooter,
   ModalController,
 } from '@ionic/angular/standalone';
 import {
   AppConfigService,
   IconComponent,
-  RemoveIfProdDirective,
   ServerConfigService,
 } from '@feedless/components';
 import { addIcons } from 'ionicons';
-import {
-  calendarNumberOutline,
-  closeOutline,
-  heart,
-  locateOutline,
-  logoRss,
-  mailOutline,
-  sendOutline,
-} from 'ionicons/icons';
+import { notificationsOutline } from 'ionicons/icons';
 import {
   SubmitModalComponent,
   SubmitModalComponentProps,
 } from '../submit-modal/submit-modal.component';
-import { Subscription } from 'rxjs';
-import { RouterLink } from '@angular/router';
 import { SubmitModalModule } from '../submit-modal/submit-modal.module';
 import {
   GqlRecordOrderByInput,
@@ -48,45 +28,28 @@ import { isPlatformBrowser } from '@angular/common';
 type SubscriptionType = 'cal' | 'atom';
 
 @Component({
-  selector: 'app-upcoming-footer',
-  templateUrl: './upcoming-footer.component.html',
-  styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [
-    IonFooter,
-    IonButton,
-    IconComponent,
-    RemoveIfProdDirective,
-    RouterLink,
-    SubmitModalModule,
-    IonFooter,
-    IonButton,
-  ],
+  selector: 'app-search-abo-button',
+  templateUrl: './search-abo-button.component.html',
+  styleUrls: ['./search-abo-button.component.scss'],
+  imports: [IonButton, IconComponent, SubmitModalModule, IonButton],
   standalone: true,
 })
-export class UpcomingFooterComponent implements OnInit, OnDestroy {
+export class SearchAboButtonComponent {
   private readonly modalCtrl = inject(ModalController);
-  private readonly alertCtrl = inject(AlertController);
   private readonly appConfigService = inject(AppConfigService);
   private readonly geoService = inject(GeoService);
   private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly serverConfig = inject(ServerConfigService);
   private readonly platformId = inject(PLATFORM_ID);
 
-  readonly location = input<NamedLatLon>();
-  readonly perimeter = input<number>(10);
-  private subscriptions: Subscription[] = [];
+  readonly location = input.required<NamedLatLon>();
+  readonly perimeter = input<number>();
   protected isBrowser = isPlatformBrowser(this.platformId);
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
       addIcons({
-        sendOutline,
-        heart,
-        locateOutline,
-        mailOutline,
-        calendarNumberOutline,
-        logoRss,
-        closeOutline,
+        notificationsOutline,
       });
     }
   }
@@ -109,82 +72,6 @@ export class UpcomingFooterComponent implements OnInit, OnDestroy {
     await modal.present();
     await modal.onDidDismiss();
   }
-
-  async showAttribution() {
-    const alert = await this.alertCtrl.create({
-      header: 'Impressum',
-      backdropDismiss: false,
-      message:
-        'Dies ist ein privates Hobbyprojekt um den vielen kleinen Veranstaltungen mehr Sichtbarkeit zu geben und den Usern eine' +
-        'vereinfachte Möglichkeiten zu geben, diese nicht mehr zu verpassen.',
-      inputs: [
-        {
-          label: 'Betreiber',
-          attributes: {
-            readonly: true,
-          },
-          type: 'text',
-          value: this.appConfigService.customProperties['operatorName'],
-        },
-        {
-          label: 'Adresse',
-          attributes: {
-            readonly: true,
-          },
-          type: 'text',
-          value: this.appConfigService.customProperties['operatorAddress'],
-        },
-        {
-          label: 'Email',
-          attributes: {
-            readonly: true,
-          },
-          type: 'text',
-          value: this.appConfigService.customProperties['operatorEmail'],
-        },
-      ],
-      buttons: [
-        {
-          role: 'cancel',
-          text: 'Schliessen',
-        },
-      ],
-    });
-    await alert.present();
-  }
-
-  ngOnInit(): void {
-    this.subscriptions
-      .push
-      // this.geoService.getCurrentLatLon().subscribe((location) => {
-      //   // ignore
-      // }),
-      ();
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.forEach((s) => s.unsubscribe());
-  }
-
-  // getPlaceUrl(location: NamedLatLon): string {
-  //   if (location) {
-  //     const now = dayjs();
-  //     const { countryCode, area, place } = location;
-  //     return (
-  //       '/' +
-  //       homeRoute({})
-  //         .countryCode({ countryCode })
-  //         .region({ region: area })
-  //         .events({
-  //           place,
-  //           perimeter: 10,
-  //           year: parseInt(now.format('YYYY')),
-  //           month: parseInt(now.format('MM')),
-  //           day: parseInt(now.format('DD')),
-  //         }).$
-  //     );
-  //   }
-  // }
 
   useUsersPosition() {
     if (isPlatformBrowser(this.platformId)) {

@@ -15,7 +15,11 @@ import { RouterLink } from '@angular/router';
 import { isPlatformBrowser, NgClass } from '@angular/common';
 import 'dayjs/locale/de';
 import { IonButton } from '@ionic/angular/standalone';
-import { DateWindowItem, formatDate, getWeekday } from '../events/events.page';
+import {
+  DateWindowItem,
+  formatDate,
+  getWeekday,
+} from '../../pages/events/events.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
 import { IconComponent } from '@feedless/components';

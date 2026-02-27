@@ -219,11 +219,11 @@ export const UPCOMING_ROUTES: Routes = [
     loadComponent: () =>
       import('./pages/terms/terms.page').then((m) => m.TermsPage),
   },
-  // {
-  //   path: toPath(template(upcomingBaseRoute.login)),
-  //   loadComponent: () =>
-  //     import('../../pages/login/login.page').then((m) => m.LoginPage),
-  // },
+  {
+    path: template(upcomingBaseRoute._.login),
+    loadComponent: () =>
+      import('@feedless/components').then((m) => m.LoginPage),
+  },
   {
     path: '',
     pathMatch: 'full',

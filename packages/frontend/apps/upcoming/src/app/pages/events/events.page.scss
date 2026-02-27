@@ -1,5 +1,9 @@
 @use '../../upcoming-mixins';
 
+ion-content {
+  --offset-bottom: -100px !important;
+}
+
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;

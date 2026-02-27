@@ -1,20 +1,20 @@
-<ion-header style="box-shadow: none;">
-  <ion-toolbar>
-    <ion-buttons slot="end">
-      @if (editMode) {
-        <ion-button (click)="confirmDelete()" color="danger" appDev>
-          <app-icon name="trash-outline"></app-icon>
-        </ion-button>
-        <ion-button (click)="save()" appDev>Speichern</ion-button>
-      } @else {
-        <ion-button (click)="toggleEditMode()" appDev>Bearbeiten</ion-button>
-      }
-      <ion-button (click)="close()" [attr.aria-label]="'Schließen'">
-        <app-icon name="close-outline"></app-icon>
-      </ion-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
+<!--<ion-header style="box-shadow: none;">-->
+<!--  <ion-toolbar>-->
+<!--    <ion-buttons slot="end">-->
+<!--      @if (editMode) {-->
+<!--        <ion-button (click)="confirmDelete()" color="danger" appDev>-->
+<!--          <app-icon name="trash-outline"></app-icon>-->
+<!--        </ion-button>-->
+<!--        <ion-button (click)="save()" appDev>Speichern</ion-button>-->
+<!--      } @else {-->
+<!--        <ion-button (click)="toggleEditMode()" appDev>Bearbeiten</ion-button>-->
+<!--      }-->
+<!--      <ion-button (click)="close()" [attr.aria-label]="'Schließen'">-->
+<!--        <app-icon name="close-outline"></app-icon>-->
+<!--      </ion-button>-->
+<!--    </ion-buttons>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
 <ion-content class="ion-padding">
   @if (editMode) {
     <form class="edit-form" (ngSubmit)="save()">
