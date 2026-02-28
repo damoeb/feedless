@@ -146,3 +146,25 @@ app-external-link {
     }
   }
 }
+
+.medium-modal {
+
+  @media only screen and (max-width: 700px) {
+    &.medium-modal {
+      --width: 100vw;
+      --height: 100vh;
+    }
+  }
+
+  @media screen and (min-width: 701px) {
+    &.medium-modal {
+      --width: 600px;
+      --height: 700px;
+    }
+  }
+
+  //& > * {
+  //  border: 6px solid rgba(var(--ion-color-primary-rgb), 0.8);
+  //  border-radius: 8px;
+  //}
+}

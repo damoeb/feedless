@@ -16,12 +16,13 @@ import dayjs from 'dayjs';
 import { ReportService } from '@feedless/components';
 import { isPlatformBrowser } from '@angular/common';
 
-export interface SubmitModalComponentProps {
+export interface EmailAboModalComponentProps {
   repositoryId: string;
   location: Nullable<NamedLatLon>;
 }
 
 type ReportFrequency = 'week' | 'month';
+type Sex = 'm' | 'f' | undefined;
 
 @Component({
   selector: 'app-submit-modal',
@@ -30,7 +31,7 @@ type ReportFrequency = 'week' | 'month';
   // eslint-disable-next-line @angular-eslint/prefer-standalone
   standalone: false,
 })
-export class EmailAboModalComponent implements SubmitModalComponentProps {
+export class EmailAboModalComponent implements EmailAboModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
   private readonly alertCtrl = inject(AlertController);
   private readonly reportService = inject(ReportService);
@@ -42,6 +43,8 @@ export class EmailAboModalComponent implements SubmitModalComponentProps {
   reportFrequencyMonth: ReportFrequency = 'month';
 
   protected formGroup = new FormGroup({
+    sex: new FormControl<Sex>(undefined),
+    age: new FormControl<number>(undefined),
     frequency: new FormControl<ReportFrequency>('week'),
     acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
     email: createEmailFormControl(''),

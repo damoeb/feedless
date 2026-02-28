@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header style="box-shadow: none">
   <ion-toolbar>
     <ion-title>Gratis Email Abo erstellen</ion-title>
     <ion-buttons slot="end">
@@ -14,7 +14,7 @@
     <strong>{{ location.displayName }}</strong
     >! 100% kostenlos und sicher!
   </p>
-  <ion-item style="--background: transparent">
+  <ion-item lines="none">
     <ion-input
       [formControl]="formGroup.controls.name"
       label="Dein Name"
@@ -24,7 +24,7 @@
     >
     </ion-input>
   </ion-item>
-  <ion-item style="--background: transparent">
+  <ion-item lines="none">
     <ion-input
       [formControl]="formGroup.controls.email"
       label="Deine Email"
@@ -34,31 +34,32 @@
     >
     </ion-input>
   </ion-item>
+
   <div>
     <ion-radio-group [formControl]="formGroup.controls.frequency" class="ion-margin-top">
       <ion-item style="--background: transparent; margin-top: 30px">
         <ion-label color="medium">
-          Wie oft willst du deine Veranstaltungsvorschau erhalten?
+          <h2>
+            Wie oft willst du deine Veranstaltungsvorschau erhalten?
+          </h2>
         </ion-label>
       </ion-item>
-      <ion-item style="--background: transparent">
+      <ion-item>
         <ion-label>
           <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyWeek"
           >Wöchentlich
           </ion-radio>
         </ion-label>
         <ion-label>
-          <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyMonth"
-          >Monatlich
+          <ion-radio labelPlacement="end" justify="start" [value]="reportFrequencyMonth">Monatlich
           </ion-radio>
           <!--          <ion-note> Static tracking based on one URL</ion-note>-->
         </ion-label>
       </ion-item>
     </ion-radio-group>
   </div>
-</ion-content>
-<ion-footer>
-  <ion-list>
+
+  <ion-list class="ion-padding-top">
     <ion-item
       [color]="
         formGroup.controls.acceptedTerms.invalid && !formGroup.controls.acceptedTerms.untouched
@@ -77,10 +78,11 @@
       </ion-checkbox>
     </ion-item>
     <div style="display: flex">
-      <ion-button style="flex: 1" color="primary" expand="block" (click)="createMailSubscription()">
+      <ion-button style="flex: 1" expand="block" (click)="createMailSubscription()">
         Jetzt Abonnieren
         <app-icon name="send-outline" slot="end"></app-icon>
       </ion-button>
     </div>
   </ion-list>
-</ion-footer>
+
+</ion-content>

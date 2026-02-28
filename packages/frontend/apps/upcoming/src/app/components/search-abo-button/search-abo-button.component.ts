@@ -15,7 +15,7 @@ import { addIcons } from 'ionicons';
 import { notificationsOutline } from 'ionicons/icons';
 import {
   EmailAboModalComponent,
-  SubmitModalComponentProps,
+  EmailAboModalComponentProps,
 } from '../email-abo-modal/email-abo-modal.component';
 import { SubmitModalModule } from '../email-abo-modal/submit-modal.module';
 import {
@@ -60,7 +60,7 @@ export class SearchAboButtonComponent {
   }
 
   async createMailSubscription() {
-    const componentProps: SubmitModalComponentProps = {
+    const componentProps: EmailAboModalComponentProps = {
       repositoryId: this.getRepositoryId(),
       location: this.location(),
     };
@@ -68,16 +68,10 @@ export class SearchAboButtonComponent {
       component: EmailAboModalComponent,
       componentProps,
       cssClass: 'medium-modal',
-      backdropDismiss: false,
+      backdropDismiss: true,
     });
     await modal.present();
     await modal.onDidDismiss();
-  }
-
-  useUsersPosition() {
-    if (isPlatformBrowser(this.platformId)) {
-      this.geoService.requestLocationFromBrowser();
-    }
   }
 
   async createSubscription() {
