@@ -88,7 +88,6 @@ export class LoginPage implements OnInit, OnDestroy {
   }
 
   async ngOnInit() {
-    this.appConfig.setPageTitle('Login');
     if (this.serverConfig.hasProfile(GqlProfileName.SelfHosted)) {
       this.showNoSignupBanner = false;
       this.showUserPasswordLogin = true;

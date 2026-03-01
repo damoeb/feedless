@@ -74,38 +74,38 @@ export class SearchAboButtonComponent {
     await modal.onDidDismiss();
   }
 
-  async createSubscription() {
-    const actionSheet = await this.actionSheetCtrl.create({
-      header: 'Veranstaltungen abonieren',
-      buttons: [
-        {
-          icon: 'mail-outline',
-          text: 'Email Abo',
-          handler: () => this.createMailSubscription(),
-        },
-        {
-          icon: 'calendar-number-outline',
-          text: 'Kalender Import (iCal)',
-          handler: () => this.createCalenderOrFeedSubscription('cal'),
-        },
-        {
-          icon: 'logo-rss',
-          text: 'RSS Feed',
-          handler: () => this.createCalenderOrFeedSubscription('atom'),
-        },
-        {
-          icon: 'close-outline',
-          text: 'Abbrechen',
-          role: 'cancel',
-          data: {
-            action: 'cancel',
-          },
-        },
-      ],
-    });
-
-    await actionSheet.present();
-  }
+  // async createSubscription() {
+  //   const actionSheet = await this.actionSheetCtrl.create({
+  //     header: 'Veranstaltungen abonieren',
+  //     buttons: [
+  //       {
+  //         icon: 'mail-outline',
+  //         text: 'Email Abo',
+  //         handler: () => this.createMailSubscription(),
+  //       },
+  //       {
+  //         icon: 'calendar-number-outline',
+  //         text: 'Kalender Import (iCal)',
+  //         handler: () => this.createCalenderOrFeedSubscription('cal'),
+  //       },
+  //       {
+  //         icon: 'logo-rss',
+  //         text: 'RSS Feed',
+  //         handler: () => this.createCalenderOrFeedSubscription('atom'),
+  //       },
+  //       {
+  //         icon: 'close-outline',
+  //         text: 'Abbrechen',
+  //         role: 'cancel',
+  //         data: {
+  //           action: 'cancel',
+  //         },
+  //       },
+  //     ],
+  //   });
+  //
+  //   await actionSheet.present();
+  // }
 
   private createCalenderOrFeedSubscription(type: SubscriptionType) {
     const currentLocation = this.location();

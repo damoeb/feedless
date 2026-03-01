@@ -60,8 +60,4 @@ export class AppConfigService {
     // this.activeProductConfig = appConfigFull;
     // this.activeProductConfigSubject.next(appConfigFull);
   }
-
-  setPageTitle(title: string) {
-    this.titleService.setTitle(`${title} | ${this.activeProductConfig.title}`);
-  }
 }
