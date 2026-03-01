@@ -1,0 +1,24 @@
+User-agent: *
+Allow: /
+Allow: /events/
+Allow: /ueber-uns/
+Allow: /agb/
+
+# Disallow admin/management areas
+Disallow: /management/
+Disallow: /login
+
+# Allow all search engines to access events
+Allow: /events/in/
+
+Sitemap: https://lokale.events/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Additional instructions for specific bots
+User-agent: Googlebot
+Crawl-delay: 0
+
+User-agent: Bingbot
+Crawl-delay: 1

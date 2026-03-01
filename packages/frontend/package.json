@@ -13,6 +13,7 @@
     "start:upcoming:prod": "ng serve -c production",
     "start:visual-diff": "nx serve apps:visual-diff",
     "build": "nx run-many -t build",
+    "generate:sitemap": "ts-node apps/upcoming/generate-sitemaps.ts",
     "build:prod": "nx run-many -t build --configuration=production",
     "test": "nx run-many -t test",
     "test:ci": "#jest --ci --coverage --watchAll=false",
