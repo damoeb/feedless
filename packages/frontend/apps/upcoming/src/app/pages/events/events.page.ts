@@ -274,6 +274,14 @@ export class EventsPage implements OnInit, OnDestroy {
     return date?.locale('de')?.format(format);
   }
 
+  private getCanonicalUrlFromPath(): string {
+    const path = this.locationService.path();
+    if (!path) {
+      return 'https://lokale.events/';
+    }
+    return `https://lokale.events${path}`;
+  }
+
   private getPageTags(): PageTags {
     const location = this.namedLatLon;
     const robots = this.activatedRoute.snapshot.params['eventId']
@@ -314,7 +322,7 @@ export class EventsPage implements OnInit, OnDestroy {
         expiresAt: this.date,
         author: 'lokale.events Team',
         robots,
-        canonicalUrl: `https://lokale.events${this.createDateUrl(this.date, location)}`,
+        canonicalUrl: this.getCanonicalUrlFromPath(),
       };
     } else {
       return {
@@ -337,7 +345,7 @@ export class EventsPage implements OnInit, OnDestroy {
         ],
         author: 'lokale.events Team',
         robots: 'index, follow',
-        canonicalUrl: 'https://lokale.events/',
+        canonicalUrl: this.getCanonicalUrlFromPath(),
       };
     }
   }
