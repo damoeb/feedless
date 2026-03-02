@@ -561,12 +561,16 @@ export class EventsPage implements OnInit, OnDestroy {
 
   createWebsiteSchema(): WebPage {
     const tags = this.getPageTags();
-    const events = this.placesByDistancePerDay[0].eventGroups
-      .flatMap((distanced) => distanced.places)
-      .flatMap((place) =>
-        place.events.map((event) => this.toSchemaOrgEvent(event, place.place)),
-      )
-      .filter((event) => event);
+    const events =
+      this.placesByDistancePerDay?.flatMap((day) =>
+        day.eventGroups.flatMap((distanced) =>
+          distanced.places.flatMap((place) =>
+            place.events.map((event) =>
+              this.toSchemaOrgEvent(event, place.place, this.createEventUrl(event)),
+            ),
+          ),
+        ),
+      ) ?? [];
 
     return {
       '@type': 'WebPage',
@@ -574,7 +578,7 @@ export class EventsPage implements OnInit, OnDestroy {
       description: tags.description,
       datePublished: tags.publishedAt.toISOString(),
       temporalCoverage: `${this.date.subtract(2, 'months').toISOString()}/${this.date.add(1, 'week').toISOString()}`,
-      url: 'this.locationService.href',
+      url: tags.canonicalUrl ?? tags.url ?? 'https://lokale.events',
       inLanguage: 'de-DE',
       about: {
         '@type': 'Thing',
@@ -603,19 +607,18 @@ export class EventsPage implements OnInit, OnDestroy {
   private toSchemaOrgEvent(
     event: LocalizedEvent,
     location: NamedLatLon,
+    eventPageUrl?: string,
   ): SchemaEvent {
     const startDate = dayjs(event.startingAt);
     return {
       '@type': 'Event',
       name: event.title,
       description: event.text || `Veranstaltung in ${location.displayName}`,
-      eventStatus: startDate.isBefore(dayjs())
-        ? 'EventScheduled'
-        : 'EventCancelled',
+      eventStatus: 'EventScheduled',
       eventAttendanceMode: 'OfflineEventAttendanceMode',
       startDate: startDate.toISOString(),
       endDate: startDate.endOf('day').toISOString(),
-      url: event.url,
+      url: eventPageUrl ?? event.url,
       location: {
         '@type': 'Place',
         name: location.displayName,

@@ -24,6 +24,7 @@
         <a
           [routerLink]="'/' + getDateUrl(d.date)"
           [attr.rel]="getSeoLinkAttributes(d.date)"
+          [attr.title]="'Events am ' + getWeekday(d.date) + ', ' + formatDate(d.date, 'D') + '. ' + formatDate(d.date, 'MMM YY')"
           [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length - 4 }"
         >
           <div
@@ -51,7 +52,11 @@
     </div>
     <div style="font-size: 2rem; align-content: center">
       @if (isValidOffset(4)) {
-        <a [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))" (click)="shiftDateWindow(4, $event)">
+        <a
+          [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))"
+          title="Weiter im Kalender"
+          (click)="shiftDateWindow(4, $event)"
+        >
           <app-icon
             aria-label="Weiter im Kalender"
             name="arrow-forward-outline"
