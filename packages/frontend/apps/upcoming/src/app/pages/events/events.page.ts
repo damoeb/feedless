@@ -326,7 +326,7 @@ export class EventsPage implements OnInit, OnDestroy {
       };
     } else {
       return {
-        title: `lokale.events | Entdecke Events und Veranstaltungen in deiner Umgebung`,
+        title: `Veranstaltungen in deiner Nähe entdecken`,
         description: `Finde spannende lokale Veranstaltungen in deiner Nähe. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - entdecke was deine Region zu bieten hat.`,
         publisher: 'lokale.events',
         category: 'Events',

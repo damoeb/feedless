@@ -166,40 +166,46 @@ export class PageService {
   }
 
   private clearMetaTags() {
-    // Remove existing meta tags to prevent duplicates
-    // Only clear in browser to avoid issues during SSR
-    if (isPlatformBrowser(this.platformId)) {
-      const existingTags = this.document.querySelectorAll(
-        'meta[name], meta[property]',
-      );
-      existingTags.forEach((tag) => {
-        const name = tag.getAttribute('name') || tag.getAttribute('property');
-        if (
-          name &&
-          (name.startsWith('og:') ||
-            name.startsWith('twitter:') ||
-            [
-              'description',
-              'keywords',
-              'author',
-              'robots',
-              'geo.region',
-              'geo.placename',
-              'geo.position',
-              'ICBM',
-            ].includes(name))
-        ) {
-          tag.remove();
-        }
-      });
+    // Remove existing meta tags (from index.html or previous setMetaTags) to prevent duplicates.
+    // Run on both SSR and browser so server-rendered HTML has only one set of meta tags.
+    const existingTags = this.document.querySelectorAll(
+      'meta[name], meta[property]',
+    );
+    existingTags.forEach((tag) => {
+      const name = tag.getAttribute('name') || tag.getAttribute('property');
+      if (
+        name &&
+        (name.startsWith('og:') ||
+          name.startsWith('twitter:') ||
+          [
+            'description',
+            'keywords',
+            'author',
+            'robots',
+            'viewport',
+            'geo.region',
+            'geo.placename',
+            'geo.position',
+            'ICBM',
+          ].includes(name))
+      ) {
+        tag.remove();
+      }
+    });
 
-      // Remove existing JSON-LD scripts
+    // Remove existing JSON-LD scripts (browser only to avoid wiping SSR-added script before add)
+    if (isPlatformBrowser(this.platformId)) {
       const existingJsonLd = this.document.querySelectorAll(
         'script[type="application/ld+json"]',
       );
       existingJsonLd.forEach((script) => script.remove());
 
-      // Remove existing canonical links
+      const existingCanonical = this.document.querySelectorAll(
+        'link[rel="canonical"]',
+      );
+      existingCanonical.forEach((link) => link.remove());
+    } else {
+      // SSR: still remove canonical so we don't keep an old one when setCanonicalUrl runs
       const existingCanonical = this.document.querySelectorAll(
         'link[rel="canonical"]',
       );
