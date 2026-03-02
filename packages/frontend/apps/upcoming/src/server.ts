@@ -1,4 +1,5 @@
 import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
+import compression from 'compression';
 import express from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -7,6 +8,7 @@ import { renderPath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
 
 const app = express();
+app.use(compression());
 const angularApp = new AngularNodeAppEngine();
 
 function createRequestLogger() {

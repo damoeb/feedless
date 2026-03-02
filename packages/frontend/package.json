@@ -44,6 +44,7 @@
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.23.0",
     "@ionic/angular": "^8.7.16",
+    "compression": "^1.8.1",
     "d3-scale": "4.0.2",
     "dayjs": "^1.11.19",
     "dexie": "^4.2.1",
