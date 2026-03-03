@@ -1,8 +1,10 @@
-<ion-button (click)="createMailSubscription()"
-            shape="round"
-            class="ion-padding">
-  <app-icon name="notifications-outline"
-            slot="start"
-            class="ion-padding-end"></app-icon>
-  Veranstaltungen abonnieren
-</ion-button>
+@if (isBrowser) {
+  <ion-button (click)="createMailSubscription()"
+              shape="round"
+              class="ion-padding">
+    <app-icon name="notifications-outline"
+              slot="start"
+              class="ion-padding-end"></app-icon>
+    Veranstaltungen abonnieren
+  </ion-button>
+}

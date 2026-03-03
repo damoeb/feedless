@@ -21,6 +21,7 @@ import { BreadcrumbList, Event as SchemaEvent, WebPage } from 'schema-dts';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { isPlatformBrowser, Location, NgClass } from '@angular/common';
 import {
+  EventsResolverData,
   parseDateFromUrl,
   parseLocationFromUrl,
   RelativeDate,
@@ -35,7 +36,7 @@ import {
   arrowForwardOutline,
   sendOutline,
 } from 'ionicons/icons';
-import { isDefined, LatLng, NamedLatLon, Nullable } from '@feedless/core';
+import { isDefined, NamedLatLon, Nullable } from '@feedless/core';
 import { UpcomingHeaderComponent } from '../../components/upcoming-header/upcoming-header.component';
 import {
   IonChip,
@@ -128,6 +129,17 @@ interface EventGroupsPerDay {
   eventGroups: PlaceByDistance[];
 }
 
+export function getDateConstraints(date: Dayjs): {
+  minDate: Dayjs;
+  maxDate: Dayjs;
+} {
+  const minDate = date;
+  return {
+    minDate,
+    maxDate: date.add(2, 'days'),
+  };
+}
+
 @Component({
   selector: 'app-events-page',
   templateUrl: './events.page.html',
@@ -170,7 +182,6 @@ export class EventsPage implements OnInit, OnDestroy {
   readonly minDate: Dayjs = dayjs().subtract(2, 'week');
   readonly maxDate: Dayjs = dayjs().add(2, 'month');
   perimeter = 10;
-  latLon: Nullable<LatLng>;
   namedLatLon: Nullable<NamedLatLon>;
   loading = true;
   dateIsFromRelativeUrl = false;
@@ -190,72 +201,79 @@ export class EventsPage implements OnInit, OnDestroy {
   async ngOnInit(): Promise<void> {
     this.pageService.setMetaTags(this.getPageTags());
 
-    this.subscriptions.push(
-      this.activatedRoute.params.subscribe(async (params) => {
-        try {
-          this.namedLatLon = await parseLocationFromUrl(
-            this.activatedRoute,
-            this.openStreetMapService,
-          );
-          this.saveLocation(this.namedLatLon);
+    if (isPlatformBrowser(this.platformId)) {
+      this.subscriptions.push(
+        this.activatedRoute.params.subscribe(async (params) => {
+          try {
+            this.namedLatLon = await parseLocationFromUrl(
+              this.activatedRoute.snapshot,
+              this.openStreetMapService,
+            );
+            this.saveLocation(this.namedLatLon);
 
-          this.latLon = this.namedLatLon;
+            // Try to parse perimeter from absolute date route
 
-          // Try to parse perimeter from absolute date route
+            this.perimeter = 10;
 
-          this.perimeter = 10;
+            // Check if date is present in URL
+            const hasDateInUrl =
+              params['year'] ||
+              params['month'] ||
+              params['day'] ||
+              params['relativeDate'];
 
-          // Check if date is present in URL
-          const hasDateInUrl =
-            params['year'] ||
-            params['month'] ||
-            params['day'] ||
-            params['relativeDate'];
+            const { date: dateFromUrl } = parseDateFromUrl(params);
+            this.dateIsFromRelativeUrl = !!params['relativeDate'];
 
-          const { date: dateFromUrl } = parseDateFromUrl(params);
-          this.dateIsFromRelativeUrl = !!params['relativeDate'];
+            if (hasDateInUrl) {
+              // Only validate and redirect if date was explicitly in URL
+              // if (
+              //   dateFromUrl.isBefore(this.minDate) ||
+              //   dateFromUrl.isAfter(this.maxDate)
+              // ) {
+              //   await this.redirectToToday();
+              // } else {
+              await this.changeDate(dateFromUrl);
+              // }
+            } else {
+              // No date in URL - just show today without redirecting
+              this.date = dateFromUrl;
+              await this.fetchEvents(this.date);
+            }
 
-          if (hasDateInUrl) {
-            // Only validate and redirect if date was explicitly in URL
-            // if (
-            //   dateFromUrl.isBefore(this.minDate) ||
-            //   dateFromUrl.isAfter(this.maxDate)
-            // ) {
-            //   await this.redirectToToday();
-            // } else {
-            await this.changeDate(dateFromUrl);
-            // }
-          } else {
-            // No date in URL - just show today without redirecting
-            this.date = dateFromUrl;
+            this.changeRef.detectChanges();
+
+            this.pageService.setMetaTags(this.getPageTags());
+
             await this.fetchEvents(this.date);
-          }
 
+            const eventId = params['eventId'];
+            if (eventId != null) {
+              await this.openEventModalForId(String(eventId));
+            }
+          } catch (e) {
+            // todo save and retrieve last place window.localStorage.getItem('lastPlace')
+            // const currentLocation = await firstValueFrom(
+            //   this.geoService.getCurrentLatLon(),
+            // );
+
+            if (this.headerComponent()) {
+              await this.headerComponent().fetchSuggestions('');
+            }
+          } finally {
+            this.loading = false;
+          }
           this.changeRef.detectChanges();
-
-          this.pageService.setMetaTags(this.getPageTags());
-
-          await this.fetchEvents(this.date);
-
-          const eventId = params['eventId'];
-          if (eventId != null) {
-            await this.openEventModalForId(String(eventId));
-          }
-        } catch (e) {
-          // todo save and retrieve last place window.localStorage.getItem('lastPlace')
-          // const currentLocation = await firstValueFrom(
-          //   this.geoService.getCurrentLatLon(),
-          // );
-
-          if (this.headerComponent()) {
-            await this.headerComponent().fetchSuggestions('');
-          }
-        } finally {
-          this.loading = false;
-        }
-        this.changeRef.detectChanges();
-      }),
-    );
+        }),
+      );
+    } else {
+      const data = this.activatedRoute.snapshot.data[
+        'events'
+      ] as EventsResolverData;
+      this.namedLatLon = data.latlng;
+      this.date = data.date;
+      await this.handleEventsResponse(data.events);
+    }
 
     if (
       !this.namedLatLon &&
@@ -384,53 +402,36 @@ export class EventsPage implements OnInit, OnDestroy {
     return deg * (Math.PI / 180);
   }
 
-  fetchEventsBetweenDates(
-    minDate: Dayjs,
-    maxDate: Dayjs,
-  ): Promise<LocalizedEvent[]> {
-    return this.eventService.findAllByRepositoryId({
-      cursor: {
-        page: 0,
-        pageSize: 50,
-      },
-      where: {
-        repository: {
-          id: this.getRepositoryId(),
-        },
-        latLng: {
-          near: {
-            point: {
-              lat: this.latLon.lat,
-              lng: this.latLon.lng,
-            },
-            distanceKm: this.perimeter,
-          },
-        },
-        startedAt: {
-          after: minDate.startOf('day').valueOf(),
-          before: maxDate.endOf('day').valueOf(),
-        },
-      },
-    });
-  }
-
   private async fetchEvents(date: Dayjs) {
     try {
       this.loadingDay = true;
       this.placesByDistancePerDay = [];
       this.changeRef.detectChanges();
 
-      const minDate = date;
-      const maxDate = minDate.add(2, 'days');
+      const events = await this.eventService.fetchEventsBetweenDates(
+        date,
+        this.getRepositoryId(),
+        this.namedLatLon.lat,
+        this.namedLatLon.lng,
+      );
+      return this.handleEventsResponse(events);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      this.loadingDay = false;
+    }
+    this.changeRef.detectChanges();
+  }
 
+  private async handleEventsResponse(events: LocalizedEvent[]) {
+    try {
+      const { minDate, maxDate } = getDateConstraints(this.date);
       const toIsoString = (date: Dayjs): string =>
         date.startOf('day').toISOString();
 
       const daysInWindow = times(maxDate.diff(minDate, 'days') + 1).map(
         (offset) => toIsoString(minDate.add(offset, 'days')),
       );
-
-      const events = await this.fetchEventsBetweenDates(minDate, maxDate);
 
       const places: NamedLatLon[] = await this.resolvePlaces(events).then(
         (places) => places.filter((place) => isDefined(place)),
@@ -550,8 +551,8 @@ export class EventsPage implements OnInit, OnDestroy {
     return this.getDistanceFromLatLonInKm(
       event.latLng.lat,
       event.latLng.lng,
-      this.latLon.lat,
-      this.latLon.lng,
+      this.namedLatLon.lat,
+      this.namedLatLon.lng,
     );
   }
 
@@ -566,7 +567,11 @@ export class EventsPage implements OnInit, OnDestroy {
         day.eventGroups.flatMap((distanced) =>
           distanced.places.flatMap((place) =>
             place.events.map((event) =>
-              this.toSchemaOrgEvent(event, place.place, this.createEventUrl(event)),
+              this.toSchemaOrgEvent(
+                event,
+                place.place,
+                this.createEventUrl(event),
+              ),
             ),
           ),
         ),

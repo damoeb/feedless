@@ -1,10 +1,6 @@
 import { Component, inject, input, PLATFORM_ID } from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
-import {
-  ActionSheetController,
-  IonButton,
-  ModalController,
-} from '@ionic/angular/standalone';
+import { IonButton, ModalController } from '@ionic/angular/standalone';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   AppConfigService,
@@ -23,7 +19,6 @@ import {
   GqlRecordsWhereInput,
   GqlSortOrder,
 } from '@feedless/graphql-api';
-import { GeoService } from '@feedless/geo';
 import { isPlatformBrowser } from '@angular/common';
 
 type SubscriptionType = 'cal' | 'atom';
@@ -38,8 +33,6 @@ type SubscriptionType = 'cal' | 'atom';
 export class SearchAboButtonComponent {
   private readonly modalCtrl = inject(ModalController);
   private readonly appConfigService = inject(AppConfigService);
-  private readonly geoService = inject(GeoService);
-  private readonly actionSheetCtrl = inject(ActionSheetController);
   private readonly serverConfig = inject(ServerConfigService);
   private readonly platformId = inject(PLATFORM_ID);
 

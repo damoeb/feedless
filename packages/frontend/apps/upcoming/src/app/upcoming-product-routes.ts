@@ -1,7 +1,12 @@
-import { ActivatedRoute, Params, Routes } from '@angular/router';
+import {
+  ActivatedRouteSnapshot,
+  Params,
+  ResolveFn,
+  Routes,
+} from '@angular/router';
 import dayjs, { Dayjs } from 'dayjs';
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { AuthGuardService } from '@feedless/components';
+import { AppConfigService, AuthGuardService } from '@feedless/components';
 import { NamedLatLon, upperCaseStringParser } from '@feedless/core';
 import {
   createRoutes,
@@ -12,6 +17,8 @@ import {
   template,
 } from 'typesafe-routes';
 import { OpenStreetMapService } from '@feedless/geo';
+import { inject } from '@angular/core';
+import { EventService, LocalizedEvent } from './event.service';
 
 export const perimeterUnit = 'Km';
 
@@ -92,7 +99,7 @@ export function parseDateFromUrl(params: Params): {
 }
 
 export async function parseLocationFromUrl(
-  activatedRoute: ActivatedRoute,
+  activatedRoute: ActivatedRouteSnapshot,
   openStreetMapService: OpenStreetMapService,
 ): Promise<NamedLatLon> {
   const err = Error('Cannot parse location from url');
@@ -100,7 +107,7 @@ export async function parseLocationFromUrl(
   try {
     const { place, region, countryCode } = parsePath(
       upcomingBaseRoute.events.countryCode.region.place,
-      activatedRoute.snapshot.params,
+      activatedRoute.params,
     );
 
     if (countryCode && region && place) {
@@ -121,11 +128,39 @@ export async function parseLocationFromUrl(
   }
 }
 
-export const perimeterParser = param<number>({
-  // parse: (value: string) => parseInt(value.replace(perimeterUnit, '')),
-  parse: (value: string) => 10,
-  serialize: (value: number) => `${value}${perimeterUnit}`,
-});
+export type EventsResolverData = {
+  events: LocalizedEvent[];
+  latlng: NamedLatLon;
+  date: Dayjs;
+};
+
+const eventsResolver: ResolveFn<Promise<EventsResolverData>> = async (
+  route,
+): Promise<EventsResolverData> => {
+  const eventService = inject(EventService);
+  const openStreetMapService = inject(OpenStreetMapService);
+  const appConfigService = inject(AppConfigService);
+
+  const latlng = await parseLocationFromUrl(route, openStreetMapService);
+  const repositoryId = appConfigService.customProperties[
+    'eventRepositoryId'
+  ] as any;
+  const { date } = parseDateFromUrl(route.params);
+
+  const events = await eventService.fetchEventsBetweenDates(
+    date,
+    repositoryId,
+    latlng.lat,
+    latlng.lng,
+  );
+  return { events, latlng, date };
+};
+
+// const eventResolver: ResolveFn<LocalizedEvent> = (route) => {
+//   const eventService = inject(EventService);
+//   const id = route.paramMap.get('id')!;
+//   return eventService.findById(id);
+// };
 
 export const relativeDateParser = param<RelativeDate>({
   parse: (value: string) => {
@@ -288,6 +323,9 @@ export const UPCOMING_ROUTES: Routes = [
   //     import('./pages/events/events.page').then((m) => m.EventsPage),
   // },
   {
+    resolve: {
+      events: eventsResolver,
+    },
     path: template(
       upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime,
     ),
