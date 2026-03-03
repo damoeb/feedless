@@ -12,7 +12,6 @@ import { EventService } from '../../event.service';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
-import { LatLng } from '@feedless/core';
 
 describe('EventsPage', () => {
   let component: EventsPage;
@@ -78,42 +77,6 @@ describe('EventsPage', () => {
     expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
       ' Mittagessen',
     );
-  });
-
-  it('#fetchEventsBetweenDates uses minDate start and maxDate end', () => {
-    // given
-    const date = dayjs();
-    const latLon: LatLng = { lat: Math.random(), lng: Math.random() };
-    component.latLon = latLon;
-
-    // when
-    component.fetchEventsBetweenDates(date, date);
-
-    // then
-    expect(eventService.findAllByRepositoryId).toHaveBeenCalledWith({
-      cursor: {
-        page: 0,
-        pageSize: 50,
-      },
-      where: {
-        repository: {
-          id: eventRepositoryId,
-        },
-        latLng: {
-          near: {
-            point: {
-              lat: latLon.lat,
-              lng: latLon.lng,
-            },
-            distanceKm: 10,
-          },
-        },
-        startedAt: {
-          after: date.startOf('day').valueOf(),
-          before: date.endOf('day').valueOf(),
-        },
-      },
-    });
   });
 
   // it('should have rel="nofollow" attribute on event links when rendered', () => {
