@@ -43,4 +43,4 @@ import { IconComponent } from '@feedless/components';
     IonCheckbox,
   ],
 })
-export class SubmitModalModule {}
+export class EmailAboModalModule {}

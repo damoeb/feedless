@@ -14,14 +14,14 @@ import {
   sendOutline,
 } from 'ionicons/icons';
 import { RouterLink } from '@angular/router';
-import { SubmitModalModule } from '../email-abo-modal/submit-modal.module';
+import { EmailAboModalModule } from '../email-abo-modal/email-abo-modal.module';
 import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'app-upcoming-footer',
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
-  imports: [IonButton, RouterLink, SubmitModalModule, IonButton],
+  imports: [IonButton, RouterLink, EmailAboModalModule, IonButton],
   standalone: true,
 })
 export class UpcomingFooterComponent {

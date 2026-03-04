@@ -29,7 +29,7 @@ ion-content::part(scroll) {
     padding: 15px;
   }
   .calendar-day {
-    margin-bottom: 15vh;
+    margin-bottom: 5vh;
   }
 }
 
@@ -99,6 +99,10 @@ h2 {
   display: block;
   text-decoration: none;
   color: inherit;
+
+  &--gray {
+    filter: grayscale(1);
+  }
 
   h3 {
     color: #704523;

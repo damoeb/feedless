@@ -94,18 +94,16 @@
                     </header>
 
                     <div style="display: flex" [ngClass]="{'past-events': isPast(day.date)}">
-                      <div>
+                      <div style="flex: 1">
                         @if (day.eventGroups.length === 0) {
-                          <div>
-                            <p class="ion-padding-top">
-                              <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
-                            </p>
+                          <div class="localized-event localized-event--gray">
+                            <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
                           </div>
                         }
                         @for (placesGroup of day.eventGroups; track placesGroup) {
                           <div>
                             @for (place of placesGroup.places; track place) {
-                              <h2 class="ion-padding-top">
+                              <h2>
                                 <a
                                   [routerLink]="getPlaceUrl(place?.place)"
                                   [title]="'Wechsle nach ' + place?.place?.place"

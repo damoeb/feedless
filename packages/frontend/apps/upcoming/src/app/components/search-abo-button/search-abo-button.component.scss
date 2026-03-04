@@ -3,10 +3,20 @@
 ion-button {
   position: fixed;
   top: 80%;
-  left: 45%;
   font-size: 16px;
+  //noinspection CssInvalidPropertyValue
+  justify-self: anchor-center;
 }
 
 app-icon {
   font-size: 24px;
+}
+
+@media (max-width: 768px) {
+  ion-button {
+    left: inherit;
+    top: 85%;
+    width: 80%;
+    margin-left: 10%;
+  }
 }

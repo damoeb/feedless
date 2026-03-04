@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { EmailAboModalComponent } from './email-abo-modal.component';
-import { SubmitModalModule } from './submit-modal.module';
+import { EmailAboModalModule } from './email-abo-modal.module';
 import { AppTestModule } from '@feedless/testing';
 
 describe('EmailAboModalComponent', () => {
@@ -10,7 +10,7 @@ describe('EmailAboModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SubmitModalModule, AppTestModule.withDefaults()],
+      imports: [EmailAboModalModule, AppTestModule.withDefaults()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EmailAboModalComponent);

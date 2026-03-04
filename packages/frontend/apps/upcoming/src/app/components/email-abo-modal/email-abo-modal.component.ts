@@ -25,7 +25,7 @@ type ReportFrequency = 'week' | 'month';
 type Sex = 'm' | 'f' | undefined;
 
 @Component({
-  selector: 'app-submit-modal',
+  selector: 'app-email-abo-modal',
   templateUrl: './email-abo-modal.component.html',
   styleUrls: ['./email-abo-modal.component.scss'],
   // eslint-disable-next-line @angular-eslint/prefer-standalone
