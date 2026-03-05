@@ -590,6 +590,15 @@ export class EventsPage implements OnInit, OnDestroy {
         name: `Events in ${this.namedLatLon?.displayName || 'deiner Nähe'}`,
         description: tags.description,
       },
+      contentLocation: {
+        '@type': 'Place',
+        name: this.namedLatLon?.displayName,
+        geo: {
+          '@type': 'GeoCoordinates',
+          latitude: this.namedLatLon?.lat,
+          longitude: this.namedLatLon?.lng,
+        },
+      },
       breadcrumb: createBreadcrumbsSchema(this.namedLatLon),
       mainEntity: {
         '@type': 'ItemList',
