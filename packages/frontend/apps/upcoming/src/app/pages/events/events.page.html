@@ -93,8 +93,8 @@
                       </h2>
                     </header>
 
-                    <div style="display: flex" [ngClass]="{'past-events': isPast(day.date)}">
-                      <div style="flex: 1">
+                    <div class="event-list" [ngClass]="{'past-events': isPast(day.date)}">
+                      <div>
                         @if (day.eventGroups.length === 0) {
                           <div class="localized-event localized-event--gray">
                             <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
@@ -107,7 +107,6 @@
                                 <a
                                   [routerLink]="getPlaceUrl(place?.place)"
                                   [title]="'Wechsle nach ' + place?.place?.place"
-                                  style="color: var(--ion-color-dark);"
                                   itemprop="url"
                                 >
                                   <span itemprop="name">{{ place?.place?.place }}</span></a
@@ -145,5 +144,5 @@
     }
   </div>
   <app-search-abo-button [location]="namedLatLon"></app-search-abo-button>
-  <app-upcoming-footer style="margin-top: 100px" [location]="namedLatLon" [perimeter]="perimeter"></app-upcoming-footer>
+  <app-upcoming-footer [location]="namedLatLon" [perimeter]="perimeter"></app-upcoming-footer>
 </ion-content>

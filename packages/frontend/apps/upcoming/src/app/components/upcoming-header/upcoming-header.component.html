@@ -1,15 +1,10 @@
 @if (isBrowser) {
 
-  <ion-header style="box-shadow: none">
+  <ion-header>
     @if (!location()) {
       <div
-        style="
-        max-width: 700px;
-        margin-left: auto;
-        margin-right: auto;
-        margin-top: 100px;
-        transition: height linear;
-      "
+        class="centric-panel"
+        style="margin-top: 100px; transition: height linear;"
       >
         <h1><em>Lokale</em>.Events</h1>
         <p> „Deine Region steckt voller Überraschungen – entdecke, wie viel mehr in ihr steckt!“ </p>
@@ -17,13 +12,8 @@
     }
     <ion-toolbar>
       <div
-        style="
-          max-width: 700px;
-          margin-left: auto;
-          margin-right: auto;
-          margin-top: 5px;
-          display: flex;
-        "
+        class="centric-panel"
+        style="margin-top: 5px;"
       >
         <div style="display: flex; flex: 1">
           <a routerLink="/" aria-label="lokale.events">
@@ -37,14 +27,6 @@
             [formControl]="locationFc"
             fill="outline"
             placeholder="PLZ oder Ortschaft"
-            style="
-              flex: 1;
-              border-radius: 8px;
-              --box-shadow: none;
-              margin: 5px;
-              --border-color: var(--ion-color-primary);
-              box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
-            "
           >
           </ion-searchbar>
           <ion-select
@@ -78,12 +60,12 @@
         </div>
       </div>
 
-      <div style="display: flex; position: absolute; right: 0; top: 10px" class="ion-hide-md-down">
+      <div class="ion-hide-md-down action-buttons">
         <!--      <ion-title>-->
         <!--        <span [innerHtml]="productConfig?.titleHtml"></span>-->
         <!--      </ion-title>-->
         <ion-buttons>
-          <ion-button appDev color="primary" fill="outline" shape="round" (click)="openAddEventModal()">
+          <ion-button appDev color="primary" shape="round" (click)="openAddEventModal()">
             <app-icon name="add-outline" slot="start"></app-icon>
             Event
             <!-- Add Event -->
@@ -93,17 +75,9 @@
         </ion-buttons>
       </div>
     </ion-toolbar>
-    <div
-      style="
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-      display: flex;
-      flex-direction: column;
-    "
-    >
+    <div class="centric-panel">
       @if (expand === 'suggestions') {
-        <ion-list class="ion-margin-bottom" style="max-height: 20vh; overflow-y: auto">
+        <ion-list class="ion-margin-bottom suggestions">
           <!--        <ion-item-->
           <!--          (click)="getCurrentLocation()"-->
           <!--          *ngIf="!locationNotAvailable"-->
@@ -133,34 +107,6 @@
           <!--        [perimeter]="perimeterFc.value"-->
           <!--      ></app-map>-->
       }
-
-      <!--    <ion-list *ngIf="showFilters || categoriesFc.value.length > 0">-->
-      <!--      <ion-item>-->
-      <!--        <ion-select-->
-      <!--          [formControl]="categoriesFc"-->
-      <!--          [interfaceOptions]="selectCategoriesOptions"-->
-      <!--          interface="action-sheet"-->
-      <!--          label="Kategorien"-->
-      <!--          [multiple]="true"-->
-      <!--          labelPlacement="start"-->
-      <!--        >-->
-      <!--          <ion-select-option-->
-      <!--            *ngFor="let category of categories"-->
-      <!--            [value]="category"-->
-      <!--            >{{ category }}</ion-select-option-->
-      <!--          >-->
-      <!--        </ion-select>-->
-      <!--      </ion-item>-->
-      <!--    </ion-list>-->
-
-      <!--    <div-->
-      <!--      style="max-height: 200px; overflow: hidden; border-radius: 8px"-->
-      <!--      class="ion-margin-top"-->
-      <!--    >-->
-      <!--      <img-->
-      <!--        src="http://upload.wikimedia.org/wikipedia/commons/3/35/Deutsch_Kaltenbrunn_evangelische_Kirche.jpg"-->
-      <!--      />-->
-      <!--    </div>-->
     </div>
   </ion-header>
 }

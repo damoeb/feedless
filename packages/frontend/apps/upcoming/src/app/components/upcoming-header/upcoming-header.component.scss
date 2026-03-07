@@ -1,5 +1,26 @@
 @use '../../upcoming-mixins';
 
+ion-header {
+  box-shadow: none;
+}
+
+ion-searchbar {
+  flex: 1;
+  border-radius: 8px;
+  --box-shadow: none;
+  margin: 5px;
+  --border-color: var(--ion-color-primary);
+  box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
+}
+
+.action-buttons {
+  display: flex;
+  position: absolute;
+  right: 0;
+  top: 10px
+}
+
+
 .calendar {
   //--app-border-color: rgba(var(--app-foreground-rgb), 0.15);
 
@@ -92,6 +113,15 @@
   }
 }
 
+.centric-panel {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  display: flex;
+  flex-direction: column;
+}
+
 .suggestion {
   margin-left: 50px;
   //@media screen and (min-width: 401px) and (max-width: 575px) {
@@ -102,4 +132,9 @@
   //}
 
   //color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));
+}
+
+.suggestions {
+  max-height: 20vh;
+  overflow-y: auto;
 }

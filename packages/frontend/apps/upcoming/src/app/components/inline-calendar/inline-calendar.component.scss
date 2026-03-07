@@ -20,6 +20,15 @@
   }
 }
 
+.forward-in-calendar {
+  font-size: 2rem;
+  align-content: center;
+}
+
+.show-today-calendar {
+  justify-self: center;
+}
+
 .calendar-day {
   flex: 1;
   max-width: 130px;
@@ -31,6 +40,11 @@
   //color: var(--ion-color-medium);
   div {
     opacity: 0.7;
+  }
+
+  .day-of-month {
+    font-size: 1.8rem;
+    font-weight: 600;
   }
 
   &.past {

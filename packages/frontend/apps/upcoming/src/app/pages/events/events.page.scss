@@ -19,8 +19,31 @@ ion-content::part(scroll) {
   column-gap: 8px;
 }
 
+.scenery-image {
+  border-radius: 1rem;
+  overflow: hidden;
+
+  img {
+    object-fit: cover;
+    width: 100%;
+    height: 11rem
+  }
+}
+
 .calendar-day {
   flex: 1;
+
+  .event-list {
+    display: flex;
+
+    > div {
+      flex: 1;
+    }
+
+    a {
+      color: var(--ion-color-dark);
+    }
+  }
 }
 
 @media (max-width: 768px) {
@@ -31,6 +54,10 @@ ion-content::part(scroll) {
   .calendar-day {
     margin-bottom: 5vh;
   }
+}
+
+app-upcoming-footer {
+  margin-top: 100px;
 }
 
 .badge {

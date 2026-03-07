@@ -42,7 +42,7 @@
             }"
           >
             <div>{{ getWeekday(d.date) }}</div>
-            <h3 style="font-size: 1.8rem; font-weight: 600;">{{ formatDate(d.date, 'D') }}</h3>
+            <h3 class="day-of-month">{{ formatDate(d.date, 'D') }}</h3>
             @if (i === 0 || d.date.date() === 1) {
               <div class="nowrap">{{ formatDate(d.date, 'MMM YY') }}</div>
             }
@@ -50,11 +50,12 @@
         </a>
       }
     </div>
-    <div style="font-size: 2rem; align-content: center">
+    <div class="forward-in-calendar">
       @if (isValidOffset(4)) {
         <a
           [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))"
           title="Weiter im Kalender"
+          rel="next"
           (click)="shiftDateWindow(4, $event)"
         >
           <app-icon
@@ -71,7 +72,7 @@
     </div>
   </div>
   @if (!isDateInCalendar(now)) {
-    <div style="justify-self: center">
+    <div class="show-today-calendar">
       <ion-button fill="outline" (click)="changeDate.emit(now)">Heute anzeigen</ion-button>
     </div>
   }
