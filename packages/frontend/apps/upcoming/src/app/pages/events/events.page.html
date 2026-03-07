@@ -125,6 +125,13 @@
                                       <header>
                                         <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
                                       </header>
+                                      <meta class="bot-only" itemprop="startDate"
+                                            [content]="day.date.toDate().toISOString()">
+                                      <meta class="bot-only" itemprop="description" [content]="event.text">
+                                      <div class="bot-only" itemprop="location" itemscope
+                                           itemtype="https://schema.org/Place">
+                                        <span itemprop="name">{{ place.place.displayName }}</span>
+                                      </div>
                                     </article>
                                   </a>
                                 }

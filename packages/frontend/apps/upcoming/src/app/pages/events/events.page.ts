@@ -621,7 +621,7 @@ export class EventsPage implements OnInit, OnDestroy {
   private toSchemaOrgEvent(
     event: LocalizedEvent,
     location: NamedLatLon,
-    eventPageUrl?: string,
+    eventPageUrl: string,
   ): SchemaEvent {
     const startDate = dayjs(event.startingAt);
     return {
@@ -632,7 +632,7 @@ export class EventsPage implements OnInit, OnDestroy {
       eventAttendanceMode: 'OfflineEventAttendanceMode',
       startDate: startDate.toISOString(),
       endDate: startDate.endOf('day').toISOString(),
-      url: eventPageUrl ?? event.url,
+      url: eventPageUrl,
       location: {
         '@type': 'Place',
         name: location.displayName,
@@ -698,7 +698,10 @@ export class EventsPage implements OnInit, OnDestroy {
 
   createEventUrl(event: LocalizedEvent): string {
     const baseUrl = this.createDateUrl(this.date, this.namedLatLon);
-    return baseUrl ? `${baseUrl}/${(event as any).id}` : '';
+    return (
+      'https::/lokale.events' +
+      (baseUrl ? `${baseUrl}/${(event as any).id}` : '')
+    );
   }
 
   getPlaceUrl(location: NamedLatLon): string {

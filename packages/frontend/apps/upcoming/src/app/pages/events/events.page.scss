@@ -30,6 +30,10 @@ ion-content::part(scroll) {
   }
 }
 
+.bot-only {
+  display: none;
+}
+
 .calendar-day {
   flex: 1;
 
