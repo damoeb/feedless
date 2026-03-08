@@ -11,7 +11,9 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
+import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -24,10 +26,13 @@ import org.migor.feedless.generated.types.SegmentReportInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.mail.MailService
+import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -47,6 +52,8 @@ class ReportUseCaseTest {
   private lateinit var repositoryOwnerId: UserId
   private lateinit var user: User
   private lateinit var userRepository: UserRepository
+  private lateinit var templateService: TemplateService
+  private lateinit var mailService: MailService
 
   @BeforeEach
   fun setUp() = runTest {
@@ -56,6 +63,8 @@ class ReportUseCaseTest {
     segmentationRepository = mock(SegmentationRepository::class.java)
     user = mock(User::class.java)
     userRepository = mock(UserRepository::class.java)
+    templateService = mock(TemplateService::class.java)
+    mailService = mock(MailService::class.java)
 
     reportUseCase = ReportUseCase(
       reportRepository,
@@ -64,6 +73,8 @@ class ReportUseCaseTest {
       mock(MeterRegistry::class.java),
       mock(RepositoryGuard::class.java),
       mock(ReportGuard::class.java),
+      templateService,
+      mailService,
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
@@ -84,7 +95,7 @@ class ReportUseCaseTest {
       what = SegmentRecordsWhereInput(tags = StringFilterInput()),
       report = SegmentReportInput(
         plugin = PluginExecutionInput(
-          pluginId = "",
+          pluginId = FeedlessPlugins.org_feedless_event_report.name,
           params = PluginExecutionParamsInput()
         )
       ),
@@ -104,6 +115,7 @@ class ReportUseCaseTest {
       // given
       `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
       `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(null)
+      `when`(templateService.renderTemplate(any(NewReportWelcomMailTemplate::class.java))).thenReturn("")
 
       // when
       val report = reportUseCase.createReport(repositoryId, segment)
@@ -129,6 +141,7 @@ class ReportUseCaseTest {
   fun `reports can be created by owner if repository is private`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
       `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
+      `when`(templateService.renderTemplate(any(NewReportWelcomMailTemplate::class.java))).thenReturn("")
       `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
 
       // when
@@ -152,15 +165,37 @@ class ReportUseCaseTest {
   }
 
   @Test
-  @Disabled
-  fun `if email is unknown, auth mail is sent`() {
-    // todo test
+  fun `when report is created, welcome mail will be sent`() {
+    runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
+      `when`(templateService.renderTemplate(any(NewReportWelcomMailTemplate::class.java))).thenReturn("")
+      `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
+
+      // when
+      val report = reportUseCase.createReport(repositoryId, segment)
+
+      // then
+      assertThat(report).isNotNull
+      verify(mailService).send(any(OutgoingMail::class.java))
+    }
+
   }
 
   @Test
-  @Disabled
-  fun `after sending auth mail there will be an cooldown for this email, where no new reports can be sent`() {
-    // todo test
+  fun `when report is created, propper segmentation is created`() {
+    runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPrivate)
+      `when`(templateService.renderTemplate(any(NewReportWelcomMailTemplate::class.java))).thenReturn("")
+      `when`(userRepository.findByEmail(any(String::class.java))).thenReturn(user)
+
+      // when
+      reportUseCase.createReport(repositoryId, segment)
+
+      // then
+      verify(segmentationRepository).save(argThat { it.reportPlugin.id == "org_feedless_event_report" })
+      verify(segmentationRepository).save(argThat { it.reportPlugin.params.paramsJsonString == "fef" })
+    }
+
   }
 
   @Test

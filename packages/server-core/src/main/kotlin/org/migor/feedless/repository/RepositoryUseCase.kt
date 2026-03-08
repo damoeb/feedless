@@ -426,7 +426,7 @@ fun PluginExecutionParamsInput.toParams(): PluginExecutionJson {
     org_feedless_diff_records,
     jsonData,
     org_feedless_conditional_tag,
-    org_feedless_fulltext
+    org_feedless_fulltext,
   )
     .firstOrNull()
 

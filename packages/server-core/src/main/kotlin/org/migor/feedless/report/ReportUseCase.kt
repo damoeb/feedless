@@ -9,10 +9,14 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
+import org.migor.feedless.mail.MailService
+import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.fromDto
+import org.migor.feedless.template.FreemarkerTemplate
+import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -24,6 +28,17 @@ import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
 
+data class NewReportWelcomeMailParams(
+  val recipientName: String,
+  val contentSegmentLatLon: LatLonPoint,
+  val contentSegmentLatLonDistance: Double?,
+  val timeInterval: ChronoUnit,
+  val timeSegmentStartingAt: LocalDateTime )
+
+data class NewReportWelcomMailTemplate(override val params: NewReportWelcomeMailParams) :
+  FreemarkerTemplate<NewReportWelcomeMailParams>("new-report-welcome-mail")
+
+
 @Service
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
 class ReportUseCase(
@@ -33,6 +48,8 @@ class ReportUseCase(
   private val meterRegistry: MeterRegistry,
   private val repositoryGuard: RepositoryGuard,
   private val reportGuard: ReportGuard,
+  private val templateService: TemplateService,
+  private val mailService: MailService,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -88,8 +105,9 @@ class ReportUseCase(
         recipientName = segment.recipient.email.name,
         recipientEmail = email,
 
-        // send authorization mail
+        // send welcome mail
         authorizationAttempt = 1,
+        authorized = true,
         lastRequestedAuthorization = LocalDateTime.now(),
         segmentId = segmentation.id,
         nextReportedAt = nextReportedAt,
@@ -97,13 +115,23 @@ class ReportUseCase(
       )
 
       meterRegistry.counter(AppMetrics.createReport)
-      sendAuthorizationMail(segment)
+      sendNewReportMail(segmentation, report)
 
       reportRepository.save(report)
     }
 
-  private suspend fun sendAuthorizationMail(segment: SegmentInput) {
-    // todo implement
+  private suspend fun sendNewReportMail(segment: Segmentation, report: Report) {
+    val renderedTemplate =
+      templateService.renderTemplate(NewReportWelcomMailTemplate(NewReportWelcomeMailParams(report.recipientName, segment.contentSegmentLatLon, segment.contentSegmentLatLonDistance, segment.timeInterval, segment.timeSegmentStartingAt)))
+
+    val mail = OutgoingMail(
+      from = "",
+      to = listOf(report.recipientEmail),
+      subject = "Neuer Report für ${}",
+      htmlContent = renderedTemplate
+    )
+
+    mailService.send(mail)
   }
 
   suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {

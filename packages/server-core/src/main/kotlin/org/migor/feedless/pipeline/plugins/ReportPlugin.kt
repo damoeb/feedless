@@ -1,42 +1,34 @@
 package org.migor.feedless.pipeline.plugins
 
-import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.document.Document
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.pipeline.ReportPlugin
-import org.migor.feedless.report.Report
+import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
+data class ReportPluginParams()
+
 @Service
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.scrape} & ${AppLayer.service}")
-class EventsReportPlugin : ReportPlugin {
+class ReportPlugin : Plugin {
 
-  private val log = LoggerFactory.getLogger(EventsReportPlugin::class.simpleName)
+  private val log = LoggerFactory.getLogger(ReportPluginParams::class.simpleName)
 
   override fun id(): String = FeedlessPlugins.org_feedless_event_report.name
   override fun name(): String = ""
   override fun listed() = false
 
-  override suspend fun report(
-    documents: List<Document>,
+  suspend fun report(
     repository: Repository,
-    params: PluginExecutionParamsInput,
+    params: ReportPluginParams,
     logCollector: LogCollector
   ) {
-    logCollector.log("report ${documents.size}")
 
-  }
 
-  override suspend fun askForAuthorization(report: Report): Report {
-    TODO("implement")
   }
 
 }
