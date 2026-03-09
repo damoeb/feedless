@@ -632,7 +632,7 @@ export class EventsPage implements OnInit, OnDestroy {
       eventAttendanceMode: 'OfflineEventAttendanceMode',
       startDate: startDate.toISOString(),
       endDate: startDate.endOf('day').toISOString(),
-      url: eventPageUrl,
+      url: 'https://lokale.events/' + eventPageUrl,
       location: {
         '@type': 'Place',
         name: location.displayName,
@@ -698,10 +698,7 @@ export class EventsPage implements OnInit, OnDestroy {
 
   createEventUrl(event: LocalizedEvent): string {
     const baseUrl = this.createDateUrl(this.date, this.namedLatLon);
-    return (
-      'https::/lokale.events' +
-      (baseUrl ? `${baseUrl}/${(event as any).id}` : '')
-    );
+    return baseUrl ? `${baseUrl}/${(event as any).id}` : '';
   }
 
   getPlaceUrl(location: NamedLatLon): string {

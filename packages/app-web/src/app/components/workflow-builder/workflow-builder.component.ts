@@ -2,22 +2,17 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject } from '@
 import { addIcons } from 'ionicons';
 import { addOutline, ellipse, removeOutline } from 'ionicons/icons';
 import {
-  IonAccordion,
-  IonAccordionGroup,
   IonButton,
   IonButtons,
   IonIcon,
   IonInput,
-  IonItem,
   IonLabel,
-  IonList,
   IonRange,
   IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
 import { FormsModule } from '@angular/forms';
 import { NgStyle } from '@angular/common';
-import { BubbleComponent } from '../bubble/bubble.component';
 
 @Component({
   selector: 'app-workflow-builder',
@@ -35,11 +30,6 @@ import { BubbleComponent } from '../bubble/bubble.component';
     IonRange,
     FormsModule,
     NgStyle,
-    IonItem,
-    IonAccordionGroup,
-    IonAccordion,
-    IonList,
-    BubbleComponent,
   ],
   standalone: true,
 })

@@ -51,7 +51,6 @@ export {
   TypeheadComponent,
   type TypeaheadSuggestion,
 } from './lib/components/typeahead/typehead.component';
-export { WorkflowBuilderComponent } from './lib/components/workflow-builder/workflow-builder.component';
 export * from './lib/modals';
 export * from './lib/guards';
 export * from './lib/directives';
