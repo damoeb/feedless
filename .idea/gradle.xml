@@ -20,6 +20,8 @@
             <option value="$PROJECT_DIR$/packages/github-connector" />
             <option value="$PROJECT_DIR$/packages/graphql-api" />
             <option value="$PROJECT_DIR$/packages/jpa-data" />
+            <option value="$PROJECT_DIR$/packages/karma-gate" />
+            <option value="$PROJECT_DIR$/packages/karma-gated-comments" />
             <option value="$PROJECT_DIR$/packages/mail-adapter" />
             <option value="$PROJECT_DIR$/packages/nominatim-proxy" />
             <option value="$PROJECT_DIR$/packages/server-core" />

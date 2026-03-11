@@ -1,0 +1,198 @@
+karma_system:
+  version: 1.1
+  description: >
+    Karma-based community moderation system similar to Hacker News.
+    Defines karma changes, privilege thresholds, age requirements, and anti-gaming limits.
+
+  # --- Base Karma Rules ---
+  actions:
+    post_upvoted:
+      actor: user
+      context: post
+      description: "User gains karma when their post receives an upvote."
+      effects:
+        - karma_change:
+          for: author(post)
+          by: 4
+          given: totalKarmaChangeToday(author(post)) < 200
+        - karma_change:
+          for: actor
+          by: -1
+
+    comment_upvoted:
+      actor: any user
+      context: comment, user
+      description: "User gains karma when their comment receives an upvote."
+      effects:
+        - karma_change:
+          for: author(post)
+          by: 4
+          given: totalKarmaChangeToday(author(post)) < 400
+        - karma_change:
+          for: actor
+          by: -1
+
+    post_downvoted:
+      actor: any user
+      context: post
+      description: "Loss of karma when a post is downvoted."
+      effects:
+        - karma_change:
+          for: author(post)
+          by: -4
+          given: totalKarmaChangeToday(author(post)) < 400
+
+    comment_downvoted:
+      actor: any user
+      context: post, comment
+      description: "Loss of karma when a comment is downvoted."
+      effects:
+        - karma_change:
+            for: author(comment)
+            by: -2
+
+    post_flagged:
+      actor: any user
+      context: post
+      description: "Penalty for rule-breaking or spam."
+      effects:
+        - karma_change:
+            for: author(post)
+            by: -10
+      limits:
+        flag_count_trigger: 3
+        moderator_review: true
+
+    confirmed_spam:
+      actor: system
+      context: user
+      description: "Severe penalty for confirmed spam or abuse."
+      effects:
+        - karma_change:
+            for: user
+            by: -50
+
+    post_deleted_by_author:
+      actor: user
+      context: post
+      description: "Minor penalty for deleting your own post."
+      effects:
+        - karma_change:
+            for: actor
+            by: -1
+
+    comment_deleted_by_moderator:
+      actor: system
+      context: comment
+      description: "Penalty when moderator removes your comment."
+      effects:
+        - karma_change:
+            for: author(comment)
+            by: -5
+
+    daily_activity_bonus:
+      actor: user
+      context: user
+      description: "Small daily reward for active participation."
+      effects:
+        - karma_change:
+            for: actor
+            by: 1
+      limits:
+        max_per_day: 1
+
+  # --- Privilege Thresholds ---
+  privileges:
+    - name: basic_access
+      min_karma: 0
+      min_account_age_days: 0
+      features:
+        - "Can comment and upvote posts"
+        - "Posts require moderator approval"
+
+    - name: regular_user
+      min_karma: 20
+      min_account_age_days: 7
+      features:
+        - "Can post freely without manual approval"
+        - "Can flag inappropriate content"
+
+    - name: trusted_user
+      min_karma: 100
+      min_account_age_days: 30
+      features:
+        - "Votes carry 1.2× weight"
+        - "Can edit own post titles and tags"
+
+    - name: senior_member
+      min_karma: 500
+      min_account_age_days: 90
+      features:
+        - "Can downvote posts and comments"
+        - "Vote weight: 1.5×"
+        - "Can access limited moderation tools"
+
+    - name: moderator_candidate
+      min_karma: 1000
+      min_account_age_days: 180
+      features:
+        - "Can edit tags of any post"
+        - "Eligible for community moderator nomination"
+        - "Vote weight: 2×"
+
+    - name: community_leader
+      min_karma: 5000
+      min_account_age_days: 365
+      features:
+        - "Full community moderation privileges"
+        - "Can review and resolve flagged content"
+        - "Access to experimental features"
+        - "Vote weight: 3× (max)"
+
+  # --- Vote Weighting Rules ---
+  vote_weight:
+    formula: "1 + log10(karma / 100)"
+    max_weight: 3.0
+    note: "Long-term, high-karma users have slightly more voting influence."
+
+  # --- Anti-Gaming Measures ---
+  anti_gaming:
+    vote_rate_limit:
+      low_karma_users: 20      # votes/hour for users <100 karma
+      high_karma_users: 100    # votes/hour for users >=100 karma
+    post_rate_limit:
+      new_users: 5             # posts/day for accounts <30 days
+      regular_users: 20
+    karma_decay:
+      rate: 0.01               # 1% decay per month
+      description: "Encourages sustained participation."
+    self_voting:
+      allowed: false
+    correlated_voting_detection:
+      enabled: true
+      correlation_threshold: 0.8
+      action: "temporary_vote_nullification"
+    duplicate_account_detection:
+      enabled: true
+      min_age_gap_days: 90
+      action: "link_accounts_and_flag_for_review"
+
+  # --- Penalties & Suspensions ---
+  penalties:
+    shadow_ban_threshold: -10
+    read_only_threshold: -50
+    permanent_ban_threshold: -200
+    description: >
+      Negative karma reduces privileges and can trigger account restrictions.
+      Accounts with very low karma are limited or suspended automatically.
+
+  # --- System Settings ---
+  system_settings:
+    moderation_review_queue: true
+    karma_floor: -200
+    initial_karma: 0
+    allow_negative_karma: true
+    display_public_karma: true
+    min_account_age_for_visibility_days: 2
+    description: >
+      Basic system controls for community visibility and moderation flow.
