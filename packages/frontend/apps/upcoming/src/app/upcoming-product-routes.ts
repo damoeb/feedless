@@ -214,7 +214,7 @@ export const upcomingBaseRoute = createRoutes({
                       //     path: ['innerhalb', perimeterParser('perimeter')],
                       //   },
                       eventId: {
-                        path: [int('eventId')],
+                        path: [str('eventId')],
                       },
                     },
                   },
@@ -225,7 +225,7 @@ export const upcomingBaseRoute = createRoutes({
                       //   path: ['innerhalb', perimeterParser('perimeter')],
                       // },
                       eventId: {
-                        path: [int('eventId')],
+                        path: [str('eventId')],
                       },
                     },
                   },

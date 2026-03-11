@@ -41,113 +41,120 @@
         <!--        </ion-buttons>-->
         <!--      </ion-toolbar>-->
 
-      <div class="ion-margin-bottom">
-        @if (date) {
-          <app-inline-calendar
-            [date]="date"
-            [dateUrlFactory]="getDateUrlFactory()"
-            [minDate]="minDate"
-            [maxDate]="maxDate"
-            [paddingLeft]="1"
-            (changeDate)="changeDate($event)"
-            [paddingRight]="5"
-          >
-          </app-inline-calendar>
+      <main id="main-content" class="events-main">
+        <div class="ion-margin-bottom">
+          @if (date) {
+            <app-inline-calendar
+              [date]="date"
+              [dateUrlFactory]="getDateUrlFactory()"
+              [minDate]="minDate"
+              [maxDate]="maxDate"
+              [paddingLeft]="1"
+              (changeDate)="changeDate($event)"
+              [paddingRight]="5"
+            >
+            </app-inline-calendar>
 
-          <h1>Veranstaltungen in {{ namedLatLon.displayName }}</h1>
+            <h1>Veranstaltungen in {{ namedLatLon.place }}</h1>
 
-          <h3
-            class="event-description"
-            tabindex="0"
-            role="button"
-            [ngClass]="{
+            <h3
+              class="event-description"
+              tabindex="0"
+              role="button"
+              [ngClass]="{
               'event-description--collapsed': collapsedDescription
               }"
-            (click)="collapsedDescription = !collapsedDescription"
-            (keydown.enter)="collapsedDescription = !collapsedDescription"
-            (keydown.space)="collapsedDescription = !collapsedDescription; $event.preventDefault()"
-          >
-            Du suchst nach Events in {{ namedLatLon.displayName }}? Hier findest du eine bunte Mischung aus
-            lokalen Veranstaltungen – oft klein, charmant und echte Geheimtipps. Ideal zum Stöbern und
-            Entdecken von Events für Familien mit Kindern!
-          </h3>
+              (click)="collapsedDescription = !collapsedDescription"
+              (keydown.enter)="collapsedDescription = !collapsedDescription"
+              (keydown.space)="collapsedDescription = !collapsedDescription; $event.preventDefault()"
+            >
+              Du suchst nach Events in {{ namedLatLon.displayName }}? Hier findest du eine bunte Mischung aus
+              lokalen Veranstaltungen – oft klein, charmant und echte Geheimtipps. Ideal zum Stöbern und
+              Entdecken von Events für Familien mit Kindern!
+            </h3>
 
-          <div class="calendar-days">
-            @if (loadingDay) {
-              <ion-spinner name="dots"></ion-spinner>
-            }
-            @if (!loadingDay) {
-              @for (day of placesByDistancePerDay; track day) {
-                <div class="calendar-day">
-                  <div>
-                    <header>
-                      <h2>
-                        <time [attr.datetime]="day.date.toDate().toISOString()">
-                          {{ getWeekday(day.date) }}, {{ formatDate(day.date, 'DD.MM.YYYY') }}
-                        </time>
-                        @if (getRelativeDateLabel(day.date)) {
-                          <div class="ion-margin-top" style="opacity: 0.7">
-                            <span class="badge">{{ getRelativeDateLabel(day.date) }} </span>
-                          </div>
-                        }
-                      </h2>
-                    </header>
+            <p class="event-disclaimer">
+              Alle Angaben ohne Gewähr – bitte beim Anbieter prüfen.
+            </p>
 
-                    <div class="event-list" [ngClass]="{'past-events': isPast(day.date)}">
-                      <div>
-                        @if (day.eventGroups.length === 0) {
-                          <div class="localized-event localized-event--gray">
-                            <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
-                          </div>
-                        }
-                        @for (placesGroup of day.eventGroups; track placesGroup) {
-                          <div>
-                            @for (place of placesGroup.places; track place) {
-                              <h2>
-                                <a
-                                  [routerLink]="getPlaceUrl(place?.place)"
-                                  [title]="'Wechsle nach ' + place?.place?.place"
-                                  itemprop="url"
-                                >
-                                  <span itemprop="name">{{ place?.place?.place }}</span></a
-                                >
-                                @if (placesGroup?.distance && placesGroup.distance > 0) {
-                                  <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
-                                }
-                              </h2>
-                              <div>
-                                @for (event of place.events; track event) {
+            <div class="calendar-days">
+              @if (loadingDay) {
+                <ion-spinner name="dots"></ion-spinner>
+              }
+              @if (!loadingDay) {
+                @for (day of placesByDistancePerDay; track day) {
+                  <div class="calendar-day">
+                    <div>
+                      <header>
+                        <h2>
+                          <time [attr.datetime]="day.date.toDate().toISOString()">
+                            {{ getWeekday(day.date) }}, {{ formatDate(day.date, 'DD.MM.YYYY') }}
+                          </time>
+                          @if (getRelativeDateLabel(day.date)) {
+                            <div class="ion-margin-top" style="opacity: 0.7">
+                              <span class="badge">{{ getRelativeDateLabel(day.date) }} </span>
+                            </div>
+                          }
+                        </h2>
+                      </header>
+
+                      <div class="event-list" [ngClass]="{'past-events': isPast(day.date)}">
+                        <div>
+                          @if (day.eventGroups.length === 0) {
+                            <div class="localized-event localized-event--gray">
+                              <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
+                            </div>
+                          }
+                          @for (placesGroup of day.eventGroups; track placesGroup) {
+                            <div>
+                              @for (place of placesGroup.places; track place) {
+                                <h2>
                                   <a
-                                    [routerLink]="createEventUrl(event)"
-                                    class="localized-event localized-event--clickable"
+                                    [routerLink]="getPlaceUrl(place?.place)"
+                                    [title]="'Wechsle nach ' + place?.place?.place"
+                                    itemprop="url"
                                   >
-                                    <article itemscope itemtype="https://schema.org/Event">
-                                      <header>
-                                        <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
-                                      </header>
-                                      <meta class="bot-only" itemprop="startDate"
-                                            [content]="day.date.toDate().toISOString()">
-                                      <meta class="bot-only" itemprop="description" [content]="event.text">
-                                      <div class="bot-only" itemprop="location" itemscope
-                                           itemtype="https://schema.org/Place">
-                                        <span itemprop="name">{{ place.place.displayName }}</span>
-                                      </div>
-                                    </article>
-                                  </a>
-                                }
-                              </div>
-                            }
-                          </div>
-                        }
+                                    <span itemprop="name">{{ place?.place?.place }}</span></a
+                                  >
+                                  @if (placesGroup?.distance && placesGroup.distance > 0) {
+                                    <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
+                                  }
+                                </h2>
+                                <div>
+                                  @for (event of place.events; track event) {
+                                    <a
+                                      [routerLink]="createEventUrl(event)"
+                                      class="localized-event localized-event--clickable"
+                                    >
+                                      <article itemscope itemtype="https://schema.org/Event">
+                                        <header>
+                                          <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
+                                        </header>
+                                        <meta class="bot-only" itemprop="startDate"
+                                              [content]="day.date.toDate().toISOString()">
+                                        <meta class="bot-only" itemprop="description" [content]="event.text">
+                                        <div itemprop="location" itemscope
+                                             itemtype="https://schema.org/Place"
+                                             class="bot-only event-location">
+                                          <span itemprop="name">{{ place.place.displayName }}</span>
+                                        </div>
+                                      </article>
+                                    </a>
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
+                }
               }
-            }
-          </div>
-        }
-      </div>
+            </div>
+          }
+        </div>
+      </main>
     }
   </div>
   <app-search-abo-button [location]="namedLatLon"></app-search-abo-button>

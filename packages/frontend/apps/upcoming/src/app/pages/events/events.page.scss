@@ -34,6 +34,22 @@ ion-content::part(scroll) {
   display: none;
 }
 
+.event-location {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  margin-top: 0.25rem;
+}
+
+.event-disclaimer {
+  font-size: 0.8125rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 1rem;
+}
+
+.events-main {
+  outline: none;
+}
+
 .calendar-day {
   flex: 1;
 

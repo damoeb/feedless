@@ -78,43 +78,37 @@ function roundLatLon(v: number): number {
 }
 
 export function createBreadcrumbsSchema(location: NamedLatLon): BreadcrumbList {
-  // todo fix
-  // const country = parsePath(upcomingBaseRoute.events.countryCode.region.({}).countryCode({
-  //   countryCode: location.countryCode,
-  // });
-  // const region = country.region({
-  //   region: location.area,
-  // });
-  // const place = region.place({
-  //   place: location.place,
-  // });
+  const base = 'https://lokale.events';
+  const countryPath = `${base}/events/in/${encodeURIComponent(location.countryCode)}`;
+  const regionPath = `${countryPath}/${encodeURIComponent(location.area)}`;
+  const placePath = `${regionPath}/${encodeURIComponent(location.place)}`;
   return {
     '@type': 'BreadcrumbList',
     itemListElement: [
-      // {
-      //   '@type': 'ListItem',
-      //   position: 1,
-      //   item: {
-      //     '@id': `https://lokale.events/${country.$}`,
-      //     name: `Events in ${location.countryCode}`,
-      //   },
-      // },
-      // {
-      //   '@type': 'ListItem',
-      //   position: 2,
-      //   item: {
-      //     '@id': `https://lokale.events/${region.$}`,
-      //     name: `Events in ${location.area}, ${location.countryCode}`,
-      //   },
-      // },
-      // {
-      //   '@type': 'ListItem',
-      //   position: 3,
-      //   item: {
-      //     '@id': `https://lokale.events/${place.$}`,
-      //     name: `Events in ${location.displayName}`,
-      //   },
-      // },
+      {
+        '@type': 'ListItem',
+        position: 1,
+        item: {
+          '@id': countryPath,
+          name: `Events in ${location.countryCode}`,
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        item: {
+          '@id': regionPath,
+          name: `Events in ${location.area}, ${location.countryCode}`,
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        item: {
+          '@id': placePath,
+          name: `Events in ${location.displayName}`,
+        },
+      },
     ],
   };
 }
@@ -272,7 +266,11 @@ export class EventsPage implements OnInit, OnDestroy {
       ] as EventsResolverData;
       this.namedLatLon = data.latlng;
       this.date = data.date;
+      this.dateIsFromRelativeUrl = !!this.activatedRoute.snapshot.params[
+        'relativeDate'
+      ];
       await this.handleEventsResponse(data.events);
+      this.pageService.setMetaTags(this.getPageTags());
     }
 
     if (
@@ -372,7 +370,7 @@ export class EventsPage implements OnInit, OnDestroy {
     if (isPlatformBrowser(this.platformId)) {
       return document.location.href;
     }
-    return '';
+    return this.getCanonicalUrlFromPath();
   }
 
   ngOnDestroy(): void {
