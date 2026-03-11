@@ -108,7 +108,7 @@ export class AuthService {
         },
       })
       .then((response) =>
-        this.handleAuthenticationToken(response.data!.authConfirmCode.token),
+        this.handleAuthenticationToken(response.data.authConfirmCode.token),
       );
   }
 

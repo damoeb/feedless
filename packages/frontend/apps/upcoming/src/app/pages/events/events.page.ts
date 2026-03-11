@@ -264,12 +264,14 @@ export class EventsPage implements OnInit, OnDestroy {
       const data = this.activatedRoute.snapshot.data[
         'events'
       ] as EventsResolverData;
-      this.namedLatLon = data.latlng;
-      this.date = data.date;
-      this.dateIsFromRelativeUrl = !!this.activatedRoute.snapshot.params[
-        'relativeDate'
-      ];
-      await this.handleEventsResponse(data.events);
+
+      if (data) {
+        this.namedLatLon = data?.latlng;
+        this.date = data?.date;
+        this.dateIsFromRelativeUrl =
+          !!this.activatedRoute.snapshot.params['relativeDate'];
+        await this.handleEventsResponse(data.events);
+      }
       this.pageService.setMetaTags(this.getPageTags());
     }
 

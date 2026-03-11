@@ -285,10 +285,6 @@ export const UPCOMING_ROUTES: Routes = [
         path: template(upcomingBaseRoute._.management),
         redirectTo: template(upcomingBaseRoute.management.sources),
       },
-      {
-        path: template(upcomingBaseRoute._.management),
-        redirectTo: template(upcomingBaseRoute.management.sources),
-      },
     ],
   },
   {
