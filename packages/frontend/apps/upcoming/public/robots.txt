@@ -1,21 +1,21 @@
 User-agent: *
-Allow: /
-Allow: /events/
 Allow: /ueber-uns/
 Allow: /agb/
 
-# Disallow admin/management areas
-Disallow: /management/
-Disallow: /login
-
-# Allow all search engines to access events
+# Allow all search engines to access stable event lists
 Allow: /events/in/*/*/*/heute$
 Allow: /events/in/*/*/*/morgen$
 Allow: /events/in/*/*/*/kommendes-wochenende$
 
+# event details and unstable urls
 Disallow: /events/in/*/*/*/am/
 Disallow: /events/in/*/*/*/heute/
 Disallow: /events/in/*/*/*/morgen/
 Disallow: /events/in/*/*/*/kommendes-wochenende/
+
+# Disallow private areas
+Disallow: /management/
+Disallow: /login
+
 
 Sitemap: https://lokale.events/sitemap.xml
