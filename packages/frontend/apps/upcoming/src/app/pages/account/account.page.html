@@ -1,0 +1,46 @@
+<ion-content>
+  <article class="ion-padding">
+    <header>
+      <h1>Profile</h1>
+      <p>Edit your user details.</p>
+    </header>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="ion-margin-top">
+      <ion-item>
+        <ion-input
+          label="Email"
+          labelPlacement="stacked"
+          [value]="email"
+          readonly
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          formControlName="firstName"
+          label="First name"
+          labelPlacement="stacked"
+          placeholder="First name"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          formControlName="lastName"
+          label="Last name"
+          labelPlacement="stacked"
+          placeholder="Last name"
+        ></ion-input>
+      </ion-item>
+      <ion-item>
+        <ion-input
+          formControlName="country"
+          label="Country"
+          labelPlacement="stacked"
+          placeholder="e.g. DE"
+        ></ion-input>
+      </ion-item>
+      <ion-button type="submit" expand="block" class="ion-margin-top">
+        Save
+      </ion-button>
+    </form>
+  </article>
+</ion-content>

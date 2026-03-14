@@ -1,17 +1,17 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 import { AppTestModule, mockRepository } from '@feedless/testing';
-import { EditorPage } from './editor.page';
+import { EventSourcesPage } from './event-sources.page';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService, PageService } from '@feedless/components';
 
-describe('EditorPage', () => {
-  let component: EditorPage;
-  let fixture: ComponentFixture<EditorPage>;
+describe('EventSourcesPage', () => {
+  let component: EventSourcesPage;
+  let fixture: ComponentFixture<EventSourcesPage>;
 
   beforeEach(waitForAsync(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        EditorPage,
+        EventSourcesPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockRepository(apolloMockController);
@@ -31,7 +31,7 @@ describe('EditorPage', () => {
     const appConfigService = TestBed.inject(AppConfigService);
     appConfigService.customProperties = { eventRepositoryId: 'foo' };
 
-    fixture = TestBed.createComponent(EditorPage);
+    fixture = TestBed.createComponent(EventSourcesPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));

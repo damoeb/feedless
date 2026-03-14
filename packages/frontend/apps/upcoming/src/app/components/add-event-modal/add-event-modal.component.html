@@ -33,10 +33,10 @@
   @if (currentStep() === 1) {
     <ion-list lines="none" class="wizard-list">
       <ion-radio-group [formControl]="eventForm.controls.eventType">
-        <ion-item button detail="false" class="option-card">
+        <ion-item button detail="false" class="option-card" disabled>
           <ion-radio value="single" labelPlacement="end" justify="start">
             <ion-label>
-              <strong>Single Event</strong>
+              <strong>Einzellnen Event</strong>
               <p>Ein einmaliges Ereignis</p>
             </ion-label>
           </ion-radio>
@@ -44,7 +44,7 @@
         <ion-item button detail="false" class="option-card">
           <ion-radio value="series" labelPlacement="end" justify="start">
             <ion-label>
-              <strong>Series of Events</strong>
+              <strong>Event Serie</strong>
               <p>Wiederkehrende Veranstaltung</p>
             </ion-label>
           </ion-radio>

@@ -19,7 +19,7 @@ import {
   DateWindowItem,
   formatDate,
   getWeekday,
-} from '../../pages/events/events.page';
+} from '../../pages/event-calendar/event-calendar.page';
 import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
 // eslint-disable-next-line @nx/enforce-module-boundaries

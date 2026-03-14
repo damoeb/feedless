@@ -1,0 +1,58 @@
+<ion-split-pane when="xs" contentId="main">
+  <ion-menu contentId="main">
+    <ion-header style="box-shadow: none">
+      <ion-toolbar>
+        <ion-menu-button></ion-menu-button>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content>
+      <ion-list lines="none">
+        <ion-list-header>
+          <ion-label>Management</ion-label>
+        </ion-list-header>
+        <ion-item [routerLink]="tmpl(routes.profile.sources)" routerLinkActive="ion-text-bold"
+                  [routerLinkActiveOptions]="{ exact: false }">
+          <ion-label>Sources</ion-label>
+        </ion-item>
+        <ion-item [routerLink]="tmpl(routes.profile.documents)" routerLinkActive="ion-text-bold"
+                  [routerLinkActiveOptions]="{ exact: false }">
+          <ion-label>Documents</ion-label>
+        </ion-item>
+        <ion-list-header>
+          <ion-label>Personal</ion-label>
+        </ion-list-header>
+        <ion-item [routerLink]="tmpl(routes.profile.account)" routerLinkActive="ion-text-bold"
+                  [routerLinkActiveOptions]="{ exact: false }">
+          <ion-label>Account</ion-label>
+        </ion-item>
+        <ion-item [routerLink]="tmpl(routes.profile.subscriptions)" routerLinkActive="ion-text-bold"
+                  [routerLinkActiveOptions]="{ exact: false }">
+          <ion-label>Subscriptions</ion-label>
+        </ion-item>
+        <ion-item [routerLink]="tmpl(routes.profile.security)" routerLinkActive="ion-text-bold"
+                  [routerLinkActiveOptions]="{ exact: false }">
+          <ion-label>Security</ion-label>
+        </ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-menu>
+
+  <div class="ion-page" id="main">
+    <ion-header style="box-shadow: none">
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+          <ion-button routerLink="/"><strong>lokale</strong><em>.events</em></ion-button>
+        </ion-buttons>
+
+        <ion-buttons slot="end">
+          <app-dark-mode-button></app-dark-mode-button>
+          <app-profile-button></app-profile-button>
+        </ion-buttons>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding">
+      <router-outlet></router-outlet>
+    </ion-content>
+  </div>
+</ion-split-pane>

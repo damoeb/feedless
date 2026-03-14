@@ -6,22 +6,12 @@ import {
   OnInit,
   viewChild,
 } from '@angular/core';
-import {
-  IonButton,
-  IonButtons,
-  IonContent,
-  IonHeader,
-  IonMenuButton,
-  IonSpinner,
-  IonToolbar,
-} from '@ionic/angular/standalone';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { IonContent, IonSpinner } from '@ionic/angular/standalone';
+import { ActivatedRoute } from '@angular/router';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import {
   AppConfigService,
-  DarkModeButtonComponent,
   MapComponent,
-  ProfileButtonComponent,
   RepositoryService,
   Source,
   SourcesComponent,
@@ -30,26 +20,14 @@ import { LatLng, Nullable } from '@feedless/core';
 import { GqlSourcesWhereInput, RepositoryFull } from '@feedless/graphql-api';
 
 @Component({
-  selector: 'app-management-page',
-  templateUrl: './editor.page.html',
-  styleUrls: ['./editor.page.scss'],
+  selector: 'app-event-sources-page',
+  templateUrl: './event-sources.page.html',
+  styleUrls: ['./event-sources.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [
-    IonHeader,
-    IonContent,
-    RouterLink,
-    IonToolbar,
-    IonButton,
-    IonButtons,
-    DarkModeButtonComponent,
-    ProfileButtonComponent,
-    SourcesComponent,
-    IonSpinner,
-    IonMenuButton,
-  ],
+  imports: [IonContent, SourcesComponent, IonSpinner],
   standalone: true,
 })
-export class EditorPage implements OnInit {
+export class EventSourcesPage implements OnInit {
   readonly map = viewChild.required<MapComponent>('map');
 
   private readonly repositoryService = inject(RepositoryService);
@@ -63,7 +41,6 @@ export class EditorPage implements OnInit {
   };
   protected repository: RepositoryFull;
   sourcesFilter: Nullable<GqlSourcesWhereInput> = null;
-  protected showSources: boolean;
 
   async ngOnInit() {
     this.repository = await this.repositoryService.getRepositoryById(
@@ -71,7 +48,6 @@ export class EditorPage implements OnInit {
       { page: 0 },
       null,
     );
-    this.showSources = this.activatedRoute.snapshot.data['sources'] == true;
     this.changeRef.detectChanges();
   }
 
@@ -95,8 +71,8 @@ export class EditorPage implements OnInit {
   }
 
   async onSourceChange(sources: Source[]) {
-    const L = await import('leaflet');
-    const map = this.map().getNativeMap();
-    sources.map((s) => L.marker(s.latLng).addTo(map));
+    // const L = await import('leaflet');
+    // const map = this.map().getNativeMap();
+    // sources.map((s) => L.marker(s.latLng).addTo(map));
   }
 }

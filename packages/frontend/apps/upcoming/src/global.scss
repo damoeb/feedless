@@ -156,10 +156,10 @@ app-external-link {
     }
   }
 
-  @media screen and (min-width: 701px) {
+  @media screen and (min-width: 801px) {
     &.medium-modal {
-      --width: 600px;
-      --height: 700px;
+      --width: 800px;
+      --height: 900px;
     }
   }
 

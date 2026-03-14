@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
-import { EventsPage } from './events.page';
+import { EventCalendarPage } from './event-calendar.page';
 import {
   AppTestModule,
   mockEvents,
@@ -13,9 +13,9 @@ import { EventService } from '../../event.service';
 import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
 
-describe('EventsPage', () => {
-  let component: EventsPage;
-  let fixture: ComponentFixture<EventsPage>;
+describe('EventCalendarPage', () => {
+  let component: EventCalendarPage;
+  let fixture: ComponentFixture<EventCalendarPage>;
   let eventService: EventService;
   let appConfigService: AppConfigService;
   let eventRepositoryId: string;
@@ -46,7 +46,7 @@ describe('EventsPage', () => {
         },
       ],
       imports: [
-        EventsPage,
+        EventCalendarPage,
         AppTestModule.withDefaults({
           configurer: (apolloMockController) => {
             mockEvents(apolloMockController);
@@ -57,7 +57,7 @@ describe('EventsPage', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(EventsPage);
+    fixture = TestBed.createComponent(EventCalendarPage);
     const router = TestBed.inject(Router);
     jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     component = fixture.componentInstance;

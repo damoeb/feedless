@@ -1,0 +1,57 @@
+<ion-content>
+  <article class="ion-padding">
+    <header>
+      <h1>Security</h1>
+      <p>Password and security settings.</p>
+    </header>
+
+    <section class="ion-margin-top">
+      <p class="ion-text-secondary">
+        This app uses email-based login (no password). To change the email address
+        used for login, use the <a routerLink="/management/profile">Profile</a> page
+        when that option is available.
+      </p>
+    </section>
+
+    <section class="ion-margin-top">
+      <h2>API tokens / secrets</h2>
+      <p class="ion-text-secondary">
+        Tokens you created for API or calendar access. Create a new one or revoke existing.
+      </p>
+
+      @if (user?.secrets?.length) {
+        <ion-list lines="full" class="ion-margin-top">
+          @for (secret of user.secrets; track secret.id) {
+            <ion-item>
+              <ion-label>
+                <span [title]="secret.id">{{ secret.valueMasked ?? secret.type ?? secret.id }}</span>
+                @if (secret.lastUsed) {
+                  <ion-note>Last used: {{ secret.lastUsed }}</ion-note>
+                }
+              </ion-label>
+              <ion-button
+                slot="end"
+                fill="clear"
+                color="danger"
+                (click)="deleteSecret(secret.id)"
+                [disabled]="busy"
+              >
+                Revoke
+              </ion-button>
+            </ion-item>
+          }
+        </ion-list>
+      } @else {
+        <p class="ion-margin-top">No tokens yet.</p>
+      }
+
+      <ion-button
+        class="ion-margin-top"
+        (click)="createSecret()"
+        [disabled]="busy"
+      >
+        {{ busy ? 'Creating…' : 'Create new token' }}
+      </ion-button>
+    </section>
+  </article>
+</ion-content>

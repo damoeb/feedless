@@ -1,0 +1,31 @@
+<ion-content>
+  <article class="ion-padding">
+    <header>
+      <h1>Subscriptions</h1>
+      <p>Your email subscriptions for event digests.</p>
+    </header>
+
+    @if (subscriptions.length === 0) {
+      <section class="ion-margin-top empty-state">
+        <p>
+          You don't have any email subscriptions yet, or the list could not be loaded.
+        </p>
+        <p>
+          You can create a new event digest subscription from any event search result
+          on the <a routerLink="/">home page</a> using the email subscription button.
+        </p>
+      </section>
+    } @else {
+      <ion-list class="ion-margin-top" lines="full">
+        @for (sub of subscriptions; track sub.id) {
+          <ion-item>
+            <ion-label>{{ sub.label }}</ion-label>
+            @if (sub.frequency) {
+              <ion-note slot="end">{{ sub.frequency }}</ion-note>
+            }
+          </ion-item>
+        }
+      </ion-list>
+    }
+  </article>
+</ion-content>

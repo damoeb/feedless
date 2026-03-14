@@ -56,7 +56,7 @@ export class AddEventModalComponent {
   readonly currentStep = signal(1);
 
   readonly eventForm = new FormGroup({
-    eventType: new FormControl<EventType>('single', { nonNullable: true }),
+    eventType: new FormControl<EventType>('series', { nonNullable: true }),
     title: new FormControl('', { validators: [Validators.required] }),
     description: new FormControl('', { validators: [Validators.required] }),
     place: new FormControl(''),

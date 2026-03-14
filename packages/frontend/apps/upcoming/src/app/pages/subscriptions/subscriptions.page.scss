@@ -1,0 +1,16 @@
+@use '../../upcoming-mixins';
+
+p {
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  color: var(--ion-color-medium);
+}
+
+.empty-state {
+  p + p {
+    margin-top: 0.5rem;
+  }
+  a {
+    color: var(--ion-color-primary);
+  }
+}

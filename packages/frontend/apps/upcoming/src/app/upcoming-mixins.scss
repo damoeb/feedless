@@ -24,15 +24,12 @@ h3 {
 }
 
 .events {
-  width: 100%;
-  max-width: min(700px, 100%);
-  min-width: 0;
+  max-width: 700px;
   margin-left: auto;
   margin-right: auto;
   display: flex;
   flex-direction: column;
   flex: 1;
-  box-sizing: border-box;
 }
 
 a:has(ion-button),

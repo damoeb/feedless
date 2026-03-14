@@ -1,0 +1,28 @@
+<ion-content>
+  <div class="sources">
+    <!--    <ion-searchbar></ion-searchbar>-->
+    <!--    <app-map-->
+    <!--      #map-->
+    <!--      style="border-radius: 8px"-->
+    <!--      (boundingBoxChange)="onMapChange($event)"-->
+    <!--      [minZoom]="10"-->
+    <!--      [maxZoom]="15"-->
+    <!--      [position]="mapPosition"-->
+    <!--    ></app-map>-->
+
+    <div>
+      @if (repository) {
+        <h1 class="ion-margin">All Sources</h1>
+
+        <app-sources
+          [repository]="repository"
+          (sourceChange)="onSourceChange($event)"
+          [sourcesFilter]="sourcesFilter"
+        >
+        </app-sources>
+      } @else {
+        <ion-spinner name="dots"></ion-spinner>
+      }
+    </div>
+  </div>
+</ion-content>

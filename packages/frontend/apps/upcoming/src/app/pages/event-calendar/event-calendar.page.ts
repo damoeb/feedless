@@ -136,8 +136,8 @@ export function getDateConstraints(date: Dayjs): {
 
 @Component({
   selector: 'app-events-page',
-  templateUrl: './events.page.html',
-  styleUrls: ['./events.page.scss'],
+  templateUrl: './event-calendar.page.html',
+  styleUrls: ['./event-calendar.page.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     UpcomingHeaderComponent,
@@ -157,7 +157,7 @@ export function getDateConstraints(date: Dayjs): {
   ],
   standalone: true,
 })
-export class EventsPage implements OnInit, OnDestroy {
+export class EventCalendarPage implements OnInit, OnDestroy {
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly eventService = inject(EventService);
   private readonly changeRef = inject(ChangeDetectorRef);
@@ -818,9 +818,18 @@ export class EventsPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    return title
-      .replace(/[0-9]{1,2}\.[ .]?[a-z]{3,10}[ .]?[0-9]{2,4}/gi, '')
-      .replace(/[0-9]{1,2}\.[ .]?[0-9]{1,2}[ .]?[0-9]{2,4}/gi, '');
+    if (!title?.trim()) return title ?? '';
+    // German date in title e.g. "13. März 2026", "1. Januar 2026" (month names with ä, ö, ü)
+    const withoutNamedMonth = title.replace(
+      /[0-9]{1,2}\.[\s.]*[a-zäöüß]{3,10}[\s.]*[0-9]{2,4}/gi,
+      '',
+    );
+    // Numeric date e.g. "13.03.2026", "1.1.26"
+    const withoutNumericDate = withoutNamedMonth.replace(
+      /[0-9]{1,2}\.[\s.]*[0-9]{1,2}[\s.]*[0-9]{2,4}/g,
+      '',
+    );
+    return withoutNumericDate.replace(/\s{2,}/g, ' ').trim();
   }
 
   async openEventModal(

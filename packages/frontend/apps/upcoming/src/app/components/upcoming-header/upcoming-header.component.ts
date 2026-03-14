@@ -62,7 +62,7 @@ import {
 } from '@feedless/components';
 import { renderPath, safeParsePath } from 'typesafe-routes';
 import { isPlatformBrowser } from '@angular/common';
-import { getPreviousLocations } from '../../pages/events/events.page';
+import { getPreviousLocations } from '../../pages/event-calendar/event-calendar.page';
 
 type SiteLocale = 'de' | 'en';
 type LocationSuggestion = {

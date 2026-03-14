@@ -184,14 +184,23 @@ export const upcomingBaseRoute = createRoutes({
   about: {
     path: ['ueber-uns'],
   },
-  management: {
-    path: ['management'],
+  profile: {
+    path: ['profile'],
     children: {
       sources: {
         path: ['sources'],
       },
       documents: {
         path: ['documents'],
+      },
+      account: {
+        path: ['account'],
+      },
+      subscriptions: {
+        path: ['subscriptions'],
+      },
+      security: {
+        path: ['security'],
       },
     },
   },
@@ -264,60 +273,78 @@ export const UPCOMING_ROUTES: Routes = [
     path: '',
     pathMatch: 'full',
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   {
-    path: '',
+    path: template(upcomingBaseRoute._.profile),
     canActivate: [AuthGuardService],
+    loadComponent: () =>
+      import('./pages/profile/profile.page').then((m) => m.ProfilePage),
     children: [
       {
-        path: template(upcomingBaseRoute._.management.sources),
+        path: '',
+        pathMatch: 'full',
+        redirectTo: 'sources',
+      },
+      {
+        path: template(upcomingBaseRoute.profile._.sources),
         data: { sources: true },
         loadComponent: () =>
-          import('./pages/editor/editor.page').then((m) => m.EditorPage),
+          import('./pages/event-sources/event-sources.page').then(
+            (m) => m.EventSourcesPage,
+          ),
       },
       {
-        path: template(upcomingBaseRoute._.management.documents),
+        path: template(upcomingBaseRoute.profile._.account),
         loadComponent: () =>
-          import('./pages/editor/editor.page').then((m) => m.EditorPage),
+          import('./pages/account/account.page').then((m) => m.AccountPage),
       },
       {
-        path: template(upcomingBaseRoute._.management),
-        redirectTo: template(upcomingBaseRoute.management.sources),
+        path: template(upcomingBaseRoute.profile._.security),
+        loadComponent: () =>
+          import('./pages/security/security.page').then((m) => m.SecurityPage),
+      },
+      {
+        path: template(upcomingBaseRoute.profile._.subscriptions),
+        loadComponent: () =>
+          import('./pages/subscriptions/subscriptions.page').then(
+            (m) => m.SubscriptionsPage,
+          ),
       },
     ],
   },
   {
     path: template(upcomingBaseRoute._.events.countryCode),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   {
     path: template(upcomingBaseRoute._.events.countryCode.region),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   {
     path: template(upcomingBaseRoute._.events.countryCode.region.place),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   {
     path: template(
       upcomingBaseRoute._.events.countryCode.region.place.dateTime,
     ),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
-  // {
-  //   path: toPath(
-  //     template(
-  //       upcomingBaseRoute.events.countryCode.region.place.dateTime.perimeter,
-  //     ),
-  //   ),
-  //   loadComponent: () =>
-  //     import('./pages/events/events.page').then((m) => m.EventsPage),
-  // },
   {
     resolve: {
       events: eventsResolver,
@@ -326,7 +353,9 @@ export const UPCOMING_ROUTES: Routes = [
       upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime,
     ),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   // {
   //   path: toPath(
@@ -336,14 +365,16 @@ export const UPCOMING_ROUTES: Routes = [
   //     ),
   //   ),
   //   loadComponent: () =>
-  //     import('./pages/events/events.page').then((m) => m.EventsPage),
+  //     import('./pages/events/events.page').then((m) => m.EventCalendarPage),
   // },
   {
     path: template(
       upcomingBaseRoute._.events.countryCode.region.place.dateTime.eventId,
     ),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
   {
     path: template(
@@ -351,6 +382,8 @@ export const UPCOMING_ROUTES: Routes = [
         .eventId,
     ),
     loadComponent: () =>
-      import('./pages/events/events.page').then((m) => m.EventsPage),
+      import('./pages/event-calendar/event-calendar.page').then(
+        (m) => m.EventCalendarPage,
+      ),
   },
 ];

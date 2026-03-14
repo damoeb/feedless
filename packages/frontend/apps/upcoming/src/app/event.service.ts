@@ -9,7 +9,7 @@ import {
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import type { DefaultContext } from '@apollo/client/core/types';
 import { Dayjs } from 'dayjs';
-import { getDateConstraints } from './pages/events/events.page';
+import { getDateConstraints } from './pages/event-calendar/event-calendar.page';
 import { uniqBy } from 'lodash-es';
 
 export type LocalizedEvent = GetElementType<GqlEventsByIdsQuery['records']>;
