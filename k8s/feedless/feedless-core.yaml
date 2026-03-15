@@ -149,7 +149,7 @@ spec:
                   key: oauthProviderRedirectUri
             # --
             # plausible
-            - name: APP_PLAUSIBLEURL
+            - name: APP_PLAUSIBLE_URL
               valueFrom:
                 configMapKeyRef:
                   name: feedless-config
