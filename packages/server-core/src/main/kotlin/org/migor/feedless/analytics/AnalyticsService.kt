@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
+import java.net.URI
 import java.time.Duration
 import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
@@ -56,9 +57,13 @@ class AnalyticsService {
   private fun postConstruct() {
 
     log.info("plausibleUrl: $plausibleUrl")
-    val hasUrl = plausibleUrl.isNotBlank()
+    val hasUrl = plausibleUrl.isNotBlank() && isValidPlausibleUrl(plausibleUrl)
     if (!hasUrl) {
-      log.error("plausibleUrl is empty")
+      if (plausibleUrl.isNotBlank()) {
+        log.error("plausibleUrl is malformed (e.g. missing host like http://:8000): $plausibleUrl")
+      } else {
+        log.error("plausibleUrl is empty")
+      }
     }
     log.info("plausibleSite: $plausibleSite")
     val hasSite = plausibleSite.isNotBlank()
@@ -83,9 +88,19 @@ class AnalyticsService {
     httpClient = Dsl.asyncHttpClient(builderConfig)
   }
 
+  internal fun isValidPlausibleUrl(url: String): Boolean {
+    return try {
+      val uri = URI(url)
+      uri.host?.isNotBlank() == true
+    } catch (e: Exception) {
+      false
+    }
+  }
+
   suspend fun track() {
     try {
       if (canPush || disabledAt.isBefore(LocalDateTime.now().minusMinutes(5))) {
+        if (!canPush) return
         val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
 
         val url = toFullUrlString(request)
