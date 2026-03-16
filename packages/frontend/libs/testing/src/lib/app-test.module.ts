@@ -386,7 +386,8 @@ export const mocks: Mocks = {
     createdAt: 0,
     lastUpdatedAt: new Date(),
     retention: {},
-  },
+    sources: [],
+  } as Mocks['repository'],
   scrapeResponse: {
     outputs: [],
     ok: true,

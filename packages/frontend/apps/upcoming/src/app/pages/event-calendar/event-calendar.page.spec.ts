@@ -75,7 +75,7 @@ describe('EventCalendarPage', () => {
 
   it('#cleanTitle', () => {
     expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
-      ' Mittagessen',
+      'Mittagessen',
     );
   });
 

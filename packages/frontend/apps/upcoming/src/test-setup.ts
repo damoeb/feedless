@@ -34,6 +34,9 @@ const ionTags = [
   'ion-badge',
   'ion-menu-button',
   'ion-icon',
+  'ion-row',
+  'ion-col',
+  'ion-progress-bar',
 ];
 
 class IonStub extends HTMLElement {}
