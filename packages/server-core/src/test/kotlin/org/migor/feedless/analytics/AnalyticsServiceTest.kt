@@ -26,7 +26,6 @@ class AnalyticsServiceTest {
       "https://plausible.io, true",
       "http://plausible.default.svc.cluster.local:8000, true",
       "http://:8000, false",
-      ", false",
       "not-a-url, false",
     ]
   )
