@@ -114,7 +114,11 @@
                                     [title]="'Wechsle nach ' + place?.place?.place"
                                     itemprop="url"
                                   >
-                                    <span itemprop="name">{{ place?.place?.place }}</span></a
+                                    <span itemprop="name">{{ place?.place?.place }}</span>
+                                    <span class="bot-only"
+                                          itemprop="description">{{ place.events.length }}
+                                      Events und Veranstaltungen in {{ placesGroup.distance }}
+                                      Km Entfernung von {{ namedLatLon.displayName }}</span></a
                                   >
                                   @if (placesGroup?.distance && placesGroup.distance > 0) {
                                     <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
