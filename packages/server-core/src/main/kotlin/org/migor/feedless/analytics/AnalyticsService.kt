@@ -72,11 +72,13 @@ class AnalyticsService {
     }
     val hasKey = plausibleApiKey.isNotBlank()
     if (!hasKey) {
-      log.error("plausibleApiKey is empty")
+      log.warn("plausibleApiKey is empty")
     }
 
     canPush = hasUrl && hasSite
     canPull = canPush && hasKey
+
+    log.info("canPush {} canPull {}", canPush, canPull)
 
     val builderConfig = Dsl.config()
       .setConnectTimeout(Duration.ofSeconds(60))
@@ -165,7 +167,7 @@ class CompletionHandlerBase(val expectedStatusCode: Int) : AsyncCompletionHandle
   override fun onStatusReceived(status: HttpResponseStatus?): AsyncHandler.State {
     val actualStatusCode = status?.statusCode
     if (actualStatusCode != expectedStatusCode) {
-      log.debug("Received httpStatus $actualStatusCode expected $expectedStatusCode")
+      log.warn("Received httpStatus $actualStatusCode expected $expectedStatusCode")
     }
     return super.onStatusReceived(status)
   }

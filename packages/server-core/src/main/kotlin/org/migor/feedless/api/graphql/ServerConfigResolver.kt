@@ -10,7 +10,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.fromDto
-import org.migor.feedless.config.CacheNames
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthType
 import org.migor.feedless.generated.types.BuildInfo
@@ -23,7 +22,6 @@ import org.migor.feedless.session.ProductsAuthProperties
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
-import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 
@@ -52,10 +50,10 @@ class ServerConfigResolver {
   private lateinit var productsAuthProperties: ProductsAuthProperties
 
   @DgsQuery(field = DgsConstants.QUERY.ServerSettings)
-  @Cacheable(
-    value = [CacheNames.SERVER_SETTINGS],
-    keyGenerator = "cacheKeyGenerator"
-  ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
+//  @Cacheable(
+//    value = [CacheNames.SERVER_SETTINGS],
+//    keyGenerator = "cacheKeyGenerator"
+//  ) // https://stackoverflow.com/questions/14072380/cacheable-key-on-multiple-method-arguments
   suspend fun serverSettings(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.SERVERSETTINGS_INPUT_ARGUMENT.Data) data: ServerSettingsContextInput,
