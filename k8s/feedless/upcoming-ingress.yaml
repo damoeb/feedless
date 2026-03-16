@@ -9,6 +9,19 @@ spec:
 
 ---
 
+# Redirect www.lokale.events -> lokale.events (non-www). HTTP->HTTPS is handled by force-ssl-redirect on the Ingress.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: upcoming-redirect-www-to-naked
+spec:
+  redirectRegex:
+    regex: ^https?://www\.lokale\.events(.*)$
+    replacement: "https://lokale.events${1}"
+    permanent: true
+
+---
+
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
@@ -44,12 +57,14 @@ metadata:
     app.kubernetes.io/name: upcoming-ingress
     cert-manager.io/cluster-issuer: letsencrypt
     traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: default-upcoming-redirect-www-to-naked@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:
     - hosts:
         - api.lokale.events
         - lokale.events
+        - www.lokale.events
       secretName: upcoming-tls
   rules:
     - host: api.lokale.events

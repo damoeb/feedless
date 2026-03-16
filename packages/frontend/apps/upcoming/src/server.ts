@@ -1,15 +1,44 @@
-import { AngularNodeAppEngine, createNodeRequestHandler, isMainModule, writeResponseToNodeResponse } from '@angular/ssr/node';
+import {
+  AngularNodeAppEngine,
+  createNodeRequestHandler,
+  isMainModule,
+  writeResponseToNodeResponse,
+} from '@angular/ssr/node';
 import compression from 'compression';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { checkOutdated, createAccessLogLine } from './server-utils';
 import { renderPath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
+import { isDevMode } from '@angular/core';
 
 const app = express();
 app.use(compression());
 const angularApp = new AngularNodeAppEngine();
+
+const LOKALE_EVENTS_HOST = 'lokale.events';
+const LOKALE_EVENTS_WWW = 'www.lokale.events';
+
+/** Redirect HTTP→HTTPS and www→non-www when not behind K8s ingress (e.g. dev or direct deploy). */
+function redirectMiddleware(req: Request, res: Response, next: NextFunction) {
+  const host = (req.header('x-forwarded-host') || req.get('host') || '').split(
+    ':',
+  )[0];
+  if (host !== LOKALE_EVENTS_HOST && host !== LOKALE_EVENTS_WWW) {
+    return next();
+  }
+  const proto =
+    req.header('x-forwarded-proto') ?? (req.secure ? 'https' : 'http');
+  const path = req.originalUrl || req.url;
+  if (host === LOKALE_EVENTS_WWW) {
+    return res.redirect(301, `https://${LOKALE_EVENTS_HOST}${path}`);
+  }
+  if (proto === 'http') {
+    return res.redirect(301, `https://${host}${path}`);
+  }
+  next();
+}
 
 function createRequestLogger() {
   app.use((req, res, next) => {
@@ -48,6 +77,9 @@ function handleSignals() {
 }
 
 handleSignals();
+if (!isDevMode()) {
+  app.use(redirectMiddleware);
+}
 createRequestLogger();
 serveStatic();
 
