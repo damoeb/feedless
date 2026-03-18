@@ -2,20 +2,26 @@ package org.migor.feedless.karma
 
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.user.UserId
-import org.springframework.stereotype.Service
+import org.springframework.stereotype.Component
 
 /**
  * Handles karma events for actions defined in karma-comments-idea.yaml.
  * Each method corresponds to an action and receives actor and context IDs.
  */
-@Service
-class KarmaComments {
+@Component
+class KarmaComments(
+  private val karmaHandlerFactory: KarmaHandlerFactory,
+  private val documentHandlerFactory: DocumentHandlerFactory
+) {
 
   fun onUpvote(actorId: UserId, documentId: DocumentId) {
     // TODO: resolve author(documentId), apply karma_change for author +4 (given daily cap), actor -1
 
-    changeUserKarma(getAuthor(documentId), 4, documentId, "upvote received")
-    changeUserKarma(actorId, -1, documentId, "upvote given")
+//    documentHandlerFactory.from(documentId).totalKarmaSince(Duration.ofDays(1))
+//    karmaHandlerFactory.from(actorId).totalKarmaSince(Duration.ofDays(1))
+
+    changeUserKarma(getAuthor(documentId), 4, documentId, KarmaChangeReason.UPVOTE_RECEIVED)
+    changeUserKarma(actorId, -1, documentId, KarmaChangeReason.UPVOTE_GIVEN)
     updateDocumentScore(documentId);
   }
 
@@ -25,8 +31,8 @@ class KarmaComments {
 
   fun onDownvote(actorId: UserId, documentId: DocumentId) {
     // TODO: resolve author(documentId), apply karma_change for author -4 (given daily cap)
-    changeUserKarma(getAuthor(documentId), 4, documentId, "downvote received")
-    changeUserKarma(actorId, -1, documentId, "downvote given")
+    changeUserKarma(getAuthor(documentId), 4, documentId, KarmaChangeReason.DOWNVOTE_RECEIVED)
+    changeUserKarma(actorId, -1, documentId, KarmaChangeReason.DOWNVOTE_GIVEN)
     updateDocumentScore(documentId);
   }
 
@@ -41,48 +47,40 @@ class KarmaComments {
 
   fun onFlagged(actorId: UserId, documentId: DocumentId) {
     // TODO: resolve author(documentId), apply karma_change for author -10
-    changeUserKarma(getAuthor(documentId), -10, documentId, "flag received")
-    changeUserKarma(actorId, -1, documentId, "flag given")
+    changeUserKarma(getAuthor(documentId), -10, documentId, KarmaChangeReason.FLAG_RECEIVED)
+    changeUserKarma(actorId, -1, documentId, KarmaChangeReason.FLAG_GIVEN)
     updateDocumentScore(documentId);
   }
 
   fun onConfirmedSpam(documentId: DocumentId) {
     // TODO: karma_change for user -50, suspend_user until 7 days from now
 
-    changeUserKarma(getAuthor(documentId), -10, documentId, "flag received")
+    changeUserKarma(getAuthor(documentId), -10, documentId, KarmaChangeReason.SPAM)
     updateDocumentScore(documentId);
   }
 
   fun onPostDeletedByAuthor(actorId: UserId, documentId: DocumentId) {
     // TODO: karma_change for actor -5
-    changeUserKarma(getAuthor(documentId), -5, documentId, "comments deleted")
-  }
-
-  fun onDailyActivityBonus(userId: UserId) {
-    // TODO: karma_change for user +1 given lastLogin is today
+    changeUserKarma(getAuthor(documentId), -5, documentId, KarmaChangeReason.COMMENTS_DELETED)
   }
 
   private fun changeUserKarma(
     affectedByKarmaChange: UserId,
     karmaChange: Int,
     documentId: DocumentId,
-    action: String
+    reason: KarmaChangeReason
   ) {
-    val karmaHandler = karmaHandlerFactory.from(affectedByKarmaChange)
-
-    karmaHandler.changeKarma(affectedByKarmaChange)
-
-    val documentHandler = documentHandlerFactory.from(affectedByKarmaChange)
-
+    karmaHandlerFactory.from(affectedByKarmaChange)
+      .changeKarma(karmaChange, reason, documentId)
   }
 
   private fun getAuthor(documentId: DocumentId): UserId {
     return documentHandlerFactory.from(documentId)
-      .ownerId()
+      .authorId()
   }
 
   private fun updateDocumentScore(documentId: DocumentId) {
-    TODO("Not yet implemented")
+    documentHandlerFactory.from(documentId).updateScore()
   }
 
 }
