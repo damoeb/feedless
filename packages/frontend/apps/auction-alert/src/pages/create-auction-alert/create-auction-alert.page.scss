@@ -1,0 +1,130 @@
+p {
+  font-size: 1.1rem;
+  line-height: 1.5rem;
+  color: var(--ion-color-medium);
+}
+
+.auction-page {
+  width: 600px;
+  margin-top: 100px;
+  justify-self: center;
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid var(--app-border-color);
+  border-radius: var(--app-border-radius);
+}
+
+h1 {
+  font-family: serif;
+  font-size: 40px;
+}
+
+.auction-alert-form {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.field-label {
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ion-color-medium);
+}
+
+.location-selection {
+  display: flex;
+}
+
+.location-selection-alternative {
+  align-self: end;
+  height: 33px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.auction-type-group {
+  width: 100%;
+
+  ion-item {
+    --background: transparent;
+    --padding-start: 0;
+  }
+}
+
+.checkbox-item {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+
+  ion-label {
+    font-size: 1rem;
+    font-weight: 400;
+  }
+}
+
+.form-error {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--ion-color-danger);
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+
+  label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ion-color-medium);
+  }
+
+  ion-item {
+    --background: var(--ion-background-color, #fff);
+    --border-radius: 8px;
+    --padding-start: 0;
+    --padding-end: 0;
+    --inner-padding-end: 0;
+  }
+}
+
+.submit-btn {
+  margin-top: 1rem;
+  letter-spacing: 0.025em;
+}
+
+.info-section {
+  margin-top: 2.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--app-border-color);
+
+  h2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 1rem;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  a {
+    color: var(--ion-color-primary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+}
+

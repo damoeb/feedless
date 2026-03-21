@@ -1,0 +1,9 @@
+{
+  "name": "auction-alert-e2e",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/auction-alert-e2e/src",
+  "implicitDependencies": ["auction-alert"],
+  "// targets": "to see all targets run: nx show project auction-alert-e2e --web",
+  "targets": {}
+}

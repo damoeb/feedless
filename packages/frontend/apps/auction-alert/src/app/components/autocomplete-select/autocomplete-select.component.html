@@ -1,0 +1,57 @@
+<ion-item lines="none" class="ac-trigger">
+  <ion-input
+    [id]="inputId()"
+    readonly
+    [value]="displayString()"
+    [placeholder]="placeholder()"
+    [attr.aria-label]="ariaLabel() || placeholder()"
+    fill="outline"
+    labelPlacement="stacked"
+    (click)="openPopover($event, popover)"
+  ></ion-input>
+</ion-item>
+
+<ion-popover
+  #popover
+  [animated]="true"
+  [showBackdrop]="true"
+  alignment="start"
+  side="bottom"
+  [style.--width.px]="popoverWidthPx() ?? undefined"
+  [style.--max-width.px]="popoverWidthPx() ?? undefined"
+  (ionPopoverWillPresent)="onPopoverWillPresent()"
+  (ionPopoverDidDismiss)="onPopoverDidDismiss()"
+>
+  <ng-template>
+    <ion-content class="ac-popover-content">
+      <ion-header class="ac-search-header">
+        <ion-searchbar
+          [placeholder]="searchPlaceholder()"
+          [debounce]="0"
+          [value]="filterQuery()"
+          (ionInput)="onSearchInput($event)"
+          class="ion-no-padding"
+        ></ion-searchbar>
+      </ion-header>
+      <ion-list class="ac-list" lines="full">
+        @for (opt of filteredOptions(); track opt) {
+          <ion-item
+            button
+            detail="false"
+            (click)="onPick(opt)"
+            [class.ac-item--selected]="isSelected(opt)"
+          >
+            <ion-label class="ac-item-label">{{ opt }}</ion-label>
+            @if (multiple()) {
+              <span slot="end" class="ac-check" aria-hidden="true">
+                @if (isSelected(opt)) {
+                  ✓
+                }
+              </span>
+            }
+          </ion-item>
+        }
+      </ion-list>
+    </ion-content>
+  </ng-template>
+</ion-popover>

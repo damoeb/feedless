@@ -1,0 +1,87 @@
+{
+  "name": "auction-alert",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/auction-alert/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/apps/auction-alert",
+        "browser": "apps/auction-alert/src/main.ts",
+        "tsConfig": "apps/auction-alert/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/auction-alert/public"
+          }
+        ],
+        "styles": ["apps/auction-alert/src/styles.scss"],
+        "polyfills": ["zone.js"],
+        "server": "apps/auction-alert/src/main.server.ts",
+        "ssr": {
+          "entry": "apps/auction-alert/src/server.ts"
+        },
+        "outputMode": "server"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "auction-alert:build:production"
+        },
+        "development": {
+          "buildTarget": "auction-alert:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {}
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "auction-alert:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/auction-alert/browser",
+        "spa": true
+      }
+    }
+  }
+}

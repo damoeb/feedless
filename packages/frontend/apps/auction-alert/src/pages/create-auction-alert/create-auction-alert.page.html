@@ -1,0 +1,139 @@
+<ion-content>
+  <div class="auction-page ion-margin-vertical">
+    <div>
+
+    </div>
+    <h1 class="ion-text-center">Edikte Alerts</h1>
+    <p class="ion-text-center">Maßgeschneiderte E-Mail Alerts zu gerichtlichen Versteigerungen in
+      Österreich</p>
+
+    <div class="card">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auction-alert-form">
+        <div class="form-field">
+          <label for="email">Email</label>
+          <ion-item lines="none">
+            <ion-input
+              id="email"
+              type="email"
+              fill="outline"
+              formControlName="email"
+              placeholder="you@example.com"
+              labelPlacement="stacked"
+            ></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="location-selection">
+          <div class="form-field">
+            <label for="country">Bundesland</label>
+            <app-autocomplete-select
+              inputId="country"
+              ariaLabel="Bundesland"
+              placeholder="Bundesland wählen"
+              searchPlaceholder="Bundesland suchen…"
+              [options]="countries"
+              [control]="form.controls.country"
+            />
+          </div>
+          <div class="location-selection-alternative">
+            oder
+          </div>
+          <div class="form-field">
+            <label for="zip">Postleitzahl</label>
+            <ion-item lines="none">
+              <ion-input
+                id="zip"
+                type="number"
+                fill="outline"
+                formControlName="zip"
+                placeholder="z.B. 6600"
+                aria-label="Postleitzahl"
+              ></ion-input>
+            </ion-item>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <span class="field-label">Objektart</span>
+          <ion-radio-group formControlName="objectType" class="auction-type-group">
+            <ion-item lines="none">
+              <ion-radio slot="start" [value]="objectTypeRealEstate" labelPlacement="end">
+                <ion-label>Liegenschaften</ion-label>
+              </ion-radio>
+            </ion-item>
+            <ion-item lines="none">
+              <ion-radio slot="start" [value]="objectTypeOther" labelPlacement="end">
+                <ion-label>Bewegliche Sachen</ion-label>
+              </ion-radio>
+            </ion-item>
+          </ion-radio-group>
+        </div>
+
+        @if (form.controls.objectType.value === objectTypeRealEstate) {
+          <div class="form-field">
+            <label for="liegenschaftKategorie">Kategorien</label>
+            <app-autocomplete-select
+              inputId="liegenschaftKategorie"
+              ariaLabel="Kategorie Liegenschaften"
+              placeholder="Eine oder mehrere Kategorien"
+              searchPlaceholder="Kategorie suchen…"
+              [options]="liegenschaftKategorien"
+              [control]="form.controls.liegenschaftKategorie"
+              [multiple]="true"
+            />
+          </div>
+        }
+
+        @if (form.controls.objectType.value === objectTypeOther) {
+          <div class="form-field">
+            <label for="beweglichKategorien">Kategorien</label>
+            <app-autocomplete-select
+              inputId="beweglichKategorien"
+              ariaLabel="Kategorien bewegliche Sachen"
+              placeholder="Eine oder mehrere Kategorien"
+              searchPlaceholder="Kategorien suchen…"
+              [options]="beweglichKategorien"
+              [control]="form.controls.beweglichKategorien"
+              [multiple]="true"
+            />
+          </div>
+
+          <ion-item lines="none" class="checkbox-item">
+            <ion-checkbox
+              labelPlacement="end"
+              formControlName="nurInternetVersteigerungen" slot="start">
+              nur Internet-Versteigerungen
+            </ion-checkbox>
+          </ion-item>
+        }
+
+        @if (form.errors?.['liegenschaftKategorieRequired'] || form.errors?.['beweglichKategorienRequired']) {
+          <p class="form-error" role="alert">Bitte wählen Sie eine passende Kategorie.</p>
+        }
+
+        <ion-button type="submit" expand="block" size="large" class="submit-btn">
+          <!--      <ion-icon name="notifications-outline" slot="start"></ion-icon>-->
+          Email Alerts abonnieren
+        </ion-button>
+      </form>
+    </div>
+
+    <section class="info-section" aria-labelledby="how-it-works-heading">
+      <h2 id="how-it-works-heading">Funktionsweise</h2>
+      <p>
+        Wir prüfen öffentliche <a href="https://edikte.justiz.gv.at/edikte/edikthome.nsf/homeSuche" target="_blank">Edikte
+        Datei</a> und passende neue Versteigerungen zu Ihren Kriterien.
+        Sie erhalten Benachrichtigungen per E-Mail – Sie können sich jederzeit wieder abmelden,
+        wie bei einem Newsletter.
+      </p>
+    </section>
+
+    <section class="info-section" aria-labelledby="contact-imprint-heading">
+      <h2 id="contact-imprint-heading">Kontakt</h2>
+      <p>
+        Verantwortlich für den Inhalt dieser Seite ist der Betreiber. Rechtliche Hinweise und
+        vollständige Angaben zum Impressum können auf Anfrage bereitgestellt werden.
+      </p>
+    </section>
+  </div>
+</ion-content>
