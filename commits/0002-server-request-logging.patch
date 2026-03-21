@@ -1,0 +1,54 @@
+From 4e9d196b38feca84a1a996f224b97abd11469be8 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Wed, 18 Feb 2026 17:36:08 +0100
+Subject: [PATCH 2/2] server request logging
+
+---
+ packages/frontend/apps/upcoming/src/server.ts | 31 +++++++++++++++++++
+ 1 file changed, 31 insertions(+)
+
+diff --git a/packages/frontend/apps/upcoming/src/server.ts b/packages/frontend/apps/upcoming/src/server.ts
+index 6b558c53..fe2a1367 100644
+--- a/packages/frontend/apps/upcoming/src/server.ts
++++ b/packages/frontend/apps/upcoming/src/server.ts
+@@ -17,6 +17,37 @@ const browserDistFolder = resolve(serverDistFolder, '../browser');
+ const app = express();
+ const angularApp = new AngularNodeAppEngine();
+ 
++/**
++ * Access log middleware (Apache-style): logs method, path, status, duration, IP, user-agent to stdout.
++ */
++app.use((req, res, next) => {
++  const start = Date.now();
++  const clientIp =
++    (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ||
++    req.socket?.remoteAddress ||
++    '-';
++  res.on('finish', () => {
++    const duration = Date.now() - start;
++    const status = res.statusCode;
++    const referer = String(req.headers.referer ?? req.headers.referrer ?? '-').replace(/"/g, '\\"');
++    const ua = String(req.headers['user-agent'] ?? '-').replace(/"/g, '\\"');
++    const line = [
++      clientIp,
++      '-',
++      '-',
++      `[${new Date().toISOString()}]`,
++      `"${req.method} ${req.originalUrl || req.url} HTTP/${req.httpVersionMajor}.${req.httpVersionMinor}"`,
++      status,
++      res.getHeader('content-length') ?? '-',
++      `"${referer}"`,
++      `"${ua}"`,
++      `${duration}ms`,
++    ].join(' ');
++    process.stdout.write(line + '\n');
++  });
++  next();
++});
++
+ /**
+  * Serve static files from /browser
+  */
+-- 
+2.50.1 (Apple Git-155)
+

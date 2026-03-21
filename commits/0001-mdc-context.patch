@@ -1,0 +1,248 @@
+From 51aca7f592eb3c63ef7a791e6981cdb12ca45d03 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Mon, 15 Dec 2025 13:38:07 +0100
+Subject: [PATCH 1/2] mdc context
+
+---
+ gradle/libs.versions.toml                     |  1 +
+ packages/server-core/build.gradle.kts         |  1 +
+ .../feedless/session/JwtRequestFilter.kt      | 11 ++-
+ .../org/migor/feedless/session/MdcContext.kt  | 91 +++++++++++++++++++
+ .../migor/feedless/session/SessionService.kt  | 24 +++++
+ .../src/main/resources/logback-loki.xml       |  3 +
+ .../src/main/resources/logback.xml            |  2 +-
+ 7 files changed, 131 insertions(+), 2 deletions(-)
+ create mode 100644 packages/server-core/src/main/kotlin/org/migor/feedless/session/MdcContext.kt
+
+diff --git a/gradle/libs.versions.toml b/gradle/libs.versions.toml
+index 3b978db4..4e5bb68e 100644
+--- a/gradle/libs.versions.toml
++++ b/gradle/libs.versions.toml
+@@ -93,6 +93,7 @@ kotlin-reflect = { module = "org.jetbrains.kotlin:kotlin-reflect", version.ref =
+ 
+ kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
+ kotlinx-coroutines-reactor = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-reactor", version.ref = "kotlinx-coroutines" }
++kotlinx-coroutines-slf4j = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-slf4j", version.ref = "kotlinx-coroutines" }
+ kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinx-coroutines" }
+ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version.ref = "kotlinx-serialization" }
+ 
+diff --git a/packages/server-core/build.gradle.kts b/packages/server-core/build.gradle.kts
+index 48e3dccc..dd62cbba 100644
+--- a/packages/server-core/build.gradle.kts
++++ b/packages/server-core/build.gradle.kts
+@@ -75,6 +75,7 @@ dependencies {
+   implementation(libs.kotlin.reflect)
+   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+   implementation(libs.kotlinx.coroutines.core)
++  implementation(libs.kotlinx.coroutines.slf4j)
+   testImplementation(libs.kotlinx.coroutines.test)
+   implementation(libs.kotlinx.coroutines.reactor)
+ //  implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:${versions["kotlinxCoroutines"]}")
+diff --git a/packages/server-core/src/main/kotlin/org/migor/feedless/session/JwtRequestFilter.kt b/packages/server-core/src/main/kotlin/org/migor/feedless/session/JwtRequestFilter.kt
+index 80a4bda3..2a52236f 100644
+--- a/packages/server-core/src/main/kotlin/org/migor/feedless/session/JwtRequestFilter.kt
++++ b/packages/server-core/src/main/kotlin/org/migor/feedless/session/JwtRequestFilter.kt
+@@ -15,6 +15,7 @@ import org.migor.feedless.Vertical
+ import org.migor.feedless.api.ApiParams
+ import org.migor.feedless.util.CryptUtil.newCorrId
+ import org.slf4j.LoggerFactory
++import org.slf4j.MDC
+ import org.springframework.beans.factory.annotation.Autowired
+ import org.springframework.context.annotation.Profile
+ import org.springframework.security.core.GrantedAuthority
+@@ -49,12 +50,20 @@ class JwtRequestFilter : Filter {
+       val corrId = StringUtils.trimToNull(request.getHeader(ApiParams.corrId)) ?: newCorrId()
+       attributes.setAttribute("corrId", corrId, RequestAttributes.SCOPE_REQUEST)
+ 
++      // Set MDC for logging context
++      MDC.put(MdcKeys.CORR_ID, corrId)
++
+       val product = StringUtils.trimToNull(request.getHeader(ApiParams.product)) ?: Vertical.feedless.name
+       attributes.setAttribute("product", product, RequestAttributes.SCOPE_REQUEST)
+ 
+       RequestContextHolder.setRequestAttributes(attributes)
+     }
+-    chain.doFilter(request, response)
++    try {
++      chain.doFilter(request, response)
++    } finally {
++      // Clean up MDC after request completes
++      clearMdc()
++    }
+   }
+ 
+ 
+diff --git a/packages/server-core/src/main/kotlin/org/migor/feedless/session/MdcContext.kt b/packages/server-core/src/main/kotlin/org/migor/feedless/session/MdcContext.kt
+new file mode 100644
+index 00000000..8dbf252d
+--- /dev/null
++++ b/packages/server-core/src/main/kotlin/org/migor/feedless/session/MdcContext.kt
+@@ -0,0 +1,91 @@
++package org.migor.feedless.session
++
++import kotlinx.coroutines.slf4j.MDCContext
++import kotlinx.coroutines.withContext
++import org.slf4j.MDC
++import kotlin.coroutines.CoroutineContext
++
++/**
++ * MDC keys used throughout the application for structured logging.
++ */
++object MdcKeys {
++  const val CORR_ID = "corrId"
++  const val USER_ID = "userId"
++  const val GROUP_ID = "groupId"
++}
++
++/**
++ * Creates a coroutine context that combines RequestContext with MDCContext,
++ * ensuring MDC values are propagated across coroutine boundaries and thread switches.
++ *
++ * Usage:
++ * ```
++ * withMdcContext(RequestContext(corrId = "abc123", userId = userId)) {
++ *   // MDC values are available here and propagated to child coroutines
++ *   log.info("Processing request") // Will include corrId, userId in MDC
++ * }
++ * ```
++ */
++suspend fun <T> withMdcContext(
++  requestContext: RequestContext,
++  block: suspend () -> T
++): T {
++  // Set MDC values from RequestContext
++  requestContext.corrId?.let { MDC.put(MdcKeys.CORR_ID, it) }
++  requestContext.userId?.let { MDC.put(MdcKeys.USER_ID, it.uuid.toString()) }
++  requestContext.groupId?.let { MDC.put(MdcKeys.GROUP_ID, it.uuid.toString()) }
++
++  return try {
++    // Combine RequestContext with MDCContext for proper propagation
++    withContext(requestContext + MDCContext()) {
++      block()
++    }
++  } finally {
++    // Clean up MDC when done
++    MDC.remove(MdcKeys.CORR_ID)
++    MDC.remove(MdcKeys.USER_ID)
++    MDC.remove(MdcKeys.GROUP_ID)
++  }
++}
++
++/**
++ * Creates a combined coroutine context with RequestContext and MDCContext.
++ * Use this when launching coroutines that need both request context and MDC propagation.
++ *
++ * Usage:
++ * ```
++ * launch(createMdcCoroutineContext(requestContext)) {
++ *   // Both RequestContext and MDC are available
++ * }
++ * ```
++ */
++fun createMdcCoroutineContext(requestContext: RequestContext): CoroutineContext {
++  // Set MDC values before creating the context
++  requestContext.corrId?.let { MDC.put(MdcKeys.CORR_ID, it) }
++  requestContext.userId?.let { MDC.put(MdcKeys.USER_ID, it.uuid.toString()) }
++  requestContext.groupId?.let { MDC.put(MdcKeys.GROUP_ID, it.uuid.toString()) }
++
++  return requestContext + MDCContext()
++}
++
++/**
++ * Updates MDC from the current RequestContext in the coroutine context.
++ * Call this after switching threads to ensure MDC is properly set.
++ */
++fun CoroutineContext.syncMdc() {
++  val requestContext = this[RequestContext]
++  requestContext?.corrId?.let { MDC.put(MdcKeys.CORR_ID, it) }
++  requestContext?.userId?.let { MDC.put(MdcKeys.USER_ID, it.uuid.toString()) }
++  requestContext?.groupId?.let { MDC.put(MdcKeys.GROUP_ID, it.uuid.toString()) }
++}
++
++/**
++ * Clears all application-specific MDC values.
++ */
++fun clearMdc() {
++  MDC.remove(MdcKeys.CORR_ID)
++  MDC.remove(MdcKeys.USER_ID)
++  MDC.remove(MdcKeys.GROUP_ID)
++}
++
++
+diff --git a/packages/server-core/src/main/kotlin/org/migor/feedless/session/SessionService.kt b/packages/server-core/src/main/kotlin/org/migor/feedless/session/SessionService.kt
+index e91940f0..f508b7b8 100644
+--- a/packages/server-core/src/main/kotlin/org/migor/feedless/session/SessionService.kt
++++ b/packages/server-core/src/main/kotlin/org/migor/feedless/session/SessionService.kt
+@@ -4,6 +4,7 @@ import org.migor.feedless.capability.UserCapability
+ import org.migor.feedless.group.GroupId
+ import org.migor.feedless.user.UserId
+ import org.migor.feedless.util.CryptUtil.newCorrId
++import org.slf4j.MDC
+ import org.springframework.security.core.context.SecurityContextHolder
+ import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+ import kotlin.coroutines.CoroutineContext
+@@ -33,6 +34,10 @@ fun createRequestContext(): RequestContext {
+   }.onFailure {
+     println(it.message)
+   }
++
++  // Sync to MDC for logging context
++  context.syncToMdc()
++
+   return context
+ }
+ 
+@@ -45,4 +50,23 @@ data class RequestContext(
+   companion object Key : CoroutineContext.Key<RequestContext>
+ 
+   override val key: CoroutineContext.Key<*> = Key
++
++  /**
++   * Syncs the RequestContext values to MDC for structured logging.
++   * Call this when the context is created or after thread switches.
++   */
++  fun syncToMdc() {
++    corrId?.let { MDC.put(MdcKeys.CORR_ID, it) }
++    userId?.let { MDC.put(MdcKeys.USER_ID, it.uuid.toString()) }
++    groupId?.let { MDC.put(MdcKeys.GROUP_ID, it.uuid.toString()) }
++  }
++
++  /**
++   * Clears MDC values associated with this context.
++   */
++  fun clearMdc() {
++    MDC.remove(MdcKeys.CORR_ID)
++    MDC.remove(MdcKeys.USER_ID)
++    MDC.remove(MdcKeys.GROUP_ID)
++  }
+ }
+diff --git a/packages/server-core/src/main/resources/logback-loki.xml b/packages/server-core/src/main/resources/logback-loki.xml
+index fff1a207..81017ca2 100644
+--- a/packages/server-core/src/main/resources/logback-loki.xml
++++ b/packages/server-core/src/main/resources/logback-loki.xml
+@@ -9,6 +9,9 @@
+       <customFields>{"version": "${APP_VERSION:-}", "commit": "${APP_GIT_COMMIT:-1}", "app":"feedless-core"}
+       </customFields>
+       <includeMdcKeyName>version</includeMdcKeyName>
++      <includeMdcKeyName>corrId</includeMdcKeyName>
++      <includeMdcKeyName>userId</includeMdcKeyName>
++      <includeMdcKeyName>groupId</includeMdcKeyName>
+     </encoder>
+   </appender>
+ 
+diff --git a/packages/server-core/src/main/resources/logback.xml b/packages/server-core/src/main/resources/logback.xml
+index ab2e8b53..8cf4e0a6 100644
+--- a/packages/server-core/src/main/resources/logback.xml
++++ b/packages/server-core/src/main/resources/logback.xml
+@@ -5,7 +5,7 @@
+   <timestamp key="timestamp-by-second" datePattern="yyyyMMdd'T'HHmmss"/>
+   <appender name="Console-Appender" class="ch.qos.logback.core.ConsoleAppender">
+     <layout>
+-      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} - %msg%n</pattern>
++      <pattern>%d{HH:mm:ss.SSS} %-5level [%X{corrId:-}] [%X{userId:-}] %logger{36} - %msg%n</pattern>
+     </layout>
+   </appender>
+ <!--  <appender name="File-Appender" class="ch.qos.logback.core.FileAppender">-->
+-- 
+2.39.5 (Apple Git-154)
+

@@ -1,3 +1,13 @@
+# Explicit HTTP -> HTTPS redirect (more reliable than annotation when using basic auth)
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: plausible-force-https
+spec:
+  redirectScheme:
+    scheme: https
+    permanent: true
+---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
@@ -9,6 +19,7 @@ metadata:
     traefik.ingress.kubernetes.io/auth-secret: plausible-basic-auth
     traefik.ingress.kubernetes.io/auth-realm: "Authentication Required"
     traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
+    traefik.ingress.kubernetes.io/router.middlewares: default-plausible-force-https@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:

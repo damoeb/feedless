@@ -1,0 +1,241 @@
+From 98c59c07381488cc4c59d03e883452ae60825fbd Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Wed, 18 Feb 2026 16:12:30 +0100
+Subject: [PATCH 1/2] admin geo
+
+---
+ packages/frontend/libs/geo/src/index.ts       |   2 +
+ .../geo/src/services/admin-geo.service.ts     | 167 ++++++++++++++++++
+ .../geo/src/services/geo-search.interface.ts  |  14 ++
+ .../src/services/open-street-map.service.ts   |   3 +-
+ 4 files changed, 185 insertions(+), 1 deletion(-)
+ create mode 100644 packages/frontend/libs/geo/src/services/admin-geo.service.ts
+ create mode 100644 packages/frontend/libs/geo/src/services/geo-search.interface.ts
+
+diff --git a/packages/frontend/libs/geo/src/index.ts b/packages/frontend/libs/geo/src/index.ts
+index 2d90739e..df73d65b 100644
+--- a/packages/frontend/libs/geo/src/index.ts
++++ b/packages/frontend/libs/geo/src/index.ts
+@@ -1,3 +1,5 @@
+ export * from './lib/places';
++export * from './services/geo-search.interface';
+ export * from './services/open-street-map.service';
++export * from './services/admin-geo.service';
+ export * from './services/geo.service';
+diff --git a/packages/frontend/libs/geo/src/services/admin-geo.service.ts b/packages/frontend/libs/geo/src/services/admin-geo.service.ts
+new file mode 100644
+index 00000000..913b53ff
+--- /dev/null
++++ b/packages/frontend/libs/geo/src/services/admin-geo.service.ts
+@@ -0,0 +1,167 @@
++import { inject, Injectable } from '@angular/core';
++import { firstValueFrom } from 'rxjs';
++import { HttpClient } from '@angular/common/http';
++import { NamedLatLon } from '@feedless/core';
++import { getCachedLocations } from '../lib/places';
++import { GeoSearchService } from './geo-search.interface';
++
++const SEARCH_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/SearchServer';
++const MAP_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/MapServer';
++
++interface SearchResultAttrs {
++  detail?: string;
++  label?: string;
++  lat?: number;
++  lon?: number;
++  x?: number;
++  y?: number;
++  origin?: string;
++}
++
++interface SearchResult {
++  id: number;
++  weight: number;
++  attrs: SearchResultAttrs;
++}
++
++interface SearchServerResponse {
++  results: SearchResult[];
++}
++
++interface IdentifyResultAttributes {
++  gemname?: string;
++  kanton?: string;
++  label?: string;
++  plz?: string;
++  ortbez?: string;
++  [key: string]: unknown;
++}
++
++interface IdentifyResult {
++  layerBodId: string;
++  featureId: string;
++  attributes: IdentifyResultAttributes;
++}
++
++interface IdentifyResponse {
++  results: IdentifyResult[];
++}
++
++function stripHtml(html: string): string {
++  return html.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim();
++}
++
++@Injectable({
++  providedIn: 'root',
++})
++export class AdminGeoService implements GeoSearchService {
++  private readonly httpClient = inject(HttpClient);
++
++  async searchByObject({
++    countryCode,
++    place,
++    area,
++  }: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>): Promise<NamedLatLon[]> {
++    const matches = getCachedLocations().filter(
++      (p) =>
++        p.countryCode === countryCode && p.place === place && p.area === area,
++    );
++    if (matches.length > 0) {
++      return matches;
++    }
++    return this.searchByQuery(`${countryCode} ${area} ${place}`);
++  }
++
++  async searchByQuery(query: string): Promise<NamedLatLon[]> {
++    const params = new URLSearchParams({
++      searchText: query,
++      type: 'locations',
++      sr: '4326',
++      limit: '5',
++    });
++    const url = `${SEARCH_SERVER}?${params.toString()}`;
++    return firstValueFrom(this.httpClient.get<SearchServerResponse>(url)).then(
++      (res) => (res.results ?? []).map((r) => this.mapSearchResultToNamedLatLon(r)),
++    );
++  }
++
++  async reverseSearch(
++    lat: number | string,
++    lon: number | string,
++  ): Promise<NamedLatLon> {
++    const latNum = typeof lat === 'string' ? parseFloat(lat) : lat;
++    const lonNum = typeof lon === 'string' ? parseFloat(lon) : lon;
++    const params = new URLSearchParams({
++      geometryType: 'esriGeometryPoint',
++      geometry: `${lonNum},${latNum}`,
++      sr: '4326',
++      tolerance: '0',
++      imageDisplay: '0,0,0',
++      mapExtent: '0,0,0,0',
++      layers:
++        'all:ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill,ch.swisstopo-vd.ortschaftenverzeichnis_plz',
++      returnGeometry: 'false',
++    });
++    const url = `${MAP_SERVER}/identify?${params.toString()}`;
++    return firstValueFrom(this.httpClient.get<IdentifyResponse>(url)).then(
++      (res) => this.mapIdentifyResponseToNamedLatLon(res, latNum, lonNum),
++    );
++  }
++
++  private mapSearchResultToNamedLatLon(result: SearchResult): NamedLatLon {
++    const a = result.attrs;
++    const lat = a.lat ?? a.y ?? 0;
++    const lng = a.lon ?? a.x ?? 0;
++    const detail = a.detail ?? '';
++    const label = a.label ? stripHtml(a.label) : detail;
++    const displayName = label || `CH ${detail}`;
++    return {
++      lat: typeof lat === 'number' ? lat : parseFloat(String(lat)),
++      lng: typeof lng === 'number' ? lng : parseFloat(String(lng)),
++      countryCode: 'ch',
++      place: detail.split(' ')[0] ?? detail,
++      area: detail.split(' ')[1] ?? '',
++      displayName: `CH, ${displayName}`,
++    };
++  }
++
++  private mapIdentifyResponseToNamedLatLon(
++    res: IdentifyResponse,
++    lat: number,
++    lon: number,
++  ): NamedLatLon {
++    const results = res.results ?? [];
++    let place = '';
++    let area = '';
++    let zip: string | undefined;
++
++    const gemeinde = results.find(
++      (r) => r.layerBodId === 'ch.swisstopo.swissboundaries3d-gemeinde-flaeche.fill',
++    );
++    const plzLayer = results.find(
++      (r) => r.layerBodId === 'ch.swisstopo-vd.ortschaftenverzeichnis_plz',
++    );
++
++    if (gemeinde?.attributes) {
++      place = gemeinde.attributes.gemname ?? gemeinde.attributes.label ?? '';
++      area = gemeinde.attributes.kanton ?? '';
++    }
++    if (plzLayer?.attributes) {
++      zip = plzLayer.attributes.plz ?? plzLayer.attributes.ortbez as string | undefined;
++      if (!place && plzLayer.attributes.ortbez) {
++        place = String(plzLayer.attributes.ortbez);
++      }
++    }
++
++    const displayName = [zip, place, area].filter(Boolean).join(' ') || 'CH';
++    return {
++      lat,
++      lng: lon,
++      countryCode: 'ch',
++      place: place || 'Switzerland',
++      area: area || '',
++      zip,
++      displayName: `CH, ${displayName}`,
++    };
++  }
++}
+diff --git a/packages/frontend/libs/geo/src/services/geo-search.interface.ts b/packages/frontend/libs/geo/src/services/geo-search.interface.ts
+new file mode 100644
+index 00000000..1281d2e8
+--- /dev/null
++++ b/packages/frontend/libs/geo/src/services/geo-search.interface.ts
+@@ -0,0 +1,14 @@
++import { NamedLatLon } from '@feedless/core';
++
++export interface GeoSearchService {
++  searchByObject(
++    params: Pick<NamedLatLon, 'countryCode' | 'place' | 'area'>,
++  ): Promise<NamedLatLon[]>;
++
++  searchByQuery(query: string): Promise<NamedLatLon[]>;
++
++  reverseSearch(
++    lat: number | string,
++    lon: number | string,
++  ): Promise<NamedLatLon>;
++}
+diff --git a/packages/frontend/libs/geo/src/services/open-street-map.service.ts b/packages/frontend/libs/geo/src/services/open-street-map.service.ts
+index 971b49b2..9b24d48e 100644
+--- a/packages/frontend/libs/geo/src/services/open-street-map.service.ts
++++ b/packages/frontend/libs/geo/src/services/open-street-map.service.ts
+@@ -4,6 +4,7 @@ import { HttpClient } from '@angular/common/http';
+ import { compact, omit } from 'lodash-es';
+ import { NamedLatLon } from '@feedless/core';
+ import { getCachedLocations } from '../lib/places';
++import { GeoSearchService } from './geo-search.interface';
+ 
+ interface OsmMatch {
+   lat: string;
+@@ -66,7 +67,7 @@ export function convertOsmMatchToNamedLatLon(osmMatch: OsmMatch): NamedLatLon {
+ @Injectable({
+   providedIn: 'root',
+ })
+-export class OpenStreetMapService {
++export class OpenStreetMapService implements GeoSearchService {
+   private readonly httpClient = inject(HttpClient);
+ 
+   // https://nominatim.openstreetmap.org/search?q=Innsbruck&format=json&addressdetails=1
+-- 
+2.50.1 (Apple Git-155)
+

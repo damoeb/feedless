@@ -1,0 +1,74 @@
+From 839be6e3fb448ec7692dddc6d720b4fb0ea9f214 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Mon, 16 Mar 2026 21:51:42 +0100
+Subject: [PATCH] fix tests
+
+---
+ packages/frontend/apps/upcoming/src/app/app.spec.ts            | 3 ++-
+ .../src/app/pages/event-calendar/event-calendar.page.spec.ts   | 2 +-
+ packages/frontend/apps/upcoming/src/test-setup.ts              | 3 +++
+ packages/frontend/libs/testing/src/lib/app-test.module.ts      | 3 ++-
+ 4 files changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/packages/frontend/apps/upcoming/src/app/app.spec.ts b/packages/frontend/apps/upcoming/src/app/app.spec.ts
+index d783af3a..0202d218 100644
+--- a/packages/frontend/apps/upcoming/src/app/app.spec.ts
++++ b/packages/frontend/apps/upcoming/src/app/app.spec.ts
+@@ -1,11 +1,12 @@
+ import { TestBed } from '@angular/core/testing';
+ import { provideRouter } from '@angular/router';
++import { AppTestModule } from '@feedless/testing';
+ import { App } from './app';
+ 
+ describe('App', () => {
+   beforeEach(async () => {
+     await TestBed.configureTestingModule({
+-      imports: [App],
++      imports: [App, AppTestModule.withDefaults()],
+       providers: [provideRouter([])],
+     }).compileComponents();
+   });
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.spec.ts b/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.spec.ts
+index 35b54f07..d7003c89 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.spec.ts
++++ b/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.spec.ts
+@@ -75,7 +75,7 @@ describe('EventCalendarPage', () => {
+ 
+   it('#cleanTitle', () => {
+     expect(component.cleanTitle('02.10.202502.10.2025 Mittagessen')).toEqual(
+-      ' Mittagessen',
++      'Mittagessen',
+     );
+   });
+ 
+diff --git a/packages/frontend/apps/upcoming/src/test-setup.ts b/packages/frontend/apps/upcoming/src/test-setup.ts
+index 84677ad8..0c2ba482 100644
+--- a/packages/frontend/apps/upcoming/src/test-setup.ts
++++ b/packages/frontend/apps/upcoming/src/test-setup.ts
+@@ -34,6 +34,9 @@ const ionTags = [
+   'ion-badge',
+   'ion-menu-button',
+   'ion-icon',
++  'ion-row',
++  'ion-col',
++  'ion-progress-bar',
+ ];
+ 
+ class IonStub extends HTMLElement {}
+diff --git a/packages/frontend/libs/testing/src/lib/app-test.module.ts b/packages/frontend/libs/testing/src/lib/app-test.module.ts
+index 52215976..8c01c784 100644
+--- a/packages/frontend/libs/testing/src/lib/app-test.module.ts
++++ b/packages/frontend/libs/testing/src/lib/app-test.module.ts
+@@ -386,7 +386,8 @@ export const mocks: Mocks = {
+     createdAt: 0,
+     lastUpdatedAt: new Date(),
+     retention: {},
+-  },
++    sources: [],
++  } as Mocks['repository'],
+   scrapeResponse: {
+     outputs: [],
+     ok: true,
+-- 
+2.50.1 (Apple Git-155)
+

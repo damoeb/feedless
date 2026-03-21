@@ -277,10 +277,15 @@ export class EventCalendarPage implements OnInit, OnDestroy {
 
     if (
       !this.namedLatLon &&
-      Object.keys(this.activatedRoute.snapshot.params).length === 0
+      Object.keys(this.activatedRoute.snapshot.params).length === 0 &&
+      isPlatformBrowser(this.platformId)
     ) {
       const savedLocations: NamedLatLon[] = this.getSavedLocations();
-      if (savedLocations.length > 0) {
+      if (
+        savedLocations.length > 0 &&
+        sessionStorage.getItem('visited') == null
+      ) {
+        sessionStorage.setItem('visited', 'true');
         await this.router.navigateByUrl(
           this.createDateUrl(dayjs(), savedLocations[0]),
         );
@@ -818,7 +823,9 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    if (!title?.trim()) return title ?? '';
+    if (!title?.trim()) {
+      return title ?? '';
+    }
     // German date in title e.g. "13. März 2026", "1. Januar 2026" (month names with ä, ö, ü)
     const withoutNamedMonth = title.replace(
       /[0-9]{1,2}\.[\s.]*[a-zäöüß]{3,10}[\s.]*[0-9]{2,4}/gi,

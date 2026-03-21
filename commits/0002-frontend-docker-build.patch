@@ -1,0 +1,76 @@
+From 6d8843ea74fc20cf6e8192d19fcbd8e523b817eb Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Fri, 13 Feb 2026 13:05:00 +0100
+Subject: [PATCH 2/3] frontend docker build
+
+---
+ packages/frontend/.dockerignore | 26 ++++++++++++++++++++++++++
+ packages/frontend/Dockerfile    | 23 +++++++++++++++++++++++
+ 2 files changed, 49 insertions(+)
+ create mode 100644 packages/frontend/.dockerignore
+ create mode 100644 packages/frontend/Dockerfile
+
+diff --git a/packages/frontend/.dockerignore b/packages/frontend/.dockerignore
+new file mode 100644
+index 00000000..77a76a72
+--- /dev/null
++++ b/packages/frontend/.dockerignore
+@@ -0,0 +1,26 @@
++# Dependencies (not needed; we copy dist and run npm ci in image)
++node_modules
++.nx
++.angular
++
++# Git and IDE
++.git
++.gitignore
++.vscode
++.idea
++*.md
++
++# Tests and coverage (not needed for production build)
++coverage
++__screenshots__
++*.spec.ts
++*.spec.tsx
++*.test.ts
++*.test.tsx
++e2e
++
++# Misc
++.DS_Store
++*.log
++.env
++.env.*
+diff --git a/packages/frontend/Dockerfile b/packages/frontend/Dockerfile
+new file mode 100644
+index 00000000..d7d0e12d
+--- /dev/null
++++ b/packages/frontend/Dockerfile
+@@ -0,0 +1,23 @@
++# Expects pre-built SSR artifacts: run `nx run upcoming:build --configuration=production` before docker build.
++# Build context: packages/frontend (so dist/apps/upcoming is available).
++FROM node:24-alpine
++
++WORKDIR /app
++
++ARG APP_VERSION
++ARG APP_GIT_COMMIT
++ENV APP_VERSION=${APP_VERSION} \
++    APP_GIT_COMMIT=${APP_GIT_COMMIT} \
++    NODE_ENV=production \
++    PORT=4000
++
++# Install production dependencies only (needed for Node server runtime)
++COPY package.json package-lock.json ./
++RUN npm ci --omit=dev
++
++COPY dist/apps/upcoming ./
++
++EXPOSE 4000
++
++# Angular 21+ outputs ESM server bundle as server.mjs; use main.js if your build is older
++CMD ["node", "server/server.mjs"]
+-- 
+2.50.1 (Apple Git-155)
+

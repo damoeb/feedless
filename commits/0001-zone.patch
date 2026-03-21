@@ -1,0 +1,97 @@
+From 50279d155d47dd455f197479b9ee8f7c335e7aba Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Fri, 20 Feb 2026 17:30:50 +0100
+Subject: [PATCH] zone
+
+---
+ .../src/app/pages/events/events.page.ts       | 34 +++++++------------
+ 1 file changed, 12 insertions(+), 22 deletions(-)
+
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
+index 4c454ace..3bffa3c6 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
++++ b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
+@@ -3,6 +3,7 @@ import {
+   ChangeDetectorRef,
+   Component,
+   inject,
++  NgZone,
+   OnDestroy,
+   OnInit,
+   PLATFORM_ID,
+@@ -149,6 +150,7 @@ export class EventsPage implements OnInit, OnDestroy {
+   private readonly appConfigService = inject(AppConfigService);
+   private readonly router = inject(Router);
+   private readonly platformId = inject(PLATFORM_ID);
++  private readonly ngZone = inject(NgZone);
+ 
+   date: Dayjs = dayjs();
+   readonly now: Dayjs = dayjs();
+@@ -184,54 +186,42 @@ export class EventsPage implements OnInit, OnDestroy {
+           this.saveLocation(this.namedLatLon);
+ 
+           this.latLon = this.namedLatLon;
+-
+-          // Try to parse perimeter from absolute date route
+-
+           this.perimeter = 10;
+ 
+-          // Check if date is present in URL
+           const hasDateInUrl =
+             params['year'] ||
+             params['month'] ||
+             params['day'] ||
+             params['relativeDate'];
+ 
+-          const { date: dateFromUrl, relative } = parseDateFromUrl(params);
++          const { date: dateFromUrl } = parseDateFromUrl(params);
+ 
+           if (hasDateInUrl) {
+-            // Only validate and redirect if date was explicitly in URL
+-            // if (
+-            //   dateFromUrl.isBefore(this.minDate) ||
+-            //   dateFromUrl.isAfter(this.maxDate)
+-            // ) {
+-            //   await this.redirectToToday();
+-            // } else {
+             await this.changeDate(dateFromUrl);
+-            // }
+           } else {
+-            // No date in URL - just show today without redirecting
+             this.date = dateFromUrl;
+             await this.fetchEvents(this.date);
+           }
+ 
+-          this.changeRef.detectChanges();
+-
++          this.ngZone.run(() => {
++            this.changeRef.detectChanges();
++          });
+           this.pageService.setMetaTags(this.getPageTags());
+ 
+           await this.fetchEvents(this.date);
++          this.ngZone.run(() => {
++            this.changeRef.detectChanges();
++          });
+         } catch (e) {
+-          // todo save and retrieve last place window.localStorage.getItem('lastPlace')
+-          // const currentLocation = await firstValueFrom(
+-          //   this.geoService.getCurrentLatLon(),
+-          // );
+-
+           if (this.headerComponent()) {
+             await this.headerComponent().fetchSuggestions('');
+           }
+         } finally {
+           this.loading = false;
++          this.ngZone.run(() => {
++            this.changeRef.detectChanges();
++          });
+         }
+-        this.changeRef.detectChanges();
+       }),
+     );
+ 
+-- 
+2.50.1 (Apple Git-155)
+

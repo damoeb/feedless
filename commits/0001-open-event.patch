@@ -1,0 +1,707 @@
+From 2e003be0396e52c1d2790eb72621dcb6142fc58c Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Wed, 25 Feb 2026 16:49:24 +0100
+Subject: [PATCH] open event
+
+---
+ .../categories.yaml                           |  21 +--
+ .../page-sidebar/page-sidebar.component.html  |   3 +
+ .../page-sidebar/page-sidebar.component.scss  |   6 +
+ .../page-sidebar/page-sidebar.component.ts    |   9 +
+ .../src/app/pages/events/events.page.html     |  22 ++-
+ .../src/app/pages/events/events.page.scss     |   4 +
+ .../src/app/pages/events/events.page.ts       | 104 +++--------
+ .../upcoming-header.component.html            |   1 +
+ .../upcoming-header.component.ts              |   6 +-
+ .../src/app/upcoming-product-routes.ts        |   8 +
+ .../frontend/apps/upcoming/src/global.scss    |   6 +
+ .../feedless/data/jpa/user/UserEntity.kt      | 168 +++++++++---------
+ 12 files changed, 172 insertions(+), 186 deletions(-)
+ create mode 100644 packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.html
+ create mode 100644 packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.scss
+ create mode 100644 packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.ts
+
+diff --git a/packages/document-classifier-models/categories.yaml b/packages/document-classifier-models/categories.yaml
+index 77591407..ab9ca754 100644
+--- a/packages/document-classifier-models/categories.yaml
++++ b/packages/document-classifier-models/categories.yaml
+@@ -4,34 +4,24 @@ veranstaltungen:
+       name: "Gottesdienst & Spiritualität"
+       unterkategorien:
+         - Gottesdienst
+-        - Andacht & Gebet
+-        - Meditation & Achtsamkeit
+-        - Spirituelle Impulse
+         - Religiöse Feiern
+ 
+     bildung_und_arbeit:
+       name: "Bildung & Arbeit"
+       unterkategorien:
+-        - Workshop
+-        - Seminar
+-        - Kurs
++        - Workshop / Kurs
+         - Vortrag
+-        - Gesprächs- & Lernkreis
+ 
+     begegnung_und_austausch:
+       name: "Begegnung & Austausch"
+       unterkategorien:
+-        - Offenes Treffen
+         - Kennenlernen & Vernetzung
+-        - Gesprächsrunde
+-        - Austauschformat
+         - Begegnungscafé
+ 
+     feiern_und_freizeit:
+       name: "Feiern & Freizeit"
+       unterkategorien:
+         - Fest & Feier
+-        - Gemeinsames Essen
+         - Ausflug & Unternehmung
+         - Spiele & Freizeit
+         - Jahresfeste
+@@ -41,9 +31,7 @@ veranstaltungen:
+       unterkategorien:
+         - Musik & Konzert
+         - Theater & Aufführung
+-        - Kreativworkshop
+         - Kunst & Gestaltung
+-        - Offene Bühne
+ 
+     gesundheit_und_bewegung:
+       name: "Gesundheit & Bewegung"
+@@ -76,6 +64,7 @@ veranstaltungen:
+     altersgruppen:
+       name: "Altersgruppen"
+       unterkategorien:
++        - Alle
+         - Kinder
+         - Jugendliche
+         - Junge Erwachsene
+@@ -96,14 +85,10 @@ veranstaltungen:
+       unterkategorien:
+         - Neu Zugezogene
+         - Menschen in Übergangsphasen
+-        - Trauernde
+-        - Suchende & Fragende
+         - Menschen mit Unterstützungsbedarf
+ 
+     offenheit:
+       name: "Offenheit"
+       unterkategorien:
+-        - Offen für alle
+-        - Gemeindemitglieder
+-        - Geschlossene Gruppe
++        - Mitglieder
+         - Einladung erforderlich
+diff --git a/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.html b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.html
+new file mode 100644
+index 00000000..ea7139c3
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.html
+@@ -0,0 +1,3 @@
++<aside class="page-sidebar">
++  <ng-content></ng-content>
++</aside>
+diff --git a/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.scss b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.scss
+new file mode 100644
+index 00000000..1f987548
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.scss
+@@ -0,0 +1,6 @@
++.page-sidebar {
++  flex-shrink: 0;
++  width: 220px;
++  padding: 1rem 0;
++  border-right: 1px solid var(--ion-color-light-shade, #e0e0e0);
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.ts b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.ts
+new file mode 100644
+index 00000000..72dc56e7
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/components/page-sidebar/page-sidebar.component.ts
+@@ -0,0 +1,9 @@
++import { Component } from '@angular/core';
++
++@Component({
++  selector: 'app-page-sidebar',
++  templateUrl: './page-sidebar.component.html',
++  styleUrls: ['./page-sidebar.component.scss'],
++  standalone: true,
++})
++export class PageSidebarComponent {}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.html b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.html
+index aceb540a..bed4f1f2 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.html
++++ b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.html
+@@ -7,6 +7,18 @@
+   ></app-upcoming-header>
+ }
+ <ion-content>
++  <app-page-sidebar>
++    <ion-list lines="none">
++      <ion-list-header>
++        <ion-label>Email Abos</ion-label>
++      </ion-list-header>
++      <a routerLink="/profil" class="sidebar-link">
++        <ion-item [button]="true">
++          <ion-label>Profil verwalten</ion-label>
++        </ion-item>
++      </a>
++    </ion-list>
++  </app-page-sidebar>
+   <div class="events">
+     @if (namedLatLon) {
+       <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
+@@ -111,20 +123,16 @@
+                               </h2>
+                               <div>
+                                 @for (event of place.events; track event) {
+-                                  <div
++                                  <a
++                                    [routerLink]="createEventUrl(event)"
+                                     class="localized-event localized-event--clickable"
+-                                    (click)="openEventModal(event, place.place)"
+-                                    role="button"
+-                                    tabindex="0"
+-                                    (keydown.enter)="openEventModal(event, place.place)"
+-                                    (keydown.space)="openEventModal(event, place.place); $event.preventDefault()"
+                                   >
+                                     <article itemscope itemtype="https://schema.org/Event">
+                                       <header>
+                                         <h3 itemprop="name"> {{ cleanTitle(event.title) }} </h3>
+                                       </header>
+                                     </article>
+-                                  </div>
++                                  </a>
+                                 }
+                               </div>
+                             }
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.scss b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.scss
+index c72ab319..42eb17a4 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.scss
++++ b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.scss
+@@ -2,6 +2,7 @@
+ 
+ ion-content::part(scroll) {
+   display: flex;
++  flex-direction: column;
+ }
+ 
+ .calendar-row {
+@@ -91,6 +92,9 @@ h2 {
+   padding: 5px;
+   border-radius: 8px;
+   margin-bottom: 8px;
++  display: block;
++  text-decoration: none;
++  color: inherit;
+ 
+   h3 {
+     color: #704523;
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
+index e4ee535f..687cb12d 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
++++ b/packages/frontend/apps/upcoming/src/app/pages/events/events.page.ts
+@@ -39,6 +39,10 @@ import { UpcomingHeaderComponent } from '../upcoming-header/upcoming-header.comp
+ import {
+   IonChip,
+   IonContent,
++  IonItem,
++  IonLabel,
++  IonList,
++  IonListHeader,
+   IonSpinner,
+   IonText,
+   ModalController,
+@@ -49,6 +53,7 @@ import { InlineCalendarComponent } from '../inline-calendar/inline-calendar.comp
+ import { renderPath } from 'typesafe-routes';
+ import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
+ import { EventDetailModalComponent } from './event-detail-modal/event-detail-modal.component';
++import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
+ 
+ type Distance2Events = { [distance: string]: LocalizedEvent[] };
+ type EventsByDistance = {
+@@ -137,6 +142,11 @@ interface EventGroupsPerDay {
+     IonText,
+     InlineCalendarComponent,
+     IonChip,
++    PageSidebarComponent,
++    IonList,
++    IonLabel,
++    IonItem,
++    IonListHeader,
+   ],
+   standalone: true,
+ })
+@@ -161,6 +171,7 @@ export class EventsPage implements OnInit, OnDestroy {
+   latLon: Nullable<LatLng>;
+   namedLatLon: Nullable<NamedLatLon>;
+   loading = true;
++  dateIsFromRelativeUrl = false;
+   private subscriptions: Subscription[] = [];
+ 
+   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
+@@ -199,7 +210,8 @@ export class EventsPage implements OnInit, OnDestroy {
+             params['day'] ||
+             params['relativeDate'];
+ 
+-          const { date: dateFromUrl, relative } = parseDateFromUrl(params);
++          const { date: dateFromUrl } = parseDateFromUrl(params);
++          this.dateIsFromRelativeUrl = !!params['relativeDate'];
+ 
+           if (hasDateInUrl) {
+             // Only validate and redirect if date was explicitly in URL
+@@ -256,11 +268,6 @@ export class EventsPage implements OnInit, OnDestroy {
+     }
+   }
+ 
+-  private async redirectToToday() {
+-    const url = this.createDateUrl(dayjs())!;
+-    await this.router.navigateByUrl(url, { replaceUrl: true });
+-  }
+-
+   formatDate(date: Dayjs, format: string) {
+     return date?.locale('de')?.format(format);
+   }
+@@ -268,6 +275,14 @@ export class EventsPage implements OnInit, OnDestroy {
+   private getPageTags(): PageTags {
+     const location = this.namedLatLon;
+     const dateStr = this.date ? this.formatDate(this.date, 'DD.MM.YYYY') : '';
++    const dateTitlePart = this.date
++      ? this.dateIsFromRelativeUrl
++        ? this.getRelativeDateLabel(this.date) || dateStr
++        : dateStr
++      : '';
++    const robots = this.activatedRoute.snapshot.params['eventId']
++      ? 'noindex, follow'
++      : 'index, follow';
+ 
+     if (location) {
+       const keywords = [
+@@ -286,7 +301,7 @@ export class EventsPage implements OnInit, OnDestroy {
+       ].filter(Boolean);
+ 
+       return {
+-        title: `Events in ${location.displayName}, ${location.area} | lokale.events`,
++        title: `Events in ${location.displayName}, ${location.area}${dateTitlePart ? ' – ' + dateTitlePart : ''} | lokale.events`,
+         description: `Entdecke aktuelle Veranstaltungen in ${location.displayName}, ${location.area}${dateStr ? ' am ' + dateStr : ''}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
+         publisher: 'lokale.events',
+         category: 'Events',
+@@ -299,8 +314,8 @@ export class EventsPage implements OnInit, OnDestroy {
+         keywords,
+         expiresAt: this.date,
+         author: 'lokale.events Team',
+-        robots: 'index, follow',
+-        canonicalUrl: `https://lokale.events${this.createUrl(location, this.date)}`,
++        robots,
++        canonicalUrl: `https://lokale.events${this.createDateUrl(this.date, location)}`,
+       };
+     } else {
+       return {
+@@ -323,7 +338,7 @@ export class EventsPage implements OnInit, OnDestroy {
+         ],
+         author: 'lokale.events Team',
+         expiresAt: this.date,
+-        robots: 'index, follow',
++        robots,
+         canonicalUrl: 'https://lokale.events/',
+       };
+     }
+@@ -658,17 +673,6 @@ export class EventsPage implements OnInit, OnDestroy {
+     }
+   }
+ 
+-  createUrl(location: NamedLatLon, date: Dayjs): string {
+-    return renderUrlWithAbsoluteDate(
+-      location.countryCode,
+-      location.area,
+-      location.place,
+-      parseInt(date.format('YYYY')),
+-      parseInt(date.format('MM')),
+-      parseInt(date.format('DD')),
+-    );
+-  }
+-
+   createEventUrl(event: LocalizedEvent): string {
+     const baseUrl = this.createDateUrl(this.date, this.namedLatLon);
+     return baseUrl ? `${baseUrl}/${(event as any).id}` : '';
+@@ -713,13 +717,6 @@ export class EventsPage implements OnInit, OnDestroy {
+     this.changeRef.detectChanges();
+   }
+ 
+-  patchUrlInAddressBar() {
+-    console.log('patchUrlInAddressBar');
+-    this.locationService.replaceState(
+-      this.createUrl(this.namedLatLon, this.date),
+-    );
+-  }
+-
+   private saveLocation(location: Nullable<NamedLatLon>) {
+     if (!isPlatformBrowser(this.platformId)) {
+       return;
+@@ -821,6 +818,7 @@ export class EventsPage implements OnInit, OnDestroy {
+       breakpoints: [0, 0.25, 0.5, 0.75, 1],
+       initialBreakpoint: 0.75,
+       backdropBreakpoint: 0.5,
++      cssClass: 'event-detail-sheet',
+     });
+     await modal.present();
+     const result = await modal.onDidDismiss();
+@@ -838,55 +836,9 @@ export class EventsPage implements OnInit, OnDestroy {
+     const found = this.findEventAndPlace(eventId);
+     if (found) {
+       await this.openEventModal(found.event, found.place);
+-      return;
+-    }
+-    const events = await this.recordService.findAllFullByRepositoryId(
+-      {
+-        where: {
+-          repository: {
+-            id: this.getRepositoryId(),
+-          },
+-          id: { eq: eventId },
+-        },
+-        cursor: { page: 0 },
+-      },
+-      'cache-first',
+-    );
+-    const event = events?.[0];
+-    if (!event) {
+-      return;
+-    }
+-    const place: NamedLatLon = event.latLng
+-      ? await this.resolvePlaceFromLatLon(event.latLng)
+-      : {
+-          lat: 0,
+-          lng: 0,
+-          place: '',
+-          displayName: 'Unbekannt',
+-          area: '',
+-          countryCode: '',
+-        };
+-    const modal = await this.modalCtrl.create({
+-      component: EventDetailModalComponent,
+-      componentProps: {
+-        event: event as LocalizedEvent,
+-        place,
+-        repositoryId: this.getRepositoryId(),
+-      },
+-      breakpoints: [0, 0.25, 0.5, 0.75, 1],
+-      initialBreakpoint: 0.75,
+-      backdropBreakpoint: 0.5,
+-    });
+-    await modal.present();
+-    const result = await modal.onDidDismiss();
+-    if (result.data?.saved === true || result.data?.deleted === true) {
+-      await this.fetchEvents(this.date);
+-    }
+-    const listUrl = this.createDateUrl(this.date, this.namedLatLon);
+-    if (listUrl && isPlatformBrowser(this.platformId)) {
+-      this.router.navigateByUrl(listUrl, { replaceUrl: true });
++    } else {
++      console.error('Unable to find event with id ' + eventId);
+     }
+-    this.changeRef.detectChanges();
+   }
+ 
+   private findEventAndPlace(
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.html b/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.html
+index f25a98c4..7b4f7153 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.html
++++ b/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.html
+@@ -84,6 +84,7 @@
+         <!--      </ion-title>-->
+         <ion-buttons>
+           <app-dark-mode-button></app-dark-mode-button>
++          <app-profile-button></app-profile-button>
+         </ion-buttons>
+       </div>
+     </ion-toolbar>
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.ts b/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.ts
+index 64cc25b7..d990f0d4 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.ts
++++ b/packages/frontend/apps/upcoming/src/app/pages/upcoming-header/upcoming-header.component.ts
+@@ -52,7 +52,10 @@ import {
+   IonToolbar,
+ } from '@ionic/angular/standalone';
+ 
+-import { DarkModeButtonComponent } from '@feedless/components';
++import {
++  DarkModeButtonComponent,
++  ProfileButtonComponent,
++} from '@feedless/components';
+ import { renderPath, safeParsePath } from 'typesafe-routes';
+ import { isPlatformBrowser } from '@angular/common';
+ 
+@@ -83,6 +86,7 @@ type ExpandableSection = 'map' | 'calendar' | 'suggestions';
+     IonItem,
+     RouterLink,
+     IonSearchbar,
++    ProfileButtonComponent,
+   ],
+   standalone: true,
+ })
+diff --git a/packages/frontend/apps/upcoming/src/app/upcoming-product-routes.ts b/packages/frontend/apps/upcoming/src/app/upcoming-product-routes.ts
+index 48222464..47b4120b 100644
+--- a/packages/frontend/apps/upcoming/src/app/upcoming-product-routes.ts
++++ b/packages/frontend/apps/upcoming/src/app/upcoming-product-routes.ts
+@@ -148,6 +148,9 @@ export const upcomingBaseRoute = createRoutes({
+   about: {
+     path: ['ueber-uns'],
+   },
++  profile: {
++    path: ['profil'],
++  },
+   management: {
+     path: ['management'],
+     children: {
+@@ -219,6 +222,11 @@ export const UPCOMING_ROUTES: Routes = [
+     loadComponent: () =>
+       import('./pages/terms/terms.page').then((m) => m.TermsPage),
+   },
++  {
++    path: template(upcomingBaseRoute._.profile),
++    loadComponent: () =>
++      import('./pages/profile/profile.page').then((m) => m.ProfilePage),
++  },
+   // {
+   //   path: toPath(template(upcomingBaseRoute.login)),
+   //   loadComponent: () =>
+diff --git a/packages/frontend/apps/upcoming/src/global.scss b/packages/frontend/apps/upcoming/src/global.scss
+index fb987cbd..5b123a30 100644
+--- a/packages/frontend/apps/upcoming/src/global.scss
++++ b/packages/frontend/apps/upcoming/src/global.scss
+@@ -113,6 +113,12 @@ ion-modal {
+   --backdrop-opacity: 0.5 !important;
+ }
+ 
++/* Event detail sheet: same width as .events (calendar) */
++ion-modal.event-detail-sheet {
++  --width: 100%;
++  --max-width: 700px;
++}
++
+ .menu-content-open {
+   filter: grayscale(0.4) brightness(0.4);
+   transition: filter 0.5s ease-in-out;
+diff --git a/packages/jpa-data/src/main/kotlin/org/migor/feedless/data/jpa/user/UserEntity.kt b/packages/jpa-data/src/main/kotlin/org/migor/feedless/data/jpa/user/UserEntity.kt
+index ffd287e4..daec2a0c 100644
+--- a/packages/jpa-data/src/main/kotlin/org/migor/feedless/data/jpa/user/UserEntity.kt
++++ b/packages/jpa-data/src/main/kotlin/org/migor/feedless/data/jpa/user/UserEntity.kt
+@@ -28,127 +28,127 @@ import java.util.*
+ 
+ @Entity
+ @Table(
+-    name = "t_user",
+-    uniqueConstraints = [
+-        UniqueConstraint(name = "UniqueUser", columnNames = [StandardJpaFields.email])]
++  name = "t_user",
++  uniqueConstraints = [
++    UniqueConstraint(name = "UniqueUser", columnNames = [StandardJpaFields.email])]
+ )
+ open class UserEntity : EntityWithUUID() {
+ 
+-    fun hasFinalizedProfile(): Boolean {
+-        return StringUtils.isNotBlank(this.email) && hasAcceptedTerms
+-    }
++  fun hasFinalizedProfile(): Boolean {
++    return StringUtils.isNotBlank(this.email) && hasAcceptedTerms
++  }
+ 
+-    @Email
+-    @Column(nullable = false, name = StandardJpaFields.email)
+-    open lateinit var email: String
++  @Email
++  @Column(nullable = false, name = StandardJpaFields.email)
++  open lateinit var email: String
+ 
+-    @Column(name = "first_name")
+-    @Size(message = "fistName", max = 150)
+-    open var firstName: String? = null
++  @Column(name = "first_name")
++  @Size(message = "fistName", max = 150)
++  open var firstName: String? = null
+ 
+-    @Column(name = "last_name")
+-    @Size(message = "lastname", max = 150)
+-    open var lastName: String? = null
++  @Column(name = "last_name")
++  @Size(message = "lastname", max = 150)
++  open var lastName: String? = null
+ 
+-    @Column(name = "country")
+-    @Size(message = "country", max = 150)
+-    open var country: String? = null
++  @Column(name = "country")
++  @Size(message = "country", max = 150)
++  open var country: String? = null
+ 
+-    @Column(nullable = false, name = "has_validated_email")
+-    open var hasValidatedEmail: Boolean = false
++  @Column(nullable = false, name = "has_validated_email")
++  open var hasValidatedEmail: Boolean = false
+ 
+-    @Column(name = "validated_email_at")
+-    open var validatedEmailAt: LocalDateTime? = null
++  @Column(name = "validated_email_at")
++  open var validatedEmailAt: LocalDateTime? = null
+ 
+-    @Column(nullable = false, name = "total_usage_mb")
+-    open var usageTotalMb: Double = 0.0
++  @Column(nullable = false, name = "total_usage_mb")
++  open var usageTotalMb: Double = 0.0
+ 
+-    @Column(nullable = false, name = "is_root")
+-    open var admin: Boolean = false
++  @Column(nullable = false, name = "is_root")
++  open var admin: Boolean = false
+ 
+-    @Column(nullable = false, name = "is_anonymous")
+-    open var anonymous: Boolean = false
++  @Column(nullable = false, name = "is_anonymous")
++  open var anonymous: Boolean = false
+ 
+-    @Column(name = "last_login")
+-    open var lastLogin: LocalDateTime = LocalDateTime.now()
++  @Column(name = "last_login")
++  open var lastLogin: LocalDateTime = LocalDateTime.now()
+ 
+-    @Column(nullable = false, name = "karma")
+-    open var karma: Int = 0
++  @Column(nullable = false, name = "karma")
++  open var karma: Int = 0
+ 
+-    @Column(nullable = false, name = "is_spamming_submissions")
+-    open var spammingSubmissions: Boolean = false
++  @Column(nullable = false, name = "is_spamming_submissions")
++  open var spammingSubmissions: Boolean = false
+ 
+-    @Column(nullable = false, name = "is_spamming_votes")
+-    open var spammingVotes: Boolean = false
++  @Column(nullable = false, name = "is_spamming_votes")
++  open var spammingVotes: Boolean = false
+ 
+-    @Column(nullable = false, name = "is_shaddow_banned")
+-    open var shadowBanned: Boolean = false
++  @Column(nullable = false, name = "is_shaddow_banned")
++  open var shadowBanned: Boolean = false
+ 
+-    @Column(nullable = false, name = "is_banned")
+-    open var banned: Boolean = false
++  @Column(nullable = false, name = "is_banned")
++  open var banned: Boolean = false
+ 
+-    @Column(name = "is_banned_until")
+-    open var bannedUntil: LocalDateTime? = null
++  @Column(name = "is_banned_until")
++  open var bannedUntil: LocalDateTime? = null
+ 
+-    @Column(nullable = false, name = "hasapprovedterms")
+-    open var hasAcceptedTerms: Boolean = false
++  @Column(nullable = false, name = "hasapprovedterms")
++  open var hasAcceptedTerms: Boolean = false
+ 
+-    @Column(name = "approved_terms_at")
+-    open var acceptedTermsAt: LocalDateTime? = null
++  @Column(name = "approved_terms_at")
++  open var acceptedTermsAt: LocalDateTime? = null
+ 
+-    @Column(nullable = false, name = "is_locked")
+-    open var locked: Boolean = false
++  @Column(nullable = false, name = "is_locked")
++  open var locked: Boolean = false
+ 
+-    @Column(name = "purge_scheduled_for")
+-    open var purgeScheduledFor: LocalDateTime? = null
++  @Column(name = "purge_scheduled_for")
++  open var purgeScheduledFor: LocalDateTime? = null
+ 
+-    @Column(name = "date_format")
+-    open var dateFormat: String? = null // todo make nullable=false
++  @Column(name = "date_format")
++  open var dateFormat: String? = null // todo make nullable=false
+ 
+-    @Column(name = "time_format")
+-    open var timeFormat: String? = null
++  @Column(name = "time_format")
++  open var timeFormat: String? = null
+ 
+-    @OneToOne(fetch = FetchType.LAZY)
+-    @JoinColumn(
+-        name = "inbox_repository_id",
+-        referencedColumnName = "id",
+-        insertable = false,
+-        updatable = false,
+-        foreignKey = ForeignKey(name = "fk_user__to__inbox_repository")
+-    )
+-    open var inboxRepository: RepositoryEntity? = null
++  @OneToOne(fetch = FetchType.LAZY)
++  @JoinColumn(
++    name = "inbox_repository_id",
++    referencedColumnName = "id",
++    insertable = false,
++    updatable = false,
++    foreignKey = ForeignKey(name = "fk_user__to__inbox_repository")
++  )
++  open var inboxRepository: RepositoryEntity? = null
+ 
+-    @Column(name = "inbox_repository_id")
+-    open var inboxRepositoryId: UUID? = null
++  @Column(name = "inbox_repository_id")
++  open var inboxRepositoryId: UUID? = null
+ 
+-    @Column(name = "notifications_last_viewed_at")
+-    open var notificationsLastViewedAt: LocalDateTime? = null
++  @Column(name = "notifications_last_viewed_at")
++  open var notificationsLastViewedAt: LocalDateTime? = null
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+-    open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
++  @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
++  @OnDelete(action = OnDeleteAction.NO_ACTION)
++  open var oneTimePasswords: MutableList<OneTimePasswordEntity> = mutableListOf()
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+-    open var subscriptions: MutableList<PlanEntity> = mutableListOf()
++  @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
++  @OnDelete(action = OnDeleteAction.NO_ACTION)
++  open var plans: MutableList<PlanEntity> = mutableListOf()
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
+-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+-    open var userSecrets: MutableList<UserSecretEntity> = mutableListOf()
++  @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
++  @OnDelete(action = OnDeleteAction.NO_ACTION)
++  open var userSecrets: MutableList<UserSecretEntity> = mutableListOf()
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
+-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+-    open var agents: MutableList<AgentEntity> = mutableListOf()
++  @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
++  @OnDelete(action = OnDeleteAction.NO_ACTION)
++  open var agents: MutableList<AgentEntity> = mutableListOf()
+ 
+-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId", orphanRemoval = true)
+-    @OnDelete(action = OnDeleteAction.NO_ACTION)
+-    open var orders: MutableList<OrderEntity> = mutableListOf()
++  @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId", orphanRemoval = true)
++  @OnDelete(action = OnDeleteAction.NO_ACTION)
++  open var orders: MutableList<OrderEntity> = mutableListOf()
+ }
+ 
+ fun UserEntity.toDomain(): org.migor.feedless.user.User {
+-    return UserMapper.Companion.INSTANCE.toDomain(this)
++  return UserMapper.Companion.INSTANCE.toDomain(this)
+ }
+ 
+ fun User.toEntity(): UserEntity {
+-    return UserMapper.Companion.INSTANCE.toEntity(this)
++  return UserMapper.Companion.INSTANCE.toEntity(this)
+ }
+-- 
+2.50.1 (Apple Git-155)
+

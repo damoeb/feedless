@@ -1,0 +1,95 @@
+From 4a39c6513cb713c2d66625f4e5ff6b4785b303c4 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Mon, 16 Mar 2026 08:48:44 +0100
+Subject: [PATCH 1/2] redirects from http -> https and www to non-www
+
+---
+ k8s/feedless/upcoming-ingress.yaml            | 15 +++++++++++
+ packages/frontend/apps/upcoming/src/server.ts | 25 +++++++++++++++++++
+ 2 files changed, 40 insertions(+)
+
+diff --git a/k8s/feedless/upcoming-ingress.yaml b/k8s/feedless/upcoming-ingress.yaml
+index 6b89ed35..7cdda274 100644
+--- a/k8s/feedless/upcoming-ingress.yaml
++++ b/k8s/feedless/upcoming-ingress.yaml
+@@ -9,6 +9,19 @@ spec:
+ 
+ ---
+ 
++# Redirect www.lokale.events -> lokale.events (non-www). HTTP->HTTPS is handled by force-ssl-redirect on the Ingress.
++apiVersion: traefik.io/v1alpha1
++kind: Middleware
++metadata:
++  name: upcoming-redirect-www-to-naked
++spec:
++  redirectRegex:
++    regex: ^https?://www\.lokale\.events(.*)$
++    replacement: "https://lokale.events${1}"
++    permanent: true
++
++---
++
+ apiVersion: traefik.io/v1alpha1
+ kind: IngressRoute
+ metadata:
+@@ -44,12 +57,14 @@ metadata:
+     app.kubernetes.io/name: upcoming-ingress
+     cert-manager.io/cluster-issuer: letsencrypt
+     traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
++    traefik.ingress.kubernetes.io/router.middlewares: default-upcoming-redirect-www-to-naked@kubernetescrd
+ spec:
+   ingressClassName: traefik
+   tls:
+     - hosts:
+         - api.lokale.events
+         - lokale.events
++        - www.lokale.events
+       secretName: upcoming-tls
+   rules:
+     - host: api.lokale.events
+diff --git a/packages/frontend/apps/upcoming/src/server.ts b/packages/frontend/apps/upcoming/src/server.ts
+index 48271201..aed0f870 100644
+--- a/packages/frontend/apps/upcoming/src/server.ts
++++ b/packages/frontend/apps/upcoming/src/server.ts
+@@ -11,6 +11,30 @@ const app = express();
+ app.use(compression());
+ const angularApp = new AngularNodeAppEngine();
+ 
++const LOKALE_EVENTS_HOST = 'lokale.events';
++const LOKALE_EVENTS_WWW = 'www.lokale.events';
++
++/** Redirect HTTP→HTTPS and www→non-www when not behind K8s ingress (e.g. dev or direct deploy). */
++function redirectMiddleware(
++  req: express.Request,
++  res: express.Response,
++  next: express.NextFunction,
++) {
++  const host = (req.get('x-forwarded-host') || req.get('host') || '').split(':')[0];
++  if (host !== LOKALE_EVENTS_HOST && host !== LOKALE_EVENTS_WWW) {
++    return next();
++  }
++  const proto = req.get('x-forwarded-proto') ?? (req.socket?.encrypted ? 'https' : 'http');
++  const path = req.originalUrl || req.url;
++  if (host === LOKALE_EVENTS_WWW) {
++    return res.redirect(301, `https://${LOKALE_EVENTS_HOST}${path}`);
++  }
++  if (proto === 'http') {
++    return res.redirect(301, `https://${host}${path}`);
++  }
++  next();
++}
++
+ function createRequestLogger() {
+   app.use((req, res, next) => {
+     res.on('finish', () => {
+@@ -48,6 +72,7 @@ function handleSignals() {
+ }
+ 
+ handleSignals();
++app.use(redirectMiddleware);
+ createRequestLogger();
+ serveStatic();
+ 
+-- 
+2.50.1 (Apple Git-155)
+

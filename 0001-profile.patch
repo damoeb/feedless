@@ -1,0 +1,552 @@
+From 629005f61261c50a415f2e5f438bf1d6e35e8bc3 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Sat, 14 Mar 2026 22:03:18 +0100
+Subject: [PATCH] profile
+
+---
+ .../management-layout.page.html               | 48 +++++++++++
+ .../management-layout.page.scss               | 15 ++++
+ .../management-layout.page.ts                 | 43 ++++++++++
+ .../src/app/pages/profile/profile.page.html   | 46 +++++++++++
+ .../src/app/pages/profile/profile.page.scss   |  7 ++
+ .../src/app/pages/profile/profile.page.ts     | 79 ++++++++++++++++++
+ .../src/app/pages/security/security.page.html | 57 +++++++++++++
+ .../src/app/pages/security/security.page.scss |  7 ++
+ .../src/app/pages/security/security.page.ts   | 81 +++++++++++++++++++
+ .../subscriptions/subscriptions.page.html     | 31 +++++++
+ .../subscriptions/subscriptions.page.scss     | 16 ++++
+ .../pages/subscriptions/subscriptions.page.ts | 15 ++++
+ 12 files changed, 445 insertions(+)
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.html
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.scss
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.ts
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.html
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.scss
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.ts
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/security/security.page.html
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/security/security.page.scss
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/security/security.page.ts
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.html
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.scss
+ create mode 100644 packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.ts
+
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.html b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.html
+new file mode 100644
+index 00000000..bf4ccc25
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.html
+@@ -0,0 +1,48 @@
++<ion-header>
++  <ion-toolbar>
++    <ion-buttons slot="start">
++      <ion-menu-button></ion-menu-button>
++      <ion-button routerLink="/"><strong>lokale</strong><em>.events</em></ion-button>
++    </ion-buttons>
++
++    <ion-buttons slot="end">
++      <ion-button routerLink="/management/sources">Sources</ion-button>
++      <ion-button routerLink="/management/documents">Documents</ion-button>
++      <ion-button routerLink="/management/profile">Profile</ion-button>
++      <ion-button routerLink="/management/subscriptions">Subscriptions</ion-button>
++      <ion-button routerLink="/management/security">Security</ion-button>
++      <app-dark-mode-button></app-dark-mode-button>
++      <app-profile-button></app-profile-button>
++    </ion-buttons>
++  </ion-toolbar>
++</ion-header>
++<ion-content>
++  <app-page-sidebar class="management-sidebar">
++    <ion-list lines="none">
++      <ion-list-header>
++        <ion-label>Management</ion-label>
++      </ion-list-header>
++      <ion-item [routerLink]="['/management/sources']" routerLinkActive="ion-text-bold" [routerLinkActiveOptions]="{ exact: false }">
++        <ion-label>Sources</ion-label>
++      </ion-item>
++      <ion-item [routerLink]="['/management/documents']" routerLinkActive="ion-text-bold" [routerLinkActiveOptions]="{ exact: false }">
++        <ion-label>Documents</ion-label>
++      </ion-item>
++      <ion-list-header>
++        <ion-label>Account</ion-label>
++      </ion-list-header>
++      <ion-item [routerLink]="['/management/profile']" routerLinkActive="ion-text-bold" [routerLinkActiveOptions]="{ exact: false }">
++        <ion-label>Profile</ion-label>
++      </ion-item>
++      <ion-item [routerLink]="['/management/subscriptions']" routerLinkActive="ion-text-bold" [routerLinkActiveOptions]="{ exact: false }">
++        <ion-label>Subscriptions</ion-label>
++      </ion-item>
++      <ion-item [routerLink]="['/management/security']" routerLinkActive="ion-text-bold" [routerLinkActiveOptions]="{ exact: false }">
++        <ion-label>Security</ion-label>
++      </ion-item>
++    </ion-list>
++  </app-page-sidebar>
++  <main class="management-outlet">
++    <router-outlet></router-outlet>
++  </main>
++</ion-content>
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.scss b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.scss
+new file mode 100644
+index 00000000..45da624e
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.scss
+@@ -0,0 +1,15 @@
++ion-content {
++  display: flex;
++}
++
++.management-sidebar {
++  position: absolute;
++  left: 0;
++  height: 100%;
++}
++
++.management-outlet {
++  flex: 1;
++  margin-left: 220px; // match page-sidebar width
++  padding: 0 1rem;
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.ts b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.ts
+new file mode 100644
+index 00000000..c5f0e9d6
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/management-layout/management-layout.page.ts
+@@ -0,0 +1,43 @@
++import { Component } from '@angular/core';
++import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
++import {
++  IonButton,
++  IonButtons,
++  IonContent,
++  IonHeader,
++  IonItem,
++  IonLabel,
++  IonList,
++  IonListHeader,
++  IonMenuButton,
++  IonToolbar,
++} from '@ionic/angular/standalone';
++// eslint-disable-next-line @nx/enforce-module-boundaries
++import { DarkModeButtonComponent, ProfileButtonComponent } from '@feedless/components';
++import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
++
++@Component({
++  selector: 'app-management-layout-page',
++  templateUrl: './management-layout.page.html',
++  styleUrls: ['./management-layout.page.scss'],
++  standalone: true,
++  imports: [
++    IonHeader,
++    IonToolbar,
++    IonButtons,
++    IonButton,
++    IonMenuButton,
++    IonContent,
++    PageSidebarComponent,
++    IonList,
++    IonListHeader,
++    IonItem,
++    IonLabel,
++    RouterLink,
++    RouterLinkActive,
++    RouterOutlet,
++    DarkModeButtonComponent,
++    ProfileButtonComponent,
++  ],
++})
++export class ManagementLayoutPage {}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.html b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.html
+new file mode 100644
+index 00000000..7e731143
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.html
+@@ -0,0 +1,46 @@
++<ion-content>
++  <article class="ion-padding">
++    <header>
++      <h1>Profile</h1>
++      <p>Edit your user details.</p>
++    </header>
++
++    <form [formGroup]="form" (ngSubmit)="save()" class="ion-margin-top">
++      <ion-item>
++        <ion-input
++          label="Email"
++          labelPlacement="stacked"
++          [value]="email"
++          readonly
++        ></ion-input>
++      </ion-item>
++      <ion-item>
++        <ion-input
++          formControlName="firstName"
++          label="First name"
++          labelPlacement="stacked"
++          placeholder="First name"
++        ></ion-input>
++      </ion-item>
++      <ion-item>
++        <ion-input
++          formControlName="lastName"
++          label="Last name"
++          labelPlacement="stacked"
++          placeholder="Last name"
++        ></ion-input>
++      </ion-item>
++      <ion-item>
++        <ion-input
++          formControlName="country"
++          label="Country"
++          labelPlacement="stacked"
++          placeholder="e.g. DE"
++        ></ion-input>
++      </ion-item>
++      <ion-button type="submit" expand="block" class="ion-margin-top">
++        Save
++      </ion-button>
++    </form>
++  </article>
++</ion-content>
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.scss b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.scss
+new file mode 100644
+index 00000000..2a9156f1
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.scss
+@@ -0,0 +1,7 @@
++@use '../../upcoming-mixins';
++
++p {
++  font-size: 1.1rem;
++  line-height: 1.5rem;
++  color: var(--ion-color-medium);
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.ts b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.ts
+new file mode 100644
+index 00000000..077fb259
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/profile/profile.page.ts
+@@ -0,0 +1,79 @@
++import {
++  ChangeDetectionStrategy,
++  ChangeDetectorRef,
++  Component,
++  inject,
++  OnInit,
++  OnDestroy,
++} from '@angular/core';
++import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
++import { IonContent, IonInput, IonItem, IonButton } from '@ionic/angular/standalone';
++// eslint-disable-next-line @nx/enforce-module-boundaries
++import { SessionService } from '@feedless/components';
++import { Subject, takeUntil } from 'rxjs';
++
++@Component({
++  selector: 'app-profile-page',
++  templateUrl: './profile.page.html',
++  styleUrls: ['./profile.page.scss'],
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  imports: [
++    IonContent,
++    IonInput,
++    IonItem,
++    IonButton,
++    ReactiveFormsModule,
++  ],
++  standalone: true,
++})
++export class ProfilePage implements OnInit, OnDestroy {
++  private readonly sessionService = inject(SessionService);
++  private readonly fb = inject(FormBuilder);
++  private readonly cdr = inject(ChangeDetectorRef);
++  private readonly destroy$ = new Subject<void>();
++
++  protected form = this.fb.nonNullable.group({
++    firstName: ['', Validators.required],
++    lastName: ['', Validators.required],
++    country: [''],
++  });
++
++  protected email = '';
++
++  ngOnInit(): void {
++    this.sessionService
++      .getSession()
++      .pipe(takeUntil(this.destroy$))
++      .subscribe((session) => {
++        const user = session?.user;
++        if (user) {
++          this.email = user.email ?? '';
++          this.form.patchValue({
++            firstName: user.firstName ?? '',
++            lastName: user.lastName ?? '',
++            country: user.country ?? '',
++          });
++          this.cdr.markForCheck();
++        }
++      });
++  }
++
++  ngOnDestroy(): void {
++    this.destroy$.next();
++    this.destroy$.complete();
++  }
++
++  protected async save(): Promise<void> {
++    if (this.form.invalid) {
++      this.form.markAllAsTouched();
++      return;
++    }
++    const v = this.form.getRawValue();
++    await this.sessionService.updateCurrentUser({
++      firstName: { set: v.firstName },
++      lastName: { set: v.lastName },
++      ...(v.country !== undefined && v.country !== '' && { country: { set: v.country } }),
++    });
++    this.cdr.markForCheck();
++  }
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/security/security.page.html b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.html
+new file mode 100644
+index 00000000..bc6b99bb
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.html
+@@ -0,0 +1,57 @@
++<ion-content>
++  <article class="ion-padding">
++    <header>
++      <h1>Security</h1>
++      <p>Password and security settings.</p>
++    </header>
++
++    <section class="ion-margin-top">
++      <p class="ion-text-secondary">
++        This app uses email-based login (no password). To change the email address
++        used for login, use the <a routerLink="/management/profile">Profile</a> page
++        when that option is available.
++      </p>
++    </section>
++
++    <section class="ion-margin-top">
++      <h2>API tokens / secrets</h2>
++      <p class="ion-text-secondary">
++        Tokens you created for API or calendar access. Create a new one or revoke existing.
++      </p>
++
++      @if (user?.secrets?.length) {
++        <ion-list lines="full" class="ion-margin-top">
++          @for (secret of user.secrets; track secret.id) {
++            <ion-item>
++              <ion-label>
++                <span [title]="secret.id">{{ secret.valueMasked ?? secret.type ?? secret.id }}</span>
++                @if (secret.lastUsed) {
++                  <ion-note>Last used: {{ secret.lastUsed }}</ion-note>
++                }
++              </ion-label>
++              <ion-button
++                slot="end"
++                fill="clear"
++                color="danger"
++                (click)="deleteSecret(secret.id)"
++                [disabled]="busy"
++              >
++                Revoke
++              </ion-button>
++            </ion-item>
++          }
++        </ion-list>
++      } @else {
++        <p class="ion-margin-top">No tokens yet.</p>
++      }
++
++      <ion-button
++        class="ion-margin-top"
++        (click)="createSecret()"
++        [disabled]="busy"
++      >
++        {{ busy ? 'Creating…' : 'Create new token' }}
++      </ion-button>
++    </section>
++  </article>
++</ion-content>
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/security/security.page.scss b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.scss
+new file mode 100644
+index 00000000..2a9156f1
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.scss
+@@ -0,0 +1,7 @@
++@use '../../upcoming-mixins';
++
++p {
++  font-size: 1.1rem;
++  line-height: 1.5rem;
++  color: var(--ion-color-medium);
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/security/security.page.ts b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.ts
+new file mode 100644
+index 00000000..c7fed512
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/security/security.page.ts
+@@ -0,0 +1,81 @@
++import {
++  ChangeDetectionStrategy,
++  ChangeDetectorRef,
++  Component,
++  inject,
++  OnInit,
++  OnDestroy,
++} from '@angular/core';
++import { IonContent, IonButton, IonItem, IonLabel, IonList, IonNote } from '@ionic/angular/standalone';
++import { RouterLink } from '@angular/router';
++// eslint-disable-next-line @nx/enforce-module-boundaries
++import { SessionService } from '@feedless/components';
++import type { User } from '@feedless/graphql-api';
++import { Subject, takeUntil } from 'rxjs';
++
++@Component({
++  selector: 'app-security-page',
++  templateUrl: './security.page.html',
++  styleUrls: ['./security.page.scss'],
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  imports: [
++    IonContent,
++    IonButton,
++    IonItem,
++    IonLabel,
++    IonList,
++    IonNote,
++    RouterLink,
++  ],
++  standalone: true,
++})
++export class SecurityPage implements OnInit, OnDestroy {
++  private readonly sessionService = inject(SessionService);
++  private readonly cdr = inject(ChangeDetectorRef);
++  private readonly destroy$ = new Subject<void>();
++
++  protected user: User | null = null;
++  protected busy = false;
++
++  ngOnInit(): void {
++    this.sessionService
++      .getSession()
++      .pipe(takeUntil(this.destroy$))
++      .subscribe((session) => {
++        this.user = session?.user ?? null;
++        this.cdr.markForCheck();
++      });
++  }
++
++  ngOnDestroy(): void {
++    this.destroy$.next();
++    this.destroy$.complete();
++  }
++
++  protected async createSecret(): Promise<void> {
++    this.busy = true;
++    this.cdr.markForCheck();
++    try {
++      await this.sessionService.createUserSecret();
++      await this.sessionService.fetchSession('network-only');
++    } finally {
++      this.busy = false;
++      this.cdr.markForCheck();
++    }
++  }
++
++  protected async deleteSecret(id: string): Promise<void> {
++    if (!confirm('Revoke this token? It will stop working immediately.')) {
++      return;
++    }
++    this.busy = true;
++    this.cdr.markForCheck();
++    try {
++      await this.sessionService.deleteUserSecret({ id });
++      await this.sessionService.fetchSession('network-only');
++    } finally {
++      this.busy = false;
++      this.cdr.markForCheck();
++    }
++  }
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.html b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.html
+new file mode 100644
+index 00000000..4a1e87d3
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.html
+@@ -0,0 +1,31 @@
++<ion-content>
++  <article class="ion-padding">
++    <header>
++      <h1>Subscriptions</h1>
++      <p>Your email subscriptions for event digests.</p>
++    </header>
++
++    @if (subscriptions.length === 0) {
++      <section class="ion-margin-top empty-state">
++        <p>
++          You don't have any email subscriptions yet, or the list could not be loaded.
++        </p>
++        <p>
++          You can create a new event digest subscription from any event search result
++          on the <a routerLink="/">home page</a> using the email subscription button.
++        </p>
++      </section>
++    } @else {
++      <ion-list class="ion-margin-top" lines="full">
++        @for (sub of subscriptions; track sub.id) {
++          <ion-item>
++            <ion-label>{{ sub.label }}</ion-label>
++            @if (sub.frequency) {
++              <ion-note slot="end">{{ sub.frequency }}</ion-note>
++            }
++          </ion-item>
++        }
++      </ion-list>
++    }
++  </article>
++</ion-content>
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.scss b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.scss
+new file mode 100644
+index 00000000..ecb8c1ec
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.scss
+@@ -0,0 +1,16 @@
++@use '../../upcoming-mixins';
++
++p {
++  font-size: 1.1rem;
++  line-height: 1.5rem;
++  color: var(--ion-color-medium);
++}
++
++.empty-state {
++  p + p {
++    margin-top: 0.5rem;
++  }
++  a {
++    color: var(--ion-color-primary);
++  }
++}
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.ts b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.ts
+new file mode 100644
+index 00000000..cfda21b6
+--- /dev/null
++++ b/packages/frontend/apps/upcoming/src/app/pages/subscriptions/subscriptions.page.ts
+@@ -0,0 +1,15 @@
++import { ChangeDetectionStrategy, Component } from '@angular/core';
++import { IonContent, IonLabel, IonList, IonItem, IonNote } from '@ionic/angular/standalone';
++import { RouterLink } from '@angular/router';
++
++@Component({
++  selector: 'app-subscriptions-page',
++  templateUrl: './subscriptions.page.html',
++  styleUrls: ['./subscriptions.page.scss'],
++  changeDetection: ChangeDetectionStrategy.OnPush,
++  imports: [IonContent, IonList, IonItem, IonLabel, IonNote, RouterLink],
++  standalone: true,
++})
++export class SubscriptionsPage {
++  protected subscriptions: { id: string; label: string; frequency?: string }[] = [];
++}
+-- 
+2.50.1 (Apple Git-155)
+

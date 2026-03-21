@@ -1,0 +1,52 @@
+From c0a30427121633a0f03cee3c7b867e24e2e32a6d Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Tue, 30 Sep 2025 14:00:05 +0200
+Subject: [PATCH 1/3] nominatim config
+
+---
+ k8s/nominatim/nominatim-config.yaml           |  7 +++++++
+ k8s/nominatim/{nomintim.yml => nominatim.yml} | 10 ++++++++--
+ 2 files changed, 15 insertions(+), 2 deletions(-)
+ create mode 100644 k8s/nominatim/nominatim-config.yaml
+ rename k8s/nominatim/{nomintim.yml => nominatim.yml} (74%)
+
+diff --git a/k8s/nominatim/nominatim-config.yaml b/k8s/nominatim/nominatim-config.yaml
+new file mode 100644
+index 00000000..c0ef6798
+--- /dev/null
++++ b/k8s/nominatim/nominatim-config.yaml
+@@ -0,0 +1,7 @@
++apiVersion: v1
++kind: ConfigMap
++metadata:
++  name: nominatim-config
++data:
++  NOMINATIM_PASSWORD: "supersecurepassword"
++  POSTGRES_PASSWORD: "postgres"
+diff --git a/k8s/nominatim/nomintim.yml b/k8s/nominatim/nominatim.yml
+similarity index 74%
+rename from k8s/nominatim/nomintim.yml
+rename to k8s/nominatim/nominatim.yml
+index 8a68bdfe..2e7119ee 100644
+--- a/k8s/nominatim/nomintim.yml
++++ b/k8s/nominatim/nominatim.yml
+@@ -37,8 +37,14 @@ spec:
+             - name: THREADS
+               value: "4"
+             - name: NOMINATIM_PASSWORD
+-              value: supersecurepassword
++              valueFrom:
++                configMapKeyRef:
++                  name: nominatim-config
++                  key: NOMINATIM_PASSWORD
+             - name: POSTGRES_PASSWORD
+-              value: postgres
++              valueFrom:
++                configMapKeyRef:
++                  name: nominatim-config
++                  key: POSTGRES_PASSWORD
+           ports:
+             - containerPort: 8080
+-- 
+2.39.5 (Apple Git-154)
+

@@ -1,5 +1,24 @@
 @use '../../upcoming-mixins';
 
+.footer-disclaimer {
+  text-align: center;
+  opacity: 0.85;
+  font-size: 0.9rem;
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 0 1rem;
+
+  p {
+    margin: 0;
+    line-height: 1.45;
+  }
+
+  .footer-engagement {
+    margin-top: 0.75rem;
+    font-style: italic;
+  }
+}
+
 ul {
   display: flex;
   padding: 0;

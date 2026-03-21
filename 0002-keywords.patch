@@ -1,0 +1,28 @@
+From 28d2741056f7819c388b78190d328c71c8bab939 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Mon, 16 Mar 2026 21:37:46 +0100
+Subject: [PATCH 2/2] keywords
+
+---
+ .../src/app/pages/event-calendar/event-calendar.page.html    | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
+
+diff --git a/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.html b/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.html
+index 2a95007e..8d9deb57 100644
+--- a/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.html
++++ b/packages/frontend/apps/upcoming/src/app/pages/event-calendar/event-calendar.page.html
+@@ -114,7 +114,10 @@
+                                     [title]="'Wechsle nach ' + place?.place?.place"
+                                     itemprop="url"
+                                   >
+-                                    <span itemprop="name">{{ place?.place?.place }}</span></a
++                                    <span itemprop="name">{{ place?.place?.place }}</span>
++                                    <span class="bot-only"
++                                          itemprop="description">Events und Veranstaltungen in {{ placesGroup.distance }}
++                                      Km Entfernung von {{ namedLatLon.displayName }}</span></a
+                                   >
+                                   @if (placesGroup?.distance && placesGroup.distance > 0) {
+                                     <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
+-- 
+2.50.1 (Apple Git-155)
+

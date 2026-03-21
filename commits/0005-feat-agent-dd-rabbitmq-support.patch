@@ -1,0 +1,2861 @@
+From 2e90803a78e1603dd2c922ffba640a237b1129e2 Mon Sep 17 00:00:00 2001
+From: Markus Ruepp <markus.ruepp@quatico.com>
+Date: Tue, 23 Sep 2025 15:56:11 +0200
+Subject: [PATCH 5/7] =?UTF-8?q?feat(agent)=20=C3=A1dd=20rabbitmq=20support?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+---
+ packages/agent/package.json                   |   4 +
+ packages/agent/src/app.module.ts              |   4 +
+ .../agent/src/health/health.controller.ts     | 134 +++++
+ packages/agent/src/health/health.module.ts    |   9 +
+ packages/agent/src/messaging/README.md        | 458 ++++++++++++++++++
+ packages/agent/src/messaging/example.ts       | 329 +++++++++++++
+ packages/agent/src/messaging/message.types.ts | 132 +++++
+ .../src/messaging/rabbitmq-config.service.ts  | 142 ++++++
+ .../rabbitmq-consumer.service.spec.ts         | 114 +++++
+ .../messaging/rabbitmq-consumer.service.ts    | 213 ++++++++
+ .../rabbitmq-producer.service.spec.ts         | 120 +++++
+ .../messaging/rabbitmq-producer.service.ts    | 212 ++++++++
+ .../agent/src/messaging/rabbitmq.module.ts    |  68 +++
+ .../src/messaging/rabbitmq.service.spec.ts    |  99 ++++
+ .../agent/src/messaging/rabbitmq.service.ts   | 242 +++++++++
+ .../agent/src/services/agent/agent.module.ts  |   5 +-
+ .../services/agent/rabbitmq-agent.service.ts  | 245 ++++++++++
+ .../services/common/verbose-config.service.ts |  12 +-
+ packages/agent/yarn.lock                      |  58 +++
+ 19 files changed, 2595 insertions(+), 5 deletions(-)
+ create mode 100644 packages/agent/src/health/health.controller.ts
+ create mode 100644 packages/agent/src/health/health.module.ts
+ create mode 100644 packages/agent/src/messaging/README.md
+ create mode 100644 packages/agent/src/messaging/example.ts
+ create mode 100644 packages/agent/src/messaging/message.types.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq-config.service.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq-consumer.service.spec.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq-consumer.service.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq-producer.service.spec.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq-producer.service.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq.module.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq.service.spec.ts
+ create mode 100644 packages/agent/src/messaging/rabbitmq.service.ts
+ create mode 100644 packages/agent/src/services/agent/rabbitmq-agent.service.ts
+
+diff --git a/packages/agent/package.json b/packages/agent/package.json
+index 431a3ccf..ea4a6651 100644
+--- a/packages/agent/package.json
++++ b/packages/agent/package.json
+@@ -29,7 +29,10 @@
+     "@nestjs/common": "11.1.6",
+     "@nestjs/config": "^4.0.2",
+     "@nestjs/core": "11.1.6",
++    "@nestjs/microservices": "^11.1.6",
+     "@nestjs/platform-express": "11.1.6",
++    "amqp-connection-manager": "^4.1.14",
++    "amqplib": "^0.10.4",
+     "graphql": "16.11.0",
+     "graphql-ws": "6.0.5",
+     "lodash": "4.17.21",
+@@ -56,6 +59,7 @@
+     "@types/jest": "30.0.0",
+     "@types/lodash": "4.17.20",
+     "@types/node": "20.8.10",
++    "@types/amqplib": "^0.10.5",
+     "@types/node-fetch": "^2.6.3",
+     "@types/supertest": "2.0.16",
+     "@types/winston": "^2.4.4",
+diff --git a/packages/agent/src/app.module.ts b/packages/agent/src/app.module.ts
+index 6f1b9c8c..b7d7097d 100644
+--- a/packages/agent/src/app.module.ts
++++ b/packages/agent/src/app.module.ts
+@@ -4,7 +4,9 @@ import { PuppeteerModule } from './services/puppeteer/puppeteer.module';
+ import { AppController } from './app.controller';
+ import { AgentModule } from './services/agent/agent.module';
+ import { CommonModule } from './services/common/common.module';
++import { HealthModule } from './health/health.module';
+ import { ConfigModule } from '@nestjs/config';
++import { RabbitMQModule } from './messaging/rabbitmq.module';
+ 
+ export interface AgentScope {
+   restrictions: {
+@@ -22,6 +24,8 @@ export interface AgentScope {
+     PuppeteerModule,
+     AgentModule,
+     CommonModule,
++    HealthModule,
++    RabbitMQModule.forRoot(),
+     ConfigModule.forRoot({
+       isGlobal: true,
+       ignoreEnvFile: true,
+diff --git a/packages/agent/src/health/health.controller.ts b/packages/agent/src/health/health.controller.ts
+new file mode 100644
+index 00000000..7c494bc0
+--- /dev/null
++++ b/packages/agent/src/health/health.controller.ts
+@@ -0,0 +1,134 @@
++import { Controller, Get, Logger } from '@nestjs/common';
++import { RabbitMQService } from '../messaging/rabbitmq.service';
++import { RabbitMQConfigService } from '../messaging/rabbitmq-config.service';
++import { RabbitMQAgentService } from '../services/agent/rabbitmq-agent.service';
++
++interface HealthStatus {
++  status: 'healthy' | 'unhealthy' | 'degraded';
++  timestamp: string;
++  uptime: number;
++  services: {
++    rabbitmq: {
++      status: 'connected' | 'disconnected' | 'disabled';
++      enabled: boolean;
++    };
++    agent: {
++      status: 'active' | 'inactive';
++      stats: any;
++    };
++  };
++  version: string;
++  environment: string;
++}
++
++@Controller('health')
++export class HealthController {
++  private readonly logger = new Logger(HealthController.name);
++
++  constructor(
++    private readonly rabbitMQService: RabbitMQService,
++    private readonly rabbitMQConfig: RabbitMQConfigService,
++    private readonly rabbitMQAgent: RabbitMQAgentService,
++  ) {}
++
++  @Get()
++  async getHealth(): Promise<HealthStatus> {
++    const startTime = Date.now();
++    
++    try {
++      const rabbitMQEnabled = this.rabbitMQConfig.isEnabled();
++      const rabbitMQHealthy = rabbitMQEnabled ? this.rabbitMQService.isHealthy() : false;
++      const agentStats = this.rabbitMQAgent.getStats();
++
++      const status: HealthStatus = {
++        status: this.determineOverallStatus(rabbitMQEnabled, rabbitMQHealthy),
++        timestamp: new Date().toISOString(),
++        uptime: process.uptime(),
++        services: {
++          rabbitmq: {
++            status: rabbitMQEnabled 
++              ? (rabbitMQHealthy ? 'connected' : 'disconnected')
++              : 'disabled',
++            enabled: rabbitMQEnabled,
++          },
++          agent: {
++            status: rabbitMQEnabled && rabbitMQHealthy ? 'active' : 'inactive',
++            stats: agentStats,
++          },
++        },
++        version: process.env.APP_VERSION || 'unknown',
++        environment: process.env.NODE_ENV || 'development',
++      };
++
++      const responseTime = Date.now() - startTime;
++      this.logger.debug(`Health check completed in ${responseTime}ms`);
++
++      return status;
++
++    } catch (error) {
++      this.logger.error('Health check failed', error);
++      
++      return {
++        status: 'unhealthy',
++        timestamp: new Date().toISOString(),
++        uptime: process.uptime(),
++        services: {
++          rabbitmq: {
++            status: 'disconnected',
++            enabled: this.rabbitMQConfig.isEnabled(),
++          },
++          agent: {
++            status: 'inactive',
++            stats: null,
++          },
++        },
++        version: process.env.APP_VERSION || 'unknown',
++        environment: process.env.NODE_ENV || 'development',
++      };
++    }
++  }
++
++  @Get('ready')
++  async getReadiness(): Promise<{ ready: boolean; message: string }> {
++    const rabbitMQEnabled = this.rabbitMQConfig.isEnabled();
++    
++    if (!rabbitMQEnabled) {
++      return {
++        ready: true,
++        message: 'Agent ready (RabbitMQ disabled)',
++      };
++    }
++
++    const rabbitMQHealthy = this.rabbitMQService.isHealthy();
++    
++    return {
++      ready: rabbitMQHealthy,
++      message: rabbitMQHealthy 
++        ? 'Agent ready and connected to RabbitMQ'
++        : 'Agent not ready - RabbitMQ connection issues',
++    };
++  }
++
++  @Get('live')
++  async getLiveness(): Promise<{ alive: boolean; message: string }> {
++    return {
++      alive: true,
++      message: 'Agent is alive',
++    };
++  }
++
++  private determineOverallStatus(
++    rabbitMQEnabled: boolean,
++    rabbitMQHealthy: boolean,
++  ): 'healthy' | 'unhealthy' | 'degraded' {
++    if (!rabbitMQEnabled) {
++      return 'degraded'; // Running but without RabbitMQ
++    }
++
++    if (rabbitMQHealthy) {
++      return 'healthy';
++    }
++
++    return 'unhealthy';
++  }
++}
+diff --git a/packages/agent/src/health/health.module.ts b/packages/agent/src/health/health.module.ts
+new file mode 100644
+index 00000000..8a9d3bca
+--- /dev/null
++++ b/packages/agent/src/health/health.module.ts
+@@ -0,0 +1,9 @@
++import { Module } from '@nestjs/common';
++import { HealthController } from './health.controller';
++import { AgentModule } from '../services/agent/agent.module';
++
++@Module({
++  imports: [AgentModule],
++  controllers: [HealthController],
++})
++export class HealthModule {}
+diff --git a/packages/agent/src/messaging/README.md b/packages/agent/src/messaging/README.md
+new file mode 100644
+index 00000000..4a40d788
+--- /dev/null
++++ b/packages/agent/src/messaging/README.md
+@@ -0,0 +1,458 @@
++# RabbitMQ Integration for Feedless Agent
++
++This package provides comprehensive RabbitMQ integration for the Feedless Agent, enabling asynchronous communication between the core server and agent instances for web scraping operations.
++
++## Overview
++
++The RabbitMQ integration includes:
++
++- **Message Types**: Structured message definitions for agent communication
++- **Configuration Service**: Flexible configuration management with environment variable support
++- **RabbitMQ Service**: Core connection and topology management
++- **Producer Service**: Service for sending messages to RabbitMQ queues
++- **Consumer Service**: Service for receiving and processing messages from RabbitMQ queues
++- **Agent Integration**: Seamless integration with existing Puppeteer-based scraping
++- **Health Monitoring**: Health check endpoints and status reporting
++- **Testing Support**: Comprehensive unit tests and mocking support
++
++## Architecture
++
++### Message Flow
++
++```
++Server Core → RabbitMQ → Agent → Puppeteer → Results → RabbitMQ → Server Core
++```
++
++### Exchanges and Queues
++
++- **Main Exchange**: `agent.exchange` (topic)
++- **Dead Letter Exchange**: `agent.dlx.exchange` (topic)
++
++#### Queues:
++1. **Scrape Requests**: `agent.scrape.requests` - Incoming scrape requests
++2. **Scrape Responses**: `agent.scrape.responses` - Scrape results
++3. **Agent Status**: `agent.status` - Agent status updates
++4. **Agent Heartbeat**: `agent.heartbeat` - Regular heartbeat messages
++5. **Agent Logs**: `agent.logs` - Log messages from agents
++6. **Agent Metrics**: `agent.metrics` - Performance metrics
++
++### Message Types
++
++#### ScrapeRequestMessage
++Requests from server to agent for web scraping operations.
++
++```typescript
++{
++  messageType: 'SCRAPE_REQUEST',
++  callbackId: 'unique-callback-id',
++  corrId: 'correlation-id',
++  scrapeRequest: {
++    url: 'https://example.com',
++    actions: [...], // Puppeteer actions
++    options: {
++      timeout: 30000,
++      userAgent: 'custom-agent',
++      viewport: { width: 1920, height: 1080 },
++      cookies: [...],
++      headers: {...}
++    }
++  },
++  priority: 5
++}
++```
++
++#### ScrapeResponseMessage
++Responses from agent to server with scraping results.
++
++```typescript
++{
++  messageType: 'SCRAPE_RESPONSE',
++  callbackId: 'unique-callback-id',
++  corrId: 'correlation-id',
++  scrapeResponse: {
++    ok: true,
++    url: 'https://example.com',
++    outputs: [...], // Extracted data
++    logs: [...], // Processing logs
++    debug: {
++      corrId: 'correlation-id',
++      console: [...], // Browser console logs
++      cookies: [...], // Cookies after processing
++      statusCode: 200,
++      metrics: {
++        render: 1500, // Render time in ms
++        queue: 100    // Queue time in ms
++      },
++      network: [...], // Network requests
++      prerendered: true
++    }
++  }
++}
++```
++
++#### AgentStatusMessage
++Agent status updates (ONLINE, OFFLINE, BUSY, ERROR).
++
++```typescript
++{
++  messageType: 'AGENT_STATUS',
++  agentId: 'agent-unique-id',
++  status: 'ONLINE',
++  version: '1.0.0',
++  capabilities: ['web-scraping', 'puppeteer'],
++  metadata: {...}
++}
++```
++
++#### AgentHeartbeatMessage
++Regular heartbeat messages for monitoring agent health.
++
++```typescript
++{
++  messageType: 'AGENT_HEARTBEAT',
++  agentId: 'agent-unique-id',
++  uptime: 3600, // seconds
++  memoryUsage: {
++    rss: 123456789,
++    heapTotal: 87654321,
++    heapUsed: 45678901,
++    external: 12345678
++  },
++  activeJobs: 2,
++  completedJobs: 150,
++  failedJobs: 5
++}
++```
++
++## Configuration
++
++### Environment Variables
++
++#### Connection Settings
++```bash
++# RabbitMQ Connection
++RABBITMQ_HOST=localhost
++RABBITMQ_PORT=5672
++RABBITMQ_USERNAME=guest
++RABBITMQ_PASSWORD=guest
++RABBITMQ_VHOST=/
++
++# Connection Options
++RABBITMQ_HEARTBEAT=60
++RABBITMQ_CONNECTION_TIMEOUT=30000
++RABBITMQ_RECONNECT_ATTEMPTS=10
++RABBITMQ_RECONNECT_DELAY=5000
++
++# Queue Configuration
++RABBITMQ_QUEUE_DURABLE=true
++RABBITMQ_QUEUE_EXCLUSIVE=false
++RABBITMQ_QUEUE_AUTO_DELETE=false
++RABBITMQ_MESSAGE_TTL=86400000
++RABBITMQ_QUEUE_MAX_LENGTH=10000
++
++# Consumer Configuration
++RABBITMQ_PREFETCH_COUNT=1
++RABBITMQ_NO_ACK=false
++RABBITMQ_CONSUMER_EXCLUSIVE=false
++
++# Publisher Configuration
++RABBITMQ_PUBLISHER_CONFIRM=true
++RABBITMQ_PUBLISHER_MANDATORY=true
++RABBITMQ_MESSAGE_PERSISTENT=true
++
++# Agent Configuration
++AGENT_ID=agent-unique-identifier
++RABBITMQ_ENABLED=true
++RABBITMQ_HEARTBEAT_INTERVAL=30000
++RABBITMQ_METRICS_INTERVAL=60000
++```
++
++### Docker Compose
++
++Add RabbitMQ to your docker-compose.yml:
++
++```yaml
++services:
++  rabbitmq:
++    image: rabbitmq:3.13-management-alpine
++    container_name: feedless-rabbitmq
++    ports:
++      - "5672:5672"
++      - "15672:15672"  # Management UI
++    environment:
++      RABBITMQ_DEFAULT_USER: feedless
++      RABBITMQ_DEFAULT_PASS: password
++    volumes:
++      - rabbitmq_data:/var/lib/rabbitmq
++    healthcheck:
++      test: ["CMD", "rabbitmq-diagnostics", "ping"]
++      interval: 30s
++      timeout: 10s
++      retries: 3
++
++  agent:
++    build: .
++    environment:
++      - RABBITMQ_HOST=rabbitmq
++      - RABBITMQ_USERNAME=feedless
++      - RABBITMQ_PASSWORD=password
++      - AGENT_ID=agent-001
++    depends_on:
++      - rabbitmq
++
++volumes:
++  rabbitmq_data:
++```
++
++## Usage
++
++### Starting the Agent
++
++The RabbitMQ integration is automatically initialized when the agent starts:
++
++```bash
++npm run start
++# or
++yarn start
++```
++
++### Health Monitoring
++
++The agent provides health check endpoints:
++
++```bash
++# Overall health status
++curl http://localhost:3000/health
++
++# Readiness check
++curl http://localhost:3000/health/ready
++
++# Liveness check
++curl http://localhost:3000/health/live
++```
++
++Example health response:
++```json
++{
++  "status": "healthy",
++  "timestamp": "2024-01-15T10:30:00.000Z",
++  "uptime": 3600,
++  "services": {
++    "rabbitmq": {
++      "status": "connected",
++      "enabled": true
++    },
++    "agent": {
++      "status": "active",
++      "stats": {
++        "startTime": 1705315800000,
++        "completedJobs": 150,
++        "failedJobs": 5,
++        "activeJobs": 2,
++        "processingTimes": [1200, 1500, 800]
++      }
++    }
++  },
++  "version": "1.0.0",
++  "environment": "production"
++}
++```
++
++### Custom Message Handling
++
++You can register custom handlers for scrape requests:
++
++```typescript
++import { RabbitMQConsumerService } from './messaging/rabbitmq-consumer.service';
++
++@Injectable()
++export class CustomAgentService {
++  constructor(private consumerService: RabbitMQConsumerService) {}
++
++  onModuleInit() {
++    // Register custom scrape handler
++    this.consumerService.registerScrapeRequestHandler(
++      this.handleCustomScrapeRequest.bind(this)
++    );
++  }
++
++  private async handleCustomScrapeRequest(message: ScrapeRequestMessage) {
++    // Custom scraping logic here
++    return {
++      ok: true,
++      outputs: [...],
++      logs: [...]
++    };
++  }
++}
++```
++
++## Development
++
++### Running Tests
++
++```bash
++# Unit tests
++npm test
++
++# Test coverage
++npm run test:cov
++
++# Watch mode
++npm run test:watch
++```
++
++### Debugging
++
++Enable debug logging:
++
++```bash
++DEBUG=true npm run start:debug
++```
++
++Set log levels:
++```bash
++LOG_LEVEL=debug npm run start
++```
++
++## Monitoring and Metrics
++
++### Agent Metrics
++
++The agent automatically reports metrics:
++
++- **Jobs Processed**: Total number of completed scraping jobs
++- **Average Processing Time**: Mean time to complete scraping requests
++- **Error Rate**: Percentage of failed scraping attempts
++- **Memory Usage**: Current memory consumption
++- **Active Jobs**: Number of currently processing requests
++
++### RabbitMQ Management
++
++Access the RabbitMQ management interface at `http://localhost:15672`
++
++Monitor:
++- Queue depths and message rates
++- Consumer status and performance
++- Dead letter queue messages
++- Connection status and errors
++
++### Key Metrics to Monitor
++
++1. **Queue Depth**: Messages waiting in queues
++2. **Processing Time**: Time to complete scrape requests
++3. **Error Rate**: Failed scraping attempts
++4. **Memory Usage**: Agent memory consumption
++5. **Connection Health**: RabbitMQ connection status
++
++## Error Handling
++
++### Retry Strategy
++
++Failed messages are automatically retried and eventually moved to dead letter queues for manual inspection.
++
++### Dead Letter Queues
++
++Monitor these queues for failed messages:
++- `agent.scrape.requests.dlq`
++- `agent.scrape.responses.dlq`
++
++### Logging
++
++The agent sends structured logs to the `agent.logs` queue:
++
++```typescript
++{
++  messageType: 'AGENT_LOG',
++  agentId: 'agent-001',
++  level: 'error',
++  message: 'Scrape request failed',
++  context: 'RabbitMQAgentService',
++  stack: '...',
++  metadata: {
++    callbackId: 'req-123',
++    url: 'https://example.com'
++  }
++}
++```
++
++## Troubleshooting
++
++### Common Issues
++
++1. **Connection Refused**: Check RabbitMQ server status and network connectivity
++2. **Queue Not Found**: Verify queue creation and binding configuration
++3. **Messages Not Processed**: Check consumer status and error logs
++4. **High Memory Usage**: Monitor processing times and queue depths
++5. **Agent Not Responding**: Check heartbeat messages and agent status
++
++### Debug Commands
++
++```bash
++# Check RabbitMQ status
++rabbitmq-diagnostics status
++
++# List queues
++rabbitmqctl list_queues
++
++# List exchanges
++rabbitmqctl list_exchanges
++
++# List bindings
++rabbitmqctl list_bindings
++```
++
++### Health Check Endpoints
++
++- `GET /health` - Overall system health
++- `GET /health/ready` - Readiness for traffic
++- `GET /health/live` - Basic liveness check
++
++## Performance Tuning
++
++### Configuration Recommendations
++
++For high-throughput scenarios:
++
++```bash
++# Increase prefetch count
++RABBITMQ_PREFETCH_COUNT=10
++
++# Reduce heartbeat frequency
++RABBITMQ_HEARTBEAT_INTERVAL=60000
++
++# Optimize queue settings
++RABBITMQ_QUEUE_MAX_LENGTH=50000
++```
++
++For low-latency scenarios:
++
++```bash
++# Reduce prefetch count
++RABBITMQ_PREFETCH_COUNT=1
++
++# Increase heartbeat frequency
++RABBITMQ_HEARTBEAT_INTERVAL=15000
++
++# Enable publisher confirms
++RABBITMQ_PUBLISHER_CONFIRM=true
++```
++
++## Security Considerations
++
++1. **Authentication**: Use strong credentials for RabbitMQ
++2. **Network Security**: Secure RabbitMQ connections with TLS
++3. **Access Control**: Configure proper user permissions
++4. **Message Encryption**: Consider encrypting sensitive message content
++5. **Monitoring**: Monitor for unusual message patterns or connection attempts
++
++## Future Enhancements
++
++Planned improvements:
++
++1. **Message Compression**: Automatic compression for large messages
++2. **Priority Queues**: Enhanced priority-based message routing
++3. **Circuit Breaker**: Fault tolerance for external dependencies
++4. **Message Tracing**: Distributed tracing for message flows
++5. **Auto-scaling**: Dynamic agent scaling based on queue depth
++6. **Message Encryption**: End-to-end encryption for sensitive data
+diff --git a/packages/agent/src/messaging/example.ts b/packages/agent/src/messaging/example.ts
+new file mode 100644
+index 00000000..7ad8b9ce
+--- /dev/null
++++ b/packages/agent/src/messaging/example.ts
+@@ -0,0 +1,329 @@
++/**
++ * Example usage of RabbitMQ integration in Feedless Agent
++ * 
++ * This file demonstrates how to:
++ * 1. Initialize RabbitMQ services
++ * 2. Send messages to the server
++ * 3. Handle incoming scrape requests
++ * 4. Monitor agent health and metrics
++ */
++
++import { Logger } from '@nestjs/common';
++import { RabbitMQProducerService } from './rabbitmq-producer.service';
++import { RabbitMQConsumerService } from './rabbitmq-consumer.service';
++import { ScrapeRequestMessage } from './message.types';
++
++export class RabbitMQExample {
++  private readonly logger = new Logger(RabbitMQExample.name);
++
++  constructor(
++    private readonly producer: RabbitMQProducerService,
++    private readonly consumer: RabbitMQConsumerService,
++  ) {}
++
++  async initialize() {
++    this.logger.log('Initializing RabbitMQ Example');
++
++    // Register a custom scrape request handler
++    this.consumer.registerScrapeRequestHandler(this.handleScrapeRequest.bind(this));
++
++    // Send initial agent status
++    await this.producer.sendAgentStatus('ONLINE', {
++      example: 'This is an example agent',
++      capabilities: ['web-scraping', 'custom-processing'],
++    });
++
++    // Start sending periodic heartbeats
++    this.startHeartbeatExample();
++
++    // Start sending periodic metrics
++    this.startMetricsExample();
++
++    this.logger.log('RabbitMQ Example initialized');
++  }
++
++  /**
++   * Example scrape request handler
++   */
++  private async handleScrapeRequest(message: ScrapeRequestMessage): Promise<any> {
++    this.logger.log(`Handling scrape request: ${message.callbackId}`);
++    this.logger.debug(`Scrape URL: ${message.scrapeRequest.url}`);
++
++    try {
++      // Simulate scraping process
++      const startTime = Date.now();
++      
++      // Send status update
++      await this.producer.sendAgentStatus('BUSY', {
++        processingJob: message.callbackId,
++        url: message.scrapeRequest.url,
++      });
++
++      // Simulate processing time based on priority
++      const processingTime = message.priority ? (6 - message.priority) * 1000 : 3000;
++      await this.sleep(processingTime);
++
++      // Simulate different outcomes based on URL
++      if (message.scrapeRequest.url.includes('error')) {
++        throw new Error('Simulated scraping error');
++      }
++
++      // Create mock response
++      const scrapeResponse = {
++        ok: true,
++        url: message.scrapeRequest.url,
++        outputs: [
++          {
++            type: 'text',
++            selector: 'title',
++            value: `Example Title for ${message.scrapeRequest.url}`,
++          },
++          {
++            type: 'text',
++            selector: 'meta[name="description"]',
++            value: 'Example description content',
++          },
++          {
++            type: 'link',
++            selector: 'a[href]',
++            value: 'https://example.com/link',
++          },
++        ],
++        logs: [
++          `Started processing: ${message.scrapeRequest.url}`,
++          `Processing took: ${Date.now() - startTime}ms`,
++          'Scraping completed successfully',
++        ],
++        debug: {
++          corrId: message.corrId || '',
++          console: ['Example console log'],
++          cookies: [],
++          statusCode: 200,
++          metrics: {
++            render: Date.now() - startTime,
++            queue: 100,
++          },
++          network: [
++            {
++              url: message.scrapeRequest.url,
++              method: 'GET',
++              status: 200,
++              responseTime: 500,
++            },
++          ],
++          prerendered: true,
++        },
++      };
++
++      // Send status back to online
++      await this.producer.sendAgentStatus('ONLINE');
++
++      this.logger.log(`Successfully processed scrape request: ${message.callbackId}`);
++      return scrapeResponse;
++
++    } catch (error) {
++      this.logger.error(`Failed to process scrape request: ${message.callbackId}`, error);
++
++      // Send error status
++      await this.producer.sendAgentStatus('ERROR', {
++        error: error.message,
++        job: message.callbackId,
++      });
++
++      // Send error log
++      await this.producer.sendLog(
++        'error',
++        `Scrape request failed: ${error.message}`,
++        'RabbitMQExample',
++        error.stack,
++        {
++          callbackId: message.callbackId,
++          url: message.scrapeRequest.url,
++        },
++      );
++
++      // Return error response
++      return {
++        ok: false,
++        errorMessage: error.message,
++        outputs: [],
++        logs: [error.message],
++      };
++    }
++  }
++
++  /**
++   * Example heartbeat sender
++   */
++  private startHeartbeatExample() {
++    let completedJobs = 0;
++    let failedJobs = 0;
++
++    setInterval(async () => {
++      try {
++        // Simulate job completion
++        if (Math.random() > 0.7) {
++          completedJobs++;
++        }
++        if (Math.random() > 0.9) {
++          failedJobs++;
++        }
++
++        await this.producer.sendHeartbeat(
++          Math.floor(Math.random() * 3), // activeJobs: 0-2
++          completedJobs,
++          failedJobs,
++        );
++
++        this.logger.debug('Heartbeat sent');
++      } catch (error) {
++        this.logger.error('Failed to send heartbeat', error);
++      }
++    }, 30000); // Every 30 seconds
++  }
++
++  /**
++   * Example metrics sender
++   */
++  private startMetricsExample() {
++    let totalJobs = 0;
++    const processingTimes: number[] = [];
++
++    setInterval(async () => {
++      try {
++        // Simulate metrics
++        totalJobs += Math.floor(Math.random() * 5);
++        const newProcessingTime = 1000 + Math.random() * 2000; // 1-3 seconds
++        processingTimes.push(newProcessingTime);
++
++        // Keep only last 100 processing times
++        if (processingTimes.length > 100) {
++          processingTimes.splice(0, processingTimes.length - 100);
++        }
++
++        const averageProcessingTime = processingTimes.reduce((a, b) => a + b, 0) / processingTimes.length;
++        const errorRate = Math.random() * 0.1; // 0-10% error rate
++
++        await this.producer.sendMetrics(
++          totalJobs,
++          averageProcessingTime,
++          errorRate,
++        );
++
++        this.logger.debug('Metrics sent', {
++          totalJobs,
++          averageProcessingTime: Math.round(averageProcessingTime),
++          errorRate: Math.round(errorRate * 100) / 100,
++        });
++      } catch (error) {
++        this.logger.error('Failed to send metrics', error);
++      }
++    }, 60000); // Every minute
++  }
++
++  /**
++   * Example of sending custom messages
++   */
++  async sendCustomMessage() {
++    await this.producer.sendCustomMessage(
++      'custom.routing.key',
++      {
++        customData: 'This is a custom message',
++        timestamp: new Date().toISOString(),
++        agentInfo: {
++          id: this.producer.getAgentId(),
++          version: '1.0.0',
++        },
++      },
++      'CUSTOM_MESSAGE',
++      {
++        priority: 7,
++        persistent: true,
++      },
++    );
++
++    this.logger.log('Custom message sent');
++  }
++
++  /**
++   * Example of sending logs with different levels
++   */
++  async sendExampleLogs() {
++    await this.producer.sendLog('info', 'Agent started successfully', 'RabbitMQExample');
++    
++    await this.producer.sendLog(
++      'warn',
++      'High memory usage detected',
++      'RabbitMQExample',
++      undefined,
++      { memoryUsage: process.memoryUsage() },
++    );
++
++    await this.producer.sendLog(
++      'error',
++      'Example error occurred',
++      'RabbitMQExample',
++      new Error('Example error').stack,
++      { errorCode: 'EXAMPLE_001' },
++    );
++
++    this.logger.log('Example logs sent');
++  }
++
++  /**
++   * Utility method for simulating async operations
++   */
++  private sleep(ms: number): Promise<void> {
++    return new Promise(resolve => setTimeout(resolve, ms));
++  }
++
++  /**
++   * Cleanup method
++   */
++  async shutdown() {
++    this.logger.log('Shutting down RabbitMQ Example');
++    
++    // Send offline status
++    await this.producer.sendAgentStatus('OFFLINE', {
++      reason: 'Example shutdown',
++    });
++
++    // Unregister handler
++    this.consumer.unregisterScrapeRequestHandler();
++
++    this.logger.log('RabbitMQ Example shutdown complete');
++  }
++}
++
++/**
++ * Example usage in a NestJS service
++ */
++/*
++@Injectable()
++export class ExampleService implements OnModuleInit, OnModuleDestroy {
++  private example: RabbitMQExample;
++
++  constructor(
++    private producer: RabbitMQProducerService,
++    private consumer: RabbitMQConsumerService,
++  ) {
++    this.example = new RabbitMQExample(producer, consumer);
++  }
++
++  async onModuleInit() {
++    await this.example.initialize();
++  }
++
++  async onModuleDestroy() {
++    await this.example.shutdown();
++  }
++
++  async sendCustomMessage() {
++    await this.example.sendCustomMessage();
++  }
++
++  async sendExampleLogs() {
++    await this.example.sendExampleLogs();
++  }
++}
++*/
+diff --git a/packages/agent/src/messaging/message.types.ts b/packages/agent/src/messaging/message.types.ts
+new file mode 100644
+index 00000000..5e778481
+--- /dev/null
++++ b/packages/agent/src/messaging/message.types.ts
+@@ -0,0 +1,132 @@
++export interface BaseMessage {
++  messageId: string;
++  timestamp: string;
++  messageType: string;
++  corrId?: string;
++}
++
++export interface ScrapeRequestMessage extends BaseMessage {
++  messageType: 'SCRAPE_REQUEST';
++  callbackId: string;
++  scrapeRequest: {
++    url: string;
++    actions?: any[];
++    options?: {
++      timeout?: number;
++      userAgent?: string;
++      viewport?: {
++        width: number;
++        height: number;
++      };
++      cookies?: any[];
++      headers?: Record<string, string>;
++    };
++  };
++  priority?: number;
++}
++
++export interface ScrapeResponseMessage extends BaseMessage {
++  messageType: 'SCRAPE_RESPONSE';
++  callbackId: string;
++  scrapeResponse: {
++    ok: boolean;
++    url?: string;
++    errorMessage?: string;
++    outputs: any[];
++    logs: string[];
++    debug?: {
++      corrId: string;
++      console: string[];
++      cookies: any[];
++      statusCode: number;
++      metrics: {
++        render: number;
++        queue: number;
++      };
++      network: any[];
++      prerendered: boolean;
++    };
++  };
++}
++
++export interface AgentStatusMessage extends BaseMessage {
++  messageType: 'AGENT_STATUS';
++  agentId: string;
++  status: 'ONLINE' | 'OFFLINE' | 'BUSY' | 'ERROR';
++  version?: string;
++  capabilities?: string[];
++  metadata?: Record<string, any>;
++}
++
++export interface AgentHeartbeatMessage extends BaseMessage {
++  messageType: 'AGENT_HEARTBEAT';
++  agentId: string;
++  uptime: number;
++  memoryUsage?: {
++    rss: number;
++    heapTotal: number;
++    heapUsed: number;
++    external: number;
++  };
++  activeJobs: number;
++  completedJobs: number;
++  failedJobs: number;
++}
++
++export interface AgentLogMessage extends BaseMessage {
++  messageType: 'AGENT_LOG';
++  agentId: string;
++  level: 'debug' | 'info' | 'warn' | 'error';
++  message: string;
++  context?: string;
++  stack?: string;
++  metadata?: Record<string, any>;
++}
++
++export interface AgentMetricsMessage extends BaseMessage {
++  messageType: 'AGENT_METRICS';
++  agentId: string;
++  metrics: {
++    jobsProcessed: number;
++    averageProcessingTime: number;
++    errorRate: number;
++    memoryUsage: number;
++    cpuUsage?: number;
++    timestamp: string;
++  };
++}
++
++export type AgentMessage = 
++  | ScrapeRequestMessage
++  | ScrapeResponseMessage
++  | AgentStatusMessage
++  | AgentHeartbeatMessage
++  | AgentLogMessage
++  | AgentMetricsMessage;
++
++// Queue and routing key constants
++export const AGENT_QUEUES = {
++  SCRAPE_REQUESTS: 'agent.scrape.requests',
++  SCRAPE_RESPONSES: 'agent.scrape.responses',
++  AGENT_STATUS: 'agent.status',
++  AGENT_HEARTBEAT: 'agent.heartbeat',
++  AGENT_LOGS: 'agent.logs',
++  AGENT_METRICS: 'agent.metrics',
++  // Dead letter queues
++  SCRAPE_REQUESTS_DLQ: 'agent.scrape.requests.dlq',
++  SCRAPE_RESPONSES_DLQ: 'agent.scrape.responses.dlq',
++} as const;
++
++export const AGENT_ROUTING_KEYS = {
++  SCRAPE_REQUEST: 'agent.scrape.request',
++  SCRAPE_RESPONSE: 'agent.scrape.response',
++  AGENT_STATUS: 'agent.status',
++  AGENT_HEARTBEAT: 'agent.heartbeat',
++  AGENT_LOGS: 'agent.logs',
++  AGENT_METRICS: 'agent.metrics',
++} as const;
++
++export const AGENT_EXCHANGES = {
++  MAIN: 'agent.exchange',
++  DLX: 'agent.dlx.exchange',
++} as const;
+diff --git a/packages/agent/src/messaging/rabbitmq-config.service.ts b/packages/agent/src/messaging/rabbitmq-config.service.ts
+new file mode 100644
+index 00000000..72f0b784
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq-config.service.ts
+@@ -0,0 +1,142 @@
++import { Injectable, Logger } from '@nestjs/common';
++import { VerboseConfigService } from '../services/common/verbose-config.service';
++
++export interface RabbitMQConnectionConfig {
++  host: string;
++  port: number;
++  username: string;
++  password: string;
++  vhost: string;
++  heartbeat: number;
++  connectionTimeout: number;
++  reconnectAttempts: number;
++  reconnectDelay: number;
++}
++
++export interface RabbitMQQueueConfig {
++  durable: boolean;
++  exclusive: boolean;
++  autoDelete: boolean;
++  arguments?: Record<string, any>;
++}
++
++@Injectable()
++export class RabbitMQConfigService {
++  private readonly logger = new Logger(RabbitMQConfigService.name);
++
++  constructor(private readonly config: VerboseConfigService) {}
++
++  getConnectionConfig(): RabbitMQConnectionConfig {
++    const host = this.config.getString('RABBITMQ_HOST', {
++      fallback: 'localhost',
++    });
++
++    const port = this.config.getNumber('RABBITMQ_PORT', {
++      fallback: 5672,
++    });
++
++    const username = this.config.getString('RABBITMQ_USERNAME', {
++      fallback: 'guest',
++    });
++
++    const password = this.config.getString('RABBITMQ_PASSWORD', {
++      fallback: 'guest',
++      mask: 4,
++    });
++
++    const vhost = this.config.getString('RABBITMQ_VHOST', {
++      fallback: '/',
++    });
++
++    const heartbeat = this.config.getNumber('RABBITMQ_HEARTBEAT', {
++      fallback: 60,
++    });
++
++    const connectionTimeout = this.config.getNumber('RABBITMQ_CONNECTION_TIMEOUT', {
++      fallback: 30000,
++    });
++
++    const reconnectAttempts = this.config.getNumber('RABBITMQ_RECONNECT_ATTEMPTS', {
++      fallback: 10,
++    });
++
++    const reconnectDelay = this.config.getNumber('RABBITMQ_RECONNECT_DELAY', {
++      fallback: 5000,
++    });
++
++    this.logger.log(`RabbitMQ connection config: ${host}:${port}${vhost}`);
++
++    return {
++      host,
++      port,
++      username,
++      password,
++      vhost,
++      heartbeat,
++      connectionTimeout,
++      reconnectAttempts,
++      reconnectDelay,
++    };
++  }
++
++  getConnectionUrl(): string {
++    const config = this.getConnectionConfig();
++    return `amqp://${config.username}:${config.password}@${config.host}:${config.port}${config.vhost}`;
++  }
++
++  getQueueConfig(): RabbitMQQueueConfig {
++    return {
++      durable: this.config.getBoolean('RABBITMQ_QUEUE_DURABLE', { fallback: true }),
++      exclusive: this.config.getBoolean('RABBITMQ_QUEUE_EXCLUSIVE', { fallback: false }),
++      autoDelete: this.config.getBoolean('RABBITMQ_QUEUE_AUTO_DELETE', { fallback: false }),
++      arguments: {
++        'x-message-ttl': this.config.getNumber('RABBITMQ_MESSAGE_TTL', {
++          fallback: 86400000, // 24 hours
++        }),
++        'x-max-length': this.config.getNumber('RABBITMQ_QUEUE_MAX_LENGTH', {
++          fallback: 10000,
++        }),
++      },
++    };
++  }
++
++  getConsumerConfig() {
++    return {
++      prefetch: this.config.getNumber('RABBITMQ_PREFETCH_COUNT', {
++        fallback: 1,
++      }),
++      noAck: this.config.getBoolean('RABBITMQ_NO_ACK', {
++        fallback: false,
++      }),
++      exclusive: this.config.getBoolean('RABBITMQ_CONSUMER_EXCLUSIVE', {
++        fallback: false,
++      }),
++    };
++  }
++
++  getPublisherConfig() {
++    return {
++      confirm: this.config.getBoolean('RABBITMQ_PUBLISHER_CONFIRM', {
++        fallback: true,
++      }),
++      mandatory: this.config.getBoolean('RABBITMQ_PUBLISHER_MANDATORY', {
++        fallback: true,
++      }),
++      persistent: this.config.getBoolean('RABBITMQ_MESSAGE_PERSISTENT', {
++        fallback: true,
++      }),
++    };
++  }
++
++  getAgentId(): string {
++    return this.config.getString('AGENT_ID', {
++      fallback: `agent-${Math.random().toString(36).substring(7)}`,
++    });
++  }
++
++  isEnabled(): boolean {
++    return this.config.getBoolean('RABBITMQ_ENABLED', {
++      fallback: true,
++    });
++  }
++}
+diff --git a/packages/agent/src/messaging/rabbitmq-consumer.service.spec.ts b/packages/agent/src/messaging/rabbitmq-consumer.service.spec.ts
+new file mode 100644
+index 00000000..4eb22752
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq-consumer.service.spec.ts
+@@ -0,0 +1,114 @@
++import { Test, TestingModule } from '@nestjs/testing';
++import { RabbitMQConsumerService } from './rabbitmq-consumer.service';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import { RabbitMQProducerService } from './rabbitmq-producer.service';
++
++describe('RabbitMQConsumerService', () => {
++  let service: RabbitMQConsumerService;
++
++  const mockRabbitMQService = {
++    waitForConnection: jest.fn(),
++    getConsumerChannel: jest.fn(),
++  };
++
++  const mockRabbitMQConfigService = {
++    isEnabled: jest.fn(),
++    getConsumerConfig: jest.fn(),
++  };
++
++  const mockRabbitMQProducerService = {
++    sendAgentStatus: jest.fn(),
++    sendScrapeResponse: jest.fn(),
++    sendLog: jest.fn(),
++  };
++
++  beforeEach(async () => {
++    const module: TestingModule = await Test.createTestingModule({
++      providers: [
++        RabbitMQConsumerService,
++        {
++          provide: RabbitMQService,
++          useValue: mockRabbitMQService,
++        },
++        {
++          provide: RabbitMQConfigService,
++          useValue: mockRabbitMQConfigService,
++        },
++        {
++          provide: RabbitMQProducerService,
++          useValue: mockRabbitMQProducerService,
++        },
++      ],
++    }).compile();
++
++    service = module.get<RabbitMQConsumerService>(RabbitMQConsumerService);
++  });
++
++  it('should be defined', () => {
++    expect(service).toBeDefined();
++  });
++
++  describe('registerScrapeRequestHandler', () => {
++    it('should register a scrape request handler', () => {
++      const handler = jest.fn();
++      
++      service.registerScrapeRequestHandler(handler);
++      
++      expect(service.hasHandler()).toBe(true);
++    });
++  });
++
++  describe('unregisterScrapeRequestHandler', () => {
++    it('should unregister the scrape request handler', () => {
++      const handler = jest.fn();
++      
++      service.registerScrapeRequestHandler(handler);
++      expect(service.hasHandler()).toBe(true);
++      
++      service.unregisterScrapeRequestHandler();
++      expect(service.hasHandler()).toBe(false);
++    });
++  });
++
++  describe('hasHandler', () => {
++    it('should return false when no handler is registered', () => {
++      expect(service.hasHandler()).toBe(false);
++    });
++
++    it('should return true when a handler is registered', () => {
++      const handler = jest.fn();
++      service.registerScrapeRequestHandler(handler);
++      expect(service.hasHandler()).toBe(true);
++    });
++  });
++
++  describe('onModuleInit', () => {
++    it('should skip initialization when RabbitMQ is disabled', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(false);
++
++      await expect(service.onModuleInit()).resolves.not.toThrow();
++    });
++
++    it('should initialize consumers when RabbitMQ is enabled', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(true);
++      mockRabbitMQService.waitForConnection.mockResolvedValue(undefined);
++      
++      const mockChannelWrapper = {
++        addSetup: jest.fn().mockResolvedValue(undefined),
++      };
++      
++      mockRabbitMQService.getConsumerChannel.mockReturnValue(mockChannelWrapper);
++      mockRabbitMQConfigService.getConsumerConfig.mockReturnValue({
++        prefetch: 1,
++        noAck: false,
++        exclusive: false,
++      });
++
++      await service.onModuleInit();
++
++      expect(mockRabbitMQService.waitForConnection).toHaveBeenCalled();
++      expect(mockChannelWrapper.addSetup).toHaveBeenCalled();
++    });
++  });
++});
+diff --git a/packages/agent/src/messaging/rabbitmq-consumer.service.ts b/packages/agent/src/messaging/rabbitmq-consumer.service.ts
+new file mode 100644
+index 00000000..bc765dad
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq-consumer.service.ts
+@@ -0,0 +1,213 @@
++import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
++import * as amqp from 'amqplib';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import { RabbitMQProducerService } from './rabbitmq-producer.service';
++import {
++  ScrapeRequestMessage,
++  AGENT_QUEUES,
++} from './message.types';
++
++@Injectable()
++export class RabbitMQConsumerService implements OnModuleInit {
++  private readonly logger = new Logger(RabbitMQConsumerService.name);
++  private scrapeRequestHandler: ((message: ScrapeRequestMessage) => Promise<any>) | null = null;
++
++  constructor(
++    private readonly rabbitMQService: RabbitMQService,
++    private readonly configService: RabbitMQConfigService,
++    private readonly producerService: RabbitMQProducerService,
++  ) {}
++
++  async onModuleInit() {
++    if (!this.configService.isEnabled()) {
++      this.logger.warn('RabbitMQ is disabled, skipping consumer initialization');
++      return;
++    }
++
++    try {
++      await this.rabbitMQService.waitForConnection();
++      await this.startConsumers();
++    } catch (error) {
++      this.logger.error('Failed to initialize RabbitMQ consumers', error);
++      throw error;
++    }
++  }
++
++  private async startConsumers() {
++    this.logger.log('Starting RabbitMQ consumers');
++    
++    const channel = this.rabbitMQService.getConsumerChannel();
++    const consumerConfig = this.configService.getConsumerConfig();
++
++    // Start scrape request consumer
++    await channel.addSetup(async (ch: amqp.Channel) => {
++      await ch.consume(
++        AGENT_QUEUES.SCRAPE_REQUESTS,
++        async (msg) => {
++          if (msg) {
++            await this.handleScrapeRequest(ch, msg);
++          }
++        },
++        {
++          noAck: consumerConfig.noAck,
++          exclusive: consumerConfig.exclusive,
++        },
++      );
++
++      this.logger.log(`Started consuming from ${AGENT_QUEUES.SCRAPE_REQUESTS}`);
++    });
++
++    // Start dead letter queue consumer
++    await channel.addSetup(async (ch: amqp.Channel) => {
++      await ch.consume(
++        AGENT_QUEUES.SCRAPE_REQUESTS_DLQ,
++        async (msg) => {
++          if (msg) {
++            await this.handleDeadLetterMessage(ch, msg);
++          }
++        },
++        {
++          noAck: false,
++        },
++      );
++
++      this.logger.log(`Started consuming from ${AGENT_QUEUES.SCRAPE_REQUESTS_DLQ}`);
++    });
++  }
++
++  private async handleScrapeRequest(channel: amqp.Channel, msg: amqp.ConsumeMessage) {
++    try {
++      const message: ScrapeRequestMessage = JSON.parse(msg.content.toString());
++      
++      this.logger.log(`Received scrape request: ${message.callbackId}`);
++      this.logger.debug(`Scrape request details:`, message);
++
++      // Send agent status as busy
++      await this.producerService.sendAgentStatus('BUSY', {
++        processingJob: message.callbackId,
++      });
++
++      let scrapeResponse: any;
++
++      if (this.scrapeRequestHandler) {
++        // Use custom handler if registered
++        scrapeResponse = await this.scrapeRequestHandler(message);
++      } else {
++        // Default response if no handler is registered
++        this.logger.warn('No scrape request handler registered, sending default response');
++        scrapeResponse = {
++          ok: false,
++          errorMessage: 'No scrape request handler registered',
++          outputs: [],
++          logs: ['No handler available'],
++        };
++      }
++
++      // Send response back
++      await this.producerService.sendScrapeResponse(
++        message.callbackId,
++        message.corrId || '',
++        scrapeResponse,
++      );
++
++      // Send agent status back to online
++      await this.producerService.sendAgentStatus('ONLINE');
++
++      // Acknowledge the message
++      channel.ack(msg);
++
++      this.logger.log(`Successfully processed scrape request: ${message.callbackId}`);
++
++    } catch (error) {
++      this.logger.error('Failed to process scrape request', error);
++
++      try {
++        const message: ScrapeRequestMessage = JSON.parse(msg.content.toString());
++        
++        // Send error response
++        await this.producerService.sendScrapeResponse(
++          message.callbackId,
++          message.corrId || '',
++          {
++            ok: false,
++            errorMessage: error.message || 'Unknown error occurred',
++            outputs: [],
++            logs: [error.stack || error.message],
++          },
++        );
++
++        // Send agent status back to online
++        await this.producerService.sendAgentStatus('ONLINE');
++
++      } catch (responseError) {
++        this.logger.error('Failed to send error response', responseError);
++      }
++
++      // Reject the message, it will go to DLQ if configured
++      channel.nack(msg, false, false);
++    }
++  }
++
++  private async handleDeadLetterMessage(channel: amqp.Channel, msg: amqp.ConsumeMessage) {
++    try {
++      const message = JSON.parse(msg.content.toString());
++      
++      this.logger.error('Processing dead letter message:', {
++        messageId: message.messageId,
++        messageType: message.messageType,
++        timestamp: message.timestamp,
++      });
++
++      // Log the failed message for analysis
++      await this.producerService.sendLog(
++        'error',
++        'Dead letter message processed',
++        'RabbitMQConsumerService',
++        undefined,
++        {
++          originalMessage: message,
++          deliveryInfo: {
++            exchange: msg.fields.exchange,
++            routingKey: msg.fields.routingKey,
++            redelivered: msg.fields.redelivered,
++          },
++        },
++      );
++
++      // Acknowledge the dead letter message
++      channel.ack(msg);
++
++    } catch (error) {
++      this.logger.error('Failed to process dead letter message', error);
++      
++      // Reject the message to avoid infinite loops
++      channel.nack(msg, false, false);
++    }
++  }
++
++  /**
++   * Register a custom handler for scrape requests
++   */
++  registerScrapeRequestHandler(
++    handler: (message: ScrapeRequestMessage) => Promise<any>,
++  ): void {
++    this.logger.log('Registering scrape request handler');
++    this.scrapeRequestHandler = handler;
++  }
++
++  /**
++   * Unregister the scrape request handler
++   */
++  unregisterScrapeRequestHandler(): void {
++    this.logger.log('Unregistering scrape request handler');
++    this.scrapeRequestHandler = null;
++  }
++
++  /**
++   * Check if a scrape request handler is registered
++   */
++  hasHandler(): boolean {
++    return this.scrapeRequestHandler !== null;
++  }
++}
+diff --git a/packages/agent/src/messaging/rabbitmq-producer.service.spec.ts b/packages/agent/src/messaging/rabbitmq-producer.service.spec.ts
+new file mode 100644
+index 00000000..2f05a6a5
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq-producer.service.spec.ts
+@@ -0,0 +1,120 @@
++import { Test, TestingModule } from '@nestjs/testing';
++import { RabbitMQProducerService } from './rabbitmq-producer.service';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++
++describe('RabbitMQProducerService', () => {
++  let service: RabbitMQProducerService;
++  let rabbitMQService: RabbitMQService;
++  let configService: RabbitMQConfigService;
++
++  const mockChannelWrapper = {
++    publish: jest.fn(),
++  };
++
++  const mockRabbitMQService = {
++    getPublisherChannel: jest.fn().mockReturnValue(mockChannelWrapper),
++  };
++
++  const mockRabbitMQConfigService = {
++    isEnabled: jest.fn(),
++    getPublisherConfig: jest.fn(),
++    getAgentId: jest.fn().mockReturnValue('test-agent-123'),
++  };
++
++  beforeEach(async () => {
++    const module: TestingModule = await Test.createTestingModule({
++      providers: [
++        RabbitMQProducerService,
++        {
++          provide: RabbitMQService,
++          useValue: mockRabbitMQService,
++        },
++        {
++          provide: RabbitMQConfigService,
++          useValue: mockRabbitMQConfigService,
++        },
++      ],
++    }).compile();
++
++    service = module.get<RabbitMQProducerService>(RabbitMQProducerService);
++    rabbitMQService = module.get<RabbitMQService>(RabbitMQService);
++    configService = module.get<RabbitMQConfigService>(RabbitMQConfigService);
++  });
++
++  it('should be defined', () => {
++    expect(service).toBeDefined();
++  });
++
++  describe('sendScrapeResponse', () => {
++    it('should send scrape response message', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(true);
++      mockRabbitMQConfigService.getPublisherConfig.mockReturnValue({
++        confirm: true,
++        mandatory: true,
++        persistent: true,
++      });
++
++      const scrapeResponse = {
++        ok: true,
++        outputs: [],
++        logs: [],
++      };
++
++      await service.sendScrapeResponse('callback-123', 'corr-456', scrapeResponse);
++
++      expect(mockChannelWrapper.publish).toHaveBeenCalled();
++    });
++
++    it('should skip sending when RabbitMQ is disabled', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(false);
++
++      const scrapeResponse = {
++        ok: true,
++        outputs: [],
++        logs: [],
++      };
++
++      await service.sendScrapeResponse('callback-123', 'corr-456', scrapeResponse);
++
++      expect(mockChannelWrapper.publish).not.toHaveBeenCalled();
++    });
++  });
++
++  describe('sendAgentStatus', () => {
++    it('should send agent status message', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(true);
++      mockRabbitMQConfigService.getPublisherConfig.mockReturnValue({
++        confirm: true,
++        mandatory: true,
++        persistent: true,
++      });
++
++      await service.sendAgentStatus('ONLINE', { test: 'metadata' });
++
++      expect(mockChannelWrapper.publish).toHaveBeenCalled();
++    });
++  });
++
++  describe('sendHeartbeat', () => {
++    it('should send heartbeat message', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(true);
++      mockRabbitMQConfigService.getPublisherConfig.mockReturnValue({
++        confirm: true,
++        mandatory: true,
++        persistent: true,
++      });
++
++      await service.sendHeartbeat(1, 10, 2);
++
++      expect(mockChannelWrapper.publish).toHaveBeenCalled();
++    });
++  });
++
++  describe('getAgentId', () => {
++    it('should return agent ID', () => {
++      const agentId = service.getAgentId();
++      expect(agentId).toBe('test-agent-123');
++    });
++  });
++});
+diff --git a/packages/agent/src/messaging/rabbitmq-producer.service.ts b/packages/agent/src/messaging/rabbitmq-producer.service.ts
+new file mode 100644
+index 00000000..0f85743c
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq-producer.service.ts
+@@ -0,0 +1,212 @@
++import { Injectable, Logger } from '@nestjs/common';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import {
++  AgentMessage,
++  ScrapeResponseMessage,
++  AgentStatusMessage,
++  AgentHeartbeatMessage,
++  AgentLogMessage,
++  AgentMetricsMessage,
++  AGENT_EXCHANGES,
++  AGENT_ROUTING_KEYS,
++} from './message.types';
++import { v4 as uuidv4 } from 'uuid';
++
++@Injectable()
++export class RabbitMQProducerService {
++  private readonly logger = new Logger(RabbitMQProducerService.name);
++  private agentId: string;
++
++  constructor(
++    private readonly rabbitMQService: RabbitMQService,
++    private readonly configService: RabbitMQConfigService,
++  ) {
++    this.agentId = this.configService.getAgentId();
++  }
++
++  async sendMessage<T extends AgentMessage>(
++    routingKey: string,
++    message: T,
++    options: {
++      priority?: number;
++      expiration?: number;
++      persistent?: boolean;
++    } = {},
++  ): Promise<void> {
++    if (!this.configService.isEnabled()) {
++      this.logger.debug('RabbitMQ disabled, skipping message send');
++      return;
++    }
++
++    try {
++      const channel = this.rabbitMQService.getPublisherChannel();
++      const publisherConfig = this.configService.getPublisherConfig();
++
++      const publishOptions = {
++        messageId: message.messageId,
++        timestamp: Date.now(),
++        persistent: options.persistent ?? publisherConfig.persistent,
++        priority: options.priority ?? 0,
++        expiration: options.expiration?.toString(),
++        headers: {
++          agentId: this.agentId,
++          messageType: message.messageType,
++        },
++      };
++
++      await channel.publish(
++        AGENT_EXCHANGES.MAIN,
++        routingKey,
++        message,
++        publishOptions,
++      );
++
++      this.logger.debug(
++        `Message sent: ${message.messageType} to ${routingKey}`,
++      );
++    } catch (error) {
++      this.logger.error(
++        `Failed to send message: ${message.messageType}`,
++        error,
++      );
++      throw error;
++    }
++  }
++
++  async sendScrapeResponse(
++    callbackId: string,
++    corrId: string,
++    scrapeResponse: any,
++  ): Promise<void> {
++    const message: ScrapeResponseMessage = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType: 'SCRAPE_RESPONSE',
++      callbackId,
++      corrId,
++      scrapeResponse,
++    };
++
++    await this.sendMessage(AGENT_ROUTING_KEYS.SCRAPE_RESPONSE, message, {
++      priority: 5,
++    });
++  }
++
++  async sendAgentStatus(
++    status: 'ONLINE' | 'OFFLINE' | 'BUSY' | 'ERROR',
++    metadata?: Record<string, any>,
++  ): Promise<void> {
++    const message: AgentStatusMessage = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType: 'AGENT_STATUS',
++      agentId: this.agentId,
++      status,
++      version: process.env.APP_VERSION || 'unknown',
++      capabilities: ['web-scraping', 'puppeteer'],
++      metadata,
++    };
++
++    await this.sendMessage(AGENT_ROUTING_KEYS.AGENT_STATUS, message);
++  }
++
++  async sendHeartbeat(
++    activeJobs: number,
++    completedJobs: number,
++    failedJobs: number,
++  ): Promise<void> {
++    const uptime = process.uptime();
++    const memoryUsage = process.memoryUsage();
++
++    const message: AgentHeartbeatMessage = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType: 'AGENT_HEARTBEAT',
++      agentId: this.agentId,
++      uptime,
++      memoryUsage: {
++        rss: memoryUsage.rss,
++        heapTotal: memoryUsage.heapTotal,
++        heapUsed: memoryUsage.heapUsed,
++        external: memoryUsage.external,
++      },
++      activeJobs,
++      completedJobs,
++      failedJobs,
++    };
++
++    await this.sendMessage(AGENT_ROUTING_KEYS.AGENT_HEARTBEAT, message);
++  }
++
++  async sendLog(
++    level: 'debug' | 'info' | 'warn' | 'error',
++    message: string,
++    context?: string,
++    stack?: string,
++    metadata?: Record<string, any>,
++  ): Promise<void> {
++    const logMessage: AgentLogMessage = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType: 'AGENT_LOG',
++      agentId: this.agentId,
++      level,
++      message,
++      context,
++      stack,
++      metadata,
++    };
++
++    await this.sendMessage(AGENT_ROUTING_KEYS.AGENT_LOGS, logMessage);
++  }
++
++  async sendMetrics(
++    jobsProcessed: number,
++    averageProcessingTime: number,
++    errorRate: number,
++  ): Promise<void> {
++    const memoryUsage = process.memoryUsage();
++
++    const message: AgentMetricsMessage = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType: 'AGENT_METRICS',
++      agentId: this.agentId,
++      metrics: {
++        jobsProcessed,
++        averageProcessingTime,
++        errorRate,
++        memoryUsage: memoryUsage.heapUsed,
++        timestamp: new Date().toISOString(),
++      },
++    };
++
++    await this.sendMessage(AGENT_ROUTING_KEYS.AGENT_METRICS, message);
++  }
++
++  async sendCustomMessage(
++    routingKey: string,
++    payload: any,
++    messageType: string,
++    options?: {
++      priority?: number;
++      expiration?: number;
++      persistent?: boolean;
++    },
++  ): Promise<void> {
++    const message = {
++      messageId: uuidv4(),
++      timestamp: new Date().toISOString(),
++      messageType,
++      agentId: this.agentId,
++      payload,
++    };
++
++    await this.sendMessage(routingKey, message as any, options);
++  }
++
++  getAgentId(): string {
++    return this.agentId;
++  }
++}
+diff --git a/packages/agent/src/messaging/rabbitmq.module.ts b/packages/agent/src/messaging/rabbitmq.module.ts
+new file mode 100644
+index 00000000..9381bdce
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq.module.ts
+@@ -0,0 +1,68 @@
++import { Module, DynamicModule, Global } from '@nestjs/common';
++import { ClientsModule, Transport } from '@nestjs/microservices';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQProducerService } from './rabbitmq-producer.service';
++import { RabbitMQConsumerService } from './rabbitmq-consumer.service';
++import { CommonModule } from '../services/common/common.module';
++
++@Global()
++@Module({
++  imports: [CommonModule],
++  providers: [
++    RabbitMQConfigService,
++    RabbitMQService,
++    RabbitMQProducerService,
++    RabbitMQConsumerService,
++  ],
++  exports: [
++    RabbitMQConfigService,
++    RabbitMQService,
++    RabbitMQProducerService,
++    RabbitMQConsumerService,
++  ],
++})
++export class RabbitMQModule {
++  static forRoot(): DynamicModule {
++    return {
++      module: RabbitMQModule,
++      imports: [
++        ClientsModule.registerAsync([
++          {
++            name: 'RABBITMQ_SERVICE',
++            useFactory: (configService: RabbitMQConfigService) => {
++              const config = configService.getConnectionConfig();
++              return {
++                transport: Transport.RMQ,
++                options: {
++                  urls: [configService.getConnectionUrl()],
++                  queue: 'agent_queue',
++                  queueOptions: {
++                    durable: true,
++                  },
++                  socketOptions: {
++                    heartbeatIntervalInSeconds: config.heartbeat,
++                    reconnectTimeInSeconds: config.reconnectDelay / 1000,
++                  },
++                },
++              };
++            },
++            inject: [RabbitMQConfigService],
++          },
++        ]),
++      ],
++      providers: [
++        RabbitMQConfigService,
++        RabbitMQService,
++        RabbitMQProducerService,
++        RabbitMQConsumerService,
++      ],
++      exports: [
++        RabbitMQConfigService,
++        RabbitMQService,
++        RabbitMQProducerService,
++        RabbitMQConsumerService,
++      ],
++    };
++  }
++}
+diff --git a/packages/agent/src/messaging/rabbitmq.service.spec.ts b/packages/agent/src/messaging/rabbitmq.service.spec.ts
+new file mode 100644
+index 00000000..d735a767
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq.service.spec.ts
+@@ -0,0 +1,99 @@
++import { Test, TestingModule } from '@nestjs/testing';
++import { RabbitMQService } from './rabbitmq.service';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import { VerboseConfigService } from '../services/common/verbose-config.service';
++
++describe('RabbitMQService', () => {
++  let service: RabbitMQService;
++  let configService: RabbitMQConfigService;
++
++  const mockVerboseConfigService = {
++    getString: jest.fn(),
++    getNumber: jest.fn(),
++    getBoolean: jest.fn(),
++  };
++
++  const mockRabbitMQConfigService = {
++    isEnabled: jest.fn(),
++    getConnectionConfig: jest.fn(),
++    getConnectionUrl: jest.fn(),
++    getQueueConfig: jest.fn(),
++    getConsumerConfig: jest.fn(),
++    getPublisherConfig: jest.fn(),
++    getAgentId: jest.fn(),
++  };
++
++  beforeEach(async () => {
++    const module: TestingModule = await Test.createTestingModule({
++      providers: [
++        RabbitMQService,
++        {
++          provide: RabbitMQConfigService,
++          useValue: mockRabbitMQConfigService,
++        },
++        {
++          provide: VerboseConfigService,
++          useValue: mockVerboseConfigService,
++        },
++      ],
++    }).compile();
++
++    service = module.get<RabbitMQService>(RabbitMQService);
++    configService = module.get<RabbitMQConfigService>(RabbitMQConfigService);
++  });
++
++  it('should be defined', () => {
++    expect(service).toBeDefined();
++  });
++
++  describe('onModuleInit', () => {
++    it('should skip initialization when RabbitMQ is disabled', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(false);
++
++      await expect(service.onModuleInit()).resolves.not.toThrow();
++    });
++
++    it('should initialize when RabbitMQ is enabled', async () => {
++      mockRabbitMQConfigService.isEnabled.mockReturnValue(true);
++      mockRabbitMQConfigService.getConnectionConfig.mockReturnValue({
++        host: 'localhost',
++        port: 5672,
++        username: 'guest',
++        password: 'guest',
++        vhost: '/',
++        heartbeat: 60,
++        connectionTimeout: 30000,
++        reconnectAttempts: 10,
++        reconnectDelay: 5000,
++      });
++      mockRabbitMQConfigService.getConnectionUrl.mockReturnValue(
++        'amqp://guest:guest@localhost:5672/',
++      );
++      mockRabbitMQConfigService.getQueueConfig.mockReturnValue({
++        durable: true,
++        exclusive: false,
++        autoDelete: false,
++      });
++      mockRabbitMQConfigService.getConsumerConfig.mockReturnValue({
++        prefetch: 1,
++        noAck: false,
++        exclusive: false,
++      });
++      mockRabbitMQConfigService.getPublisherConfig.mockReturnValue({
++        confirm: true,
++        mandatory: true,
++        persistent: true,
++      });
++
++      // Note: This test would require actual RabbitMQ connection for full testing
++      // In a real test environment, you might want to use testcontainers
++    });
++  });
++
++  describe('isHealthy', () => {
++    it('should return health status', () => {
++      const isHealthy = service.isHealthy();
++      expect(typeof isHealthy).toBe('boolean');
++    });
++  });
++});
+diff --git a/packages/agent/src/messaging/rabbitmq.service.ts b/packages/agent/src/messaging/rabbitmq.service.ts
+new file mode 100644
+index 00000000..d1772e11
+--- /dev/null
++++ b/packages/agent/src/messaging/rabbitmq.service.ts
+@@ -0,0 +1,242 @@
++import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
++import * as amqp from 'amqplib';
++import * as amqpConnectionManager from 'amqp-connection-manager';
++import { RabbitMQConfigService } from './rabbitmq-config.service';
++import { AGENT_EXCHANGES, AGENT_QUEUES, AGENT_ROUTING_KEYS } from './message.types';
++
++@Injectable()
++export class RabbitMQService implements OnModuleInit, OnModuleDestroy {
++  private readonly logger = new Logger(RabbitMQService.name);
++  private connection: amqpConnectionManager.AmqpConnectionManager;
++  private publisherChannel: amqpConnectionManager.ChannelWrapper;
++  private consumerChannel: amqpConnectionManager.ChannelWrapper;
++  private isConnected = false;
++
++  constructor(private readonly configService: RabbitMQConfigService) {}
++
++  async onModuleInit() {
++    if (!this.configService.isEnabled()) {
++      this.logger.warn('RabbitMQ is disabled, skipping initialization');
++      return;
++    }
++
++    try {
++      await this.connect();
++      await this.setupTopology();
++    } catch (error) {
++      this.logger.error('Failed to initialize RabbitMQ service', error);
++      throw error;
++    }
++  }
++
++  async onModuleDestroy() {
++    await this.disconnect();
++  }
++
++  private async connect() {
++    const connectionConfig = this.configService.getConnectionConfig();
++    const connectionUrl = this.configService.getConnectionUrl();
++
++    this.logger.log(`Connecting to RabbitMQ at ${connectionConfig.host}:${connectionConfig.port}`);
++
++    this.connection = amqpConnectionManager.connect([connectionUrl], {
++      heartbeatIntervalInSeconds: connectionConfig.heartbeat,
++      reconnectTimeInSeconds: connectionConfig.reconnectDelay / 1000,
++    });
++
++    this.connection.on('connect', () => {
++      this.logger.log('Successfully connected to RabbitMQ');
++      this.isConnected = true;
++    });
++
++    this.connection.on('disconnect', (params) => {
++      this.logger.warn('Disconnected from RabbitMQ', params);
++      this.isConnected = false;
++    });
++
++    this.connection.on('connectFailed', (params) => {
++      this.logger.error('Failed to connect to RabbitMQ', params);
++      this.isConnected = false;
++    });
++
++    // Create publisher channel
++    this.publisherChannel = this.connection.createChannel({
++      json: true,
++      setup: async (channel: amqp.Channel) => {
++        const publisherConfig = this.configService.getPublisherConfig();
++        if (publisherConfig.confirm) {
++          // Enable publisher confirms
++          await (channel as any).confirmSelect();
++        }
++        return channel;
++      },
++    });
++
++    // Create consumer channel
++    this.consumerChannel = this.connection.createChannel({
++      json: true,
++      setup: async (channel: amqp.Channel) => {
++        const consumerConfig = this.configService.getConsumerConfig();
++        await channel.prefetch(consumerConfig.prefetch);
++        return channel;
++      },
++    });
++  }
++
++  private async setupTopology() {
++    this.logger.log('Setting up RabbitMQ topology');
++
++    try {
++      await this.publisherChannel.addSetup(async (channel: amqp.Channel) => {
++        // Create exchanges
++        await channel.assertExchange(AGENT_EXCHANGES.MAIN, 'topic', {
++          durable: true,
++        });
++
++        await channel.assertExchange(AGENT_EXCHANGES.DLX, 'topic', {
++          durable: true,
++        });
++
++        // Create queues with dead letter configuration
++        const queueConfig = this.configService.getQueueConfig();
++        const dlxArgs = {
++          'x-dead-letter-exchange': AGENT_EXCHANGES.DLX,
++        };
++
++        // Scrape request queue
++        await channel.assertQueue(AGENT_QUEUES.SCRAPE_REQUESTS, {
++          ...queueConfig,
++          arguments: {
++            ...queueConfig.arguments,
++            ...dlxArgs,
++            'x-dead-letter-routing-key': `${AGENT_ROUTING_KEYS.SCRAPE_REQUEST}.dlq`,
++          },
++        });
++
++        await channel.bindQueue(
++          AGENT_QUEUES.SCRAPE_REQUESTS,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.SCRAPE_REQUEST,
++        );
++
++        // Scrape response queue
++        await channel.assertQueue(AGENT_QUEUES.SCRAPE_RESPONSES, {
++          ...queueConfig,
++          arguments: {
++            ...queueConfig.arguments,
++            ...dlxArgs,
++            'x-dead-letter-routing-key': `${AGENT_ROUTING_KEYS.SCRAPE_RESPONSE}.dlq`,
++          },
++        });
++
++        await channel.bindQueue(
++          AGENT_QUEUES.SCRAPE_RESPONSES,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.SCRAPE_RESPONSE,
++        );
++
++        // Agent status queue
++        await channel.assertQueue(AGENT_QUEUES.AGENT_STATUS, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.AGENT_STATUS,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.AGENT_STATUS,
++        );
++
++        // Agent heartbeat queue
++        await channel.assertQueue(AGENT_QUEUES.AGENT_HEARTBEAT, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.AGENT_HEARTBEAT,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.AGENT_HEARTBEAT,
++        );
++
++        // Agent logs queue
++        await channel.assertQueue(AGENT_QUEUES.AGENT_LOGS, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.AGENT_LOGS,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.AGENT_LOGS,
++        );
++
++        // Agent metrics queue
++        await channel.assertQueue(AGENT_QUEUES.AGENT_METRICS, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.AGENT_METRICS,
++          AGENT_EXCHANGES.MAIN,
++          AGENT_ROUTING_KEYS.AGENT_METRICS,
++        );
++
++        // Dead letter queues
++        await channel.assertQueue(AGENT_QUEUES.SCRAPE_REQUESTS_DLQ, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.SCRAPE_REQUESTS_DLQ,
++          AGENT_EXCHANGES.DLX,
++          `${AGENT_ROUTING_KEYS.SCRAPE_REQUEST}.dlq`,
++        );
++
++        await channel.assertQueue(AGENT_QUEUES.SCRAPE_RESPONSES_DLQ, queueConfig);
++        await channel.bindQueue(
++          AGENT_QUEUES.SCRAPE_RESPONSES_DLQ,
++          AGENT_EXCHANGES.DLX,
++          `${AGENT_ROUTING_KEYS.SCRAPE_RESPONSE}.dlq`,
++        );
++
++        this.logger.log('RabbitMQ topology setup complete');
++      });
++    } catch (error) {
++      this.logger.error('Failed to setup RabbitMQ topology', error);
++      throw error;
++    }
++  }
++
++  async disconnect() {
++    if (this.connection) {
++      this.logger.log('Disconnecting from RabbitMQ');
++      await this.connection.close();
++      this.isConnected = false;
++    }
++  }
++
++  getPublisherChannel(): amqpConnectionManager.ChannelWrapper {
++    if (!this.publisherChannel) {
++      throw new Error('Publisher channel not initialized');
++    }
++    return this.publisherChannel;
++  }
++
++  getConsumerChannel(): amqpConnectionManager.ChannelWrapper {
++    if (!this.consumerChannel) {
++      throw new Error('Consumer channel not initialized');
++    }
++    return this.consumerChannel;
++  }
++
++  isHealthy(): boolean {
++    return this.isConnected && this.connection && !this.connection.isConnected();
++  }
++
++  async waitForConnection(timeoutMs: number = 10000): Promise<void> {
++    return new Promise((resolve, reject) => {
++      if (this.isConnected) {
++        resolve();
++        return;
++      }
++
++      const timeout = setTimeout(() => {
++        reject(new Error('Connection timeout'));
++      }, timeoutMs);
++
++      const checkConnection = () => {
++        if (this.isConnected) {
++          clearTimeout(timeout);
++          resolve();
++        } else {
++          setTimeout(checkConnection, 100);
++        }
++      };
++
++      checkConnection();
++    });
++  }
++}
+diff --git a/packages/agent/src/services/agent/agent.module.ts b/packages/agent/src/services/agent/agent.module.ts
+index 5ddccb6d..3cbb9987 100644
+--- a/packages/agent/src/services/agent/agent.module.ts
++++ b/packages/agent/src/services/agent/agent.module.ts
+@@ -1,11 +1,12 @@
+ import { Module } from '@nestjs/common';
+ import { AgentService } from './agent.service';
++import { RabbitMQAgentService } from './rabbitmq-agent.service';
+ import { PuppeteerModule } from '../puppeteer/puppeteer.module';
+ import { CommonModule } from '../common/common.module';
+ 
+ @Module({
+-  providers: [AgentService],
+-  exports: [AgentService],
++  providers: [AgentService, RabbitMQAgentService],
++  exports: [AgentService, RabbitMQAgentService],
+   imports: [PuppeteerModule, CommonModule],
+ })
+ export class AgentModule {}
+diff --git a/packages/agent/src/services/agent/rabbitmq-agent.service.ts b/packages/agent/src/services/agent/rabbitmq-agent.service.ts
+new file mode 100644
+index 00000000..0a4c4c3e
+--- /dev/null
++++ b/packages/agent/src/services/agent/rabbitmq-agent.service.ts
+@@ -0,0 +1,245 @@
++import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
++import { PuppeteerService } from '../puppeteer/puppeteer.service';
++import { VerboseConfigService } from '../common/verbose-config.service';
++import { RabbitMQConsumerService } from '../../messaging/rabbitmq-consumer.service';
++import { RabbitMQProducerService } from '../../messaging/rabbitmq-producer.service';
++import { RabbitMQConfigService } from '../../messaging/rabbitmq-config.service';
++import { ScrapeRequestMessage } from '../../messaging/message.types';
++import { ScrapeResponseInput } from '../../generated/graphql';
++
++interface AgentStats {
++  startTime: number;
++  completedJobs: number;
++  failedJobs: number;
++  activeJobs: number;
++  processingTimes: number[];
++}
++
++@Injectable()
++export class RabbitMQAgentService implements OnModuleInit {
++  private readonly logger = new Logger(RabbitMQAgentService.name);
++  private stats: AgentStats = {
++    startTime: Date.now(),
++    completedJobs: 0,
++    failedJobs: 0,
++    activeJobs: 0,
++    processingTimes: [],
++  };
++  private heartbeatInterval: NodeJS.Timeout | null = null;
++  private metricsInterval: NodeJS.Timeout | null = null;
++
++  constructor(
++    private readonly puppeteerService: PuppeteerService,
++    private readonly config: VerboseConfigService,
++    private readonly consumerService: RabbitMQConsumerService,
++    private readonly producerService: RabbitMQProducerService,
++    private readonly rabbitMQConfig: RabbitMQConfigService,
++  ) {}
++
++  async onModuleInit() {
++    if (!this.rabbitMQConfig.isEnabled()) {
++      this.logger.warn('RabbitMQ is disabled, RabbitMQAgentService will not start');
++      return;
++    }
++
++    try {
++      await this.initialize();
++    } catch (error) {
++      this.logger.error('Failed to initialize RabbitMQAgentService', error);
++      throw error;
++    }
++  }
++
++  private async initialize() {
++    this.logger.log('Initializing RabbitMQ Agent Service');
++
++    // Register scrape request handler
++    this.consumerService.registerScrapeRequestHandler(
++      this.handleScrapeRequest.bind(this),
++    );
++
++    // Send initial status
++    await this.producerService.sendAgentStatus('ONLINE', {
++      capabilities: ['web-scraping', 'puppeteer'],
++      version: process.env.APP_VERSION || 'unknown',
++      nodeVersion: process.version,
++    });
++
++    // Start heartbeat
++    this.startHeartbeat();
++
++    // Start metrics reporting
++    this.startMetricsReporting();
++
++    this.logger.log('RabbitMQ Agent Service initialized successfully');
++  }
++
++  private async handleScrapeRequest(message: ScrapeRequestMessage): Promise<any> {
++    const startTime = Date.now();
++    this.stats.activeJobs++;
++
++    try {
++      this.logger.log(`Processing scrape request: ${message.callbackId}`);
++      this.logger.debug(`Scrape URL: ${message.scrapeRequest.url}`);
++
++      // Convert RabbitMQ message to puppeteer service format
++      const scrapeRequest = {
++        ...message.scrapeRequest,
++        corrId: message.corrId,
++        callbackId: message.callbackId,
++      };
++
++      // Process with puppeteer service
++      const scrapeResponse = await this.puppeteerService.submit(scrapeRequest as any);
++
++      // Update stats
++      const processingTime = Date.now() - startTime;
++      this.stats.completedJobs++;
++      this.stats.activeJobs--;
++      this.stats.processingTimes.push(processingTime);
++
++      // Keep only last 100 processing times for metrics
++      if (this.stats.processingTimes.length > 100) {
++        this.stats.processingTimes = this.stats.processingTimes.slice(-100);
++      }
++
++      this.logger.log(
++        `Successfully processed scrape request: ${message.callbackId} in ${processingTime}ms`,
++      );
++
++      return scrapeResponse;
++
++    } catch (error) {
++      this.logger.error(
++        `Failed to process scrape request: ${message.callbackId}`,
++        error,
++      );
++
++      // Update stats
++      this.stats.failedJobs++;
++      this.stats.activeJobs--;
++
++      // Send error log
++      await this.producerService.sendLog(
++        'error',
++        `Scrape request failed: ${error.message}`,
++        'RabbitMQAgentService',
++        error.stack,
++        {
++          callbackId: message.callbackId,
++          corrId: message.corrId,
++          url: message.scrapeRequest.url,
++        },
++      );
++
++      // Return error response
++      const errorResponse: ScrapeResponseInput = {
++        ok: false,
++        errorMessage: error.message || 'Unknown error occurred',
++        outputs: [],
++        logs: [error.stack || error.message],
++      };
++
++      return errorResponse;
++    }
++  }
++
++  private startHeartbeat() {
++    const heartbeatInterval = this.config.getNumber('RABBITMQ_HEARTBEAT_INTERVAL', {
++      fallback: 30000, // 30 seconds
++    });
++
++    this.heartbeatInterval = setInterval(async () => {
++      try {
++        await this.producerService.sendHeartbeat(
++          this.stats.activeJobs,
++          this.stats.completedJobs,
++          this.stats.failedJobs,
++        );
++      } catch (error) {
++        this.logger.error('Failed to send heartbeat', error);
++      }
++    }, heartbeatInterval);
++
++    this.logger.log(`Heartbeat started with interval: ${heartbeatInterval}ms`);
++  }
++
++  private startMetricsReporting() {
++    const metricsInterval = this.config.getNumber('RABBITMQ_METRICS_INTERVAL', {
++      fallback: 60000, // 1 minute
++    });
++
++    this.metricsInterval = setInterval(async () => {
++      try {
++        const averageProcessingTime = this.calculateAverageProcessingTime();
++        const errorRate = this.calculateErrorRate();
++
++        await this.producerService.sendMetrics(
++          this.stats.completedJobs,
++          averageProcessingTime,
++          errorRate,
++        );
++      } catch (error) {
++        this.logger.error('Failed to send metrics', error);
++      }
++    }, metricsInterval);
++
++    this.logger.log(`Metrics reporting started with interval: ${metricsInterval}ms`);
++  }
++
++  private calculateAverageProcessingTime(): number {
++    if (this.stats.processingTimes.length === 0) {
++      return 0;
++    }
++
++    const sum = this.stats.processingTimes.reduce((a, b) => a + b, 0);
++    return sum / this.stats.processingTimes.length;
++  }
++
++  private calculateErrorRate(): number {
++    const totalJobs = this.stats.completedJobs + this.stats.failedJobs;
++    if (totalJobs === 0) {
++      return 0;
++    }
++
++    return this.stats.failedJobs / totalJobs;
++  }
++
++  async shutdown() {
++    this.logger.log('Shutting down RabbitMQ Agent Service');
++
++    // Send offline status
++    try {
++      await this.producerService.sendAgentStatus('OFFLINE', {
++        reason: 'shutdown',
++        uptime: Date.now() - this.stats.startTime,
++      });
++    } catch (error) {
++      this.logger.error('Failed to send offline status', error);
++    }
++
++    // Clear intervals
++    if (this.heartbeatInterval) {
++      clearInterval(this.heartbeatInterval);
++      this.heartbeatInterval = null;
++    }
++
++    if (this.metricsInterval) {
++      clearInterval(this.metricsInterval);
++      this.metricsInterval = null;
++    }
++
++    // Unregister handler
++    this.consumerService.unregisterScrapeRequestHandler();
++
++    this.logger.log('RabbitMQ Agent Service shutdown complete');
++  }
++
++  getStats(): AgentStats {
++    return { ...this.stats };
++  }
++
++  getAgentId(): string {
++    return this.producerService.getAgentId();
++  }
++}
+diff --git a/packages/agent/src/services/common/verbose-config.service.ts b/packages/agent/src/services/common/verbose-config.service.ts
+index ec5f1496..eb79a08a 100644
+--- a/packages/agent/src/services/common/verbose-config.service.ts
++++ b/packages/agent/src/services/common/verbose-config.service.ts
+@@ -8,9 +8,11 @@ export type EnvValueOptions<T> = { fallback?: T; mask?: number };
+ export class VerboseConfigService extends ConfigService {
+   private readonly log = new Logger(VerboseConfigService.name);
+ 
+-  getBoolean(propertyPath: string): boolean {
+-    const result = super.get(propertyPath)?.toLowerCase()?.trim() === 'true';
+-    this.logEnv(propertyPath, result);
++  getBoolean(propertyPath: string, { fallback }: EnvValueOptions<boolean> = {}): boolean {
++    const value = super.get(propertyPath);
++    const useFallback = isUndefined(value);
++    const result = useFallback ? fallback : value?.toLowerCase()?.trim() === 'true';
++    this.logEnv(propertyPath, result, useFallback);
+     return result;
+   }
+ 
+@@ -22,6 +24,10 @@ export class VerboseConfigService extends ConfigService {
+     return result;
+   }
+ 
++  getNumber(propertyPath: string, { mask, fallback }: EnvValueOptions<number>) {
++    return this.getInt(propertyPath, { mask, fallback });
++  }
++
+   getString(
+     propertyPath: string,
+     { mask, fallback }: EnvValueOptions<string>,
+diff --git a/packages/agent/yarn.lock b/packages/agent/yarn.lock
+index 84b1f462..5e734da2 100644
+--- a/packages/agent/yarn.lock
++++ b/packages/agent/yarn.lock
+@@ -2184,6 +2184,14 @@
+     path-to-regexp "8.2.0"
+     tslib "2.8.1"
+ 
++"@nestjs/microservices@^11.1.6":
++  version "11.1.6"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/@nestjs/microservices/-/microservices-11.1.6.tgz#a295eba66c7beb655b6ff5e8fb45972b1147accd"
++  integrity sha512-5ibvCvZ8IBxKhpSkyAC+EBdtm0XVAu3h+GV4PmOi4bXbRvVBT3Kwqq4td2wkWDN3VqteChjQ0aTADv0jizhCrg==
++  dependencies:
++    iterare "1.2.1"
++    tslib "2.8.1"
++
+ "@nestjs/platform-express@11.1.6":
+   version "11.1.6"
+   resolved "https://registry.yarnpkg.com/@nestjs/platform-express/-/platform-express-11.1.6.tgz#9b1dcf82a3b3fdd5761c918ad664aff83e4eacc7"
+@@ -2346,6 +2354,13 @@
+   dependencies:
+     tslib "^2.4.0"
+ 
++"@types/amqplib@^0.10.5":
++  version "0.10.7"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/@types/amqplib/-/amqplib-0.10.7.tgz#62fbd07fbdab89a295bc1614779b458d1657eeff"
++  integrity sha512-IVj3avf9AQd2nXCx0PGk/OYq7VmHiyNxWFSb5HhU9ATh+i+gHWvVcljFTcTWQ/dyHJCTrzCixde+r/asL2ErDA==
++  dependencies:
++    "@types/node" "*"
++
+ "@types/babel__core@^7.20.5":
+   version "7.20.5"
+   resolved "https://registry.yarnpkg.com/@types/babel__core/-/babel__core-7.20.5.tgz#3df15f27ba85319caa07ba08d0721889bb39c017"
+@@ -3058,6 +3073,21 @@ ajv@^8.0.0:
+     require-from-string "^2.0.2"
+     uri-js "^4.2.2"
+ 
++amqp-connection-manager@^4.1.14:
++  version "4.1.14"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/amqp-connection-manager/-/amqp-connection-manager-4.1.14.tgz#603d20ffbc6d90fe464c2a08600c7644c9475342"
++  integrity sha512-1km47dIvEr0HhMUazqovSvNwIlSvDX2APdUpULaINtHpiki1O+cLRaTeXb/jav4OLtH+k6GBXx5gsKOT9kcGKQ==
++  dependencies:
++    promise-breaker "^6.0.0"
++
++amqplib@^0.10.4:
++  version "0.10.9"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/amqplib/-/amqplib-0.10.9.tgz#5b744c21d624f9307d0399e4d339b7354675831c"
++  integrity sha512-jwSftI4QjS3mizvnSnOrPGYiUnm1vI2OP1iXeOUz5pb74Ua0nbf6nPyyTzuiCLEE3fMpaJORXh2K/TQ08H5xGA==
++  dependencies:
++    buffer-more-ints "~1.0.0"
++    url-parse "~1.5.10"
++
+ ansi-colors@4.1.3:
+   version "4.1.3"
+   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.3.tgz#37611340eb2243e70cc604cad35d63270d48781b"
+@@ -3451,6 +3481,11 @@ buffer-from@^1.0.0:
+   resolved "https://registry.yarnpkg.com/buffer-from/-/buffer-from-1.1.2.tgz#2b146a6fd72e80b4f55d255f35ed59a3a9a41bd5"
+   integrity sha512-E+XQCRwSbaaiChtv6k6Dwgc+bx+Bs6vuKJHHl5kox/BaKbhiXzqQOwK4cO22yElGp2OCmjwVhT3HmxgyPGnJfQ==
+ 
++buffer-more-ints@~1.0.0:
++  version "1.0.0"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/buffer-more-ints/-/buffer-more-ints-1.0.0.tgz#ef4f8e2dddbad429ed3828a9c55d44f05c611422"
++  integrity sha512-EMetuGFz5SLsT0QTnXzINh4Ksr+oo4i+UGTXEshiGCQWnsgSs7ZhJ8fzlwQ+OzEMs0MpDAMr1hxnblp5a4vcHg==
++
+ buffer@^5.5.0:
+   version "5.7.1"
+   resolved "https://registry.yarnpkg.com/buffer/-/buffer-5.7.1.tgz#ba62e7c13133053582197160851a8f648e99eed0"
+@@ -6617,6 +6652,11 @@ progress@^2.0.3:
+   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
+   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
+ 
++promise-breaker@^6.0.0:
++  version "6.0.0"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/promise-breaker/-/promise-breaker-6.0.0.tgz#107d2b70f161236abdb4ac5a736c7eb8df489d0f"
++  integrity sha512-BthzO9yTPswGf7etOBiHCVuugs2N01/Q/94dIPls48z2zCmrnDptUUZzfIb+41xq0MnYZ/BzmOd6ikDR4ibNZA==
++
+ promise@^7.1.1:
+   version "7.3.1"
+   resolved "https://registry.yarnpkg.com/promise/-/promise-7.3.1.tgz#064b72602b18f90f29192b8b1bc418ffd1ebd3bf"
+@@ -6709,6 +6749,11 @@ qs@^6.11.2, qs@^6.14.0:
+   dependencies:
+     side-channel "^1.1.0"
+ 
++querystringify@^2.1.1:
++  version "2.2.0"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/querystringify/-/querystringify-2.2.0.tgz#3345941b4153cb9d082d8eee4cda2016a9aef7f6"
++  integrity sha512-FIqgj2EUvTa7R50u0rGsyTftzjYmv/a3hO345bZNrqabNqjtgiDMgmo4mkUjd+nzU5oF3dClKqFIPUKybUyqoQ==
++
+ queue-microtask@^1.2.2:
+   version "1.2.3"
+   resolved "https://registry.yarnpkg.com/queue-microtask/-/queue-microtask-1.2.3.tgz#4929228bbc724dfac43e0efb058caf7b6cfb6243"
+@@ -6824,6 +6869,11 @@ require-main-filename@^2.0.0:
+   resolved "https://registry.yarnpkg.com/require-main-filename/-/require-main-filename-2.0.0.tgz#d0b329ecc7cc0f61649f62215be69af54aa8989b"
+   integrity sha512-NKN5kMDylKuldxYLSUfrbo5Tuzh4hd+2E8NPPX02mZtn1VuREQToYe/ZdlJy+J3uCpfaiGF05e7B8W0iXbQHmg==
+ 
++requires-port@^1.0.0:
++  version "1.0.0"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/requires-port/-/requires-port-1.0.0.tgz#925d2601d39ac485e091cf0da5c6e694dc3dcaff"
++  integrity sha512-KigOCHcocU3XODJxsu8i/j8T9tzT4adHiecwORRQ0ZZFcp7ahwXuRU1m+yuO90C5ZUyGeGfocHDI14M3L3yDAQ==
++
+ resolve-cwd@^3.0.0:
+   version "3.0.0"
+   resolved "https://registry.yarnpkg.com/resolve-cwd/-/resolve-cwd-3.0.0.tgz#0f0075f1bb2544766cf73ba6a6e2adfebcb13f2d"
+@@ -7820,6 +7870,14 @@ uri-js@^4.2.2:
+   dependencies:
+     punycode "^2.1.0"
+ 
++url-parse@~1.5.10:
++  version "1.5.10"
++  resolved "https://binaries.quatico.com/artifactory/api/npm/quatico-npm-proxy/url-parse/-/url-parse-1.5.10.tgz#9d3c2f736c1d75dd3bd2be507dcc111f1e2ea9c1"
++  integrity sha512-WypcfiRhfeUP9vvF0j6rw0J3hrWrw6iZv3+22h6iRMJ/8z1Tj6XfLP4DsUix5MhMPnXpiHDoKyoZ/bdCkwBCiQ==
++  dependencies:
++    querystringify "^2.1.1"
++    requires-port "^1.0.0"
++
+ urlpattern-polyfill@^10.0.0:
+   version "10.1.0"
+   resolved "https://registry.yarnpkg.com/urlpattern-polyfill/-/urlpattern-polyfill-10.1.0.tgz#1b2517e614136c73ba32948d5e7a3a063cba8e74"
+-- 
+2.39.5 (Apple Git-154)
+
