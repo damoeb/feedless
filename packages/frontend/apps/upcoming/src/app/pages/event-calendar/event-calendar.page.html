@@ -126,8 +126,12 @@
                                 </h2>
                                 <div>
                                   @for (event of place.events; track event) {
+                                    <!--                                    <a-->
+                                      <!--                                      [routerLink]="createEventUrl(event)"-->
+                                      <!--                                      class="localized-event localized-event&#45;&#45;clickable"-->
+                                      <!--                                    >-->
                                     <a
-                                      [routerLink]="createEventUrl(event)"
+                                      [href]="event.url"
                                       class="localized-event localized-event--clickable"
                                     >
                                       <article itemscope itemtype="https://schema.org/Event">

@@ -91,7 +91,7 @@
       </section>
 
       @if (event.url) {
-        <ion-button (click)="openEventUrl(event.url)">
+        <ion-button [href]="event.url" title="Zur Veranstaltungsseite">
           Zur Veranstaltungsseite
         </ion-button>
       }

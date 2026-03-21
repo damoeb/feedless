@@ -99,10 +99,14 @@ export class EventDetailModalComponent {
   }
 
   async save(): Promise<void> {
-    if (this.saving) return;
+    if (this.saving) {
+      return;
+    }
     const e = this.event;
     const id = (e as { id?: string }).id ?? (e as unknown as { id: string }).id;
-    if (!id) return;
+    if (!id) {
+      return;
+    }
     this.saving = true;
     try {
       const v = this.editForm.getRawValue();
@@ -138,7 +142,9 @@ export class EventDetailModalComponent {
   }
 
   private async delete(): Promise<void> {
-    if (this.deleting) return;
+    if (this.deleting) {
+      return;
+    }
     this.deleting = true;
     try {
       await this.recordService.removeById({
@@ -155,12 +161,6 @@ export class EventDetailModalComponent {
 
   formatDate(date: number, format: string): string {
     return dayjs(date).locale('de').format(format);
-  }
-
-  openEventUrl(url: string) {
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
   }
 
   getTitle(): string {
