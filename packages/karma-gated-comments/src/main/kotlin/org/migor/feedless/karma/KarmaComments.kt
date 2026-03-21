@@ -14,6 +14,38 @@ class KarmaComments(
   private val documentHandlerFactory: DocumentHandlerFactory
 ) {
 
+  private val rules =
+    mapOf(
+      KarmaChangeReason.UPVOTE_GIVEN to mapOf(
+        KarmaSubject.AUTHOR to 4,
+        KarmaSubject.AGENT to -1
+      )
+    )
+
+  fun on(agentId: UserId, documentId: DocumentId, reason: KarmaChangeReason) {
+    val rule = rules[reason]!!
+
+    rule[KarmaSubject.AUTHOR]?.let { karmaChange ->
+      changeUserKarma(
+        getAuthor(documentId),
+        karmaChange,
+        documentId,
+        reason,
+      )
+    }
+
+    rule[KarmaSubject.AGENT]?.let { karmaChange ->
+      changeUserKarma(
+        agentId,
+        karmaChange,
+        documentId,
+        reason,
+      )
+    }
+
+    updateDocumentScore(documentId);
+  }
+
   fun onUpvote(actorId: UserId, documentId: DocumentId) {
     // TODO: resolve author(documentId), apply karma_change for author +4 (given daily cap), actor -1
 
