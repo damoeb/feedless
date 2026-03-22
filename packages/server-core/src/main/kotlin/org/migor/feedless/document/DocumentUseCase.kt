@@ -236,7 +236,7 @@ class DocumentUseCase(
                   logCollector
                 )
 
-                is ReportPlugin -> {
+                is ReportPlugin<*> -> {
                   log.info("ignoring ${plugin.id()} plugin")
                   state.currentDocument
                 }

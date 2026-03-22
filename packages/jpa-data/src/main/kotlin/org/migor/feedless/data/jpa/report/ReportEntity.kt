@@ -6,16 +6,21 @@ import jakarta.persistence.FetchType
 import jakarta.persistence.ForeignKey
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.OneToOne
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Email
 import jakarta.validation.constraints.Size
+import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.type.SqlTypes
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.cronSchedule.CronScheduleEntity
 import org.migor.feedless.data.jpa.user.UserEntity
+import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.report.Report
+import org.springframework.context.annotation.Lazy
 import java.time.LocalDateTime
 import java.util.*
 
@@ -53,13 +58,15 @@ open class ReportEntity : EntityWithUUID() {
   @Column(name = "disabled_at")
   open var disabledAt: LocalDateTime? = null
 
-//  @Column(name = "next_reported_at", nullable = false)
-//  open lateinit var nextReportedAt: LocalDateTime
+  @JdbcTypeCode(SqlTypes.JSON)
+  @Lazy
+  @Column(nullable = false, name = "reporter_plugin")
+  open lateinit var reporterPlugin: PluginExecution
 
   @Column(name = StandardJpaFields.segmentationId, nullable = false)
   open lateinit var segmentId: UUID
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
     name = StandardJpaFields.segmentationId,
@@ -87,7 +94,7 @@ open class ReportEntity : EntityWithUUID() {
   @Column(name = StandardJpaFields.cronScheduleId)
   open var cronScheduleId: UUID? = null
 
-  @ManyToOne(fetch = FetchType.LAZY)
+  @OneToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(
     name = StandardJpaFields.cronScheduleId,
@@ -96,7 +103,7 @@ open class ReportEntity : EntityWithUUID() {
     updatable = false,
     foreignKey = ForeignKey(name = "fk_report__to__cron_schedule")
   )
-  open var chronSchedule: CronScheduleEntity? = null
+  open var cronSchedule: CronScheduleEntity? = null
 }
 
 fun ReportEntity.toDomain(): Report {

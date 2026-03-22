@@ -13,6 +13,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -27,6 +28,8 @@ import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
+import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.plugins.EventsReportPlugin
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
@@ -39,6 +42,7 @@ import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import java.time.LocalDateTime
 
 class ReportUseCaseTest {
 
@@ -54,6 +58,8 @@ class ReportUseCaseTest {
   private lateinit var userRepository: UserRepository
   private lateinit var templateService: TemplateService
   private lateinit var mailService: MailService
+  private val eventsReportPlugin = EventsReportPlugin()
+  private lateinit var pluginService: PluginService
 
   @BeforeEach
   fun setUp() = runTest {
@@ -65,14 +71,21 @@ class ReportUseCaseTest {
     userRepository = mock(UserRepository::class.java)
     templateService = mock(TemplateService::class.java)
     mailService = mock(MailService::class.java)
+    pluginService = PluginService(
+      emptyList(),
+      emptyList(),
+      listOf(eventsReportPlugin),
+    )
 
     reportUseCase = ReportUseCase(
       reportRepository,
+      mock(CronScheduleRepository::class.java),
       repositoryRepository,
       segmentationRepository,
       mock(MeterRegistry::class.java),
       mock(RepositoryGuard::class.java),
       templateService,
+      pluginService,
       mailService,
       mock(ReportGuard::class.java),
     )
@@ -95,7 +108,7 @@ class ReportUseCaseTest {
       what = SegmentRecordsWhereInput(tags = StringFilterInput()),
       report = SegmentReportInput(
         plugin = PluginExecutionInput(
-          pluginId = "",
+          pluginId = EventsReportPlugin().id(),
           params = PluginExecutionParamsInput()
         )
       ),
@@ -176,6 +189,16 @@ class ReportUseCaseTest {
       // then
       assertThat(report).isNotNull
       verify(mailService).send(any(OutgoingMail::class.java))
+    }
+
+  @Test
+  fun `processReportJobs will load pending reports`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = repositoryOwnerId)) {
+      `when`(reportRepository.findAllPendingBatched(any(LocalDateTime::class.java))).thenReturn(emptyList())
+
+      reportUseCase.processReportJobs()
+
+      verify(reportRepository).findAllPendingBatched(any(LocalDateTime::class.java))
     }
 
 

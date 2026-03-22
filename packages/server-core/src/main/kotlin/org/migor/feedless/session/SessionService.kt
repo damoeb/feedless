@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.BadRequestException
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UserCapability
@@ -19,7 +20,15 @@ private fun OAuth2AuthenticationToken.getGroupCapability(): GroupCapability? {
 }
 
 fun injectCapabilitiesFromJwt(jwt: Jwt): RequestContext {
-  TODO()
+  val capabilities = jwt.capabilities()
+
+  val userId = capabilities.find { it.authority == UserCapability.ID.value }
+    ?.let { UserCapability.fromString(it.payload) } ?: throw BadRequestException("invalid jwt)")
+
+  val groupId = capabilities.filter { it.authority == GroupCapability.ID.value }
+    .map { GroupCapability.fromString(it.payload) }
+
+  return RequestContext(userId = userId, groupId = groupId.first().groupId)
 }
 
 fun injectCapabilitiesFromSecurityContext(): RequestContext {

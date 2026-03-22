@@ -1,19 +1,25 @@
 package org.migor.feedless.pipeline
 
 import org.migor.feedless.document.Document
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.report.Report
+import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
 
-interface ReportPlugin : Plugin {
+interface ReportPlugin<T> : Plugin {
 
   suspend fun report(
     documents: List<Document>,
     repository: Repository,
-    params: PluginExecutionParamsInput,
+    params: T,
     logCollector: LogCollector
   )
 
-  suspend fun askForAuthorization(report: Report): Report
+  suspend fun report(
+    documents: List<Document>,
+    repository: Repository,
+    params: String,
+    logCollector: LogCollector
+  )
+
+  suspend fun tryParseParams(jsonParams: String): EventsReportPluginParams
 }

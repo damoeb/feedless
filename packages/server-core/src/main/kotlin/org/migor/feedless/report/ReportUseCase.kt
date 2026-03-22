@@ -6,17 +6,24 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
+import org.migor.feedless.document.Document
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
+import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.ReportPlugin
+import org.migor.feedless.pipelineJob.PluginExecution
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.repository.fromDto
+import org.migor.feedless.repository.nextCronDate
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
@@ -41,6 +48,7 @@ class ReportUseCase(
   private val meterRegistry: MeterRegistry,
   private val repositoryGuard: RepositoryGuard,
   private val templateService: TemplateService,
+  private val pluginService: PluginService,
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
 ) {
@@ -64,16 +72,15 @@ class ReportUseCase(
       val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
 
       val interval = when (segment.`when`.scheduled.interval) {
-        IntervalUnit.MONTH -> ChronoUnit.MONTHS
-        IntervalUnit.WEEK -> ChronoUnit.WEEKS
+        IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
+        IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
       }
 
       var segmentation = Segmentation(
         size = 200,
         repositoryId = repositoryId,
         timeSegmentStartingAt = startingAt,
-        timeInterval = interval,
-        reportPlugin = segment.report.plugin.fromDto()
+        timeInterval = interval.first
       )
 
       segmentation = segment.what.latLng?.let {
@@ -88,7 +95,7 @@ class ReportUseCase(
       segmentationRepository.save(segmentation)
 
 
-      val nextReportedAt = if (interval == ChronoUnit.MONTHS) {
+      val nextReportedAt = if (interval.first == ChronoUnit.MONTHS) {
         startingAt.with(TemporalAdjusters.lastDayOfMonth())
       } else {
         startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
@@ -100,6 +107,12 @@ class ReportUseCase(
       )
       cronScheduleRepository.save(cronSchedule)
 
+      val reporterPlugin = segment.report.plugin
+
+      val plugin = pluginService.resolveById<ReportPlugin<*>>(reporterPlugin.pluginId)!!
+//      plugin.tryParseParams("{}") // validate
+//      plugin.tryParseParams(reporterPlugin.params.toParams().paramsJsonString!!) // validate
+
       val report = Report(
         recipientName = segment.recipient.email.name,
         recipientEmail = email,
@@ -108,7 +121,13 @@ class ReportUseCase(
         authorizationAttempt = 1,
         lastRequestedAuthorization = LocalDateTime.now(),
         segmentId = segmentation.id,
+        segment = segmentation, // ignored, relevant for read
+        reporterPlugin = PluginExecution(
+          id = reporterPlugin.pluginId,
+          params = PluginExecutionJson()
+        ),
         cronScheduleId = cronSchedule.id,
+        cronSchedule = cronSchedule, // ignore, relevant for read
         userId = coroutineContext.userId()
       )
 
@@ -157,6 +176,38 @@ class ReportUseCase(
     val reports = withContext(Dispatchers.IO) {
       reportRepository.findAllPendingBatched(LocalDateTime.now())
     }
-    TODO("Not yet implemented")
+
+    reports.forEach { report ->
+      val cron = report.cronSchedule
+      val now = LocalDateTime.now()
+      try {
+
+        val (repository, documents) = resolveSegment(report.segment)
+
+        resolveReporterPlugin(report.reporterPlugin)
+          .report(documents, repository, report.reporterPlugin.params.paramsJsonString!!, LogCollector())
+
+      } catch (_: Exception) {
+        val next = nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
+        withContext(Dispatchers.IO) {
+          cronScheduleRepository.save(
+            cron.copy(
+              scheduledNextAt = next,
+              executedLastAt = now
+            )
+          )
+        }
+      }
+    }
+  }
+
+  private suspend fun resolveReporterPlugin(plugin: PluginExecution): ReportPlugin<*> =
+    pluginService.resolveById<ReportPlugin<*>>(plugin.id)!!
+
+  private fun resolveSegment(segment: Segmentation): Pair<Repository, List<Document>> {
+    val repository = repositoryRepository.findById(segment.repositoryId)!!
+
+    return Pair(repository, emptyList())
   }
 }
+

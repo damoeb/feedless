@@ -19,6 +19,9 @@ open class CronScheduleEntity : EntityWithUUID() {
 
   @Column(name = "scheduled_next_at")
   open var scheduledNextAt: LocalDateTime? = null
+
+  @Column(name = "executed_last_at")
+  open var executedLastAt: LocalDateTime? = null
 }
 
 
