@@ -13,6 +13,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
+import org.migor.feedless.data.jpa.cronSchedule.CronScheduleEntity
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.report.Report
 import java.time.LocalDateTime
@@ -52,8 +53,8 @@ open class ReportEntity : EntityWithUUID() {
   @Column(name = "disabled_at")
   open var disabledAt: LocalDateTime? = null
 
-  @Column(name = "next_reported_at", nullable = false)
-  open lateinit var nextReportedAt: LocalDateTime
+//  @Column(name = "next_reported_at", nullable = false)
+//  open lateinit var nextReportedAt: LocalDateTime
 
   @Column(name = StandardJpaFields.segmentationId, nullable = false)
   open lateinit var segmentId: UUID
@@ -82,6 +83,20 @@ open class ReportEntity : EntityWithUUID() {
     foreignKey = ForeignKey(name = "fk_report__to__user")
   )
   open var user: UserEntity? = null
+
+  @Column(name = StandardJpaFields.cronScheduleId)
+  open var cronScheduleId: UUID? = null
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  @JoinColumn(
+    name = StandardJpaFields.cronScheduleId,
+    referencedColumnName = "id",
+    insertable = false,
+    updatable = false,
+    foreignKey = ForeignKey(name = "fk_report__to__cron_schedule")
+  )
+  open var chronSchedule: CronScheduleEntity? = null
 }
 
 fun ReportEntity.toDomain(): Report {

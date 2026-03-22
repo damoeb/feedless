@@ -32,7 +32,7 @@ import org.migor.feedless.license.LicenseRepository
 import org.migor.feedless.payment.PaymentMethod
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductUseCase
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.user.UserCreate
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserUseCase
@@ -58,7 +58,7 @@ class OrderResolver(
   suspend fun orders(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.ORDERS_INPUT_ARGUMENT.Data) data: OrdersInput
-  ): List<OrderDto> = withContext(context = createRequestContext()) {
+  ): List<OrderDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("orders $data")
     orderUseCase.findAll(data.cursor.toPageableRequest()).map { it.toDto(productUseCase) }
   }
@@ -67,7 +67,7 @@ class OrderResolver(
   suspend fun upsertOrder(
     @InputArgument(DgsConstants.MUTATION.UPSERTORDER_INPUT_ARGUMENT.Data) data: UpsertOrderInput,
   ): OrderDto =
-    withContext(context = createRequestContext()) {
+    withContext(context = injectCapabilitiesFromSecurityContext()) {
       log.debug("upsertOrder $data")
       orderUseCase.upsert(data.where?.id?.let { OrderId(it) }, data.create?.toDomain(), data.update?.toDomain())
         .toDto(productUseCase)

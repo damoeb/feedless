@@ -61,6 +61,7 @@ class FeedServiceTest {
   private lateinit var environment: Environment
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var sourceRepository: SourceRepository
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @BeforeEach
   fun beforeEach() = runTest {
@@ -85,13 +86,15 @@ class FeedServiceTest {
     val authService = mock(AuthService::class.java)
     val jwt = mock(Jwt::class.java)
     `when`(jwt.getClaimAsString("id")).thenReturn(UUID.randomUUID().toString())
-    `when`(authService.parseAndVerify(any2())).thenReturn(jwt)
 
     val claim = mock(RepositoryClaim::class.java)
     `when`(claim.createdAt).thenReturn(LocalDateTime.now())
 
     val repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
     `when`(repositoryClaimRepository.findById(any2())).thenReturn(claim)
+
+    jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
+    `when`(jwtTokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
 
     feedService = FeedService(
       mock(PropertyService::class.java),
@@ -102,7 +105,7 @@ class FeedServiceTest {
       documentUseCase,
       documentRepository,
       filterPlugin,
-      mock(JwtTokenIssuer::class.java),
+      jwtTokenIssuer,
       repositoryClaimRepository,
       mock(RepositoryRepository::class.java),
       featureService,

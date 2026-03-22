@@ -6,6 +6,7 @@ import org.migor.feedless.agent.AgentId
 import org.migor.feedless.annotation.AnnotationId
 import org.migor.feedless.attachment.AttachmentId
 import org.migor.feedless.connectedApp.ConnectedAppId
+import org.migor.feedless.cronSchedule.CronScheduleId
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureId
@@ -56,6 +57,10 @@ interface IdMappers {
   // Document IDs
   fun mapDocumentId(value: UUID?): DocumentId? = value?.let { DocumentId(it) }
   fun mapDocumentId(value: DocumentId?): UUID? = value?.uuid
+
+  // CronSchedule IDs
+  fun mapCronScheduleId(value: UUID?): CronScheduleId? = value?.let { CronScheduleId(it) }
+  fun mapCronScheduleId(value: CronScheduleId?): UUID? = value?.uuid
 
   // Agent IDs
   fun mapAgentId(value: UUID?): AgentId? = value?.let { AgentId(it) }

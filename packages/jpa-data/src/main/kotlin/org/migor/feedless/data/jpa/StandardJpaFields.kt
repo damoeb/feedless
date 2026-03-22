@@ -19,6 +19,7 @@ object StandardJpaFields {
   const val name = "name"
   const val ownerId = "owner_id"
   const val userId = "user_id"
+  const val cronScheduleId = "cron_schedule_id"
   const val groupId = "group_id"
   const val type = "type"
   const val feedUrl = "feed_url"

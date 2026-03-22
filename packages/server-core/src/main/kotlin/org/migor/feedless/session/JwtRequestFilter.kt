@@ -32,7 +32,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 @Component
 @Deprecated("use DataFetchingEnvironment directly instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-class JwtRequestFilter(private val authService: AuthService) : Filter {
+class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -40,7 +40,7 @@ class JwtRequestFilter(private val authService: AuthService) : Filter {
       runBlocking {
         runCatching {
           SecurityContextHolder.getContext().authentication =
-            toOAuth2AuthenticationToken(authService.interceptToken(request))
+            toOAuth2AuthenticationToken(jwtTokenIssuer.decodeJwt(request))
         }.onFailure { log.debug(it.message) }
       }
       val attributes = ServletRequestAttributes(request)

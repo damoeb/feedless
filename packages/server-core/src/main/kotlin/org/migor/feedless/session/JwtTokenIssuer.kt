@@ -5,6 +5,8 @@ import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
+import jakarta.servlet.http.HttpServletRequest
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -19,10 +21,12 @@ import org.migor.feedless.userSecret.UserSecret
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
+import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.JwsHeader
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.security.oauth2.jwt.JwtClaimsSet
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
 import javax.crypto.SecretKey
@@ -41,12 +45,12 @@ import kotlin.time.toDuration
 @Service
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtTokenIssuer(
-  val propertyService: PropertyService,
-  val meterRegistry: MeterRegistry,
+  private val propertyService: PropertyService,
+  private val meterRegistry: MeterRegistry,
   @Value("\${auth.token.anonymous.validForDays}")
-  val tokenAnonymousValidForDays: String,
+  private val tokenAnonymousValidForDays: String,
   @Value("\${default.auth.token.anonymous.validForDays}")
-  val defaultTokenAnonymousValidForDays: String
+  private val defaultTokenAnonymousValidForDays: String
 ) {
   private val log = LoggerFactory.getLogger(JwtTokenIssuer::class.simpleName)
 
@@ -159,6 +163,26 @@ class JwtTokenIssuer(
       .encode(params)
   }
 
+  suspend fun decodeJwt(token: String): Jwt {
+    return NimbusJwtDecoder
+      .withSecretKey(getSecretKey())
+      .build()
+      .decode(token)
+  }
+
+  @Throws(AccessDeniedException::class)
+  suspend fun decodeJwt(request: HttpServletRequest): Jwt {
+    val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
+    if (StringUtils.isNotBlank(authCookie?.value)) {
+      return decodeJwt(authCookie?.value!!)
+    }
+    val authHeader = request.getHeader("Authentication")
+    if (StringUtils.isNotBlank(authHeader)) {
+      return decodeJwt(authHeader.replaceFirst("Bearer ", ""))
+    }
+    throw AccessDeniedException("token not present")
+  }
+
   private fun getSecretKey(): SecretKey {
     return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }
@@ -172,4 +196,5 @@ class JwtTokenIssuer(
   private fun parseDuration(actual: String, fallback: String) = runCatching {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
+
 }

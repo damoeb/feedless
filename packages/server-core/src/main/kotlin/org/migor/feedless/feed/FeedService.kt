@@ -287,7 +287,7 @@ class FeedService(
 
   suspend fun resolveClaim(token: String?): RepositoryClaim? {
     val jwt = try {
-      token?.let { authService.parseAndVerify(token)!! }
+      token?.let { jwtTokenIssuer.decodeJwt(token) }
     } catch (_: Throwable) {
       null
     }

@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.generated.DgsConstants
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.prepost.PreAuthorize
@@ -32,7 +32,7 @@ class FeedResolver(
   suspend fun issueAnonymousFeedToken(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.ISSUEANONYMOUSFEEDTOKEN_INPUT_ARGUMENT.Url) url: String,
-  ): AuthenticationDto = withContext(context = createRequestContext()) {
+  ): AuthenticationDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createAnonymousFeedUrl $url")
     feedService.createAnonymousFeedUrl(URI(url)).toDto()
   }

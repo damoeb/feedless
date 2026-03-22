@@ -1,6 +1,5 @@
 package org.migor.feedless.pipeline.plugins
 
-import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
@@ -10,11 +9,22 @@ import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.report.Report
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
+/**
+ * Mail reports
+ *
+ * when:
+ * - asap
+ * - scheduled
+ *
+ * mails:
+ * - welcome
+ * - report
+ * - good bye
+ */
 @Service
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.scrape} & ${AppLayer.service}")
 class EventsReportPlugin : ReportPlugin {

@@ -19,7 +19,7 @@ import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -78,7 +78,7 @@ class FeedController(
   suspend fun legacyEntities(
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
-  ): ResponseEntity<String> = withContext(createRequestContext()) {
+  ): ResponseEntity<String> = withContext(injectCapabilitiesFromSecurityContext()) {
     analyticsService.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
@@ -94,64 +94,66 @@ class FeedController(
   @GetMapping(
     "/api/feed",
   )
-  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
-    analyticsService.track()
-    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
-    val feedUrl = toFullUrlString(request)
+  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analyticsService.track()
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
+      val feedUrl = toFullUrlString(request)
 
-    val selectors = GenericFeedSelectors(
-      linkXPath = request.param("pLink"),
-      extendContext = ExtendContext.NONE,
-      contextXPath = request.param("pContext").replace("//body/", "//"),
-      dateXPath = null,
-    )
-
-    val feed = resolveFeedCatching(feedUrl)
-    {
-      feedService.webToFeed(
-        request.param("url"),
-        selectors,
-        false,
-        null,
-        null,
-        feedUrl
+      val selectors = GenericFeedSelectors(
+        linkXPath = request.param("pLink"),
+        extendContext = ExtendContext.NONE,
+        contextXPath = request.param("pContext").replace("//body/", "//"),
+        dateXPath = null,
       )
+
+      val feed = resolveFeedCatching(feedUrl)
+      {
+        feedService.webToFeed(
+          request.param("url"),
+          selectors,
+          false,
+          null,
+          null,
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
     }
-    feed.export(request.param("out", "atom"))
-  }
 
   @Throttled
   @Timed
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
-  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
-    analyticsService.track()
-    val feedUrl = toFullUrlString(request)
-    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
+  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analyticsService.track()
+      val feedUrl = toFullUrlString(request)
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
 
-    val selectors = GenericFeedSelectors(
-      linkXPath = request.firstParam("link", "linkXPath"),
-      extendContext = when (request.firstParamOptional("x", "extendContext") ?: "") {
-        "p" -> ExtendContext.PREVIOUS
-        "n" -> ExtendContext.NEXT
-        "pn" -> ExtendContext.PREVIOUS_AND_NEXT
-        else -> ExtendContext.NONE
-      },
-      contextXPath = request.firstParam("context", "contextXPath"),
-      dateXPath = request.paramOptional("date"),
-    )
-
-    val feed = resolveFeedCatching(feedUrl) {
-      feedService.webToFeed(
-        request.param("url"),
-        selectors,
-        request.paramBool("pp"),
-        request.paramOptional("q"),
-        request.paramOptional("token"),
-        feedUrl
+      val selectors = GenericFeedSelectors(
+        linkXPath = request.firstParam("link", "linkXPath"),
+        extendContext = when (request.firstParamOptional("x", "extendContext") ?: "") {
+          "p" -> ExtendContext.PREVIOUS
+          "n" -> ExtendContext.NEXT
+          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+          else -> ExtendContext.NONE
+        },
+        contextXPath = request.firstParam("context", "contextXPath"),
+        dateXPath = request.paramOptional("date"),
       )
+
+      val feed = resolveFeedCatching(feedUrl) {
+        feedService.webToFeed(
+          request.param("url"),
+          selectors,
+          request.paramBool("pp"),
+          request.paramOptional("q"),
+          request.paramOptional("token"),
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
     }
-    feed.export(request.param("out", "atom"))
-  }
 
   @Throttled
   @Timed
@@ -159,20 +161,21 @@ class FeedController(
     "/api/feeds/transform",
     ApiUrls.transformFeed
   )
-  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> = withContext(createRequestContext()) {
-    analyticsService.track()
-    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
-    val feedUrl = toFullUrlString(request)
-    val feed = resolveFeedCatching(feedUrl) {
-      feedService.transformFeed(
-        request.param("url"),
-        request.paramOptional("q"),
-        request.paramOptional("token"),
-        feedUrl
-      )
+  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analyticsService.track()
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
+      val feedUrl = toFullUrlString(request)
+      val feed = resolveFeedCatching(feedUrl) {
+        feedService.transformFeed(
+          request.param("url"),
+          request.paramOptional("q"),
+          request.paramOptional("token"),
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
     }
-    feed.export(request.param("out", "atom"))
-  }
 
   private suspend fun resolveFeedCatching(
     feedUrl: String,

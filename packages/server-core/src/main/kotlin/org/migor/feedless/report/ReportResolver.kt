@@ -11,7 +11,8 @@ import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -22,6 +23,7 @@ import org.migor.feedless.generated.types.Report as ReportDto
 @Profile("${AppProfiles.DEV_ONLY} & ${AppProfiles.report} & ${AppLayer.api}")
 class ReportResolver(
   private val reportUseCase: ReportUseCase,
+  private val jwtTokenIssuer: JwtTokenIssuer,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportResolver::class.simpleName)
@@ -33,7 +35,7 @@ class ReportResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.RepositoryId) repositoryId: String,
     @InputArgument(DgsConstants.MUTATION.CREATEREPORT_INPUT_ARGUMENT.Segmentation) segmentation: SegmentInput
-  ): ReportDto = withContext(context = createRequestContext()) {
+  ): ReportDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createReport")
     reportUseCase.createReport(RepositoryId(repositoryId), segmentation).toDto()
   }
@@ -44,7 +46,7 @@ class ReportResolver(
   suspend fun deleteReport(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPORT_INPUT_ARGUMENT.ReportId) reportId: String,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("deleteReport $reportId")
     reportUseCase.deleteReport(ReportId(reportId))
     true

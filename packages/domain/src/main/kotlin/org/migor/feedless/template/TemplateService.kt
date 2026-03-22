@@ -4,10 +4,16 @@ abstract class FreemarkerTemplate<T>(val templateName: String) {
   abstract val params: T
 }
 
-data class WelcomeMailParams(val productName: String)
+data class ReportCreatedParams(
+  val language: String,
+  val deactivationLink: String,
+  val reportName: String,
+  val cronExpression: String,
+  val nextScheduledAt: String,
+)
 
-data class MailTemplateWelcomePaid(override val params: WelcomeMailParams) :
-  FreemarkerTemplate<WelcomeMailParams>("mail-welcome-paid")
+data class MailTemplateReportCreated(override val params: ReportCreatedParams) :
+  FreemarkerTemplate<ReportCreatedParams>("mail-report-created")
 
 data class AuthCodeMailParams(
   val codeValidUntil: String,

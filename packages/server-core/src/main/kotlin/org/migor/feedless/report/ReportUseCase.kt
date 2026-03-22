@@ -6,13 +6,20 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.cronSchedule.CronSchedule
+import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
+import org.migor.feedless.mail.MailService
+import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.fromDto
+import org.migor.feedless.template.MailTemplateReportCreated
+import org.migor.feedless.template.ReportCreatedParams
+import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -25,13 +32,16 @@ import java.time.temporal.TemporalAdjusters
 
 
 @Service
-@Profile("${AppProfiles.report} & ${AppLayer.service}")
+@Profile("${AppProfiles.report} & ${AppProfiles.mail} & ${AppLayer.service}")
 class ReportUseCase(
   private val reportRepository: ReportRepository,
+  private val cronScheduleRepository: CronScheduleRepository,
   private val repositoryRepository: RepositoryRepository,
   private val segmentationRepository: SegmentationRepository,
   private val meterRegistry: MeterRegistry,
   private val repositoryGuard: RepositoryGuard,
+  private val templateService: TemplateService,
+  private val mailService: MailService,
   private val reportGuard: ReportGuard,
 ) {
 
@@ -84,6 +94,12 @@ class ReportUseCase(
         startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
       }
 
+      val cronSchedule = CronSchedule(
+        cronExpression = "",
+        scheduledNextAt = nextReportedAt
+      )
+      cronScheduleRepository.save(cronSchedule)
+
       val report = Report(
         recipientName = segment.recipient.email.name,
         recipientEmail = email,
@@ -92,18 +108,32 @@ class ReportUseCase(
         authorizationAttempt = 1,
         lastRequestedAuthorization = LocalDateTime.now(),
         segmentId = segmentation.id,
-        nextReportedAt = nextReportedAt,
+        cronScheduleId = cronSchedule.id,
         userId = coroutineContext.userId()
       )
 
       meterRegistry.counter(AppMetrics.createReport)
-      sendAuthorizationMail(segment)
+      sendReportCreatedMail(segment)
 
       reportRepository.save(report)
     }
 
-  private suspend fun sendAuthorizationMail(segment: SegmentInput) {
-    // todo implement
+  private suspend fun sendReportCreatedMail(segment: SegmentInput) {
+    val params = ReportCreatedParams(
+      language = "de",
+      deactivationLink = "",
+      reportName = "",
+      cronExpression = "",
+      nextScheduledAt = "",
+    )
+    val body = templateService.renderTemplate(MailTemplateReportCreated(params))
+    val mail = OutgoingMail(
+      from = "no-reply@feedless.org",
+      to = listOf(segment.recipient.email.email),
+      subject = "Reporter erstellt",
+      htmlContent = body
+    )
+    mailService.send(mail)
   }
 
   suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {
@@ -121,5 +151,12 @@ class ReportUseCase(
         authorizedAt = LocalDateTime.now()
       )
     )
+  }
+
+  suspend fun processReportJobs() {
+    val reports = withContext(Dispatchers.IO) {
+      reportRepository.findAllPendingBatched(LocalDateTime.now())
+    }
+    TODO("Not yet implemented")
   }
 }

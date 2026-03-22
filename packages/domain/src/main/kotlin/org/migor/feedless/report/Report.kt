@@ -1,5 +1,6 @@
 package org.migor.feedless.report
 
+import org.migor.feedless.cronSchedule.CronScheduleId
 import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
 
@@ -14,9 +15,9 @@ data class Report(
   val lastReportedAt: LocalDateTime? = null,
   val disabled: Boolean = false,
   val disabledAt: LocalDateTime? = null,
-  val nextReportedAt: LocalDateTime,
   val segmentId: SegmentationId,
   val userId: UserId? = null,
+  val cronScheduleId: CronScheduleId? = null,
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

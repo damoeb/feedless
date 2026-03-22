@@ -18,25 +18,63 @@ class FreemarkerTemplateServiceIntTest {
   lateinit var templateService: FreemarkerTemplateService
 
   @Test
-  fun testTemplateWelcomePaidMail() {
-    assertThat(renderTemplate(MailTemplateWelcomePaid(WelcomeMailParams(productName = "ThisProduct"))))
+  fun testMailTemplateReportCreated() {
+    assertThat(
+      renderTemplate(
+        MailTemplateReportCreated(
+          ReportCreatedParams(
+            language = "en",
+            deactivationLink = "deactivationLink",
+            reportName = "reportName",
+            cronExpression = "cronExpression",
+            nextScheduledAt = "nextScheduledAt",
+          )
+        )
+      )
+    )
       .isEqualTo(
         """
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  </head>
-  <body>
-    <p>Welcome to ThisProduct</p>
-    <p>paid plan</p>
-    <p>Regards,</p>
-    <p>
-      <em>ThisProduct Team</em> <br />
-    </p>
-  </body>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scheduled Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Scheduled Reporter Created</h2>
+<p>Your report has been successfully scheduled. Below are the details:</p>
+
+<table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+<tr>
+<td style="padding: 8px; font-weight: bold;">Report Name:</td>
+<td style="padding: 8px;">reportName</td>
+</tr>
+<tr>
+<td style="padding: 8px; font-weight: bold;">Schedule (Cron):</td>
+<td style="padding: 8px;">cronExpression</td>
+</tr>
+<tr>
+<td style="padding: 8px; font-weight: bold;">Next Execution:</td>
+<td style="padding: 8px;">nextScheduledAt</td>
+</tr>
+</table>
+
+<p style="margin-top: 20px;">
+If you no longer wish to receive this report, you can deactivate it here:
+</p>
+
+<p>
+<a href="deactivationLink"
+style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
+Deactivate Report
+</a>
+</p>
+
+</body>
 </html>
-        """.trimAllIndents()
+""".trimAllIndents()
       )
   }
 

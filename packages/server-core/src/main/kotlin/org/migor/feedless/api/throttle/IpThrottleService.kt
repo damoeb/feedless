@@ -14,6 +14,7 @@ import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.capabilities
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
@@ -29,7 +30,8 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 @Profile("${AppProfiles.throttle} && ${AppLayer.api}")
 class IpThrottleService(
-  private val authService: AuthService
+  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val authService: AuthService,
 ) {
   private val log = LoggerFactory.getLogger(IpThrottleService::class.simpleName)
 
@@ -94,7 +96,7 @@ class IpThrottleService(
   private fun resolveRateBuckets(request: HttpServletRequest): List<Bucket> {
     return runBlocking {
       runCatching {
-        val token = authService.interceptToken(request)
+        val token = jwtTokenIssuer.decodeJwt(request)
         listOf(resolveTokenBucket(token))
       }.getOrElse {
         val remoteAddr = HttpUtil.getRemoteAddr(request)

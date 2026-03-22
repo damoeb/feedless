@@ -32,7 +32,7 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -61,7 +61,7 @@ class DocumentResolver(
   suspend fun record(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORD_INPUT_ARGUMENT.Data) data: RecordWhereInput,
-  ): Record = withContext(context = createRequestContext()) {
+  ): Record = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("record $data")
     val documentId = DocumentId(data.where.id)
     val document = documentGuard.requireRead(documentId)
@@ -76,7 +76,7 @@ class DocumentResolver(
   suspend fun records(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
-  ): List<Record> = withContext(context = createRequestContext()) {
+  ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("records $data")
     val repositoryId = RepositoryId(data.where.repository.id)
 
@@ -110,7 +110,7 @@ class DocumentResolver(
   suspend fun deleteRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETERECORDS_INPUT_ARGUMENT.Data) data: DeleteRecordsInput,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     documentUseCase.deleteDocuments(
       RepositoryId(data.where.repository.id),
       data.where.id!!.toDomain()
@@ -123,7 +123,7 @@ class DocumentResolver(
   suspend fun createRecords(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
-  ): List<Record> = withContext(context = createRequestContext()) {
+  ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     records.map { documentUseCase.createDocument(it).toDto(propertyService) }
   }
 
@@ -132,7 +132,7 @@ class DocumentResolver(
   suspend fun updateRecord(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
     true
   }
@@ -141,7 +141,7 @@ class DocumentResolver(
   suspend fun recordsFrequency(
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.Where) where: RecordsWhereInputDto,
     @InputArgument(DgsConstants.QUERY.RECORDSFREQUENCY_INPUT_ARGUMENT.GroupBy) groupBy: RecordDateField,
-  ): List<RecordFrequency> = withContext(context = createRequestContext()) {
+  ): List<RecordFrequency> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     documentUseCase.getRecordFrequency(where.toDomain(), groupBy.toDomain()).map { it.toDto() }
   }
 

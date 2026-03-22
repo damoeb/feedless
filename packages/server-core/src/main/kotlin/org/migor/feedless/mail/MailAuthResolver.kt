@@ -16,7 +16,7 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.web.context.request.ServletWebRequest
@@ -31,7 +31,7 @@ class MailAuthResolver(
 
   @DgsMutation(field = DgsConstants.MUTATION.AuthenticateWithCodeViaMail)
   suspend fun authViaMail(@InputArgument(DgsConstants.MUTATION.AUTHENTICATEWITHCODEVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): ConfirmCode =
-    withContext(context = createRequestContext()) {
+    withContext(context = injectCapabilitiesFromSecurityContext()) {
       log.debug("authViaMail ${data.product}")
       mailAuthenticationService.authenticateUsingMail(data)
     }
@@ -41,7 +41,7 @@ class MailAuthResolver(
   suspend fun confirmAuthCode(
     @InputArgument(DgsConstants.MUTATION.AUTHCONFIRMCODE_INPUT_ARGUMENT.Data) data: ConfirmAuthCodeInput,
     dfe: DataFetchingEnvironment,
-  ): Authentication = withContext(context = createRequestContext()) {
+  ): Authentication = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("confirmAuthCode")
     mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
   }

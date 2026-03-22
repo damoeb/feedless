@@ -46,4 +46,8 @@ class MailServiceImpl(
       )
     )
   }
+
+  override suspend fun send(outgoingMail: OutgoingMail) {
+    mailGateway.send(outgoingMail)
+  }
 }

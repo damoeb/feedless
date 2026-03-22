@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<#if language == "de">
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Geplanter Bericht</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Bericht erstellt</h2>
+<p>Ihr Bericht wurde erfolgreich geplant. Hier sind die Details:</p>
+
+<table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Berichtsname:</td>
+    <td style="padding: 8px;">${reportName}</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Zeitplan (Cron):</td>
+    <td style="padding: 8px;">${cronExpression}</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Nächste Ausführung:</td>
+    <td style="padding: 8px;">${nextScheduledAt}</td>
+  </tr>
+</table>
+
+<p style="margin-top: 20px;">
+  Falls Sie diesen Bericht nicht mehr erhalten möchten, können Sie ihn hier deaktivieren:
+</p>
+
+<p>
+  <a href="${deactivationLink}"
+     style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
+    Bericht deaktivieren
+  </a>
+</p>
+
+</body>
+</html>
+<#else>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scheduled Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Scheduled Reporter Created</h2>
+<p>Your report has been successfully scheduled. Below are the details:</p>
+
+<table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Report Name:</td>
+    <td style="padding: 8px;">${reportName}</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Schedule (Cron):</td>
+    <td style="padding: 8px;">${cronExpression}</td>
+  </tr>
+  <tr>
+    <td style="padding: 8px; font-weight: bold;">Next Execution:</td>
+    <td style="padding: 8px;">${nextScheduledAt}</td>
+  </tr>
+</table>
+
+<p style="margin-top: 20px;">
+  If you no longer wish to receive this report, you can deactivate it here:
+</p>
+
+<p>
+  <a href="${deactivationLink}"
+     style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
+    Deactivate Report
+  </a>
+</p>
+
+</body>
+</html>
+</#if>

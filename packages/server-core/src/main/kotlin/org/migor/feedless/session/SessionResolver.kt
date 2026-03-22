@@ -35,27 +35,28 @@ class SessionResolver(
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
 
   @DgsQuery
-  suspend fun session(dfe: DataFetchingEnvironment): Session = withContext(context = createRequestContext()) {
-    unsetSessionCookie(dfe)
-    val defaultSession = Session(
-      isLoggedIn = false,
-      isAnonymous = true
-    )
+  suspend fun session(dfe: DataFetchingEnvironment): Session =
+    withContext(context = injectCapabilitiesFromSecurityContext()) {
+      unsetSessionCookie(dfe)
+      val defaultSession = Session(
+        isLoggedIn = false,
+        isAnonymous = true
+      )
 
-    if (capabilityService.hasCapability(UserCapability.ID)) {
-      runCatching {
-        val userCapability = UserCapability.resolve(capabilityService.getCapability(UserCapability.ID)!!)
-        Session(
-          isLoggedIn = true,
-          isAnonymous = false,
-          userId = userCapability.uuid.toString()
-        )
-      }.getOrDefault(defaultSession)
-    } else {
-      defaultSession
+      if (capabilityService.hasCapability(UserCapability.ID)) {
+        runCatching {
+          val userCapability = UserCapability.resolve(capabilityService.getCapability(UserCapability.ID)!!)
+          Session(
+            isLoggedIn = true,
+            isAnonymous = false,
+            userId = userCapability.uuid.toString()
+          )
+        }.getOrDefault(defaultSession)
+      } else {
+        defaultSession
 
+      }
     }
-  }
 
   private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {
     ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
@@ -68,7 +69,7 @@ class SessionResolver(
   suspend fun authUser(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.AUTHUSER_INPUT_ARGUMENT.Data) data: AuthUserInput,
-  ): Authentication = withContext(context = createRequestContext()) {
+  ): Authentication = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("authUser")
     try {
       val jwt = authService.authenticateUser(data.email, data.secretKey)
@@ -87,7 +88,7 @@ class SessionResolver(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun logout(
     dfe: DataFetchingEnvironment,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("logout")
     val cookie = Cookie("TOKEN", "")
     cookie.isHttpOnly = true

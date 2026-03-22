@@ -10,4 +10,5 @@ object ApiUrls {
 //  const val legacyTransformFeed = "/api/legacy/tf"
 //  const val legacyWebToFeed = "/api/legacy/w2f"
   const val mailForwardingAllow = "/mail/forwarding/allow"
+  const val reportDelete = "/reports/delete"
 }

@@ -22,7 +22,7 @@ import org.migor.feedless.connectedApp.GithubConnection
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -50,7 +50,7 @@ class UserResolver(
   suspend fun updateCurrentUser(
     dfe: DataFetchingEnvironment,
     @InputArgument data: UpdateCurrentUserInput,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.info("updateCurrentUser ${userId()} $data")
     userUseCase.updateUser(userId()!!, data)
     true
@@ -63,7 +63,7 @@ class UserResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
     @InputArgument authorize: Boolean,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.info("updateConnectedApp ${userId()}")
     userUseCase.updateConnectedApp(userId()!!, ConnectedAppId(id), authorize)
     true
@@ -75,7 +75,7 @@ class UserResolver(
   suspend fun deleteConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument id: String,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.info("deleteConnectedApp ${userId()}")
     userUseCase.deleteConnectedApp(userId()!!, ConnectedAppId(id))
     true
@@ -91,7 +91,7 @@ class UserResolver(
   suspend fun getConnectedApp(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.CONNECTEDAPP_INPUT_ARGUMENT.Id) id: String,
-  ): ConnectedAppDto = withContext(context = createRequestContext()) {
+  ): ConnectedAppDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.info("connectedApp ${userId()} ")
     userUseCase.getConnectedAppByUserAndId(userId()!!, ConnectedAppId(id)).toDto()
   }

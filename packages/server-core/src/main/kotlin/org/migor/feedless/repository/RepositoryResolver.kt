@@ -32,7 +32,7 @@ import org.migor.feedless.generated.types.RepositoryUpdateInput
 import org.migor.feedless.generated.types.RepositoryWhereInput
 import org.migor.feedless.generated.types.SourceOrderByInput
 import org.migor.feedless.generated.types.SourcesWhereInput
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceOrderBy
 import org.migor.feedless.source.SourceRepository
@@ -74,7 +74,7 @@ class RepositoryResolver(
   suspend fun repositories(
     dfe: DataFetchingEnvironment,
     @InputArgument data: RepositoriesInput,
-  ): List<RepositoryDto> = withContext(context = createRequestContext()) {
+  ): List<RepositoryDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("repositories $data")
 
     val userId = coroutineContext.userId()
@@ -103,7 +103,7 @@ class RepositoryResolver(
   suspend fun countRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.COUNTREPOSITORIES_INPUT_ARGUMENT.Data) data: CountRepositoriesInput,
-  ): Int = withContext(context = createRequestContext()) {
+  ): Int = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("countRepositories")
     repositoryUseCase.countAll(coroutineContext.userId(), data.product.fromDto())
   }
@@ -113,7 +113,7 @@ class RepositoryResolver(
   suspend fun repository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
-  ): RepositoryDto = withContext(context = createRequestContext()) {
+  ): RepositoryDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("repository $data")
     val repository = repositoryRepository.findById(RepositoryId(data.where.id))
       ?: throw IllegalArgumentException("Repository not found")
@@ -126,7 +126,7 @@ class RepositoryResolver(
   suspend fun createRepositories(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
-  ): List<RepositoryDto> = withContext(context = createRequestContext()) {
+  ): List<RepositoryDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createRepositories $data")
     repositoryUseCase.create(data).map { it.toDto(it.ownerId == coroutineContext.userId().uuid) }
   }
@@ -137,7 +137,7 @@ class RepositoryResolver(
   suspend fun updateRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
-  ) = withContext(context = createRequestContext()) {
+  ) = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("updateRepository $data")
     repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data)
     true
@@ -149,7 +149,7 @@ class RepositoryResolver(
   suspend fun deleteRepository(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.DELETEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUniqueWhereInput,
-  ): Boolean = withContext(context = createRequestContext()) {
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("deleteRepository $data")
     repositoryUseCase.delete(RepositoryId(data.id))
     true
@@ -162,7 +162,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Where) where: SourcesWhereInput?,
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Order) order: List<SourceOrderByInput>?,
     dfe: DgsDataFetchingEnvironment,
-  ): List<SourceDto> = withContext(context = createRequestContext()) {
+  ): List<SourceDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     val pageable = cursor.toPageable(10)
     if (pageable.pageSize == 0) {

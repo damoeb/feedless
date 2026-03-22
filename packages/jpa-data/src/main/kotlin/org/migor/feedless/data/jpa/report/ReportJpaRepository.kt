@@ -7,6 +7,7 @@ import org.migor.feedless.report.ReportId
 import org.migor.feedless.report.ReportRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -22,5 +23,9 @@ class ReportJpaRepository(private val reportDAO: ReportDAO) : ReportRepository {
 
   override fun findById(reportId: ReportId): Report? {
     return reportDAO.findById(reportId.uuid).getOrNull()?.toDomain()
+  }
+
+  override fun findAllPendingBatched(now: LocalDateTime): List<Report> {
+    return reportDAO.findAllPendingBatched(now).map { it.toDomain() }
   }
 }

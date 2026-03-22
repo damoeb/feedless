@@ -17,7 +17,7 @@ import org.migor.feedless.generated.types.FeatureGroup
 import org.migor.feedless.generated.types.PricedProduct
 import org.migor.feedless.generated.types.Product
 import org.migor.feedless.generated.types.ProductsWhereInput
-import org.migor.feedless.session.createRequestContext
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 
@@ -34,7 +34,7 @@ class ProductResolver(
   @DgsQuery(field = DgsConstants.QUERY.Products)
   suspend fun getProducts(
     @InputArgument(DgsConstants.QUERY.PRODUCTS_INPUT_ARGUMENT.Data) data: ProductsWhereInput
-  ): List<Product> = withContext(context = createRequestContext()) {
+  ): List<Product> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("products $data")
     productService.findAll(data).map { it.toDto() }
   }

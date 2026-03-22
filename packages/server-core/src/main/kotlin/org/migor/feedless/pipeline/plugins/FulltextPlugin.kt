@@ -2,7 +2,6 @@ package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
-import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -27,7 +26,6 @@ import org.migor.feedless.scrape.needsPrerendering
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
-import org.migor.feedless.user.corrId
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired

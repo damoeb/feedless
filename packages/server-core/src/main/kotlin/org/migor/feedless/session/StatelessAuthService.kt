@@ -48,16 +48,7 @@ class StatelessAuthService : AuthService() {
     )
   }
 
-  override suspend fun parseAndVerify(token: String): Jwt? = null
-  override suspend fun assertToken(request: HttpServletRequest) {
-
-  }
-
   override fun isWhitelisted(request: HttpServletRequest): Boolean = true
-
-  override suspend fun interceptToken(request: HttpServletRequest): Jwt {
-    TODO("ignore")
-  }
 
   override suspend fun authenticateUser(email: String, secretKey: String): Jwt {
     return if (email == rootEmail && secretKey == rootSecretKey) {
