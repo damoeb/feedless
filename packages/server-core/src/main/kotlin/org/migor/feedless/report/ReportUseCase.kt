@@ -17,6 +17,8 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
+import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
+import org.migor.feedless.pipeline.plugins.toPluginExecutionJson
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
@@ -39,7 +41,7 @@ import java.time.temporal.TemporalAdjusters
 
 
 @Service
-@Profile("${AppProfiles.report} & ${AppProfiles.mail} & ${AppLayer.service}")
+@Profile("${AppProfiles.report} & ${AppLayer.service}")
 class ReportUseCase(
   private val reportRepository: ReportRepository,
   private val cronScheduleRepository: CronScheduleRepository,
@@ -178,10 +180,18 @@ class ReportUseCase(
       val now = LocalDateTime.now()
       try {
 
-        val (repository, documents) = resolveSegment(report.segment!!)
+        val segment = report.segment!!
+        val (repository, documents) = resolveSegment(segment)
 
         resolveReporterPlugin(report.reporterPlugin)
-          .report(documents, repository, report.reporterPlugin.params, LogCollector())
+          .report(
+            documents, repository, EventsReportPluginParams(
+              from = "no-reply@lokale.events",
+              to = report.recipientEmail,
+              subject = "",
+              language = "de",
+            ).toPluginExecutionJson(), LogCollector()
+          )
 
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
@@ -207,4 +217,3 @@ class ReportUseCase(
     return Pair(repository, emptyList())
   }
 }
-

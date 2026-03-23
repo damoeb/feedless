@@ -2,7 +2,6 @@ package org.migor.feedless.pipeline
 
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.document.Document
-import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
 
@@ -22,5 +21,4 @@ interface ReportPlugin<T> : Plugin {
     logCollector: LogCollector
   )
 
-  suspend fun tryParseParams(jsonParams: String): EventsReportPluginParams
 }

@@ -1,7 +1,6 @@
 package org.migor.feedless.mail.template
 
 import org.migor.feedless.AppLayer
-import org.migor.feedless.AppProfiles
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
 import org.slf4j.LoggerFactory
@@ -12,7 +11,7 @@ import java.io.ByteArrayOutputStream
 import java.io.OutputStreamWriter
 
 @Service
-@Profile("${AppProfiles.mail} & ${AppLayer.service}")
+@Profile(AppLayer.service)
 class FreemarkerTemplateService(
   private val freemarkerConfigurer: FreeMarkerConfigurer
 ) : TemplateService {

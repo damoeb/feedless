@@ -57,6 +57,7 @@ import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
@@ -75,7 +76,6 @@ import java.time.LocalDateTime
   AppProfiles.report,
   AppProfiles.document,
   AppProfiles.repository,
-  AppProfiles.mail,
   AppProfiles.user,
   AppProfiles.scrape,
   AppLayer.repository,
@@ -241,37 +241,49 @@ class ReportUseCaseIntTest {
   }
 
   @Test
-//  @Transactional
-  fun `given retention by capacity given, delete old items first`() =
+  fun `when creating a report, user receives a mail`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
-      reportUseCase.createReport(
-        repository.id,
-        SegmentInput(
-          `when` = TimeSegmentInput(
-            scheduled = ScheduledSegmentInput(
-              interval = IntervalUnit.WEEK,
-              startingAt = 0
-            ),
-          ),
-          what = SegmentRecordsWhereInput(),
-          report = SegmentReportInput(
-            plugin = PluginExecutionInput(
-              pluginId = EventsReportPlugin().id(),
-              params = PluginExecutionParamsInput(),
-            )
-          ),
-          recipient = ReportRecipientInput(
-            email = ReportEmailRecipientInput(
-              email = "email@somewhere",
-              name = "RecipientName"
-            )
-          ),
-        )
-      )
+      createReport()
+
+      verify(mailService).send(any(OutgoingMail::class.java))
+    }
+
+  @Test
+  fun `given a report exists, processReportJobs will send a report`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      createReport()
+      reset(mailService)
 
       reportUseCase.processReportJobs()
 
       verify(mailService).send(any(OutgoingMail::class.java))
     }
+
+  private suspend fun createReport() {
+    reportUseCase.createReport(
+      repository.id,
+      SegmentInput(
+        `when` = TimeSegmentInput(
+          scheduled = ScheduledSegmentInput(
+            interval = IntervalUnit.WEEK,
+            startingAt = 0
+          ),
+        ),
+        what = SegmentRecordsWhereInput(),
+        report = SegmentReportInput(
+          plugin = PluginExecutionInput(
+            pluginId = EventsReportPlugin().id(),
+            params = PluginExecutionParamsInput(),
+          )
+        ),
+        recipient = ReportRecipientInput(
+          email = ReportEmailRecipientInput(
+            email = "email@somewhere",
+            name = "RecipientName"
+          )
+        ),
+      )
+    )
+  }
 
 }

@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
@@ -20,12 +19,23 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 data class EventsReportPluginParams(
-  @SerializedName("language") val language: String,
-  @SerializedName("deactivationLink") val deactivationLink: String,
+  val language: String,
+  val from: String,
+  val to: String,
+  val subject: String,
 )
 
+fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
+  return PluginExecutionJson(
+    paramsJsonString = Gson().toJson(this)
+  )
+}
+
+
 data class EventCalendarMailParams(
+  val language: String,
   val events: List<Document>,
+  val deactivationLink: String,
 )
 
 data class MailTemplateEventCalendar(override val params: EventCalendarMailParams) :
@@ -54,17 +64,19 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
     params: EventsReportPluginParams,
     logCollector: LogCollector
   ) {
-    logCollector.log("report ${documents.size}")
+    logCollector.log("event-report ${documents.size}")
 
-    val params = EventCalendarMailParams(
-      events = documents
+    val templateParams = EventCalendarMailParams(
+      language = params.language,
+      events = documents,
+      deactivationLink = "",
     )
-    val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(params))
+    val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(templateParams))
     mailService.send(
       OutgoingMail(
-        from = "",
-        to = listOf(),
-        subject = "",
+        from = params.from,
+        to = listOf(params.to),
+        subject = params.subject,
         htmlContent = eventCalendarMail
       )
     )
@@ -76,13 +88,11 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
     params: PluginExecutionJson,
     logCollector: LogCollector
   ) {
-    logCollector.log("report ${documents.size}")
-    report(documents, repository, EventsReportPluginParams(language = "de", deactivationLink = ""), logCollector)
-//    report(documents, repository, tryParseParams(params), logCollector)
+    return report(documents, repository, fromPluginExecutionJson(params), logCollector)
   }
 
-  override suspend fun tryParseParams(jsonParams: String): EventsReportPluginParams {
-    return Gson().fromJson(jsonParams, EventsReportPluginParams::class.java)
+  private fun fromPluginExecutionJson(params: PluginExecutionJson): EventsReportPluginParams {
+    return Gson().fromJson(params.paramsJsonString, EventsReportPluginParams::class.java)
   }
 
 }
