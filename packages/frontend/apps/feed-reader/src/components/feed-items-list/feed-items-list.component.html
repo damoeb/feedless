@@ -1,0 +1,54 @@
+<div class="feed-items-list">
+  <div class="feed-items-list__header">
+    <h2 class="feed-items-list__title">{{ viewTitle }}</h2>
+    <span class="feed-items-list__count">{{ items.length }} items</span>
+  </div>
+
+  <div class="feed-items-list__scroll">
+    @if (items.length === 0) {
+      <div class="feed-items-list__empty">No items to display.</div>
+    }
+    @for (item of items; track item.id) {
+      <div
+        class="feed-items-list__row"
+        [class.feed-items-list__row--selected]="selectedItemId === item.id"
+        [class.feed-items-list__row--read]="item.read"
+        (click)="onRowClick(item.id)"
+        role="button"
+        tabindex="0"
+        (keydown.enter)="onRowClick(item.id)"
+        (keydown.space)="$event.preventDefault(); onRowClick(item.id)"
+      >
+        <div class="feed-items-list__row-inner">
+          <button
+            type="button"
+            class="feed-items-list__star"
+            [class.feed-items-list__star--active]="item.starred"
+            (click)="onStarClick($event, item.id)"
+            [attr.aria-label]="item.starred ? 'Unstar' : 'Star'"
+          >
+            {{ item.starred ? '★' : '☆' }}
+          </button>
+          <div class="feed-items-list__main">
+            <div class="feed-items-list__title-line">
+              <span
+                class="feed-items-list__item-title"
+                [class.feed-items-list__item-title--unread]="!item.read"
+              >
+                {{ item.title }}
+              </span>
+            </div>
+            <div class="feed-items-list__meta">
+              <span class="feed-items-list__feed-name">{{ feedTitle(item.feedId) }}</span>
+              <span class="feed-items-list__meta-muted"> — {{ item.author }} </span>
+              <span class="feed-items-list__meta-date">
+                {{ formatDate(item.date) }}
+              </span>
+            </div>
+            <p class="feed-items-list__summary">{{ item.summary }}</p>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>

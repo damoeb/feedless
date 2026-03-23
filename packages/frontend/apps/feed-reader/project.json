@@ -1,0 +1,93 @@
+{
+  "name": "feed-reader",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "prefix": "app",
+  "sourceRoot": "apps/feed-reader/src",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@angular/build:application",
+      "outputs": [
+        "{options.outputPath}"
+      ],
+      "options": {
+        "outputPath": "dist/apps/feed-reader",
+        "browser": "apps/feed-reader/src/main.ts",
+        "tsConfig": "apps/feed-reader/tsconfig.app.json",
+        "inlineStyleLanguage": "scss",
+        "assets": [
+          {
+            "glob": "**/*",
+            "input": "apps/feed-reader/public"
+          }
+        ],
+        "styles": [
+          "apps/feed-reader/src/styles.scss"
+        ],
+        "polyfills": [
+          "zone.js"
+        ],
+        "server": "apps/feed-reader/src/main.server.ts",
+        "ssr": {
+          "entry": "apps/feed-reader/src/server.ts"
+        },
+        "outputMode": "server"
+      },
+      "configurations": {
+        "production": {
+          "optimization": true,
+          "budgets": [
+            {
+              "type": "initial",
+              "maximumWarning": "500kb",
+              "maximumError": "1mb"
+            },
+            {
+              "type": "anyComponentStyle",
+              "maximumWarning": "4kb",
+              "maximumError": "8kb"
+            }
+          ],
+          "outputHashing": "all"
+        },
+        "development": {
+          "optimization": false,
+          "extractLicenses": false,
+          "sourceMap": true
+        }
+      },
+      "defaultConfiguration": "production"
+    },
+    "serve": {
+      "continuous": true,
+      "executor": "@angular/build:dev-server",
+      "configurations": {
+        "production": {
+          "buildTarget": "feed-reader:build:production"
+        },
+        "development": {
+          "buildTarget": "feed-reader:build:development"
+        }
+      },
+      "defaultConfiguration": "development"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    },
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {}
+    },
+    "serve-static": {
+      "continuous": true,
+      "executor": "@nx/web:file-server",
+      "options": {
+        "buildTarget": "feed-reader:build",
+        "port": 4200,
+        "staticFilePath": "dist/apps/feed-reader/browser",
+        "spa": true
+      }
+    }
+  }
+}

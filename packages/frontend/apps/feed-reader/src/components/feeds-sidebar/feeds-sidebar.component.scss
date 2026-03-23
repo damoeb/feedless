@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  flex-shrink: 0;
+  width: 240px;
+  min-width: 240px;
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  user-select: none;
+  background: rgba(0, 0, 0, 0.02);
+  border-right: 1px solid var(--app-border-color, #dfdbd4);
+}
+
+.feeds-sidebar {
+  padding-bottom: 8px;
+}
+
+.feeds-sidebar__section {
+  padding: 8px 0;
+}
+
+.feeds-sidebar__view {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.feeds-sidebar__view:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.feeds-sidebar__view--active {
+  background: rgba(56, 128, 255, 0.08);
+  font-weight: 700;
+  color: var(--ion-color-primary-shade, #3171e0);
+}
+
+.feeds-sidebar__icon {
+  flex-shrink: 0;
+}
+
+.feeds-sidebar__star-icon {
+  color: #e6a800;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.feeds-sidebar__badge {
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 400;
+  color: var(--ion-color-medium, #92949c);
+}
+
+.feeds-sidebar__subscriptions {
+  border-top: 1px solid var(--app-border-color, #dfdbd4);
+  padding-top: 4px;
+}
+
+.feeds-sidebar__subscriptions-label {
+  padding: 4px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ion-color-medium, #92949c);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.feeds-sidebar__folder-header {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.feeds-sidebar__folder-header:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.feeds-sidebar__chevron {
+  flex-shrink: 0;
+}
+
+.feeds-sidebar__badge--folder {
+  margin-left: auto;
+}
+
+.feeds-sidebar__feed {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 4px 28px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 4px;
+}
+
+.feeds-sidebar__feed:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.feeds-sidebar__feed--selected {
+  background: rgba(56, 128, 255, 0.08);
+  font-weight: 700;
+  color: var(--ion-color-primary-shade, #3171e0);
+}
+
+.feeds-sidebar__feed--unread {
+  font-weight: 700;
+}
+
+.feeds-sidebar__feed-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.feeds-sidebar__badge--feed {
+  margin-left: auto;
+}

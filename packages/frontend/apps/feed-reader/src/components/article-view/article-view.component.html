@@ -1,0 +1,64 @@
+@if (!item) {
+  <div class="article-view article-view--empty">
+    <div class="article-view__empty-inner">
+      <div class="article-view__empty-icon" aria-hidden="true">📰</div>
+      <p>Select an item to read</p>
+    </div>
+  </div>
+} @else {
+  <div class="article-view article-view--content">
+    <div class="article-view__inner">
+      <div class="article-view__title-row">
+        <button
+          type="button"
+          class="article-view__star"
+          [class.article-view__star--active]="item.starred"
+          (click)="onStarClick()"
+          [attr.aria-label]="item.starred ? 'Unstar' : 'Star'"
+        >
+          {{ item.starred ? '★' : '☆' }}
+        </button>
+        <h1 class="article-view__heading">{{ item.title }}</h1>
+      </div>
+
+      <div class="article-view__meta">
+        <span class="article-view__meta-feed">{{ feedTitle() }}</span>
+        <span class="article-view__meta-muted"> — {{ item.author }} </span>
+        <span class="article-view__meta-muted article-view__meta-date">
+          {{ formatFullDate(item.date) }}
+        </span>
+        <a
+          class="article-view__original"
+          [href]="item.url"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <svg
+            class="article-view__external-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            width="11"
+            height="11"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          Original
+        </a>
+      </div>
+
+      <div class="article-view__body">
+        @if (contentHtml) {
+          <div class="article-view__html" [innerHTML]="contentHtml"></div>
+        }
+      </div>
+    </div>
+  </div>
+}

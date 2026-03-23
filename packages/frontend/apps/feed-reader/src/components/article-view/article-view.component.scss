@@ -1,0 +1,141 @@
+:host {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.article-view {
+  flex: 1;
+  background: var(--article-bg, #fbfaf8);
+}
+
+.article-view--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ion-color-medium, #92949c);
+  font-size: 13px;
+}
+
+.article-view__empty-inner {
+  text-align: center;
+}
+
+.article-view__empty-icon {
+  font-size: 40px;
+  margin-bottom: 8px;
+  opacity: 0.2;
+}
+
+.article-view--content {
+  overflow-y: auto;
+}
+
+.article-view__inner {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px 24px;
+}
+
+.article-view__title-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.article-view__star {
+  margin-top: 2px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  color: rgba(var(--ion-color-medium-rgb, 146, 148, 156), 0.4);
+}
+
+.article-view__star--active,
+.article-view__star:hover {
+  color: #e6a800;
+}
+
+.article-view__heading {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.35;
+  color: var(--ion-color-dark, #222428);
+}
+
+.article-view__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+  padding-left: 28px;
+  font-size: 12px;
+}
+
+.article-view__meta-feed {
+  color: var(--ion-color-primary, #3880ff);
+}
+
+.article-view__meta-muted {
+  color: var(--ion-color-medium, #92949c);
+}
+
+.article-view__meta-date {
+  margin-left: 8px;
+}
+
+.article-view__original {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--ion-color-primary, #3880ff);
+  text-decoration: none;
+}
+
+.article-view__original:hover {
+  text-decoration: underline;
+}
+
+.article-view__external-icon {
+  flex-shrink: 0;
+}
+
+.article-view__body {
+  border-top: 1px solid var(--app-border-color, #dfdbd4);
+  padding-top: 16px;
+  padding-left: 28px;
+}
+
+.article-view__html {
+  font-size: 14px;
+  line-height: 1.625;
+  color: var(--ion-color-dark, #222428);
+
+  ::ng-deep p {
+    margin-bottom: 12px;
+  }
+
+  ::ng-deep ul {
+    list-style: disc;
+    padding-left: 20px;
+    margin-bottom: 12px;
+  }
+
+  ::ng-deep li {
+    margin-bottom: 4px;
+  }
+
+  ::ng-deep a {
+    color: var(--ion-color-primary, #3880ff);
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,24 @@
+<ion-content>
+  <div class="feed-subscriptions-layout">
+    <app-feeds-sidebar
+      [feeds]="initialFeeds"
+      [selectedFeedId]="selectedFeedId"
+      [selectedView]="selectedView"
+      (selectFeed)="handleSidebarSelectFeed($event)"
+      (selectView)="handleSidebarSelectView($event)"
+    />
+    <app-feed-items-list
+      [items]="items"
+      [feeds]="initialFeeds"
+      [selectedItemId]="selectedItemId"
+      [viewTitle]="viewTitle"
+      (selectItem)="handleSelectItem($event)"
+      (toggleStar)="handleToggleStar($event)"
+    />
+    <app-article-view
+      [item]="selectedItem"
+      [feeds]="initialFeeds"
+      (toggleStar)="handleToggleStar($event)"
+    />
+  </div>
+</ion-content>
