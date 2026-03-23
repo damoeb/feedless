@@ -18,10 +18,10 @@ data class Report(
   val disabled: Boolean = false,
   val disabledAt: LocalDateTime? = null,
   val segmentId: SegmentationId,
-  val segment: Segmentation,
+  val segment: Segmentation? = null,
   val userId: UserId? = null,
   val cronScheduleId: CronScheduleId,
-  val cronSchedule: CronSchedule,
+  val cronSchedule: CronSchedule? = null,
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )
 

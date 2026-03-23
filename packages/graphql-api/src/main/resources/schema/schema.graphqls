@@ -1408,7 +1408,7 @@ input ReportEmailRecipientInput {
 
 input SegmentRecordsWhereInput {
   latLng: GeoPointWhereInput
-  tags: StringFilterInput!
+  tags: StringFilterInput
   maxSize: Int
 }
 

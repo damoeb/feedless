@@ -55,87 +55,83 @@ class ReportUseCase(
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
 
-  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report =
-    withContext(Dispatchers.IO) {
-      log.info("createReport repositoryId=$repositoryId")
+  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report = withContext(Dispatchers.IO) {
+    log.info("createReport repositoryId=$repositoryId")
 
-      repositoryRepository.findById(repositoryId)!!
+    repositoryGuard.requireWrite(repositoryId)
 
-      val email = segment.recipient.email.email
+    val email = segment.recipient.email.email
 
-      repositoryGuard.requireWrite(repositoryId)
 //      val isOwner = repository.ownerId == user?.id || repository.ownerId == resolveUserId()?.uuid
-      // todo enable this
+    // todo enable this
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
 //      throw IllegalArgumentException() // obscured access denied
 //    }
-      val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
+    val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
 
-      val interval = when (segment.`when`.scheduled.interval) {
-        IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
-        IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
-      }
+    val interval = when (segment.`when`.scheduled.interval) {
+      IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
+      IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
+    }
 
-      var segmentation = Segmentation(
-        size = 200,
-        repositoryId = repositoryId,
-        timeSegmentStartingAt = startingAt,
-        timeInterval = interval.first
-      )
+    var segmentation = Segmentation(
+      size = 200,
+      repositoryId = repositoryId,
+      timeSegmentStartingAt = startingAt,
+      timeInterval = interval.first
+    )
 
-      segmentation = segment.what.latLng?.let {
-        it.near?.let {
-          segmentation.copy(
-            contentSegmentLatLon = LatLonPoint(it.point.lat, it.point.lng),
-            contentSegmentLatLonDistance = it.distanceKm
-          )
-        } ?: segmentation
+    segmentation = segment.what.latLng?.let {
+      it.near?.let {
+        segmentation.copy(
+          contentSegmentLatLon = LatLonPoint(it.point.lat, it.point.lng),
+          contentSegmentLatLonDistance = it.distanceKm
+        )
       } ?: segmentation
+    } ?: segmentation
 
-      segmentationRepository.save(segmentation)
+    segmentationRepository.save(segmentation)
 
+    val nextReportedAt = if (interval.first == ChronoUnit.MONTHS) {
+      startingAt.with(TemporalAdjusters.lastDayOfMonth())
+    } else {
+      startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+    }
 
-      val nextReportedAt = if (interval.first == ChronoUnit.MONTHS) {
-        startingAt.with(TemporalAdjusters.lastDayOfMonth())
-      } else {
-        startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
-      }
+    val cronSchedule = CronSchedule(
+      cronExpression = "",
+      scheduledNextAt = nextReportedAt
+    )
 
-      val cronSchedule = CronSchedule(
-        cronExpression = "",
-        scheduledNextAt = nextReportedAt
-      )
-      cronScheduleRepository.save(cronSchedule)
+    cronScheduleRepository.save(cronSchedule)
 
-      val reporterPlugin = segment.report.plugin
+    val reporterPlugin = segment.report.plugin
 
-      val plugin = pluginService.resolveById<ReportPlugin<*>>(reporterPlugin.pluginId)!!
+    val plugin = pluginService.resolveById<ReportPlugin<*>>(reporterPlugin.pluginId)!!
 //      plugin.tryParseParams("{}") // validate
 //      plugin.tryParseParams(reporterPlugin.params.toParams().paramsJsonString!!) // validate
 
-      val report = Report(
-        recipientName = segment.recipient.email.name,
-        recipientEmail = email,
 
-        // send authorization mail
-        authorizationAttempt = 1,
-        lastRequestedAuthorization = LocalDateTime.now(),
-        segmentId = segmentation.id,
-        segment = segmentation, // ignored, relevant for read
-        reporterPlugin = PluginExecution(
-          id = reporterPlugin.pluginId,
-          params = PluginExecutionJson()
-        ),
-        cronScheduleId = cronSchedule.id,
-        cronSchedule = cronSchedule, // ignore, relevant for read
-        userId = coroutineContext.userId()
-      )
+    val report = Report(
+      recipientName = segment.recipient.email.name,
+      recipientEmail = email,
 
-      meterRegistry.counter(AppMetrics.createReport)
-      sendReportCreatedMail(segment)
+      // send authorization mail
+      authorizationAttempt = 1,
+      lastRequestedAuthorization = LocalDateTime.now(),
+      segmentId = segmentation.id,
+      reporterPlugin = PluginExecution(
+        id = reporterPlugin.pluginId,
+        params = PluginExecutionJson()
+      ),
+      cronScheduleId = cronSchedule.id,
+      userId = coroutineContext.userId()
+    )
 
-      reportRepository.save(report)
-    }
+    meterRegistry.counter(AppMetrics.createReport)
+    sendReportCreatedMail(segment)
+    reportRepository.save(report)
+  }
 
   private suspend fun sendReportCreatedMail(segment: SegmentInput) {
     val params = ReportCreatedParams(
@@ -178,16 +174,17 @@ class ReportUseCase(
     }
 
     reports.forEach { report ->
-      val cron = report.cronSchedule
+      val cron = report.cronSchedule!!
       val now = LocalDateTime.now()
       try {
 
-        val (repository, documents) = resolveSegment(report.segment)
+        val (repository, documents) = resolveSegment(report.segment!!)
 
         resolveReporterPlugin(report.reporterPlugin)
-          .report(documents, repository, report.reporterPlugin.params.paramsJsonString!!, LogCollector())
+          .report(documents, repository, report.reporterPlugin.params, LogCollector())
 
-      } catch (_: Exception) {
+      } catch (e: Exception) {
+        log.error("Failed to process report job {}: {}", report.id, e.message, e)
         val next = nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
         withContext(Dispatchers.IO) {
           cronScheduleRepository.save(

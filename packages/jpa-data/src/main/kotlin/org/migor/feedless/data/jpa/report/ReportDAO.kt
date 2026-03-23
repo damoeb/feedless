@@ -18,11 +18,10 @@ interface ReportDAO : JpaRepository<ReportEntity, UUID> {
     value = """
       select distinct r from ReportEntity r
       inner join r.cronSchedule as c
-      inner join fetch r.segment
-      inner join fetch r.cronSchedule
-      inner join fetch r.reporterPlugin
+      join fetch r.segment
+      join fetch r.cronSchedule
       where r.disabled = false
-      and c.scheduledNextAt < :now
+      and  c.scheduledNextAt < :now
     """
   )
   fun findAllEnabledPendingBatched(@Param("now") now: LocalDateTime, pageable: PageRequest): List<ReportEntity>

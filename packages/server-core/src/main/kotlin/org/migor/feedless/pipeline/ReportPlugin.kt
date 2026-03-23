@@ -1,5 +1,6 @@
 package org.migor.feedless.pipeline
 
+import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.document.Document
 import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
 import org.migor.feedless.repository.Repository
@@ -17,7 +18,7 @@ interface ReportPlugin<T> : Plugin {
   suspend fun report(
     documents: List<Document>,
     repository: Repository,
-    params: String,
+    params: PluginExecutionJson,
     logCollector: LogCollector
   )
 
