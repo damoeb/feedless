@@ -9,23 +9,18 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
-import org.migor.feedless.document.Document
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.pipeline.ReportPlugin
-import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
-import org.migor.feedless.pipeline.plugins.toPluginExecutionJson
+import org.migor.feedless.pipeline.SinkPlugin
 import org.migor.feedless.pipelineJob.PluginExecution
-import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.nextCronDate
-import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
@@ -109,7 +104,7 @@ class ReportUseCase(
 
     val reporterPlugin = segment.report.plugin
 
-    val plugin = pluginService.resolveById<ReportPlugin<*>>(reporterPlugin.pluginId)!!
+    val plugin = pluginService.resolveById<SinkPlugin>(reporterPlugin.pluginId)!!
 //      plugin.tryParseParams("{}") // validate
 //      plugin.tryParseParams(reporterPlugin.params.toParams().paramsJsonString!!) // validate
 
@@ -179,19 +174,8 @@ class ReportUseCase(
       val cron = report.cronSchedule!!
       val now = LocalDateTime.now()
       try {
-
-        val segment = report.segment!!
-        val (repository, documents) = resolveSegment(segment)
-
         resolveReporterPlugin(report.reporterPlugin)
-          .report(
-            documents, repository, EventsReportPluginParams(
-              from = "no-reply@lokale.events",
-              to = report.recipientEmail,
-              subject = "",
-              language = "de",
-            ).toPluginExecutionJson(), LogCollector()
-          )
+          .report(report)
 
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
@@ -208,12 +192,6 @@ class ReportUseCase(
     }
   }
 
-  private suspend fun resolveReporterPlugin(plugin: PluginExecution): ReportPlugin<*> =
-    pluginService.resolveById<ReportPlugin<*>>(plugin.id)!!
-
-  private fun resolveSegment(segment: Segmentation): Pair<Repository, List<Document>> {
-    val repository = repositoryRepository.findById(segment.repositoryId)!!
-
-    return Pair(repository, emptyList())
-  }
+  private suspend fun resolveReporterPlugin(plugin: PluginExecution): SinkPlugin =
+    pluginService.resolveById<SinkPlugin>(plugin.id)!!
 }

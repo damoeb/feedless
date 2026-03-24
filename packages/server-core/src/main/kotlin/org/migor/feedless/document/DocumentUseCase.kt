@@ -26,7 +26,7 @@ import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.pipeline.ReportPlugin
+import org.migor.feedless.pipeline.SinkPlugin
 import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
@@ -236,7 +236,7 @@ class DocumentUseCase(
                   logCollector
                 )
 
-                is ReportPlugin<*> -> {
+                is SinkPlugin -> {
                   log.info("ignoring ${plugin.id()} plugin")
                   state.currentDocument
                 }

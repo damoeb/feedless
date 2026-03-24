@@ -54,10 +54,10 @@ interface DocumentRepository {
   fun saveAll(documents: List<Document>): List<Document>
   fun findAllFiltered(
     repositoryId: RepositoryId,
-    filter: DocumentsFilter?,
-    orderBy: RecordOrderBy?,
+    filter: DocumentsFilter? = null,
+    orderBy: RecordOrderBy? = null,
     status: ReleaseStatus,
-    tags: List<String>,
+    tags: List<String> = emptyList(),
     pageable: PageableRequest
   ): List<Document>
 

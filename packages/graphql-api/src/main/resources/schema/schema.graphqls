@@ -1670,9 +1670,21 @@ input PluginExecutionParamsInput {
   org_feedless_feed: FeedParamsInput
   org_feedless_diff_records: DiffRecordsParamsInput
   org_feedless_filter: [ItemFilterParamsInput!]
+  org_feedless_auctions_report: AuctionsReportPluginParamsInput
+  org_feedless_events_report: EventsReportPluginParamsInput
   jsonData: String
   org_feedless_fulltext: FulltextPluginParamsInput
   org_feedless_conditional_tag: [ConditionalTagInput!]
+}
+
+input AuctionsReportPluginParamsInput {
+  language: String!
+  objectType: String!
+  categories: [String!]!
+}
+
+input EventsReportPluginParamsInput {
+  language: String!
 }
 
 input FeedParamsInput {
@@ -1736,6 +1748,7 @@ enum FeedlessPlugins {
   org_feedless_fulltext
   org_feedless_filter
   org_feedless_event_report
+  org_feedless_auctions_report
   org_feedless_conditional_tag
   org_feedless_privacy
   org_feedless_detect_media

@@ -5,12 +5,13 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
-import org.migor.feedless.pipeline.ReportPlugin
-import org.migor.feedless.repository.Repository
-import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.pipeline.AbstractSegmentedSinkPlugin
+import org.migor.feedless.report.Report
+import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
 import org.slf4j.LoggerFactory
@@ -19,18 +20,8 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
 data class EventsReportPluginParams(
-  val language: String,
-  val from: String,
-  val to: String,
-  val subject: String,
+  val language: String
 )
-
-fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
-  return PluginExecutionJson(
-    paramsJsonString = Gson().toJson(this)
-  )
-}
-
 
 data class EventCalendarMailParams(
   val language: String,
@@ -44,12 +35,17 @@ data class MailTemplateEventCalendar(override val params: EventCalendarMailParam
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
+class EventsSegmentedSinkPlugin @Autowired constructor(
+  documentRepository: DocumentRepository,
+) : AbstractSegmentedSinkPlugin(documentRepository) {
 
-  private val log = LoggerFactory.getLogger(EventsReportPlugin::class.simpleName)
+  private val log = LoggerFactory.getLogger(EventsSegmentedSinkPlugin::class.simpleName)
 
   @Autowired
   private lateinit var mailService: MailService
+
+  @Autowired
+  private lateinit var repositoryRepository: RepositoryRepository
 
   @Autowired
   private lateinit var templateService: TemplateService
@@ -58,13 +54,13 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
   override fun name(): String = ""
   override fun listed() = false
 
-  override suspend fun report(
-    documents: List<Document>,
-    repository: Repository,
-    params: EventsReportPluginParams,
-    logCollector: LogCollector
-  ) {
-    logCollector.log("event-report ${documents.size}")
+  override suspend fun report(report: Report) {
+
+    val segment = report.segment!!
+    val documents = getSegmentOfDocuments(segment)
+    val params = fromPluginExecutionJson(report.reporterPlugin.params)
+
+//    val repoitory = repositoryRepository.findById(report.segment!!.repositoryId)
 
     val templateParams = EventCalendarMailParams(
       language = params.language,
@@ -74,25 +70,15 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
     val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(templateParams))
     mailService.send(
       OutgoingMail(
-        from = params.from,
-        to = listOf(params.to),
-        subject = params.subject,
+        from = "no-reply@lokale.events",
+        to = listOf(report.recipientEmail),
+        subject = "Events Report für Thalwil Woche 12",
         htmlContent = eventCalendarMail
       )
     )
   }
 
-  override suspend fun report(
-    documents: List<Document>,
-    repository: Repository,
-    params: PluginExecutionJson,
-    logCollector: LogCollector
-  ) {
-    return report(documents, repository, fromPluginExecutionJson(params), logCollector)
-  }
-
   private fun fromPluginExecutionJson(params: PluginExecutionJson): EventsReportPluginParams {
     return Gson().fromJson(params.paramsJsonString, EventsReportPluginParams::class.java)
   }
-
 }

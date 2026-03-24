@@ -10,6 +10,20 @@
     <div class="card">
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="auction-alert-form">
         <div class="form-field">
+          <label for="name">Name</label>
+          <ion-item lines="none">
+            <ion-input
+              id="name"
+              type="name"
+              fill="outline"
+              formControlName="name"
+              placeholder="Dein Name"
+              labelPlacement="stacked"
+            ></ion-input>
+          </ion-item>
+        </div>
+
+        <div class="form-field">
           <label for="email">Email</label>
           <ion-item lines="none">
             <ion-input

@@ -25,10 +25,16 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 
-import { PageService, PageTags } from '@feedless/components';
+import {
+  AppConfigService,
+  PageService,
+  PageTags,
+  ReportService,
+} from '@feedless/components';
 
 import { AutocompleteSelectComponent } from '../../app/components/autocomplete-select/autocomplete-select.component';
 import dayjs from 'dayjs';
+import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 
 export type ObjectType = 'liegenschaften' | 'beweglich';
 
@@ -82,8 +88,10 @@ function auctionCategoryValidator(): ValidatorFn {
   standalone: true,
 })
 export class CreateAuctionAlertPage implements OnInit {
+  private readonly reportService = inject(ReportService);
   private readonly pageService = inject(PageService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly appConfigService = inject(AppConfigService);
 
   /** Bundesländer (same labels as Ediktsdatei filters). */
   readonly countries = [
@@ -155,8 +163,12 @@ export class CreateAuctionAlertPage implements OnInit {
     'Sonstiges',
   ] as const;
 
+  readonly objectTypeRealEstate: ObjectType = 'liegenschaften';
+  readonly objectTypeOther: ObjectType = 'beweglich';
+
   readonly form = new FormGroup(
     {
+      name: new FormControl<string>('', [Validators.required]),
       email: new FormControl<string>('', [
         Validators.required,
         Validators.email,
@@ -166,7 +178,7 @@ export class CreateAuctionAlertPage implements OnInit {
         nonNullable: true,
         validators: [nonEmptyArrayValidator()],
       }),
-      objectType: new FormControl<ObjectType>('liegenschaften', {
+      objectType: new FormControl<ObjectType>(this.objectTypeRealEstate, {
         nonNullable: true,
         validators: [Validators.required],
       }),
@@ -178,9 +190,6 @@ export class CreateAuctionAlertPage implements OnInit {
     },
     { validators: [auctionCategoryValidator()] },
   );
-
-  readonly objectTypeRealEstate: ObjectType = 'liegenschaften';
-  readonly objectTypeOther: ObjectType = 'beweglich';
 
   ngOnInit() {
     this.pageService.setMetaTags(this.getPageTags());
@@ -205,14 +214,8 @@ export class CreateAuctionAlertPage implements OnInit {
       duration: 3000,
     });
     await toast.present();
-    this.form.reset({
-      email: '',
-      country: [],
-      objectType: 'liegenschaften',
-      liegenschaftKategorie: '',
-      beweglichKategorien: [],
-      nurInternetVersteigerungen: false,
-    });
+
+    this.createReporter();
   }
 
   private getPageTags(): PageTags {
@@ -230,5 +233,37 @@ export class CreateAuctionAlertPage implements OnInit {
       robots: 'index, follow',
       canonicalUrl: 'https://edikte.feedless.org',
     };
+  }
+
+  private getRepositoryId(): string {
+    return this.appConfigService.customProperties[
+      'auctionsRepositoryId'
+    ] as any;
+  }
+
+  private async createReporter() {
+    await this.reportService.createReport(this.getRepositoryId(), {
+      what: {
+        tags: {},
+      },
+      when: {
+        scheduled: {
+          interval: GqlIntervalUnit.Week,
+          startingAt: dayjs().day(0).toDate().getTime(),
+        },
+      },
+      report: {
+        plugin: {
+          pluginId: GqlFeedlessPlugins.OrgFeedlessEventReport,
+          params: {},
+        },
+      },
+      recipient: {
+        email: {
+          email: this.form.value.email,
+          name: this.form.value.name,
+        },
+      },
+    });
   }
 }

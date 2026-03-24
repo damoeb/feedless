@@ -26,10 +26,11 @@ import org.migor.feedless.generated.types.SegmentReportInput
 import org.migor.feedless.generated.types.StringFilterInput
 import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
-import org.migor.feedless.pipeline.plugins.EventsReportPlugin
+import org.migor.feedless.pipeline.plugins.EventsSegmentedSinkPlugin
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
@@ -58,7 +59,7 @@ class ReportUseCaseTest {
   private lateinit var userRepository: UserRepository
   private lateinit var templateService: TemplateService
   private lateinit var mailService: MailService
-  private val eventsReportPlugin = EventsReportPlugin()
+  private val eventsReportPlugin = EventsSegmentedSinkPlugin(mock(DocumentRepository::class.java))
   private lateinit var pluginService: PluginService
 
   @BeforeEach
@@ -108,7 +109,7 @@ class ReportUseCaseTest {
       what = SegmentRecordsWhereInput(tags = StringFilterInput()),
       report = SegmentReportInput(
         plugin = PluginExecutionInput(
-          pluginId = EventsReportPlugin().id(),
+          pluginId = eventsReportPlugin.id(),
           params = PluginExecutionParamsInput()
         )
       ),

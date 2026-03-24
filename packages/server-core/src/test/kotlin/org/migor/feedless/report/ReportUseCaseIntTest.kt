@@ -23,6 +23,7 @@ import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
@@ -39,7 +40,6 @@ import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
-import org.migor.feedless.pipeline.plugins.EventsReportPlugin
 import org.migor.feedless.pipeline.plugins.FulltextPlugin
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
@@ -272,7 +272,7 @@ class ReportUseCaseIntTest {
         what = SegmentRecordsWhereInput(),
         report = SegmentReportInput(
           plugin = PluginExecutionInput(
-            pluginId = EventsReportPlugin().id(),
+            pluginId = FeedlessPlugins.org_feedless_event_report.name,
             params = PluginExecutionParamsInput(),
           )
         ),
