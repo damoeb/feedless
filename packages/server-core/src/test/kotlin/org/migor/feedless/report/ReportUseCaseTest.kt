@@ -31,6 +31,7 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.EventsSegmentedSinkPlugin
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
@@ -59,7 +60,10 @@ class ReportUseCaseTest {
   private lateinit var userRepository: UserRepository
   private lateinit var templateService: TemplateService
   private lateinit var mailService: MailService
-  private val eventsReportPlugin = EventsSegmentedSinkPlugin(mock(DocumentRepository::class.java))
+  private val eventsReportPlugin = EventsSegmentedSinkPlugin(
+    mock(DocumentRepository::class.java),
+    mock(ReportDeactivationLinkFactory::class.java),
+  )
   private lateinit var pluginService: PluginService
 
   @BeforeEach
@@ -89,6 +93,7 @@ class ReportUseCaseTest {
       pluginService,
       mailService,
       mock(ReportGuard::class.java),
+      mock(ReportDeactivationLinkFactory::class.java),
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }

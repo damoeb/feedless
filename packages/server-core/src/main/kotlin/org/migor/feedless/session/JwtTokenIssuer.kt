@@ -114,6 +114,18 @@ class JwtTokenIssuer(
     )
   }
 
+  fun createJwtForReportDeactivationLink(userId: UserId): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report_unsubscribe"))).increment()
+    log.debug("signedToken for report deactivation link")
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.USER.value,
+        JwtParameterNames.CAPABILITIES to toAuthorities(listOf(UserCapability(userId))),
+      ),
+      getExpiration(AuthTokenType.SERVICE),
+    )
+  }
+
   fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")

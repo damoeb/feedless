@@ -28,7 +28,7 @@ fun injectCapabilitiesFromJwt(jwt: Jwt): RequestContext {
   val groupId = capabilities.filter { it.authority == GroupCapability.ID.value }
     .map { GroupCapability.fromString(it.payload) }
 
-  return RequestContext(userId = userId, groupId = groupId.first().groupId)
+  return RequestContext(userId = userId, groupId = groupId.firstOrNull()?.groupId)
 }
 
 fun injectCapabilitiesFromSecurityContext(): RequestContext {

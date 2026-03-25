@@ -48,6 +48,7 @@ class ReportUseCase(
   private val pluginService: PluginService,
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
+  private val reportDeactivationLinkFactory: ReportDeactivationLinkFactory,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -126,14 +127,15 @@ class ReportUseCase(
     )
 
     meterRegistry.counter(AppMetrics.createReport)
-    sendReportCreatedMail(segment)
-    reportRepository.save(report)
+    val saved = reportRepository.save(report)
+    sendReportCreatedMail(segment, saved)
+    saved
   }
 
-  private suspend fun sendReportCreatedMail(segment: SegmentInput) {
+  private suspend fun sendReportCreatedMail(segment: SegmentInput, report: Report) {
     val params = ReportCreatedParams(
       language = "de",
-      deactivationLink = "",
+      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
       reportName = "",
       cronExpression = "",
       nextScheduledAt = "",

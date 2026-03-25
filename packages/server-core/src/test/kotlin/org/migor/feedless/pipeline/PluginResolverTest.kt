@@ -3,6 +3,7 @@ package org.migor.feedless.pipeline
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.mockito.Mockito.mock
 import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
 import org.migor.feedless.pipeline.plugins.ConditionalTagPlugin
@@ -55,7 +56,10 @@ class PluginResolverTest {
 
   @Test
   fun testEventsReportPluginToDto() {
-    val incoming = EventsSegmentedSinkPlugin(mock(DocumentRepository::class.java))
+    val incoming = EventsSegmentedSinkPlugin(
+      mock(DocumentRepository::class.java),
+      mock(ReportDeactivationLinkFactory::class.java),
+    )
     val expected = PluginDto(
       id = "org_feedless_event_report",
       name = "",

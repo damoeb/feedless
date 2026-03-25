@@ -11,6 +11,7 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.AbstractSegmentedSinkPlugin
 import org.migor.feedless.report.Report
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
@@ -37,6 +38,7 @@ data class MailTemplateEventCalendar(override val params: EventCalendarMailParam
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class EventsSegmentedSinkPlugin @Autowired constructor(
   documentRepository: DocumentRepository,
+  private val reportDeactivationLinkFactory: ReportDeactivationLinkFactory,
 ) : AbstractSegmentedSinkPlugin(documentRepository) {
 
   private val log = LoggerFactory.getLogger(EventsSegmentedSinkPlugin::class.simpleName)
@@ -65,7 +67,7 @@ class EventsSegmentedSinkPlugin @Autowired constructor(
     val templateParams = EventCalendarMailParams(
       language = params.language,
       events = documents,
-      deactivationLink = "",
+      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
     )
     val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(templateParams))
     mailService.send(

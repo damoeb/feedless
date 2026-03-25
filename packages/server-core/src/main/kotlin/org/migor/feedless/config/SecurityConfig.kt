@@ -133,6 +133,7 @@ class SecurityConfig {
       ApiUrls.webToFeed,
       ApiUrls.webToFeedVerbose,
       ApiUrls.mailForwardingAllow + "/**",
+      ApiUrls.reportDelete + "/**",
       "/stream/feed/**",
       "/api/feed**",
       "/feed/**",

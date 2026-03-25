@@ -11,6 +11,7 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.AbstractSegmentedSinkPlugin
 import org.migor.feedless.report.Report
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
@@ -43,6 +44,7 @@ class AuctionsSegmentedSinkPlugin(
   private val templateService: TemplateService,
   private val repositoryRepository: RepositoryRepository,
   documentRepository: DocumentRepository,
+  private val reportDeactivationLinkFactory: ReportDeactivationLinkFactory,
 ) : AbstractSegmentedSinkPlugin(documentRepository) {
 
   private val log = LoggerFactory.getLogger(AuctionsSegmentedSinkPlugin::class.simpleName)
@@ -65,7 +67,7 @@ class AuctionsSegmentedSinkPlugin(
     val templateParams = AuctionsReportMailParams(
       language = params.language,
       documents = documents,
-      deactivationLink = "",
+      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
     )
     val auctionsReportMail = templateService.renderTemplate(MailTemplateAuctionsReport(templateParams))
     mailService.send(
