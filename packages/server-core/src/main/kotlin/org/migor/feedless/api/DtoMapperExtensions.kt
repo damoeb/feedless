@@ -6,7 +6,7 @@ import org.migor.feedless.api.mapper.ScrapeResponseMapper
 import org.migor.feedless.api.mapper.UserSecretMapper
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.mapper.toSource
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
 import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
 import org.migor.feedless.document.Document
@@ -97,8 +97,8 @@ class DtoMapperFacade(
   // Domain object mappings
 //    fun toDto(user: User): UserDto = userMapper.toDto(user)
 
-  fun toDto(document: Document, propertyService: PropertyService): RecordDto =
-    documentMapper.toDto(document, propertyService)
+  fun toDto(document: Document, appUrlsProperties: AppUrlsProperties): RecordDto =
+    documentMapper.toDto(document, appUrlsProperties)
 
 //    fun toDto(product: Product): ProductDto = productMapper.toDto(product)
 //    fun toDto(pricedProduct: PricedProduct): PricedProductDto = productMapper.toDto(pricedProduct)
@@ -162,8 +162,8 @@ class DtoMapperFacade(
 
 //fun User.toDTO(): UserDto = DtoMapperFacade.getInstance().toDto(this)
 
-fun Document.toDto(propertyService: PropertyService): RecordDto =
-  DtoMapperFacade.getInstance().toDto(this, propertyService)
+fun Document.toDto(appUrlsProperties: AppUrlsProperties): RecordDto =
+  DtoMapperFacade.getInstance().toDto(this, appUrlsProperties)
 
 //fun Product.toDTO(): ProductDto = DtoMapperFacade.getInstance().toDto(this)
 //fun PricedProduct.toDto(): PricedProductDto = DtoMapperFacade.getInstance().toDto(this)
@@ -186,8 +186,8 @@ fun RemoteNativeFeedRef.toDto(): RemoteNativeFeedDto = DtoMapperFacade.getInstan
 fun GenericFeedRule.toDto(): TransientGenericFeedDto = DtoMapperFacade.getInstance().toDto(this)
 fun SelectorsDto.fromDto(): GenericFeedSelectors = DtoMapperFacade.getInstance().fromDto(this)
 
-fun createDocumentUrl(propertyService: PropertyService, id: DocumentId): String =
-  "${propertyService.apiGatewayUrl}/article/${id}"
+fun createDocumentUrl(appUrlsProperties: AppUrlsProperties, id: DocumentId): String =
+  "${appUrlsProperties.apiGatewayUrl}/article/${id}"
 
 // Helper function for isHtml
 fun isHtml(rawMimeType: String?): Boolean = rawMimeType?.lowercase()?.startsWith("text/html") == true

@@ -15,7 +15,7 @@ import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.attachment.AttachmentRepository
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppLocaleProperties
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.scrape.GenericFeedParserOptions
 import org.migor.feedless.scrape.WebExtractService
@@ -68,11 +68,10 @@ internal class WebToFeedTransformerIntTest {
 
   @BeforeEach
   fun setUp() {
-    val propertyService = mock(PropertyService::class.java)
-    Mockito.`when`(propertyService.locale).thenReturn(Locale.forLanguageTag("en"))
-    Mockito.`when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
+    val appLocaleProperties = mock(AppLocaleProperties::class.java)
+    Mockito.`when`(appLocaleProperties.locale).thenReturn(Locale.forLanguageTag("en"))
 
-    parser = WebToFeedTransformer(propertyService, WebToTextTransformer(), webExtractService)
+    parser = WebToFeedTransformer(appLocaleProperties, WebToTextTransformer(), webExtractService)
   }
 
   @Test

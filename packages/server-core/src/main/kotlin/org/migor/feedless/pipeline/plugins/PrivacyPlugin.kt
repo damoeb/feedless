@@ -7,7 +7,7 @@ import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.attachment.AttachmentId
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -41,7 +41,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  lateinit var appUrlsProperties: AppUrlsProperties
 
   @Value("\${APP_BLACKLISTED_DOMAINS:}")
   lateinit var blacklistedDomainsStr: String
@@ -147,7 +147,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
         val attachment = toAttachment(response, documentId)
 
         val attachmentLinkElement = JsoupElement(JsoupTag.valueOf("a"), "")
-        attachmentLinkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
+        attachmentLinkElement.attr("href", createAttachmentUrl(appUrlsProperties, attachment.id))
         attachmentLinkElement.attr("target", "_blank")
         attachmentLinkElement.appendText("Full Image $origFormat")
 
@@ -195,7 +195,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     return try {
       val response = fetch(linkElement.attr("href"), arrayOf("application/pdf"))
       val attachment = toAttachment(response, documentId)
-      linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
+      linkElement.attr("href", createAttachmentUrl(appUrlsProperties, attachment.id))
       attachment
     } catch (t: Throwable) {
       log.debug("${t.message}")
@@ -250,5 +250,5 @@ private fun JsoupDocument.links(): List<JsoupElement> {
 }
 
 
-fun createAttachmentUrl(propertyService: PropertyService, id: AttachmentId): String =
-  "${propertyService.apiGatewayUrl}/attachment/${id.uuid}"
+fun createAttachmentUrl(appUrlsProperties: AppUrlsProperties, id: AttachmentId): String =
+  "${appUrlsProperties.apiGatewayUrl}/attachment/${id.uuid}"

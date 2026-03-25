@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.mapstruct.factory.Mappers
 import org.migor.feedless.api.mapper.DocumentMapper
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.repository.RepositoryId
 import org.mockito.Mockito
 import java.time.LocalDateTime
@@ -15,12 +15,12 @@ import java.time.ZoneOffset
 class DocumentResolverTest {
 
   private lateinit var documentMapper: DocumentMapper
-  private lateinit var propertyService: PropertyService
+  private lateinit var appUrlsProperties: AppUrlsProperties
 
   @BeforeEach
   fun setUp() {
     documentMapper = Mappers.getMapper(DocumentMapper::class.java)
-    propertyService = Mockito.mock(PropertyService::class.java)
+    appUrlsProperties = Mockito.mock(AppUrlsProperties::class.java)
   }
 
   @Test
@@ -47,7 +47,7 @@ class DocumentResolverTest {
       attachments = emptyList()
     )
 
-    val result = documentMapper.toDto(incoming, propertyService)
+    val result = documentMapper.toDto(incoming, appUrlsProperties)
 
     assertThat(result.id).isEqualTo(documentId.uuid.toString())
     assertThat(result.url).isEqualTo("https://example.com/article")

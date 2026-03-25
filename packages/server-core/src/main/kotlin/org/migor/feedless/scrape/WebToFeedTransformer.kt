@@ -6,7 +6,7 @@ import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppLocaleProperties
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.DOMElementByXPath
@@ -139,7 +139,7 @@ enum class ExtendContext(val value: String) {
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToFeedTransformer(
-  private var propertyService: PropertyService,
+  private var appLocaleProperties: AppLocaleProperties,
   private var webToTextTransformer: WebToTextTransformer,
   private var webExtractService: WebExtractService
 ) {
@@ -285,7 +285,7 @@ class WebToFeedTransformer(
     uri: URI,
     logger: LogCollector,
   ): JsonFeed {
-    val locale = extractLocale(document, propertyService.locale)
+    val locale = extractLocale(document, appLocaleProperties.locale)
     val element = withAbsUrls(document, uri)
     val response = webExtractService.extract(
       selectors.toScrapeExtracts(),

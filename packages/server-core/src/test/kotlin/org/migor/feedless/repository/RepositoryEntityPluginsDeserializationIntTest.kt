@@ -15,7 +15,7 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
 import org.migor.feedless.attachment.AttachmentRepository
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -33,6 +33,7 @@ import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
@@ -62,13 +63,14 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     DocumentRepository::class,
     DocumentUseCase::class,
     ProductUseCase::class,
-    PropertyService::class,
+    AppUrlsProperties::class,
     InboxService::class,
     AgentService::class,
     AttachmentRepository::class,
     OrderRepository::class,
     StatelessAuthService::class,
     SourcePipelineService::class,
+    ReportDeactivationLinkFactory::class,
   ]
 )
 class

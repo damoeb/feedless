@@ -22,7 +22,7 @@ import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.eq
 import org.migor.feedless.scrape.LogCollector
@@ -53,7 +53,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 )
 @MockitoBean(
   types = [
-    PropertyService::class,
+    AppUrlsProperties::class,
     AgentService::class,
     AttachmentDAO::class,
     SourceRepository::class,

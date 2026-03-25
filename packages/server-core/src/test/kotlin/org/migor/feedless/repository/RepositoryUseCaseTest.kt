@@ -16,7 +16,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.HttpFetchInput
@@ -67,7 +67,7 @@ class RepositoryUseCaseTest {
       repositoryRepository,
       planConstraintsService,
       mock(DocumentUseCase::class.java),
-      mock(PropertyService::class.java),
+      mock(AppUrlsProperties::class.java),
       sourceUseCase,
       repositoryGuard
     )

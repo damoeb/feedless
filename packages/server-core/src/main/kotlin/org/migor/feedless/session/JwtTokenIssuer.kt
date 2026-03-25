@@ -13,7 +13,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppJwtProperties
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -45,7 +46,8 @@ import kotlin.time.toDuration
 @Service
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtTokenIssuer(
-  private val propertyService: PropertyService,
+  private val appUrlsProperties: AppUrlsProperties,
+  private val appJwtProperties: AppJwtProperties,
   private val meterRegistry: MeterRegistry,
   @Value("\${auth.token.anonymous.validForDays}")
   private val tokenAnonymousValidForDays: String,
@@ -155,7 +157,7 @@ class JwtTokenIssuer(
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     var claimsSet = JwtClaimsSet.builder()
-      .issuer(propertyService.apiGatewayUrl)
+      .issuer(appUrlsProperties.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "feedless" }
       .claims { c -> c[JwtParameterNames.IAT] = Clock.System.now().toEpochMilliseconds() }
@@ -196,7 +198,7 @@ class JwtTokenIssuer(
   }
 
   private fun getSecretKey(): SecretKey {
-    return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    return SecretKeySpec(appJwtProperties.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }
 
   private fun toAuthorities(capabilities: List<Capability<out Any>>): Map<String, String> {

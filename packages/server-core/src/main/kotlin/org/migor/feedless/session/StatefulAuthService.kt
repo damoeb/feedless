@@ -9,7 +9,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppJwtProperties
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -24,8 +24,6 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import java.net.InetAddress
 import java.time.LocalDateTime
-import javax.crypto.SecretKey
-import javax.crypto.spec.SecretKeySpec
 import kotlin.properties.Delegates
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
@@ -38,7 +36,7 @@ class StatefulAuthService : AuthService() {
   private val log = LoggerFactory.getLogger(StatefulAuthService::class.simpleName)
 
   @Autowired
-  private lateinit var propertyService: PropertyService
+  private lateinit var appJwtProperties: AppJwtProperties
 
   @Autowired
   private lateinit var userRepository: UserRepository
@@ -139,8 +137,4 @@ class StatefulAuthService : AuthService() {
   private fun parseDuration(actual: String, fallback: String) = runCatching {
     actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
   }.getOrElse { fallback.toLong() }
-
-  private fun getSecretKey(): SecretKey {
-    return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
-  }
 }

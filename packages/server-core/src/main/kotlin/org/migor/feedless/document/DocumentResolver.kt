@@ -15,7 +15,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.api.toDto
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateRecordInput
@@ -49,7 +49,7 @@ import org.migor.feedless.generated.types.StringFilterInput as StringFilterInput
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentResolver(
   private val repositoryUseCase: RepositoryUseCase,
-  private val propertyService: PropertyService,
+  private val appUrlsProperties: AppUrlsProperties,
   private val documentUseCase: DocumentUseCase,
   private val documentGuard: DocumentGuard
 ) {
@@ -68,7 +68,7 @@ class DocumentResolver(
 
     DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = documentId
 
-    document.toDto(propertyService)
+    document.toDto(appUrlsProperties)
   }
 
   @Throttled
@@ -93,7 +93,7 @@ class DocumentResolver(
         pageable = pageable.toPageableRequest()
       ).map {
         it.toDto(
-          propertyService
+          appUrlsProperties
         )
       }.toList()
     }
@@ -124,7 +124,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
   ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    records.map { documentUseCase.createDocument(it).toDto(propertyService) }
+    records.map { documentUseCase.createDocument(it).toDto(appUrlsProperties) }
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
@@ -133,7 +133,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
+    documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(appUrlsProperties)
     true
   }
 

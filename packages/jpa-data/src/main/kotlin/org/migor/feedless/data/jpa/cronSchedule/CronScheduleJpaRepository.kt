@@ -17,7 +17,7 @@ class CronScheduleJpaRepository(private val cronScheduleDAO: CronScheduleDAO) :
   }
 
   override fun findByReportId(id: ReportId): CronSchedule {
-    return requireNotNull(cronScheduleDAO.findByReportId(id)) { "CronSchedule for report $id" }.toDomain()
+    return requireNotNull(cronScheduleDAO.findByReportId(id.uuid)) { "CronSchedule for report $id" }.toDomain()
   }
 
 }

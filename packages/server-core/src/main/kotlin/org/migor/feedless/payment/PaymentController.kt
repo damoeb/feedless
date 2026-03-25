@@ -3,7 +3,7 @@ package org.migor.feedless.payment
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.order.OrderId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -25,7 +25,7 @@ class PaymentController {
   private lateinit var paymentUseCase: PaymentUseCase
 
   @Autowired
-  private lateinit var propertyService: PropertyService
+  private lateinit var appUrlsProperties: AppUrlsProperties
 
 
   @GetMapping(
@@ -43,7 +43,7 @@ class PaymentController {
       log.error("Payment callback failed with ${ex.message}", ex)
       "success=false&message=${ex.message}"
     }
-    headers.add(HttpHeaders.LOCATION, "${propertyService.appHost}/payment/summary/${orderId}?$queryParams")
+    headers.add(HttpHeaders.LOCATION, "${appUrlsProperties.appHost}/payment/summary/${orderId}?$queryParams")
     ResponseEntity<String>(headers, HttpStatus.FOUND)
   }
 

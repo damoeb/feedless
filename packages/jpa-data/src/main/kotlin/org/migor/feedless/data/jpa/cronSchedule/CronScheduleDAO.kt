@@ -1,7 +1,6 @@
 package org.migor.feedless.data.jpa.cronSchedule
 
 import org.migor.feedless.AppLayer
-import org.migor.feedless.report.ReportId
 import org.springframework.context.annotation.Profile
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -17,5 +16,5 @@ interface CronScheduleDAO : JpaRepository<CronScheduleEntity, UUID> {
     """SELECT r.cronSchedule FROM ReportEntity r
     WHERE r.id = :id"""
   )
-  fun findByReportId(@Param("id") id: ReportId): CronScheduleEntity?
+  fun findByReportId(@Param("id") id: UUID): CronScheduleEntity?
 }

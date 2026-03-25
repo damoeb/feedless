@@ -15,7 +15,7 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.SortableRequest
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.auth.AuthToken
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
@@ -64,7 +64,7 @@ typealias ShipFeedItems = Boolean;
 @Service
 @Profile("${AppProfiles.feed} & ${AppLayer.service}")
 class FeedService(
-  private val propertyService: PropertyService,
+  private val appUrlsProperties: AppUrlsProperties,
   private val webToFeedTransformer: WebToFeedTransformer,
   private val feedParserService: FeedParserService,
   private val scrapeService: ScrapeService,
@@ -333,7 +333,7 @@ class FeedService(
 
   private fun createEolArticle(feedUrl: String): JsonItem {
     val article = JsonItem()
-    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    val feedActivationLink = "${appUrlsProperties.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
     article.title = "ACTION REQUIRED – Reenable Your Feed"
     article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
@@ -349,7 +349,7 @@ class FeedService(
 
   private fun createFeedMessage(feedUrl: String): JsonItem {
     val article = JsonItem()
-    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    val feedActivationLink = "${appUrlsProperties.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
     article.title = "ACTION REQUIRED – Reenable Your Feed"
     article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
