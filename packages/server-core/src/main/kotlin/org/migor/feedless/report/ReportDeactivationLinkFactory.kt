@@ -17,7 +17,7 @@ class ReportDeactivationLinkFactory(
   private val jwtTokenIssuer: JwtTokenIssuer,
 ) {
 
-  fun createLink(report: Report): String {
+  suspend fun createLink(report: Report): String {
     val userId = report.userId
       ?: throw IllegalArgumentException("report.userId is required for deactivation link")
     val jwt = jwtTokenIssuer.createJwtForReportDeactivationLink(userId)

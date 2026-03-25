@@ -12,7 +12,8 @@ import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppJwtProperties
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
@@ -25,20 +26,23 @@ import java.time.temporal.ChronoUnit
 class JwtTokenIssuerTest {
 
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
-  private lateinit var propertyService: PropertyService
+  private lateinit var appUrlsProperties: AppUrlsProperties
+  private lateinit var appJwtProperties: AppJwtProperties
   private lateinit var meterRegistry: MeterRegistry
   private val testJwtSecret = "test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm"
 
   @BeforeEach
   fun setUp() {
-    propertyService = mock(PropertyService::class.java)
+    appUrlsProperties = mock(AppUrlsProperties::class.java)
+    appJwtProperties = mock(AppJwtProperties::class.java)
     meterRegistry = SimpleMeterRegistry()
 
-    `when`(propertyService.jwtSecret).thenReturn(testJwtSecret)
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
+    `when`(appJwtProperties.jwtSecret).thenReturn(testJwtSecret)
+    `when`(appUrlsProperties.apiGatewayUrl).thenReturn("http://localhost:8080")
 
     jwtTokenIssuer = JwtTokenIssuer(
-      propertyService = propertyService,
+      appUrlsProperties = appUrlsProperties,
+      appJwtProperties = appJwtProperties,
       meterRegistry = meterRegistry,
       tokenAnonymousValidForDays = "1",
       defaultTokenAnonymousValidForDays = "1"

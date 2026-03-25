@@ -67,7 +67,7 @@ class AuctionsSegmentedSinkPlugin(
     val templateParams = AuctionsReportMailParams(
       language = params.language,
       documents = documents,
-      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
+      deactivationLink = reportDeactivationLinkFactory.createLink(report)
     )
     val auctionsReportMail = templateService.renderTemplate(MailTemplateAuctionsReport(templateParams))
     mailService.send(

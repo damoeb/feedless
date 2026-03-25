@@ -18,7 +18,7 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.generated.types.CreateRecordInput
 import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.message.MessageService
@@ -62,7 +62,7 @@ class DocumentUseCase(
   private val pluginService: PluginService,
   private val telegramBotServiceMaybe: Optional<TelegramBotService>,
   private val messageService: MessageService,
-  private val propertyService: PropertyService,
+  private val appUrlsProperties: AppUrlsProperties,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
 ) : DocumentProvider {
@@ -216,7 +216,7 @@ class DocumentUseCase(
                 is FilterEntityPlugin<*> -> {
                   if (!plugin.filterEntity(
                       state.currentDocument.toJsonItem(
-                        propertyService,
+                        appUrlsProperties,
                         EntityVisibility.isPublic
                       ),
                       job.executorParams.paramsJsonString,

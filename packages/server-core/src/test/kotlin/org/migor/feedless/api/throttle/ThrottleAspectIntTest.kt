@@ -13,7 +13,7 @@ import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.license.LicenseUseCase
@@ -55,7 +55,7 @@ import kotlin.time.Duration.Companion.seconds
     UserUseCase::class,
     DocumentUseCase::class,
     HttpService::class,
-    PropertyService::class,
+    AppUrlsProperties::class,
     UserGuard::class,
     UserSecretUseCase::class,
     UserRepository::class,

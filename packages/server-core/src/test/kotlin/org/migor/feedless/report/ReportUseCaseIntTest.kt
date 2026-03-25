@@ -12,10 +12,12 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any
+import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
+import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.order.OrderDAO
 import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
@@ -23,6 +25,7 @@ import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.generated.types.EventsReportPluginParamsInput
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.PluginExecutionInput
@@ -57,10 +60,12 @@ import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.mockito.kotlin.reset
+import org.mockito.Mockito
+import org.mockito.Mockito.clearInvocations
 import org.mockito.kotlin.verify
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.boot.test.mock.mockito.MockBean
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -89,7 +94,7 @@ import java.time.LocalDateTime
     DocumentPipelineJobRepository::class,
     FeatureService::class,
     ProductUseCase::class,
-    PropertyService::class,
+    AppUrlsProperties::class,
     RepositoryHarvester::class,
     AttachmentRepository::class,
     GroupUseCase::class,
@@ -110,6 +115,9 @@ class ReportUseCaseIntTest {
   @Autowired
   private lateinit var reportUseCase: ReportUseCase
 
+  @MockBean
+  private lateinit var reportDeactivationLinkFactory: ReportDeactivationLinkFactory
+
   @Autowired
   private lateinit var repositoryRepository: RepositoryRepository
 
@@ -121,6 +129,9 @@ class ReportUseCaseIntTest {
 
   @Autowired
   private lateinit var groupRepository: GroupRepository
+
+  @Autowired
+  private lateinit var cronScheduleRepository: CronScheduleRepository
 
   @MockitoBean
   private lateinit var mailService: MailService
@@ -153,6 +164,8 @@ class ReportUseCaseIntTest {
 
     assertThat(repositoryRepository.countByGroupId(group.id)).isEqualTo(1)
     assertThat(documentRepository.countByRepositoryId(repository.id)).isEqualTo(4)
+
+    Mockito.`when`(reportDeactivationLinkFactory.createLink(any2())).thenReturn("link")
   }
 
   private suspend fun addDocuments(it: Repository) {
@@ -251,16 +264,21 @@ class ReportUseCaseIntTest {
   @Test
   fun `given a report exists, processReportJobs will send a report`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
-      createReport()
-      reset(mailService)
+      val report = createReport()
+      clearInvocations(mailService)
+
+      val cron = cronScheduleRepository.findByReportId(report.id)
+      cronScheduleRepository.save(
+        cron.copy(scheduledNextAt = LocalDateTime.now().minusHours(1))
+      )
 
       reportUseCase.processReportJobs()
 
       verify(mailService).send(any(OutgoingMail::class.java))
     }
 
-  private suspend fun createReport() {
-    reportUseCase.createReport(
+  private suspend fun createReport(): Report {
+    return reportUseCase.createReport(
       repository.id,
       SegmentInput(
         `when` = TimeSegmentInput(
@@ -273,7 +291,9 @@ class ReportUseCaseIntTest {
         report = SegmentReportInput(
           plugin = PluginExecutionInput(
             pluginId = FeedlessPlugins.org_feedless_event_report.name,
-            params = PluginExecutionParamsInput(),
+            params = PluginExecutionParamsInput(
+              org_feedless_events_report = EventsReportPluginParamsInput(language = "de"),
+            ),
           )
         ),
         recipient = ReportRecipientInput(

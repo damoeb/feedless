@@ -11,7 +11,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -97,7 +97,7 @@ class FeedServiceTest {
     `when`(jwtTokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
 
     feedService = FeedService(
-      mock(PropertyService::class.java),
+      mock(AppUrlsProperties::class.java),
       webToFeedTransformer,
       feedParserService,
       scrapeService,

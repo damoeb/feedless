@@ -3,7 +3,7 @@ package org.migor.feedless.api.mapper
 import org.apache.commons.lang3.StringUtils
 import org.mapstruct.Mapper
 import org.mapstruct.Mapping
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.document.Document
 import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.GeoPoint
@@ -28,14 +28,14 @@ abstract class DocumentMapper {
   @Mapping(target = "updatedAt", expression = "java(MapperUtil.toMillis(document.getUpdatedAt()))")
   @Mapping(target = "latLng", expression = "java(getLatLng(document))")
   @Mapping(target = "tags", expression = "java(getTags(document))")
-  @Mapping(target = "attachments", expression = "java(getAttachments(document, propertyService))")
+  @Mapping(target = "attachments", expression = "java(getAttachments(document, appUrlsProperties))")
   @Mapping(target = "publishedAt", expression = "java(MapperUtil.toMillis(document.getPublishedAt()))")
   @Mapping(target = "startingAt", expression = "java(MapperUtil.toMillis(document.getStartingAt()))")
   @Mapping(target = "imageUrl", source = "document.imageUrl")
   @Mapping(target = "url", source = "document.url")
   @Mapping(target = "title", source = "document.title")
   @Mapping(target = "text", source = "document.text")
-  abstract fun toDto(document: Document, propertyService: PropertyService): Record
+  abstract fun toDto(document: Document, appUrlsProperties: AppUrlsProperties): Record
 
   protected fun getHtml(document: Document): String? {
     return if (StringUtils.isBlank(document.html) && isHtml(document.rawMimeType)) {
@@ -79,11 +79,11 @@ abstract class DocumentMapper {
     return baseTags.plus(addListenableTag(audioAttachments))
   }
 
-  protected fun getAttachments(document: Document, propertyService: PropertyService): List<Attachment> {
+  protected fun getAttachments(document: Document, appUrlsProperties: AppUrlsProperties): List<Attachment> {
     return document.attachments.map {
       Attachment(
         id = it.id.toString(),
-        url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
+        url = it.remoteDataUrl ?: createAttachmentUrl(appUrlsProperties, it.id),
         type = it.mimeType,
         duration = it.duration,
         size = it.size,

@@ -16,7 +16,7 @@ import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
 import org.migor.feedless.feature.FeatureService
@@ -73,7 +73,7 @@ import java.time.LocalDateTime
     PluginService::class,
     FeatureService::class,
     ProductUseCase::class,
-    PropertyService::class,
+    AppUrlsProperties::class,
     RepositoryHarvester::class,
     AttachmentRepository::class,
     GroupUseCase::class,

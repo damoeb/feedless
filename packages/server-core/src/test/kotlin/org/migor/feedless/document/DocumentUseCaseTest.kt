@@ -20,7 +20,7 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.CreateRecordInput
@@ -76,7 +76,7 @@ class DocumentUseCaseTest {
   private lateinit var userRepository: UserRepository
 
   private lateinit var documentUseCase: DocumentUseCase
-  private lateinit var propertyService: PropertyService
+  private lateinit var appUrlsProperties: AppUrlsProperties
 
   private lateinit var currentUser: User
   private lateinit var documentGuard: DocumentGuard
@@ -106,7 +106,7 @@ class DocumentUseCaseTest {
     planConstraintsService = mock(PlanConstraintsService::class.java)
     telegramBotService = mock(TelegramBotService::class.java)
     messageService = mock(MessageService::class.java)
-    propertyService = mock(PropertyService::class.java)
+    appUrlsProperties = mock(AppUrlsProperties::class.java)
 
     filterPlugin = spy(CompositeFilterPlugin())
     fulltextPlugin = mock(FulltextPlugin::class.java)
@@ -128,7 +128,7 @@ class DocumentUseCaseTest {
       pluginService,
       Optional.of(telegramBotService),
       messageService,
-      propertyService,
+      appUrlsProperties,
       documentGuard,
       repositoryGuard,
     )
@@ -146,9 +146,9 @@ class DocumentUseCaseTest {
       contentHash = ""
     )
 
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://foo.bar")
+    `when`(appUrlsProperties.apiGatewayUrl).thenReturn("http://foo.bar")
 
-    assertThat(document.toJsonItem(propertyService, EntityVisibility.isPublic)).isNotNull();
+    assertThat(document.toJsonItem(appUrlsProperties, EntityVisibility.isPublic)).isNotNull();
 
     repository = Repository(
       id = repositoryId,

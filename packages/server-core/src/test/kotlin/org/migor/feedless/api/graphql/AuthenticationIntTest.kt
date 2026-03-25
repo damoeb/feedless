@@ -11,7 +11,8 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppJwtProperties
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
@@ -85,7 +86,10 @@ class AuthenticationIntTest {
   lateinit var authService: AuthService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  lateinit var appJwtProperties: AppJwtProperties
+
+  @Autowired
+  lateinit var appUrlsProperties: AppUrlsProperties
 
   @MockitoBean
   lateinit var userSecretRepository: UserSecretRepository
@@ -101,7 +105,7 @@ class AuthenticationIntTest {
     this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
 
     // Create JWT decoder with the same secret key used to sign tokens
-    val secretKey: SecretKey = SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    val secretKey: SecretKey = SecretKeySpec(appJwtProperties.jwtSecret.encodeToByteArray(), "HmacSHA256")
     this.jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey).build()
   }
 
@@ -143,7 +147,7 @@ class AuthenticationIntTest {
     val jwt = jwtDecoder.decode(actualToken)
     assertThat(jwt).isNotNull()
     assertThat(jwt.tokenValue).isEqualTo(actualToken)
-    assertThat(jwt.issuer.toString()).isEqualTo(propertyService.apiGatewayUrl)
+    assertThat(jwt.issuer.toString()).isEqualTo(appUrlsProperties.apiGatewayUrl)
   }
 }
 

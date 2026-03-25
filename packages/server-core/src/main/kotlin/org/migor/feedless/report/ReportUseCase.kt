@@ -6,7 +6,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.generated.types.IntervalUnit
@@ -21,6 +20,7 @@ import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.nextCronDate
+import org.migor.feedless.repository.toParams
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
@@ -120,7 +120,7 @@ class ReportUseCase(
       segmentId = segmentation.id,
       reporterPlugin = PluginExecution(
         id = reporterPlugin.pluginId,
-        params = PluginExecutionJson()
+        params = reporterPlugin.params.toParams()
       ),
       cronScheduleId = cronSchedule.id,
       userId = coroutineContext.userId()
@@ -135,7 +135,10 @@ class ReportUseCase(
   private suspend fun sendReportCreatedMail(segment: SegmentInput, report: Report) {
     val params = ReportCreatedParams(
       language = "de",
-      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
+      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.fold(
+        onSuccess = { it ?: "" },
+        onFailure = { "" },
+      ),
       reportName = "",
       cronExpression = "",
       nextScheduledAt = "",
@@ -181,7 +184,11 @@ class ReportUseCase(
 
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
-        val next = nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
+        val next = if (cron.cronExpression.isNotBlank()) {
+          nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
+        } else {
+          (cron.scheduledNextAt ?: now).plusWeeks(1)
+        }
         withContext(Dispatchers.IO) {
           cronScheduleRepository.save(
             cron.copy(

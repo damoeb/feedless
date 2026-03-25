@@ -12,7 +12,7 @@ import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.mockito.Mockito
 import org.mockito.Mockito.anyInt
 import org.mockito.Mockito.anyString
@@ -60,9 +60,9 @@ internal class PrivacyPluginTest {
   @BeforeEach
   fun setUp() {
     plugin = PrivacyPlugin()
-    val mockPropertyService = mock(PropertyService::class.java)
-    `when`(mockPropertyService.apiGatewayUrl).thenReturn("https://localhost:8080/")
-    plugin.propertyService = mockPropertyService
+    val mockAppUrlsProperties = mock(AppUrlsProperties::class.java)
+    `when`(mockAppUrlsProperties.apiGatewayUrl).thenReturn("https://localhost:8080/")
+    plugin.appUrlsProperties = mockAppUrlsProperties
     mockHttpService = mock(HttpService::class.java)
     plugin.httpService = mockHttpService
   }

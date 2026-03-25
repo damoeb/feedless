@@ -13,7 +13,7 @@ import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
 import org.migor.feedless.document.DocumentRepository
@@ -40,6 +40,7 @@ import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
+import org.migor.feedless.report.ReportDeactivationLinkFactory
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.user.User
@@ -71,12 +72,13 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
     DocumentRepository::class,
     DocumentUseCase::class,
     ProductUseCase::class,
-    PropertyService::class,
+    AppUrlsProperties::class,
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,
     AgentService::class,
     SourcePipelineService::class,
+    ReportDeactivationLinkFactory::class,
   ]
 )
 class RepositoryUseCaseIntTest {

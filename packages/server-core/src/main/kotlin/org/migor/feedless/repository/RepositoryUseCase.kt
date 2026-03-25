@@ -18,7 +18,7 @@ import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.config.AppUrlsProperties
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentUseCase
@@ -77,7 +77,7 @@ class RepositoryUseCase(
   private val repositoryRepository: RepositoryRepository,
   private val planConstraintsService: PlanConstraintsService,
   private val documentUseCase: DocumentUseCase,
-  private val propertyService: PropertyService,
+  private val appUrlsProperties: AppUrlsProperties,
   private val sourceUseCase: SourceUseCase,
   private val repositoryGuard: RepositoryGuard,
 ) : RepositoryProvider {
@@ -122,7 +122,7 @@ class RepositoryUseCase(
         filter = filter,
         orderBy = order,
         pageable = pageable,
-      ).map { it.toJsonItem(propertyService, repository.visibility) }.toList()
+      ).map { it.toJsonItem(appUrlsProperties, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
       log.error("empty result", e)
@@ -140,13 +140,13 @@ class RepositoryUseCase(
 //    jsonFeed.tags = tags
     jsonFeed.title = title
     jsonFeed.description = repository.description
-    jsonFeed.websiteUrl = "${propertyService.appHost}/feeds/$repositoryId"
+    jsonFeed.websiteUrl = "${appUrlsProperties.appHost}/feeds/$repositoryId"
     jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: LocalDateTime.now()
     jsonFeed.items = items.filterIndexed { index, _ -> index < pageSize - 1 }
     jsonFeed.imageUrl = null
     jsonFeed.page = page
     jsonFeed.expired = false
-    val urlBuilder = UriComponentsBuilder.fromHttpUrl("${propertyService.apiGatewayUrl}/f/${repositoryId}/atom")
+    val urlBuilder = UriComponentsBuilder.fromHttpUrl("${appUrlsProperties.apiGatewayUrl}/f/${repositoryId}/atom")
 //    if (shareKey != null) {
 //      urlBuilder.queryParam("skey", shareKey)
 //    }
@@ -426,7 +426,9 @@ fun PluginExecutionParamsInput.toParams(): PluginExecutionJson {
     org_feedless_diff_records,
     jsonData,
     org_feedless_conditional_tag,
-    org_feedless_fulltext
+    org_feedless_fulltext,
+    org_feedless_events_report,
+    org_feedless_auctions_report,
   )
     .firstOrNull()
 
@@ -436,7 +438,7 @@ fun PluginExecutionParamsInput.toParams(): PluginExecutionJson {
 }
 
 fun Document.toJsonItem(
-  propertyService: PropertyService,
+  appUrlsProperties: AppUrlsProperties,
   visibility: EntityVisibility,
   requestURI: String? = null
 ): JsonItem {
@@ -451,14 +453,14 @@ fun Document.toJsonItem(
   article.title = StringUtils.trimToEmpty(title)
   article.attachments = attachments.map {
     JsonAttachment(
-      url = it.remoteDataUrl ?: createAttachmentUrl(propertyService, it.id),
+      url = it.remoteDataUrl ?: createAttachmentUrl(appUrlsProperties, it.id),
       type = it.mimeType,
       length = it.size,
       duration = it.duration
     )
   }
   if (visibility === EntityVisibility.isPublic) {
-    article.url = createDocumentUrl(propertyService, id)
+    article.url = createDocumentUrl(appUrlsProperties, id)
     article.text = StringUtils.abbreviate(text, "...", 160)
   } else {
     article.url = url

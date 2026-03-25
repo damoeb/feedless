@@ -12,11 +12,9 @@ import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.AbstractSegmentedSinkPlugin
 import org.migor.feedless.report.Report
 import org.migor.feedless.report.ReportDeactivationLinkFactory
-import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -36,21 +34,14 @@ data class MailTemplateEventCalendar(override val params: EventCalendarMailParam
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class EventsSegmentedSinkPlugin @Autowired constructor(
+class EventsSegmentedSinkPlugin(
   documentRepository: DocumentRepository,
+  private val mailService: MailService,
+  private val templateService: TemplateService,
   private val reportDeactivationLinkFactory: ReportDeactivationLinkFactory,
 ) : AbstractSegmentedSinkPlugin(documentRepository) {
 
   private val log = LoggerFactory.getLogger(EventsSegmentedSinkPlugin::class.simpleName)
-
-  @Autowired
-  private lateinit var mailService: MailService
-
-  @Autowired
-  private lateinit var repositoryRepository: RepositoryRepository
-
-  @Autowired
-  private lateinit var templateService: TemplateService
 
   override fun id(): String = FeedlessPlugins.org_feedless_event_report.name
   override fun name(): String = ""
@@ -67,7 +58,7 @@ class EventsSegmentedSinkPlugin @Autowired constructor(
     val templateParams = EventCalendarMailParams(
       language = params.language,
       events = documents,
-      deactivationLink = runCatching { reportDeactivationLinkFactory.createLink(report) }.getOrDefault(""),
+      deactivationLink = reportDeactivationLinkFactory.createLink(report),
     )
     val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(templateParams))
     mailService.send(
