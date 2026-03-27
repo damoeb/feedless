@@ -24,7 +24,7 @@ WITH inserted AS (SELECT r.id              AS report_id,
          )
          SELECT cron_id,
                 NOW(),
-                '0 12 * * 0',
+                '0 0 12 * * 0',
                 next_reported_at
          FROM inserted
          RETURNING id)

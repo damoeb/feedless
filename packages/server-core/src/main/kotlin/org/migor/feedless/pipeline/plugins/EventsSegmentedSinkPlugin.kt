@@ -1,6 +1,7 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
@@ -72,6 +73,8 @@ class EventsSegmentedSinkPlugin(
   }
 
   private fun fromPluginExecutionJson(params: PluginExecutionJson): EventsReportPluginParams {
-    return Gson().fromJson(params.paramsJsonString, EventsReportPluginParams::class.java)
+    return StringUtils.trimToNull(params.paramsJsonString)
+      ?.let { Gson().fromJson(params.paramsJsonString, EventsReportPluginParams::class.java) }
+      ?: EventsReportPluginParams(language = "de")
   }
 }
