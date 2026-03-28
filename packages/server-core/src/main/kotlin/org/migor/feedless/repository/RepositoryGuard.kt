@@ -39,6 +39,18 @@ class RepositoryGuard(
     repository
   }
 
+  /**
+   * Public repositories used for shared products (e.g. Edikte Alerts): subscribers may create reports
+   * without being the repository owner.
+   */
+  suspend fun requirePublicRepositoryForAlertSubscription(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
+    val repository = repositoryRepository.findById(id) ?: throw NotFoundException("Repository $id not found")
+    if (repository.visibility !== EntityVisibility.isPublic) {
+      throw AccessDeniedException("Repository $id does not allow public alert subscriptions")
+    }
+    repository
+  }
+
   private suspend fun requireRead(userId: UserId?, id: RepositoryId): Pair<User?, Repository> {
     val repository = repositoryRepository.findById(id) ?: throw NotFoundException("Repository $id not found")
     if (repository.visibility === EntityVisibility.isPublic) {

@@ -24,6 +24,7 @@ import org.migor.feedless.repository.toParams
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -124,6 +125,84 @@ class ReportUseCase(
       ),
       cronScheduleId = cronSchedule.id,
       userId = coroutineContext.userId()
+    )
+
+    meterRegistry.counter(AppMetrics.createReport)
+    val saved = reportRepository.save(report)
+    sendReportCreatedMail(segment, saved)
+    saved
+  }
+
+  /**
+   * Same as [createReport] but for a **public** shared repository (subscriber is not the repo owner).
+   * Used after Stripe subscription checkout (trial) for products like auction-alert.
+   */
+  suspend fun createReportForPublicRepository(
+    repositoryId: RepositoryId,
+    segment: SegmentInput,
+    subscriberUserId: UserId,
+  ): Report = withContext(Dispatchers.IO) {
+    log.info("createReportForPublicRepository repositoryId=$repositoryId user=$subscriberUserId")
+
+    repositoryGuard.requirePublicRepositoryForAlertSubscription(repositoryId)
+
+    val email = segment.recipient.email.email
+
+    val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
+
+    val interval = when (segment.`when`.scheduled.interval) {
+      IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
+      IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
+    }
+
+    var segmentation = Segmentation(
+      size = 200,
+      repositoryId = repositoryId,
+      timeSegmentStartingAt = startingAt,
+      timeInterval = interval.first
+    )
+
+    segmentation = segment.what.latLng?.let {
+      it.near?.let {
+        segmentation.copy(
+          contentSegmentLatLon = LatLonPoint(it.point.lat, it.point.lng),
+          contentSegmentLatLonDistance = it.distanceKm
+        )
+      } ?: segmentation
+    } ?: segmentation
+
+    segmentationRepository.save(segmentation)
+
+    val nextReportedAt = if (interval.first == ChronoUnit.MONTHS) {
+      startingAt.with(TemporalAdjusters.lastDayOfMonth())
+    } else {
+      startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
+    }
+
+    val cronSchedule = CronSchedule(
+      cronExpression = "",
+      scheduledNextAt = nextReportedAt
+    )
+
+    cronScheduleRepository.save(cronSchedule)
+
+    val reporterPlugin = segment.report.plugin
+
+    pluginService.resolveById<SinkPlugin>(reporterPlugin.pluginId)!!
+
+    val report = Report(
+      recipientName = segment.recipient.email.name,
+      recipientEmail = email,
+
+      authorizationAttempt = 1,
+      lastRequestedAuthorization = LocalDateTime.now(),
+      segmentId = segmentation.id,
+      reporterPlugin = PluginExecution(
+        id = reporterPlugin.pluginId,
+        params = reporterPlugin.params.toParams()
+      ),
+      cronScheduleId = cronSchedule.id,
+      userId = subscriberUserId
     )
 
     meterRegistry.counter(AppMetrics.createReport)

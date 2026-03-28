@@ -10,6 +10,50 @@ p {
   justify-self: center;
 }
 
+.step-indicator {
+  font-size: 0.875rem;
+  color: var(--ion-color-medium);
+  margin-bottom: 0.75rem;
+}
+
+.trial-section {
+  margin-bottom: 1.25rem;
+
+  h2 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: var(--ion-text-color);
+  }
+
+  p {
+    margin: 0 0 0.75rem;
+    color: var(--ion-color-medium);
+    font-size: 1rem;
+    line-height: 1.45;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  .trial-hint {
+    font-size: 0.95rem;
+  }
+}
+
+.accept-terms-item {
+  margin-bottom: 1rem;
+}
+
+.checkout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
 .card {
   padding: 20px;
   border: 1px solid var(--app-border-color);

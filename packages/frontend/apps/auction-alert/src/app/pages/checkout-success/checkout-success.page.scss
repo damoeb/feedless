@@ -1,0 +1,14 @@
+.checkout-result {
+  max-width: 32rem;
+  margin: 2rem auto;
+
+  h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  p {
+    color: var(--ion-color-medium);
+    line-height: 1.5;
+  }
+}

@@ -178,6 +178,11 @@ type Mutation {
   deleteRepository(data: RepositoryUniqueWhereInput!): Boolean!
 
   createReport(repositoryId: ID!, segmentation: SegmentInput!): Report!
+  """
+  Start Stripe subscription checkout (trial) for auction-alert style signups.
+  If an account with the same email already exists, returns loginRequired instead of a checkout URL.
+  """
+  createAuctionAlertCheckout(repositoryId: ID!, segmentation: SegmentInput!): AuctionAlertCheckoutResult!
   deleteReport(reportId: ID!): Boolean!
 
   logout: Boolean
@@ -198,6 +203,12 @@ type Mutation {
 type Report {
   id: ID!
   createdAt: Long!
+}
+
+type AuctionAlertCheckoutResult {
+  checkoutUrl: String
+  loginRequired: Boolean!
+  errorMessage: String
 }
 
 input UpsertOrderInput {

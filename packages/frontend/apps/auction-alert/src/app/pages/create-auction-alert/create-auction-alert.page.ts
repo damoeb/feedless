@@ -1,11 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import {
-  ChangeDetectionStrategy,
-  Component,
-  inject,
-  OnInit,
-  PLATFORM_ID,
-} from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, signal } from '@angular/core';
 import {
   AbstractControl,
   FormControl,
@@ -27,17 +21,20 @@ import {
   IonRadioGroup,
   ToastController,
 } from '@ionic/angular/standalone';
+import { ApolloClient } from '@apollo/client/core';
 
-import {
-  AppConfigService,
-  PageService,
-  PageTags,
-  ReportService,
-} from '@feedless/components';
+import { AppConfigService, PageService, PageTags } from '@feedless/components';
 
 import { AutocompleteSelectComponent } from '../../components/autocomplete-select/autocomplete-select.component';
 import dayjs from 'dayjs';
-import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
+import {
+  CreateAuctionAlertCheckout,
+  GqlCreateAuctionAlertCheckoutMutation,
+  GqlCreateAuctionAlertCheckoutMutationVariables,
+  GqlFeedlessPlugins,
+  GqlIntervalUnit,
+  GqlSegmentInput,
+} from '@feedless/graphql-api';
 
 export type ObjectType = 'liegenschaften' | 'beweglich';
 
@@ -51,31 +48,10 @@ function nonEmptyArrayValidator(): ValidatorFn {
   };
 }
 
-function auctionCategoryValidator(): ValidatorFn {
-  return (control: AbstractControl): ValidationErrors | null => {
-    const fg = control as FormGroup;
-    const type = fg.get('objectType')?.value as ObjectType;
-    if (type === 'liegenschaften') {
-      const v = fg.get('liegenschaftKategorie')?.value;
-      if (!v || !String(v).trim()) {
-        return { liegenschaftKategorieRequired: true };
-      }
-    }
-    if (type === 'beweglich') {
-      const arr = fg.get('beweglichKategorien')?.value as string[];
-      if (!arr?.length) {
-        return { beweglichKategorienRequired: true };
-      }
-    }
-    return null;
-  };
-}
-
 @Component({
   selector: 'app-create-auction-alert-page',
   templateUrl: './create-auction-alert.page.html',
   styleUrls: ['./create-auction-alert.page.scss'],
-  changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [
     IonButton,
     IonCheckbox,
@@ -91,12 +67,15 @@ function auctionCategoryValidator(): ValidatorFn {
   standalone: true,
 })
 export class CreateAuctionAlertPage implements OnInit {
-  private readonly reportService = inject(ReportService);
+  private readonly apollo = inject<ApolloClient<any>>(ApolloClient);
   private readonly pageService = inject(PageService);
   private readonly toastCtrl = inject(ToastController);
   private readonly alertCtrl = inject(AlertController);
   private readonly appConfigService = inject(AppConfigService);
   private readonly platformId = inject(PLATFORM_ID);
+
+  readonly wizardStep = signal<1 | 2>(1);
+  readonly checkoutLoading = signal(false);
 
   /** Bundesländer (same labels as Ediktsdatei filters). */
   readonly countries = [
@@ -111,7 +90,6 @@ export class CreateAuctionAlertPage implements OnInit {
     'Vorarlberg',
   ] as const;
 
-  /** Kategorien — [Einfache Suche Liegenschaften](https://edikte.justiz.gv.at/edikte/ex/exedi3.nsf/suche!OpenForm&subf=) */
   readonly liegenschaftKategorien = [
     'Einfamilienhaus',
     'Zweifamilienhaus',
@@ -137,7 +115,6 @@ export class CreateAuctionAlertPage implements OnInit {
     'Sonstiges',
   ] as const;
 
-  /** Kategorie (ohne Unterkategorie) — [Bewegliche Sachen](https://edikte.justiz.gv.at/edikte/fe/feedi6.nsf/suche!OpenForm&subf=) */
   readonly beweglichKategorien = [
     'Antiquität, Kunst',
     'Audio, HiFi',
@@ -192,15 +169,15 @@ export class CreateAuctionAlertPage implements OnInit {
       nurInternetVersteigerungen: new FormControl<boolean>(false, {
         nonNullable: true,
       }),
+      acceptTerms: new FormControl<boolean>(false, { nonNullable: true }),
     },
-    { validators: [auctionCategoryValidator()] },
+    { validators: [this.auctionCategoryValidator()] },
   );
 
   ngOnInit() {
     this.pageService.setMetaTags(this.getPageTags());
   }
 
-  /** From vertical app config; shown in Kontakt / Impressum sections. */
   get operatorName(): string {
     return this.stringFromCustomProperty('operatorName');
   }
@@ -216,6 +193,126 @@ export class CreateAuctionAlertPage implements OnInit {
   private stringFromCustomProperty(key: string): string {
     const v = this.appConfigService.customProperties?.[key];
     return typeof v === 'string' ? v.trim() : '';
+  }
+
+  private auctionCategoryValidator(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const fg = control as FormGroup;
+      if (fg.untouched) {
+        return null;
+      }
+      const type = fg.get('objectType')?.value as ObjectType;
+      if (type === this.objectTypeRealEstate) {
+        const v = fg.get('liegenschaftKategorie')?.value;
+        if (!v || !String(v).trim()) {
+          return { liegenschaftKategorieRequired: true };
+        }
+      }
+      if (type === this.objectTypeOther) {
+        const arr = fg.get('beweglichKategorien')?.value as string[];
+        if (!arr?.length) {
+          return { beweglichKategorienRequired: true };
+        }
+      }
+      return null;
+    };
+  }
+
+  goToStep2(): void {
+    this.form.markAllAsTouched();
+    this.form.updateValueAndValidity();
+    if (!this.form.valid) {
+      console.log(this.form.errors);
+      void this.toastCtrl
+        .create({
+          message:
+            'Bitte E-Mail, Bundesland und passende Kategorie(n) ausfüllen.',
+          color: 'danger',
+          duration: 3000,
+        })
+        .then((t) => t.present());
+      return;
+    }
+    this.wizardStep.set(2);
+  }
+
+  goToStep1(): void {
+    this.wizardStep.set(1);
+  }
+
+  async startCheckout(): Promise<void> {
+    if (!this.form.value.acceptTerms) {
+      const toast = await this.toastCtrl.create({
+        message: 'Bitte AGB und Datenschutz bestätigen.',
+        color: 'danger',
+        duration: 3000,
+      });
+      await toast.present();
+      return;
+    }
+
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+
+    this.checkoutLoading.set(true);
+    try {
+      const res = await this.apollo.mutate<
+        GqlCreateAuctionAlertCheckoutMutation,
+        GqlCreateAuctionAlertCheckoutMutationVariables
+      >({
+        mutation: CreateAuctionAlertCheckout,
+        variables: {
+          repositoryId: this.getRepositoryId(),
+          segmentation: this.buildSegmentation(),
+        },
+      });
+
+      const data = res.data?.createAuctionAlertCheckout;
+      if (!data) {
+        throw new Error('Keine Antwort vom Server.');
+      }
+      if (data.loginRequired) {
+        const toast = await this.toastCtrl.create({
+          message:
+            data.errorMessage ??
+            'Für diese E-Mail existiert bereits ein Konto. Bitte melden Sie sich an.',
+          color: 'warning',
+          duration: 6000,
+        });
+        await toast.present();
+        return;
+      }
+      if (data.errorMessage) {
+        const toast = await this.toastCtrl.create({
+          message: data.errorMessage,
+          color: 'danger',
+          duration: 5000,
+        });
+        await toast.present();
+        return;
+      }
+      if (data.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+        return;
+      }
+      const toast = await this.toastCtrl.create({
+        message: 'Checkout konnte nicht gestartet werden.',
+        color: 'danger',
+        duration: 4000,
+      });
+      await toast.present();
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'Checkout fehlgeschlagen.';
+      const toast = await this.toastCtrl.create({
+        message: msg,
+        color: 'danger',
+        duration: 5000,
+      });
+      await toast.present();
+    } finally {
+      this.checkoutLoading.set(false);
+    }
   }
 
   async showDatenschutz(): Promise<void> {
@@ -258,29 +355,6 @@ export class CreateAuctionAlertPage implements OnInit {
     ].join('\n');
   }
 
-  async onSubmit() {
-    this.form.markAllAsTouched();
-    this.form.updateValueAndValidity();
-    if (!this.form.valid) {
-      const toast = await this.toastCtrl.create({
-        message:
-          'Bitte E-Mail, Bundesland und passende Kategorie(n) ausfüllen.',
-        color: 'danger',
-        duration: 3000,
-      });
-      await toast.present();
-      return;
-    }
-    const toast = await this.toastCtrl.create({
-      message: "You're subscribed! We'll notify you of matching auctions.",
-      color: 'success',
-      duration: 3000,
-    });
-    await toast.present();
-
-    this.createReporter();
-  }
-
   private getPageTags(): PageTags {
     return {
       title: 'Edikte Alerts',
@@ -304,8 +378,8 @@ export class CreateAuctionAlertPage implements OnInit {
     ] as any;
   }
 
-  private async createReporter() {
-    await this.reportService.createReport(this.getRepositoryId(), {
+  private buildSegmentation(): GqlSegmentInput {
+    return {
       what: {
         tags: {},
       },
@@ -327,6 +401,6 @@ export class CreateAuctionAlertPage implements OnInit {
           name: this.form.value.name,
         },
       },
-    });
+    };
   }
 }

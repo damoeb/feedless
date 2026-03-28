@@ -10,5 +10,6 @@ import org.springframework.context.annotation.Configuration
   AppSeedProperties::class,
   AppLocaleProperties::class,
   AppFormattingProperties::class,
+  AuctionAlertProperties::class,
 )
 class AppFeedlessPropertiesConfiguration

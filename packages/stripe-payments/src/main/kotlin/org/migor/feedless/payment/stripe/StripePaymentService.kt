@@ -99,6 +99,61 @@ class StripeUseCase(
     }
   }
 
+  override suspend fun createSubscriptionCheckoutSession(
+    priceId: String,
+    successUrl: String,
+    cancelUrl: String,
+    trialPeriodDays: Long,
+    customerEmail: String?,
+    metadata: Map<String, String>,
+  ): PaymentSession = withContext(Dispatchers.IO) {
+    try {
+      log.info("createSubscriptionCheckoutSession priceId=$priceId trialDays=$trialPeriodDays")
+
+      val sessionMetadata = metadata.toMutableMap()
+
+      val paramsBuilder = SessionCreateParams.builder()
+        .setMode(SessionCreateParams.Mode.SUBSCRIPTION)
+        .addLineItem(
+          SessionCreateParams.LineItem.builder()
+            .setPrice(priceId)
+            .setQuantity(1L)
+            .build()
+        )
+        .setSubscriptionData(
+          SessionCreateParams.SubscriptionData.builder()
+            .setTrialPeriodDays(trialPeriodDays)
+            .build()
+        )
+        .setSuccessUrl(successUrl)
+        .setCancelUrl(cancelUrl)
+        .putAllMetadata(sessionMetadata)
+
+      if (!customerEmail.isNullOrBlank()) {
+        paramsBuilder.setCustomerEmail(customerEmail.trim())
+      }
+
+      val session = Session.create(paramsBuilder.build())
+
+      log.info("Created Stripe subscription checkout session: ${session.id}")
+
+      val mergedMeta = (session.metadata ?: emptyMap()) + sessionMetadata
+      PaymentSession(
+        sessionId = session.id,
+        checkoutUrl = session.url ?: "",
+        status = mapStripeSessionStatus(session.status),
+        amountTotal = session.amountTotal,
+        currency = session.currency,
+        customerId = session.customer,
+        paymentIntentId = session.paymentIntent,
+        metadata = mergedMeta
+      )
+    } catch (e: Exception) {
+      log.error("Failed to create subscription checkout session", e)
+      throw PaymentServiceException("Failed to create subscription checkout session: ${e.message}", e)
+    }
+  }
+
   /**
    * Retrieves a Stripe Checkout Session by ID
    */
@@ -273,6 +328,7 @@ class StripeUseCase(
       eventType = event.type,
       orderId = session?.metadata?.get("orderId")?.let { UUID.fromString(it) },
       userId = session?.metadata?.get("userId")?.let { UUID.fromString(it) },
+      pendingId = session?.metadata?.get("pendingId")?.let { UUID.fromString(it) },
       sessionId = session?.id,
       paymentIntentId = session?.paymentIntent,
       status = status,
@@ -295,6 +351,7 @@ class StripeUseCase(
       eventType = event.type,
       orderId = paymentIntent.metadata?.get("orderId")?.let { UUID.fromString(it) },
       userId = paymentIntent.metadata?.get("userId")?.let { UUID.fromString(it) },
+      pendingId = paymentIntent.metadata?.get("pendingId")?.let { UUID.fromString(it) },
       sessionId = null,
       paymentIntentId = paymentIntent.id,
       status = status,

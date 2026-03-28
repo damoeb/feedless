@@ -1,0 +1,13 @@
+mutation createAuctionAlertCheckout(
+  $repositoryId: ID!
+  $segmentation: SegmentInput!
+) {
+  createAuctionAlertCheckout(
+    repositoryId: $repositoryId
+    segmentation: $segmentation
+  ) {
+    checkoutUrl
+    loginRequired
+    errorMessage
+  }
+}

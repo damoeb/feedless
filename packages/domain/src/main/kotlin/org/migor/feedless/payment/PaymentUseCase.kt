@@ -31,6 +31,19 @@ interface PaymentUseCase {
   ): PaymentSession
 
   /**
+   * Stripe Checkout in subscription mode with trial (e.g. auction-alert).
+   * Metadata should stay small (e.g. pendingId only); large payloads live server-side.
+   */
+  suspend fun createSubscriptionCheckoutSession(
+    priceId: String,
+    successUrl: String,
+    cancelUrl: String,
+    trialPeriodDays: Long,
+    customerEmail: String?,
+    metadata: Map<String, String>,
+  ): PaymentSession
+
+  /**
    * Retrieves the status of a payment session
    *
    * @param sessionId Payment session ID
@@ -94,6 +107,8 @@ data class WebhookEvent(
   val eventType: String,
   val orderId: UUID?,
   val userId: UUID?,
+  /** Set for auction-alert subscription checkout (metadata pendingId). */
+  val pendingId: UUID?,
   val sessionId: String?,
   val paymentIntentId: String?,
   val status: PaymentStatus,

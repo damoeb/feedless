@@ -7,6 +7,7 @@ import org.migor.feedless.order.OrderId
 import org.migor.feedless.order.OrderUseCase
 import org.migor.feedless.payment.PaymentStatus
 import org.migor.feedless.payment.PaymentUseCase
+import org.migor.feedless.payment.PendingCheckoutFinalizer
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -34,6 +35,9 @@ class StripeWebhookController {
 
   @Autowired
   lateinit var orderUseCase: OrderUseCase
+
+  @Autowired(required = false)
+  var pendingCheckoutFinalizer: PendingCheckoutFinalizer? = null
 
   @GetMapping(
     "/aspi/payment/{orderId}/checkout",
@@ -101,29 +105,37 @@ class StripeWebhookController {
 
       log.info("Processed webhook event: ${webhookEvent.eventType} (${webhookEvent.eventId})")
 
-      if (webhookEvent.orderId == null) {
-        throw IllegalArgumentException("webhookEvent must provide an OrderId")
-      }
-
-      val orderId = OrderId(webhookEvent.orderId!!)
-
-      // Handle successful payment events
-      when (webhookEvent.status) {
-        PaymentStatus.SUCCEEDED -> {
-          paymentUseCase.handlePaymentCallback(orderId)
+      if (webhookEvent.pendingId != null && pendingCheckoutFinalizer != null) {
+        when (webhookEvent.status) {
+          PaymentStatus.SUCCEEDED -> {
+            pendingCheckoutFinalizer!!.finalizePendingCheckout(webhookEvent.pendingId!!)
+          }
+          else -> {
+            log.debug("Ignoring pending checkout webhook status: ${webhookEvent.status}")
+          }
         }
+      } else if (webhookEvent.orderId != null) {
+        val orderId = OrderId(webhookEvent.orderId!!)
 
-        PaymentStatus.FAILED -> {
-          paymentUseCase.handlePaymentFailureCallback(orderId)
-        }
+        when (webhookEvent.status) {
+          PaymentStatus.SUCCEEDED -> {
+            paymentUseCase.handlePaymentCallback(orderId)
+          }
 
-        PaymentStatus.CANCELLED -> {
-          paymentUseCase.handlePaymentCancelCallback(orderId)
-        }
+          PaymentStatus.FAILED -> {
+            paymentUseCase.handlePaymentFailureCallback(orderId)
+          }
 
-        else -> {
-          log.debug("Webhook event status: ${webhookEvent.status}")
+          PaymentStatus.CANCELLED -> {
+            paymentUseCase.handlePaymentCancelCallback(orderId)
+          }
+
+          else -> {
+            log.debug("Webhook event status: ${webhookEvent.status}")
+          }
         }
+      } else {
+        log.warn("Webhook event has neither pendingId nor orderId: ${webhookEvent.eventId}")
       }
 
 

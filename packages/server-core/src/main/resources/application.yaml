@@ -73,3 +73,12 @@ logging:
 #   error:
 #     whitelabel:
 #       enabled: false
+
+# Stripe subscription checkout for auction-alert (override in deployment)
+auction-alert:
+  stripe:
+    price-id: ${AUCTION_ALERT_STRIPE_PRICE_ID:}
+  checkout:
+    trial-days: 30
+    success-url: ${AUCTION_ALERT_CHECKOUT_SUCCESS_URL:}
+    cancel-url: ${AUCTION_ALERT_CHECKOUT_CANCEL_URL:}
