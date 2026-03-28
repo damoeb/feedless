@@ -1,8 +1,10 @@
+import { isPlatformBrowser } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
   inject,
   OnInit,
+  PLATFORM_ID,
 } from '@angular/core';
 import {
   AbstractControl,
@@ -14,6 +16,7 @@ import {
   Validators,
 } from '@angular/forms';
 import {
+  AlertController,
   IonButton,
   IonCheckbox,
   IonContent,
@@ -32,7 +35,7 @@ import {
   ReportService,
 } from '@feedless/components';
 
-import { AutocompleteSelectComponent } from '../../app/components/autocomplete-select/autocomplete-select.component';
+import { AutocompleteSelectComponent } from '../../components/autocomplete-select/autocomplete-select.component';
 import dayjs from 'dayjs';
 import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
 
@@ -51,7 +54,7 @@ function nonEmptyArrayValidator(): ValidatorFn {
 function auctionCategoryValidator(): ValidatorFn {
   return (control: AbstractControl): ValidationErrors | null => {
     const fg = control as FormGroup;
-    const type = fg.get('auctionType')?.value as ObjectType;
+    const type = fg.get('objectType')?.value as ObjectType;
     if (type === 'liegenschaften') {
       const v = fg.get('liegenschaftKategorie')?.value;
       if (!v || !String(v).trim()) {
@@ -91,7 +94,9 @@ export class CreateAuctionAlertPage implements OnInit {
   private readonly reportService = inject(ReportService);
   private readonly pageService = inject(PageService);
   private readonly toastCtrl = inject(ToastController);
+  private readonly alertCtrl = inject(AlertController);
   private readonly appConfigService = inject(AppConfigService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   /** Bundesländer (same labels as Ediktsdatei filters). */
   readonly countries = [
@@ -195,6 +200,64 @@ export class CreateAuctionAlertPage implements OnInit {
     this.pageService.setMetaTags(this.getPageTags());
   }
 
+  /** From vertical app config; shown in Kontakt / Impressum sections. */
+  get operatorName(): string {
+    return this.stringFromCustomProperty('operatorName');
+  }
+
+  get operatorAddress(): string {
+    return this.stringFromCustomProperty('operatorAddress');
+  }
+
+  get operatorEmail(): string {
+    return this.stringFromCustomProperty('operatorEmail');
+  }
+
+  private stringFromCustomProperty(key: string): string {
+    const v = this.appConfigService.customProperties?.[key];
+    return typeof v === 'string' ? v.trim() : '';
+  }
+
+  async showDatenschutz(): Promise<void> {
+    if (!isPlatformBrowser(this.platformId)) {
+      return;
+    }
+    const alert = await this.alertCtrl.create({
+      header: 'Datenschutzerklärung',
+      cssClass: 'datenschutz-legal-alert',
+      message: this.datenschutzAlertMessage(),
+      backdropDismiss: true,
+      buttons: [
+        {
+          text: 'Schließen',
+          role: 'cancel',
+        },
+      ],
+    });
+    await alert.present();
+  }
+
+  private datenschutzAlertMessage(): string {
+    return [
+      'Hinweis: Dieser Text ersetzt keine anwaltliche Beratung. Bitte ergänzen Sie ihn nach Ihrem Anwendungsfall.',
+      '',
+      'Verantwortliche Stelle',
+      'Die im Impressum dieser Seite genannte Stelle ist für die Datenverarbeitung verantwortlich.',
+      '',
+      'Zwecke und Rechtsgrundlagen',
+      'Wir verarbeiten die von Ihnen im Formular angegebenen Daten (z. B. Name, E-Mail, Suchkriterien), um E-Mail-Benachrichtigungen zu gerichtlichen Versteigerungen zu versenden, die Ihren Angaben entsprechen. Rechtsgrundlage ist die Durchführung vorvertraglicher Maßnahmen bzw. die Erfüllung des Nutzungsangebots (Art. 6 Abs. 1 lit. b DSGVO) sowie ggf. Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), soweit Sie diese abgegeben haben.',
+      '',
+      'Speicherdauer',
+      'Daten werden nur so lange gespeichert, wie es für den jeweiligen Zweck erforderlich ist oder gesetzliche Aufbewahrungsfristen bestehen.',
+      '',
+      'Ihre Rechte',
+      'Sie haben nach Maßgabe der DSGVO Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch. Außerdem haben Sie das Recht, sich bei einer Aufsichtsbehörde zu beschweren.',
+      '',
+      'Kontakt bei Fragen zum Datenschutz',
+      'Wenden Sie sich bitte an die im Impressum angegebene E-Mail-Adresse.',
+    ].join('\n');
+  }
+
   async onSubmit() {
     this.form.markAllAsTouched();
     this.form.updateValueAndValidity();
@@ -222,7 +285,7 @@ export class CreateAuctionAlertPage implements OnInit {
     return {
       title: 'Edikte Alerts',
       description:
-        'Erfahre mehr über lokale.events - die Plattform für lokale Veranstaltungen und Events. Wir bringen Menschen zusammen und machen regionale Schätze sichtbar.',
+        'E-Mail-Benachrichtigungen zu neuen gerichtlichen Versteigerungen in Österreich, passend zu Bundesland, Kategorien und Suchkriterien.',
       publisher: 'feedless',
       category: 'Alerts',
       url: 'https://edikte.feedless.org',

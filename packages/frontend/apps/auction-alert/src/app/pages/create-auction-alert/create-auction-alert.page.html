@@ -1,8 +1,5 @@
 <ion-content>
   <div class="auction-page ion-margin-vertical">
-    <div>
-
-    </div>
     <h1 class="ion-text-center">Edikte Alerts</h1>
     <p class="ion-text-center">Maßgeschneiderte E-Mail Alerts zu gerichtlichen Versteigerungen in
       Österreich</p>
@@ -133,7 +130,7 @@
     </div>
 
     <section class="info-section" aria-labelledby="how-it-works-heading">
-      <h2 id="how-it-works-heading">Funktionsweise</h2>
+      <h2 id="how-it-works-heading">Wie funktionierts?</h2>
       <p>
         Wir prüfen öffentliche <a href="https://edikte.justiz.gv.at/edikte/edikthome.nsf/homeSuche" target="_blank">Edikte
         Datei</a> und passende neue Versteigerungen zu Ihren Kriterien.
@@ -142,12 +139,52 @@
       </p>
     </section>
 
-    <section class="info-section" aria-labelledby="contact-imprint-heading">
-      <h2 id="contact-imprint-heading">Kontakt</h2>
+    <section class="info-section video-placeholder-section" aria-labelledby="demo-video-heading">
+      <h2 id="demo-video-heading">Kurz erklärt</h2>
+      <div class="video-placeholder-frame" role="img" aria-label="Platzhalter für ein Erklärvideo">
+        <p class="video-placeholder-text">Video folgt in Kürze.</p>
+      </div>
+    </section>
+
+    <section class="info-section" aria-labelledby="contact-heading">
+      <h2 id="contact-heading">Kontakt</h2>
       <p>
-        Verantwortlich für den Inhalt dieser Seite ist der Betreiber. Rechtliche Hinweise und
-        vollständige Angaben zum Impressum können auf Anfrage bereitgestellt werden.
+        Bei Fragen zum Angebot wenden Sie sich an den Betreiber.
       </p>
+      @if (operatorEmail) {
+        <p>
+          <a [href]="'mailto:' + operatorEmail">{{ operatorEmail }}</a>
+        </p>
+      } @else {
+        <p class="info-muted">E-Mail-Adresse wird in der Konfiguration hinterlegt.</p>
+      }
+      <p class="legal-links">
+        <button type="button" class="legal-link-btn" (click)="showDatenschutz()">
+          Datenschutzerklärung
+        </button>
+      </p>
+    </section>
+
+    <section class="info-section impressum-section" id="impressum" aria-labelledby="impressum-heading">
+      <h2 id="impressum-heading">Impressum</h2>
+      @if (operatorName || operatorAddress || operatorEmail) {
+        <dl class="impressum-dl">
+          @if (operatorName) {
+            <dt>Betreiber</dt>
+            <dd>{{ operatorName }}</dd>
+          }
+          @if (operatorAddress) {
+            <dt>Anschrift</dt>
+            <dd>{{ operatorAddress }}</dd>
+          }
+          @if (operatorEmail) {
+            <dt>Kontakt</dt>
+            <dd>{{ operatorEmail }}</dd>
+          }
+        </dl>
+      } @else {
+        <p class="info-muted">Angaben zum Betreiber werden in der Konfiguration hinterlegt.</p>
+      }
     </section>
   </div>
 </ion-content>

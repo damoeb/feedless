@@ -1,7 +1,7 @@
 import { Route } from '@angular/router';
 
 const loadCreateAuctionAlertPage = () =>
-  import('../pages/create-auction-alert/create-auction-alert.page').then(
+  import('./pages/create-auction-alert/create-auction-alert.page').then(
     (m) => m.CreateAuctionAlertPage,
   );
 

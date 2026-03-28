@@ -115,3 +115,11 @@ ion-select {
   background: var(--app-input-background-color);
   min-height: 40px;
 }
+
+/* Long Datenschutz copy in Ionic alert (overlay) */
+.datenschutz-legal-alert .alert-message {
+  max-height: min(70vh, 28rem);
+  overflow-y: auto;
+  text-align: start;
+  white-space: pre-wrap;
+}
