@@ -28,6 +28,7 @@ import {
 } from '../../generated/graphql';
 import { ArrayElement, isNonNull, NestedKeys, TypeAtPath } from '../types';
 import { RecordService } from './record.service';
+import { RecordFull } from '../graphql/types';
 import dayjs from 'dayjs';
 import { isNullish } from '@apollo/client/cache/inmemory/helpers';
 import { liveQuery, Observable as DexieObservable } from 'dexie';
@@ -383,7 +384,12 @@ export class NotebookService {
     console.log('new note', note);
 
     this.notesChanges.next({ a: note.id, b: ChangeModifier.create });
-    await this.recordService.createRecords([this.covertNoteToRecord(note)]);
+    await this.withOnline<void>(
+      async () => {
+        await this.recordService.createRecords([this.covertNoteToRecord(note)]);
+      },
+      async (): Promise<void> => {}
+    );
 
     // this.findAllAsync(title);
     if (triggerOpen) {
@@ -455,9 +461,16 @@ export class NotebookService {
       if (!notebook.offline) {
         // sync up
         const upSyncNew = notes.filter((note) => note.createdAt > notebook.lastSyncedAt);
-        await this.recordService.createRecords(
-          upSyncNew.map((note) => this.covertNoteToRecord(note))
-        );
+        if (upSyncNew.length > 0) {
+          await this.withOnline<void>(
+            async () => {
+              await this.recordService.createRecords(
+                upSyncNew.map((note) => this.covertNoteToRecord(note))
+              );
+            },
+            async (): Promise<void> => {}
+          );
+        }
 
         const upSyncChanged = notes.filter((note) => note.updatedAt > notebook.lastSyncedAt);
         await Promise.all(upSyncChanged.map((note) => this.updateNoteInternal(note)));
@@ -466,19 +479,23 @@ export class NotebookService {
         try {
           let page = 0;
           while (true) {
-            const records = await this.recordService.findAllFullByRepositoryId({
-              where: {
-                repository: {
-                  id: notebook.id,
-                },
-                updatedAt: {
-                  after: notebook.lastUpdatedAt,
-                },
-              },
-              cursor: {
-                page,
-              },
-            });
+            const records = await this.withOnline<RecordFull[]>(
+              () =>
+                this.recordService.findAllFullByRepositoryId({
+                  where: {
+                    repository: {
+                      id: notebook.id,
+                    },
+                    updatedAt: {
+                      after: notebook.lastUpdatedAt,
+                    },
+                  },
+                  cursor: {
+                    page,
+                  },
+                }),
+              async (): Promise<RecordFull[]> => []
+            );
             if (records.length == 0) {
               break;
             }
@@ -596,19 +613,24 @@ export class NotebookService {
       links: extractByRegExp(reLink),
     };
 
-    await this.recordService.updateRecord({
-      data: {
-        title: {
-          set: note.title,
-        },
-        text: {
-          set: note.text,
-        },
+    await this.withOnline<void>(
+      async () => {
+        await this.recordService.updateRecord({
+          data: {
+            title: {
+              set: note.title,
+            },
+            text: {
+              set: note.text,
+            },
+          },
+          where: {
+            id: note.id,
+          },
+        });
       },
-      where: {
-        id: note.id,
-      },
-    });
+      async (): Promise<void> => {}
+    );
     this.index.update(this.toIndexDocument(note));
     console.log('updateNote', note);
     await notebookRepository.notes.update(note.id, note);
@@ -733,7 +755,7 @@ export class NotebookService {
   }
 
   private async init() {
-    await this.authGuard.assertLoggedIn();
+    //await this.authGuard.assertLoggedIn();
     const remoteNotebooks = await this.withOnline<
       ArrayElement<GqlCreateRepositoriesMutation['createRepositories']>[]
     >(
@@ -837,16 +859,21 @@ export class NotebookService {
 
     this.index.remove(id);
     await notebookRepository.notes.delete(id);
-    await this.recordService.removeById({
-      where: {
-        id: {
-          eq: id,
-        },
-        repository: {
-          id: this.currentRepositoryId,
-        },
+    await this.withOnline<void>(
+      async () => {
+        await this.recordService.removeById({
+          where: {
+            id: {
+              eq: id,
+            },
+            repository: {
+              id: this.currentRepositoryId,
+            },
+          },
+        });
       },
-    });
+      async (): Promise<void> => {}
+    );
     this.notesChanges.next({ a: id, b: ChangeModifier.remove });
 
     if (note.parent) {
