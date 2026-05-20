@@ -45,6 +45,7 @@ jqwik = "1.9.3"
 telegrambots = "6.9.0"
 stripe = "29.1.0"
 gradle-node = "7.1.0"
+openapi-generator = "7.9.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
@@ -59,6 +60,7 @@ grgit = { id = "org.ajoberstar.grgit" }
 jacoco = { id = "io.freefair.aggregate-jacoco-report", version = "9.0.0" }
 javacc = { id = "org.javacc.javacc", version.ref = "javacc" }
 node = { id = "com.github.node-gradle.node", version.ref = "gradle-node" }
+openapi-generator = { id = "org.openapi.generator", version.ref = "openapi-generator" }
 
 [libraries]
 async-http-client = { module = "org.asynchttpclient:async-http-client", version.ref = "async-http-client" }

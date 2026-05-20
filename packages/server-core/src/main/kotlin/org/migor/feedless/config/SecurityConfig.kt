@@ -17,6 +17,7 @@ import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.session.CookieProvider
+import org.migor.feedless.http.HttpApiJwtFilter
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
@@ -79,6 +80,9 @@ class SecurityConfig {
   @Autowired
   private lateinit var jwtRequestFilter: JwtRequestFilter
 
+  @Autowired(required = false)
+  private var httpApiJwtFilter: HttpApiJwtFilter? = null
+
   @Autowired
   private lateinit var authorizedClientService: OAuth2AuthorizedClientService
 
@@ -100,7 +104,11 @@ class SecurityConfig {
   @Throws(Exception::class)
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
-    return conditionalOauth(http)
+    var chain = conditionalOauth(http)
+    httpApiJwtFilter?.let { filter ->
+      chain = chain.addFilterBefore(filter, org.springframework.security.web.authentication.www.BasicAuthenticationFilter::class.java)
+    }
+    return chain
       .headers {
         it.httpStrictTransportSecurity {
           it.includeSubDomains(true)
@@ -118,6 +126,7 @@ class SecurityConfig {
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests {
         it.requestMatchers(*(whitelistedUrls())).permitAll()
+        it.requestMatchers("/api/v1/**").authenticated()
         it.requestMatchers("/actuator/**").hasAnyRole(metricRole)
         it.requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
       }
@@ -273,7 +282,7 @@ class SecurityConfig {
 
   fun corsConfigurationSource(): CorsConfigurationSource {
     val config = CorsConfiguration()
-    config.allowedMethods = listOf("GET", "POST")
+    config.allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE")
     config.allowCredentials = true
     config.allowedHeaders = listOf(CorsConfiguration.ALL)
     config.allowedOrigins = StringUtils.trimToNull(allowedOrigins)?.split(",")?.map { it.trim() }

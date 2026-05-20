@@ -40,7 +40,7 @@ class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
       runBlocking {
         runCatching {
           SecurityContextHolder.getContext().authentication =
-            toOAuth2AuthenticationToken(jwtTokenIssuer.decodeJwt(request))
+            jwtToOAuth2AuthenticationToken(jwtTokenIssuer.decodeJwt(request))
         }.onFailure { log.debug(it.message) }
       }
       val attributes = ServletRequestAttributes(request)
@@ -58,18 +58,19 @@ class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
   }
 
 
-  private fun toOAuth2AuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
-    val attributes = mapOf("dummy" to "wef")
-    val authorities: List<GrantedAuthority> = jwtToken.capabilities()
+}
 
-    val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
-    val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
-    return OAuth2AuthenticationToken(
-      principal,
-      authorities,
-      authorizedClientRegistrationId
-    )
-  }
+fun jwtToOAuth2AuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
+  val attributes = mapOf("dummy" to "wef")
+  val authorities: List<GrantedAuthority> = jwtToken.capabilities()
+
+  val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
+  val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
+  return OAuth2AuthenticationToken(
+    principal,
+    authorities,
+    authorizedClientRegistrationId
+  )
 }
 
 fun Jwt.capabilities(): List<LazyGrantedAuthority> {
