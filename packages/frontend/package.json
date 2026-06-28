@@ -10,7 +10,6 @@
     "start:feedless": "nx serve apps:upcoming",
     "start:rss-proxy": "nx serve apps:rss-proxy",
     "start:untold-notes": "nx serve apps:untold",
-    "start:feed-reader": "nx serve apps:feed-reader",
     "start:reader": "nx serve apps:reader",
     "start:upcoming": "nx serve apps:upcoming",
     "start:upcoming:prod": "ng serve -c production",

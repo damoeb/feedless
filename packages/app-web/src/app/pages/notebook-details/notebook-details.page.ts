@@ -10,7 +10,14 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { debounceTime, firstValueFrom, from, Observable, Subscription } from 'rxjs';
+import {
+  debounceTime,
+  firstValueFrom,
+  from,
+  Observable,
+  shareReplay,
+  Subscription,
+} from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
   Note,
@@ -238,8 +245,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     return this.notebookService.suggestByType(query, type, this.currentEditorHandle.note);
   }
 
-  @HostListener('window:keydown.esc', ['$event'])
-  async handleKeyEsc(event: KeyboardEvent) {
+  @HostListener('window:keydown.control.k', ['$event'])
+  async handleKeyEsc(event: Event) {
+    event.preventDefault();
     // if (this.currentNote) {
     //   if (this.searchbarElement().hasFocus()) {
     //     await this.focusEditor();
@@ -287,7 +295,7 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         () => this.notebookService.openNotebook(params.notebookId)
       );
 
-      this.appConfig.setPageTitle(`Notebook ${this.notebook.title}`);
+      this.appConfig.setPageTitle(this.notebook.title);
 
       await failSafe(
         'Note',
@@ -485,6 +493,22 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
 
   childrenAccessor(node: NoteHandle): Observable<NoteHandle[]> {
     return node.children();
+  }
+
+  private childrenCountCache = new WeakMap<NoteHandle, Observable<number>>();
+
+  childrenCount(node: NoteHandle): Observable<number> {
+    let count$ = this.childrenCountCache.get(node);
+    if (!count$) {
+      count$ = node.childrenCount().pipe(shareReplay(1));
+      this.childrenCountCache.set(node, count$);
+    }
+    return count$;
+  }
+
+  toggleExpand(node: NoteHandle, event: Event) {
+    event.stopPropagation();
+    node.expanded = !node.expanded;
   }
 
   closeNote() {

@@ -30,6 +30,33 @@ app-code-editor {
   height: 5px;
 }
 
+.tree-node {
+  display: flex;
+  align-items: center;
+
+  .caret {
+    flex: 0 0 auto;
+    width: 18px;
+    height: 18px;
+    margin-right: 2px;
+    color: var(--ion-color-medium);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+
+    &--expanded {
+      transform: rotate(90deg);
+    }
+
+    &--placeholder {
+      cursor: default;
+    }
+
+    &:not(.caret--placeholder):hover {
+      color: var(--app-foreground);
+    }
+  }
+}
+
 mark {
   background: var(--ion-color-medium);
 }
@@ -76,7 +103,7 @@ app-tree-view {
 
 .note-tree,
 .shortcuts {
-  --line-color: rgba(var(--app-foreground-rgb), 0.5);
+  --line-color: rgba(var(--app-foreground-rgb), 0.2);
 
   app-bubble {
     position: absolute;
@@ -191,9 +218,9 @@ ion-accordion.accordion-expanded {
   .line {
     cursor: pointer;
 
-    &:first-child {
-      border-top: 2px solid var(--line-color);
-    }
+    //&:first-child {
+    //border-top: 2px solid var(--line-color);
+    //}
 
     border-right: 2px solid var(--line-color);
     width: var(--line-width);
@@ -220,14 +247,12 @@ ion-accordion.accordion-expanded {
   background: var(--line-color);
   height: calc(var(--b) + var(--s) / (2 * tan(var(--a) / 2)));
   //width: 100%;
-  --_g: var(--s) repeat-x
-    conic-gradient(
+  --_g: var(--s) repeat-x conic-gradient(
       from calc(var(--a) / -2) at bottom,
       #0000,
       #000 1deg calc(var(--a) - 1deg),
       #0000 var(--a)
-    );
-  mask:
-    50% calc(-1 * var(--b)) / var(--_g) exclude,
-    50% / var(--_g);
+  );
+  mask: 50% calc(-1 * var(--b)) / var(--_g) exclude,
+  50% / var(--_g);
 }

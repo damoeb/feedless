@@ -1,13 +1,13 @@
 <div [id]="getId()">
-  @if (isOpen) {
-    <div class="references">
-      <ul>
-        @for (outLink of handle().incomingLinks$() | async; track outLink) {
-          <li>{{ outLink }}</li>
-        }
-      </ul>
-    </div>
-  }
+  <!--  @if (isOpen) {-->
+  <!--    <div class="references">-->
+  <!--      <ul>-->
+  <!--        @for (outLink of handle().incomingLinks$() | async; track outLink) {-->
+  <!--          <li>{{ outLink }}</li>-->
+  <!--        }-->
+  <!--      </ul>-->
+  <!--    </div>-->
+  <!--  }-->
   <div class="note" [ngClass]="{ 'note--open': isOpen, 'note--disabled': handle().disabled }">
     <div class="note-header" (click)="toggle()">
       <div class="flex ion-nowrap">
@@ -48,13 +48,13 @@
       }
     </div>
   </div>
-  @if (isOpen) {
-    <div class="references">
-      <ul>
-        @for (outLink of handle().outgoingLinks$() | async; track outLink) {
-          <li>{{ outLink }}</li>
-        }
-      </ul>
-    </div>
-  }
+  <!--  @if (isOpen) {-->
+  <!--    <div class="references">-->
+  <!--      <ul>-->
+  <!--        @for (outLink of handle().outgoingLinks$() | async; track outLink) {-->
+  <!--          <li>{{ outLink }}</li>-->
+  <!--        }-->
+  <!--      </ul>-->
+  <!--    </div>-->
+  <!--  }-->
 </div>
