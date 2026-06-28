@@ -144,7 +144,7 @@ app-tree-view {
   justify-content: center;
 
   .note-editor {
-    --editor-width: 600px;
+    --editor-width: 880px;
     background: var(--background);
     //padding-right: 15px;
     //padding-bottom: 15px;
@@ -160,6 +160,63 @@ app-tree-view {
       display: flex;
       flex: 1;
     }
+
+    .editor-layout {
+      display: flex;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .editor-main {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .references-column {
+      display: flex;
+      flex: 0 0 280px;
+      flex-direction: column;
+      width: 280px;
+      min-height: 0;
+      border-left: 1px solid rgba(var(--app-foreground-rgb), 0.2);
+
+      .references-header {
+        padding: 5px;
+
+        ion-segment {
+          --background: transparent;
+        }
+      }
+
+      .references-body {
+        flex: 1;
+        overflow-y: auto;
+        padding: 5px;
+
+        .references-empty {
+          display: block;
+          padding: 8px 4px;
+          font-size: 0.85rem;
+        }
+
+        .references-tags {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 6px;
+          padding: 4px;
+
+          .reference-tag {
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            background: rgba(var(--app-foreground-rgb), 0.1);
+            color: var(--app-foreground);
+          }
+        }
+      }
+    }
   }
 }
 
@@ -170,6 +227,17 @@ app-tree-view {
       width: 100%;
       height: 50vh;
       border-radius: unset;
+
+      .editor-layout {
+        flex-direction: column;
+      }
+
+      .references-column {
+        flex: 0 0 auto;
+        width: 100%;
+        border-left: none;
+        border-top: 1px solid rgba(var(--app-foreground-rgb), 0.2);
+      }
     }
   }
 }

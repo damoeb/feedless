@@ -201,80 +201,122 @@
           <div class="note-editors">
             @if (currentEditorHandle) {
               <div class="note-editor">
-                <div style="display: flex">
-                  <div style="flex: 1; display: flex; align-items: center">
-                    <ion-button
-                      (click)="currentEditorHandle.noteHandle.toggleUpvote()"
-                      fill="clear"
-                      size="small"
-                    >
-                      @if (currentEditorHandle.note.isUpVoted) {
-                        <ion-icon
-                          name="ellipse"
-                          style="color: var(--ion-color-primary)"
-                          slot="icon-only"
-                        ></ion-icon>
-                      } @else {
-                        <ion-icon name="ellipse-outline" slot="icon-only"></ion-icon>
-                      }
-                    </ion-button>
-                    <ion-text
-                      style="
+                <div class="editor-layout">
+                  <div class="editor-main">
+                    <div style="display: flex">
+                      <div style="flex: 1; display: flex; align-items: center">
+                        <ion-button
+                          (click)="currentEditorHandle.noteHandle.toggleUpvote()"
+                          fill="clear"
+                          size="small"
+                        >
+                          @if (currentEditorHandle.note.isUpVoted) {
+                            <ion-icon
+                              name="ellipse"
+                              style="color: var(--ion-color-primary)"
+                              slot="icon-only"
+                            ></ion-icon>
+                          } @else {
+                            <ion-icon name="ellipse-outline" slot="icon-only"></ion-icon>
+                          }
+                        </ion-button>
+                        <ion-text
+                          style="
                     white-space: nowrap;
                     overflow: hidden;
                     max-width: 150px;
                     text-overflow: ellipsis;
                   "
-                    >
-                      <strong> {{ currentEditorHandle.note.title }} </strong>
-                    </ion-text>
+                        >
+                          <strong> {{ currentEditorHandle.note.title }} </strong>
+                        </ion-text>
+                      </div>
+                      <ion-buttons>
+                        <ion-button>
+                          <ion-icon name="attach-outline" slot="start"></ion-icon>
+                          Attach
+                        </ion-button>
+                        <!--                <ion-input [value]="currentEditorHandle.note.customId"></ion-input>-->
+                        <ion-button (click)="changeParent()"> Move</ion-button>
+                        <ion-button (click)="cloneNote()">
+                          <ion-icon name="copy-outline" slot="start"></ion-icon>
+                          Clone
+                        </ion-button>
+
+                        <ion-button (click)="closeNote()" size="small">
+                          <ion-icon slot="icon-only" name="close-outline"></ion-icon>
+                        </ion-button>
+                      </ion-buttons>
+                    </div>
+                    <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
+
+                    <app-code-editor
+                      [autoSuggestionsProvider]="loadAutoSuggestions"
+                      [formControl]="currentEditorHandle.formControl"
+                      [extensions]="extensions"
+                      [lineNumbers]="false"
+                    ></app-code-editor>
+                    <div style="display: flex; align-self: flex-end">
+                      <ion-buttons>
+                        <!--                      <div style="display: flex; align-items: center; column-gap: 10px;">-->
+                        <!--                        <ion-checkbox labelPlacement="end" [formControl]="autosafe" color="medium">-->
+                        <!--                          Autosafe-->
+                        <!--                        </ion-checkbox>-->
+                        <!--                        @if (autosafe.value !== true) {-->
+                        <!--                          <ion-button>-->
+                        <!--                            Save-->
+                        <!--                          </ion-button>-->
+                        <!--                        }-->
+                        <!--                      </div>-->
+                        <ion-button (click)="createFollowUpNote()" fill="solid" color="primary">
+                          <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
+                          Extend
+                        </ion-button>
+
+                        <ion-button (click)="deleteNote()" size="small">
+                          <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
+                        </ion-button>
+                      </ion-buttons>
+                    </div>
                   </div>
-                  <ion-buttons>
-                    <ion-button>
-                      <ion-icon name="attach-outline" slot="start"></ion-icon>
-                      Attach
-                    </ion-button>
-                    <!--                <ion-input [value]="currentEditorHandle.note.customId"></ion-input>-->
-                    <ion-button (click)="changeParent()"> Move</ion-button>
-                    <ion-button (click)="cloneNote()">
-                      <ion-icon name="copy-outline" slot="start"></ion-icon>
-                      Clone
-                    </ion-button>
-
-                    <ion-button (click)="closeNote()" size="small">
-                      <ion-icon slot="icon-only" name="close-outline"></ion-icon>
-                    </ion-button>
-                  </ion-buttons>
-                </div>
-                <!--                @if (currentEditorHandle.maximized || currentEditorHandle.toolbar) {-->
-
-                <app-code-editor
-                  [autoSuggestionsProvider]="loadAutoSuggestions"
-                  [formControl]="currentEditorHandle.formControl"
-                  [extensions]="extensions"
-                  [lineNumbers]="false"
-                ></app-code-editor>
-                <div style="display: flex; align-self: flex-end">
-                  <ion-buttons>
-                    <!--                      <div style="display: flex; align-items: center; column-gap: 10px;">-->
-                    <!--                        <ion-checkbox labelPlacement="end" [formControl]="autosafe" color="medium">-->
-                    <!--                          Autosafe-->
-                    <!--                        </ion-checkbox>-->
-                    <!--                        @if (autosafe.value !== true) {-->
-                    <!--                          <ion-button>-->
-                    <!--                            Save-->
-                    <!--                          </ion-button>-->
-                    <!--                        }-->
-                    <!--                      </div>-->
-                    <ion-button (click)="createFollowUpNote()" fill="solid" color="primary">
-                      <ion-icon name="return-down-forward-outline" slot="start"></ion-icon>
-                      Extend
-                    </ion-button>
-
-                    <ion-button (click)="deleteNote()" size="small">
-                      <ion-icon slot="icon-only" name="trash-outline"></ion-icon>
-                    </ion-button>
-                  </ion-buttons>
+                  <div class="references-column">
+                    <div class="references-header">
+                      <ion-segment [formControl]="referenceFilterFC" mode="ios">
+                        <ion-segment-button value="all">
+                          <ion-label>All</ion-label>
+                        </ion-segment-button>
+                        <ion-segment-button value="incoming">
+                          <ion-label>Incoming</ion-label>
+                        </ion-segment-button>
+                        <ion-segment-button value="outgoing">
+                          <ion-label>Outgoing</ion-label>
+                        </ion-segment-button>
+                        <ion-segment-button value="tags">
+                          <ion-label>Tags</ion-label>
+                        </ion-segment-button>
+                      </ion-segment>
+                    </div>
+                    <div class="references-body">
+                      @if (referenceFilterFC.value === 'tags') {
+                        <div class="references-tags">
+                          @for (tag of currentTags; track tag) {
+                            <span class="reference-tag">{{ tag }}</span>
+                          } @empty {
+                            <ion-text color="medium" class="references-empty">No tags</ion-text>
+                          }
+                        </div>
+                      } @else {
+                        @for (reference of references$ | async; track reference.body.id) {
+                          <app-note-details
+                            [handle]="reference"
+                            [createScrollId]="false"
+                          ></app-note-details>
+                        } @empty {
+                          <ion-text color="medium" class="references-empty">No references</ion-text>
+                        }
+                      }
+                    </div>
+                  </div>
                 </div>
               </div>
             }

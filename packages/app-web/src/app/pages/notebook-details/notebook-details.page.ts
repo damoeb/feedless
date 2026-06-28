@@ -11,12 +11,17 @@ import {
   viewChildren,
 } from '@angular/core';
 import {
+  combineLatest,
   debounceTime,
   firstValueFrom,
   from,
+  map,
   Observable,
+  of,
   shareReplay,
+  startWith,
   Subscription,
+  switchMap,
 } from 'rxjs';
 import { RepositoryWithFrequency } from '../../graphql/types';
 import {
@@ -105,6 +110,8 @@ enum Focussable {
   searchbar,
 }
 
+export type ReferenceFilter = 'all' | 'incoming' | 'outgoing' | 'tags';
+
 @Component({
   selector: 'app-notebook-details-page',
   templateUrl: './notebook-details.page.html',
@@ -183,6 +190,9 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
   shortcutValueRecent: NoteShortcutType = 'recent';
   shortcutValuePinned: NoteShortcutType = 'pinned';
   shortcutValueOff: NoteShortcutType = 'off';
+
+  referenceFilterFC = new FormControl<ReferenceFilter>('all');
+  references$: Observable<NoteHandle[]> = of([]);
 
   treeRoots$: Observable<NoteHandle[]>;
   private setSystemReady: (value: PromiseLike<void> | void) => void;
@@ -332,7 +342,10 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
         }),
       ],
     };
-    // await this.refreshReferences(openNote);
+    this.references$ = this.referenceFilterFC.valueChanges.pipe(
+      startWith(this.referenceFilterFC.value),
+      switchMap((filter) => this.resolveReferences(noteHandle, filter))
+    );
     this.currentEditorHandle = null;
     this.changeRef.detectChanges();
 
@@ -342,6 +355,29 @@ export class NotebookDetailsPage implements OnInit, OnDestroy, AfterViewInit {
     setTimeout(async () => {
       await this.setFocus(Focussable.editor);
     }, 1000);
+  }
+
+  private resolveReferences(
+    noteHandle: NoteHandle,
+    filter: ReferenceFilter
+  ): Observable<NoteHandle[]> {
+    switch (filter) {
+      case 'incoming':
+        return noteHandle.incomingLinks$();
+      case 'outgoing':
+        return noteHandle.outgoingLinks$();
+      case 'tags':
+        return of([]);
+      case 'all':
+      default:
+        return combineLatest([noteHandle.incomingLinks$(), noteHandle.outgoingLinks$()]).pipe(
+          map(([incoming, outgoing]) => [...incoming, ...outgoing])
+        );
+    }
+  }
+
+  get currentTags(): string[] {
+    return this.currentEditorHandle?.note?.references?.hashtags ?? [];
   }
 
   hasSettingsValue<
