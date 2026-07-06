@@ -543,6 +543,29 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     return this.sourceBuilder.needsJavascript();
   }
 
+  showTopSearchBar(): boolean {
+    if (this.hideSearchBar()) {
+      return false;
+    }
+    return !this.sourceBuilder?.response;
+  }
+
+  sourceAccordionHighlighted(): boolean {
+    return Boolean(
+      this.url?.length ||
+        this.tags?.length ||
+        this.geoLocation ||
+        this.titleFc.value?.length ||
+        (this.sourceBuilder && this.needsJavaScript())
+    );
+  }
+
+  async updateSourceUrl(url: string) {
+    this.url = url;
+    await this.scrapeUrl();
+    await this.webToFeedTransformerComponent()?.reloadFeedsAndRestoreSelection(this.selectedFeed);
+  }
+
   async showFeedUrlModal() {
     const feedUrl = await this.createFeedUrl();
     const alert = await this.alertCtrl.create({

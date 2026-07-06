@@ -220,36 +220,55 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             }
           })
       );
-      const outputs = this.sourceBuilder().response?.outputs;
-      if (!outputs) {
-        throw new Error('No outputs found in response');
-      }
-      const elementWithFeeds = outputs.find((o) => o.response?.extract?.feeds);
-      if (elementWithFeeds) {
-        const feeds = elementWithFeeds.response.extract.feeds;
-        this.genericFeeds = feeds.genericFeeds;
-        this.nativeFeeds = feeds.nativeFeeds as GqlRemoteNativeFeed[]; // todo
-        const scores = feeds.genericFeeds.map((gf) => gf.score);
-        const maxScore = max(scores);
-        const minScore = min(scores);
-        this.scaleScore = scaleLinear().domain([minScore, maxScore]).range([0, 100]);
-      } else {
-        throw new Error('not supported');
-      }
-      const feed = this.feed();
-      if (feed) {
-        if (feed.nativeFeed) {
-          await this.pickNativeFeed(feed.nativeFeed);
-        } else if (feed.genericFeed) {
-          await this.pickGenericFeed(feed.genericFeed);
-        } else {
-          throw new Error('not supported');
-        }
-      }
+      await this.reloadFeedsAndRestoreSelection(this.feed());
       this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     } catch (e) {
       console.error(e);
     }
+  }
+
+  async reloadFeedsAndRestoreSelection(previousSelection?: NativeOrGenericFeed) {
+    const outputs = this.sourceBuilder().response?.outputs;
+    if (!outputs) {
+      return;
+    }
+
+    const elementWithFeeds = outputs.find((o) => o.response?.extract?.feeds);
+    if (!elementWithFeeds) {
+      return;
+    }
+
+    const feeds = elementWithFeeds.response.extract.feeds;
+    this.genericFeeds = feeds.genericFeeds;
+    this.nativeFeeds = feeds.nativeFeeds as GqlRemoteNativeFeed[];
+    const scores = feeds.genericFeeds.map((gf) => gf.score);
+    if (scores.length > 0) {
+      this.scaleScore = scaleLinear().domain([min(scores), max(scores)]).range([0, 100]);
+    }
+
+    if (previousSelection?.genericFeed) {
+      const hash = previousSelection.genericFeed.hash;
+      const match =
+        hash === this.CUSTOM_HASH ? null : this.genericFeeds.find((gf) => gf.hash === hash);
+      if (match) {
+        await this.pickGenericFeed(match);
+        return;
+      }
+      if (hash === this.CUSTOM_HASH) {
+        await this.pickGenericFeed(previousSelection.genericFeed);
+        return;
+      }
+    }
+    if (previousSelection?.nativeFeed) {
+      const match = this.nativeFeeds.find(
+        (nf) => nf.feedUrl === previousSelection.nativeFeed.feedUrl
+      );
+      if (match) {
+        await this.pickNativeFeed(match);
+        return;
+      }
+    }
+    this.changeRef.detectChanges();
   }
 
   async pickNativeFeed(feed: GqlRemoteNativeFeed) {

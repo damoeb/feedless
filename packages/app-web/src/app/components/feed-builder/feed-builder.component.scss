@@ -3,6 +3,18 @@ app-transform-website-to-feed {
   flex: 1;
 }
 
+.source-url-item {
+  --inner-padding-end: 0;
+
+  app-searchbar {
+    width: 100%;
+  }
+
+  &::part(native) {
+    align-items: stretch;
+  }
+}
+
 ion-content::part(scroll) {
   display: flex;
   flex-direction: column;
