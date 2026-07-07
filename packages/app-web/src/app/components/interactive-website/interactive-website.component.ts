@@ -84,6 +84,7 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
   readonly sourceBuilder = input.required<SourceBuilder>();
 
   readonly showUrl = input<boolean>(false);
+  readonly showSegments = input<boolean>(true);
 
   readonly loadingChange = output<boolean>();
 

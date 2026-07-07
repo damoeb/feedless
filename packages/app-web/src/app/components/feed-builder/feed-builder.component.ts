@@ -1,34 +1,20 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild, } from '@angular/core';
 import { Location } from '@angular/common';
 import { Subscription } from 'rxjs';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
-  GqlItemFilterParamsInput,
   GqlRemoteNativeFeed,
   GqlSourceInput,
   GqlTransientGenericFeed,
 } from '../../../generated/graphql';
 import {
   AlertController,
-  IonAccordion,
   IonButton,
   IonIcon,
-  IonInput,
   IonItem,
   IonLabel,
   IonList,
-  IonNote,
   IonProgressBar,
   IonToolbar,
   ModalController,
@@ -58,20 +44,13 @@ import {
   settingsOutline,
 } from 'ionicons/icons';
 import { SearchbarComponent } from '../../elements/searchbar/searchbar.component';
-import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 import { ServerConfigService } from '../../services/server-config.service';
-import {
-  standaloneV1WebToFeedRoute,
-  standaloneV2FeedTransformRoute,
-  standaloneV2WebToFeedRoute,
-} from '../../router-utils';
-import { LatLng, Nullable } from '../../types';
+import { standaloneV1WebToFeedRoute, standaloneV2FeedTransformRoute, standaloneV2WebToFeedRoute, } from '../../router-utils';
+import { Nullable } from '../../types';
 import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if-prod.directive';
 import { assignIn, first, isArray } from 'lodash-es';
 import { parseQuery, renderPath, renderQuery } from 'typesafe-routes';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
-import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
-import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
+import { ReactiveFormsModule } from '@angular/forms';
 import { SessionService } from '../../services/session.service';
 
 /**
@@ -141,12 +120,8 @@ export type StandaloneUrlParams = {
     TransformWebsiteToFeedComponent,
     IonLabel,
     IonIcon,
-    IonAccordion,
-    IonNote,
-    FilterItemsAccordionComponent,
     IonButton,
     RemoveIfProdDirective,
-    IonInput,
     ReactiveFormsModule,
   ],
   standalone: true,
@@ -193,11 +168,11 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
 
   readonly selectedRepositoryChanged = output<RepositoryWithFrequency>();
 
-  protected tags: string[] = [];
-  protected geoLocation: LatLng;
-  protected titleFc = new FormControl<string>('');
+  // protected tags: string[] = [];
+  // protected geoLocation: LatLng;
+  // protected titleFc = new FormControl<string>('');
   // protected repositories: Repository[] = [];
-  hasValidFeed: boolean;
+  // hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
 
   constructor() {
@@ -216,9 +191,9 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const source = this.source();
     if (source) {
       console.log('this.source', source);
-      this.tags = source.tags;
-      this.geoLocation = source.latLng;
-      this.titleFc.setValue(source.title);
+      // this.tags = source.tags;
+      // this.geoLocation = source.latLng;
+      // this.titleFc.setValue(source.title);
       this.sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
       this.url = this.sourceBuilder.getUrl();
       await this.scrapeUrl();
@@ -312,21 +287,22 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   }
 
   async createOrRefineFeed(refine: boolean, draft: boolean = false) {
-    this.sourceBuilder.patch({
-      tags: this.tags,
-      draft,
-      title: this.titleFc.value,
-    });
-
-    // console.log('this.location', this.geoLocation);
-    if (this.geoLocation) {
-      this.sourceBuilder.patch({
-        latLng: {
-          lat: this.geoLocation.lat,
-          lng: this.geoLocation.lng,
-        },
-      });
-    }
+    // todo reuse
+    // this.sourceBuilder.patch({
+    //   tags: this.tags,
+    //   draft,
+    //   title: this.titleFc.value,
+    // });
+    //
+    // // console.log('this.location', this.geoLocation);
+    // if (this.geoLocation) {
+    //   this.sourceBuilder.patch({
+    //     latLng: {
+    //       lat: this.geoLocation.lat,
+    //       lng: this.geoLocation.lng,
+    //     },
+    //   });
+    // }
     this.selectedFeedChanged.emit({
       source: this.sourceBuilder.build(),
       feed: this.selectedFeed,
@@ -369,26 +345,26 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     this.apolloAbortController.abort('user canceled');
   }
 
-  async showTagsModal() {
-    this.tags = await this.modalService.openTagModal(TagsModalComponent, {
-      tags: this.tags || [],
-    });
-    this.changeRef.detectChanges();
-  }
-
-  async showLocationPickerModal() {
-    this.geoLocation = await this.modalService.openSearchAddressModal(SearchAddressModalComponent);
-    console.log('this.geoLocation', this.geoLocation);
-    this.changeRef.detectChanges();
-  }
-
-  getTagsString() {
-    if (this.tags) {
-      return tagsToString(this.tags);
-    } else {
-      return '-';
-    }
-  }
+  // async showTagsModal() {
+  //   this.tags = await this.modalService.openTagModal(TagsModalComponent, {
+  //     tags: this.tags || [],
+  //   });
+  //   this.changeRef.detectChanges();
+  // }
+  //
+  // async showLocationPickerModal() {
+  //   this.geoLocation = await this.modalService.openSearchAddressModal(SearchAddressModalComponent);
+  //   console.log('this.geoLocation', this.geoLocation);
+  //   this.changeRef.detectChanges();
+  // }
+  //
+  // getTagsString() {
+  //   if (this.tags) {
+  //     return tagsToString(this.tags);
+  //   } else {
+  //     return '-';
+  //   }
+  // }
 
   private async detectLegacyRssProxy() {
     const legacyPathFragments = [
@@ -523,21 +499,21 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
       ?.params?.org_feedless_filter;
   }
 
-  onFilterChange(params: GqlItemFilterParamsInput[]) {
-    if (params.length === 0) {
-      this.sourceBuilder.removePluginById(GqlFeedlessPlugins.OrgFeedlessFilter);
-    } else {
-      console.log('patchFilterAction');
-      this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
-        execute: {
-          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
-          params: {
-            org_feedless_filter: params,
-          },
-        },
-      });
-    }
-  }
+  // onFilterChange(params: GqlItemFilterParamsInput[]) {
+  //   if (params.length === 0) {
+  //     this.sourceBuilder.removePluginById(GqlFeedlessPlugins.OrgFeedlessFilter);
+  //   } else {
+  //     console.log('patchFilterAction');
+  //     this.sourceBuilder.addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+  //       execute: {
+  //         pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+  //         params: {
+  //           org_feedless_filter: params,
+  //         },
+  //       },
+  //     });
+  //   }
+  // }
 
   needsJavaScript() {
     return this.sourceBuilder.needsJavascript();

@@ -1,24 +1,26 @@
 <div class="ion-no-padding preview" style="display: flex; flex: 1; flex-direction: column">
   <ion-toolbar style="--background: transparent">
     <ion-row>
-      <ion-col size="9">
-        <div style="display: flex; align-items: center; column-gap: 10px">
-          @if (showUrl()) {
-            <ion-input [formControl]="formFg.controls.url" class="ion-margin-start"></ion-input>
-          }
+      @if (showSegments()) {
+        <ion-col size="9">
+          <div style="display: flex; align-items: center; column-gap: 10px">
+            @if (showUrl()) {
+              <ion-input [formControl]="formFg.controls.url" class="ion-margin-start"></ion-input>
+            }
 
-          <ion-segment [formControl]="viewModeFc" mode="ios">
-            @if (hasScreenshot) {
-              <ion-segment-button [value]="viewModeImage">Image </ion-segment-button>
-            }
-            @if (hasMarkup) {
-              <ion-segment-button [value]="viewModeMarkup">Markup </ion-segment-button>
-            }
-            <ng-content select="[segmentButton]"></ng-content>
-          </ion-segment>
-        </div>
-      </ion-col>
-      <ion-col size="3">
+            <ion-segment [formControl]="viewModeFc" mode="ios">
+              @if (hasScreenshot) {
+                <ion-segment-button [value]="viewModeImage">Image</ion-segment-button>
+              }
+              @if (hasMarkup) {
+                <ion-segment-button [value]="viewModeMarkup">Markup</ion-segment-button>
+              }
+              <ng-content select="[segmentButton]"></ng-content>
+            </ion-segment>
+          </div>
+        </ion-col>
+      }
+      <ion-col size="3" [push]="showSegments() ? '0' : '9'">
         @if (viewModeFc.value === viewModeMarkup || viewModeFc.value === viewModeImage) {
           <ion-buttons>
             <ion-button (click)="zoomIn()">
@@ -45,7 +47,7 @@
     @if (errorMessage) {
       <ion-toolbar color="danger">
         <ion-label class="ion-margin-horizontal"
-          >{{ errorMessage }}.
+        >{{ errorMessage }}.
           @if (!serverConfig.isSelfHosted()) {
             <span>Please try later.</span>
           }
@@ -132,20 +134,20 @@
         <app-console-button [logs]="logs"></app-console-button>
       }
       <!--      <div>-->
-      <!--        <ion-button shape="round" size="small">Console</ion-button>-->
-      <!--      </div>-->
-      <!--      <app-code-editor-->
-      <!--        *ngIf="viewModeFc.value === viewLogs"-->
-      <!--        [controls]="false"-->
-      <!--        [text]="logs"-->
-      <!--      >-->
-      <!--      </app-code-editor>-->
+        <!--        <ion-button shape="round" size="small">Console</ion-button>-->
+        <!--      </div>-->
+        <!--      <app-code-editor-->
+        <!--        *ngIf="viewModeFc.value === viewLogs"-->
+        <!--        [controls]="false"-->
+        <!--        [text]="logs"-->
+        <!--      >-->
+        <!--      </app-code-editor>-->
       <ng-content select="[segmentBody]"></ng-content>
       @if (pickMode) {
         <ion-row>
           <ion-item color="primary" style="width: 100%">
             <ion-label> Click on your element of choice</ion-label>
-            <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel </ion-button>
+            <ion-button (click)="cancelPickMode()" color="dark" slot="end">Cancel</ion-button>
           </ion-item>
         </ion-row>
       }

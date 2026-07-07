@@ -1,6 +1,7 @@
 # Feedless
 
-Time is precious, let&#39;s automate the web, build our custom well-behaving deterministic bots. _feedless_ is a middleware/web-app to
+Time is precious, let&#39;s automate the web, build our custom well-behaving deterministic bots. _feedless_ is a
+middleware/web-app to
 build web-based workflows. Extendable using plugins.
 
 ## Features
@@ -22,13 +23,34 @@ build web-based workflows. Extendable using plugins.
 
 ## Version 3.x (Latest)
 
-You need [docker-compose](https://docs.docker.com/compose/install/) or [podman-compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), here is the basic setup.
+You need [docker-compose](https://docs.docker.com/compose/install/)
+or [podman-compose](https://docs.podman.io/en/latest/markdown/podman-compose.1.html), here is the basic setup.
 
 # Support & Contact
 
 - Public Mail Group feedless@googlegroups.com
 - Contact feedlessapp@proton.me
 
+## Local Development Setup
+
+### Preparation
+
+```bash
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.4/install.sh | bash  # nvm
+curl -s "https://get.sdkman.io" | bash                                           # sdkman
+curl -LsSf https://astral.sh/uv/install.sh | sh                                  # uv
+```
+
+### Setuo
+
+```bash
+source .venv/bin/activate
+uv pip install -r requirements.txt
+
+sdk env
+```
+
 ## License
 
-Feedless is released under non-competitive FSL license, that falls back to Open Source Apache 2 after two years ([FSL-1.0-Apache-2.0](https://fsl.software/)).
+Feedless is released under non-competitive FSL license, that falls back to Open Source Apache 2 after two
+years ([FSL-1.0-Apache-2.0](https://fsl.software/)).

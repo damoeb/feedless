@@ -1,17 +1,8 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  inject,
-  input,
-  OnDestroy,
-  OnInit,
-  output,
-  viewChild,
-} from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, inject, input, OnDestroy, OnInit, output, viewChild, } from '@angular/core';
 import {
   GqlExtendContentOptions,
   GqlFeedlessPlugins,
+  GqlItemFilterParamsInput,
   GqlLogStatement,
   GqlRemoteNativeFeed,
   GqlTransientGenericFeed,
@@ -19,38 +10,22 @@ import {
 import { Record, Selectors } from '../../graphql/types';
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { assign, last, max, min, omit } from 'lodash-es';
-import {
-  FormControl,
-  FormGroup,
-  FormsModule,
-  ReactiveFormsModule,
-  Validators,
-} from '@angular/forms';
+import { FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators, } from '@angular/forms';
 import { format } from 'prettier/standalone';
 import htmlPlugin from 'prettier/plugins/html';
 import { ModalService } from '../../services/modal.service';
-import { NativeOrGenericFeed } from '../feed-builder/feed-builder.component';
+import { NativeOrGenericFeed, tagsToString } from '../feed-builder/feed-builder.component';
 import { debounce as rxDebounce, interval, Subscription } from 'rxjs';
 import { SourceBuilder } from '../interactive-website/source-builder';
-import {
-  CodeEditorModalComponent,
-  CodeEditorModalComponentProps,
-} from '../../modals/code-editor-modal/code-editor-modal.component';
+import { CodeEditorModalComponent, CodeEditorModalComponentProps, } from '../../modals/code-editor-modal/code-editor-modal.component';
 import { InteractiveWebsiteComponent } from '../interactive-website/interactive-website.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location, NgStyle } from '@angular/common';
 import { ScrapeService } from '../../services/scrape.service';
 import { addIcons } from 'ionicons';
-import {
-  chevronForward,
-  chevronForwardOutline,
-  eyeOutline,
-  refreshOutline,
-  searchOutline,
-} from 'ionicons/icons';
+import { chevronForward, chevronForwardOutline, eyeOutline, refreshOutline, searchOutline, } from 'ionicons/icons';
 import { ResponsiveColumnsComponent } from '../responsive-columns/responsive-columns.component';
 import {
-  IonAccordion,
   IonAccordionGroup,
   IonButton,
   IonCheckbox,
@@ -61,7 +36,6 @@ import {
   IonList,
   IonNote,
   IonProgressBar,
-  IonSegmentButton,
   IonSpinner,
   ToastController,
 } from '@ionic/angular/standalone';
@@ -69,6 +43,10 @@ import { BubbleComponent } from '../bubble/bubble.component';
 import { RemoteFeedPreviewComponent } from '../remote-feed-preview/remote-feed-preview.component';
 import { ConsoleButtonComponent } from '../console-button/console-button.component';
 import { BlockElementComponent } from '../block-element/block-element.component';
+import { LatLng } from '../../types';
+import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
+import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
+import { FilterItemsAccordionComponent } from '../filter-items-accordion/filter-items-accordion.component';
 
 export type TypedFormControls<TControl> = {
   [K in keyof TControl]: FormControl<TControl[K]>;
@@ -84,7 +62,6 @@ export type ComponentStatus = 'valid' | 'invalid';
   imports: [
     ResponsiveColumnsComponent,
     IonAccordionGroup,
-    IonAccordion,
     IonItem,
     IonLabel,
     IonIcon,
@@ -98,12 +75,12 @@ export type ComponentStatus = 'valid' | 'invalid';
     IonList,
     BubbleComponent,
     InteractiveWebsiteComponent,
-    IonSegmentButton,
     IonProgressBar,
     IonSpinner,
     RemoteFeedPreviewComponent,
     ConsoleButtonComponent,
     BlockElementComponent,
+    FilterItemsAccordionComponent,
   ],
   standalone: true,
 })
@@ -128,6 +105,10 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   readonly statusChange = output<ComponentStatus>();
 
   readonly selectedFeedChange = output<NativeOrGenericFeed>();
+
+  protected tags: string[] = [];
+  protected geoLocation: LatLng;
+  protected titleFc = new FormControl<string>('');
 
   readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
     TypedFormControls<Selectors>
@@ -166,6 +147,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   activeSegment: string;
   private customSelectorsFgChangeSubscription: Subscription;
   protected loadingFeedPreview: boolean;
+  hasValidFeed: boolean;
 
   constructor() {
     addIcons({
@@ -179,6 +161,11 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   async ngOnInit() {
     try {
+      if (this.sourceBuilder().meta) {
+        this.tags = this.sourceBuilder().meta.controls.tags.value;
+        this.geoLocation = this.sourceBuilder().meta.controls.latLng.value;
+        this.titleFc.setValue(this.sourceBuilder().meta.controls.title.value);
+      }
       if (this.feed()?.genericFeed) {
         this.customizeGenericFeed(this.feed().genericFeed);
       } else {
@@ -249,6 +236,27 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       this.statusChange.emit(this.isValid() ? 'valid' : 'invalid');
     } catch (e) {
       console.error(e);
+    }
+  }
+
+  async showTagsModal() {
+    this.tags = await this.modalService.openTagModal(TagsModalComponent, {
+      tags: this.tags || [],
+    });
+    this.changeRef.detectChanges();
+  }
+
+  async showLocationPickerModal() {
+    this.geoLocation = await this.modalService.openSearchAddressModal(SearchAddressModalComponent);
+    console.log('this.geoLocation', this.geoLocation);
+    this.changeRef.detectChanges();
+  }
+
+  getTagsString() {
+    if (this.tags) {
+      return tagsToString(this.tags);
+    } else {
+      return '-';
     }
   }
 
@@ -473,5 +481,26 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
         this.fetchFeedPreview(false);
       }
     }
+  }
+
+  onFilterChange(params: GqlItemFilterParamsInput[]) {
+    if (params.length === 0) {
+      this.sourceBuilder().removePluginById(GqlFeedlessPlugins.OrgFeedlessFilter);
+    } else {
+      console.log('patchFilterAction');
+      this.sourceBuilder().addOrUpdatePluginById(GqlFeedlessPlugins.OrgFeedlessFilter, {
+        execute: {
+          pluginId: GqlFeedlessPlugins.OrgFeedlessFilter,
+          params: {
+            org_feedless_filter: params,
+          },
+        },
+      });
+    }
+  }
+
+  getFilterPlugin() {
+    return this.sourceBuilder().findFirstByPluginsId(GqlFeedlessPlugins.OrgFeedlessFilter)?.execute
+      ?.params?.org_feedless_filter;
   }
 }
