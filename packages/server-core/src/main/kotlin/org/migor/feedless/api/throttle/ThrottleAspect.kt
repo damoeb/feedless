@@ -19,7 +19,7 @@ class ThrottleAspect {
   @Autowired
   private lateinit var ipThrottle: IpThrottleService
 
-  @Around("@annotation(org.migor.feedless.api.throttle.Throttled)")
+  @Around("@annotation(org.migor.feedless.api.throttle.Throttled) || @annotation(org.migor.feedless.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
     return if (ipThrottle.tryAquire(joinPoint)) {
       joinPoint.proceed()

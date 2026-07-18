@@ -7,7 +7,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.user.User
@@ -69,15 +68,12 @@ class StatefulAuthService : AuthService() {
   }
 
   override suspend fun authenticateUser(email: String, secretKey: String): Jwt = withContext(Dispatchers.IO) {
-    log.debug("authRoot")
-    val root = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
-    if (!root.admin) {
-      throw PermissionDeniedException("account is not root")
-    }
+    log.debug("authUser")
+    val user = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
     userSecretRepository.findBySecretKeyValue(secretKey, email)
       ?: throw IllegalArgumentException("secretKey does not match")
 
-    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(root.id)))
+    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id)))
   }
 
   override suspend fun findUserById(userId: UserId): User? = withContext(Dispatchers.IO) {

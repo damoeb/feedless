@@ -16,8 +16,10 @@ dependencies {
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation(libs.kotlin.reflect)
   implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.reactor)
   compileOnly("io.swagger.core.v3:swagger-annotations:2.2.30")
   testImplementation(libs.spring.boot.test)
+  testImplementation(libs.kotlinx.coroutines.test)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
@@ -54,3 +56,7 @@ tasks.named("compileKotlin") {
 }
 
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
+
+tasks.test {
+  useJUnitPlatform()
+}

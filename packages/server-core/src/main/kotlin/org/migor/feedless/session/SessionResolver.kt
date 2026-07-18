@@ -27,8 +27,7 @@ import org.springframework.web.context.request.ServletWebRequest
 @DgsComponent
 @Profile("${AppProfiles.session} & ${AppLayer.api}")
 class SessionResolver(
-  private val authService: AuthService,
-  private val cookieProvider: CookieProvider,
+  private val sessionTokenPort: SessionTokenPort,
   private val capabilityService: CapabilityService,
 ) {
 
@@ -72,11 +71,11 @@ class SessionResolver(
   ): Authentication = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("authUser")
     try {
-      val jwt = authService.authenticateUser(data.email, data.secretKey)
-      addCookie(dfe, cookieProvider.createTokenCookie(jwt))
+      val token = sessionTokenPort.authenticateUser(data.email, data.secretKey)
+      addCookie(dfe, toServletCookie(sessionTokenPort.toCookie(token)))
       Authentication(
-        token = jwt.tokenValue,
-        corrId = CryptUtil.newCorrId()
+        token = token.token,
+        corrId = CryptUtil.newCorrId(),
       )
     } catch (e: Exception) {
       log.error(e.message, e)
@@ -90,17 +89,21 @@ class SessionResolver(
     dfe: DataFetchingEnvironment,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("logout")
-    val cookie = Cookie("TOKEN", "")
-    cookie.isHttpOnly = true
-    cookie.maxAge = 0
-    addCookie(dfe, cookie)
+    addCookie(dfe, toServletCookie(sessionTokenPort.createExpiredTokenCookie()))
     true
   }
 
+  private fun toServletCookie(cookie: org.migor.feedless.session.HttpSetCookie): Cookie {
+    return Cookie(cookie.name, cookie.value).apply {
+      isHttpOnly = cookie.httpOnly
+      maxAge = cookie.maxAge
+      secure = cookie.secure
+      path = cookie.path
+    }
+  }
+
   private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
-    val cookie = cookieProvider.createExpiredSessionCookie("JSESSION")
-    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
-      cookie
-    )
+    val cookie = sessionTokenPort.createExpiredTokenCookie("JSESSION")
+    addCookie(dfe, toServletCookie(cookie))
   }
 }
