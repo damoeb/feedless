@@ -1,234 +1,62 @@
 openapi: 3.0.3
 info:
   title: Feedless HTTP API
-  description: REST API for managing feed repositories and sources.
+  description: REST API for Feedless entities (auth, repository, source, document, harvest, plan, group).
   version: 1.0.0
-
 servers:
   - url: /api/v1
-    description: Feed management API v1
-
+    description: Feedless HTTP API v1
 security:
   - userSecretJwt: []
-
 paths:
-  /repositories:
-    get:
-      tags: [Repositories]
-      operationId: listRepositories
-      summary: List repositories for the authenticated user
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: product
-          in: query
-          schema:
-            $ref: '#/components/schemas/Vertical'
-        - name: visibility
-          in: query
-          schema:
-            $ref: '#/components/schemas/Visibility'
-        - name: q
-          in: query
-          description: Fulltext search query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Repository list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RepositoryListResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
+  /auth/login:
     post:
-      tags: [Repositories]
-      operationId: createRepositories
-      summary: Create one or more repositories
+      tags: [Auth]
+      operationId: login
+      security: []
+      summary: Authenticate with email + secretKey
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/RepositoryCreate'
-      responses:
-        '201':
-          description: Created repositories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Repository'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/count:
-    get:
-      tags: [Repositories]
-      operationId: countRepositories
-      summary: Count repositories for a product
-      parameters:
-        - name: product
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/Vertical'
+              $ref: '#/components/schemas/AuthUserRequest'
       responses:
         '200':
-          description: Repository count
+          description: JWT issued
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CountResponse'
+                $ref: '#/components/schemas/AuthenticationResponse'
         '401':
           $ref: '#/components/responses/Unauthorized'
-
-  /repositories/{repositoryId}:
-    parameters:
-      - $ref: '#/components/parameters/RepositoryId'
+  /auth/session:
     get:
-      tags: [Repositories]
-      operationId: getRepository
-      summary: Get a repository by id
+      tags: [Auth]
+      operationId: getSession
+      summary: Current auth session
       responses:
         '200':
-          description: Repository
+          description: Session
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Repository'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    patch:
-      tags: [Repositories]
-      operationId: updateRepository
-      summary: Update a repository
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RepositoryUpdate'
+                $ref: '#/components/schemas/SessionResponse'
+  /auth/logout:
+    post:
+      tags: [Auth]
+      operationId: logout
+      summary: Clear TOKEN cookie
       responses:
         '204':
-          description: Updated
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    delete:
-      tags: [Repositories]
-      operationId: deleteRepository
-      summary: Delete a repository
-      responses:
-        '204':
-          description: Deleted
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/{repositoryId}/sources:
-    parameters:
-      - $ref: '#/components/parameters/RepositoryId'
-    get:
-      tags: [Sources]
-      operationId: listSources
-      summary: List sources on a repository
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: disabled
-          in: query
-          schema:
-            type: boolean
-        - name: like
-          in: query
-          schema:
-            type: string
-      responses:
-        '200':
-          description: Source list
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SourceListResponse'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/{repositoryId}/sources/{sourceId}:
-    parameters:
-      - $ref: '#/components/parameters/RepositoryId'
-      - $ref: '#/components/parameters/SourceId'
-    get:
-      tags: [Sources]
-      operationId: getSource
-      summary: Get a source by id
-      responses:
-        '200':
-          description: Source
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Source'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
+          description: Logged out
 components:
   securitySchemes:
     userSecretJwt:
       type: apiKey
       in: header
       name: Authentication
-      description: >
-        Bearer JWT from UserSecret.value (create via GraphQL createUserSecret).
-        Example header value: `Bearer eyJ...`
-
-  parameters:
-    RepositoryId:
-      name: repositoryId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    SourceId:
-      name: sourceId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    Page:
-      name: page
-      in: query
-      schema:
-        type: integer
-        minimum: 0
-        default: 0
-    PageSize:
-      name: pageSize
-      in: query
-      schema:
-        type: integer
-        minimum: 0
-        maximum: 100
-        default: 20
-
+      description: Bearer JWT from login or UserSecret (logged-in user). Anonymous JWTs are rejected. Example `Bearer eyJ...`
   responses:
     Unauthorized:
       description: Missing or invalid authentication
@@ -248,361 +76,31 @@ components:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
-
   schemas:
     ApiError:
       type: object
       required: [code, message]
       properties:
-        code:
-          type: string
-        message:
-          type: string
-
-    CountResponse:
+        code: { type: string }
+        message: { type: string }
+        corrId: { type: string, description: Optional correlation id for support/debug }
+        path: { type: string, description: Optional field or request path for validation errors }
+    AuthUserRequest:
       type: object
-      required: [count]
+      required: [email, secretKey]
       properties:
-        count:
-          type: integer
-
-    RepositoryListResponse:
+        email: { type: string, format: email }
+        secretKey: { type: string }
+    AuthenticationResponse:
       type: object
-      required: [items]
+      required: [token, corrId]
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Repository'
-
-    SourceListResponse:
+        token: { type: string }
+        corrId: { type: string }
+    SessionResponse:
       type: object
-      required: [items]
+      required: [isAnonymous, isLoggedIn]
       properties:
-        items:
-          type: array
-          items:
-            $ref: '#/components/schemas/Source'
-
-    Vertical:
-      type: string
-      enum:
-        - all
-        - rssProxy
-        - visualDiff
-        - reader
-        - feedless
-        - upcoming
-        - untoldNotes
-        - pageChangeTracker
-        - feedDump
-
-    Visibility:
-      type: string
-      enum:
-        - isPrivate
-        - isPublic
-
-    Retention:
-      type: object
-      properties:
-        maxCapacity:
-          type: integer
-        maxAgeDays:
-          type: integer
-
-    Repository:
-      type: object
-      required:
-        - id
-        - title
-        - description
-        - shareKey
-        - ownerId
-        - product
-        - visibility
-        - refreshCron
-        - tags
-        - createdAt
-        - lastUpdatedAt
-        - documentCount
-        - archived
-        - pullsPerMonth
-        - currentUserIsOwner
-        - pushNotificationsEnabled
-        - sourcesCount
-        - sourcesCountWithProblems
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        description:
-          type: string
-        shareKey:
-          type: string
-        ownerId:
-          type: string
-          format: uuid
-        product:
-          $ref: '#/components/schemas/Vertical'
-        visibility:
-          $ref: '#/components/schemas/Visibility'
-        refreshCron:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        createdAt:
-          type: integer
-          format: int64
-        lastUpdatedAt:
-          type: integer
-          format: int64
-        nextUpdateAt:
-          type: integer
-          format: int64
-        documentCount:
-          type: integer
-          format: int64
-        archived:
-          type: boolean
-        pullsPerMonth:
-          type: integer
-        currentUserIsOwner:
-          type: boolean
-        pushNotificationsEnabled:
-          type: boolean
-        sourcesCount:
-          type: integer
-        sourcesCountWithProblems:
-          type: integer
-        disabledFrom:
-          type: integer
-          format: int64
-
-    RepositoryCreate:
-      type: object
-      required: [product, sources, title, description]
-      properties:
-        product:
-          $ref: '#/components/schemas/Vertical'
-        sources:
-          type: array
-          items:
-            $ref: '#/components/schemas/SourceCreate'
-        title:
-          type: string
-        description:
-          type: string
-        retention:
-          $ref: '#/components/schemas/Retention'
-        refreshCron:
-          type: string
-        withShareKey:
-          type: boolean
-        pushNotificationsMuted:
-          type: boolean
-        visibility:
-          $ref: '#/components/schemas/Visibility'
-
-    RepositoryUpdate:
-      type: object
-      properties:
-        title:
-          type: string
-        description:
-          type: string
-        refreshCron:
-          type: string
-        pushNotificationsMuted:
-          type: boolean
-        visibility:
-          $ref: '#/components/schemas/Visibility'
-        retention:
-          $ref: '#/components/schemas/Retention'
-        sources:
-          $ref: '#/components/schemas/SourcesPatch'
-
-    SourcesPatch:
-      type: object
-      properties:
-        add:
-          type: array
-          items:
-            $ref: '#/components/schemas/SourceCreate'
-        update:
-          type: array
-          items:
-            $ref: '#/components/schemas/SourceUpdate'
-        remove:
-          type: array
-          items:
-            type: string
-            format: uuid
-
-    Source:
-      type: object
-      required: [id, title, flow]
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        flow:
-          $ref: '#/components/schemas/ScrapeFlow'
-        disabled:
-          type: boolean
-        lastRefreshedAt:
-          type: integer
-          format: int64
-        lastRecordsRetrieved:
-          type: integer
-        latLng:
-          $ref: '#/components/schemas/GeoPoint'
-        tags:
-          type: array
-          items:
-            type: string
-        recordCount:
-          type: integer
-        lastErrorMessage:
-          type: string
-
-    SourceCreate:
-      type: object
-      required: [title, flow]
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        flow:
-          $ref: '#/components/schemas/ScrapeFlow'
-        draft:
-          type: boolean
-        latLng:
-          $ref: '#/components/schemas/GeoPoint'
-        tags:
-          type: array
-          items:
-            type: string
-        lastErrorMessage:
-          type: string
-
-    SourceUpdate:
-      type: object
-      required: [id]
-      properties:
-        id:
-          type: string
-          format: uuid
-        title:
-          type: string
-        tags:
-          type: array
-          items:
-            type: string
-        disabled:
-          type: boolean
-        latLng:
-          $ref: '#/components/schemas/GeoPoint'
-        flow:
-          $ref: '#/components/schemas/ScrapeFlow'
-
-    GeoPoint:
-      type: object
-      required: [lat, lng]
-      properties:
-        lat:
-          type: number
-          format: float
-        lng:
-          type: number
-          format: float
-
-    ScrapeFlow:
-      type: object
-      required: [sequence]
-      properties:
-        sequence:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScrapeAction'
-
-    ScrapeAction:
-      type: object
-      properties:
-        fetch:
-          $ref: '#/components/schemas/HttpFetch'
-        extract:
-          $ref: '#/components/schemas/ScrapeExtract'
-
-    HttpFetch:
-      type: object
-      properties:
-        get:
-          $ref: '#/components/schemas/HttpGetRequest'
-
-    HttpGetRequest:
-      type: object
-      required: [url]
-      properties:
-        url:
-          $ref: '#/components/schemas/StringLiteralOrVariable'
-        timeout:
-          type: integer
-        forcePrerender:
-          type: boolean
-        language:
-          type: string
-        additionalWaitSec:
-          type: integer
-
-    StringLiteralOrVariable:
-      type: object
-      properties:
-        literal:
-          type: string
-        variable:
-          type: string
-
-    ScrapeExtract:
-      type: object
-      properties:
-        fragmentName:
-          type: string
-        selectorBased:
-          $ref: '#/components/schemas/DomExtract'
-
-    DomExtract:
-      type: object
-      properties:
-        fragmentName:
-          type: string
-        xpath:
-          $ref: '#/components/schemas/DomElementByXPath'
-        emit:
-          type: array
-          items:
-            $ref: '#/components/schemas/ScrapeEmit'
-        uniqueBy:
-          $ref: '#/components/schemas/ScrapeEmit'
-
-    DomElementByXPath:
-      type: object
-      properties:
-        xpath:
-          type: string
-
-    ScrapeEmit:
-      type: string
-      enum:
-        - text
-        - html
-        - pixel
-        - date
+        isAnonymous: { type: boolean }
+        isLoggedIn: { type: boolean }
+        userId: { type: string, format: uuid }

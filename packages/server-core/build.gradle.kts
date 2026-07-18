@@ -103,7 +103,7 @@ dependencies {
   implementation(project(":packages:jpa-data"))
   implementation(project(":packages:feed-parser"))
   api(project(":packages:graphql-api"))
-  api(project(":packages:http-api"))
+  implementation(project(":packages:http-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")
   kapt("org.mapstruct:mapstruct-processor:1.6.3")
