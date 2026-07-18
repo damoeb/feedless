@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
   implementation(project(":packages:domain"))
+  implementation(libs.gson)
   implementation(libs.spring.boot.web)
   implementation(libs.spring.boot.validation)
   implementation(libs.spring.boot.security)
@@ -44,6 +45,7 @@ openApiGenerate {
       "serviceInterface" to "false",
       "skipDefaultInterface" to "true",
       "reactive" to "true",
+      "useCoroutines" to "true",
       "gradleBuildFile" to "false",
     )
   )

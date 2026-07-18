@@ -50,6 +50,107 @@ paths:
       responses:
         '204':
           description: Logged out
+  /repositories:
+    get:
+      tags: [Repositories]
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: product
+          in: query
+          schema:
+            $ref: '#/components/schemas/Vertical'
+        - name: visibility
+          in: query
+          schema:
+            $ref: '#/components/schemas/Visibility'
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryListResponse'
+    post:
+      tags: [Repositories]
+      operationId: createRepositories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/RepositoryCreate'
+            x-codegen-request-body-name: repositoryCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Repository'
+  /repositories/count:
+    get:
+      tags: [Repositories]
+      operationId: countRepositories
+      parameters:
+        - name: product
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/Vertical'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountResponse'
+  /repositories/{repositoryId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+    get:
+      tags: [Repositories]
+      operationId: getRepository
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Repositories]
+      operationId: updateRepository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryUpdate'
+      responses:
+        '204':
+          description: Updated
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Repositories]
+      operationId: deleteRepository
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     userSecretJwt:
@@ -57,6 +158,29 @@ components:
       in: header
       name: Authentication
       description: Bearer JWT from login or UserSecret (logged-in user). Anonymous JWTs are rejected. Example `Bearer eyJ...`
+  parameters:
+    RepositoryId:
+      name: repositoryId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        maximum: 100
+        default: 20
   responses:
     Unauthorized:
       description: Missing or invalid authentication
@@ -104,3 +228,457 @@ components:
         isAnonymous: { type: boolean }
         isLoggedIn: { type: boolean }
         userId: { type: string, format: uuid }
+    CountResponse:
+      type: object
+      required: [count]
+      properties:
+        count:
+          type: integer
+    RepositoryListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Repository'
+        hasMore:
+          type: boolean
+    Vertical:
+      type: string
+      enum:
+        - all
+        - rssProxy
+        - visualDiff
+        - reader
+        - feedless
+        - upcoming
+        - untoldNotes
+        - pageChangeTracker
+        - feedDump
+        - digest
+    Visibility:
+      type: string
+      enum:
+        - isPrivate
+        - isPublic
+    Retention:
+      type: object
+      properties:
+        maxCapacity:
+          type: integer
+        maxAgeDays:
+          type: integer
+    Repository:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - shareKey
+        - ownerId
+        - product
+        - visibility
+        - refreshCron
+        - tags
+        - createdAt
+        - lastUpdatedAt
+        - documentCount
+        - archived
+        - pullsPerMonth
+        - currentUserIsOwner
+        - pushNotificationsEnabled
+        - sourcesCount
+        - sourcesCountWithProblems
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        shareKey:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+        product:
+          $ref: '#/components/schemas/Vertical'
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+        refreshCron:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        createdAt:
+          type: integer
+          format: int64
+        lastUpdatedAt:
+          type: integer
+          format: int64
+        nextUpdateAt:
+          type: integer
+          format: int64
+        documentCount:
+          type: integer
+          format: int64
+        archived:
+          type: boolean
+        pullsPerMonth:
+          type: integer
+        currentUserIsOwner:
+          type: boolean
+        pushNotificationsEnabled:
+          type: boolean
+        sourcesCount:
+          type: integer
+        sourcesCountWithProblems:
+          type: integer
+        disabledFrom:
+          type: integer
+          format: int64
+    RepositoryCreate:
+      type: object
+      required: [product, sources, title, description]
+      properties:
+        product:
+          $ref: '#/components/schemas/Vertical'
+        sources:
+          type: array
+          items:
+            $ref: '#/components/schemas/SourceCreate'
+        title:
+          type: string
+        description:
+          type: string
+        retention:
+          $ref: '#/components/schemas/Retention'
+        refreshCron:
+          type: string
+        withShareKey:
+          type: boolean
+        pushNotificationsMuted:
+          type: boolean
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+    RepositoryUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        refreshCron:
+          type: string
+        pushNotificationsMuted:
+          type: boolean
+        visibility:
+          $ref: '#/components/schemas/Visibility'
+        retention:
+          $ref: '#/components/schemas/Retention'
+    SourceCreate:
+      type: object
+      required: [title, flow]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        flow:
+          $ref: '#/components/schemas/ScrapeFlow'
+        draft:
+          type: boolean
+        latLng:
+          $ref: '#/components/schemas/GeoPoint'
+        tags:
+          type: array
+          items:
+            type: string
+        lastErrorMessage:
+          type: string
+    GeoPoint:
+      type: object
+      required: [lat, lng]
+      properties:
+        lat:
+          type: number
+          format: float
+        lng:
+          type: number
+          format: float
+    ScrapeFlow:
+      type: object
+      required: [sequence]
+      properties:
+        sequence:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScrapeAction'
+    ScrapeAction:
+      type: object
+      properties:
+        fetch:
+          $ref: '#/components/schemas/HttpFetch'
+        extract:
+          $ref: '#/components/schemas/ScrapeExtract'
+        execute:
+          $ref: '#/components/schemas/PluginExecution'
+        click:
+          $ref: '#/components/schemas/DomElement'
+        type:
+          $ref: '#/components/schemas/DomActionType'
+        waitFor:
+          $ref: '#/components/schemas/WaitForAction'
+        select:
+          $ref: '#/components/schemas/DomActionSelect'
+        header:
+          $ref: '#/components/schemas/RequestHeader'
+        purge:
+          $ref: '#/components/schemas/DomElementByXPath'
+    HttpFetch:
+      type: object
+      properties:
+        get:
+          $ref: '#/components/schemas/HttpGetRequest'
+    HttpGetRequest:
+      type: object
+      required: [url]
+      properties:
+        url:
+          $ref: '#/components/schemas/StringLiteralOrVariable'
+        timeout:
+          type: integer
+        viewport:
+          $ref: '#/components/schemas/ViewPort'
+        forcePrerender:
+          type: boolean
+        language:
+          type: string
+        waitUntil:
+          $ref: '#/components/schemas/PuppeteerWaitUntil'
+        additionalWaitSec:
+          type: integer
+    ViewPort:
+      type: object
+      required: [width, height, isMobile, isLandscape]
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        isMobile:
+          type: boolean
+        isLandscape:
+          type: boolean
+    PuppeteerWaitUntil:
+      type: string
+      enum:
+        - load
+        - domcontentloaded
+        - networkidle0
+        - networkidle2
+    StringLiteralOrVariable:
+      type: object
+      properties:
+        literal:
+          type: string
+        variable:
+          type: string
+    ScrapeExtract:
+      type: object
+      required: [fragmentName]
+      properties:
+        fragmentName:
+          type: string
+        imageBased:
+          $ref: '#/components/schemas/ScrapeBoundingBox'
+        selectorBased:
+          $ref: '#/components/schemas/DomExtract'
+    ScrapeBoundingBox:
+      type: object
+      required: [boundingBox]
+      properties:
+        boundingBox:
+          $ref: '#/components/schemas/BoundingBox'
+    BoundingBox:
+      type: object
+      required: [x, y, w, h]
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+        w:
+          type: integer
+        h:
+          type: integer
+    DomExtract:
+      type: object
+      required: [fragmentName, xpath, emit, uniqueBy]
+      properties:
+        fragmentName:
+          type: string
+        xpath:
+          $ref: '#/components/schemas/DomElementByXPath'
+        max:
+          type: integer
+        emit:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScrapeEmit'
+        uniqueBy:
+          $ref: '#/components/schemas/ScrapeEmit'
+        extract:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomExtract'
+    DomElementByXPath:
+      type: object
+      required: [value]
+      properties:
+        value:
+          type: string
+    ScrapeEmit:
+      type: string
+      enum:
+        - text
+        - html
+        - pixel
+        - date
+    DomElement:
+      type: object
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByNameOrXPath'
+        position:
+          $ref: '#/components/schemas/XyPosition'
+    DomElementByNameOrXPath:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/DomElementByName'
+        xpath:
+          $ref: '#/components/schemas/DomElementByXPath'
+    DomElementByName:
+      type: object
+      required: [value]
+      properties:
+        value:
+          type: string
+    XyPosition:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+    WaitForAction:
+      type: object
+      required: [element]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByNameOrXPath'
+    DomActionType:
+      type: object
+      required: [element, typeValue]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByXPath'
+        typeValue:
+          type: string
+    DomActionSelect:
+      type: object
+      required: [element, selectValue]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByXPath'
+        selectValue:
+          type: string
+    RequestHeader:
+      type: object
+      required: [name, value]
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    PluginExecution:
+      type: object
+      required: [pluginId, params]
+      properties:
+        pluginId:
+          type: string
+        params:
+          $ref: '#/components/schemas/PluginExecutionParams'
+    PluginExecutionParams:
+      type: object
+      properties:
+        jsonData:
+          type: string
+        org_feedless_fulltext:
+          $ref: '#/components/schemas/FulltextPluginParams'
+        org_feedless_diff_records:
+          $ref: '#/components/schemas/DiffRecordsParams'
+        org_feedless_feed:
+          $ref: '#/components/schemas/FeedParams'
+    FulltextPluginParams:
+      type: object
+      required: [readability, summary, inheritParams]
+      properties:
+        readability:
+          type: boolean
+        summary:
+          type: boolean
+        inheritParams:
+          type: boolean
+        onErrorRemove:
+          type: boolean
+    DiffRecordsParams:
+      type: object
+      required: [nextItemMinIncrement, compareBy]
+      properties:
+        nextItemMinIncrement:
+          type: number
+          format: float
+        compareBy:
+          $ref: '#/components/schemas/CompareBy'
+        inlineDiffImage:
+          type: boolean
+        inlineLatestImage:
+          type: boolean
+        inlinePreviousImage:
+          type: boolean
+    CompareBy:
+      type: object
+      required: [field]
+      properties:
+        fragmentNameRef:
+          type: string
+        field:
+          type: string
+    FeedParams:
+      type: object
+      properties:
+        generic:
+          $ref: '#/components/schemas/Selectors'
+    Selectors:
+      type: object
+      required: [contextXPath, dateIsStartOfEvent, extendContext, paginationXPath, linkXPath]
+      properties:
+        contextXPath:
+          type: string
+        dateIsStartOfEvent:
+          type: boolean
+        dateXPath:
+          type: string
+        extendContext:
+          type: string
+        paginationXPath:
+          type: string
+        linkXPath:
+          type: string
