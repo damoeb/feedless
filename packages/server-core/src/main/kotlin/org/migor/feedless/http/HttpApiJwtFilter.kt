@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.session.AuthTokenType
+import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.jwtToOAuth2AuthenticationToken
 import org.slf4j.LoggerFactory
@@ -24,7 +26,10 @@ class HttpApiJwtFilter(
   private val log = LoggerFactory.getLogger(HttpApiJwtFilter::class.simpleName)
 
   override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-    return !request.requestURI.startsWith("/api/v1/")
+    if (!request.requestURI.startsWith("/api/v1/")) {
+      return true
+    }
+    return request.requestURI == "/api/v1/auth/login"
   }
 
   override fun doFilterInternal(
@@ -35,6 +40,10 @@ class HttpApiJwtFilter(
     val authenticated = runBlocking {
       try {
         val jwt = jwtTokenIssuer.decodeJwt(request)
+        if (jwt.getClaimAsString(JwtParameterNames.TYPE) == AuthTokenType.ANONYMOUS.value) {
+          response.sendError(HttpStatus.UNAUTHORIZED.value(), "Authentication required")
+          return@runBlocking false
+        }
         SecurityContextHolder.getContext().authentication = jwtToOAuth2AuthenticationToken(jwt)
         true
       } catch (e: Exception) {

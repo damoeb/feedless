@@ -44,6 +44,32 @@ class HttpApiJwtFilterTest {
   }
 
   @Test
+  fun `returns 401 when token is anonymous`() {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+
+    val request = MockHttpServletRequest("GET", "/api/v1/repositories")
+    request.addHeader("Authentication", "Bearer $token")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assert(response.status == HttpStatus.UNAUTHORIZED.value())
+    verify(chain, never()).doFilter(request, response)
+  }
+
+  @Test
+  fun `skips filter for login path`() {
+    val request = MockHttpServletRequest("POST", "/api/v1/auth/login")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    verify(chain).doFilter(request, response)
+  }
+
+  @Test
   fun `continues chain when token is valid`() = runBlocking {
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(UserId())
