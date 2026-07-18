@@ -232,25 +232,41 @@ class RepositoryUseCase(
       }
     } ?: repository
 
-    repository = data.nextUpdateAt?.let {
+    if (data.nextUpdateAt != null || data.scheduleNextUpdateNow) {
+      val next = data.nextUpdateAt ?: LocalDateTime.now()
       val nextAt = planConstraintsService.coerceMinScheduledNextAt(
         repository.lastUpdatedAt,
-        it,
+        next,
         groupId
       )
       log.info("nextUpdateAt $nextAt")
-      repository.copy(triggerScheduledNextAt = nextAt)
-    } ?: repository
+      repository = repository.copy(triggerScheduledNextAt = nextAt)
+    }
 
-    if (data.retentionMaxAgeDays != null || data.retentionMaxCapacity != null) {
-      data.retentionMaxAgeDays?.let {
-        log.info("retentionMaxAgeDays $it")
-        repository = repository.copy(retentionMaxAgeDays = it)
-      }
-      data.retentionMaxCapacity?.let {
-        log.info("retentionMaxItems $it")
-        repository = repository.copy(retentionMaxCapacity = it)
-      }
+    var retentionTouched = false
+    if (data.clearRetentionMaxAgeDays) {
+      log.info("retentionMaxAgeDays null")
+      repository = repository.copy(retentionMaxAgeDays = null)
+      retentionTouched = true
+    } else if (data.retentionMaxAgeDays != null) {
+      log.info("retentionMaxAgeDays ${data.retentionMaxAgeDays}")
+      repository = repository.copy(retentionMaxAgeDays = data.retentionMaxAgeDays)
+      retentionTouched = true
+    }
+    if (data.clearRetentionMaxCapacity) {
+      log.info("retentionMaxItems null")
+      repository = repository.copy(retentionMaxCapacity = null)
+      retentionTouched = true
+    } else if (data.retentionMaxCapacity != null) {
+      log.info("retentionMaxItems ${data.retentionMaxCapacity}")
+      repository = repository.copy(retentionMaxCapacity = data.retentionMaxCapacity)
+      retentionTouched = true
+    }
+    data.retentionMaxAgeDaysReferenceField?.let {
+      log.info("retentionMaxAgeDaysReferenceField $it")
+      repository = repository.copy(retentionMaxAgeDaysReferenceField = it)
+    }
+    if (retentionTouched) {
       documentUseCase.applyRetentionStrategy(repository.id)
     }
 

@@ -37,6 +37,7 @@ class RepositoryUpdateTest {
   private lateinit var data: RepositoryUpdate
   private lateinit var sourceUseCase: SourceUseCase
   private lateinit var repositoryGuard: RepositoryGuard
+  private lateinit var documentUseCase: DocumentUseCase
   private val currentUserId = randomUserId()
 
   @BeforeEach
@@ -44,13 +45,14 @@ class RepositoryUpdateTest {
     repositoryRepository = mock(RepositoryRepository::class.java)
     planConstraintsService = mock(PlanConstraintsService::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
+    documentUseCase = mock(DocumentUseCase::class.java)
 
     repositoryGuard = mock(RepositoryGuard::class.java)
     repositoryUseCase = spy(
       RepositoryUseCase(
         repositoryRepository,
         planConstraintsService,
-        mock(DocumentUseCase::class.java),
+        documentUseCase,
         mock(PropertyService::class.java),
         sourceUseCase,
         repositoryGuard,
@@ -199,6 +201,68 @@ class RepositoryUpdateTest {
       repositoryUseCase.updateRepository(repositoryId, data)
 
       verify(sourceUseCase).deleteAllById(any2(), any2())
+    }
+
+  @Test
+  fun `clear retention maxAgeDays applies retention strategy and clears field`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      var savedRepo: Repository? = null
+      `when`(repositoryRepository.save(any2())).thenAnswer {
+        savedRepo = it.arguments[0] as Repository
+        savedRepo
+      }
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(clearRetentionMaxAgeDays = true))
+
+      verify(documentUseCase).applyRetentionStrategy(repositoryId)
+      assertThat(savedRepo?.retentionMaxAgeDays).isNull()
+    }
+
+  @Test
+  fun `schedule next update now coerces current time`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      val coercedNextAt = LocalDateTime.of(2026, 7, 18, 12, 0)
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          any2(),
+          any2(),
+          any2(),
+        )
+      ).thenReturn(coercedNextAt)
+      var savedRepo: Repository? = null
+      `when`(repositoryRepository.save(any2())).thenAnswer {
+        savedRepo = it.arguments[0] as Repository
+        savedRepo
+      }
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(scheduleNextUpdateNow = true))
+
+      verify(planConstraintsService).coerceMinScheduledNextAt(
+        any2(),
+        any2(),
+        any2(),
+      )
+      assertThat(savedRepo?.triggerScheduledNextAt).isEqualTo(coercedNextAt)
+    }
+
+  @Test
+  fun `retention age reference field is persisted`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      var savedRepo: Repository? = null
+      `when`(repositoryRepository.save(any2())).thenAnswer {
+        savedRepo = it.arguments[0] as Repository
+        savedRepo
+      }
+
+      repositoryUseCase.updateRepository(
+        repositoryId,
+        RepositoryUpdate(retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.publishedAt),
+      )
+
+      assertThat(savedRepo?.retentionMaxAgeDaysReferenceField).isEqualTo(MaxAgeDaysDateField.publishedAt)
     }
 
   private fun mockRepositorySave() {

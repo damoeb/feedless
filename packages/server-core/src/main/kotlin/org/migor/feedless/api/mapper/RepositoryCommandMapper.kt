@@ -4,20 +4,12 @@ import com.google.gson.Gson
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.fromDto as scrapeFlowFromDto
-import org.migor.feedless.generated.types.BoolUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableIntUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableStringUpdateOperationsInput
 import org.migor.feedless.generated.types.PluginExecutionInput
 import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.RecordDateFieldUpdateOperationsInput
 import org.migor.feedless.generated.types.RepositoryCreateInput
 import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.generated.types.RetentionInput
-import org.migor.feedless.generated.types.RetentionUpdateInput
 import org.migor.feedless.generated.types.SourcesUpdateInput
-import org.migor.feedless.generated.types.StringUpdateOperationsInput
-import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.repository.RepositoryCreate
@@ -50,6 +42,10 @@ fun RetentionInput.toDomain(): RepositoryRetention {
 }
 
 fun RepositoryUpdateDataInput.toDomain(): RepositoryUpdate {
+  val nextUpdateAtInput = nextUpdateAt
+  val retentionInput = retention
+  val retentionMaxAgeDaysInput = retentionInput?.maxAgeDays
+  val retentionMaxCapacityInput = retentionInput?.maxCapacity
   return RepositoryUpdate(
     title = title?.set,
     description = description?.set,
@@ -57,10 +53,13 @@ fun RepositoryUpdateDataInput.toDomain(): RepositoryUpdate {
     pushNotificationsEnabled = pushNotificationsMuted?.set,
     visibility = visibility?.set?.fromDto(),
     plugins = plugins?.map { PluginExecution(id = it.pluginId, params = it.params.toParams()) },
-    nextUpdateAt = nextUpdateAt?.set?.toLocalDateTime(),
-    retentionMaxCapacity = retention?.maxCapacity?.set,
-    retentionMaxAgeDays = retention?.maxAgeDays?.set,
-    retentionMaxAgeDaysReferenceField = retention?.ageReferenceField?.set?.fromDto(),
+    nextUpdateAt = nextUpdateAtInput?.set?.toLocalDateTime(),
+    scheduleNextUpdateNow = nextUpdateAtInput != null && nextUpdateAtInput.set == null,
+    retentionMaxCapacity = retentionMaxCapacityInput?.set,
+    clearRetentionMaxCapacity = retentionMaxCapacityInput != null && retentionMaxCapacityInput.set == null,
+    retentionMaxAgeDays = retentionMaxAgeDaysInput?.set,
+    clearRetentionMaxAgeDays = retentionMaxAgeDaysInput != null && retentionMaxAgeDaysInput.set == null,
+    retentionMaxAgeDaysReferenceField = retentionInput?.ageReferenceField?.set?.fromDto(),
     sources = sources?.toDomain(),
   )
 }

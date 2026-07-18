@@ -17,8 +17,11 @@ data class RepositoryUpdate(
   val visibility: EntityVisibility? = null,
   val plugins: List<PluginExecution>? = null,
   val nextUpdateAt: LocalDateTime? = null,
+  val scheduleNextUpdateNow: Boolean = false,
   val retentionMaxCapacity: Int? = null,
+  val clearRetentionMaxCapacity: Boolean = false,
   val retentionMaxAgeDays: Int? = null,
+  val clearRetentionMaxAgeDays: Boolean = false,
   val retentionMaxAgeDaysReferenceField: MaxAgeDaysDateField? = null,
   val sources: RepositorySourcesUpdate? = null,
 )
