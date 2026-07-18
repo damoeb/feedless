@@ -13,25 +13,18 @@ import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomSourceId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.Vertical
+import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
-import org.migor.feedless.generated.types.HttpFetchInput
-import org.migor.feedless.generated.types.HttpGetRequestInput
-import org.migor.feedless.generated.types.RepositoryCreateInput
-import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.ScrapeActionInput
-import org.migor.feedless.generated.types.ScrapeFlowInput
-import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.SourceUpdateInput
-import org.migor.feedless.generated.types.SourcesUpdateInput
-import org.migor.feedless.generated.types.StringLiteralOrVariableInput
-import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -101,32 +94,22 @@ class RepositoryUseCaseTest {
     `when`(planConstraintsService.coerceVisibility(any(GroupId::class.java), eq(null)))
       .thenReturn(EntityVisibility.isPrivate)
 
+    val sourceId = SourceId()
     repositoryUseCase.create(
       listOf(
-        RepositoryCreateInput(
+        RepositoryCreate(
           product = Vertical.rssProxy,
           sources = listOf(
-            SourceInput(
+            Source(
               title = "wef",
-              flow = ScrapeFlowInput(
-                sequence = listOf(
-                  ScrapeActionInput(
-                    fetch = HttpFetchInput(
-                      get = HttpGetRequestInput(
-                        url = StringLiteralOrVariableInput(
-                          literal = ""
-                        )
-                      )
-                    )
-                  )
-                )
+              actions = listOf(
+                FetchAction(sourceId = sourceId, url = "")
               ),
             )
           ),
           title = "",
           description = "",
           refreshCron = "",
-          withShareKey = true
         )
       )
     )
@@ -141,12 +124,11 @@ class RepositoryUseCaseTest {
         .thenReturn(EntityVisibility.isPublic)
 
       val repositories = listOf(
-        RepositoryCreateInput(
+        RepositoryCreate(
           sources = emptyList(),
           product = Vertical.rssProxy,
           title = "",
           description = "",
-          withShareKey = false
         )
       )
       val createdRepositories = repositoryUseCase.create(
@@ -171,26 +153,6 @@ class RepositoryUseCaseTest {
     }
   }
 
-//  @Test
-//  fun `given user is owner, updating repository works`() = runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
-//    val repositoryId = randomRepositoryId()
-//    val data = RepositoryUpdateDataInput(
-//      nextUpdateAt = NullableLongUpdateOperationsInput(set = null)
-//    )
-//    val mockRepository = mock(Repository::class.java)
-//    `when`(mockRepository.ownerId).thenReturn(userId)
-//
-//    `when`(repositoryDAO.findById(any(RepositoryId::class.java)))
-//      .thenReturn(mockRepository)
-//
-//    // when
-//    val update = repositoryService.updateRepository(repositoryId, data)
-//
-//    // then
-//    verify(mockRepository).triggerScheduledNextAt = any2()
-//    assertThat(update).isNotNull()
-//  }
-
   @Test
   fun `given user is not owner, updating repository fails`() {
     val repositoryId = randomRepositoryId()
@@ -203,12 +165,11 @@ class RepositoryUseCaseTest {
     )
 
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
-      val mockInput = RepositoryUpdateDataInput()
       runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
         `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
           .thenReturn(mockRepository)
 
-        repositoryUseCase.updateRepository(repositoryId, mockInput)
+        repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate())
       }
     }
   }
@@ -218,10 +179,8 @@ class RepositoryUseCaseTest {
     runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
       val repositoryId = randomRepositoryId()
       val removeSources = listOf(randomSourceId())
-      val data = RepositoryUpdateDataInput(
-        sources = SourcesUpdateInput(
-          remove = removeSources.map { it.uuid.toString() }
-        )
+      val data = RepositoryUpdate(
+        sources = RepositorySourcesUpdate(remove = removeSources)
       )
       val mockRepository = Repository(
         id = repositoryId,
@@ -234,10 +193,8 @@ class RepositoryUseCaseTest {
         .thenReturn(mockRepository)
       `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
       verify(sourceUseCase).deleteAllById(eq(repositoryId), eq(removeSources))
     }
 
@@ -245,11 +202,9 @@ class RepositoryUseCaseTest {
   fun `given updateRepository call, sources can be updated`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
       val repositoryId = randomRepositoryId()
-      val updateSources = listOf(mock(SourceUpdateInput::class.java))
-      val data = RepositoryUpdateDataInput(
-        sources = SourcesUpdateInput(
-          update = updateSources,
-        )
+      val updateSources = listOf(RepositorySourceUpdate(sourceId = randomSourceId()))
+      val data = RepositoryUpdate(
+        sources = RepositorySourcesUpdate(update = updateSources)
       )
       val repository = Repository(
         id = repositoryId,
@@ -262,10 +217,8 @@ class RepositoryUseCaseTest {
         .thenReturn(repository)
       `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
       verify(sourceUseCase).updateSources(eq(repositoryId), eq(updateSources))
     }
 
@@ -273,11 +226,15 @@ class RepositoryUseCaseTest {
   fun `given updateRepository call, sources can be added`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
       val repositoryId = randomRepositoryId()
-      val addSources = listOf(mock(SourceInput::class.java))
-      val data = RepositoryUpdateDataInput(
-        sources = SourcesUpdateInput(
-          add = addSources,
+      val sourceId = SourceId()
+      val addSources = listOf(
+        Source(
+          title = "new source",
+          actions = listOf(FetchAction(sourceId = sourceId, url = "")),
         )
+      )
+      val data = RepositoryUpdate(
+        sources = RepositorySourcesUpdate(add = addSources)
       )
       val repository = Repository(
         id = repositoryId,
@@ -290,11 +247,9 @@ class RepositoryUseCaseTest {
         .thenReturn(repository)
       `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
-      verify(sourceUseCase).createSources(eq(addSources), eq(repositoryId))
+      verify(sourceUseCase).createSources(eq(addSources.map { it.copy(repositoryId = repositoryId) }), eq(repositoryId))
     }
 
   @Test

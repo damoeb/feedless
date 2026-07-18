@@ -30,7 +30,7 @@ import org.migor.feedless.pipeline.plugins.DiffRecordsParams
 import org.migor.feedless.pipeline.plugins.FeedPluginParams
 import org.migor.feedless.pipeline.plugins.FulltextPluginParams
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
-import org.migor.feedless.repository.toParams
+import org.migor.feedless.api.mapper.toParams
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory

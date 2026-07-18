@@ -31,10 +31,13 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.api.mapper.fromDto
+import org.migor.feedless.api.mapper.toSource
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
@@ -93,7 +96,7 @@ class SourceUseCaseTest {
         )
       )
     )
-    sourceUseCase.createSources(inputs, repositoryId)
+    sourceUseCase.createSources(inputs.map { it.toSource() }, repositoryId)
 
     verify(sourceRepository).saveAll(argThat<List<Source>> { it.size == 1 })
     verify(scrapeActionRepository).saveAll(argThat<List<ScrapeAction>> { it.size == 1 })
@@ -143,7 +146,13 @@ class SourceUseCaseTest {
 
     `when`(scrapeActionRepository.findAllBySourceId(eq(sourceId))).thenReturn(listOf(mock(FetchAction::class.java)))
 
-    val updates = listOf(update)
+    val updates = listOf(
+      RepositorySourceUpdate(
+        sourceId = sourceId,
+        disabled = false,
+        actions = update.data.flow?.set?.fromDto(),
+      )
+    )
 
     sourceUseCase.updateSources(repositoryId, updates)
 

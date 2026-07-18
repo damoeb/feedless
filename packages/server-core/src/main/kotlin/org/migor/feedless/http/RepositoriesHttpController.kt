@@ -8,6 +8,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.http.api.RepositoriesApi
+import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.http.mapper.toGraphql
 import org.migor.feedless.http.mapper.toHttpDto
 import org.migor.feedless.http.mapper.toPageable
@@ -117,7 +118,7 @@ class RepositoriesHttpController(
       httpAuthSupport.withUserContext(httpRequest) { ctx ->
         try {
           val userId = ctx.userId!!
-          val created = repositoryUseCase.create(repositoryCreate.map { it.toGraphql() })
+          val created = repositoryUseCase.create(repositoryCreate.map { it.toGraphql().toDomain() })
           ResponseEntity.status(HttpStatus.CREATED).body(
             created.map { enrichRepository(it, userId) },
           )
@@ -136,7 +137,7 @@ class RepositoriesHttpController(
   ): ResponseEntity<Unit> = runBlocking {
     httpAuthSupport.withUserContext(httpRequest) { _ ->
       try {
-        repositoryUseCase.updateRepository(RepositoryId(repositoryId), repositoryUpdate.toGraphql())
+        repositoryUseCase.updateRepository(RepositoryId(repositoryId), repositoryUpdate.toGraphql().toDomain())
         ResponseEntity.noContent().build()
       } catch (e: Exception) {
         toErrorResponse(e)

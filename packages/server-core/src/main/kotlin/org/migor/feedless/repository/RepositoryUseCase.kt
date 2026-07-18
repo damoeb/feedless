@@ -1,10 +1,8 @@
 package org.migor.feedless.repository
 
-import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -13,9 +11,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
-import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.createDocumentUrl
-import org.migor.feedless.api.fromDto
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.common.PropertyService
@@ -29,21 +25,14 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
-import org.migor.feedless.generated.types.PluginExecutionInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.RepositoryCreateInput
-import org.migor.feedless.generated.types.RepositoryUpdateDataInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
-import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil.newCorrId
-import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
@@ -80,11 +69,11 @@ class RepositoryUseCase(
   private val propertyService: PropertyService,
   private val sourceUseCase: SourceUseCase,
   private val repositoryGuard: RepositoryGuard,
-) : RepositoryProvider {
+) : RepositoryUseCasePort {
 
   private val log = LoggerFactory.getLogger(RepositoryUseCase::class.simpleName)
 
-  suspend fun create(data: List<RepositoryCreateInput>): List<Repository> =
+  override suspend fun create(data: List<RepositoryCreate>): List<Repository> =
     withContext(Dispatchers.IO) {
       log.info("create repository with ${data.size} sources")
 
@@ -156,7 +145,7 @@ class RepositoryUseCase(
     return jsonFeed
   }
 
-  suspend fun findAllByUserId(
+  override suspend fun findAllByUserId(
     pageable: PageableRequest,
     where: RepositoriesFilter?,
     userId: UserId?
@@ -165,12 +154,12 @@ class RepositoryUseCase(
     return repositoryRepository.findAll(pageable, where, userId)
   }
 
-  suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
+  override suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
     log.debug("findById repositoryId=$repositoryId")
     repositoryRepository.findById(repositoryId)
   }
 
-  suspend fun delete(repositoryId: RepositoryId) {
+  override suspend fun delete(repositoryId: RepositoryId) {
     val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.ownerId != currentCoroutineContext().userId()) {
       throw PermissionDeniedException("not authorized")
@@ -192,7 +181,7 @@ class RepositoryUseCase(
     )
   }
 
-  suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdateDataInput) {
+  override suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdate) {
     // Fetch entity for mutation
     val existingRepository = repositoryGuard.requireWrite(id)
 
@@ -205,39 +194,36 @@ class RepositoryUseCase(
       throw PermissionDeniedException("not authorized")
     }
     log.info("update $id")
-    repository = data.title?.set?.let { repository.copy(title = it) } ?: repository
-    repository = data.description?.set?.let { repository.copy(description = it) } ?: repository
+    repository = data.title?.let { repository.copy(title = it) } ?: repository
+    repository = data.description?.let { repository.copy(description = it) } ?: repository
 
     val groupId = currentCoroutineContext().groupId()
     repository = data.refreshCron?.let {
-      it.set?.let {
-        repository.copy(
-          sourcesSyncCron = planConstraintsService.auditCronExpression(it),
-          triggerScheduledNextAt = calculateScheduledNextAt(
-            it,
-            groupId,
-            repository.lastUpdatedAt
-          )
+      repository.copy(
+        sourcesSyncCron = planConstraintsService.auditCronExpression(it),
+        triggerScheduledNextAt = calculateScheduledNextAt(
+          it,
+          groupId,
+          repository.lastUpdatedAt
         )
-      }
+      )
     } ?: repository
 
-    repository = data.pushNotificationsMuted?.let {
-      repository.copy(pushNotificationsEnabled = it.set)
+    repository = data.pushNotificationsEnabled?.let {
+      repository.copy(pushNotificationsEnabled = it)
     } ?: repository
 
-    repository =
-      data.visibility?.set?.let {
-        repository.copy(
-          visibility = planConstraintsService.coerceVisibility(
-            groupId,
-            it.fromDto()
-          )
+    repository = data.visibility?.let {
+      repository.copy(
+        visibility = planConstraintsService.coerceVisibility(
+          groupId,
+          it
         )
-      }
-        ?: repository
+      )
+    } ?: repository
+
     repository = data.plugins?.let { plugins ->
-      val newPlugins = plugins.map { it.fromDto() }.sortedBy { it.id }.toMutableList()
+      val newPlugins = plugins.sortedBy { it.id }.toMutableList()
       if (newPlugins != repository.plugins) {
         log.info("plugins $newPlugins")
         repository.copy(plugins = newPlugins)
@@ -247,49 +233,38 @@ class RepositoryUseCase(
     } ?: repository
 
     repository = data.nextUpdateAt?.let {
-      val next = it.set?.toLocalDateTime() ?: LocalDateTime.now()
       val nextAt = planConstraintsService.coerceMinScheduledNextAt(
         repository.lastUpdatedAt,
-        next,
+        it,
         groupId
       )
       log.info("nextUpdateAt $nextAt")
       repository.copy(triggerScheduledNextAt = nextAt)
     } ?: repository
 
-    repository = data.retention?.let { retention ->
-      var updated = repository
-      retention.maxAgeDays?.let {
-        log.info("retentionMaxAgeDays ${it.set}")
-        updated = updated.copy(retentionMaxAgeDays = it.set)
+    if (data.retentionMaxAgeDays != null || data.retentionMaxCapacity != null) {
+      data.retentionMaxAgeDays?.let {
+        log.info("retentionMaxAgeDays $it")
+        repository = repository.copy(retentionMaxAgeDays = it)
       }
-      retention.maxCapacity?.let {
-        log.info("retentionMaxItems ${it.set}")
-        updated = updated.copy(retentionMaxCapacity = it.set)
+      data.retentionMaxCapacity?.let {
+        log.info("retentionMaxItems $it")
+        repository = repository.copy(retentionMaxCapacity = it)
       }
-      if (retention.maxAgeDays != null || retention.maxCapacity != null) {
-        documentUseCase.applyRetentionStrategy(repository.id)
-      }
-      updated
-    } ?: repository
+      documentUseCase.applyRetentionStrategy(repository.id)
+    }
 
-    data.sources?.let {
-      it.add?.let {
-        sourceUseCase.createSources(it, repository.id)
-      }
-      it.update?.let {
-        sourceUseCase.updateSources(repository.id, it)
-      }
-      it.remove?.let {
-        sourceUseCase.deleteAllById(repository.id, it.map { SourceId(it) })
-      }
+    data.sources?.let { sources ->
+      sources.add?.let { sourceUseCase.createSources(it, repository.id) }
+      sources.update?.let { sourceUseCase.updateSources(repository.id, it) }
+      sources.remove?.let { sourceUseCase.deleteAllById(repository.id, it) }
     }
     withContext(Dispatchers.IO) {
       repositoryRepository.save(repository)
     }
   }
 
-  suspend fun countAll(userId: UserId?, product: Vertical): Int {
+  override suspend fun countAll(userId: UserId?, product: Vertical): Int {
     log.debug("countAll userId=$userId product=$product")
     return userId
       ?.let { repositoryRepository.countAllByOwnerIdAndProduct(it, product) }
@@ -315,18 +290,17 @@ class RepositoryUseCase(
 //  }
 
   private suspend fun createRepository(
-    repoInput: RepositoryCreateInput
+    repoInput: RepositoryCreate
   ): Repository {
 
-    val product = repoInput.product.fromDto()
     val groupId = currentCoroutineContext().groupId()
     var repo = Repository(
       shareKey = newCorrId(9),
       title = repoInput.title,
       description = repoInput.description,
-      visibility = planConstraintsService.coerceVisibility(groupId, repoInput.visibility?.fromDto()),
+      visibility = planConstraintsService.coerceVisibility(groupId, repoInput.visibility),
       ownerId = currentCoroutineContext().userId(),
-      pushNotificationsEnabled = BooleanUtils.isTrue(repoInput.pushNotificationsMuted),
+      pushNotificationsEnabled = repoInput.pushNotificationsEnabled,
       retentionMaxCapacity =
         planConstraintsService.coerceRetentionMaxCapacity(repoInput.retention?.maxCapacity, groupId),
       retentionMaxAgeDays = planConstraintsService.coerceRetentionMaxAgeDays(
@@ -334,9 +308,9 @@ class RepositoryUseCase(
         groupId = groupId
       ),
       groupId = groupId,
-      product = product,
+      product = repoInput.product,
       sourcesSyncCron = repoInput.refreshCron?.let {
-        planConstraintsService.auditCronExpression(repoInput.refreshCron ?: "")
+        planConstraintsService.auditCronExpression(it)
       } ?: ""
     )
 
@@ -347,28 +321,15 @@ class RepositoryUseCase(
       if (it.size > 5) {
         throw BadRequestException("Too many plugins ${it.size}, limit 5")
       }
-      repo.copy(plugins = it.map { plugin -> plugin.fromDto() })
+      repo.copy(plugins = it)
     } ?: repo
-
-//    if (subInput.withShareKey) {
-//      newCorrId(10)
-//    } else {
-//      ""
-//    }
 
     val saved = repositoryRepository.save(repo)
 
-    sourceUseCase.createSources(repoInput.sources, repo.id)
-
-
-//    repoInput.additionalSinks?.let { sink ->
-//      val owner = withContext(Dispatchers.IO) {
-//        userDAO.findById(ownerId).orElseThrow()
-//      }
-//      repo.mailForwards = sink.mapNotNull { it.email }
-//        .map { createMailForwarder(corrId, it, repo, owner, repo.product) }
-//        .toMutableList()
-//    }
+    sourceUseCase.createSources(
+      repoInput.sources.map { it.copy(repositoryId = repo.id) },
+      repo.id
+    )
 
     return saved
   }
@@ -413,26 +374,6 @@ class RepositoryUseCase(
     log.debug("provideAll")
     TODO("Not yet implemented")
   }
-}
-
-fun PluginExecutionInput.fromDto(): PluginExecution {
-  return PluginExecution(id = pluginId, params = params.toParams())
-}
-
-fun PluginExecutionParamsInput.toParams(): PluginExecutionJson {
-  val data = listOfNotNull(
-    org_feedless_filter,
-    org_feedless_feed,
-    org_feedless_diff_records,
-    jsonData,
-    org_feedless_conditional_tag,
-    org_feedless_fulltext
-  )
-    .firstOrNull()
-
-  return PluginExecutionJson(
-    paramsJsonString = data?.let { Gson().toJson(it) },
-  )
 }
 
 fun Document.toJsonItem(

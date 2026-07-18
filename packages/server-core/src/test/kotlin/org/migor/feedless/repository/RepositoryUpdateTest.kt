@@ -14,19 +14,8 @@ import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
-import org.migor.feedless.generated.types.BoolUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableIntUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableLongUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableStringUpdateOperationsInput
-import org.migor.feedless.generated.types.RecordDateField
-import org.migor.feedless.generated.types.RecordDateFieldUpdateOperationsInput
-import org.migor.feedless.generated.types.RepositoryUpdateDataInput
-import org.migor.feedless.generated.types.RetentionUpdateInput
-import org.migor.feedless.generated.types.SourcesUpdateInput
-import org.migor.feedless.generated.types.StringUpdateOperationsInput
-import org.migor.feedless.generated.types.Visibility
-import org.migor.feedless.generated.types.VisibilityUpdateOperationsInput
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
@@ -45,7 +34,7 @@ class RepositoryUpdateTest {
   private lateinit var repositoryId: RepositoryId
   private lateinit var ownerId: UserId
   private lateinit var repository: Repository
-  private lateinit var data: RepositoryUpdateDataInput
+  private lateinit var data: RepositoryUpdate
   private lateinit var sourceUseCase: SourceUseCase
   private lateinit var repositoryGuard: RepositoryGuard
   private val currentUserId = randomUserId()
@@ -83,22 +72,18 @@ class RepositoryUpdateTest {
 
     `when`(repositoryGuard.requireWrite(repositoryId)).thenReturn(repository)
 
-    data = RepositoryUpdateDataInput(
-      description = NullableStringUpdateOperationsInput(set = "new-description"),
-      refreshCron = NullableStringUpdateOperationsInput(set = "* * * * * *"),
-      title = StringUpdateOperationsInput(set = "new-title"),
-      pushNotificationsMuted = BoolUpdateOperationsInput(set = true),
-      visibility = VisibilityUpdateOperationsInput(set = Visibility.isPrivate),
-      retention = RetentionUpdateInput(
-        maxCapacity = NullableIntUpdateOperationsInput(),
-        maxAgeDays = NullableIntUpdateOperationsInput(),
-        ageReferenceField = RecordDateFieldUpdateOperationsInput(
-          set = RecordDateField.createdAt
-        )
-      ),
+    data = RepositoryUpdate(
+      description = "new-description",
+      refreshCron = "* * * * * *",
+      title = "new-title",
+      pushNotificationsEnabled = true,
+      visibility = EntityVisibility.isPrivate,
+      retentionMaxCapacity = null,
+      retentionMaxAgeDays = null,
+      retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt,
       plugins = listOf(),
-      nextUpdateAt = NullableLongUpdateOperationsInput(set = 1),
-      sources = SourcesUpdateInput(
+      nextUpdateAt = LocalDateTime.ofEpochSecond(1, 0, java.time.ZoneOffset.UTC),
+      sources = RepositorySourcesUpdate(
         remove = emptyList(),
         update = emptyList(),
         add = emptyList()
@@ -143,7 +128,6 @@ class RepositoryUpdateTest {
 
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // Verify the repository was saved with updated values
       assertThat(savedRepo).isNotNull
       val saved = savedRepo!!
       assertThat(saved.title).isEqualTo("new-title")
@@ -154,7 +138,6 @@ class RepositoryUpdateTest {
   @Test
   fun `given a valid update request, sources can be added`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
-      // given
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
       `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
       `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
@@ -169,17 +152,14 @@ class RepositoryUpdateTest {
       ).thenReturn(LocalDateTime.now())
       mockRepositorySave()
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
       verify(sourceUseCase).createSources(any2(), any2())
     }
 
   @Test
   fun `given a valid update request, sources can be updated`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
-      // given
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
       `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
       `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
@@ -194,17 +174,14 @@ class RepositoryUpdateTest {
       ).thenReturn(LocalDateTime.now())
       mockRepositorySave()
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
       verify(sourceUseCase).updateSources(any2(), any2())
     }
 
   @Test
   fun `given a valid update request, sources can be removed`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
-      // given
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
       `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
       `when`(planConstraintsService.coerceVisibility(any2(), any2())).thenAnswer {
@@ -219,10 +196,8 @@ class RepositoryUpdateTest {
       ).thenReturn(LocalDateTime.now())
       mockRepositorySave()
 
-      // when
       repositoryUseCase.updateRepository(repositoryId, data)
 
-      // then
       verify(sourceUseCase).deleteAllById(any2(), any2())
     }
 

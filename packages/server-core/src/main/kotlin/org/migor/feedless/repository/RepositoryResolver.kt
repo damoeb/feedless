@@ -13,6 +13,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.api.fromDto
+import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.throttle.Throttled
 import org.migor.feedless.capability.CapabilityId
@@ -128,7 +129,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
   ): List<RepositoryDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createRepositories $data")
-    repositoryUseCase.create(data).map { it.toDto(it.ownerId == coroutineContext.userId().uuid) }
+    repositoryUseCase.create(data.map { it.toDomain() }).map { it.toDto(it.ownerId == coroutineContext.userId().uuid) }
   }
 
   @Throttled
@@ -139,7 +140,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.UPDATEREPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryUpdateInput,
   ) = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("updateRepository $data")
-    repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data)
+    repositoryUseCase.updateRepository(RepositoryId(data.where.id), data.data.toDomain())
     true
   }
 

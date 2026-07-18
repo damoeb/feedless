@@ -14,13 +14,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
-import org.migor.feedless.api.mapper.fromDto
-import org.migor.feedless.api.mapper.toSource
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.data.jpa.source.toDomain
 import org.migor.feedless.data.jpa.source.toEntity
-import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.SourceUpdateInput
+import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.SourcePipelineService
@@ -160,18 +157,16 @@ class SourceUseCase(
   }
 
 
-  suspend fun createSources(sourceInputs: List<SourceInput>, repositoryId: RepositoryId) =
+  suspend fun createSources(sources: List<Source>, repositoryId: RepositoryId) =
     withContext(Dispatchers.IO) {
-      log.info("creating ${sourceInputs.size} sources")
+      log.info("creating ${sources.size} sources")
 
       val groupId = coroutineContext.groupId()
 
       val createSources = mutableListOf<Source>()
       val createScrapeActions = mutableListOf<ScrapeAction>()
-      sourceInputs.map {
-        it.toSource().copy(
-          repositoryId = repositoryId
-        )
+      sources.map { source ->
+        source.copy(repositoryId = repositoryId)
       }
         .map { source: Source ->
           planConstraintsService.auditScrapeRequestMaxActions(source.actions.size, groupId)
@@ -210,7 +205,7 @@ class SourceUseCase(
 
     }
 
-  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<SourceUpdateInput>) =
+  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<RepositorySourceUpdate>) =
     withContext(Dispatchers.IO) {
       log.info("updating ${updateInputs.size} sources")
 
@@ -224,59 +219,53 @@ class SourceUseCase(
       val saveScrapeActions = mutableListOf<ScrapeAction>()
 
       updateInputs.map { sourceUpdate ->
-        var source = sourceRepository.findById(SourceId(sourceUpdate.where.id))!!
+        var source = sourceRepository.findById(sourceUpdate.sourceId)!!
         if (source.repositoryId != repositoryId) {
           throw IllegalArgumentException("source does not belong to repository")
         }
 
         var changed = false
 
-        source = sourceUpdate.data.tags?.let {
+        source = sourceUpdate.tags?.let {
           changed = true
-          source.copy(tags = it.set.toTypedArray())
+          source.copy(tags = it.toTypedArray())
         } ?: source
 
-        source = sourceUpdate.data.title?.let {
+        source = sourceUpdate.title?.let {
           changed = true
-          source.copy(title = it.set)
+          source.copy(title = it)
         } ?: source
 
-        source = sourceUpdate.data.latLng?.let { point ->
+        if (sourceUpdate.clearLatLng) {
           changed = true
+          source = source.copy(latLon = null)
+        } else {
+          source = sourceUpdate.latLng?.let { point ->
+            changed = true
+            source.copy(latLon = point)
+          } ?: source
+        }
 
-          point.set?.let {
-            source.copy(latLon = LatLonPoint(it.lat, it.lng))
-          } ?: source.copy(latLon = null)
-
-        } ?: source
-
-        source = sourceUpdate.data.disabled?.let { disabled ->
+        source = sourceUpdate.disabled?.let { disabled ->
           changed = true
           source.copy(
-            disabled = disabled.set,
+            disabled = disabled,
             errorsInSuccession = 0
           )
         } ?: source
 
-        sourceUpdate.data.flow?.let { flow ->
-          // remove old actions
+        if (sourceUpdate.clearActions || sourceUpdate.actions != null) {
           deleteScrapeActions.addAll(scrapeActionRepository.findAllBySourceId(source.id))
-
-          flow.set?.let {
-            // append new actions
-            val actions = flow.set?.fromDto()?.mapIndexed { index, scrapeAction ->
+          sourceUpdate.actions?.let { actions ->
+            val savedActions = actions.mapIndexed { index, scrapeAction ->
               val actionEntity = scrapeAction.toEntity()
               actionEntity.sourceId = source.id.uuid
               actionEntity.pos = index
               actionEntity.toDomain()
             }
-            actions?.let {
-              saveScrapeActions.addAll(actions)
-            }
+            saveScrapeActions.addAll(savedActions)
           }
         }
-
-//      source.actions = mutableListOf() todo fix this
 
         if (changed) {
           modifiedSources.add(source)
