@@ -32,4 +32,8 @@ class UserGroupAssignmentJpaRepository(private val userGroupAssignmentDAO: UserG
     userGroupAssignmentDAO.deleteById(assignment.id.uuid)
   }
 
+  override fun findAllByGroupId(groupId: GroupId): List<UserGroupAssignment> {
+    return userGroupAssignmentDAO.findAllByGroupId(groupId.uuid).map { it.toDomain() }
+  }
+
 }

@@ -20,4 +20,5 @@ interface UserGroupAssignmentDAO : JpaRepository<UserGroupAssignmentEntity, UUID
   )
   fun findAllByUserId(@Param("id") userId: UUID): List<UserGroupAssignmentEntity>
   fun findByUserIdAndGroupId(userId: UUID, groupId: UUID): UserGroupAssignmentEntity?
+  fun findAllByGroupId(groupId: UUID): List<UserGroupAssignmentEntity>
 }

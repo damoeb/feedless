@@ -67,6 +67,7 @@ class GroupUseCaseTest {
     groupUseCase = GroupUseCase(
       userGroupAssignmentRepository,
       groupGuard,
+      groupRepository,
     )
     `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
@@ -85,7 +86,7 @@ class GroupUseCaseTest {
       mockCurrentUserIsAdmin(true)
 
       // when
-      groupUseCase.addUserToGroup(user.id, group, role)
+      groupUseCase.addUserToGroup(user.id, groupId, role)
 
       // then
       verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
@@ -106,7 +107,7 @@ class GroupUseCaseTest {
       mockCurrentUserRoleForGroup(RoleInGroup.owner)
 
       // when
-      groupUseCase.addUserToGroup(user.id, group, role)
+      groupUseCase.addUserToGroup(user.id, groupId, role)
 
       // then
       verify(userGroupAssignmentRepository).save(argThat { it.userId == userId && it.groupId == groupId && it.role == role })
@@ -122,7 +123,7 @@ class GroupUseCaseTest {
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
-          groupUseCase.addUserToGroup(user.id, group, RoleInGroup.owner)
+          groupUseCase.addUserToGroup(user.id, groupId, RoleInGroup.owner)
         }
       }
     }
@@ -142,7 +143,7 @@ class GroupUseCaseTest {
       // when/then
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
-          groupUseCase.addUserToGroup(user.id, group, RoleInGroup.viewer)
+          groupUseCase.addUserToGroup(user.id, groupId, RoleInGroup.viewer)
         }
       }
     }
@@ -155,7 +156,7 @@ class GroupUseCaseTest {
       val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
       // when
-      groupUseCase.removeUserFromGroup(user, group)
+      groupUseCase.removeUserFromGroup(groupId, user.id)
 
       // then
       verify(userGroupAssignmentRepository).delete(eq(assignment))
@@ -170,7 +171,7 @@ class GroupUseCaseTest {
       val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
 
       // when
-      groupUseCase.removeUserFromGroup(user, group)
+      groupUseCase.removeUserFromGroup(groupId, user.id)
 
       // then
       verify(userGroupAssignmentRepository).delete(eq(assignment))
@@ -190,7 +191,7 @@ class GroupUseCaseTest {
       mockCurrentUserRoleForGroup(role)
       assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
         runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-          groupUseCase.removeUserFromGroup(user, group)
+          groupUseCase.removeUserFromGroup(groupId, user.id)
         }
       }
     }

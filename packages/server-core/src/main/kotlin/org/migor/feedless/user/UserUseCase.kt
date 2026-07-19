@@ -146,7 +146,7 @@ class UserUseCase(
     )
 
     withContext(newCtx) {
-      groupUseCase.addUserToGroup(user.id, group, RoleInGroup.owner)
+      groupUseCase.addUserToGroup(user.id, group.id, RoleInGroup.owner)
 
       createInboxRepository(user.id)
     }

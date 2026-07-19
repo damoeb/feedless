@@ -377,6 +377,103 @@ paths:
                 $ref: '#/components/schemas/Plan'
         '404':
           $ref: '#/components/responses/NotFound'
+  /groups:
+    get:
+      tags: [Groups]
+      operationId: listGroups
+      responses:
+        '200':
+          description: Groups the current user belongs to (as GroupAssignment)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssignmentListResponse'
+    post:
+      tags: [Groups]
+      operationId: createGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+  /groups/{groupId}:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Groups]
+      operationId: getGroup
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Groups]
+      operationId: deleteGroup
+      responses:
+        '204':
+          description: Deleted
+  /groups/{groupId}/members:
+    post:
+      tags: [Groups]
+      operationId: addGroupMember
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMemberCreate'
+      responses:
+        '201':
+          description: Assignment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssignment'
+  /groups/{groupId}/members/{userId}:
+    delete:
+      tags: [Groups]
+      operationId: removeGroupMember
+      parameters:
+        - name: groupId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Removed
 components:
   securitySchemes:
     userSecretJwt:
@@ -1124,3 +1221,53 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Plan'
+    Group:
+      type: object
+      required: [id, name, ownerId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+    GroupCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+    GroupAssignment:
+      type: object
+      required: [id, role, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]
+        name:
+          type: string
+    GroupAssignmentListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAssignment'
+    GroupMemberCreate:
+      type: object
+      required: [userId, role]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]
