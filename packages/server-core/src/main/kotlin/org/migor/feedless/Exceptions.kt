@@ -5,7 +5,6 @@ import java.time.Duration
 class BadRequestException(override val message: String) : FatalHarvestException(message)
 
 class UnavailableException(override val message: String) : ResumableHarvestException(message, Duration.ofMinutes(5))
-class NotFoundException(override val message: String) : RuntimeException()
 class SiteNotFoundException(url: String) : FatalHarvestException("$url not found")
 open class ResumableHarvestException(message: String, val nextRetryAfter: Duration) :
   RuntimeException(message)

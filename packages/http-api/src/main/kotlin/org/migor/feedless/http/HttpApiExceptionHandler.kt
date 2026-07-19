@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.http.api.model.ApiError
 import org.migor.feedless.session.AuthCredentialsException
@@ -28,6 +29,10 @@ class HttpApiExceptionHandler {
   @ExceptionHandler(PermissionDeniedException::class)
   fun handlePermissionDenied(ex: PermissionDeniedException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.message ?: "permission denied", request)
+
+  @ExceptionHandler(NotFoundException::class)
+  fun handleNotFound(ex: NotFoundException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.message ?: "not found", request)
 
   @ExceptionHandler(IllegalArgumentException::class)
   fun handleBadRequest(ex: IllegalArgumentException, request: WebRequest): ResponseEntity<ApiError> =

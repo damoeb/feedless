@@ -2,6 +2,7 @@ package org.migor.feedless.group
 
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
@@ -10,6 +11,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.Mother.randomGroupId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
@@ -33,6 +35,7 @@ class GroupUseCaseTest {
   private val groupId = randomGroupId()
   private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
   private lateinit var groupGuard: GroupGuard
+  private lateinit var groupRepository: GroupRepository
   private lateinit var groupUseCase: GroupUseCase
   private lateinit var user: User
   private lateinit var currentUser: User
@@ -51,7 +54,7 @@ class GroupUseCaseTest {
 
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
 
-    val groupRepository = mock(GroupRepository::class.java)
+    groupRepository = mock(GroupRepository::class.java)
     group = mock(Group::class.java)
     `when`(group.id).thenReturn(groupId)
     `when`(group.ownerId).thenReturn(userId)
@@ -71,6 +74,56 @@ class GroupUseCaseTest {
     )
     `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
+
+  @Test
+  fun `findByIdForUser returns null when group missing`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      `when`(groupRepository.findById(groupId)).thenReturn(null)
+
+      val result = groupUseCase.findByIdForUser(groupId)
+
+      assertThat(result).isNull()
+    }
+
+  @Test
+  fun `findByIdForUser throws when user is not member`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(eq(currentUserId), eq(groupId))).thenReturn(null)
+
+      assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+        runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
+          groupUseCase.findByIdForUser(groupId)
+        }
+      }
+    }
+
+  @Test
+  fun `delete removes assignments and group`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockCurrentUserIsAdmin(true)
+      val assignment = mock(UserGroupAssignment::class.java)
+      `when`(userGroupAssignmentRepository.findAllByGroupId(groupId)).thenReturn(listOf(assignment))
+
+      groupUseCase.delete(groupId)
+
+      verify(userGroupAssignmentRepository).delete(eq(assignment))
+      verify(groupRepository).delete(eq(group))
+    }
+
+  @Test
+  fun `delete throws NotFoundException when group disappears after guard check`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockCurrentUserIsAdmin(true)
+      `when`(groupRepository.findById(groupId))
+        .thenReturn(group)
+        .thenReturn(null)
+
+      assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
+        runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
+          groupUseCase.delete(groupId)
+        }
+      }
+    }
 
   @ParameterizedTest
   @CsvSource(
