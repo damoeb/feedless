@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service
 class PlanUseCase(private val planRepository: PlanRepository) : PlanUseCasePort {
   private val log = LoggerFactory.getLogger(PlanUseCase::class.simpleName)
 
-  suspend fun findById(id: PlanId): Plan? = withContext(Dispatchers.IO) {
+  override suspend fun findById(id: PlanId): Plan? = withContext(Dispatchers.IO) {
     log.info("findById id=$id")
     val plan = planRepository.findById(id)
 
@@ -28,7 +28,7 @@ class PlanUseCase(private val planRepository: PlanRepository) : PlanUseCasePort 
     plan
   }
 
-  suspend fun findAllByUser(): List<Plan> = withContext(Dispatchers.IO) {
+  override suspend fun findAllByUser(): List<Plan> = withContext(Dispatchers.IO) {
     log.info("findAllByUser")
     planRepository.findAllByUser(coroutineContext.userId())
   }

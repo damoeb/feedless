@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.http.mapper.HttpPlanMapper
 import org.migor.feedless.plan.Plan
@@ -75,6 +76,22 @@ class PlanHttpControllerTest {
     } else {
       assert(mvcResult.response.status == 200)
       assert(mvcResult.response.contentAsString.contains(plan.id.uuid.toString()))
+    }
+  }
+
+  @Test
+  fun `getPlan returns 403 when not owner`() = runTest {
+    val planId = PlanId()
+    whenever(planUseCase.findById(eq(planId))).thenThrow(PermissionDeniedException("must be owner"))
+
+    val mvcResult = mockMvc.get("/api/v1/plans/${planId.uuid}").andReturn()
+
+    if (mvcResult.request.asyncContext != null) {
+      mockMvc.perform(asyncDispatch(mvcResult))
+        .andExpect(status().isForbidden)
+        .andExpect(jsonPath("$.code").value("FORBIDDEN"))
+    } else {
+      assert(mvcResult.response.status == 403)
     }
   }
 

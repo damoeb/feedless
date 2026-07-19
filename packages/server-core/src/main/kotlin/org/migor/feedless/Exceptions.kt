@@ -2,8 +2,6 @@ package org.migor.feedless
 
 import java.time.Duration
 
-open class FatalHarvestException(override val message: String) : RuntimeException()
-class PermissionDeniedException(override val message: String) : FatalHarvestException(message)
 class BadRequestException(override val message: String) : FatalHarvestException(message)
 
 class UnavailableException(override val message: String) : ResumableHarvestException(message, Duration.ofMinutes(5))
