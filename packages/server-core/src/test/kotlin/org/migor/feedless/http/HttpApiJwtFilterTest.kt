@@ -2,9 +2,9 @@ package org.migor.feedless.http
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
-import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
@@ -70,18 +70,22 @@ class HttpApiJwtFilterTest {
   }
 
   @Test
-  fun `continues chain when token is valid`() = runBlocking {
+  fun `continues chain and stores RequestContext when token is valid`() {
     val user = mock(User::class.java)
-    `when`(user.id).thenReturn(UserId())
+    val userId = UserId()
+    `when`(user.id).thenReturn(userId)
     val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
 
     val request = MockHttpServletRequest("GET", "/api/v1/repositories")
     request.addHeader("Authentication", "Bearer $token")
     val response = MockHttpServletResponse()
-    val chain = mock(FilterChain::class.java)
+    var requestContext: RequestContext? = null
+    val chain = FilterChain { req, _ ->
+      requestContext = req.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR) as? RequestContext
+    }
 
     filter.doFilter(request, response, chain)
 
-    verify(chain).doFilter(request, response)
+    assert(requestContext?.userId == userId)
   }
 }
