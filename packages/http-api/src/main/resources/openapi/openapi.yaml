@@ -234,6 +234,30 @@ paths:
           description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+    get:
+      tags: [Harvests]
+      operationId: listHarvests
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: includeLogs
+          in: query
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HarvestListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
   /records:
     get:
       tags: [Records]
@@ -1013,3 +1037,31 @@ components:
           type: string
         linkXPath:
           type: string
+    Harvest:
+      type: object
+      required: [ok, itemsAdded, itemsIgnored, logs, startedAt]
+      properties:
+        ok:
+          type: boolean
+        itemsAdded:
+          type: integer
+        itemsIgnored:
+          type: integer
+        logs:
+          type: string
+        startedAt:
+          type: integer
+          format: int64
+        finishedAt:
+          type: integer
+          format: int64
+    HarvestListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Harvest'
