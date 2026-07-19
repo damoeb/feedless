@@ -23,10 +23,9 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
-import org.migor.feedless.generated.types.CreateRecordInput
+import org.migor.feedless.document.DocumentCreate
+import org.migor.feedless.document.DocumentUpdate
 import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.RecordUpdateInput
-import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.PluginService
@@ -476,12 +475,12 @@ class DocumentUseCaseTest {
       mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
       mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
 
-      val data = CreateRecordInput(
+      val data = DocumentCreate(
         title = "foo",
         publishedAt = Date().time,
         url = "",
         text = "",
-        repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
+        repositoryId = repositoryId,
       )
       documentUseCase.createDocument(data)
 
@@ -499,12 +498,12 @@ class DocumentUseCaseTest {
       `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
       mockRepository(repositoryId, ownerId = currentUserId)
 
-      val data = CreateRecordInput(
+      val data = DocumentCreate(
         title = "foo",
         publishedAt = Date().time,
         url = "",
         text = "",
-        repositoryId = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString()),
+        repositoryId = repositoryId,
       )
       documentUseCase.createDocument(data)
 
@@ -522,7 +521,7 @@ class DocumentUseCaseTest {
     runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       mockRepository(repositoryId, ownerId = randomUserId())
 
-      val data = RecordUpdateInput()
+      val data = DocumentUpdate()
       val where = DocumentId(documentId.uuid)
       documentUseCase.updateDocument(data, where)
 
@@ -546,7 +545,7 @@ class DocumentUseCaseTest {
       mockRepositoryFindById(repositoryId, repository)
 
 
-      val data = RecordUpdateInput()
+      val data = DocumentUpdate()
       val where = DocumentId(documentId.uuid)
 
       // when
@@ -576,7 +575,7 @@ class DocumentUseCaseTest {
     assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
       runTest(context = RequestContext(groupId = GroupId(), userId = differentUserId)) {
         `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-        documentUseCase.deleteDocuments(repositoryId, StringFilter())
+        documentUseCase.deleteDocuments(repositoryId, org.migor.feedless.document.StringFilter())
       }
     }
   }

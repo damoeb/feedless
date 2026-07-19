@@ -19,15 +19,12 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
-import org.migor.feedless.generated.types.CreateRecordInput
-import org.migor.feedless.generated.types.RecordUpdateInput
 import org.migor.feedless.message.MessageService
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
 import org.migor.feedless.pipeline.Plugin
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.ReportPlugin
-import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
@@ -65,21 +62,21 @@ class DocumentUseCase(
   private val propertyService: PropertyService,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
-) : DocumentProvider {
+) : DocumentProvider, DocumentUseCasePort {
 
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
 
-  suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
+  override suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
     log.info("findById id=$id")
     documentRepository.findById(id)
   }
 
-  suspend fun findAllByRepositoryId(
+  override suspend fun findAllByRepositoryId(
     repositoryId: RepositoryId,
-    filter: DocumentsFilter? = null,
-    orderBy: RecordOrderBy? = null,
-    status: ReleaseStatus = ReleaseStatus.released,
-    tags: List<String> = emptyList(),
+    filter: DocumentsFilter?,
+    orderBy: RecordOrderBy?,
+    status: ReleaseStatus,
+    tags: List<String>,
     pageable: PageableRequest,
   ): List<Document> = withContext(Dispatchers.IO) {
     log.info("findAllByRepositoryId repositoryId=$repositoryId")
@@ -152,7 +149,7 @@ class DocumentUseCase(
       } ?: log.debug("no retention with maxAgeDays given")
   }
 
-  suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
+  override suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
     log.info("deleteDocuments $documentIds")
 
     repositoryGuard.requireRead(repositoryId)
@@ -164,15 +161,12 @@ class DocumentUseCase(
 
     val documents = documentRepository
       .findAllByRepositoryIdAndIdIn(
-        repositoryId, if (documentIds.`in` != null) {
-          documentIds.`in`.map { DocumentId(it) }
-        } else {
-          if (documentIds.eq != null) {
-            listOf(DocumentId(documentIds.eq))
-          } else {
-            throw IllegalArgumentException("operation not supported")
-          }
-        }
+        repositoryId,
+        when {
+          documentIds.`in` != null -> documentIds.`in`!!.map { DocumentId(it) }
+          documentIds.eq != null -> listOf(DocumentId(documentIds.eq!!))
+          else -> throw IllegalArgumentException("operation not supported")
+        },
       )
 
     documentRepository.deleteAllById(documents.map { it.id });
@@ -420,13 +414,13 @@ class DocumentUseCase(
     documentRepository.countByRepositoryId(repositoryId)
   }
 
-  suspend fun createDocument(data: CreateRecordInput): Document {
-    log.info("createDocument repositoryId=${data.repositoryId.id}")
-    val repositoryId = RepositoryId(data.repositoryId.id)
+  override suspend fun createDocument(data: DocumentCreate): Document {
+    log.info("createDocument repositoryId=${data.repositoryId}")
+    val repositoryId = data.repositoryId
 
-    val repository = repositoryGuard.requireWrite(repositoryId)
+    repositoryGuard.requireWrite(repositoryId)
 
-    val documentId = data.id?.let { DocumentId(data.id!!) } ?: DocumentId()
+    val documentId = data.id ?: DocumentId()
     val document = Document(
       id = documentId,
       title = data.title,
@@ -442,7 +436,7 @@ class DocumentUseCase(
     }
   }
 
-  suspend fun updateDocument(data: RecordUpdateInput, id: DocumentId): Document = withContext(Dispatchers.IO) {
+  override suspend fun updateDocument(data: DocumentUpdate, id: DocumentId): Document = withContext(Dispatchers.IO) {
     log.info("updateDocument id=$id")
     var document = documentRepository.findById(id)!!
       .copy(
@@ -452,15 +446,15 @@ class DocumentUseCase(
     repositoryGuard.requireWrite(document.repositoryId)
 
     document = data.url?.let {
-      document.copy(url = it.set)
+      document.copy(url = it)
     } ?: document
 
     document = data.text?.let {
-      document.copy(text = it.set)
+      document.copy(text = it)
     } ?: document
 
     document = data.title?.let {
-      document.copy(title = it.set)
+      document.copy(title = it)
     } ?: document
 
     documentRepository.save(document)

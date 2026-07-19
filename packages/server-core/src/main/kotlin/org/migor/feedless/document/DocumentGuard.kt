@@ -5,7 +5,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.guard.ResourceGuard
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
@@ -13,7 +12,7 @@ import org.springframework.stereotype.Service
 @Profile("${AppProfiles.document} & ${AppLayer.service}")
 class DocumentGuard(
   private val documentRepository: DocumentRepository,
-) : ResourceGuard<DocumentId, Document> {
+) : DocumentGuardPort {
 
   override suspend fun requireWrite(id: DocumentId): Document = withContext(Dispatchers.IO) {
 //    val currentUserId = currentCoroutineContext()[RequestContext.Key]!!.userId!!

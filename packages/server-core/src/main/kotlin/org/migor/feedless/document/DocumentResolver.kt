@@ -14,6 +14,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.api.toDto
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.config.DgsCustomContext
@@ -27,7 +28,6 @@ import org.migor.feedless.generated.types.RecordWhereInput
 import org.migor.feedless.generated.types.RecordsInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.UpdateRecordInput
-import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
@@ -113,7 +113,7 @@ class DocumentResolver(
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     documentUseCase.deleteDocuments(
       RepositoryId(data.where.repository.id),
-      data.where.id!!.toDomain()
+      data.where.id!!.toDomainStringFilter(),
     )
     true
   }
@@ -124,7 +124,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
   ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    records.map { documentUseCase.createDocument(it).toDto(propertyService) }
+    records.map { documentUseCase.createDocument(it.toDomain()).toDto(propertyService) }
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
@@ -133,7 +133,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    documentUseCase.updateDocument(data.data, DocumentId(data.where.id)).toDto(propertyService)
+    documentUseCase.updateDocument(data.data.toDomain(), DocumentId(data.where.id)).toDto(propertyService)
     true
   }
 
@@ -162,13 +162,6 @@ class DocumentResolver(
 
 }
 
-
-fun StringFilterInputDto.toDomain(): StringFilter {
-  return StringFilter(
-    eq = eq,
-    `in` = `in`
-  )
-}
 
 fun DocumentFrequency.toDto(): RecordFrequency {
   return RecordFrequency(

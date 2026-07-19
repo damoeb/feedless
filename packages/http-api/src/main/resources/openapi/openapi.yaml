@@ -234,6 +234,94 @@ paths:
           description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
+  /records:
+    get:
+      tags: [Records]
+      operationId: listRecords
+      parameters:
+        - name: repositoryId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordListResponse'
+    post:
+      tags: [Records]
+      operationId: createRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordCreate'
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+    delete:
+      tags: [Records]
+      operationId: deleteRecords
+      parameters:
+        - name: repositoryId
+          in: query
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordDeleteRequest'
+      responses:
+        '204':
+          description: Deleted
+  /records/{recordId}:
+    parameters:
+      - $ref: '#/components/parameters/RecordId'
+    get:
+      tags: [Records]
+      operationId: getRecord
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Records]
+      operationId: updateRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordUpdate'
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     userSecretJwt:
@@ -266,6 +354,13 @@ components:
         default: 20
     SourceId:
       name: sourceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RecordId:
+      name: recordId
       in: path
       required: true
       schema:
@@ -344,6 +439,99 @@ components:
             $ref: '#/components/schemas/Source'
         hasMore:
           type: boolean
+    Record:
+      type: object
+      required: [id, url, createdAt, publishedAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        html:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+        createdAt:
+          type: integer
+          format: int64
+        publishedAt:
+          type: integer
+          format: int64
+        updatedAt:
+          type: integer
+          format: int64
+        startingAt:
+          type: integer
+          format: int64
+        rawBase64:
+          type: string
+        rawMimeType:
+          type: string
+    RecordCreate:
+      type: object
+      required: [title, url, publishedAt, repositoryId]
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: integer
+          format: int64
+        repositoryId:
+          type: string
+          format: uuid
+        text:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        rawBase64:
+          type: string
+        rawMimeType:
+          type: string
+    RecordUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    RecordDeleteRequest:
+      type: object
+      required: [ids]
+      properties:
+        ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+    RecordListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
     Vertical:
       type: string
       enum:
