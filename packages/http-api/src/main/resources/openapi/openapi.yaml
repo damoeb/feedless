@@ -346,6 +346,37 @@ paths:
                 $ref: '#/components/schemas/Record'
         '404':
           $ref: '#/components/responses/NotFound'
+  /plans:
+    get:
+      tags: [Plans]
+      operationId: listPlans
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanListResponse'
+  /plans/{planId}:
+    get:
+      tags: [Plans]
+      operationId: getPlan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     userSecretJwt:
@@ -1065,3 +1096,31 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Harvest'
+    Plan:
+      type: object
+      required: [id, productId, recurringYearly]
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        startedAt:
+          type: integer
+          format: int64
+        terminatedAt:
+          type: integer
+          format: int64
+        recurringYearly:
+          type: boolean
+    PlanListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
