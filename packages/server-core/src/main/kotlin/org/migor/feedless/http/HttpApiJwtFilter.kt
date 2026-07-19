@@ -6,6 +6,7 @@ import jakarta.servlet.http.HttpServletResponse
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.JwtTokenIssuer

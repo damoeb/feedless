@@ -76,7 +76,7 @@ class RepositoryHttpController(
         created.forEach { repo ->
           emit(mapper.toHttp(repo, userId != null && repo.ownerId == userId))
         }
-      },
+      }.withHttpApiRequestContext(),
     )
 
   @PreAuthorize("@capabilityService.hasCapability('user')")

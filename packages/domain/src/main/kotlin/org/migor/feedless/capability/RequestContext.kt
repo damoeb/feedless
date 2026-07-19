@@ -12,6 +12,9 @@ object MdcKeys {
   const val GROUP_ID = "groupId"
 }
 
+/** Servlet request attribute key for [RequestContext] set by the HTTP API JWT filter. */
+const val HTTP_API_REQUEST_CONTEXT_ATTR = "org.migor.feedless.http.requestContext"
+
 data class RequestContext(
   val corrId: String = newCorrId(),
   val isAdmin: Boolean? = false, // todo not yet resolved

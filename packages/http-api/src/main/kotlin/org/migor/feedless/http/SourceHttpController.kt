@@ -76,7 +76,7 @@ class SourceHttpController(
         created.forEach { source ->
           emit(mapper.toHttp(source))
         }
-      },
+      }.withHttpApiRequestContext(),
     )
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
