@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.Semaphore
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
@@ -219,9 +220,10 @@ class SourceUseCase(
       val saveScrapeActions = mutableListOf<ScrapeAction>()
 
       updateInputs.forEach { sourceUpdate ->
-        var source = sourceRepository.findById(sourceUpdate.sourceId)!!
+        var source = sourceRepository.findById(sourceUpdate.sourceId)
+          ?: throw NotFoundException("Source ${sourceUpdate.sourceId} not found")
         if (source.repositoryId != repositoryId) {
-          throw IllegalArgumentException("source does not belong to repository")
+          throw NotFoundException("Source ${sourceUpdate.sourceId} not found")
         }
 
         var changed = false
@@ -279,14 +281,16 @@ class SourceUseCase(
     }
 
   override suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
-    // todo verify permissions
-//    val repository = repositoryRepository.findById(repositoryId)!!
-//    if (repository.groupId != coroutineContext.groupId()) {
-//      throw IllegalArgumentException("Cannot update a source with a group id '${repository.groupId}'")
-//    }
+    val repository = repositoryRepository.findById(repositoryId)!!
+    if (repository.groupId != coroutineContext.groupId()) {
+      throw IllegalArgumentException("Cannot delete a source with a group id '${repository.groupId}'")
+    }
 
     log.info("removing ${sourceIds.size} sources")
     val sources = sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, sourceIds)
+    if (sources.isEmpty()) {
+      throw NotFoundException("No sources found to delete")
+    }
     sourceRepository.deleteAllById(sources.map { it.id })
   }
 }

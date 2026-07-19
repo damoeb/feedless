@@ -14,6 +14,7 @@ import org.migor.feedless.http.mapper.HttpSourceMapper
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCasePort
+import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.throttle.Throttled
@@ -98,6 +99,9 @@ class SourceHttpController(
     sourceId: java.util.UUID,
     sourceUpdate: SourceUpdate,
   ): ResponseEntity<Unit> {
+    if (findSourceInRepository(repositoryId, sourceId) == null) {
+      return ResponseEntity.notFound().build()
+    }
     sourceUseCase.updateSources(
       RepositoryId(repositoryId.toString()),
       listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)),
@@ -111,10 +115,24 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
   ): ResponseEntity<Unit> {
+    if (findSourceInRepository(repositoryId, sourceId) == null) {
+      return ResponseEntity.notFound().build()
+    }
     sourceUseCase.deleteAllById(
       RepositoryId(repositoryId.toString()),
       listOf(SourceId(sourceId.toString())),
     )
     return ResponseEntity.noContent().build()
+  }
+
+  private suspend fun findSourceInRepository(
+    repositoryId: java.util.UUID,
+    sourceId: java.util.UUID,
+  ): Source? {
+    val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString())) ?: return null
+    if (source.repositoryId != RepositoryId(repositoryId.toString())) {
+      return null
+    }
+    return source
   }
 }

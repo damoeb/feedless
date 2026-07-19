@@ -4,6 +4,8 @@ import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
@@ -186,5 +188,53 @@ class SourceUseCaseTest {
     sourceUseCase.deleteAllById(repositoryId, sourceIds)
 
     verify(sourceRepository).deleteAllById(argThat<List<SourceId>> { it.size == sources.size })
+  }
+
+  @Test
+  fun `updateSources throws NotFound when source missing`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+    val sourceId = SourceId()
+    `when`(sourceRepository.findById(eq(sourceId))).thenReturn(null)
+
+    assertThrows<NotFoundException> {
+      sourceUseCase.updateSources(
+        repositoryId,
+        listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
+      )
+    }
+  }
+
+  @Test
+  fun `updateSources throws NotFound when source belongs to another repository`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+    val sourceId = SourceId()
+    val otherRepositoryId = randomRepositoryId()
+    val source = mock(Source::class.java)
+    `when`(source.repositoryId).thenReturn(otherRepositoryId)
+    `when`(sourceRepository.findById(eq(sourceId))).thenReturn(source)
+
+    assertThrows<NotFoundException> {
+      sourceUseCase.updateSources(
+        repositoryId,
+        listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
+      )
+    }
+  }
+
+  @Test
+  fun `deleteAllById throws NotFound when no sources match`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+    val sourceId = SourceId()
+    `when`(sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, listOf(sourceId))).thenReturn(emptyList())
+
+    assertThrows<NotFoundException> {
+      sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+    }
+  }
+
+  @Test
+  fun `deleteAllById throws when group does not match`() = runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+    val sourceId = SourceId()
+
+    assertThrows<IllegalArgumentException> {
+      sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+    }
   }
 }
