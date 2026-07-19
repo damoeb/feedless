@@ -48,7 +48,7 @@ class SourceUseCase(
   private val scrapeActionRepository: ScrapeActionRepository,
   private val repositoryRepository: RepositoryRepository,
   private val sourcePipelineService: SourcePipelineService
-) {
+) : SourceUseCasePort {
 
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
 
@@ -157,7 +157,7 @@ class SourceUseCase(
   }
 
 
-  suspend fun createSources(sources: List<Source>, repositoryId: RepositoryId) =
+  override suspend fun createSources(sources: List<Source>, repositoryId: RepositoryId): List<Source> =
     withContext(Dispatchers.IO) {
       log.info("creating ${sources.size} sources")
 
@@ -202,10 +202,10 @@ class SourceUseCase(
 
       sourceRepository.saveAll(createSources)
       scrapeActionRepository.saveAll(createScrapeActions)
-
+      sourceRepository.findAllWithActionsByIdIn(createSources.map { it.id })
     }
 
-  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<RepositorySourceUpdate>) =
+  override suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<RepositorySourceUpdate>) =
     withContext(Dispatchers.IO) {
       log.info("updating ${updateInputs.size} sources")
 
@@ -218,7 +218,7 @@ class SourceUseCase(
       val deleteScrapeActions = mutableListOf<ScrapeAction>()
       val saveScrapeActions = mutableListOf<ScrapeAction>()
 
-      updateInputs.map { sourceUpdate ->
+      updateInputs.forEach { sourceUpdate ->
         var source = sourceRepository.findById(sourceUpdate.sourceId)!!
         if (source.repositoryId != repositoryId) {
           throw IllegalArgumentException("source does not belong to repository")
@@ -275,9 +275,10 @@ class SourceUseCase(
       scrapeActionRepository.deleteAll(deleteScrapeActions)
       scrapeActionRepository.saveAll(saveScrapeActions)
       sourceRepository.saveAll(modifiedSources)
+      Unit
     }
 
-  suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
+  override suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
     // todo verify permissions
 //    val repository = repositoryRepository.findById(repositoryId)!!
 //    if (repository.groupId != coroutineContext.groupId()) {

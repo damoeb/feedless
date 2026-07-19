@@ -53,6 +53,89 @@ class HttpScrapeFlowMapper {
   fun toDomainActions(flow: ScrapeFlow): List<ScrapeAction> =
     flow.sequence.mapNotNull { toDomainAction(it) }
 
+  fun toHttpFlow(actions: List<ScrapeAction>): ScrapeFlow =
+    ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { toHttpAction(it) })
+
+  private fun toHttpAction(action: ScrapeAction): HttpScrapeAction =
+    when (action) {
+      is FetchAction -> HttpScrapeAction(fetch = action.toHttpFetch())
+      is WaitAction -> HttpScrapeAction(waitFor = WaitForAction(element = org.migor.feedless.http.api.model.DomElementByNameOrXPath(xpath = DomElementByXPath(value = action.xpath))))
+      is HeaderAction -> HttpScrapeAction(header = RequestHeader(name = action.name, value = action.value))
+      is DomAction -> when (action.event) {
+        DomEventType.purge -> HttpScrapeAction(purge = DomElementByXPath(value = action.xpath))
+        DomEventType.type -> HttpScrapeAction(type = DomActionType(element = DomElementByXPath(value = action.xpath), typeValue = action.data ?: ""))
+        DomEventType.select -> HttpScrapeAction(select = DomActionSelect(element = DomElementByXPath(value = action.xpath), selectValue = action.data ?: ""))
+        DomEventType.click -> HttpScrapeAction(click = DomElement(element = org.migor.feedless.http.api.model.DomElementByNameOrXPath(xpath = DomElementByXPath(value = action.xpath))))
+      }
+      is ClickXpathAction -> HttpScrapeAction(click = DomElement(element = org.migor.feedless.http.api.model.DomElementByNameOrXPath(xpath = DomElementByXPath(value = action.xpath))))
+      is ClickPositionAction -> HttpScrapeAction(click = DomElement(position = org.migor.feedless.http.api.model.XyPosition(x = action.x, y = action.y)))
+      is ExtractBoundingBoxAction -> HttpScrapeAction(
+        extract = ScrapeExtract(
+          fragmentName = action.fragmentName,
+          imageBased = org.migor.feedless.http.api.model.ScrapeBoundingBox(
+            boundingBox = org.migor.feedless.http.api.model.BoundingBox(x = action.x, y = action.y, w = action.w, h = action.h),
+          ),
+        ),
+      )
+      is ExtractXpathAction -> HttpScrapeAction(
+        extract = ScrapeExtract(
+          fragmentName = action.fragmentName,
+          selectorBased = org.migor.feedless.http.api.model.DomExtract(
+            fragmentName = action.fragmentName,
+            xpath = DomElementByXPath(value = action.xpath),
+            uniqueBy = action.uniqueBy.toHttp(),
+            emit = action.emit.map { it.toHttp() },
+          ),
+        ),
+      )
+      is ExecuteAction -> HttpScrapeAction(execute = action.toHttpExecute())
+    }
+
+  private fun FetchAction.toHttpFetch(): HttpFetch {
+    val get = HttpGetRequest(
+      url = org.migor.feedless.http.api.model.StringLiteralOrVariable(
+        literal = if (!isVariable) url else null,
+        variable = if (isVariable) url else null,
+      ),
+      timeout = timeout,
+      additionalWaitSec = additionalWaitSec,
+      language = language,
+      forcePrerender = forcePrerender,
+      waitUntil = waitUntil?.toHttp(),
+      viewport = if (viewportWidth != null && viewportHeight != null) {
+        org.migor.feedless.http.api.model.ViewPort(
+          width = viewportWidth!!,
+          height = viewportHeight!!,
+          isMobile = isMobile,
+          isLandscape = isLandscape,
+        )
+      } else {
+        null
+      },
+    )
+    return HttpFetch(get = get)
+  }
+
+  private fun ExecuteAction.toHttpExecute(): PluginExecution =
+    PluginExecution(
+      pluginId = pluginId,
+      params = PluginExecutionParams(jsonData = executorParams?.paramsJsonString),
+    )
+
+  private fun ExtractEmit.toHttp(): ScrapeEmit = when (this) {
+    ExtractEmit.text -> ScrapeEmit.text
+    ExtractEmit.html -> ScrapeEmit.html
+    ExtractEmit.pixel -> ScrapeEmit.pixel
+    ExtractEmit.date -> ScrapeEmit.date
+  }
+
+  private fun PuppeteerWaitUntil.toHttp(): org.migor.feedless.http.api.model.PuppeteerWaitUntil = when (this) {
+    PuppeteerWaitUntil.load -> org.migor.feedless.http.api.model.PuppeteerWaitUntil.load
+    PuppeteerWaitUntil.domcontentloaded -> org.migor.feedless.http.api.model.PuppeteerWaitUntil.domcontentloaded
+    PuppeteerWaitUntil.networkidle0 -> org.migor.feedless.http.api.model.PuppeteerWaitUntil.networkidle0
+    PuppeteerWaitUntil.networkidle2 -> org.migor.feedless.http.api.model.PuppeteerWaitUntil.networkidle2
+  }
+
   private fun toDomainAction(action: HttpScrapeAction): ScrapeAction? {
     action.fetch?.let { return it.toFetchAction() }
     action.waitFor?.let { return it.toWaitAction() }

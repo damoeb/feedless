@@ -151,6 +151,89 @@ paths:
           description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
+  /repositories/{repositoryId}/sources:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+    get:
+      tags: [Sources]
+      operationId: listSources
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: disabled
+          in: query
+          schema:
+            type: boolean
+        - name: like
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceListResponse'
+    post:
+      tags: [Sources]
+      operationId: createSources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/SourceCreate'
+            x-codegen-request-body-name: sourceCreate
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Source'
+  /repositories/{repositoryId}/sources/{sourceId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+    get:
+      tags: [Sources]
+      operationId: getSource
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
+        '404':
+          $ref: '#/components/responses/NotFound'
+    patch:
+      tags: [Sources]
+      operationId: updateSource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceUpdate'
+      responses:
+        '204':
+          description: Updated
+        '404':
+          $ref: '#/components/responses/NotFound'
+    delete:
+      tags: [Sources]
+      operationId: deleteSource
+      responses:
+        '204':
+          description: Deleted
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   securitySchemes:
     userSecretJwt:
@@ -181,6 +264,13 @@ components:
         minimum: 0
         maximum: 100
         default: 20
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
   responses:
     Unauthorized:
       description: Missing or invalid authentication
@@ -242,6 +332,16 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Repository'
+        hasMore:
+          type: boolean
+    SourceListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Source'
         hasMore:
           type: boolean
     Vertical:
@@ -379,6 +479,34 @@ components:
           $ref: '#/components/schemas/Visibility'
         retention:
           $ref: '#/components/schemas/Retention'
+    Source:
+      type: object
+      required: [id, title, flow]
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        flow:
+          $ref: '#/components/schemas/ScrapeFlow'
+        disabled:
+          type: boolean
+        lastRefreshedAt:
+          type: integer
+          format: int64
+        lastRecordsRetrieved:
+          type: integer
+        latLng:
+          $ref: '#/components/schemas/GeoPoint'
+        tags:
+          type: array
+          items:
+            type: string
+        recordCount:
+          type: integer
+        lastErrorMessage:
+          type: string
     SourceCreate:
       type: object
       required: [title, flow]
@@ -400,6 +528,21 @@ components:
             type: string
         lastErrorMessage:
           type: string
+    SourceUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        disabled:
+          type: boolean
+        latLng:
+          $ref: '#/components/schemas/GeoPoint'
+        flow:
+          $ref: '#/components/schemas/ScrapeFlow'
     GeoPoint:
       type: object
       required: [lat, lng]
