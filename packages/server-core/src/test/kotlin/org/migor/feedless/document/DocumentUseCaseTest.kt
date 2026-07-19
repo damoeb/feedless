@@ -53,6 +53,7 @@ import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.util.toLegacyDate
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
@@ -508,6 +509,33 @@ class DocumentUseCaseTest {
       documentUseCase.createDocument(data)
 
       verify(documentRepository).save(any(Document::class.java))
+    }
+
+  @Test
+  fun `create document honors publishedAt tags rawMimeType and optional text`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val publishedAt = Date().time
+
+      mockUser(currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+      mockRepository(repositoryId, ownerId = currentUserId)
+
+      val data = DocumentCreate(
+        title = "foo",
+        publishedAt = publishedAt,
+        url = "https://example.com",
+        text = null,
+        tags = listOf("news", "tech"),
+        rawMimeType = "text/plain",
+        repositoryId = repositoryId,
+      )
+      val saved = documentUseCase.createDocument(data)
+
+      assertThat(saved.text).isEmpty()
+      assertThat(saved.tags?.toList()).containsExactly("news", "tech")
+      assertThat(saved.rawMimeType).isEqualTo("text/plain")
+      assertThat(saved.publishedAt.toLegacyDate().time).isEqualTo(publishedAt)
     }
 
   @Test

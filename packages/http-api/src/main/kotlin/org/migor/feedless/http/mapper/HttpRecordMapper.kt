@@ -3,6 +3,7 @@ package org.migor.feedless.http.mapper
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentCreate
 import org.migor.feedless.document.DocumentUpdate
+import org.migor.feedless.document.enrichedTags
 import org.migor.feedless.http.api.model.RecordCreate
 import org.migor.feedless.http.api.model.RecordUpdate
 import org.migor.feedless.repository.RepositoryId
@@ -22,7 +23,7 @@ class HttpRecordMapper {
       title = document.title,
       text = document.text,
       html = getHtml(document),
-      tags = document.tags?.toList(),
+      tags = document.enrichedTags(),
       imageUrl = document.imageUrl,
       createdAt = document.createdAt.toMillis(),
       publishedAt = document.publishedAt.toMillis(),

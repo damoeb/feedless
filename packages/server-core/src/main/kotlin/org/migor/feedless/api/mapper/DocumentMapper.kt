@@ -9,8 +9,7 @@ import org.migor.feedless.generated.types.Attachment
 import org.migor.feedless.generated.types.GeoPoint
 import org.migor.feedless.generated.types.Record
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
-import org.migor.feedless.repository.addListenableTag
-import org.migor.feedless.repository.classifyDuration
+import org.migor.feedless.document.enrichedTags
 import java.nio.charset.StandardCharsets
 import java.util.*
 
@@ -70,14 +69,7 @@ abstract class DocumentMapper {
     }
   }
 
-  protected fun getTags(document: Document): List<String> {
-    val baseTags = document.tags?.asList() ?: emptyList()
-    val audioAttachments = document.attachments
-      .filter { it.mimeType.startsWith("audio/") && it.duration != null }
-      .map { classifyDuration(it.duration!!) }
-      .distinct()
-    return baseTags.plus(addListenableTag(audioAttachments))
-  }
+  protected fun getTags(document: Document): List<String> = document.enrichedTags()
 
   protected fun getAttachments(document: Document, propertyService: PropertyService): List<Attachment> {
     return document.attachments.map {

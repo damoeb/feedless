@@ -40,6 +40,8 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
+import org.migor.feedless.util.toLocalDateTime
+import java.util.Base64
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -425,10 +427,15 @@ class DocumentUseCase(
       id = documentId,
       title = data.title,
       url = data.url,
-      text = data.text!!,
+      text = data.text ?: "",
       repositoryId = repositoryId,
       status = ReleaseStatus.released,
-      contentHash = CryptUtil.sha1(data.rawBase64 ?: documentId.uuid.toString())
+      publishedAt = data.publishedAt.toLocalDateTime(),
+      tags = data.tags?.toTypedArray(),
+      rawMimeType = data.rawMimeType,
+      raw = data.rawBase64?.let { Base64.getDecoder().decode(it) },
+      contentHash = CryptUtil.sha1(data.rawBase64 ?: documentId.uuid.toString()),
+      parentId = data.parentId,
     )
 
     return withContext(Dispatchers.IO) {
