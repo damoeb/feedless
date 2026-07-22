@@ -14,6 +14,7 @@ import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.document.DocumentController
 import org.migor.feedless.feed.FeedService
 import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.SessionResolver
 import org.migor.feedless.user.UserGuard
@@ -52,8 +53,9 @@ const val actuatorPassword = "password"
     OAuth2AuthorizedClientService::class,
     FeedService::class,
     UserGroupAssignmentRepository::class,
-    AnalyticsService::class,
     GroupRepository::class,
+    GroupUseCasePort::class,
+    AnalyticsService::class
   ]
 )
 @ActiveProfiles(
