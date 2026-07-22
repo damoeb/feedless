@@ -13,6 +13,8 @@ interface GroupUseCasePort {
 
   suspend fun listAssignments(): List<GroupAssignmentSummary>
 
+  suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment>
+
   suspend fun addUserToGroup(userId: UserId, groupId: GroupId, role: RoleInGroup): UserGroupAssignment
 
   suspend fun removeUserFromGroup(groupId: GroupId, userId: UserId)

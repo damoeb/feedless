@@ -8,6 +8,7 @@ import org.migor.feedless.http.api.GroupsApi
 import org.migor.feedless.http.api.model.GroupAssignmentListResponse
 import org.migor.feedless.http.api.model.GroupCreate
 import org.migor.feedless.http.api.model.GroupMemberCreate
+import org.migor.feedless.http.api.model.GroupMemberListResponse
 import org.migor.feedless.http.mapper.HttpGroupMapper
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.user.UserId
@@ -35,6 +36,22 @@ class GroupHttpController(
       GroupAssignmentListResponse(
         items = items,
         hasMore = false,
+      ),
+    )
+  }
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  override suspend fun listGroupMembers(
+    groupId: java.util.UUID,
+    page: Int,
+    pageSize: Int,
+  ): ResponseEntity<GroupMemberListResponse> {
+    val items = groupUseCase.listMembers(GroupId(groupId), page, pageSize)
+      .map { mapper.toHttpMember(it) }
+    return ResponseEntity.ok(
+      GroupMemberListResponse(
+        items = items,
+        hasMore = items.size == pageSize,
       ),
     )
   }

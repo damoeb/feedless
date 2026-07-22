@@ -64,6 +64,17 @@ class GroupUseCase(
     }
   }
 
+  override suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment> =
+    withContext(Dispatchers.IO) {
+      log.info("listMembers groupId=$groupId page=$page pageSize=$pageSize")
+      findByIdForUser(groupId) ?: throw NotFoundException("group not found")
+      val fixedPage = page.coerceAtLeast(0)
+      val fixedPageSize = pageSize.coerceAtLeast(0).coerceAtMost(100)
+      userGroupAssignmentRepository.findAllByGroupId(groupId)
+        .drop(fixedPage * fixedPageSize)
+        .take(fixedPageSize)
+    }
+
   override suspend fun addUserToGroup(
     userId: UserId,
     groupId: GroupId,

@@ -431,16 +431,31 @@ paths:
         '204':
           description: Deleted
   /groups/{groupId}/members:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Groups]
+      operationId: listGroupMembers
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Members of the group
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
     post:
       tags: [Groups]
       operationId: addGroupMember
-      parameters:
-        - name: groupId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       requestBody:
         required: true
         content:
@@ -455,22 +470,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/GroupAssignment'
   /groups/{groupId}/members/{userId}:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
     delete:
       tags: [Groups]
       operationId: removeGroupMember
-      parameters:
-        - name: groupId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
-        - name: userId
-          in: path
-          required: true
-          schema:
-            type: string
-            format: uuid
       responses:
         '204':
           description: Removed
@@ -1261,6 +1276,26 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GroupAssignment'
+    GroupMember:
+      type: object
+      required: [userId, role]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]
+    GroupMemberListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
     GroupMemberCreate:
       type: object
       required: [userId, role]

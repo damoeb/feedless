@@ -250,6 +250,32 @@ class GroupUseCaseTest {
     }
 
 
+  @Test
+  fun `listMembers returns paged assignments for members`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockCurrentUserRoleForGroup(RoleInGroup.viewer)
+      val member1 = UserGroupAssignment(userId = UserId(), groupId = groupId, role = RoleInGroup.owner)
+      val member2 = UserGroupAssignment(userId = UserId(), groupId = groupId, role = RoleInGroup.viewer)
+      val member3 = UserGroupAssignment(userId = UserId(), groupId = groupId, role = RoleInGroup.editor)
+      `when`(userGroupAssignmentRepository.findAllByGroupId(groupId)).thenReturn(listOf(member1, member2, member3))
+
+      val page = groupUseCase.listMembers(groupId, page = 1, pageSize = 1)
+
+      assertThat(page).containsExactly(member2)
+    }
+
+  @Test
+  fun `listMembers throws NotFoundException when group missing`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      `when`(groupRepository.findById(groupId)).thenReturn(null)
+
+      assertThatExceptionOfType(NotFoundException::class.java).isThrownBy {
+        runBlocking(RequestContext(groupId = GroupId(), userId = currentUserId)) {
+          groupUseCase.listMembers(groupId, page = 0, pageSize = 20)
+        }
+      }
+    }
+
   private fun mockCurrentUserRoleForGroup(role: RoleInGroup): UserGroupAssignment {
     return mockUserRoleForGroup(currentUserId, role)
   }

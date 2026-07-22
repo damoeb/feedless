@@ -143,6 +143,48 @@ class GroupHttpControllerTest {
   }
 
   @Test
+  fun `listGroupMembers returns members`() = runTest {
+    val groupId = GroupId()
+    val memberId = UserId()
+    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(20))).thenReturn(
+      listOf(
+        UserGroupAssignment(
+          userId = memberId,
+          groupId = groupId,
+          role = RoleInGroup.viewer,
+        ),
+      ),
+    )
+
+    val mvcResult = mockMvc.get("/api/v1/groups/${groupId.uuid}/members") {
+      param("page", "0")
+      param("pageSize", "20")
+    }.andReturn()
+
+    dispatchIfAsync(
+      mvcResult,
+      status().isOk,
+      jsonPath("$.items[0].userId").value(memberId.uuid.toString()),
+      jsonPath("$.items[0].role").value("viewer"),
+      jsonPath("$.hasMore").value(false),
+    )
+  }
+
+  @Test
+  fun `listGroupMembers returns 404 when group missing`() = runTest {
+    val groupId = GroupId()
+    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(20)))
+      .thenThrow(NotFoundException("group not found"))
+
+    val mvcResult = mockMvc.get("/api/v1/groups/${groupId.uuid}/members") {
+      param("page", "0")
+      param("pageSize", "20")
+    }.andReturn()
+
+    dispatchIfAsync(mvcResult, status().isNotFound, jsonPath("$.code").value("NOT_FOUND"))
+  }
+
+  @Test
   fun `addGroupMember returns 201`() = runTest {
     val group = Group(name = "team", ownerId = UserId())
     val memberId = UserId()
