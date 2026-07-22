@@ -60,18 +60,19 @@ class HttpApiJwtFilterTest {
   }
 
   @Test
-  fun `skips filter for login path`() {
-    val request = MockHttpServletRequest("POST", "/api/v1/auth/login")
+  fun `does not skip filter for any api v1 path`() {
+    val request = MockHttpServletRequest("GET", "/api/v1/user")
     val response = MockHttpServletResponse()
     val chain = mock(FilterChain::class.java)
 
     filter.doFilter(request, response, chain)
 
-    verify(chain).doFilter(request, response)
+    assert(response.status == HttpStatus.UNAUTHORIZED.value())
+    verify(chain, never()).doFilter(request, response)
   }
 
   @Test
-  fun `continues chain and stores RequestContext when token is valid`() {
+  fun `continues chain and stores RequestContext when token is valid via deprecated Authentication header`() {
     val user = mock(User::class.java)
     val userId = UserId()
     `when`(user.id).thenReturn(userId)
@@ -79,6 +80,26 @@ class HttpApiJwtFilterTest {
 
     val request = MockHttpServletRequest("GET", "/api/v1/repositories")
     request.addHeader("Authentication", "Bearer $token")
+    val response = MockHttpServletResponse()
+    var requestContext: RequestContext? = null
+    val chain = FilterChain { req, _ ->
+      requestContext = req.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR) as? RequestContext
+    }
+
+    filter.doFilter(request, response, chain)
+
+    assert(requestContext?.userId == userId)
+  }
+
+  @Test
+  fun `continues chain and stores RequestContext when token is valid via Authorization header`() {
+    val user = mock(User::class.java)
+    val userId = UserId()
+    `when`(user.id).thenReturn(userId)
+    val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
+
+    val request = MockHttpServletRequest("GET", "/api/v1/user")
+    request.addHeader("Authorization", "Bearer $token")
     val response = MockHttpServletResponse()
     var requestContext: RequestContext? = null
     val chain = FilterChain { req, _ ->

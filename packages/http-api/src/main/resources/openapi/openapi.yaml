@@ -7,49 +7,25 @@ servers:
   - url: /api/v1
     description: Feedless HTTP API v1
 security:
-  - userSecretJwt: []
+  - bearerAuth: []
 paths:
-  /auth/login:
-    post:
-      tags: [Auth]
-      operationId: login
-      security: []
-      summary: Authenticate with email + secretKey
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AuthUserRequest'
-      responses:
-        '200':
-          description: JWT issued
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthenticationResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-  /auth/session:
+  /user:
     get:
       tags: [Auth]
-      operationId: getSession
-      summary: Current auth session
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user (GitHub GET /user)
+      description: >
+        Requires Authorization Bearer UserSecret.value (from GraphQL createUserSecret).
+        Returns id, email, and groups.
       responses:
         '200':
-          description: Session
+          description: Authenticated user
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/SessionResponse'
-  /auth/logout:
-    post:
-      tags: [Auth]
-      operationId: logout
-      summary: Clear TOKEN cookie
-      responses:
-        '204':
-          description: Logged out
+                $ref: '#/components/schemas/AuthenticatedUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /repositories:
     get:
       tags: [Repositories]
@@ -491,11 +467,14 @@ paths:
           description: Removed
 components:
   securitySchemes:
-    userSecretJwt:
-      type: apiKey
-      in: header
-      name: Authentication
-      description: Bearer JWT from login or UserSecret (logged-in user). Anonymous JWTs are rejected. Example `Bearer eyJ...`
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: >
+        `Authorization: Bearer <UserSecret.value>` (GitHub PAT style).
+        Legacy `Authentication: Bearer <…>` accepted in v1 but **deprecated**.
+        TOKEN cookie still accepted for browser clients. Anonymous JWTs are rejected.
   parameters:
     RepositoryId:
       name: repositoryId
@@ -561,25 +540,16 @@ components:
         message: { type: string }
         corrId: { type: string, description: Optional correlation id for support/debug }
         path: { type: string, description: Optional field or request path for validation errors }
-    AuthUserRequest:
+    AuthenticatedUser:
       type: object
-      required: [email, secretKey]
+      required: [id, email, groups]
       properties:
+        id: { type: string, format: uuid }
         email: { type: string, format: email }
-        secretKey: { type: string }
-    AuthenticationResponse:
-      type: object
-      required: [token, corrId]
-      properties:
-        token: { type: string }
-        corrId: { type: string }
-    SessionResponse:
-      type: object
-      required: [isAnonymous, isLoggedIn]
-      properties:
-        isAnonymous: { type: boolean }
-        isLoggedIn: { type: boolean }
-        userId: { type: string, format: uuid }
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAssignment'
     CountResponse:
       type: object
       required: [count]

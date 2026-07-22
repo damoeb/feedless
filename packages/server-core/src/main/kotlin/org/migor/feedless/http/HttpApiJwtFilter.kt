@@ -28,10 +28,8 @@ class HttpApiJwtFilter(
   private val log = LoggerFactory.getLogger(HttpApiJwtFilter::class.simpleName)
 
   override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-    if (!request.requestURI.startsWith("/api/v1/")) {
-      return true
-    }
-    return request.requestURI == "/api/v1/auth/login"
+    // No public auth issuance path on the HTTP API: every /api/v1/** request requires a UserSecret Bearer JWT.
+    return !request.requestURI.startsWith("/api/v1/")
   }
 
   override fun doFilterInternal(

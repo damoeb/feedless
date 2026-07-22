@@ -1,24 +1,18 @@
 package org.migor.feedless.http.mapper
 
-import org.migor.feedless.auth.AuthToken
-import org.migor.feedless.http.api.model.AuthenticationResponse
-import org.migor.feedless.http.api.model.SessionResponse
-import org.migor.feedless.session.SessionInfo
+import org.migor.feedless.auth.AuthenticatedUser
 import org.springframework.stereotype.Component
+import org.migor.feedless.http.api.model.AuthenticatedUser as HttpAuthenticatedUser
 
 @Component
-class HttpAuthMapper {
+class HttpAuthMapper(
+  private val groupMapper: HttpGroupMapper,
+) {
 
-  fun toAuthenticationResponse(token: AuthToken, corrId: String): AuthenticationResponse =
-    AuthenticationResponse(
-      token = token.token,
-      corrId = corrId,
-    )
-
-  fun toSessionResponse(session: SessionInfo): SessionResponse =
-    SessionResponse(
-      isAnonymous = session.isAnonymous,
-      isLoggedIn = session.isLoggedIn,
-      userId = session.userId?.uuid,
+  fun toHttp(user: AuthenticatedUser): HttpAuthenticatedUser =
+    HttpAuthenticatedUser(
+      id = user.id.uuid,
+      email = user.email,
+      groups = user.groups.map { groupMapper.toHttp(it) },
     )
 }

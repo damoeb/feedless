@@ -172,13 +172,18 @@ class JwtTokenIssuer(
 
   @Throws(AccessDeniedException::class)
   suspend fun decodeJwt(request: HttpServletRequest): Jwt {
+    // Preference order: Authorization (GitHub PAT style) > Authentication (deprecated) > TOKEN cookie.
+    val authorizationHeader = request.getHeader("Authorization")
+    if (StringUtils.isNotBlank(authorizationHeader)) {
+      return decodeJwt(authorizationHeader.replaceFirst("Bearer ", ""))
+    }
+    val deprecatedAuthHeader = request.getHeader("Authentication")
+    if (StringUtils.isNotBlank(deprecatedAuthHeader)) {
+      return decodeJwt(deprecatedAuthHeader.replaceFirst("Bearer ", ""))
+    }
     val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
     if (StringUtils.isNotBlank(authCookie?.value)) {
       return decodeJwt(authCookie?.value!!)
-    }
-    val authHeader = request.getHeader("Authentication")
-    if (StringUtils.isNotBlank(authHeader)) {
-      return decodeJwt(authHeader.replaceFirst("Bearer ", ""))
     }
     throw AccessDeniedException("token not present")
   }

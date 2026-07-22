@@ -134,8 +134,9 @@ class SecurityConfig {
   }
 
   private fun whitelistedUrls(): Array<String> {
+    // No public auth issuance path — all /api/v1/** require UserSecret Bearer.
+    // Do not add /api/v1/auth or /api/v1/user to whitelist.
     val urls = mutableListOf(
-      "/api/v1/auth/login",
       "/graphql",
       "/actuator/health",
       "/actuator/health/liveness",

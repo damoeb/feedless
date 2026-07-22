@@ -6,6 +6,7 @@ import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.SignedJWT
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
@@ -18,6 +19,8 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.security.access.AccessDeniedException
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -199,6 +202,53 @@ class JwtTokenIssuerTest {
     // then
     assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
       .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS));
+  }
+
+  @Test
+  fun `decodeJwt prefers Authorization header over deprecated Authentication header and cookie`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val otherToken = jwtTokenIssuer.createJwtForCapabilities(listOf()).tokenValue
+    val request = MockHttpServletRequest()
+    request.addHeader("Authorization", "Bearer $token")
+    request.addHeader("Authentication", "Bearer $otherToken")
+    request.setCookies(Cookie("TOKEN", otherToken))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt falls back to deprecated Authentication header when Authorization is absent`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val cookieToken = jwtTokenIssuer.createJwtForCapabilities(listOf()).tokenValue
+    val request = MockHttpServletRequest()
+    request.addHeader("Authentication", "Bearer $token")
+    request.setCookies(Cookie("TOKEN", cookieToken))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt falls back to TOKEN cookie when no header is present`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val request = MockHttpServletRequest()
+    request.setCookies(Cookie("TOKEN", token))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt throws AccessDeniedException when no token is present`() {
+    val request = MockHttpServletRequest()
+
+    org.assertj.core.api.Assertions.assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
+      kotlinx.coroutines.runBlocking { jwtTokenIssuer.decodeJwt(request) }
+    }
   }
 }
 
