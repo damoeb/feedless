@@ -3,6 +3,7 @@ package org.migor.feedless.api.graphql
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
@@ -85,6 +86,17 @@ class ScrapeQueryResolverIntTest {
   @BeforeEach
   fun setUp() {
     mockSecurityContext()
+  }
+
+  /**
+   * SecurityContextHolder is a thread-local and Gradle reuses test worker threads. Leaving the
+   * mocked SecurityContext installed poisons every later test on the same thread: a mock swallows
+   * `setAuthentication(...)`, so code that authenticates a request silently keeps reading this
+   * stale token.
+   */
+  @AfterEach
+  fun tearDown() {
+    SecurityContextHolder.clearContext()
   }
 
   @Test

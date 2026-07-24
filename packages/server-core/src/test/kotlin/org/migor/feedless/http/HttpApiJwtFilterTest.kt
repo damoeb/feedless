@@ -15,6 +15,7 @@ import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.http.HttpStatus
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 
@@ -25,6 +26,9 @@ class HttpApiJwtFilterTest {
 
   @BeforeEach
   fun setUp() {
+    // The filter authenticates through SecurityContextHolder, a thread-local shared with every
+    // other test on this Gradle worker — start from a clean one.
+    SecurityContextHolder.clearContext()
     val propertyService = mock(PropertyService::class.java)
     `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
     `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")

@@ -4,8 +4,15 @@ info:
   description: REST API for Feedless entities (auth, repository, source, document, harvest, plan, group).
   version: 1.0.0
 servers:
-  - url: /api/v1
-    description: Feedless HTTP API v1
+  - url: '{scheme}://{host}/api/v1'
+    description: Feedless HTTP API v1. Feedless is self-hosted — point `host` at your instance.
+    variables:
+      scheme:
+        default: https
+        enum: [https, http]
+      host:
+        default: feedless.org
+        description: Host (and optional port) of the Feedless instance
 security:
   - bearerAuth: []
 paths:
@@ -26,6 +33,8 @@ paths:
                 $ref: '#/components/schemas/AuthenticatedUser'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories:
     get:
       tags: [Repositories]
@@ -36,7 +45,7 @@ paths:
         - name: product
           in: query
           schema:
-            $ref: '#/components/schemas/Vertical'
+            $ref: '#/components/schemas/VerticalFilter'
         - name: visibility
           in: query
           schema:
@@ -52,27 +61,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RepositoryListResponse'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [Repositories]
-      operationId: createRepositories
+      operationId: createRepository
+      summary: Create a single repository
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/RepositoryCreate'
-            x-codegen-request-body-name: repositoryCreate
+              $ref: '#/components/schemas/RepositoryCreate'
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Repository'
+                $ref: '#/components/schemas/Repository'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/count:
     get:
       tags: [Repositories]
@@ -82,7 +93,7 @@ paths:
           in: query
           required: true
           schema:
-            $ref: '#/components/schemas/Vertical'
+            $ref: '#/components/schemas/VerticalFilter'
       responses:
         '200':
           description: OK
@@ -90,6 +101,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CountResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -105,6 +118,8 @@ paths:
                 $ref: '#/components/schemas/Repository'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
     patch:
       tags: [Repositories]
       operationId: updateRepository
@@ -115,10 +130,18 @@ paths:
             schema:
               $ref: '#/components/schemas/RepositoryUpdate'
       responses:
-        '204':
+        '200':
           description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
       tags: [Repositories]
       operationId: deleteRepository
@@ -127,6 +150,10 @@ paths:
           description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}/sources:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -151,27 +178,29 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SourceListResponse'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [Sources]
-      operationId: createSources
+      operationId: createSource
+      summary: Create a single source in a repository
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/SourceCreate'
-            x-codegen-request-body-name: sourceCreate
+              $ref: '#/components/schemas/SourceCreate'
       responses:
         '201':
           description: Created
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Source'
+                $ref: '#/components/schemas/Source'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}/sources/{sourceId}:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -188,6 +217,8 @@ paths:
                 $ref: '#/components/schemas/Source'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
     patch:
       tags: [Sources]
       operationId: updateSource
@@ -198,10 +229,18 @@ paths:
             schema:
               $ref: '#/components/schemas/SourceUpdate'
       responses:
-        '204':
+        '200':
           description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
       tags: [Sources]
       operationId: deleteSource
@@ -210,6 +249,10 @@ paths:
           description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}/sources/{sourceId}/harvests:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -234,6 +277,8 @@ paths:
                 $ref: '#/components/schemas/HarvestListResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
   /records:
     get:
       tags: [Records]
@@ -254,6 +299,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RecordListResponse'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [Records]
       operationId: createRecord
@@ -270,6 +317,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Record'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
       tags: [Records]
       operationId: deleteRecords
@@ -289,6 +340,10 @@ paths:
       responses:
         '204':
           description: Deleted
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /records/{recordId}:
     parameters:
       - $ref: '#/components/parameters/RecordId'
@@ -304,6 +359,8 @@ paths:
                 $ref: '#/components/schemas/Record'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
     patch:
       tags: [Records]
       operationId: updateRecord
@@ -322,6 +379,10 @@ paths:
                 $ref: '#/components/schemas/Record'
         '404':
           $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /plans:
     get:
       tags: [Plans]
@@ -333,6 +394,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/PlanListResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /plans/{planId}:
     get:
       tags: [Plans]
@@ -353,6 +416,8 @@ paths:
                 $ref: '#/components/schemas/Plan'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
   /groups:
     get:
       tags: [Groups]
@@ -364,6 +429,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GroupAssignmentListResponse'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [Groups]
       operationId: createGroup
@@ -380,6 +447,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Group'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /groups/{groupId}:
     parameters:
       - name: groupId
@@ -400,12 +471,18 @@ paths:
                 $ref: '#/components/schemas/Group'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
     delete:
       tags: [Groups]
       operationId: deleteGroup
       responses:
         '204':
           description: Deleted
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /groups/{groupId}/members:
     parameters:
       - name: groupId
@@ -429,6 +506,8 @@ paths:
                 $ref: '#/components/schemas/GroupMemberListResponse'
         '404':
           $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
     post:
       tags: [Groups]
       operationId: addGroupMember
@@ -445,6 +524,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GroupAssignment'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /groups/{groupId}/members/{userId}:
     parameters:
       - name: groupId
@@ -465,12 +548,15 @@ paths:
       responses:
         '204':
           description: Removed
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
     bearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
       description: >
         `Authorization: Bearer <UserSecret.value>` (GitHub PAT style).
         Legacy `Authentication: Bearer <…>` accepted in v1 but **deprecated**.
@@ -513,6 +599,16 @@ components:
         type: string
         format: uuid
   responses:
+    Error:
+      description: >
+        Any error. Every error response — 400 `BAD_REQUEST` / `VALIDATION_ERROR`,
+        401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 429 `TOO_MANY_REQUESTS`,
+        500 `INTERNAL_ERROR` — carries an `ApiError` body. Since every route requires
+        authentication, every operation can return 401.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
     Unauthorized:
       description: Missing or invalid authentication
       content:
@@ -521,6 +617,17 @@ components:
             $ref: '#/components/schemas/ApiError'
     BadRequest:
       description: Invalid request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: Rate limit exceeded — retry after the interval in `Retry-After`
+      headers:
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
       content:
         application/json:
           schema:
@@ -536,10 +643,31 @@ components:
       type: object
       required: [code, message]
       properties:
-        code: { type: string }
-        message: { type: string }
-        corrId: { type: string, description: Optional correlation id for support/debug }
-        path: { type: string, description: Optional field or request path for validation errors }
+        code:
+          type: string
+          description: Stable machine-readable code, e.g. NOT_FOUND, VALIDATION_ERROR
+        message:
+          type: string
+          description: Human-readable summary. Not stable — do not match on it.
+        corrId:
+          type: string
+          description: Correlation id for support/debug
+        path:
+          type: string
+          description: Request path the error occurred on
+        errors:
+          type: array
+          description: Per-field details, present on VALIDATION_ERROR. All failing fields, not just the first.
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
+      type: object
+      required: [field, message]
+      properties:
+        field:
+          type: string
+        message:
+          type: string
     AuthenticatedUser:
       type: object
       required: [id, email, groups]
@@ -598,17 +726,17 @@ components:
         imageUrl:
           type: string
         createdAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         publishedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         updatedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         startingAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         rawBase64:
           type: string
         rawMimeType:
@@ -622,8 +750,8 @@ components:
         url:
           type: string
         publishedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         repositoryId:
           type: string
           format: uuid
@@ -671,6 +799,20 @@ components:
             $ref: '#/components/schemas/Record'
     Vertical:
       type: string
+      description: A concrete product. Never `all` — that is a filter value only, see VerticalFilter.
+      enum:
+        - rssProxy
+        - visualDiff
+        - reader
+        - feedless
+        - upcoming
+        - untoldNotes
+        - pageChangeTracker
+        - feedDump
+        - digest
+    VerticalFilter:
+      type: string
+      description: Product filter for queries. `all` matches every product.
       enum:
         - all
         - rssProxy
@@ -685,8 +827,8 @@ components:
     Visibility:
       type: string
       enum:
-        - isPrivate
-        - isPublic
+        - private
+        - public
     Retention:
       type: object
       properties:
@@ -696,11 +838,13 @@ components:
           type: integer
     Repository:
       type: object
+      description: >
+        Only intrinsic, always-present fields are required. Computed counters and
+        caller-relative fields are optional and are omitted when not resolved.
       required:
         - id
         - title
         - description
-        - shareKey
         - ownerId
         - product
         - visibility
@@ -708,13 +852,7 @@ components:
         - tags
         - createdAt
         - lastUpdatedAt
-        - documentCount
         - archived
-        - pullsPerMonth
-        - currentUserIsOwner
-        - pushNotificationsEnabled
-        - sourcesCount
-        - sourcesCountWithProblems
       properties:
         id:
           type: string
@@ -725,6 +863,9 @@ components:
           type: string
         shareKey:
           type: string
+          description: >
+            Capability secret granting access to a private repository. Returned only to
+            the owner; omitted for everyone else. Treat as a credential.
         ownerId:
           type: string
           format: uuid
@@ -739,14 +880,14 @@ components:
           items:
             type: string
         createdAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         lastUpdatedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         nextUpdateAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         documentCount:
           type: integer
           format: int64
@@ -756,15 +897,18 @@ components:
           type: integer
         currentUserIsOwner:
           type: boolean
+          description: Relative to the calling user, not a property of the repository itself
         pushNotificationsEnabled:
           type: boolean
         sourcesCount:
           type: integer
+          description: Omitted when not computed for this response
         sourcesCountWithProblems:
           type: integer
+          description: Omitted when not computed for this response
         disabledFrom:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
     RepositoryCreate:
       type: object
       required: [product, sources, title, description]
@@ -818,8 +962,8 @@ components:
         disabled:
           type: boolean
         lastRefreshedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         lastRecordsRetrieved:
           type: integer
         latLng:
@@ -830,6 +974,7 @@ components:
             type: string
         recordCount:
           type: integer
+          description: Omitted when not computed for this response
         lastErrorMessage:
           type: string
     SourceCreate:
@@ -874,10 +1019,14 @@ components:
       properties:
         lat:
           type: number
-          format: float
+          format: double
+          minimum: -90
+          maximum: 90
         lng:
           type: number
-          format: float
+          format: double
+          minimum: -180
+          maximum: 180
     ScrapeFlow:
       type: object
       required: [sequence]
@@ -888,6 +1037,12 @@ components:
             $ref: '#/components/schemas/ScrapeAction'
     ScrapeAction:
       type: object
+      description: >
+        Exactly one of these properties must be set — an action is a fetch, or a click, or
+        an extract, never a combination. Enforced at runtime: an action with zero or more
+        than one property set is rejected with 400 VALIDATION_ERROR.
+      minProperties: 1
+      maxProperties: 1
       properties:
         fetch:
           $ref: '#/components/schemas/HttpFetch'
@@ -1152,8 +1307,15 @@ components:
           type: string
     Harvest:
       type: object
-      required: [ok, itemsAdded, itemsIgnored, logs, startedAt]
+      required: [id, sourceId, ok, itemsAdded, itemsIgnored, logs, startedAt]
       properties:
+        id:
+          type: string
+          format: uuid
+        sourceId:
+          type: string
+          format: uuid
+          description: Source this harvest ran against — preserves provenance in merged lists
         ok:
           type: boolean
         itemsAdded:
@@ -1163,11 +1325,11 @@ components:
         logs:
           type: string
         startedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         finishedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
     HarvestListResponse:
       type: object
       required: [items, hasMore]
@@ -1189,11 +1351,11 @@ components:
           type: string
           format: uuid
         startedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         terminatedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         recurringYearly:
           type: boolean
     PlanListResponse:

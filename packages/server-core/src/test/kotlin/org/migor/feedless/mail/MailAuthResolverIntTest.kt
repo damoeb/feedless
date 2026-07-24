@@ -62,8 +62,8 @@ import java.util.*
     MailService::class,
     UserRepository::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class,
     GroupRepository::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @Import(

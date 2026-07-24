@@ -2,6 +2,7 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.http.api.PlansApi
 import org.migor.feedless.http.api.model.PlanListResponse
 import org.migor.feedless.http.mapper.HttpPlanMapper
@@ -36,7 +37,7 @@ class PlanHttpController(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   override suspend fun getPlan(planId: java.util.UUID): ResponseEntity<HttpPlan> {
     val plan = planUseCase.findById(PlanId(planId))
-      ?: return ResponseEntity.notFound().build()
+      ?: throw NotFoundException("plan $planId not found")
     return ResponseEntity.ok(mapper.toHttp(plan))
   }
 }

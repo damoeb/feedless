@@ -7,7 +7,7 @@ import org.migor.feedless.document.enrichedTags
 import org.migor.feedless.http.api.model.RecordCreate
 import org.migor.feedless.http.api.model.RecordUpdate
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.util.toMillis
+import org.migor.feedless.util.toOffsetDateTime
 import org.springframework.stereotype.Component
 import java.nio.charset.StandardCharsets
 import java.util.Base64
@@ -25,10 +25,10 @@ class HttpRecordMapper {
       html = getHtml(document),
       tags = document.enrichedTags(),
       imageUrl = document.imageUrl,
-      createdAt = document.createdAt.toMillis(),
-      publishedAt = document.publishedAt.toMillis(),
-      updatedAt = document.updatedAt.toMillis(),
-      startingAt = document.startingAt?.toMillis(),
+      createdAt = document.createdAt.toOffsetDateTime(),
+      publishedAt = document.publishedAt.toOffsetDateTime(),
+      updatedAt = document.updatedAt.toOffsetDateTime(),
+      startingAt = document.startingAt?.toOffsetDateTime(),
       rawBase64 = getRawBase64(document),
       rawMimeType = getRawMimeType(document),
     )
@@ -37,7 +37,8 @@ class HttpRecordMapper {
     DocumentCreate(
       title = body.title,
       url = body.url,
-      publishedAt = body.publishedAt,
+      // DocumentCreate still carries epoch millis internally; the wire format is RFC3339.
+      publishedAt = body.publishedAt.toInstant().toEpochMilli(),
       repositoryId = RepositoryId(body.repositoryId.toString()),
       text = body.text,
       tags = body.tags,

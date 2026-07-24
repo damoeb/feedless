@@ -2,6 +2,7 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.http.api.GroupsApi
@@ -46,12 +47,13 @@ class GroupHttpController(
     page: Int,
     pageSize: Int,
   ): ResponseEntity<GroupMemberListResponse> {
-    val items = groupUseCase.listMembers(GroupId(groupId), page, pageSize)
-      .map { mapper.toHttpMember(it) }
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val fetched = groupUseCase.listMembers(GroupId(groupId), page, pageSize + 1)
+    val items = fetched.take(pageSize).map { mapper.toHttpMember(it) }
     return ResponseEntity.ok(
       GroupMemberListResponse(
         items = items,
-        hasMore = items.size == pageSize,
+        hasMore = fetched.size > pageSize,
       ),
     )
   }
@@ -66,7 +68,7 @@ class GroupHttpController(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   override suspend fun getGroup(groupId: java.util.UUID): ResponseEntity<HttpGroup> {
     val group = groupUseCase.findByIdForUser(GroupId(groupId))
-      ?: return ResponseEntity.notFound().build()
+      ?: throw NotFoundException("group $groupId not found")
     return ResponseEntity.ok(mapper.toHttp(group))
   }
 

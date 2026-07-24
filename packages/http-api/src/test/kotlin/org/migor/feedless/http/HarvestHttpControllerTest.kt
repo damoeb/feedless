@@ -55,7 +55,7 @@ class HarvestHttpControllerTest {
       source(id = sourceId, repositoryId = RepositoryId(repoId.toString())),
     )
     val harvest = harvest(sourceId = sourceId, logs = "very long harvest log output")
-    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(20))).thenReturn(listOf(harvest))
+    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(21))).thenReturn(listOf(harvest))
 
     val mvcResult = mockMvc.get("/api/v1/repositories/$repoId/sources/${sourceId.uuid}/harvests") {
       param("page", "0")
@@ -84,7 +84,7 @@ class HarvestHttpControllerTest {
       source(id = sourceId, repositoryId = RepositoryId(repoId.toString())),
     )
     val harvest = harvest(sourceId = sourceId, logs = "full harvest log output")
-    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(20))).thenReturn(listOf(harvest))
+    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(21))).thenReturn(listOf(harvest))
 
     val mvcResult = mockMvc.get("/api/v1/repositories/$repoId/sources/${sourceId.uuid}/harvests") {
       param("page", "0")
@@ -103,14 +103,15 @@ class HarvestHttpControllerTest {
   }
 
   @Test
-  fun `listHarvests sets hasMore when page is full`() = runTest {
+  fun `listHarvests sets hasMore when a further item exists`() = runTest {
     val repoId = UUID.randomUUID()
     val sourceId = SourceId()
     whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(
       source(id = sourceId, repositoryId = RepositoryId(repoId.toString())),
     )
-    val harvests = List(2) { harvest(sourceId = sourceId) }
-    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(2))).thenReturn(harvests)
+    // pageSize + 1 available: there really is a next page
+    val harvests = List(3) { harvest(sourceId = sourceId) }
+    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(3))).thenReturn(harvests)
 
     val mvcResult = mockMvc.get("/api/v1/repositories/$repoId/sources/${sourceId.uuid}/harvests") {
       param("page", "0")
@@ -125,6 +126,34 @@ class HarvestHttpControllerTest {
     } else {
       assert(mvcResult.response.status == 200)
       assert(mvcResult.response.contentAsString.contains("\"hasMore\":true"))
+    }
+  }
+
+  @Test
+  fun `listHarvests reports hasMore false when the last page is exactly full`() = runTest {
+    val repoId = UUID.randomUUID()
+    val sourceId = SourceId()
+    whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(
+      source(id = sourceId, repositoryId = RepositoryId(repoId.toString())),
+    )
+    // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
+    // page here and made every client fetch an empty one.
+    val harvests = List(2) { harvest(sourceId = sourceId) }
+    whenever(harvestUseCase.findAllBySourceId(eq(sourceId), eq(0), eq(3))).thenReturn(harvests)
+
+    val mvcResult = mockMvc.get("/api/v1/repositories/$repoId/sources/${sourceId.uuid}/harvests") {
+      param("page", "0")
+      param("pageSize", "2")
+    }.andReturn()
+
+    if (mvcResult.request.asyncContext != null) {
+      mockMvc.perform(asyncDispatch(mvcResult))
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.hasMore").value(false))
+        .andExpect(jsonPath("$.items.length()").value(2))
+    } else {
+      assert(mvcResult.response.status == 200)
+      assert(mvcResult.response.contentAsString.contains("\"hasMore\":false"))
     }
   }
 

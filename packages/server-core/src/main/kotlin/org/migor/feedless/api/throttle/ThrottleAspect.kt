@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.TooManyRequestsException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -21,11 +22,15 @@ class ThrottleAspect {
 
   @Around("@annotation(org.migor.feedless.api.throttle.Throttled) || @annotation(org.migor.feedless.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
-    return if (ipThrottle.tryAquire(joinPoint)) {
-      joinPoint.proceed()
-    } else {
-      null
+    // tryAquire throws HostOverloadingException when the bucket is empty; this guards the
+    // other half of its Boolean contract. Returning null instead — as this used to — would
+    // surface as a 200 with an empty body (HTTP) or a null field (GraphQL), and the caller
+    // would never learn it was throttled.
+    if (!ipThrottle.tryAquire(joinPoint)) {
+      log.debug("throttled ${joinPoint.signature.name}")
+      throw TooManyRequestsException("rate limit exceeded for ${joinPoint.signature.name}")
     }
+    return joinPoint.proceed()
   }
 
   //  @Before("execution(* com.gkatzioura.spring.aop.service.SampleService.createSample (java.lang.String)) && args(sampleName)")

@@ -7,7 +7,7 @@ import org.migor.feedless.http.api.model.SourceUpdate
 import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
-import org.migor.feedless.util.toMillis
+import org.migor.feedless.util.toOffsetDateTime
 import org.springframework.stereotype.Component
 import org.migor.feedless.http.api.model.Source as HttpSource
 
@@ -22,11 +22,12 @@ class HttpSourceMapper(
       title = source.title,
       flow = scrapeFlowMapper.toHttpFlow(source.actions),
       disabled = source.disabled,
-      lastRefreshedAt = source.lastRefreshedAt?.toMillis(),
+      lastRefreshedAt = source.lastRefreshedAt?.toOffsetDateTime(),
       lastRecordsRetrieved = source.lastRecordsRetrieved,
-      latLng = source.latLon?.let { GeoPoint(lat = it.latitude.toFloat(), lng = it.longitude.toFloat()) },
+      latLng = source.latLon?.let { GeoPoint(lat = it.latitude, lng = it.longitude) },
       tags = source.tags?.toList(),
-      recordCount = 0,
+      // Not computed on this path — omit rather than report a hardcoded 0.
+      recordCount = null,
       lastErrorMessage = source.lastErrorMessage,
     )
 
@@ -39,7 +40,7 @@ class HttpSourceMapper(
       title = update.title,
       tags = update.tags,
       disabled = update.disabled,
-      latLng = update.latLng?.let { LatLonPoint(it.lat.toDouble(), it.lng.toDouble()) },
+      latLng = update.latLng?.let { LatLonPoint(it.lat, it.lng) },
       actions = update.flow?.let { scrapeFlowMapper.toDomainActions(it) },
       clearActions = false,
     )

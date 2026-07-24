@@ -1,7 +1,5 @@
 package org.migor.feedless.http
 
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -43,10 +41,9 @@ class SourceHttpControllerCreateTest {
   }
 
   @Test
-  fun `createSources runs flow with request context from servlet attribute`() = runTest {
+  fun `createSource returns the created source`() = runTest {
     val repoId = UUID.randomUUID()
-    val requestContext = RequestContext(groupId = GroupId(), userId = UserId())
-    bindRequestContext(requestContext)
+    bindRequestContext(RequestContext(groupId = GroupId(), userId = UserId()))
 
     val sourceId = SourceId()
     val created = Source(
@@ -57,13 +54,50 @@ class SourceHttpControllerCreateTest {
     )
     whenever(sourceUseCase.createSources(any(), any())).thenReturn(listOf(created))
 
-    val response = controller.createSources(repoId, flowOf(sourceCreate()))
-    val body = response.body!!.toList()
+    val response = controller.createSource(repoId, sourceCreate())
 
     assert(response.statusCode == HttpStatus.CREATED)
-    assert(body.size == 1)
-    assert(body.first().title == created.title)
+    assert(response.body!!.title == created.title)
+    // Not computed on this path — omitted, not reported as 0.
+    assert(response.body!!.recordCount == null)
     verify(sourceUseCase).createSources(any(), any())
+  }
+
+  @Test
+  fun `an action setting two kinds is rejected`() = runTest {
+    val ambiguous = SourceCreate(
+      title = "Ambiguous",
+      flow = ScrapeFlow(
+        sequence = listOf(
+          ScrapeAction(
+            fetch = org.migor.feedless.http.api.model.HttpFetch(
+              get = org.migor.feedless.http.api.model.HttpGetRequest(
+                url = org.migor.feedless.http.api.model.StringLiteralOrVariable(literal = "https://example.com"),
+              ),
+            ),
+            purge = org.migor.feedless.http.api.model.DomElementByXPath(value = "//div"),
+          ),
+        ),
+      ),
+    )
+
+    val ex = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+      mapper.toDomainSource(ambiguous)
+    }
+    assert(ex.message!!.contains("exactly one is allowed")) { ex.message!! }
+  }
+
+  @Test
+  fun `an action setting no kind is rejected`() = runTest {
+    val empty = SourceCreate(
+      title = "Empty",
+      flow = ScrapeFlow(sequence = listOf(ScrapeAction())),
+    )
+
+    val ex = org.junit.jupiter.api.assertThrows<IllegalArgumentException> {
+      mapper.toDomainSource(empty)
+    }
+    assert(ex.message!!.contains("sets no action")) { ex.message!! }
   }
 
   private fun bindRequestContext(requestContext: RequestContext) {

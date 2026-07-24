@@ -6,11 +6,10 @@ class BadRequestException(override val message: String) : FatalHarvestException(
 
 class UnavailableException(override val message: String) : ResumableHarvestException(message, Duration.ofMinutes(5))
 class SiteNotFoundException(url: String) : FatalHarvestException("$url not found")
-open class ResumableHarvestException(message: String, val nextRetryAfter: Duration) :
-  RuntimeException(message)
 
-class HostOverloadingException(message: String, waitForRefill: Duration) :
-  ResumableHarvestException(message, waitForRefill)
+// ResumableHarvestException and HostOverloadingException live in :packages:domain so the
+// HTTP edge (:packages:http-api, which depends on domain only) can map them to status
+// codes. Same package, so the FQNs are unchanged.
 
 class NoItemsRetrievedException : RuntimeException("no items retireved")
 

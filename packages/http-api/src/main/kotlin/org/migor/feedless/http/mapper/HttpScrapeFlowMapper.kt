@@ -51,7 +51,37 @@ class HttpScrapeFlowMapper {
     )
 
   fun toDomainActions(flow: ScrapeFlow): List<ScrapeAction> =
-    flow.sequence.mapNotNull { toDomainAction(it) }
+    flow.sequence.mapIndexed { index, action ->
+      requireExactlyOneKind(action, index)
+      toDomainAction(action) ?: throw IllegalArgumentException("flow.sequence[$index] is not a known action")
+    }
+
+  /**
+   * A ScrapeAction is a union: fetch, or click, or extract — never a combination. The
+   * schema cannot express that (no oneOf), and picking the first non-null field would
+   * silently discard the rest, so reject ambiguous actions instead.
+   */
+  private fun requireExactlyOneKind(action: HttpScrapeAction, index: Int) {
+    val set = listOfNotNull(
+      action.fetch?.let { "fetch" },
+      action.extract?.let { "extract" },
+      action.execute?.let { "execute" },
+      action.click?.let { "click" },
+      action.type?.let { "type" },
+      action.waitFor?.let { "waitFor" },
+      action.select?.let { "select" },
+      action.header?.let { "header" },
+      action.purge?.let { "purge" },
+    )
+    require(set.size == 1) {
+      if (set.isEmpty()) {
+        "flow.sequence[$index] sets no action; exactly one of fetch, extract, execute, " +
+          "click, type, waitFor, select, header, purge is required"
+      } else {
+        "flow.sequence[$index] sets ${set.size} actions (${set.joinToString(", ")}); exactly one is allowed"
+      }
+    }
+  }
 
   fun toHttpFlow(actions: List<ScrapeAction>): ScrapeFlow =
     ScrapeFlow(sequence = actions.sortedBy { it.pos }.map { toHttpAction(it) })

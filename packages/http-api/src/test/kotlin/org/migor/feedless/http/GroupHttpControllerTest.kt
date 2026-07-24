@@ -146,7 +146,7 @@ class GroupHttpControllerTest {
   fun `listGroupMembers returns members`() = runTest {
     val groupId = GroupId()
     val memberId = UserId()
-    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(20))).thenReturn(
+    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(21))).thenReturn(
       listOf(
         UserGroupAssignment(
           userId = memberId,
@@ -173,7 +173,7 @@ class GroupHttpControllerTest {
   @Test
   fun `listGroupMembers returns 404 when group missing`() = runTest {
     val groupId = GroupId()
-    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(20)))
+    whenever(groupUseCase.listMembers(eq(groupId), eq(0), eq(21)))
       .thenThrow(NotFoundException("group not found"))
 
     val mvcResult = mockMvc.get("/api/v1/groups/${groupId.uuid}/members") {

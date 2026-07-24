@@ -38,17 +38,18 @@ class RecordHttpController(
     page: Int,
     pageSize: Int,
   ): ResponseEntity<RecordListResponse> {
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize)
-    val items = documentUseCase
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val fetched = documentUseCase
       .findAllByRepositoryId(
         RepositoryId(repositoryId.toString()),
         pageable = pageable,
       )
-      .map { mapper.toHttp(it) }
+    val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(
       RecordListResponse(
         items = items,
-        hasMore = items.size == pageSize,
+        hasMore = fetched.size > pageSize,
       ),
     )
   }

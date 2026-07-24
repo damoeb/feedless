@@ -60,6 +60,7 @@ import kotlin.time.Duration.Companion.seconds
     UserGuard::class,
     UserSecretUseCase::class,
     UserRepository::class,
+    GroupRepository::class,
     OneTimePasswordService::class,
     GroupRepository::class,
   ]

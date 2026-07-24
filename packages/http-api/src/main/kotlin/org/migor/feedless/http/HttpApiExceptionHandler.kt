@@ -1,12 +1,16 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.TooManyRequestsException
 import org.migor.feedless.http.api.model.ApiError
+import org.migor.feedless.http.api.model.FieldError
 import org.migor.feedless.session.AuthCredentialsException
 import org.migor.feedless.session.AuthUserNotFoundException
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.MDC
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.AccessDeniedException
@@ -38,15 +42,44 @@ class HttpApiExceptionHandler {
   fun handleBadRequest(ex: IllegalArgumentException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.message ?: "invalid request", request)
 
+  @ExceptionHandler(TooManyRequestsException::class)
+  fun handleTooManyRequests(ex: TooManyRequestsException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(
+      HttpStatus.TOO_MANY_REQUESTS,
+      "TOO_MANY_REQUESTS",
+      ex.message,
+      request,
+      headers = mapOf(HttpHeaders.RETRY_AFTER to ex.retryAfter.seconds.toString()),
+    )
+
+  /**
+   * The throttle layer raises this. Without an explicit mapping it fell through to
+   * handleGeneric and every rate-limited call looked like a 500, so clients had no way to
+   * tell "back off" from "the server is broken".
+   */
+  @ExceptionHandler(HostOverloadingException::class)
+  fun handleHostOverloading(ex: HostOverloadingException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(
+      HttpStatus.TOO_MANY_REQUESTS,
+      "TOO_MANY_REQUESTS",
+      ex.message ?: "rate limit exceeded",
+      request,
+      headers = mapOf(HttpHeaders.RETRY_AFTER to ex.nextRetryAfter.seconds.coerceAtLeast(1).toString()),
+    )
+
   @ExceptionHandler(MethodArgumentNotValidException::class)
   fun handleValidation(ex: MethodArgumentNotValidException, request: WebRequest): ResponseEntity<ApiError> {
-    val field = ex.bindingResult.fieldErrors.firstOrNull()?.field
+    val fieldErrors = ex.bindingResult.fieldErrors.map {
+      FieldError(field = it.field, message = it.defaultMessage ?: "invalid")
+    }
     return errorResponse(
       HttpStatus.BAD_REQUEST,
       "VALIDATION_ERROR",
-      ex.bindingResult.fieldErrors.firstOrNull()?.defaultMessage ?: "validation failed",
+      // Summarise every failing field — reporting only the first one made callers
+      // fix-and-retry once per field.
+      fieldErrors.joinToString("; ") { "${it.field}: ${it.message}" }.ifEmpty { "validation failed" },
       request,
-      path = field ?: request.contextPath,
+      errors = fieldErrors,
     )
   }
 
@@ -60,15 +93,20 @@ class HttpApiExceptionHandler {
     message: String,
     request: WebRequest,
     path: String? = request.getDescription(false).removePrefix("uri="),
+    errors: List<FieldError>? = null,
+    headers: Map<String, String> = emptyMap(),
   ): ResponseEntity<ApiError> {
     val corrId = CryptUtil.newCorrId()
     MDC.put("corrId", corrId)
-    return ResponseEntity.status(status).body(
+    val builder = ResponseEntity.status(status)
+    headers.forEach { (name, value) -> builder.header(name, value) }
+    return builder.body(
       ApiError(
         code = code,
         message = message,
         corrId = corrId,
         path = path,
+        errors = errors,
       ),
     )
   }

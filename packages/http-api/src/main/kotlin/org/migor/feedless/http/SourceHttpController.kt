@@ -1,10 +1,8 @@
 package org.migor.feedless.http
 
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.toList
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.http.api.SourcesApi
 import org.migor.feedless.http.api.model.SourceCreate
@@ -43,54 +41,43 @@ class SourceHttpController(
     disabled: Boolean?,
     like: String?,
   ): ResponseEntity<SourceListResponse> {
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize)
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
     val where = if (disabled == null && like == null) {
       null
     } else {
       SourcesFilter(disabled = disabled, like = like)
     }
-    val items = sourceRepository
+    val fetched = sourceRepository
       .findAllByRepositoryIdFiltered(RepositoryId(repositoryId.toString()), pageable, where, null)
-      .map { mapper.toHttp(it) }
+    val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(
       SourceListResponse(
         items = items,
-        hasMore = items.size == pageSize,
+        hasMore = fetched.size > pageSize,
       ),
     )
   }
 
   @PreAuthorize("@capabilityService.hasToken()")
   @Throttled
-  override fun createSources(
+  override suspend fun createSource(
     repositoryId: java.util.UUID,
-    sourceCreate: Flow<SourceCreate>,
-  ): ResponseEntity<Flow<HttpSource>> =
-    ResponseEntity.status(HttpStatus.CREATED).body(
-      flow {
-        val creates = sourceCreate.toList()
-        val created = sourceUseCase.createSources(
-          creates.map { mapper.toDomainSource(it) },
-          RepositoryId(repositoryId.toString()),
-        )
-        created.forEach { source ->
-          emit(mapper.toHttp(source))
-        }
-      }.withHttpApiRequestContext(),
-    )
+    sourceCreate: SourceCreate,
+  ): ResponseEntity<HttpSource> {
+    val created = sourceUseCase.createSources(
+      listOf(mapper.toDomainSource(sourceCreate)),
+      RepositoryId(repositoryId.toString()),
+    ).firstOrNull() ?: throw IllegalStateException("source was not created")
+    return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toHttp(created))
+  }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   override suspend fun getSource(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
-  ): ResponseEntity<HttpSource> {
-    val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString()))
-      ?: return ResponseEntity.notFound().build()
-    if (source.repositoryId != RepositoryId(repositoryId.toString())) {
-      return ResponseEntity.notFound().build()
-    }
-    return ResponseEntity.ok(mapper.toHttp(source))
-  }
+  ): ResponseEntity<HttpSource> =
+    ResponseEntity.ok(mapper.toHttp(requireSourceInRepository(repositoryId, sourceId)))
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
@@ -98,15 +85,13 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
     sourceUpdate: SourceUpdate,
-  ): ResponseEntity<Unit> {
-    if (findSourceInRepository(repositoryId, sourceId) == null) {
-      return ResponseEntity.notFound().build()
-    }
+  ): ResponseEntity<HttpSource> {
+    requireSourceInRepository(repositoryId, sourceId)
     sourceUseCase.updateSources(
       RepositoryId(repositoryId.toString()),
       listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)),
     )
-    return ResponseEntity.noContent().build()
+    return ResponseEntity.ok(mapper.toHttp(requireSourceInRepository(repositoryId, sourceId)))
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -115,9 +100,7 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
   ): ResponseEntity<Unit> {
-    if (findSourceInRepository(repositoryId, sourceId) == null) {
-      return ResponseEntity.notFound().build()
-    }
+    requireSourceInRepository(repositoryId, sourceId)
     sourceUseCase.deleteAllById(
       RepositoryId(repositoryId.toString()),
       listOf(SourceId(sourceId.toString())),
@@ -125,13 +108,14 @@ class SourceHttpController(
     return ResponseEntity.noContent().build()
   }
 
-  private suspend fun findSourceInRepository(
+  private suspend fun requireSourceInRepository(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
-  ): Source? {
-    val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString())) ?: return null
+  ): Source {
+    val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString()))
+      ?: throw NotFoundException("source $sourceId not found")
     if (source.repositoryId != RepositoryId(repositoryId.toString())) {
-      return null
+      throw NotFoundException("source $sourceId not found in repository $repositoryId")
     }
     return source
   }

@@ -1,8 +1,7 @@
 package org.migor.feedless.http
 
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.EntityVisibility
@@ -42,31 +41,81 @@ class RepositoryHttpControllerCreateTest {
   }
 
   @Test
-  fun `createRepositories runs flow with request context from servlet attribute`() = runTest {
+  fun `createRepository returns the created repository`() = runTest {
     val userId = UserId()
-    val requestContext = RequestContext(groupId = GroupId(), userId = userId)
-    bindRequestContext(requestContext)
-
-    val repo = Repository(
-      id = RepositoryId(),
-      title = "Created feed",
-      description = "desc",
-      visibility = EntityVisibility.isPrivate,
-      ownerId = userId,
-      groupId = GroupId(),
-      product = Vertical.rssProxy,
-      shareKey = "share-key",
-    )
+    val repo = repository(userId)
     whenever(repositoryUseCase.create(any())).thenReturn(listOf(repo))
 
-    val response = controller.createRepositories(flowOf(repositoryCreate()))
-    val body = response.body!!.toList()
+    val response = asUser(userId) { controller.createRepository(repositoryCreate()) }
 
     assert(response.statusCode == HttpStatus.CREATED)
-    assert(body.size == 1)
-    assert(body.first().title == repo.title)
+    assert(response.body!!.title == repo.title)
     verify(repositoryUseCase).create(any())
   }
+
+  @Test
+  fun `createRepository returns the shareKey to the owner`() = runTest {
+    val userId = UserId()
+    whenever(repositoryUseCase.create(any())).thenReturn(listOf(repository(userId)))
+
+    val body = asUser(userId) { controller.createRepository(repositoryCreate()) }.body!!
+
+    assert(body.shareKey == "share-key")
+    assert(body.currentUserIsOwner == true)
+  }
+
+  @Test
+  fun `shareKey is omitted for a non-owner rather than blanked`() = runTest {
+    // owned by somebody else
+    whenever(repositoryUseCase.create(any())).thenReturn(listOf(repository(UserId())))
+
+    val body = asUser(UserId()) { controller.createRepository(repositoryCreate()) }.body!!
+
+    assert(body.shareKey == null)
+    assert(body.currentUserIsOwner == false)
+  }
+
+  @Test
+  fun `computed counters are omitted rather than reported as zero`() = runTest {
+    val userId = UserId()
+    whenever(repositoryUseCase.create(any())).thenReturn(listOf(repository(userId)))
+
+    val body = asUser(userId) { controller.createRepository(repositoryCreate()) }.body!!
+
+    assert(body.sourcesCount == null)
+    assert(body.sourcesCountWithProblems == null)
+  }
+
+  @Test
+  fun `visibility is mapped to the public private wire values`() = runTest {
+    val userId = UserId()
+    whenever(repositoryUseCase.create(any())).thenReturn(listOf(repository(userId)))
+
+    val body = asUser(userId) { controller.createRepository(repositoryCreate()) }.body!!
+
+    assert(body.visibility == org.migor.feedless.http.api.model.Visibility.private)
+  }
+
+  /**
+   * In production HttpApiServletInvocableHandlerMethod puts the RequestContext into the
+   * coroutine context; here we do it directly.
+   */
+  private suspend fun <T> asUser(userId: UserId, block: suspend () -> T): T {
+    val requestContext = RequestContext(groupId = GroupId(), userId = userId)
+    bindRequestContext(requestContext)
+    return withContext(requestContext) { block() }
+  }
+
+  private fun repository(ownerId: UserId) = Repository(
+    id = RepositoryId(),
+    title = "Created feed",
+    description = "desc",
+    visibility = EntityVisibility.isPrivate,
+    ownerId = ownerId,
+    groupId = GroupId(),
+    product = Vertical.rssProxy,
+    shareKey = "share-key",
+  )
 
   private fun bindRequestContext(requestContext: RequestContext) {
     val request = MockHttpServletRequest()

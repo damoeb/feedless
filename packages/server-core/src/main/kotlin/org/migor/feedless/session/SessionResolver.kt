@@ -58,9 +58,17 @@ class SessionResolver(
     }
 
   private fun addCookie(dfe: DataFetchingEnvironment, cookie: Cookie) {
-    ((DgsContext.getRequestData(dfe)!! as DgsWebMvcRequestData).webRequest!! as ServletWebRequest).response!!.addCookie(
-      cookie
-    )
+    // No servlet response when the schema is executed outside a web request (DgsQueryExecutor,
+    // subscriptions). Setting a cookie is a side effect of the transport, so skip it rather than
+    // failing the whole query — the !! chain here used to NPE.
+    val response = (DgsContext.getRequestData(dfe) as? DgsWebMvcRequestData)
+      ?.let { it.webRequest as? ServletWebRequest }
+      ?.response
+    if (response == null) {
+      log.debug("no servlet response available, skipping cookie ${cookie.name}")
+      return
+    }
+    response.addCookie(cookie)
   }
 
   @Throttled

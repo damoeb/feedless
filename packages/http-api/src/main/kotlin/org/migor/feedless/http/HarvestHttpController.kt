@@ -2,6 +2,7 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.harvest.HarvestUseCasePort
 import org.migor.feedless.http.api.HarvestsApi
 import org.migor.feedless.http.api.model.HarvestListResponse
@@ -33,17 +34,18 @@ class HarvestHttpController(
     includeLogs: Boolean,
   ): ResponseEntity<HarvestListResponse> {
     val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString()))
-      ?: return ResponseEntity.notFound().build()
+      ?: throw NotFoundException("source $sourceId not found")
     if (source.repositoryId != RepositoryId(repositoryId.toString())) {
-      return ResponseEntity.notFound().build()
+      throw NotFoundException("source $sourceId not found in repository $repositoryId")
     }
-    val items = harvestUseCase
-      .findAllBySourceId(SourceId(sourceId.toString()), page, pageSize)
-      .map { mapper.toHttp(it, includeLogs) }
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val fetched = harvestUseCase
+      .findAllBySourceId(SourceId(sourceId.toString()), page, pageSize + 1)
+    val items = fetched.take(pageSize).map { mapper.toHttp(it, includeLogs) }
     return ResponseEntity.ok(
       HarvestListResponse(
         items = items,
-        hasMore = items.size == pageSize,
+        hasMore = fetched.size > pageSize,
       ),
     )
   }

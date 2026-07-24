@@ -61,9 +61,10 @@ class RecordHttpControllerTest {
   }
 
   @Test
-  fun `listRecords sets hasMore when page is full`() = runTest {
+  fun `listRecords sets hasMore when a further item exists`() = runTest {
     val repositoryId = RepositoryId()
-    val records = List(2) { document(repositoryId = repositoryId) }
+    // pageSize + 1 available: there really is a next page
+    val records = List(3) { document(repositoryId = repositoryId) }
     whenever(
       documentUseCase.findAllByRepositoryId(
         eq(repositoryId),
@@ -71,7 +72,7 @@ class RecordHttpControllerTest {
         anyOrNull(),
         any(),
         any(),
-        eq(PageableRequest(pageNumber = 0, pageSize = 2)),
+        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
       ),
     ).thenReturn(records)
 
@@ -103,7 +104,7 @@ class RecordHttpControllerTest {
         anyOrNull(),
         any(),
         any(),
-        eq(PageableRequest(pageNumber = 0, pageSize = 2)),
+        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
       ),
     ).thenReturn(records)
 
@@ -118,6 +119,40 @@ class RecordHttpControllerTest {
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.hasMore").value(false))
         .andExpect(jsonPath("$.items.length()").value(1))
+    } else {
+      assert(mvcResult.response.status == 200)
+      assert(mvcResult.response.contentAsString.contains("\"hasMore\":false"))
+    }
+  }
+
+  @Test
+  fun `listRecords reports hasMore false when the last page is exactly full`() = runTest {
+    val repositoryId = RepositoryId()
+    // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
+    // page here and made every client fetch an empty one.
+    val records = List(2) { document(repositoryId = repositoryId) }
+    whenever(
+      documentUseCase.findAllByRepositoryId(
+        eq(repositoryId),
+        anyOrNull(),
+        anyOrNull(),
+        any(),
+        any(),
+        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
+      ),
+    ).thenReturn(records)
+
+    val mvcResult = mockMvc.get("/api/v1/records") {
+      param("repositoryId", repositoryId.uuid.toString())
+      param("page", "0")
+      param("pageSize", "2")
+    }.andReturn()
+
+    if (mvcResult.request.asyncContext != null) {
+      mockMvc.perform(asyncDispatch(mvcResult))
+        .andExpect(status().isOk)
+        .andExpect(jsonPath("$.hasMore").value(false))
+        .andExpect(jsonPath("$.items.length()").value(2))
     } else {
       assert(mvcResult.response.status == 200)
       assert(mvcResult.response.contentAsString.contains("\"hasMore\":false"))

@@ -65,6 +65,7 @@ const val rootSecretKey = "barBarBarKey"
   types = [
     ServerConfigResolver::class,
     UserGroupAssignmentRepository::class,
+    GroupRepository::class,
     UserGuard::class,
     GroupRepository::class,
   ]

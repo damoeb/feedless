@@ -57,8 +57,8 @@ import java.time.LocalDateTime
     DocumentRepository::class,
     UserRepository::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class,
     GroupRepository::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @ActiveProfiles(
