@@ -16,3 +16,5 @@ LAST_BUILD_COMMIT
 .postgres-data
 bin
 .worktrees/
+.omc/
+data
