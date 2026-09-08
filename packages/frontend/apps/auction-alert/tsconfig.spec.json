@@ -2,6 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
+    // The test bundle splits into chunks that reference each other cyclically, so a
+    // native class field initialized from an imported enum ("readonly X = X") is
+    // evaluated before that import exists. Assigning in the constructor instead
+    // defers it to instantiation time, which is what the app bundle effectively does.
+    "useDefineForClassFields": false,
     "types": ["vitest/globals"]
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"]

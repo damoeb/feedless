@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InlineCalendarComponent } from './inline-calendar.component';
 import { relativeDateIncrement } from '../../upcoming-product-routes';
 import dayjs from 'dayjs';
@@ -7,17 +7,17 @@ describe('InlineCalendar', () => {
   let component: InlineCalendarComponent;
   let fixture: ComponentFixture<InlineCalendarComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InlineCalendarComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InlineCalendarComponent);
     // const router = TestBed.inject(Router);
-    // jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    // vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     component = fixture.componentInstance;
     // fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

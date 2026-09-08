@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { FilterItemsAccordionComponent } from './filter-items-accordion.component';
 import {
@@ -13,14 +13,13 @@ describe('FilterItemsAccordionComponent', () => {
   let component: FilterItemsAccordionComponent;
   let fixture: ComponentFixture<FilterItemsAccordionComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults(), FilterItemsAccordionComponent],
     }).compileComponents();
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 
@@ -30,7 +29,7 @@ describe('FilterItemsAccordionComponent', () => {
     componentRef.setInput('labelPrefix', '');
     componentRef.setInput('filterPlugin', null);
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

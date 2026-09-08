@@ -88,8 +88,7 @@
       "executor": "@nx/eslint:lint"
     },
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "@angular/build:unit-test",
       "dependsOn": [
         {
           "projects": ["graphql-api"],
@@ -97,8 +96,8 @@
         }
       ],
       "options": {
-        "jestConfig": "apps/upcoming/jest.config.cts",
-        "tsConfig": "apps/upcoming/tsconfig.spec.json"
+        "runnerConfig": true,
+        "setupFiles": ["test/vitest-setup.ts"]
       }
     },
     "serve-static": {

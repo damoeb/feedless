@@ -26,7 +26,6 @@ describe('LoginPage', () => {
     fixture = TestBed.createComponent(LoginPage);
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
     component = fixture.componentInstance;

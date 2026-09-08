@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { UpcomingHeaderComponent } from './upcoming-header.component';
 import { AppTestModule, mockEvents } from '@feedless/testing';
 import dayjs from 'dayjs';
@@ -11,7 +11,7 @@ describe('UpcomingHeaderComponent', () => {
   let component: UpcomingHeaderComponent;
   let fixture: ComponentFixture<UpcomingHeaderComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         UpcomingHeaderComponent,
@@ -38,7 +38,7 @@ describe('UpcomingHeaderComponent', () => {
     componentRef.setInput('date', dayjs());
     componentRef.setInput('location', getCachedLocations()[0]);
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

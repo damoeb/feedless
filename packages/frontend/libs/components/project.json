@@ -7,11 +7,12 @@
   "tags": [],
   "targets": {
     "test": {
-      "executor": "@nx/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "executor": "@angular/build:unit-test",
       "options": {
-        "jestConfig": "libs/components/jest.config.cts",
-        "tsConfig": "libs/components/tsconfig.spec.json"
+        "buildTarget": "upcoming:build:development",
+        "tsConfig": "libs/components/tsconfig.spec.json",
+        "runnerConfig": true,
+        "setupFiles": ["test/vitest-setup.ts"]
       }
     },
     "lint": {

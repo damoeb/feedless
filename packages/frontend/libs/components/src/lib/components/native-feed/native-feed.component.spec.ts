@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NativeFeedComponent } from './native-feed.component';
 import { AppTestModule } from '@feedless/testing';
@@ -7,7 +7,7 @@ describe('NativeFeedComponent', () => {
   let component: NativeFeedComponent;
   let fixture: ComponentFixture<NativeFeedComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [NativeFeedComponent, AppTestModule.withDefaults()],
     }).compileComponents();
@@ -25,7 +25,7 @@ describe('NativeFeedComponent', () => {
     //   serverSettingsService,
     // );
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

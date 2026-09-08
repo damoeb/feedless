@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RemoteFeedItemComponent } from './remote-feed-item.component';
 import { AppTestModule } from '@feedless/testing';
@@ -8,13 +8,11 @@ describe('RemoteFeedItemComponent', () => {
   let component: RemoteFeedItemComponent;
   let fixture: ComponentFixture<RemoteFeedItemComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [RemoteFeedItemComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
-    const appConfigService = TestBed.inject(AppConfigService);
-    appConfigService.getAllAppConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(RemoteFeedItemComponent);
     component = fixture.componentInstance;
@@ -32,7 +30,7 @@ describe('RemoteFeedItemComponent', () => {
     componentRef.setInput('feedItemIndex', 1);
 
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

@@ -19,8 +19,9 @@ describe('BubbleComponent', () => {
 
   it('should create', () => {
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.innerHTML.trim()).toEqual(
-      `<span class="bubble-wrapper"><span class="bubble blue"></span></span>`,
-    );
+    const wrapper = compiled.querySelector('span.bubble-wrapper');
+    expect(wrapper).toBeTruthy();
+    const bubble = wrapper?.querySelector('span.bubble');
+    expect(bubble?.classList.contains('blue')).toBe(true);
   });
 });

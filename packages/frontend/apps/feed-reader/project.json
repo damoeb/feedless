@@ -8,9 +8,7 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "options": {
         "outputPath": "dist/apps/feed-reader",
         "browser": "apps/feed-reader/src/main.ts",
@@ -22,12 +20,8 @@
             "input": "apps/feed-reader/public"
           }
         ],
-        "styles": [
-          "apps/feed-reader/src/styles.scss"
-        ],
-        "polyfills": [
-          "zone.js"
-        ],
+        "styles": ["apps/feed-reader/src/styles.scss"],
+        "polyfills": ["zone.js"],
         "server": "apps/feed-reader/src/main.server.ts",
         "ssr": {
           "entry": "apps/feed-reader/src/server.ts"

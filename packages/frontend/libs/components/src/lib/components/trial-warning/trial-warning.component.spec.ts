@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TrialWarningComponent } from './trial-warning.component';
 import {
@@ -13,21 +13,20 @@ describe('TrialWarningComponent', () => {
   let component: TrialWarningComponent;
   let fixture: ComponentFixture<TrialWarningComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TrialWarningComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 
     fixture = TestBed.createComponent(TrialWarningComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

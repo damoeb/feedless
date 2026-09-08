@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InteractiveWebsiteModalComponent } from './interactive-website-modal.component';
 import {
   ApolloMockController,
@@ -12,14 +12,13 @@ describe('InteractiveWebsiteModalComponent', () => {
   let component: InteractiveWebsiteModalComponent;
   let fixture: ComponentFixture<InteractiveWebsiteModalComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InteractiveWebsiteModalComponent, AppTestModule.withDefaults()],
     }).compileComponents();
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 
@@ -42,7 +41,7 @@ describe('InteractiveWebsiteModalComponent', () => {
       },
     };
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

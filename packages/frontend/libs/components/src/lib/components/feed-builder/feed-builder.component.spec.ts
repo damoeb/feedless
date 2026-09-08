@@ -18,8 +18,8 @@ import { ServerConfigService, SessionService } from '../../services';
 describe('FeedBuilderComponent', () => {
   let component: FeedBuilderComponent;
   let fixture: ComponentFixture<FeedBuilderComponent>;
-  const mockIsSaasFn = jest.fn<boolean, []>();
-  const mockRequestAnonymousFeedToken = jest.fn<string, []>();
+  const mockIsSaasFn = vi.fn<() => boolean>();
+  const mockRequestAnonymousFeedToken = vi.fn<() => string>();
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({

@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { AppTestModule, mockRepository } from '@feedless/testing';
 import { EventSourcesPage } from './event-sources.page';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -8,7 +8,7 @@ describe('EventSourcesPage', () => {
   let component: EventSourcesPage;
   let fixture: ComponentFixture<EventSourcesPage>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         EventSourcesPage,
@@ -22,7 +22,7 @@ describe('EventSourcesPage', () => {
         {
           provide: PageService,
           useValue: {
-            setMetaTags: jest.fn(),
+            setMetaTags: vi.fn(),
           },
         },
       ],
@@ -34,7 +34,7 @@ describe('EventSourcesPage', () => {
     fixture = TestBed.createComponent(EventSourcesPage);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

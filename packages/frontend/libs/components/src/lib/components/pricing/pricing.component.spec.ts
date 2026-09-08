@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PricingComponent } from './pricing.component';
 import { AppTestModule, mockPlans, mockProducts } from '@feedless/testing';
@@ -10,7 +10,7 @@ describe('PricingComponent', () => {
   let component: PricingComponent;
   let fixture: ComponentFixture<PricingComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         PricingComponent,
@@ -24,8 +24,6 @@ describe('PricingComponent', () => {
       ],
     }).compileComponents();
 
-    const appConfigService = TestBed.inject(AppConfigService);
-    appConfigService.getAllAppConfigs = () => Promise.resolve([]);
 
     fixture = TestBed.createComponent(PricingComponent);
     component = fixture.componentInstance;
@@ -33,7 +31,7 @@ describe('PricingComponent', () => {
     componentRef.setInput('vertical', GqlVertical.RssProxy);
 
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();
