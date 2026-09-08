@@ -1,4 +1,4 @@
-import { NamedLatLon } from '@feedless/core';
+import type { NamedLatLon } from '@feedless/core';
 import { isArray, omit } from 'lodash-es';
 
 export function getCachedLocations(): NamedLatLon[] {
