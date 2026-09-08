@@ -208,14 +208,14 @@ spec:
             - name: feedless-cert-volume
               mountPath: /usr/feedless/feedless.pem
               subPath: feedless.pem
-          livenessProbe:
-            httpGet:
-              path: /actuator/health
-              port: 8080
-            initialDelaySeconds: 20
-            periodSeconds: 20
-            timeoutSeconds: 6
-            failureThreshold: 4
+      #          livenessProbe:
+      #            httpGet:
+      #              path: /actuator/health
+      #              port: 8080
+      #            initialDelaySeconds: 20
+      #            periodSeconds: 20
+      #            timeoutSeconds: 6
+      #            failureThreshold: 4
       volumes:
         - name: feedless-cert-volume
           secret:
