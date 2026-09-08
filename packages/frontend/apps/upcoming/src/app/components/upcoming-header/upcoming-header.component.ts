@@ -465,7 +465,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
     try {
       const { countryCode, area, place } = await parseLocationFromUrl(
         this.activatedRoute.snapshot,
-        this.openStreetMapService,
+        this.adminGeoService,
       );
       const url = renderPath(
         upcomingBaseRoute.events.countryCode.region.place.dateTime,

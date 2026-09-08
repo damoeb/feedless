@@ -16,7 +16,7 @@ import {
   str,
   template,
 } from 'typesafe-routes';
-import { OpenStreetMapService } from '@feedless/geo';
+import { AdminGeoService, GeoSearchService } from '@feedless/geo';
 import { inject } from '@angular/core';
 import { EventService, LocalizedEvent } from './event.service';
 
@@ -100,7 +100,7 @@ export function parseDateFromUrl(params: Params): {
 
 export async function parseLocationFromUrl(
   activatedRoute: ActivatedRouteSnapshot,
-  openStreetMapService: OpenStreetMapService,
+  geoService: GeoSearchService,
 ): Promise<NamedLatLon> {
   const err = Error('Cannot parse location from url');
 
@@ -111,7 +111,7 @@ export async function parseLocationFromUrl(
     );
 
     if (countryCode && region && place) {
-      const results = await openStreetMapService.searchByObject({
+      const results = await geoService.searchByObject({
         area: region,
         countryCode,
         place,
@@ -138,10 +138,10 @@ const eventsResolver: ResolveFn<Promise<EventsResolverData>> = async (
   route,
 ): Promise<EventsResolverData> => {
   const eventService = inject(EventService);
-  const openStreetMapService = inject(OpenStreetMapService);
+  const geoService = inject(AdminGeoService);
   const appConfigService = inject(AppConfigService);
 
-  const latlng = await parseLocationFromUrl(route, openStreetMapService);
+  const latlng = await parseLocationFromUrl(route, geoService);
   const repositoryId = appConfigService.customProperties[
     'eventRepositoryId'
   ] as any;

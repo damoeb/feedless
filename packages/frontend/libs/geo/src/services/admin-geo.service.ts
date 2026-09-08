@@ -75,7 +75,9 @@ export class AdminGeoService implements GeoSearchService {
     if (matches.length > 0) {
       return matches;
     }
-    return this.searchByQuery(`${countryCode} ${area} ${place}`);
+    // Place first: the SearchServer ranks by leading term, so
+    // `CH Zürich Hedingen` returns the city of Zürich rather than Hedingen.
+    return this.searchByQuery([place, area].filter(Boolean).join(' '));
   }
 
   async searchByQuery(query: string): Promise<NamedLatLon[]> {

@@ -52,7 +52,11 @@ import { UpcomingFooterComponent } from '../../components/upcoming-footer/upcomi
 import { EventService, LocalizedEvent } from '../../event.service';
 import { InlineCalendarComponent } from '../../components/inline-calendar/inline-calendar.component';
 import { renderPath } from 'typesafe-routes';
-import { getCachedLocations, OpenStreetMapService } from '@feedless/geo';
+import {
+  AdminGeoService,
+  getCachedLocations,
+  OpenStreetMapService,
+} from '@feedless/geo';
 import { EventDetailModalComponent } from '../../components/event-detail-modal/event-detail-modal.component';
 import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
 import { SearchAboButtonComponent } from '../../components/search-abo-button/search-abo-button.component';
@@ -164,6 +168,7 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   private readonly locationService = inject(Location);
   private readonly pageService = inject(PageService);
   private readonly openStreetMapService = inject(OpenStreetMapService);
+  private readonly adminGeoService = inject(AdminGeoService);
   private readonly appConfigService = inject(AppConfigService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
@@ -201,7 +206,7 @@ export class EventCalendarPage implements OnInit, OnDestroy {
           try {
             this.namedLatLon = await parseLocationFromUrl(
               this.activatedRoute.snapshot,
-              this.openStreetMapService,
+              this.adminGeoService,
             );
             this.saveLocation(this.namedLatLon);
 
