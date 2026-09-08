@@ -1,4 +1,5 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import type { MockedObject } from 'vitest';
 import { EventCalendarPage } from './event-calendar.page';
 import {
   AppTestModule,
@@ -20,11 +21,11 @@ describe('EventCalendarPage', () => {
   let appConfigService: AppConfigService;
   let eventRepositoryId: string;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     eventService = {
-      fetchEventsBetweenDates: jest.fn().mockReturnValue([]),
-      findAllByRepositoryId: jest.fn().mockReturnValue(Promise.resolve([])),
-    } as any as jest.Mocked<EventService>;
+      fetchEventsBetweenDates: vi.fn().mockReturnValue([]),
+      findAllByRepositoryId: vi.fn().mockReturnValue(Promise.resolve([])),
+    } as any as MockedObject<EventService>;
     eventRepositoryId = Math.random().toString(16);
 
     appConfigService = {
@@ -32,7 +33,7 @@ describe('EventCalendarPage', () => {
         eventRepositoryId,
       },
       getActiveProductConfigChange: () => of({}),
-    } as any as jest.Mocked<AppConfigService>;
+    } as any as MockedObject<AppConfigService>;
 
     await TestBed.configureTestingModule({
       providers: [
@@ -59,7 +60,7 @@ describe('EventCalendarPage', () => {
 
     fixture = TestBed.createComponent(EventCalendarPage);
     const router = TestBed.inject(Router);
-    jest.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
+    vi.spyOn(router, 'navigateByUrl').mockResolvedValue(true);
     component = fixture.componentInstance;
 
     component.date = dayjs();
@@ -67,7 +68,7 @@ describe('EventCalendarPage', () => {
 
     await component.ngOnInit();
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

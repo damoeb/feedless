@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TableComponent } from './table.component';
 import { AppTestModule } from '@feedless/testing';
@@ -7,7 +7,7 @@ describe('TableComponent', () => {
   let component: TableComponent<any>;
   let fixture: ComponentFixture<TableComponent<any>>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TableComponent, AppTestModule.withDefaults()],
     }).compileComponents();
@@ -17,7 +17,7 @@ describe('TableComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput('rows', [{ id: 1, name: 'Test' }]);
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

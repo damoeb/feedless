@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProductHeadlineComponent } from './product-headline.component';
 
@@ -6,7 +6,7 @@ describe('ProductHeadlineComponent', () => {
   let component: ProductHeadlineComponent;
   let fixture: ComponentFixture<ProductHeadlineComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ProductHeadlineComponent],
     }).compileComponents();
@@ -16,7 +16,7 @@ describe('ProductHeadlineComponent', () => {
     const componentRef = fixture.componentRef;
     componentRef.setInput('title', '');
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

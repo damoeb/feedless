@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { RepositoryModalComponent } from './repository-modal.component';
 import {
@@ -14,14 +14,13 @@ describe('RepositoryModalComponent', () => {
   let component: RepositoryModalComponent;
   let fixture: ComponentFixture<RepositoryModalComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [AppTestModule.withDefaults(), RepositoryModalComponent],
     }).compileComponents();
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 
@@ -29,7 +28,7 @@ describe('RepositoryModalComponent', () => {
     component = fixture.componentInstance;
     component.repository = mocks.repository;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

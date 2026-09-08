@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InteractiveWebsiteComponent } from './interactive-website.component';
 import { AppTestModule, mockScrape } from '@feedless/testing';
@@ -9,7 +9,7 @@ describe('InteractiveWebsiteComponent', () => {
   let component: InteractiveWebsiteComponent;
   let fixture: ComponentFixture<InteractiveWebsiteComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         InteractiveWebsiteComponent,
@@ -29,7 +29,7 @@ describe('InteractiveWebsiteComponent', () => {
     );
 
     fixture.detectChanges();
-  }));
+  });
 
   afterEach(() => {
     if (component && typeof component.ngOnDestroy === 'function') {

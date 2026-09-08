@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ImportButtonComponent } from './import-button.component';
 import {
@@ -18,7 +18,7 @@ describe('ImportButtonComponent', () => {
   let component: ImportButtonComponent;
   let fixture: ComponentFixture<ImportButtonComponent>;
 
-  beforeEach(waitForAsync(async () => {
+  beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         ImportButtonComponent,
@@ -39,14 +39,13 @@ describe('ImportButtonComponent', () => {
 
     await mockServerSettings(
       TestBed.inject(ApolloMockController),
-      TestBed.inject(ServerConfigService),
       TestBed.inject(ApolloClient),
     );
 
     fixture = TestBed.createComponent(ImportButtonComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
-  }));
+  });
 
   it('should create', () => {
     expect(component).toBeTruthy();

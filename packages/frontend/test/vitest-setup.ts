@@ -37,3 +37,22 @@ for (const proto of [
  */
 const { initialize } = await import('@ionic/core/components');
 initialize();
+
+/**
+ * jsdom implements no media queries at all. Both Ionic and the app's own colour-scheme
+ * detection call `matchMedia` during construction, so a query that matches nothing is
+ * enough to keep them on their default (light) branch.
+ */
+if (typeof window !== 'undefined' && !window.matchMedia) {
+  window.matchMedia = (query: string) =>
+    ({
+      matches: false,
+      media: query,
+      onchange: null,
+      addListener: () => undefined,
+      removeListener: () => undefined,
+      addEventListener: () => undefined,
+      removeEventListener: () => undefined,
+      dispatchEvent: () => false,
+    }) as MediaQueryList;
+}
