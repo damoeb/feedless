@@ -7,7 +7,7 @@ set -e
 
 # Configuration
 CONTAINER_NAME="feedless-upcoming-latest-test"
-PORT="8080"
+PORT="${PORT:-8080}"
 BASE_URL="http://localhost:${PORT}"
 
 get_date_days_ago() {
