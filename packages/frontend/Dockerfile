@@ -11,10 +11,8 @@ ENV APP_VERSION=${APP_VERSION} \
     NODE_ENV=production \
     PORT=80
 
-# Install production dependencies only (needed for Node server runtime)
-COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
-
+# No npm install: the Angular SSR build bundles every runtime dependency into
+# server/server.mjs, so the image needs nothing but the dist output and node.
 COPY dist/apps/upcoming ./
 
 EXPOSE 80

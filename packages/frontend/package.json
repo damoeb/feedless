@@ -27,7 +27,6 @@
   "packageManager": "npm",
   "private": true,
   "dependencies": {
-    "@angular-devkit/build-angular": "~21.0.0",
     "@angular/animations": "~21.0.0",
     "@angular/common": "~21.0.0",
     "@angular/compiler": "~21.0.0",
@@ -69,6 +68,7 @@
     "zone.js": "~0.15.0"
   },
   "devDependencies": {
+    "@angular-devkit/build-angular": "~21.0.0",
     "@angular-devkit/core": "~21.0.0",
     "@angular-devkit/schematics": "~21.0.0",
     "@angular/build": "~21.0.0",
