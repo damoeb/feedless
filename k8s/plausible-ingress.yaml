@@ -1,12 +1,18 @@
-# Explicit HTTP -> HTTPS redirect (more reliable than annotation when using basic auth)
+# Basic auth for plausible.feedless.org.
+#
+# The previous traefik.ingress.kubernetes.io/auth-type|auth-secret|auth-realm
+# annotations are Traefik v1 syntax and are silently ignored by v2/v3 - the host
+# was served with no authentication at all. v2/v3 requires a BasicAuth Middleware.
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: plausible-force-https
+  name: plausible-basic-auth
+  # Must match the `default-` prefix in the router.middlewares annotation below.
+  namespace: default
 spec:
-  redirectScheme:
-    scheme: https
-    permanent: true
+  basicAuth:
+    secret: plausible-basic-auth
+    realm: "Authentication Required"
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -15,11 +21,8 @@ metadata:
   annotations:
     app.kubernetes.io/name: plausible-ingress
     cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/auth-type: basic
-    traefik.ingress.kubernetes.io/auth-secret: plausible-basic-auth
-    traefik.ingress.kubernetes.io/auth-realm: "Authentication Required"
-    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
-    traefik.ingress.kubernetes.io/router.middlewares: default-plausible-force-https@kubernetescrd
+    # HTTP -> HTTPS is handled cluster-wide by ports.web.redirectTo in traefik.yaml.
+    traefik.ingress.kubernetes.io/router.middlewares: default-plausible-basic-auth@kubernetescrd
 spec:
   ingressClassName: traefik
   tls:

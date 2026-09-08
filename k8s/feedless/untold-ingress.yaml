@@ -56,7 +56,6 @@ metadata:
   annotations:
     app.kubernetes.io/name: untold-ingress
     cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: traefik
   tls:

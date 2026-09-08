@@ -71,7 +71,7 @@ spec:
   secretName: rssproxy-migor-org-tls
   issuerRef:
     name: letsencrypt
-    kind: Issuer
+    kind: ClusterIssuer
   dnsNames:
     - api.rssproxy.migor.org
     - rssproxy.migor.org

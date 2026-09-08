@@ -5,5 +5,6 @@ metadata:
   namespace: default
 type: Opaque
 data:
-  # htpasswd -c auth myuser
-  auth: bXl1c2VyOiRhcHIxJEg4NmhBdkZyJGxmU0pXTjVockU4N2U2b0p2WGc4VjEK
+  # Traefik's BasicAuth middleware reads the `users` key (nginx-ingress uses `auth`).
+  # Regenerate with: htpasswd -nb <user> <password> | base64
+  users: bXl1c2VyOiRhcHIxJEg4NmhBdkZyJGxmU0pXTjVockU4N2U2b0p2WGc4VjEK

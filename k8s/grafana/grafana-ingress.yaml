@@ -5,7 +5,6 @@ metadata:
   annotations:
     app.kubernetes.io/name: grafana-ingress
     cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: traefik
   tls:

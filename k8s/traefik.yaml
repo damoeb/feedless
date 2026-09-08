@@ -1,5 +1,25 @@
-logs:
-  general:
-    level: DEBUG
-  access:
-    enabled: true
+# k3s reads Traefik's Helm values from a HelmChartConfig, not from a bare values
+# fragment - without the wrapper this file is not a valid manifest and
+# `kubectl apply` rejects it.
+#
+# ports.web.redirectTo is the cluster-wide HTTP -> HTTPS redirect. It acts at the
+# entrypoint, before routing, so it covers every Ingress *and* IngressRoute
+# without per-object annotations.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+  name: traefik
+  namespace: kube-system
+spec:
+  valuesContent: |-
+    logs:
+      general:
+        level: DEBUG
+      access:
+        enabled: true
+    # Traefik Helm chart >= v25 (current k3s) takes the object form below.
+    # On an older chart this key is a plain string: `redirectTo: websecure`.
+    ports:
+      web:
+        redirectTo:
+          port: websecure

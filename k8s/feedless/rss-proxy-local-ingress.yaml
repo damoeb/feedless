@@ -43,7 +43,6 @@ metadata:
 #  namespace: feedless
 spec:
   entryPoints:
-    - web
     - websecure
   routes:
     # Handle `/`
@@ -96,7 +95,6 @@ metadata:
   annotations:
     app.kubernetes.io/name: rss-proxy-ingress
     cert-manager.io/cluster-issuer: letsencrypt
-    traefik.ingress.kubernetes.io/force-ssl-redirect: "true"
 spec:
   ingressClassName: traefik
   tls:
