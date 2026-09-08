@@ -1,4 +1,10 @@
-import { inject, Injectable, isDevMode, PLATFORM_ID } from '@angular/core';
+import {
+  inject,
+  Injectable,
+  InjectionToken,
+  isDevMode,
+  PLATFORM_ID,
+} from '@angular/core';
 import {
   GqlAuthType,
   GqlProfileName,
@@ -16,6 +22,16 @@ import { isPlatformBrowser } from '@angular/common';
 
 export type BuildInfo = GqlServerSettingsQuery['serverSettings']['build'];
 
+/**
+ * Server-side config. Provided by the app's server bootstrap, which reads
+ * config.json from disk. Without it the server would have to fetch the config
+ * over HTTP from the live site, which makes both prerendering and SSR depend on
+ * a reachable deployment.
+ */
+export const SERVER_APP_CONFIG = new InjectionToken<VerticalAppConfig>(
+  'SERVER_APP_CONFIG',
+);
+
 export interface ConfigError {
   header: string;
   message: string;
@@ -29,6 +45,9 @@ export interface ConfigError {
 export class ServerConfigService {
   private readonly httpClient = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
+  private readonly serverAppConfig = inject(SERVER_APP_CONFIG, {
+    optional: true,
+  });
 
   apiUrl!: string;
   private profiles!: GqlProfileName[];
@@ -92,6 +111,9 @@ export class ServerConfigService {
   }
 
   private async fetchConfigViaHttp(): Promise<VerticalAppConfig> {
+    if (!isPlatformBrowser(this.platformId) && this.serverAppConfig) {
+      return this.serverAppConfig;
+    }
     return firstValueFrom(
       this.httpClient.get<VerticalAppConfig>(this.getConfigJsonUrl()),
     );
