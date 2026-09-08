@@ -3,17 +3,16 @@ spring:
     add-properties: false
   main:
     banner-mode: off
+  # host/port/credentials/auth/starttls/test-connection live in
+  # application-mail.yaml, which the `mail` profile activates after this one and
+  # therefore wins. Only the timeouts are set here - they overlap with nothing.
   mail:
-    test-connection: true
     properties:
       mail:
         smtp:
-          auth: true
           connectiontimeout: 10000
           timeout: 10000
           writetimeout: 10000
-          starttls:
-            enable: true
 
 logging:
   level:

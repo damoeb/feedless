@@ -1,0 +1,56 @@
+package org.migor.feedless.mail
+
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.springframework.core.io.ClassPathResource
+import org.yaml.snakeyaml.Yaml
+
+/**
+ * Guards the two defects that crash-looped feedless-core in production: the
+ * `mail` profile ships mailpit defaults and is active in the `saas` profile
+ * group, so a dev-only SMTP host reached the cluster.
+ */
+class MailPropertiesTest {
+
+  @Suppress("UNCHECKED_CAST")
+  private fun load(name: String): Map<String, Any> =
+    Yaml().load(ClassPathResource(name).inputStream) as Map<String, Any>
+
+  @Suppress("UNCHECKED_CAST")
+  private fun at(root: Map<String, Any>, vararg path: String): Any? =
+    path.fold(root as Any?) { node, key -> (node as? Map<String, Any>)?.get(key) }
+
+  @Test
+  fun `startup is never gated on SMTP reachability`() {
+    // spring.mail.test-connection=true makes MailSenderValidatorAutoConfiguration
+    // connect in its constructor, so an unreachable mail server aborts the
+    // context refresh and takes the whole API down.
+    listOf("application-mail.yaml", "application-prod.yaml").forEach { file ->
+      val value = at(load(file), "spring", "mail", "test-connection")
+      assertThat(value)
+        .describedAs("spring.mail.test-connection in %s must not default to true", file)
+        .isNotEqualTo(true)
+    }
+  }
+
+  @Test
+  fun `smtp properties sit under spring_mail_properties`() {
+    val mail = load("application-mail.yaml")
+    // Previously nested under `spring.properties.mail.smtp`, one level too high,
+    // so Spring never bound them and smtp.auth stayed on.
+    assertThat(at(mail, "spring", "properties"))
+      .describedAs("spring.properties is not a key Spring Boot binds")
+      .isNull()
+    assertThat(at(mail, "spring", "mail", "properties", "mail", "smtp", "auth")).isNotNull()
+  }
+
+  @Test
+  fun `connection settings are env-overridable`() {
+    val mail = load("application-mail.yaml")
+    listOf("host", "port", "username", "password", "test-connection").forEach { key ->
+      assertThat(at(mail, "spring", "mail", key).toString())
+        .describedAs("spring.mail.%s must be overridable per deployment", key)
+        .startsWith("\${")
+    }
+  }
+}

@@ -1,17 +1,25 @@
-# mailpit (docker compose up -d mailpit)
+# Defaults target mailpit for local development (docker compose up -d mailpit).
+# Every connection setting is env-overridable so a real deployment can point at
+# its own SMTP server without a code change. This file is the single source of
+# truth for spring.mail: the `mail` profile is part of the `saas` profile group
+# and is activated *after* `prod`, so values here win over application-prod.yaml.
 app:
   mail:
-    sender: feedless-sender@localhost
+    sender: ${APP_MAIL_SENDER:feedless-sender@localhost}
 spring:
   mail:
-    host: localhost
-    port: 1025
-    username:
-    password:
-    test-connection: true
-  properties:
-    mail:
-      smtp:
-        auth: false
-        starttls:
-          enable: false
+    host: ${APP_MAIL_HOST:localhost}
+    port: ${APP_MAIL_PORT:1025}
+    username: ${APP_MAIL_USERNAME:}
+    password: ${APP_MAIL_PASSWORD:}
+    # Never gate application startup on SMTP reachability. With this enabled,
+    # MailSenderValidatorAutoConfiguration connects in its constructor and an
+    # unreachable mail server aborts the context refresh - the whole API
+    # crash-loops because mail is down.
+    test-connection: ${APP_MAIL_TEST_CONNECTION:false}
+    properties:
+      mail:
+        smtp:
+          auth: ${APP_MAIL_SMTP_AUTH:false}
+          starttls:
+            enable: ${APP_MAIL_SMTP_STARTTLS:false}
