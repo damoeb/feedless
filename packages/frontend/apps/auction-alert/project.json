@@ -71,7 +71,10 @@
     },
     "test": {
       "executor": "@angular/build:unit-test",
-      "options": {}
+      "options": {
+        "runnerConfig": true,
+        "setupFiles": ["test/vitest-setup.ts"]
+      }
     },
     "serve-static": {
       "continuous": true,

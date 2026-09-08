@@ -1,4 +1,3 @@
-/// <reference types="jest" />
 import { NgModule } from '@angular/core';
 import { ApolloClient, DocumentNode } from '@apollo/client/core';
 import { provideHttpClientTesting } from '@angular/common/http/testing';
@@ -89,7 +88,7 @@ export class ApolloMockController {
 
   client() {
     return {
-      query: jest.fn().mockImplementation((args) => {
+      query: (args: { query: DocumentNode }) => {
         const mock = this.mockedRequests
           .filter((it) => it.query === args.query)
           .find((it) => isUndefined(it.condition) || it.condition(args));
@@ -109,8 +108,8 @@ export class ApolloMockController {
           loading: false,
           networkStatus: 7,
         });
-      }),
-      mutate: jest.fn().mockImplementation((args) => {
+      },
+      mutate: (args: { mutate: DocumentNode }) => {
         const mock = this.mockedRequests
           .filter((it) => it.mutate === args.mutate)
           .find((it) => isUndefined(it.condition) || it.condition(args));
@@ -130,7 +129,7 @@ export class ApolloMockController {
           loading: false,
           networkStatus: 7,
         });
-      }),
+      },
       // subscribe: jasmine.createSpy('subscribe').and.callFake((args) => {
       //   if (args.mutate === AuthAnonymous) {
       //     return Promise.resolve({
@@ -504,7 +503,7 @@ export async function mockServerSettings(
     attributionHtml: '',
     product: GqlVertical.Feedless,
   };
-  httpClient.get = jest.fn().mockReturnValue(of(mockConfig));
+  httpClient.get = (() => of(mockConfig)) as unknown as typeof httpClient.get;
   // await serverSettingsService.fetchServerSettings();
   return apolloMockController;
 }
