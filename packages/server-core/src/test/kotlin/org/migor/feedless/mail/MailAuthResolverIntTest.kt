@@ -21,6 +21,7 @@ import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Vertical
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.oneTimePassword.OneTimePasswordRepository
 import org.migor.feedless.report.ReportUseCase
 import org.migor.feedless.user.UserGuard
@@ -61,7 +62,8 @@ import java.util.*
     MailService::class,
     UserRepository::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class
+    OAuth2AuthorizedClientService::class,
+    GroupRepository::class,
   ]
 )
 @Import(

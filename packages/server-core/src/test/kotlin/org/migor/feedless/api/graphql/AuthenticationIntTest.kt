@@ -15,6 +15,7 @@ import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
@@ -65,6 +66,7 @@ const val rootSecretKey = "barBarBarKey"
     ServerConfigResolver::class,
     UserGroupAssignmentRepository::class,
     UserGuard::class,
+    GroupRepository::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class)

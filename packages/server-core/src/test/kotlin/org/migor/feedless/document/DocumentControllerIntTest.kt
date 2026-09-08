@@ -15,6 +15,7 @@ import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.eq
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.AuthService
 import org.migor.feedless.session.CookieProvider
@@ -56,7 +57,8 @@ import java.time.LocalDateTime
     DocumentRepository::class,
     UserRepository::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class
+    OAuth2AuthorizedClientService::class,
+    GroupRepository::class,
   ]
 )
 @ActiveProfiles(

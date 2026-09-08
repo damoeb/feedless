@@ -12,6 +12,7 @@ import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
@@ -51,7 +52,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     UserSecretRepository::class,
     UserGuard::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class
+    OAuth2AuthorizedClientService::class,
+    GroupRepository::class,
   ]
 )
 @Import(

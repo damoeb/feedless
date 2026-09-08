@@ -16,6 +16,7 @@ import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.generated.DgsClient
+import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.license.LicenseUseCase
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.secrets.UserSecretUseCase
@@ -60,6 +61,7 @@ import kotlin.time.Duration.Companion.seconds
     UserSecretUseCase::class,
     UserRepository::class,
     OneTimePasswordService::class,
+    GroupRepository::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)
