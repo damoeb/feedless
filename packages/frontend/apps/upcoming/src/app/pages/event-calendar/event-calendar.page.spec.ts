@@ -150,11 +150,14 @@ describe('EventCalendarPage', () => {
       ).toBe(0);
     });
 
-    it('renders the start time as visible text', () => {
-      const time = (fixture.nativeElement as HTMLElement).querySelector(
-        '.event-details time[datetime]',
-      );
-      expect(time?.textContent).toContain('19:30');
+    /**
+     * Der Gruppentitel nennt den Ort bereits, und die Uhrzeit gehört auf die
+     * Event-Detailseite. In der Übersicht ist beides Rauschen.
+     */
+    it('shows neither time nor place per entry', () => {
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelectorAll('.event-details').length).toBe(0);
+      expect(element.querySelectorAll('.event-location').length).toBe(0);
     });
   });
 

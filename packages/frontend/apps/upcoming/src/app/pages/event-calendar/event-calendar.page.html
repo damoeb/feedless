@@ -133,12 +133,6 @@
                                         <header>
                                           <h3> {{ cleanTitle(event.title) }} </h3>
                                         </header>
-                                        <div class="event-details">
-                                          @if (formatTime(event.startingAt); as startTime) {
-                                            <time [attr.datetime]="toIsoString(event.startingAt)">{{ startTime }} Uhr</time>
-                                          }
-                                          <span class="event-location">{{ place.place.displayName }}</span>
-                                        </div>
                                       </article>
                                     </a>
                                   }
