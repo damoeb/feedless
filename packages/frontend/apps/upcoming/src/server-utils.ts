@@ -2,6 +2,72 @@ import dayjs from 'dayjs';
 import { safeParsePath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
 import { Request, Response } from 'express';
+import { getCachedLocations } from '@feedless/geo';
+
+export type EventsPath = {
+  countryCode: string;
+  region?: string;
+  place?: string;
+  rest: string[];
+};
+
+const EVENTS_PREFIX = '/events/in/';
+
+/**
+ * Zerlegt `/events/in/CH/ZG/Zug/heute` in seine Bestandteile. Liefert null für
+ * jeden Pfad ausserhalb von /events/in, damit der Aufrufer ihn unverändert an
+ * Angular weiterreicht.
+ */
+export function parseEventsPath(pathname: string): EventsPath | null {
+  if (!pathname.startsWith(EVENTS_PREFIX)) {
+    return null;
+  }
+  const segments = pathname
+    .slice(EVENTS_PREFIX.length)
+    .split('/')
+    .filter((segment) => segment.length > 0)
+    .map((segment) => decodeURIComponent(segment));
+
+  if (segments.length === 0) {
+    return null;
+  }
+
+  const [countryCode, region, place, ...rest] = segments;
+  return { countryCode, region, place, rest };
+}
+
+const normalize = (value: string): string => value.trim().toLowerCase();
+
+/**
+ * Prüft Land, Kanton und Ort gegen die statische Ortsliste. Ohne diese Prüfung
+ * beantwortet jede erfundene Orts-URL mit 200 und erzeugt einen unbegrenzten
+ * Soft-404-Raum.
+ */
+export function isKnownLocation(path: EventsPath): boolean {
+  const locations = getCachedLocations();
+  const inCountry = locations.filter(
+    (location) =>
+      normalize(location.countryCode) === normalize(path.countryCode),
+  );
+  if (inCountry.length === 0) {
+    return false;
+  }
+  if (!path.region) {
+    return true;
+  }
+  const inRegion = inCountry.filter(
+    (location) => normalize(location.area) === normalize(path.region!),
+  );
+  if (inRegion.length === 0) {
+    return false;
+  }
+  if (!path.place) {
+    return true;
+  }
+  return inRegion.some(
+    (location) => normalize(location.place) === normalize(path.place!),
+  );
+}
 
 export type OutdatedResult =
   | { outdated: false }

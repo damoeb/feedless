@@ -8,7 +8,12 @@ import compression from 'compression';
 import express, { NextFunction, Request, Response } from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { checkOutdated, createAccessLogLine } from './server-utils';
+import {
+  checkOutdated,
+  createAccessLogLine,
+  isKnownLocation,
+  parseEventsPath,
+} from './server-utils';
 import { renderPath } from 'typesafe-routes';
 import { upcomingBaseRoute } from './app/upcoming-product-routes';
 import { isDevMode } from '@angular/core';
@@ -87,6 +92,11 @@ serveStatic();
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
+  const eventsPath = parseEventsPath(req.path);
+  if (eventsPath && !isKnownLocation(eventsPath)) {
+    return res.status(404).send('Not found');
+  }
+
   const outdated = checkOutdated(req.path);
   if (outdated.outdated) {
     return res.redirect(
