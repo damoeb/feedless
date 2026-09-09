@@ -134,26 +134,51 @@ export type EventsResolverData = {
   date: Dayjs;
 };
 
-const eventsResolver: ResolveFn<Promise<EventsResolverData>> = async (
-  route,
-): Promise<EventsResolverData> => {
+/**
+ * Never rejects. A rejected resolver aborts the navigation, so Angular SSR
+ * renders nothing, `angularApp.handle()` resolves to null and express answers
+ * its default 404 - an api outage would take every relative-date url in the
+ * sitemap down with it. EventCalendarPage already tolerates missing data and
+ * refetches on hydration, so degrade as far as the failure requires and let
+ * the page render.
+ */
+export const eventsResolver: ResolveFn<
+  Promise<EventsResolverData | null>
+> = async (route): Promise<EventsResolverData | null> => {
   const eventService = inject(EventService);
   const geoService = inject(AdminGeoService);
   const appConfigService = inject(AppConfigService);
 
-  const latlng = await parseLocationFromUrl(route, geoService);
+  const { date } = parseDateFromUrl(route.params);
+
+  let latlng: NamedLatLon;
+  try {
+    latlng = await parseLocationFromUrl(route, geoService);
+  } catch (e) {
+    // Unresolvable place, or the geo backend is down - either way there is
+    // nothing to anchor the page to.
+    console.error('eventsResolver: cannot resolve location', e);
+    return null;
+  }
+
   const repositoryId = appConfigService.customProperties[
     'eventRepositoryId'
   ] as any;
-  const { date } = parseDateFromUrl(route.params);
 
-  const events = await eventService.fetchEventsBetweenDates(
-    date,
-    repositoryId,
-    latlng.lat,
-    latlng.lng,
-  );
-  return { events, latlng, date };
+  try {
+    const events = await eventService.fetchEventsBetweenDates(
+      date,
+      repositoryId,
+      latlng.lat,
+      latlng.lng,
+    );
+    return { events, latlng, date };
+  } catch (e) {
+    // The location is known, so the page still has its heading, meta tags and
+    // canonical url. Only the event list is missing.
+    console.error('eventsResolver: cannot fetch events', e);
+    return { events: [], latlng, date };
+  }
 };
 
 // const eventResolver: ResolveFn<LocalizedEvent> = (route) => {
