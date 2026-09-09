@@ -13,6 +13,7 @@ import {
   getLegacyRedirect,
   isKnownLocation,
   parseEventsPath,
+  secondsUntilMidnight,
 } from './server-utils';
 import { isDevMode } from '@angular/core';
 
@@ -105,6 +106,15 @@ app.use('/**', (req, res, next) => {
       return res.status(404).send('Not found');
     }
   }
+
+  // Der Seiteninhalt wechselt einmal pro Tag. `max-age=0` hält den
+  // Browser-Cache aussen vor, `s-maxage` gilt für CDN und Reverse Proxy, und
+  // `stale-while-revalidate` verhindert, dass um Mitternacht alle Kanten
+  // gleichzeitig auf den SSR durchschlagen.
+  res.setHeader(
+    'Cache-Control',
+    `public, max-age=0, s-maxage=${secondsUntilMidnight(new Date())}, stale-while-revalidate=3600`,
+  );
 
   angularApp
     .handle(req)

@@ -2,6 +2,7 @@ import {
   getLegacyRedirect,
   isKnownLocation,
   parseEventsPath,
+  secondsUntilMidnight,
 } from './server-utils';
 
 describe('parseEventsPath', () => {
@@ -126,5 +127,18 @@ describe('getLegacyRedirect', () => {
 
   it('returns null for an unrecognised trailing segment', () => {
     expect(redirectFor('/events/in/CH/ZG/Zug/irgendwas')).toBeNull();
+  });
+});
+
+describe('secondsUntilMidnight', () => {
+  it('counts the seconds left in the day', () => {
+    expect(secondsUntilMidnight(new Date('2026-09-09T23:59:00Z'))).toBe(60);
+    expect(secondsUntilMidnight(new Date('2026-09-09T00:00:00Z'))).toBe(86400);
+  });
+
+  it('never returns zero, so the header is always usable', () => {
+    expect(
+      secondsUntilMidnight(new Date('2026-09-09T23:59:59.999Z')),
+    ).toBeGreaterThan(0);
   });
 });

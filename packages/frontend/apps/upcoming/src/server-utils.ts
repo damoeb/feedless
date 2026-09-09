@@ -115,6 +115,20 @@ export function getLegacyRedirect(path: EventsPath): string | null {
   return null;
 }
 
+/**
+ * Sekunden bis zum nächsten UTC-Mitternacht, mindestens eine. Der Inhalt einer
+ * Ortsseite wechselt genau einmal pro Tag; ohne Cache-Header hängt jeder Crawl
+ * am SSR-Rendering.
+ */
+export function secondsUntilMidnight(now: Date): number {
+  const midnight = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1,
+  );
+  return Math.max(1, Math.round((midnight - now.getTime()) / 1000));
+}
+
 export type RequestLog = {
   clientIp: string;
   timestamp: string;
