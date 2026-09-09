@@ -23,3 +23,11 @@ spring:
           auth: ${APP_MAIL_SMTP_AUTH:false}
           starttls:
             enable: ${APP_MAIL_SMTP_STARTTLS:false}
+
+management:
+  health:
+    mail:
+      # MailHealthIndicator opens an SMTP connection on every health check, so
+      # an unreachable mail server makes /actuator/health report DOWN -> 503 ->
+      # the liveness probe restarts the pod. Same reasoning as test-connection.
+      enabled: false

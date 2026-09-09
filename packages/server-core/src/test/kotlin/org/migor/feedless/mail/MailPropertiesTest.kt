@@ -45,6 +45,18 @@ class MailPropertiesTest {
   }
 
   @Test
+  fun `health is never gated on SMTP reachability`() {
+    // MailHealthIndicator opens an SMTP connection on every health check, so an
+    // unreachable mail server makes /actuator/health report DOWN -> 503 -> the
+    // kubernetes liveness probe restarts the pod every two minutes. Same class
+    // of defect as test-connection, one layer later in the lifecycle.
+    val value = at(load("application-mail.yaml"), "management", "health", "mail", "enabled")
+    assertThat(value)
+      .describedAs("management.health.mail.enabled must stay off")
+      .isEqualTo(false)
+  }
+
+  @Test
   fun `connection settings are env-overridable`() {
     val mail = load("application-mail.yaml")
     listOf("host", "port", "username", "password", "test-connection").forEach { key ->

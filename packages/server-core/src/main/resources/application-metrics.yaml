@@ -12,3 +12,10 @@ management:
 management.endpoints.web.exposure.include: health,info,prometheus
 #management.endpoint.health.show-details: always
 #management.metrics.export.prometheus.enabled: true
+
+# Probe groups for kubernetes: liveness = "is the jvm alive", readiness =
+# "can it serve traffic". Neither should be gated on external systems.
+management.endpoint.health.probes.enabled: true
+# Detail is needed to tell *which* indicator is DOWN; only for authenticated
+# callers, so the public probe endpoints stay a bare status.
+management.endpoint.health.show-details: when-authorized
