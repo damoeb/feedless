@@ -40,6 +40,7 @@ import {
 } from 'ionicons/icons';
 import { isDefined, NamedLatLon, Nullable } from '@feedless/core';
 import { cleanEventTitle } from '../../event-title';
+import { EVENT_DETAIL_PAGES_ENABLED } from '../../feature-flags';
 import { UpcomingHeaderComponent } from '../../components/upcoming-header/upcoming-header.component';
 import {
   IonChip,
@@ -174,6 +175,7 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   private readonly platformId = inject(PLATFORM_ID);
   private readonly recordService = inject(RecordService);
   protected isBrowser = isPlatformBrowser(this.platformId);
+  protected eventDetailsEnabled = EVENT_DETAIL_PAGES_ENABLED;
 
   date: Dayjs = dayjs();
   readonly now: Dayjs = dayjs();
@@ -542,7 +544,9 @@ export class EventCalendarPage implements OnInit, OnDestroy {
               this.toSchemaOrgEvent(
                 event,
                 place.place,
-                this.getEventUrl(event, place.place),
+                this.eventDetailsEnabled
+                  ? `https://lokale.events${this.getEventUrl(event, place.place)}`
+                  : event.url,
               ),
             ),
           ),
@@ -607,7 +611,7 @@ export class EventCalendarPage implements OnInit, OnDestroy {
       // für fast jedes Event eine Falschangabe. Kein endDate aus demselben
       // Grund.
       startDate: startDate.format('YYYY-MM-DD'),
-      url: `https://lokale.events${eventPageUrl}`,
+      url: eventPageUrl,
       location: {
         '@type': 'Place',
         name: location.displayName,

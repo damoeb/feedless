@@ -125,21 +125,34 @@
                                       <!--                                      [routerLink]="createEventUrl(event)"-->
                                       <!--                                      class="localized-event localized-event&#45;&#45;clickable"-->
                                       <!--                                    >-->
-                                    <article class="localized-event">
-                                      <h3>
-                                        <a [routerLink]="getEventUrl(event, place.place)">
-                                          {{ cleanTitle(event.title) }}
-                                        </a>
-                                      </h3>
-                                      @if (event.url) {
-                                        <a
-                                          class="localized-event__source"
-                                          [href]="event.url"
-                                          rel="nofollow noopener"
-                                          [attr.title]="'Zur Quelle: ' + cleanTitle(event.title)"
-                                        >zur Quelle</a>
-                                      }
-                                    </article>
+                                    @if (eventDetailsEnabled) {
+                                      <article class="localized-event">
+                                        <h3>
+                                          <a [routerLink]="getEventUrl(event, place.place)">
+                                            {{ cleanTitle(event.title) }}
+                                          </a>
+                                        </h3>
+                                        @if (event.url) {
+                                          <a
+                                            class="localized-event__source"
+                                            [href]="event.url"
+                                            rel="nofollow noopener"
+                                            [attr.title]="'Zur Quelle: ' + cleanTitle(event.title)"
+                                          >zur Quelle</a>
+                                        }
+                                      </article>
+                                    } @else {
+                                      <a
+                                        [href]="event.url"
+                                        class="localized-event localized-event--clickable"
+                                      >
+                                        <article>
+                                          <header>
+                                            <h3> {{ cleanTitle(event.title) }} </h3>
+                                          </header>
+                                        </article>
+                                      </a>
+                                    }
                                   }
                                 </div>
                               }
