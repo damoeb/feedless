@@ -273,16 +273,14 @@ export const UPCOMING_ROUTES: Routes = [
   {
     path: template(upcomingBaseRoute._.events.countryCode),
     loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
+      import('./pages/country-hub/country-hub.page').then(
+        (m) => m.CountryHubPage,
       ),
   },
   {
     path: template(upcomingBaseRoute._.events.countryCode.region),
     loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
-      ),
+      import('./pages/region-hub/region-hub.page').then((m) => m.RegionHubPage),
   },
   {
     resolve: {
