@@ -1,4 +1,4 @@
-import { stripHtml } from './admin-geo.service';
+import { parsePlaceAndArea, stripHtml } from './admin-geo.service';
 
 /**
  * Die admin.ch SearchServer-Antwort liefert `label` mit einer eigenen
@@ -43,5 +43,88 @@ describe('stripHtml', () => {
   it('tolerates an empty or missing label', () => {
     expect(stripHtml('')).toBe('');
     expect(stripHtml(undefined)).toBe('');
+  });
+});
+
+/**
+ * Alle Fälle stammen aus echten Antworten von
+ * api3.geo.admin.ch/rest/services/ech/SearchServer, abgefragt am 2026-09-09.
+ */
+describe('parsePlaceAndArea', () => {
+  it('reads name and canton out of the bold label', () => {
+    expect(parsePlaceAndArea('<b>Riehen (BS)</b>', 'riehen bs')).toEqual({
+      place: 'Riehen',
+      area: 'BS',
+    });
+    expect(parsePlaceAndArea('<b>Hedingen (ZH)</b>', 'hedingen zh')).toEqual({
+      place: 'Hedingen',
+      area: 'ZH',
+    });
+  });
+
+  it('keeps the casing that detail throws away', () => {
+    // detail liefert 'bern be' - daraus wurde "Veranstaltungen in bern".
+    expect(parsePlaceAndArea('<b>Bern (BE)</b>', 'bern be')).toEqual({
+      place: 'Bern',
+      area: 'BE',
+    });
+  });
+
+  it('keeps hyphens, slashes and accents', () => {
+    expect(
+      parsePlaceAndArea('<b>La Chaux-de-Fonds (NE)</b>', 'la chaux-de-fonds ne'),
+    ).toEqual({ place: 'La Chaux-de-Fonds', area: 'NE' });
+    expect(
+      parsePlaceAndArea('<b>Biel/Bienne (BE)</b>', 'biel/bienne be'),
+    ).toEqual({ place: 'Biel/Bienne', area: 'BE' });
+    expect(parsePlaceAndArea('<b>Genève (GE)</b>', 'geneve ge')).toEqual({
+      place: 'Genève',
+      area: 'GE',
+    });
+  });
+
+  it('takes the canton from outside the bold part when it sits there', () => {
+    expect(
+      parsePlaceAndArea('<i>Ort</i> <b>Riehen</b> (BS) - Riehen', 'riehen riehen'),
+    ).toEqual({ place: 'Riehen', area: 'BS' });
+    expect(
+      parsePlaceAndArea(
+        '<b>Zug</b> (ZG) - Steinhausen,Baar,Zug',
+        'zug steinhausen,baar,zug',
+      ),
+    ).toEqual({ place: 'Zug', area: 'ZG' });
+  });
+
+  it('falls back to detail when the label carries no canton', () => {
+    expect(parsePlaceAndArea('<b>Zug</b>', 'zug zg')).toEqual({
+      place: 'Zug',
+      area: 'ZG',
+    });
+  });
+
+  it('ignores a detail token that is not a canton code', () => {
+    // Sonst stünde hier area: 'HAUSACKER'.
+    expect(
+      parsePlaceAndArea(
+        '<i>Bus</i> <b>Hedingen, Hausacker</b>',
+        'hedingen, hausacker 8582721 haltestelle bus',
+      ),
+    ).toEqual({ place: 'Hedingen, Hausacker', area: '' });
+  });
+
+  it('survives the newline the api sometimes puts inside the bold tag', () => {
+    expect(
+      parsePlaceAndArea(
+        '<b>Genève\n</b> (GE) - Genève,Cologny,Carouge (GE)',
+        'geneve\n geneve,cologny',
+      ),
+    ).toEqual({ place: 'Genève', area: 'GE' });
+  });
+
+  it('tolerates a missing label or detail', () => {
+    expect(parsePlaceAndArea(undefined, undefined)).toEqual({
+      place: '',
+      area: '',
+    });
   });
 });

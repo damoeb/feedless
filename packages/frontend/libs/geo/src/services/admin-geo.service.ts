@@ -64,6 +64,44 @@ export function stripHtml(html: string | undefined): string {
     .trim();
 }
 
+/**
+ * Ort und Kanton aus der SearchServer-Antwort.
+ *
+ * `detail` ist die normalisierte Suchform und durchgehend kleingeschrieben -
+ * daraus gelesen erscheint auf der Seite „Veranstaltungen in bern". Das `label`
+ * trägt die Schreibweise: der fett markierte Teil ist der Ortsname, das
+ * `(XX)` der Kanton. `detail` bleibt der Rückfall, aber nur wenn sein zweites
+ * Token wie ein Kantonskürzel aussieht - bei `<i>Bus</i> <b>Hedingen,
+ * Hausacker</b>` wäre es sonst „HAUSACKER".
+ */
+export function parsePlaceAndArea(
+  label: string | undefined,
+  detail: string | undefined,
+): { place: string; area: string } {
+  const cleanLabel = stripHtml(label);
+  const boldMatch = /<b>([\s\S]*?)<\/b>/.exec(label ?? '');
+  const bold = stripHtml(boldMatch?.[1]);
+
+  const boldWithCanton = /^(.*?)\s*\(([A-Za-z]{2})\)$/.exec(bold);
+  if (boldWithCanton) {
+    return {
+      place: boldWithCanton[1],
+      area: boldWithCanton[2].toUpperCase(),
+    };
+  }
+
+  const detailTokens = stripHtml(detail).split(' ');
+  const cantonFromLabel = /\(([A-Za-z]{2})\)/.exec(cleanLabel)?.[1];
+  const cantonFromDetail = /^[A-Za-z]{2}$/.test(detailTokens[1] ?? '')
+    ? detailTokens[1]
+    : undefined;
+
+  return {
+    place: bold || detailTokens[0] || cleanLabel,
+    area: (cantonFromLabel ?? cantonFromDetail ?? '').toUpperCase(),
+  };
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -130,13 +168,13 @@ export class AdminGeoService implements GeoSearchService {
     const a = result.attrs;
     const lat = a.lat ?? a.y ?? 0;
     const lng = a.lon ?? a.x ?? 0;
-    const detail = a.detail ?? '';
+    const { place, area } = parsePlaceAndArea(a.label, a.detail);
     return {
       lat: typeof lat === 'number' ? lat : parseFloat(String(lat)),
       lng: typeof lng === 'number' ? lng : parseFloat(String(lng)),
       countryCode: 'ch',
-      place: detail.split(' ')[0] ?? detail,
-      area: detail.split(' ')[1] ?? '',
+      place,
+      area,
       displayName: stripHtml(a.label),
     };
   }
