@@ -23,7 +23,9 @@ import { isPlatformBrowser, Location, NgClass } from '@angular/common';
 import {
   EventsResolverData,
   parseDateFromQuery,
+  DateLink,
   parseLocationFromUrl,
+  renderDateLink,
   renderDateUrl,
   renderPlaceUrl,
 } from '../../upcoming-product-routes';
@@ -648,11 +650,19 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     return `${base}?event=${encodeURIComponent(String((event as any).id))}`;
   }
 
-  getPlaceUrl(location: NamedLatLon): string {
+  createDateLink(
+    date: Nullable<Dayjs>,
+    location: Nullable<NamedLatLon> = null,
+  ): DateLink {
+    const { countryCode, region, place } = this.getLocationOrElse(location);
+    return renderDateLink(countryCode, region, place, date);
+  }
+
+  getPlaceLink(location: NamedLatLon): DateLink {
     if (!location) {
-      return '';
+      return { path: '', queryParams: {} };
     }
-    return this.createDateUrl(this.date, location);
+    return this.createDateLink(this.date, location);
   }
 
   // private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
@@ -736,6 +746,19 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     } else {
       return this.activatedRoute.snapshot.params as any;
     }
+  }
+
+  toIsoString(startingAt: number): string {
+    return dayjs(startingAt).toISOString();
+  }
+
+  /** Leerstring für Ganztages-Einträge, damit die Zeile dort entfällt. */
+  formatTime(startingAt: number): string {
+    const date = dayjs(startingAt);
+    if (date.hour() === 0 && date.minute() === 0) {
+      return '';
+    }
+    return date.locale('de').format('HH:mm');
   }
 
   cleanTitle(title: string) {
@@ -839,8 +862,8 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     );
   }
 
-  getDateUrlFactory() {
-    return this.createDateUrl.bind(this);
+  getDateLinkFactory() {
+    return (date: Dayjs): DateLink => this.createDateLink(date);
   }
 }
 

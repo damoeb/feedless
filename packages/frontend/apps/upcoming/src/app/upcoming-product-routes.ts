@@ -47,21 +47,46 @@ export function renderPlaceUrl(
   });
 }
 
+export type DateLink = {
+  path: string;
+  queryParams: Record<string, string>;
+};
+
 /**
  * Heute ist die nackte Ortsseite, jeder andere Tag hängt als `?date=` daran.
  * Der Canonical zeigt immer auf die parameterlose Form.
+ *
+ * Für `routerLink` getrennt nach Pfad und Query: bekommt `routerLink` einen
+ * String mit Query-String, kodiert Angular `?` und `=` als Pfadbestandteile
+ * und erzeugt `Zug%3Fdate%3D2026-09-12`.
  */
+export function renderDateLink(
+  countryCode: string,
+  region: string,
+  place: string,
+  date: Dayjs | null | undefined,
+): DateLink {
+  const path = renderPlaceUrl(countryCode, region, place);
+  if (!date || date.isSame(dayjs(), 'day')) {
+    return { path, queryParams: {} };
+  }
+  return { path, queryParams: { date: date.format('YYYY-MM-DD') } };
+}
+
+/** Dieselbe URL als String, für `navigateByUrl` und `replaceState`. */
 export function renderDateUrl(
   countryCode: string,
   region: string,
   place: string,
   date: Dayjs | null | undefined,
 ): string {
-  const base = renderPlaceUrl(countryCode, region, place);
-  if (!date || date.isSame(dayjs(), 'day')) {
-    return base;
-  }
-  return `${base}?date=${date.format('YYYY-MM-DD')}`;
+  const { path, queryParams } = renderDateLink(
+    countryCode,
+    region,
+    place,
+    date,
+  );
+  return queryParams['date'] ? `${path}?date=${queryParams['date']}` : path;
 }
 
 export async function parseLocationFromUrl(

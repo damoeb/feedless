@@ -11,6 +11,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import dayjs, { Dayjs, OpUnitType } from 'dayjs';
+import { DateLink } from '../../upcoming-product-routes';
 import { RouterLink } from '@angular/router';
 import { isPlatformBrowser, NgClass } from '@angular/common';
 import 'dayjs/locale/de';
@@ -43,7 +44,7 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   readonly paddingRight = input.required<number>();
   readonly minDate = input.required<Dayjs>();
   readonly maxDate = input.required<Dayjs>();
-  readonly dateUrlFactory = input.required<(date: Dayjs) => string>();
+  readonly dateLinkFactory = input.required<(date: Dayjs) => DateLink>();
   private readonly platformId = inject(PLATFORM_ID);
 
   dateWindow: DateWindowItem[] = [];
@@ -64,8 +65,8 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
     this.createDateWindow(this.date());
   }
 
-  getDateUrl(date: Dayjs): string {
-    return this.dateUrlFactory()(date);
+  getDateLink(date: Dayjs): DateLink {
+    return this.dateLinkFactory()(date);
   }
 
   isPast(day: Dayjs): boolean {
