@@ -34,7 +34,8 @@ export class AboutUsPage implements OnInit {
       publisher: 'lokale.events',
       category: 'Über uns',
       url: document.location.href,
-      lang: 'de',
+      lang: 'de-CH',
+      locale: 'de_CH',
       publishedAt: dayjs(),
       keywords: [
         'lokale.events',

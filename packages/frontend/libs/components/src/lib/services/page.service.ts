@@ -24,6 +24,8 @@ export type PageTags = {
   canonicalUrl?: string;
   robots?: string;
   viewport?: string;
+  /** Vorgabe de_DE, damit die übrigen Apps unverändert bleiben. */
+  locale?: string;
 };
 
 @Injectable({
@@ -102,7 +104,7 @@ export class PageService {
       { property: 'og:description', content: options.description },
       { property: 'og:url', content: options.url },
       { property: 'og:type', content: 'website' },
-      { property: 'og:locale', content: 'de_DE' },
+      { property: 'og:locale', content: options.locale ?? 'de_DE' },
     ];
 
     // Add image if provided

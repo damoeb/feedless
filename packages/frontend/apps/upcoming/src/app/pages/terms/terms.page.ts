@@ -34,7 +34,8 @@ export class TermsPage implements OnInit {
       publisher: 'lokale.events',
       category: 'Rechtliches',
       url: this.location.path(),
-      lang: 'de',
+      lang: 'de-CH',
+      locale: 'de_CH',
       publishedAt: dayjs(),
       keywords: [
         'AGB',
