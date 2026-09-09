@@ -10,11 +10,14 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   createAccessLogLine,
+  detailMatchesPlace,
+  EventsPath,
   getLegacyRedirect,
-  isKnownLocation,
+  isResolvableLocation,
   parseEventsPath,
   secondsUntilMidnight,
 } from './server-utils';
+import { SEARCH_SERVER } from '@feedless/geo';
 import { isDevMode } from '@angular/core';
 
 const app = express();
@@ -68,6 +71,40 @@ function serveStatic() {
   );
 }
 
+/**
+ * Ergebnisse der admin.ch-Rückfrage, damit ein Crawler, der dieselbe unbekannte
+ * URL wiederholt anfragt, nicht jedes Mal eine Anfrage auslöst.
+ */
+const locationLookupCache = new Map<string, boolean>();
+
+async function lookupLocation(path: EventsPath): Promise<boolean> {
+  const key = `${path.countryCode}/${path.region}/${path.place}`;
+  const cached = locationLookupCache.get(key);
+  if (cached !== undefined) {
+    return cached;
+  }
+  const params = new URLSearchParams({
+    searchText: [path.place, path.region].filter(Boolean).join(' '),
+    type: 'locations',
+    sr: '4326',
+    limit: '5',
+  });
+  const response = await fetch(`${SEARCH_SERVER}?${params.toString()}`, {
+    signal: AbortSignal.timeout(3000),
+  });
+  if (!response.ok) {
+    throw new Error(`SearchServer answered ${response.status}`);
+  }
+  const body = (await response.json()) as {
+    results?: { attrs?: { detail?: string } }[];
+  };
+  const resolvable = (body.results ?? []).some((result) =>
+    detailMatchesPlace(path.place ?? '', result.attrs?.detail ?? ''),
+  );
+  locationLookupCache.set(key, resolvable);
+  return resolvable;
+}
+
 function handleSignals() {
   process.on('SIGINT', () => {
     console.log('SIGINT received. Shutting down...');
@@ -90,7 +127,7 @@ serveStatic();
 /**
  * Handle all other requests by rendering the Angular application.
  */
-app.use('/**', (req, res, next) => {
+app.use('/**', async (req, res, next) => {
   // `/**` ist für express ein Mount-Präfix: innerhalb des Handlers ist
   // `req.path` immer `/` und der tatsächliche Pfad steht in `req.baseUrl`.
   // `originalUrl` ist die einzige Quelle, die ungekürzt bleibt.
@@ -102,7 +139,7 @@ app.use('/**', (req, res, next) => {
     if (redirect) {
       return res.redirect(301, redirect);
     }
-    if (!isKnownLocation(eventsPath)) {
+    if (!(await isResolvableLocation(eventsPath, lookupLocation))) {
       return res.status(404).send('Not found');
     }
   }

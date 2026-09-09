@@ -1,6 +1,8 @@
 import {
+  detailMatchesPlace,
   getLegacyRedirect,
   isKnownLocation,
+  isResolvableLocation,
   parseEventsPath,
   secondsUntilMidnight,
 } from './server-utils';
@@ -140,5 +142,102 @@ describe('secondsUntilMidnight', () => {
     expect(
       secondsUntilMidnight(new Date('2026-09-09T23:59:59.999Z')),
     ).toBeGreaterThan(0);
+  });
+});
+
+describe('isResolvableLocation', () => {
+  const never = async () => {
+    throw new Error('should not be asked');
+  };
+
+  it('accepts a cached place without asking anyone', async () => {
+    expect(
+      await isResolvableLocation(parseEventsPath('/events/in/CH/ZG/Zug')!, never),
+    ).toBe(true);
+  });
+
+  /**
+   * Die Ortsliste kennt sechs Kantone und nur deren Kürzel. Ohne diesen
+   * Rückfall würde /events/in/CH/Zürich/Hedingen 404 liefern, obwohl die Seite
+   * heute funktioniert - siehe geo-resolution.spec.ts.
+   */
+  it('asks the geo service for a place the list does not carry', async () => {
+    const asked: string[] = [];
+    const lookup = async (path: typeof parsed) => {
+      asked.push(`${path.region}/${path.place}`);
+      return true;
+    };
+    const parsed = parseEventsPath('/events/in/CH/Zürich/Hedingen')!;
+
+    expect(await isResolvableLocation(parsed, lookup)).toBe(true);
+    expect(asked).toEqual(['Zürich/Hedingen']);
+  });
+
+  it('rejects a place no one can resolve', async () => {
+    expect(
+      await isResolvableLocation(
+        parseEventsPath('/events/in/CH/ZG/Nirgendwo')!,
+        async () => false,
+      ),
+    ).toBe(false);
+  });
+
+  it('rejects an unknown hub level without asking', async () => {
+    expect(
+      await isResolvableLocation(parseEventsPath('/events/in/CH/QQ')!, never),
+    ).toBe(false);
+    expect(
+      await isResolvableLocation(parseEventsPath('/events/in/XX')!, never),
+    ).toBe(false);
+  });
+
+  it('lets the request through when the geo service fails', async () => {
+    expect(
+      await isResolvableLocation(
+        parseEventsPath('/events/in/CH/BE/Bern')!,
+        async () => {
+          throw new Error('admin.ch down');
+        },
+      ),
+    ).toBe(true);
+  });
+});
+
+describe('detailMatchesPlace', () => {
+  it('accepts a result that carries the requested place', () => {
+    expect(detailMatchesPlace('Zug', 'zug zg')).toBe(true);
+    expect(detailMatchesPlace('Bern', 'bern be')).toBe(true);
+    expect(detailMatchesPlace('Hedingen', 'hedingen zh')).toBe(true);
+  });
+
+  it('resolves german umlauts the way the search server writes them', () => {
+    expect(detailMatchesPlace('Zürich', 'zuerich zh')).toBe(true);
+    expect(detailMatchesPlace('Wädenswil', 'waedenswil zh')).toBe(true);
+  });
+
+  it('also accepts a plain diacritic strip', () => {
+    expect(detailMatchesPlace('Genève', 'geneve ge')).toBe(true);
+  });
+
+  it('matches a multi word place', () => {
+    expect(detailMatchesPlace('Aarau Rohr', 'aarau rohr ag')).toBe(true);
+    expect(detailMatchesPlace('La Chaux-de-Fonds', 'la chaux de fonds ne')).toBe(
+      true,
+    );
+  });
+
+  /**
+   * Das ist der eigentliche Zweck: der SearchServer antwortet auf `Nirgendwo ZG`
+   * mit `Zug`, auf `Quatschort XX` mit `Le Sex Blanc`.
+   */
+  it('rejects a fuzzy match that is a different place', () => {
+    expect(detailMatchesPlace('Nirgendwo', 'zug zg')).toBe(false);
+    expect(detailMatchesPlace('Quatschort', 'le sex blanc iserables')).toBe(
+      false,
+    );
+  });
+
+  it('rejects an empty place', () => {
+    expect(detailMatchesPlace('', 'zug zg')).toBe(false);
   });
 });

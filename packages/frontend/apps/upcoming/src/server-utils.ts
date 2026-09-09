@@ -65,6 +65,67 @@ export function isKnownLocation(path: EventsPath): boolean {
   );
 }
 
+/**
+ * Zwei Lesarten desselben Namens: die deutsche Umlaut-Auflösung (Zürich →
+ * zuerich), die der SearchServer in `detail` verwendet, und die reine
+ * Diakritika-Entfernung (Zürich → zurich). Verglichen wird gegen beide.
+ */
+function normalizeForCompare(value: string): string[] {
+  const lower = value.toLowerCase();
+  const expanded = lower
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss');
+  const stripped = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  return [expanded, stripped].map((variant) =>
+    variant.replace(/[^a-z0-9]+/g, ' ').trim(),
+  );
+}
+
+/**
+ * Der SearchServer sucht unscharf und liefert praktisch immer ein Ergebnis -
+ * `Quatschort XX` ergibt `Le Sex Blanc`. „Es kam etwas zurück" taugt deshalb
+ * nicht als Prüfung; der Treffer muss den angefragten Ort auch tragen.
+ */
+export function detailMatchesPlace(place: string, detail: string): boolean {
+  const haystack = ` ${normalizeForCompare(detail).join(' ')} `;
+  return normalizeForCompare(place).some(
+    (variant) => variant.length > 0 && haystack.includes(` ${variant} `),
+  );
+}
+
+export type LocationLookup = (path: EventsPath) => Promise<boolean>;
+
+/**
+ * Die gebündelte Ortsliste deckt nur sechs Kantone ab und kennt Kantone nur
+ * unter ihrem Kürzel. `/events/in/CH/Zürich/Hedingen` und `/events/in/CH/BE/Bern`
+ * sind trotzdem echte Orte, die über die admin.ch-Suche auflösen - ein 404
+ * allein auf Basis der Liste würde funktionierende Seiten abschalten.
+ *
+ * Deshalb: Listentreffer sofort durchlassen, sonst nachfragen. Schlägt die
+ * Abfrage fehl, wird durchgelassen statt geblockt - eine Störung bei admin.ch
+ * darf nicht die halbe Schweiz auf 404 setzen.
+ */
+export async function isResolvableLocation(
+  path: EventsPath,
+  lookup: LocationLookup,
+): Promise<boolean> {
+  if (isKnownLocation(path)) {
+    return true;
+  }
+  // Die Hub-Ebenen rendern ausschliesslich aus der Liste. Ein Kanton, der
+  // nicht darin steht, hat dort nichts zu zeigen.
+  if (!path.region || !path.place) {
+    return false;
+  }
+  try {
+    return await lookup(path);
+  } catch {
+    return true;
+  }
+}
+
 const RELATIVE_DATE_KEYWORDS = [
   'gestern',
   'heute',
