@@ -5,9 +5,10 @@ import { NamedLatLon } from '@feedless/core';
 import { getCachedLocations } from '../lib/places';
 import { GeoSearchService } from './geo-search.interface';
 
-const SEARCH_SERVER =
+export const SEARCH_SERVER =
   'https://api3.geo.admin.ch/rest/services/ech/SearchServer';
 const MAP_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/MapServer';
+
 
 interface SearchResultAttrs {
   detail?: string;
@@ -48,8 +49,16 @@ interface IdentifyResponse {
   results: IdentifyResult[];
 }
 
-function stripHtml(html: string): string {
-  return html
+/**
+ * Der SearchServer hebt den Treffer im `label` selbst hervor - `<b>Zug (ZG)</b>`,
+ * teils mit einer Klassifizierung wie `<i>Ort</i>` davor. Ungefiltert landet
+ * dieses Markup in `displayName` und damit im Seitentitel, in der
+ * Meta-Description und im Fliesstext, wo Angular es escaped und der Nutzer
+ * `<b>Zug</b>` als Text liest. Die Suchvorschläge im Header setzen ihre eigene
+ * Hervorhebung, brauchen die der API also nicht.
+ */
+export function stripHtml(html: string | undefined): string {
+  return (html ?? '')
     .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
@@ -128,7 +137,7 @@ export class AdminGeoService implements GeoSearchService {
       countryCode: 'ch',
       place: detail.split(' ')[0] ?? detail,
       area: detail.split(' ')[1] ?? '',
-      displayName: a.label,
+      displayName: stripHtml(a.label),
     };
   }
 

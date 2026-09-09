@@ -6,6 +6,17 @@
   "projectType": "library",
   "tags": [],
   "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test",
+      "options": {
+        "buildTarget": "upcoming:build:development",
+        "tsConfig": "libs/geo/tsconfig.spec.json",
+        "runnerConfig": true,
+        "setupFiles": [
+          "test/vitest-setup.ts"
+        ]
+      }
+    },
     "lint": {
       "executor": "@nx/eslint:lint"
     }
