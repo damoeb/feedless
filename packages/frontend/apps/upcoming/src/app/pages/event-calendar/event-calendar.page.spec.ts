@@ -150,11 +150,39 @@ describe('EventCalendarPage', () => {
       ).toBe(0);
     });
 
-    it('renders the start time as visible text', () => {
-      const time = (fixture.nativeElement as HTMLElement).querySelector(
-        '.event-details time[datetime]',
-      );
-      expect(time?.textContent).toContain('19:30');
+    /**
+     * Der Gruppentitel nennt den Ort bereits, und die Uhrzeit gehört auf die
+     * Event-Detailseite. In der Übersicht ist beides Rauschen.
+     */
+    /**
+     * Die Event-Detailseiten sind gebaut, aber abgeschaltet, solange der
+     * Bestand nichts hergibt, was eine eigene Seite rechtfertigt. Siehe
+     * feature-flags.ts.
+     */
+    it('links straight to the source while detail pages are off', () => {
+      const element = fixture.nativeElement as HTMLElement;
+      expect(
+        element.querySelector('a[href="https://example.com/event1"]'),
+      ).toBeTruthy();
+      expect(element.querySelectorAll('a[href*="/e/"]')).toHaveLength(0);
+    });
+
+    it('links to the detail page once the flag is on', () => {
+      (component as any).eventDetailsEnabled = true;
+      (component as any).changeRef.detectChanges();
+      fixture.detectChanges();
+      const element = fixture.nativeElement as HTMLElement;
+
+      expect(element.querySelectorAll('a[href*="/e/"]').length).toBe(1);
+      expect(
+        element.querySelector('a.localized-event__source'),
+      ).toBeTruthy();
+    });
+
+    it('shows neither time nor place per entry', () => {
+      const element = fixture.nativeElement as HTMLElement;
+      expect(element.querySelectorAll('.event-details').length).toBe(0);
+      expect(element.querySelectorAll('.event-location').length).toBe(0);
     });
   });
 

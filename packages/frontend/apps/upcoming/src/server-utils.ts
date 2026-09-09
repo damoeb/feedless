@@ -141,6 +141,21 @@ const placeUrl = (countryCode: string, region: string, place: string): string =>
 const pad = (value: string): string => value.padStart(2, '0');
 
 /**
+ * Das `?event=` aus der URL-Konsolidierung war ein Zwischenschritt; seit es
+ * eigene Event-Seiten gibt, zeigt es dorthin. Ohne Titel-Slug, weil der Server
+ * den Titel nicht kennt - `/e/<uuid>` ist eine gültige Event-URL.
+ */
+export function getEventQueryRedirect(
+  path: EventsPath,
+  eventId: string | undefined,
+): string | null {
+  if (!path.region || !path.place || path.rest.length > 0 || !eventId) {
+    return null;
+  }
+  return `${placeUrl(path.countryCode, path.region, path.place)}/e/${encodeURIComponent(eventId)}`;
+}
+
+/**
  * Liefert das 301-Ziel für eine Alt-URL, sonst null.
  *
  * Die relativen Datums-Pfade zeigen bewusst auf die nackte Ortsseite und nicht
@@ -157,7 +172,7 @@ export function getLegacyRedirect(path: EventsPath): string | null {
 
   if (RELATIVE_DATE_KEYWORDS.includes(head)) {
     if (tail.length === 1) {
-      return `${base}?event=${encodeURIComponent(tail[0])}`;
+      return `${base}/e/${encodeURIComponent(tail[0])}`;
     }
     return tail.length === 0 ? base : null;
   }
@@ -165,7 +180,7 @@ export function getLegacyRedirect(path: EventsPath): string | null {
   if (head === 'am' && tail.length >= 3) {
     const [year, month, day, ...eventId] = tail;
     if (eventId.length === 1) {
-      return `${base}?event=${encodeURIComponent(eventId[0])}`;
+      return `${base}/e/${encodeURIComponent(eventId[0])}`;
     }
     if (eventId.length > 0) {
       return null;

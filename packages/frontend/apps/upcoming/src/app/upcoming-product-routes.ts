@@ -18,6 +18,7 @@ import {
 import { AdminGeoService, GeoSearchService } from '@feedless/geo';
 import { inject } from '@angular/core';
 import { EventService, LocalizedEvent } from './event.service';
+import { cleanEventTitle } from './event-title';
 
 export const perimeterUnit = 'Km';
 
@@ -87,6 +88,53 @@ export function renderDateUrl(
     date,
   );
   return queryParams['date'] ? `${path}?date=${queryParams['date']}` : path;
+}
+
+const UUID_AT_END =
+  /([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})$/i;
+
+/**
+ * `/events/in/CH/ZG/Zug/e/chilbi-baar-<uuid>`. Der Titel steht vorn, weil er
+ * in Suchergebnissen und beim Teilen sichtbar ist; die id am Ende, weil sie
+ * die Seite eindeutig macht. Beide enthalten Bindestriche, deshalb wird die id
+ * am Ende verankert gelesen und nicht am ersten Trenner.
+ */
+export function renderEventUrl(
+  countryCode: string,
+  region: string,
+  place: string,
+  event: { id: string; title?: string | null },
+): string {
+  return renderPath(upcomingBaseRoute.events.countryCode.region.place.event, {
+    countryCode,
+    region,
+    place,
+    eventSlug: toEventSlug(cleanEventTitle(event.title), event.id),
+  });
+}
+
+export function toEventSlug(
+  title: string | null | undefined,
+  id: string,
+): string {
+  const slug = (title ?? '')
+    .toLowerCase()
+    .replace(/ä/g, 'ae')
+    .replace(/ö/g, 'oe')
+    .replace(/ü/g, 'ue')
+    .replace(/ß/g, 'ss')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60)
+    .replace(/-+$/g, '');
+  return slug ? `${slug}-${id}` : id;
+}
+
+/** Liest die id aus dem Slug. null, wenn am Ende keine uuid steht. */
+export function parseEventIdFromSlug(slug: string | undefined): string | null {
+  return UUID_AT_END.exec(slug ?? '')?.[1]?.toLowerCase() ?? null;
 }
 
 export async function parseLocationFromUrl(
@@ -172,11 +220,42 @@ export const eventsResolver: ResolveFn<
   }
 };
 
-// const eventResolver: ResolveFn<LocalizedEvent> = (route) => {
-//   const eventService = inject(EventService);
-//   const id = route.paramMap.get('id')!;
-//   return eventService.findById(id);
-// };
+export type EventDetailResolverData = {
+  event: LocalizedEvent;
+  place: NamedLatLon;
+};
+
+/**
+ * Degradiert wie der Listen-Resolver, statt abzulehnen: eine abgelehnte
+ * Navigation lässt Angular SSR nichts rendern, und express antwortet dann mit
+ * seinem eigenen 404. Liefert null, wenn Ort oder Event nicht auflösbar sind -
+ * die Seite entscheidet dann, was sie zeigt.
+ */
+export const eventDetailResolver: ResolveFn<
+  Promise<EventDetailResolverData | null>
+> = async (route): Promise<EventDetailResolverData | null> => {
+  const eventService = inject(EventService);
+  const geoService = inject(AdminGeoService);
+
+  const eventId = parseEventIdFromSlug(route.params['eventSlug']);
+  if (!eventId) {
+    return null;
+  }
+
+  let place: NamedLatLon;
+  try {
+    place = await parseLocationFromUrl(route, geoService);
+  } catch (e) {
+    console.error('eventDetailResolver: cannot resolve location', e);
+    return null;
+  }
+
+  const event = await eventService.findById(eventId);
+  if (!event) {
+    return null;
+  }
+  return { event, place };
+};
 
 export const upcomingBaseRoute = createRoutes({
   terms: {
@@ -219,6 +298,11 @@ export const upcomingBaseRoute = createRoutes({
             children: {
               place: {
                 path: [str('place')],
+                children: {
+                  event: {
+                    path: ['e', str('eventSlug')],
+                  },
+                },
               },
             },
           },
@@ -306,6 +390,16 @@ export const UPCOMING_ROUTES: Routes = [
     path: template(upcomingBaseRoute._.events.countryCode.region),
     loadComponent: () =>
       import('./pages/region-hub/region-hub.page').then((m) => m.RegionHubPage),
+  },
+  {
+    resolve: {
+      eventDetail: eventDetailResolver,
+    },
+    path: template(upcomingBaseRoute._.events.countryCode.region.place.event),
+    loadComponent: () =>
+      import('./pages/event-detail/event-detail.page').then(
+        (m) => m.EventDetailPage,
+      ),
   },
   {
     resolve: {

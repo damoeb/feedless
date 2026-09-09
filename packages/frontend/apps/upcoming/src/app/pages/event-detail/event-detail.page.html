@@ -1,0 +1,48 @@
+<ion-content>
+  <main id="main-content" class="event-detail">
+    @if (event && place) {
+      <nav class="event-detail__breadcrumb">
+        <a [routerLink]="placeUrl">← Veranstaltungen in {{ place.place }}</a>
+      </nav>
+
+      <h1>{{ title }}</h1>
+
+      <p class="event-detail__facts">
+        @if (startDate) {
+          <time [attr.datetime]="startDate.format('YYYY-MM-DD')">
+            {{ formatDate(startDate) }}
+          </time>
+        }
+        <span class="event-detail__place">{{ place.displayName }}</span>
+      </p>
+
+      @if (isPast) {
+        <p class="event-detail__past">Diese Veranstaltung liegt in der Vergangenheit.</p>
+      }
+
+      @if (body) {
+        <p class="event-detail__body">{{ body }}</p>
+      }
+
+      @if (event.url) {
+        <p class="event-detail__source">
+          <a [href]="event.url" rel="nofollow noopener" target="_blank">
+            Alle Angaben und Anmeldung beim Veranstalter
+          </a>
+        </p>
+      }
+
+      <p class="event-detail__disclaimer">
+        Alle Angaben ohne Gewähr – bitte beim Anbieter prüfen. Uhrzeiten liegen
+        uns für diese Veranstaltung nicht zuverlässig vor.
+      </p>
+    } @else {
+      <h1>Veranstaltung nicht gefunden</h1>
+      <p>
+        Diese Veranstaltung gibt es nicht mehr, oder die Adresse stimmt nicht.
+        <a routerLink="/events/in/CH">Alle Kantone ansehen</a>
+      </p>
+    }
+  </main>
+  <app-upcoming-footer></app-upcoming-footer>
+</ion-content>

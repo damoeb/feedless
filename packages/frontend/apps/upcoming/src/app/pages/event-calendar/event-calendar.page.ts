@@ -25,6 +25,7 @@ import {
   parseDateFromQuery,
   DateLink,
   parseLocationFromUrl,
+  renderEventUrl,
   renderDateLink,
   renderDateUrl,
   renderPlaceUrl,
@@ -38,6 +39,8 @@ import {
   sendOutline,
 } from 'ionicons/icons';
 import { isDefined, NamedLatLon, Nullable } from '@feedless/core';
+import { cleanEventTitle } from '../../event-title';
+import { EVENT_DETAIL_PAGES_ENABLED } from '../../feature-flags';
 import { UpcomingHeaderComponent } from '../../components/upcoming-header/upcoming-header.component';
 import {
   IonChip,
@@ -47,7 +50,6 @@ import {
   IonListHeader,
   IonSpinner,
   IonText,
-  ModalController,
 } from '@ionic/angular/standalone';
 import { UpcomingFooterComponent } from '../../components/upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../../event.service';
@@ -57,7 +59,6 @@ import {
   getCachedLocations,
   OpenStreetMapService,
 } from '@feedless/geo';
-import { EventDetailModalComponent } from '../../components/event-detail-modal/event-detail-modal.component';
 import { PageSidebarComponent } from '../../components/page-sidebar/page-sidebar.component';
 import { SearchAboButtonComponent } from '../../components/search-abo-button/search-abo-button.component';
 
@@ -172,9 +173,9 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   private readonly appConfigService = inject(AppConfigService);
   private readonly router = inject(Router);
   private readonly platformId = inject(PLATFORM_ID);
-  private readonly modalCtrl = inject(ModalController);
   private readonly recordService = inject(RecordService);
   protected isBrowser = isPlatformBrowser(this.platformId);
+  protected eventDetailsEnabled = EVENT_DETAIL_PAGES_ENABLED;
 
   date: Dayjs = dayjs();
   readonly now: Dayjs = dayjs();
@@ -220,11 +221,6 @@ export class EventCalendarPage implements OnInit, OnDestroy {
             this.changeRef.detectChanges();
 
             this.pageService.setMetaTags(this.getPageTags());
-
-            const eventId = queryParams['event'];
-            if (eventId != null) {
-              await this.openEventModalForId(String(eventId));
-            }
           } catch (e) {
             if (this.headerComponent()) {
               await this.headerComponent().fetchSuggestions('');
@@ -548,7 +544,9 @@ export class EventCalendarPage implements OnInit, OnDestroy {
               this.toSchemaOrgEvent(
                 event,
                 place.place,
-                this.createEventUrl(event),
+                this.eventDetailsEnabled
+                  ? `https://lokale.events${this.getEventUrl(event, place.place)}`
+                  : event.url,
               ),
             ),
           ),
@@ -608,9 +606,12 @@ export class EventCalendarPage implements OnInit, OnDestroy {
       description: event.text || `Veranstaltung in ${location.displayName}`,
       eventStatus: 'EventScheduled',
       eventAttendanceMode: 'OfflineEventAttendanceMode',
-      startDate: startDate.toISOString(),
-      endDate: startDate.endOf('day').toISOString(),
-      url: 'https://lokale.events/' + eventPageUrl,
+      // Reines Datum: 96 % der Events tragen 10:00, weil die Pipeline diesen
+      // Wert stempelt, wenn sie keine Zeit erkennt. Eine Uhrzeit hier wäre
+      // für fast jedes Event eine Falschangabe. Kein endDate aus demselben
+      // Grund.
+      startDate: startDate.format('YYYY-MM-DD'),
+      url: eventPageUrl,
       location: {
         '@type': 'Place',
         name: location.displayName,
@@ -642,20 +643,29 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     return renderDateUrl(countryCode, region, place, date);
   }
 
-  createEventUrl(event: LocalizedEvent): string {
-    const { countryCode, region, place } = this.getLocationOrElse(
-      this.namedLatLon,
-    );
-    const base = renderPlaceUrl(countryCode, region, place);
-    return `${base}?event=${encodeURIComponent(String((event as any).id))}`;
-  }
-
   createDateLink(
     date: Nullable<Dayjs>,
     location: Nullable<NamedLatLon> = null,
   ): DateLink {
     const { countryCode, region, place } = this.getLocationOrElse(location);
     return renderDateLink(countryCode, region, place, date);
+  }
+
+  /**
+   * Das Event hängt unter *seinem* Ort, nicht unter dem der aufgerufenen Seite.
+   * Sonst wäre dasselbe Event unter jedem Nachbarort erreichbar und jede
+   * Variante würde auf sich selbst kanonisieren.
+   */
+  getEventUrl(event: LocalizedEvent, place: NamedLatLon): string {
+    if (!place?.countryCode || !place?.area || !place?.place) {
+      return '';
+    }
+    return renderEventUrl(
+      place.countryCode,
+      place.area,
+      place.place,
+      event as unknown as { id: string; title?: string | null },
+    );
   }
 
   getPlaceLink(location: NamedLatLon): DateLink {
@@ -762,77 +772,7 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   }
 
   cleanTitle(title: string) {
-    if (!title?.trim()) {
-      return title ?? '';
-    }
-    // German date in title e.g. "13. März 2026", "1. Januar 2026" (month names with ä, ö, ü)
-    const withoutNamedMonth = title.replace(
-      /[0-9]{1,2}\.[\s.]*[a-zäöüß]{3,10}[\s.]*[0-9]{2,4}/gi,
-      '',
-    );
-    // Numeric date e.g. "13.03.2026", "1.1.26"
-    const withoutNumericDate = withoutNamedMonth.replace(
-      /[0-9]{1,2}\.[\s.]*[0-9]{1,2}[\s.]*[0-9]{2,4}/g,
-      '',
-    );
-    return withoutNumericDate.replace(/\s{2,}/g, ' ').trim();
-  }
-
-  async openEventModal(
-    event: LocalizedEvent,
-    place: NamedLatLon,
-  ): Promise<void> {
-    const eventUrl = this.createEventUrl(event);
-    if (eventUrl && isPlatformBrowser(this.platformId)) {
-      this.locationService.replaceState(eventUrl);
-    }
-    const modal = await this.modalCtrl.create({
-      component: EventDetailModalComponent,
-      componentProps: {
-        event,
-        place,
-        repositoryId: this.getRepositoryId(),
-      },
-      breakpoints: [0, 0.25, 0.5, 0.75, 1],
-      initialBreakpoint: 0.75,
-      backdropBreakpoint: 0.5,
-      cssClass: 'event-detail-sheet',
-    });
-    await modal.present();
-    const result = await modal.onDidDismiss();
-    if (result.data?.saved === true || result.data?.deleted === true) {
-      await this.fetchEvents(this.date);
-    }
-    const listUrl = this.createDateUrl(this.date, this.namedLatLon);
-    if (listUrl && isPlatformBrowser(this.platformId)) {
-      this.locationService.replaceState(listUrl);
-    }
-    this.changeRef.detectChanges();
-  }
-
-  private async openEventModalForId(eventId: string): Promise<void> {
-    const found = this.findEventAndPlace(eventId);
-    if (found) {
-      await this.openEventModal(found.event, found.place);
-    } else {
-      console.error('Unable to find event with id ' + eventId);
-    }
-  }
-
-  private findEventAndPlace(
-    eventId: string,
-  ): { event: LocalizedEvent; place: NamedLatLon } | null {
-    for (const day of this.placesByDistancePerDay) {
-      for (const group of day.eventGroups) {
-        for (const { place, events } of group.places) {
-          const event = events.find((e) => String((e as any).id) === eventId);
-          if (event) {
-            return { event, place };
-          }
-        }
-      }
-    }
-    return null;
+    return cleanEventTitle(title);
   }
 
   private async resolvePlaceFromLatLon(latLng: {
