@@ -135,7 +135,7 @@ h2 {
 
 .localized-event {
   //background: rgba(var(--app-foreground-rgb), 0.5);
-  background: #fbf2ed;
+  background: #ecf6f2;
   padding: 5px;
   border-radius: 8px;
   margin-bottom: 8px;
@@ -148,7 +148,7 @@ h2 {
   }
 
   h3 {
-    color: #704523;
+    color: #0e6b54;
     line-height: 1.3rem;
     margin: 0;
     font-size: 0.9rem;
@@ -159,7 +159,7 @@ h2 {
     transition: background 0.15s ease;
 
     &:hover {
-      background: #f5e6de;
+      background: #e0efe9;
     }
   }
 }

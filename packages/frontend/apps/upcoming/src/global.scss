@@ -95,18 +95,21 @@ a {
   }
 }
 
+// Die -rgb-Varianten standen bisher als Prozentwerte da (97.6, 11.4 …), werden
+// aber als rgba(var(--x-rgb), .5) verwendet und dort als 0-255 gelesen. Sie
+// trafen die gewünschte Wirkung nur zufällig annähernd.
 .dark {
-  --app-background: #1d1c18;
-  --app-foreground: #f9f8f4;
-  --app-background-rgb: 11.4, 11, 9.4;
-  --app-foreground-rgb: 97.6, 97.3, 95.7;
+  --app-background: #101d19;
+  --app-foreground: #e4f1eb;
+  --app-background-rgb: 16, 29, 25;
+  --app-foreground-rgb: 228, 241, 235;
 }
 
 .light {
-  --app-background: #f9f8f4;
-  --app-foreground: #1d1c18;
-  --app-background-rgb: 97.6, 97.3, 95.7;
-  --app-foreground-rgb: 11.4, 11, 9.4;
+  --app-background: #f1f8f5;
+  --app-foreground: #14241f;
+  --app-background-rgb: 241, 248, 245;
+  --app-foreground-rgb: 20, 36, 31;
 }
 
 ion-modal {
