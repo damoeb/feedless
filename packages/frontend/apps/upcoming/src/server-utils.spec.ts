@@ -1,4 +1,8 @@
-import { isKnownLocation, parseEventsPath } from './server-utils';
+import {
+  getLegacyRedirect,
+  isKnownLocation,
+  parseEventsPath,
+} from './server-utils';
 
 describe('parseEventsPath', () => {
   it('returns null for paths outside /events/in', () => {
@@ -67,5 +71,60 @@ describe('isKnownLocation', () => {
     expect(isKnownLocation(parseEventsPath('/events/in/CH/zg/zug')!)).toBe(
       true,
     );
+  });
+});
+
+describe('getLegacyRedirect', () => {
+  const redirectFor = (pathname: string) =>
+    getLegacyRedirect(parseEventsPath(pathname)!);
+
+  it('collapses the relative date paths onto the bare place page', () => {
+    for (const keyword of [
+      'heute',
+      'morgen',
+      'gestern',
+      'kommendes-wochenende',
+    ]) {
+      expect(redirectFor(`/events/in/CH/ZG/Zug/${keyword}`)).toBe(
+        '/events/in/CH/ZG/Zug',
+      );
+    }
+  });
+
+  it('turns an absolute date path into a date query parameter', () => {
+    expect(redirectFor('/events/in/CH/ZG/Zug/am/2026/09/08')).toBe(
+      '/events/in/CH/ZG/Zug?date=2026-09-08',
+    );
+  });
+
+  it('pads single digit months and days', () => {
+    expect(redirectFor('/events/in/CH/ZG/Zug/am/2026/1/5')).toBe(
+      '/events/in/CH/ZG/Zug?date=2026-01-05',
+    );
+  });
+
+  it('turns an event deeplink into an event query parameter', () => {
+    expect(redirectFor('/events/in/CH/ZG/Zug/heute/abc-123')).toBe(
+      '/events/in/CH/ZG/Zug?event=abc-123',
+    );
+    expect(redirectFor('/events/in/CH/ZG/Zug/am/2026/09/08/abc-123')).toBe(
+      '/events/in/CH/ZG/Zug?event=abc-123',
+    );
+  });
+
+  it('re-encodes place names in the target', () => {
+    expect(redirectFor('/events/in/CH/AG/Aarau%20Rohr/heute')).toBe(
+      '/events/in/CH/AG/Aarau%20Rohr',
+    );
+  });
+
+  it('returns null for urls that are already canonical', () => {
+    expect(redirectFor('/events/in/CH/ZG/Zug')).toBeNull();
+    expect(redirectFor('/events/in/CH/ZG')).toBeNull();
+    expect(redirectFor('/events/in/CH')).toBeNull();
+  });
+
+  it('returns null for an unrecognised trailing segment', () => {
+    expect(redirectFor('/events/in/CH/ZG/Zug/irgendwas')).toBeNull();
   });
 });

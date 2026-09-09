@@ -9,13 +9,11 @@ import express, { NextFunction, Request, Response } from 'express';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
-  checkOutdated,
   createAccessLogLine,
+  getLegacyRedirect,
   isKnownLocation,
   parseEventsPath,
 } from './server-utils';
-import { renderPath } from 'typesafe-routes';
-import { upcomingBaseRoute } from './app/upcoming-product-routes';
 import { isDevMode } from '@angular/core';
 
 const app = express();
@@ -92,19 +90,20 @@ serveStatic();
  * Handle all other requests by rendering the Angular application.
  */
 app.use('/**', (req, res, next) => {
-  const eventsPath = parseEventsPath(req.path);
-  if (eventsPath && !isKnownLocation(eventsPath)) {
-    return res.status(404).send('Not found');
-  }
+  // `/**` ist für express ein Mount-Präfix: innerhalb des Handlers ist
+  // `req.path` immer `/` und der tatsächliche Pfad steht in `req.baseUrl`.
+  // `originalUrl` ist die einzige Quelle, die ungekürzt bleibt.
+  const pathname = (req.originalUrl || req.url).split('?')[0];
+  const eventsPath = parseEventsPath(pathname);
 
-  const outdated = checkOutdated(req.path);
-  if (outdated.outdated) {
-    return res.redirect(
-      renderPath(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime,
-        outdated.params,
-      ),
-    );
+  if (eventsPath) {
+    const redirect = getLegacyRedirect(eventsPath);
+    if (redirect) {
+      return res.redirect(301, redirect);
+    }
+    if (!isKnownLocation(eventsPath)) {
+      return res.status(404).send('Not found');
+    }
   }
 
   angularApp

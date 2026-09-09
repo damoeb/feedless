@@ -1,6 +1,3 @@
-import dayjs from 'dayjs';
-import { safeParsePath } from 'typesafe-routes';
-import { upcomingBaseRoute } from './app/upcoming-product-routes';
 import { Request, Response } from 'express';
 import { getCachedLocations } from '@feedless/geo';
 
@@ -44,64 +41,78 @@ const normalize = (value: string): string => value.trim().toLowerCase();
  * Soft-404-Raum.
  */
 export function isKnownLocation(path: EventsPath): boolean {
-  const locations = getCachedLocations();
-  const inCountry = locations.filter(
-    (location) =>
-      normalize(location.countryCode) === normalize(path.countryCode),
+  const { countryCode, region, place } = path;
+  const inCountry = getCachedLocations().filter(
+    (location) => normalize(location.countryCode) === normalize(countryCode),
   );
   if (inCountry.length === 0) {
     return false;
   }
-  if (!path.region) {
+  if (!region) {
     return true;
   }
   const inRegion = inCountry.filter(
-    (location) => normalize(location.area) === normalize(path.region!),
+    (location) => normalize(location.area) === normalize(region),
   );
   if (inRegion.length === 0) {
     return false;
   }
-  if (!path.place) {
+  if (!place) {
     return true;
   }
   return inRegion.some(
-    (location) => normalize(location.place) === normalize(path.place!),
+    (location) => normalize(location.place) === normalize(place),
   );
 }
 
-export type OutdatedResult =
-  | { outdated: false }
-  | {
-      outdated: true;
-      params?: {
-        day: number;
-        month: number;
-        year: number;
-        countryCode: string;
-        region: string;
-        place: string;
-      };
-    };
+const RELATIVE_DATE_KEYWORDS = [
+  'gestern',
+  'heute',
+  'morgen',
+  'kommendes-wochenende',
+];
 
-export function checkOutdated(path: string): OutdatedResult {
-  const parsedRoute = safeParsePath(
-    upcomingBaseRoute.events.countryCode.region.place.dateTime,
-    path,
-  );
-  if (parsedRoute.success) {
-    const maxAge = dayjs().subtract(7, 'days');
-    const { day, month, year, countryCode, region, place } = parsedRoute.data;
-    const routeDate = dayjs()
-      .year(year)
-      .month(month - 1)
-      .date(day);
-    return {
-      outdated: routeDate.isAfter(maxAge),
-      params: { day, month, year, countryCode, region, place },
-    };
+const placeUrl = (countryCode: string, region: string, place: string): string =>
+  `/events/in/${encodeURIComponent(countryCode)}/${encodeURIComponent(
+    region,
+  )}/${encodeURIComponent(place)}`;
+
+const pad = (value: string): string => value.padStart(2, '0');
+
+/**
+ * Liefert das 301-Ziel für eine Alt-URL, sonst null.
+ *
+ * Die relativen Datums-Pfade zeigen bewusst auf die nackte Ortsseite und nicht
+ * auf ein berechnetes `?date=`: ein 301 wird dauerhaft zwischengespeichert, ein
+ * relatives Datum ändert sich täglich. Nur `/am/` trägt ein festes Datum.
+ */
+export function getLegacyRedirect(path: EventsPath): string | null {
+  const { countryCode, region, place, rest } = path;
+  if (!region || !place || rest.length === 0) {
+    return null;
+  }
+  const base = placeUrl(countryCode, region, place);
+  const [head, ...tail] = rest;
+
+  if (RELATIVE_DATE_KEYWORDS.includes(head)) {
+    if (tail.length === 1) {
+      return `${base}?event=${encodeURIComponent(tail[0])}`;
+    }
+    return tail.length === 0 ? base : null;
   }
 
-  return { outdated: false };
+  if (head === 'am' && tail.length >= 3) {
+    const [year, month, day, ...eventId] = tail;
+    if (eventId.length === 1) {
+      return `${base}?event=${encodeURIComponent(eventId[0])}`;
+    }
+    if (eventId.length > 0) {
+      return null;
+    }
+    return `${base}?date=${year}-${pad(month)}-${pad(day)}`;
+  }
+
+  return null;
 }
 
 export type RequestLog = {
