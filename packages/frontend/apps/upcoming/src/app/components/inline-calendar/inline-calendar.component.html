@@ -22,7 +22,8 @@
 
       @for (d of dateWindow; track d.date.toISOString(); let i = $index) {
         <a
-          [routerLink]="'/' + getDateUrl(d.date)"
+          [routerLink]="getDateLink(d.date).path"
+          [queryParams]="getDateLink(d.date).queryParams"
           [attr.rel]="getSeoLinkAttributes(d.date)"
           [attr.title]="'Events am ' + getWeekday(d.date) + ', ' + formatDate(d.date, 'D') + '. ' + formatDate(d.date, 'MMM YY')"
           [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length - 4 }"
@@ -42,7 +43,7 @@
             }"
           >
             <div>{{ getWeekday(d.date) }}</div>
-            <h3 class="day-of-month">{{ formatDate(d.date, 'D') }}</h3>
+            <span class="day-of-month">{{ formatDate(d.date, 'D') }}</span>
             @if (i === 0 || d.date.date() === 1) {
               <div class="nowrap">{{ formatDate(d.date, 'MMM YY') }}</div>
             }
@@ -53,7 +54,8 @@
     <div class="forward-in-calendar">
       @if (isValidOffset(4)) {
         <a
-          [routerLink]="getDateUrl(dateWindow[0].date.add(4, 'days'))"
+          [routerLink]="getDateLink(dateWindow[0].date.add(4, 'days')).path"
+          [queryParams]="getDateLink(dateWindow[0].date.add(4, 'days')).queryParams"
           title="Weiter im Kalender"
           rel="next"
           (click)="shiftDateWindow(4, $event)"

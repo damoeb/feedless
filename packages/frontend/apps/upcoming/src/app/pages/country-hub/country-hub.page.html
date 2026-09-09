@@ -1,0 +1,20 @@
+<ion-content>
+  <main id="main-content" class="hub">
+    <h1>Veranstaltungen in der Schweiz</h1>
+    <p class="hub__intro">
+      Lokale Veranstaltungen aus {{ regions.length }} Kantonen. Wähle einen
+      Kanton, um alle Orte zu sehen.
+    </p>
+    <ul class="hub__list">
+      @for (region of regions; track region.area) {
+        <li>
+          <a [routerLink]="region.url">
+            Veranstaltungen im Kanton {{ region.area }}
+          </a>
+          <span class="hub__count">{{ region.placeCount }} Orte</span>
+        </li>
+      }
+    </ul>
+  </main>
+  <app-upcoming-footer></app-upcoming-footer>
+</ion-content>

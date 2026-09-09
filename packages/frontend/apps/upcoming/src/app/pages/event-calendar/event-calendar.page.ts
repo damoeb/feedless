@@ -22,13 +22,14 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { isPlatformBrowser, Location, NgClass } from '@angular/common';
 import {
   EventsResolverData,
-  parseDateFromUrl,
+  parseDateFromQuery,
+  DateLink,
   parseLocationFromUrl,
-  RelativeDate,
-  relativeDateIncrement,
-  upcomingBaseRoute,
+  renderDateLink,
+  renderDateUrl,
+  renderPlaceUrl,
 } from '../../upcoming-product-routes';
-import { Subscription } from 'rxjs';
+import { combineLatest, Subscription } from 'rxjs';
 import 'dayjs/locale/de';
 import { addIcons } from 'ionicons';
 import {
@@ -51,7 +52,6 @@ import {
 import { UpcomingFooterComponent } from '../../components/upcoming-footer/upcoming-footer.component';
 import { EventService, LocalizedEvent } from '../../event.service';
 import { InlineCalendarComponent } from '../../components/inline-calendar/inline-calendar.component';
-import { renderPath } from 'typesafe-routes';
 import {
   AdminGeoService,
   getCachedLocations,
@@ -183,7 +183,6 @@ export class EventCalendarPage implements OnInit, OnDestroy {
   perimeter = 10;
   namedLatLon: Nullable<NamedLatLon>;
   loading = true;
-  dateIsFromRelativeUrl = false;
   private subscriptions: Subscription[] = [];
 
   readonly headerComponent = viewChild<UpcomingHeaderComponent>('header');
@@ -202,7 +201,10 @@ export class EventCalendarPage implements OnInit, OnDestroy {
 
     if (isPlatformBrowser(this.platformId)) {
       this.subscriptions.push(
-        this.activatedRoute.params.subscribe(async (params) => {
+        combineLatest([
+          this.activatedRoute.params,
+          this.activatedRoute.queryParams,
+        ]).subscribe(async ([, queryParams]) => {
           try {
             this.namedLatLon = await parseLocationFromUrl(
               this.activatedRoute.snapshot,
@@ -210,52 +212,20 @@ export class EventCalendarPage implements OnInit, OnDestroy {
             );
             this.saveLocation(this.namedLatLon);
 
-            // Try to parse perimeter from absolute date route
-
             this.perimeter = 10;
 
-            // Check if date is present in URL
-            const hasDateInUrl =
-              params['year'] ||
-              params['month'] ||
-              params['day'] ||
-              params['relativeDate'];
-
-            const { date: dateFromUrl } = parseDateFromUrl(params);
-            this.dateIsFromRelativeUrl = !!params['relativeDate'];
-
-            if (hasDateInUrl) {
-              // Only validate and redirect if date was explicitly in URL
-              // if (
-              //   dateFromUrl.isBefore(this.minDate) ||
-              //   dateFromUrl.isAfter(this.maxDate)
-              // ) {
-              //   await this.redirectToToday();
-              // } else {
-              await this.changeDate(dateFromUrl);
-              // }
-            } else {
-              // No date in URL - just show today without redirecting
-              this.date = dateFromUrl;
-              await this.fetchEvents(this.date);
-            }
+            const { date } = parseDateFromQuery(queryParams);
+            await this.changeDate(date);
 
             this.changeRef.detectChanges();
 
             this.pageService.setMetaTags(this.getPageTags());
 
-            await this.fetchEvents(this.date);
-
-            const eventId = params['eventId'];
+            const eventId = queryParams['event'];
             if (eventId != null) {
               await this.openEventModalForId(String(eventId));
             }
           } catch (e) {
-            // todo save and retrieve last place window.localStorage.getItem('lastPlace')
-            // const currentLocation = await firstValueFrom(
-            //   this.geoService.getCurrentLatLon(),
-            // );
-
             if (this.headerComponent()) {
               await this.headerComponent().fetchSuggestions('');
             }
@@ -273,8 +243,6 @@ export class EventCalendarPage implements OnInit, OnDestroy {
       if (data) {
         this.namedLatLon = data?.latlng;
         this.date = data?.date;
-        this.dateIsFromRelativeUrl =
-          !!this.activatedRoute.snapshot.params['relativeDate'];
         await this.handleEventsResponse(data.events);
       }
       this.pageService.setMetaTags(this.getPageTags());
@@ -307,20 +275,18 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     if (!path) {
       return 'https://lokale.events/';
     }
-    return `https://lokale.events${path}`;
+    return `https://lokale.events${path.split('?')[0]}`;
   }
 
   private getPageTags(): PageTags {
     const location = this.namedLatLon;
-    const robots = this.activatedRoute.snapshot.params['eventId']
-      ? 'noindex, follow'
-      : 'index, follow';
+    const queryParams = this.activatedRoute.snapshot.queryParams;
+    const robots =
+      queryParams['event'] || queryParams['date']
+        ? 'noindex, follow'
+        : 'index, follow';
 
     if (location) {
-      const dateTitlePart = this.dateIsFromRelativeUrl
-        ? this.getRelativeDateLabel(this.date)
-        : `am ${this.formatDate(this.date, 'DD.MM.YYYY')}`;
-
       const keywords = [
         'Events',
         'Veranstaltungen',
@@ -336,14 +302,15 @@ export class EventCalendarPage implements OnInit, OnDestroy {
       ];
 
       return {
-        title: `Events ${dateTitlePart} in ${location.displayName}, ${location.area} | lokale.events`,
+        title: `Events in ${location.displayName}, ${location.area} | lokale.events`,
         description: `Entdecke aktuelle Veranstaltungen in ${location.displayName}, ${location.area}. Von Familien-Events über Sport-Aktivitäten bis hin zu kulturellen Veranstaltungen und Märkten - finde spannende Events in deiner Nähe.`,
         publisher: 'lokale.events',
         category: 'Events',
         url: this.getCurrentUrl(),
         region: location.area,
         place: location.displayName,
-        lang: 'de',
+        lang: 'de-CH',
+        locale: 'de_CH',
         publishedAt: dayjs(),
         position: location,
         keywords,
@@ -359,7 +326,8 @@ export class EventCalendarPage implements OnInit, OnDestroy {
         publisher: 'lokale.events',
         category: 'Events',
         url: this.getCurrentUrl(),
-        lang: 'de',
+        lang: 'de-CH',
+        locale: 'de_CH',
         publishedAt: dayjs(),
         keywords: [
           'Events',
@@ -671,61 +639,30 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     location: Nullable<NamedLatLon> = null,
   ): string {
     const { countryCode, region, place } = this.getLocationOrElse(location);
-
-    const now = dayjs().startOf('day');
-    const diffInDays = date.startOf('day').diff(now, 'day');
-
-    const hasRelativeDateExpression = Object.values<number>(
-      relativeDateIncrement,
-    ).includes(diffInDays);
-    if (hasRelativeDateExpression) {
-      const relativeDates = Object.keys(
-        relativeDateIncrement,
-      ) as RelativeDate[];
-      const relativeDateParam = relativeDates.find(
-        (relativeDate) => relativeDateIncrement[relativeDate] === diffInDays,
-      );
-
-      return renderUrlWithRelativeDate(
-        countryCode,
-        region,
-        place,
-        relativeDateParam,
-      );
-    } else {
-      const { year, month, day } = this.getDateOrElse(date);
-
-      return renderUrlWithAbsoluteDate(
-        countryCode,
-        region,
-        place,
-        year,
-        month,
-        day,
-      );
-    }
+    return renderDateUrl(countryCode, region, place, date);
   }
 
   createEventUrl(event: LocalizedEvent): string {
-    const baseUrl = this.createDateUrl(this.date, this.namedLatLon);
-    return baseUrl ? `${baseUrl}/${(event as any).id}` : '';
+    const { countryCode, region, place } = this.getLocationOrElse(
+      this.namedLatLon,
+    );
+    const base = renderPlaceUrl(countryCode, region, place);
+    return `${base}?event=${encodeURIComponent(String((event as any).id))}`;
   }
 
-  getPlaceUrl(location: NamedLatLon): string {
-    if (location) {
-      const { countryCode, area, place } = location;
-      // Use parseDateFromUrl to handle both absolute and relative dates
-      const { date } = parseDateFromUrl(this.activatedRoute.snapshot.params);
-      return renderUrlWithAbsoluteDate(
-        countryCode,
-        area,
-        place,
-        parseInt(date.format('YYYY')),
-        parseInt(date.format('MM')),
-        parseInt(date.format('DD')),
-      );
+  createDateLink(
+    date: Nullable<Dayjs>,
+    location: Nullable<NamedLatLon> = null,
+  ): DateLink {
+    const { countryCode, region, place } = this.getLocationOrElse(location);
+    return renderDateLink(countryCode, region, place, date);
+  }
+
+  getPlaceLink(location: NamedLatLon): DateLink {
+    if (!location) {
+      return { path: '', queryParams: {} };
     }
-    return '';
+    return this.createDateLink(this.date, location);
   }
 
   // private toSchemaOrgPlace(place: EventsAtPlace): SchemaPlace {
@@ -795,22 +732,6 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     return '';
   }
 
-  private getDateOrElse(date: Dayjs): {
-    year: number;
-    month: number;
-    day: number;
-  } {
-    if (date) {
-      return {
-        year: parseInt(date.format('YYYY')),
-        month: parseInt(date.format('MM')),
-        day: parseInt(date.format('DD')),
-      };
-    } else {
-      return this.activatedRoute.snapshot.params as any;
-    }
-  }
-
   private getLocationOrElse(location: NamedLatLon): {
     countryCode: string;
     region: string;
@@ -825,6 +746,19 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     } else {
       return this.activatedRoute.snapshot.params as any;
     }
+  }
+
+  toIsoString(startingAt: number): string {
+    return dayjs(startingAt).toISOString();
+  }
+
+  /** Leerstring für Ganztages-Einträge, damit die Zeile dort entfällt. */
+  formatTime(startingAt: number): string {
+    const date = dayjs(startingAt);
+    if (date.hour() === 0 && date.minute() === 0) {
+      return '';
+    }
+    return date.locale('de').format('HH:mm');
   }
 
   cleanTitle(title: string) {
@@ -928,8 +862,8 @@ export class EventCalendarPage implements OnInit, OnDestroy {
     );
   }
 
-  getDateUrlFactory() {
-    return this.createDateUrl.bind(this);
+  getDateLinkFactory() {
+    return (date: Dayjs): DateLink => this.createDateLink(date);
   }
 }
 
@@ -956,42 +890,4 @@ export function getWeekday(date: Dayjs): string {
 
 export function formatDate(date: Dayjs, format: string) {
   return date?.locale('de')?.format(format);
-}
-
-export function renderUrlWithAbsoluteDate(
-  countryCode: string,
-  region: string,
-  place: string,
-  year: number,
-  month: number,
-  day: number,
-) {
-  return renderPath(
-    upcomingBaseRoute.events.countryCode.region.place.dateTime,
-    {
-      countryCode,
-      region,
-      place,
-      year,
-      month,
-      day,
-    },
-  );
-}
-
-export function renderUrlWithRelativeDate(
-  countryCode: string,
-  region: string,
-  place: string,
-  relativeDate: RelativeDate,
-) {
-  return renderPath(
-    upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
-    {
-      countryCode,
-      region,
-      place,
-      relativeDate,
-    },
-  );
 }

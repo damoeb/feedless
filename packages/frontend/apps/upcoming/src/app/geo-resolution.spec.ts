@@ -3,7 +3,6 @@ import {
   parseLocationFromUrl,
   upcomingBaseRoute,
 } from './upcoming-product-routes';
-import { parsePath } from 'typesafe-routes';
 import { ActivatedRouteSnapshot } from '@angular/router';
 import { TestBed } from '@angular/core/testing';
 import { provideHttpClient } from '@angular/common/http';
@@ -77,27 +76,5 @@ describe('location resolution from url', () => {
     });
 
     expect(queries).toEqual(['Hedingen Zürich']);
-  });
-});
-
-/**
- * Every relative-date keyword the sitemap advertises must resolve, or we are
- * publishing 404s to search engines.
- */
-describe('relative date keywords', () => {
-  const parseKeyword = (keyword: string) =>
-    parsePath(
-      upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
-      `/events/in/CH/ZH/Thalwil/${keyword}`,
-    );
-
-  it('accepts every keyword used in the sitemap', () => {
-    ['heute', 'morgen', 'kommendes-wochenende'].forEach((keyword) => {
-      expect(parseKeyword(keyword).relativeDate).toEqual(keyword);
-    });
-  });
-
-  it('rejects unknown keywords', () => {
-    expect(() => parseKeyword('bogus')).toThrow();
   });
 });

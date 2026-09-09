@@ -11,6 +11,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import dayjs, { Dayjs, OpUnitType } from 'dayjs';
+import { DateLink } from '../../upcoming-product-routes';
 import { RouterLink } from '@angular/router';
 import { isPlatformBrowser, NgClass } from '@angular/common';
 import 'dayjs/locale/de';
@@ -24,10 +25,6 @@ import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { IconComponent } from '@feedless/components';
-import {
-  RelativeDate,
-  relativeDateIncrement,
-} from '../../upcoming-product-routes';
 
 @Component({
   selector: 'app-inline-calendar',
@@ -47,7 +44,7 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
   readonly paddingRight = input.required<number>();
   readonly minDate = input.required<Dayjs>();
   readonly maxDate = input.required<Dayjs>();
-  readonly dateUrlFactory = input.required<(date: Dayjs) => string>();
+  readonly dateLinkFactory = input.required<(date: Dayjs) => DateLink>();
   private readonly platformId = inject(PLATFORM_ID);
 
   dateWindow: DateWindowItem[] = [];
@@ -68,8 +65,8 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
     this.createDateWindow(this.date());
   }
 
-  getDateUrl(date: Dayjs): string {
-    return this.dateUrlFactory()(date);
+  getDateLink(date: Dayjs): DateLink {
+    return this.dateLinkFactory()(date);
   }
 
   isPast(day: Dayjs): boolean {
@@ -144,16 +141,14 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
     );
   }
 
+  /**
+   * Nur der heutige Tag ist die kanonische Ortsseite; jeder andere Tag hängt
+   * als `?date=` daran und wird nicht indexiert.
+   */
   getSeoLinkAttributes(date: Dayjs): string {
-    const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
-    const diff = date.startOf('day').diff(dayjs().startOf('day'), 'day');
-    const relativeDateExpressionMaybe = relativeDates.find(
-      (relativeDate) => relativeDateIncrement[relativeDate] === diff,
-    );
-    if (relativeDateExpressionMaybe) {
+    if (date.isSame(dayjs(), 'day')) {
       return ['follow', 'index'].join(' ');
-    } else {
-      return ['follow', 'no-index'].join(' ');
     }
+    return ['follow', 'noindex'].join(' ');
   }
 }

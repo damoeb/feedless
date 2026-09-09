@@ -5,9 +5,10 @@ import { NamedLatLon } from '@feedless/core';
 import { getCachedLocations } from '../lib/places';
 import { GeoSearchService } from './geo-search.interface';
 
-const SEARCH_SERVER =
+export const SEARCH_SERVER =
   'https://api3.geo.admin.ch/rest/services/ech/SearchServer';
 const MAP_SERVER = 'https://api3.geo.admin.ch/rest/services/ech/MapServer';
+
 
 interface SearchResultAttrs {
   detail?: string;
@@ -48,11 +49,57 @@ interface IdentifyResponse {
   results: IdentifyResult[];
 }
 
-function stripHtml(html: string): string {
-  return html
+/**
+ * Der SearchServer hebt den Treffer im `label` selbst hervor - `<b>Zug (ZG)</b>`,
+ * teils mit einer Klassifizierung wie `<i>Ort</i>` davor. Ungefiltert landet
+ * dieses Markup in `displayName` und damit im Seitentitel, in der
+ * Meta-Description und im Fliesstext, wo Angular es escaped und der Nutzer
+ * `<b>Zug</b>` als Text liest. Die Suchvorschläge im Header setzen ihre eigene
+ * Hervorhebung, brauchen die der API also nicht.
+ */
+export function stripHtml(html: string | undefined): string {
+  return (html ?? '')
     .replace(/<[^>]*>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim();
+}
+
+/**
+ * Ort und Kanton aus der SearchServer-Antwort.
+ *
+ * `detail` ist die normalisierte Suchform und durchgehend kleingeschrieben -
+ * daraus gelesen erscheint auf der Seite „Veranstaltungen in bern". Das `label`
+ * trägt die Schreibweise: der fett markierte Teil ist der Ortsname, das
+ * `(XX)` der Kanton. `detail` bleibt der Rückfall, aber nur wenn sein zweites
+ * Token wie ein Kantonskürzel aussieht - bei `<i>Bus</i> <b>Hedingen,
+ * Hausacker</b>` wäre es sonst „HAUSACKER".
+ */
+export function parsePlaceAndArea(
+  label: string | undefined,
+  detail: string | undefined,
+): { place: string; area: string } {
+  const cleanLabel = stripHtml(label);
+  const boldMatch = /<b>([\s\S]*?)<\/b>/.exec(label ?? '');
+  const bold = stripHtml(boldMatch?.[1]);
+
+  const boldWithCanton = /^(.*?)\s*\(([A-Za-z]{2})\)$/.exec(bold);
+  if (boldWithCanton) {
+    return {
+      place: boldWithCanton[1],
+      area: boldWithCanton[2].toUpperCase(),
+    };
+  }
+
+  const detailTokens = stripHtml(detail).split(' ');
+  const cantonFromLabel = /\(([A-Za-z]{2})\)/.exec(cleanLabel)?.[1];
+  const cantonFromDetail = /^[A-Za-z]{2}$/.test(detailTokens[1] ?? '')
+    ? detailTokens[1]
+    : undefined;
+
+  return {
+    place: bold || detailTokens[0] || cleanLabel,
+    area: (cantonFromLabel ?? cantonFromDetail ?? '').toUpperCase(),
+  };
 }
 
 @Injectable({
@@ -121,14 +168,14 @@ export class AdminGeoService implements GeoSearchService {
     const a = result.attrs;
     const lat = a.lat ?? a.y ?? 0;
     const lng = a.lon ?? a.x ?? 0;
-    const detail = a.detail ?? '';
+    const { place, area } = parsePlaceAndArea(a.label, a.detail);
     return {
       lat: typeof lat === 'number' ? lat : parseFloat(String(lat)),
       lng: typeof lng === 'number' ? lng : parseFloat(String(lng)),
       countryCode: 'ch',
-      place: detail.split(' ')[0] ?? detail,
-      area: detail.split(' ')[1] ?? '',
-      displayName: a.label,
+      place,
+      area,
+      displayName: stripHtml(a.label),
     };
   }
 

@@ -6,6 +6,7 @@ ion-button {
   font-size: 16px;
   //noinspection CssInvalidPropertyValue
   justify-self: anchor-center;
+  z-index: 1000;
 }
 
 app-icon {

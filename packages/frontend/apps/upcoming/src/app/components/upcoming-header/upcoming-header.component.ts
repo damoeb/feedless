@@ -51,6 +51,8 @@ import {
 import { LatLng, NamedLatLon, Nullable } from '@feedless/core';
 import {
   parseLocationFromUrl,
+  renderDateUrl,
+  renderPlaceUrl,
   upcomingBaseRoute,
 } from '../../upcoming-product-routes';
 
@@ -467,17 +469,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
         this.activatedRoute.snapshot,
         this.adminGeoService,
       );
-      const url = renderPath(
-        upcomingBaseRoute.events.countryCode.region.place.dateTime,
-        {
-          countryCode,
-          region: area,
-          place,
-          year: parseInt(this.currentDate.locale(this.locale).format('YYYY')),
-          month: parseInt(this.currentDate.locale(this.locale).format('MM')),
-          day: parseInt(this.currentDate.locale(this.locale).format('DD')),
-        },
-      );
+      const url = renderDateUrl(countryCode, area, place, this.currentDate);
 
       await this.router.navigateByUrl(url, { replaceUrl: true });
     } catch (e) {
@@ -510,15 +502,7 @@ export class UpcomingHeaderComponent implements OnInit, OnDestroy, OnChanges {
   // }
 
   private getUrlForLocation({ countryCode, area, place }: NamedLatLon): string {
-    return renderPath(
-      upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
-      {
-        countryCode,
-        region: area,
-        place,
-        relativeDate: 'heute',
-      },
-    );
+    return renderPlaceUrl(countryCode, area, place);
   }
 
   private getBreadcrumbs(): LocationSuggestion[] {

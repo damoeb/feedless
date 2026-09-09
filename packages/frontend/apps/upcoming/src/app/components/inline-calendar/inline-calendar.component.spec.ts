@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { InlineCalendarComponent } from './inline-calendar.component';
-import { relativeDateIncrement } from '../../upcoming-product-routes';
 import dayjs from 'dayjs';
 
 describe('InlineCalendar', () => {
@@ -24,20 +23,20 @@ describe('InlineCalendar', () => {
   });
 
   describe('#getSeoLinkAttributes', () => {
-    Object.values(relativeDateIncrement).forEach((increment) => {
-      it(`relative dates for increment ${increment} return index=true`, () => {
-        const attrs = component.getSeoLinkAttributes(
-          dayjs().startOf('day').add(increment, 'day'),
-        );
-        expect(attrs.indexOf('index') > -1).toBe(true);
-        expect(attrs.indexOf('no-index') === -1).toBe(true);
-      });
+    it('marks today as indexable, because it is the canonical place page', () => {
+      const attrs = component.getSeoLinkAttributes(dayjs());
+      expect(attrs.split(' ')).toContain('index');
+      expect(attrs.split(' ')).not.toContain('noindex');
     });
-    it('other dates return index=false', () => {
-      // Use an offset that cannot equal any relativeDateIncrement value (-1, 0, 1, or 6–7)
-      const attrs = component.getSeoLinkAttributes(dayjs().add(10, 'day'));
-      expect(attrs).toContain('no-index');
-      expect(attrs.split(' ')).not.toContain('index'); // "index" as word, not substring of "no-index"
+
+    [-1, 1, 6, 10].forEach((offset) => {
+      it(`marks an offset of ${offset} days as noindex, it is only a ?date= view`, () => {
+        const attrs = component.getSeoLinkAttributes(
+          dayjs().startOf('day').add(offset, 'day'),
+        );
+        expect(attrs.split(' ')).toContain('noindex');
+        expect(attrs.split(' ')).not.toContain('index');
+      });
     });
   });
 });

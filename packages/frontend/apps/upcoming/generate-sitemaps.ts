@@ -2,6 +2,7 @@ import { SitemapStream, streamToPromise } from 'sitemap';
 import { writeFileSync } from 'fs';
 import { join } from 'path';
 import { Readable } from 'node:stream';
+import { buildSitemapLinks } from './src/sitemap-links.ts';
 // A plain node build script, not app code: it runs before the Angular
 // toolchain, so it cannot resolve the @feedless/geo path alias, and the
 // barrel would pull in Angular services it has no injector for.
@@ -30,7 +31,7 @@ class AppsDataGenerator {
   private generateSiteMap(outDir: string) {
     const domain = `https://lokale.events/`;
     const lastMod = new Date().toISOString();
-    const links = this.generateUpcomingSitemapLinks(lastMod);
+    const links = buildSitemapLinks(places, lastMod);
     const smStream = new SitemapStream({
       hostname: domain,
       lastmodDateOnly: false,
@@ -47,49 +48,6 @@ class AppsDataGenerator {
         this.prettyPrint(String(sitemap)),
       ),
     );
-  }
-
-  private generateUpcomingSitemapLinks(lastMod: string): Array<{
-    url: string;
-    changefreq: 'daily' | 'weekly' | 'monthly' | 'yearly';
-    lastmod: string;
-    priority: number;
-  }> {
-    const links = [
-      {
-        url: '/',
-        changefreq: 'daily' as const,
-        lastmod: lastMod,
-        priority: 1.0,
-      },
-      {
-        url: '/ueber-uns/',
-        changefreq: 'monthly' as const,
-        lastmod: lastMod,
-        priority: 0.8,
-      },
-      {
-        url: '/agb/',
-        changefreq: 'yearly' as const,
-        lastmod: lastMod,
-        priority: 0.3,
-      },
-    ]; // Add location-based event pages with better priorities
-    const locationUrls = places.map((location) => {
-      return `CH/${location.area.toUpperCase()}/${encodeURIComponent(location.place)}`;
-    });
-    locationUrls.forEach((location) => {
-      ['heute', 'morgen', 'kommendes-wochenende'].forEach((day) => {
-        const dateUrl = `/events/in/${location}/${day}`;
-        links.push({
-          url: dateUrl,
-          changefreq: 'daily' as const,
-          lastmod: lastMod,
-          priority: day != 'kommendes-wochenende' ? 0.9 : 0.7, // Higher priority for today
-        });
-      });
-    });
-    return links;
   }
 
   // One element per line, so a regenerated sitemap produces a reviewable diff
@@ -116,4 +74,6 @@ class AppsDataGenerator {
   }
 }
 
-new AppsDataGenerator(join(process.cwd(), 'apps/upcoming/public'));
+if (process.argv[1]?.endsWith('generate-sitemaps.ts')) {
+  new AppsDataGenerator(join(process.cwd(), 'apps/upcoming/public'));
+}
