@@ -10,9 +10,8 @@ import { AppConfigService, AuthGuardService } from '@feedless/components';
 import { NamedLatLon, upperCaseStringParser } from '@feedless/core';
 import {
   createRoutes,
-  int,
-  param,
   parsePath,
+  renderPath,
   str,
   template,
 } from 'typesafe-routes';
@@ -22,80 +21,47 @@ import { EventService, LocalizedEvent } from './event.service';
 
 export const perimeterUnit = 'Km';
 
-export type RelativeDate =
-  | 'gestern'
-  | 'heute'
-  | 'morgen'
-  | 'kommendes-wochenende';
-
-function getToday() {
-  return dayjs().startOf('day');
-}
-
-function getDaysUntilSaturday() {
-  const today = getToday();
-  return (6 - today.day() + 7) % 7 || 7;
-}
-
-export const relativeDateIncrement: Record<RelativeDate, number> = {
-  gestern: -1,
-  heute: 0,
-  morgen: 1,
-  'kommendes-wochenende': getDaysUntilSaturday(),
-};
-
-export function parseRelativeDate(keyword: RelativeDate): Dayjs {
-  const today = getToday();
-  switch (keyword) {
-    case 'gestern':
-      return today.add(-1, 'day');
-    case 'heute':
-      return today.add(0, 'day');
-    case 'morgen':
-      return today.add(1, 'days');
-    case 'kommendes-wochenende': {
-      // Find next friday
-      return today.add(getDaysUntilSaturday(), 'days');
-    }
-    default:
-      return today;
-  }
-}
-
-export function parseDateFromUrl(params: Params): {
+export function parseDateFromQuery(queryParams: Params): {
   date: Dayjs;
-  relative: boolean;
+  explicit: boolean;
 } {
-  // Try to parse relative date first
-  try {
-    const { relativeDate } = parsePath(
-      upcomingBaseRoute.events.countryCode.region.place.relativeDateTime,
-      params,
-    );
-    if (relativeDate) {
-      return {
-        date: parseRelativeDate(relativeDate as RelativeDate),
-        relative: true,
-      };
+  const raw = queryParams['date'];
+  if (typeof raw === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(raw)) {
+    const parsed = dayjs(raw, 'YYYY-MM-DD');
+    if (parsed.isValid()) {
+      return { date: parsed, explicit: true };
     }
-  } catch (e) {
-    // ignore, try absolute date
   }
+  return { date: dayjs(), explicit: false };
+}
 
-  // Try to parse absolute date
-  try {
-    const { year, month, day } = parsePath(
-      upcomingBaseRoute.events.countryCode.region.place.dateTime,
-      params,
-    );
-    const date = dayjs(`${year}/${month}/${day}`, 'YYYY/MM/DD');
-    if (date?.isValid()) {
-      return { date, relative: false };
-    }
-  } catch (e) {
-    // ignore
+export function renderPlaceUrl(
+  countryCode: string,
+  region: string,
+  place: string,
+): string {
+  return renderPath(upcomingBaseRoute.events.countryCode.region.place, {
+    countryCode,
+    region,
+    place,
+  });
+}
+
+/**
+ * Heute ist die nackte Ortsseite, jeder andere Tag hängt als `?date=` daran.
+ * Der Canonical zeigt immer auf die parameterlose Form.
+ */
+export function renderDateUrl(
+  countryCode: string,
+  region: string,
+  place: string,
+  date: Dayjs | null | undefined,
+): string {
+  const base = renderPlaceUrl(countryCode, region, place);
+  if (!date || date.isSame(dayjs(), 'day')) {
+    return base;
   }
-  return { date: dayjs(), relative: false };
+  return `${base}?date=${date.format('YYYY-MM-DD')}`;
 }
 
 export async function parseLocationFromUrl(
@@ -149,7 +115,7 @@ export const eventsResolver: ResolveFn<
   const geoService = inject(AdminGeoService);
   const appConfigService = inject(AppConfigService);
 
-  const { date } = parseDateFromUrl(route.params);
+  const { date } = parseDateFromQuery(route.queryParams);
 
   let latlng: NamedLatLon;
   try {
@@ -186,18 +152,6 @@ export const eventsResolver: ResolveFn<
 //   const id = route.paramMap.get('id')!;
 //   return eventService.findById(id);
 // };
-
-export const relativeDateParser = param<RelativeDate>({
-  parse: (value: string) => {
-    const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
-
-    if (relativeDates.includes(value as RelativeDate)) {
-      return value as RelativeDate;
-    }
-    throw new Error(`Invalid relative date keyword: ${value}`);
-  },
-  serialize: (value: RelativeDate) => value,
-});
 
 export const upcomingBaseRoute = createRoutes({
   terms: {
@@ -240,30 +194,6 @@ export const upcomingBaseRoute = createRoutes({
             children: {
               place: {
                 path: [str('place')],
-                children: {
-                  dateTime: {
-                    path: ['am', int('year'), int('month'), int('day')],
-                    children: {
-                      //   perimeter: {
-                      //     path: ['innerhalb', perimeterParser('perimeter')],
-                      //   },
-                      eventId: {
-                        path: [str('eventId')],
-                      },
-                    },
-                  },
-                  relativeDateTime: {
-                    path: [relativeDateParser('relativeDate')],
-                    children: {
-                      // perimeter: {
-                      //   path: ['innerhalb', perimeterParser('perimeter')],
-                      // },
-                      eventId: {
-                        path: [str('eventId')],
-                      },
-                    },
-                  },
-                },
               },
             },
           },
@@ -355,57 +285,10 @@ export const UPCOMING_ROUTES: Routes = [
       ),
   },
   {
-    path: template(upcomingBaseRoute._.events.countryCode.region.place),
-    loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
-      ),
-  },
-  {
-    path: template(
-      upcomingBaseRoute._.events.countryCode.region.place.dateTime,
-    ),
-    loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
-      ),
-  },
-  {
     resolve: {
       events: eventsResolver,
     },
-    path: template(
-      upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime,
-    ),
-    loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
-      ),
-  },
-  // {
-  //   path: toPath(
-  //     template(
-  //       upcomingBaseRoute.events.countryCode.region.place.relativeDateTime
-  //         .perimeter,
-  //     ),
-  //   ),
-  //   loadComponent: () =>
-  //     import('./pages/events/events.page').then((m) => m.EventCalendarPage),
-  // },
-  {
-    path: template(
-      upcomingBaseRoute._.events.countryCode.region.place.dateTime.eventId,
-    ),
-    loadComponent: () =>
-      import('./pages/event-calendar/event-calendar.page').then(
-        (m) => m.EventCalendarPage,
-      ),
-  },
-  {
-    path: template(
-      upcomingBaseRoute._.events.countryCode.region.place.relativeDateTime
-        .eventId,
-    ),
+    path: template(upcomingBaseRoute._.events.countryCode.region.place),
     loadComponent: () =>
       import('./pages/event-calendar/event-calendar.page').then(
         (m) => m.EventCalendarPage,

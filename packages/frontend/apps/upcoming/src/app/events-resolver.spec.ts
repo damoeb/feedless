@@ -15,9 +15,9 @@ import { EventService } from './event.service';
 /**
  * A rejected resolver aborts the navigation, so Angular SSR renders nothing,
  * `angularApp.handle()` resolves to null and express answers its default 404.
- * That turned an api outage into a hard 404 on every `/heute`, `/morgen` and
- * `/kommendes-wochenende` url in the sitemap, while the sibling routes - which
- * carry no resolver - kept rendering. The resolver must degrade, never reject.
+ * The place page is the only indexable event url there is, so a rejecting
+ * resolver would take every place in the sitemap down with it during an api
+ * outage. The resolver must degrade, never reject.
  */
 describe('eventsResolver', () => {
   const hedingen = {
@@ -34,8 +34,8 @@ describe('eventsResolver', () => {
       countryCode: 'CH',
       region: 'ZH',
       place: 'Hedingen',
-      relativeDate: 'heute',
     },
+    queryParams: {},
   } as unknown as ActivatedRouteSnapshot;
 
   const resolve = (geo: unknown, events: unknown) => {

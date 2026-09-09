@@ -24,10 +24,6 @@ import { addIcons } from 'ionicons';
 import { calendarNumberOutline } from 'ionicons/icons';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { IconComponent } from '@feedless/components';
-import {
-  RelativeDate,
-  relativeDateIncrement,
-} from '../../upcoming-product-routes';
 
 @Component({
   selector: 'app-inline-calendar',
@@ -144,16 +140,14 @@ export class InlineCalendarComponent implements OnInit, OnChanges {
     );
   }
 
+  /**
+   * Nur der heutige Tag ist die kanonische Ortsseite; jeder andere Tag hängt
+   * als `?date=` daran und wird nicht indexiert.
+   */
   getSeoLinkAttributes(date: Dayjs): string {
-    const relativeDates = Object.keys(relativeDateIncrement) as RelativeDate[];
-    const diff = date.startOf('day').diff(dayjs().startOf('day'), 'day');
-    const relativeDateExpressionMaybe = relativeDates.find(
-      (relativeDate) => relativeDateIncrement[relativeDate] === diff,
-    );
-    if (relativeDateExpressionMaybe) {
+    if (date.isSame(dayjs(), 'day')) {
       return ['follow', 'index'].join(' ');
-    } else {
-      return ['follow', 'no-index'].join(' ');
     }
+    return ['follow', 'noindex'].join(' ');
   }
 }
