@@ -20,6 +20,10 @@ export const serverRoutes: ServerRoute[] = [
     renderMode: RenderMode.Server,
   },
   {
+    path: template(upcomingBaseRoute._.events.countryCode.region.place.event),
+    renderMode: RenderMode.Server,
+  },
+  {
     path: 'agb',
     renderMode: RenderMode.Server,
   },

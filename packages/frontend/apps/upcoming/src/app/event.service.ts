@@ -4,13 +4,16 @@ import {
   GetElementType,
   GqlEventsByIdsQuery,
   GqlEventsByIdsQueryVariables,
+  GqlRecordByIdQuery,
+  GqlRecordByIdQueryVariables,
   GqlRecordsInput,
+  RecordById,
 } from '@feedless/graphql-api';
 import { ApolloClient, FetchPolicy } from '@apollo/client/core';
 import type { DefaultContext } from '@apollo/client/core/types';
 import { Dayjs } from 'dayjs';
 import { getDateConstraints } from './pages/event-calendar/event-calendar.page';
-import { uniqBy } from 'lodash-es';
+import { dedupeEvents } from './event-dedup';
 
 export type LocalizedEvent = GetElementType<GqlEventsByIdsQuery['records']>;
 
@@ -50,7 +53,26 @@ export class EventService {
           before: maxDate.endOf('day').valueOf(),
         },
       },
-    }).then((events) => uniqBy(events, 'url'));
+    }).then(dedupeEvents);
+  }
+
+  /**
+   * Ein einzelnes Event für die Detailseite. `record(data:)` und der
+   * id-Filter existieren im Schema, es braucht keinen Codegen-Lauf.
+   */
+  findById(id: string): Promise<LocalizedEvent | null> {
+    return this.apollo
+      .query<GqlRecordByIdQuery, GqlRecordByIdQueryVariables>({
+        query: RecordById,
+        variables: {
+          data: {
+            where: { id },
+          },
+        },
+        fetchPolicy: 'cache-first',
+      })
+      .then((response) => (response.data.record as LocalizedEvent) ?? null)
+      .catch((): null => null);
   }
 
   findAllByRepositoryId(

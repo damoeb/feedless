@@ -1,6 +1,9 @@
 import dayjs from 'dayjs';
 import {
   parseDateFromQuery,
+  parseEventIdFromSlug,
+  renderEventUrl,
+  toEventSlug,
   renderPlaceUrl,
   upcomingBaseRoute,
 } from './upcoming-product-routes';
@@ -67,6 +70,63 @@ describe('renderPlaceUrl', () => {
   it('leaves encoding to the angular url serializer', () => {
     expect(renderPlaceUrl('CH', 'AG', 'Aarau Rohr')).toBe(
       '/events/in/CH/AG/Aarau Rohr',
+    );
+  });
+});
+
+describe('toEventSlug', () => {
+  const id = '754bec48-e44b-4818-b5c1-6a017bef09a1';
+
+  it('puts a readable slug in front of the id', () => {
+    expect(toEventSlug('Chilbi Baar', id)).toBe(`chilbi-baar-${id}`);
+  });
+
+  it('folds umlauts and accents', () => {
+    expect(toEventSlug('Zämä bewegä', id)).toBe(`zaemae-bewegae-${id}`);
+    expect(toEventSlug('Fête de la Musique', id)).toBe(
+      `fete-de-la-musique-${id}`,
+    );
+  });
+
+  it('falls back to the bare id when the title yields nothing', () => {
+    expect(toEventSlug('', id)).toBe(id);
+    expect(toEventSlug('!!! ???', id)).toBe(id);
+  });
+
+  it('caps the slug and never ends it on a separator', () => {
+    const slug = toEventSlug('a'.repeat(200), id);
+    expect(slug).toBe(`${'a'.repeat(60)}-${id}`);
+    expect(toEventSlug('Sport ' + 'x'.repeat(60), id)).not.toContain('--');
+  });
+});
+
+describe('parseEventIdFromSlug', () => {
+  const id = '754bec48-e44b-4818-b5c1-6a017bef09a1';
+
+  /**
+   * Titel-Slug und uuid enthalten beide Bindestriche - die id muss deshalb am
+   * Ende verankert gelesen werden, nicht am ersten Trenner.
+   */
+  it('reads the id out of a slug that is full of hyphens', () => {
+    expect(parseEventIdFromSlug(`chilbi-baar-am-see-${id}`)).toBe(id);
+    expect(parseEventIdFromSlug(id)).toBe(id);
+  });
+
+  it('returns null when no id is present', () => {
+    expect(parseEventIdFromSlug('chilbi-baar')).toBeNull();
+    expect(parseEventIdFromSlug(undefined)).toBeNull();
+  });
+});
+
+describe('renderEventUrl', () => {
+  it('renders the event url below its place', () => {
+    expect(
+      renderEventUrl('CH', 'ZG', 'Zug', {
+        id: '754bec48-e44b-4818-b5c1-6a017bef09a1',
+        title: 'Chilbi Baar',
+      }),
+    ).toBe(
+      '/events/in/CH/ZG/Zug/e/chilbi-baar-754bec48-e44b-4818-b5c1-6a017bef09a1',
     );
   });
 });

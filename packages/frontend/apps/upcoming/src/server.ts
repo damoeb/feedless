@@ -12,6 +12,7 @@ import {
   createAccessLogLine,
   detailMatchesPlace,
   EventsPath,
+  getEventQueryRedirect,
   getLegacyRedirect,
   isResolvableLocation,
   parseEventsPath,
@@ -138,6 +139,15 @@ app.use('/**', async (req, res, next) => {
     const redirect = getLegacyRedirect(eventsPath);
     if (redirect) {
       return res.redirect(301, redirect);
+    }
+    const eventQuery = getEventQueryRedirect(
+      eventsPath,
+      new URL(req.originalUrl || req.url, 'http://localhost').searchParams.get(
+        'event',
+      ) ?? undefined,
+    );
+    if (eventQuery) {
+      return res.redirect(301, eventQuery);
     }
     if (!(await isResolvableLocation(eventsPath, lookupLocation))) {
       return res.status(404).send('Not found');

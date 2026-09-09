@@ -1,5 +1,6 @@
 import {
   detailMatchesPlace,
+  getEventQueryRedirect,
   getLegacyRedirect,
   isKnownLocation,
   isResolvableLocation,
@@ -106,12 +107,12 @@ describe('getLegacyRedirect', () => {
     );
   });
 
-  it('turns an event deeplink into an event query parameter', () => {
+  it('turns an event deeplink into an event page url', () => {
     expect(redirectFor('/events/in/CH/ZG/Zug/heute/abc-123')).toBe(
-      '/events/in/CH/ZG/Zug?event=abc-123',
+      '/events/in/CH/ZG/Zug/e/abc-123',
     );
     expect(redirectFor('/events/in/CH/ZG/Zug/am/2026/09/08/abc-123')).toBe(
-      '/events/in/CH/ZG/Zug?event=abc-123',
+      '/events/in/CH/ZG/Zug/e/abc-123',
     );
   });
 
@@ -239,5 +240,25 @@ describe('detailMatchesPlace', () => {
 
   it('rejects an empty place', () => {
     expect(detailMatchesPlace('', 'zug zg')).toBe(false);
+  });
+});
+
+describe('getEventQueryRedirect', () => {
+  const forPath = (pathname: string, eventId?: string) =>
+    getEventQueryRedirect(parseEventsPath(pathname)!, eventId);
+
+  it('sends ?event= to the event page', () => {
+    expect(forPath('/events/in/CH/ZG/Zug', 'abc-123')).toBe(
+      '/events/in/CH/ZG/Zug/e/abc-123',
+    );
+  });
+
+  it('does nothing without an event id', () => {
+    expect(forPath('/events/in/CH/ZG/Zug')).toBeNull();
+  });
+
+  it('does nothing on a hub level or below the place', () => {
+    expect(forPath('/events/in/CH/ZG', 'abc')).toBeNull();
+    expect(forPath('/events/in/CH/ZG/Zug/e/abc', 'abc')).toBeNull();
   });
 });
