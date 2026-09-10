@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any
@@ -51,22 +52,33 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 
+/**
+ * Der Durchstich gegen eine echte Datenbank: anlegen, bestätigen, verschicken.
+ */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
@@ -111,6 +123,9 @@ class ReportUseCaseIntTest {
   private lateinit var reportUseCase: ReportUseCase
 
   @Autowired
+  private lateinit var reportRepository: ReportRepository
+
+  @Autowired
   private lateinit var repositoryRepository: RepositoryRepository
 
   @Autowired
@@ -124,6 +139,14 @@ class ReportUseCaseIntTest {
 
   @MockitoBean
   private lateinit var mailService: MailService
+
+  /**
+   * JwtTokenIssuer hängt am session-Profil, das hier nicht aktiv ist. Der
+   * Report-Pfad braucht ihn nur, um die Links in den Mails zu signieren.
+   */
+  @MockitoBean
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+
   private lateinit var user: User
   private lateinit var group: Group
 
@@ -132,8 +155,11 @@ class ReportUseCaseIntTest {
 
   @BeforeEach
   fun setUp() = runTest {
-    // Clean up before each test
     userRepository.deleteAll()
+
+    whenever(jwtTokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("token").header("alg", "HS256").claim("report_id", "x").build()
+    )
 
     user = User(
       email = "test@test.com",
@@ -141,7 +167,6 @@ class ReportUseCaseIntTest {
     )
     userRepository.save(user)
 
-    // Create a group for the user
     group = groupRepository.save(
       Group(
         name = "test-group",
@@ -165,18 +190,21 @@ class ReportUseCaseIntTest {
       createdAt = past,
       latlon = JtsUtil.createPoint(1.0, 1.0)
     )
+    // Ein echtes Event: gestern geerntet, morgen statt. Die Dokumentabfrage
+    // filtert bewusst auf publishedAt < jetzt.
     createDocument(
       it,
-      title = "future-released",
+      // Mit Markup im Titel, wie es aus gescrapten Quellen kommen kann.
+      title = "future-released <b>bold</b>",
       status = ReleaseStatus.released,
-      publishedAt = future,
+      publishedAt = past,
       startingAt = future,
       createdAt = future,
       latlon = JtsUtil.createPoint(1.0, 1.0)
     )
     createDocument(
       it,
-      title = "3",
+      title = "past-unreleased",
       status = ReleaseStatus.unreleased,
       publishedAt = past,
       startingAt = past,
@@ -185,7 +213,7 @@ class ReportUseCaseIntTest {
     )
     createDocument(
       it,
-      title = "4",
+      title = "future-unreleased",
       status = ReleaseStatus.unreleased,
       publishedAt = future,
       startingAt = future,
@@ -194,6 +222,10 @@ class ReportUseCaseIntTest {
     )
   }
 
+  /**
+   * Öffentlich, wie das Veranstaltungs-Repository von lokale.events: sonst
+   * liesse sich der anonyme Weg nicht prüfen.
+   */
   private suspend fun createRepository(suffix: String, user: User, groupId: GroupId): Repository {
     val repository = Repository(
       title = "title $suffix",
@@ -203,6 +235,7 @@ class ReportUseCaseIntTest {
       product = Vertical.rssProxy,
       ownerId = user.id,
       groupId = groupId,
+      visibility = EntityVisibility.isPublic,
       lastUpdatedAt = LocalDateTime.now().minusDays(2),
       retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt,
     )
@@ -248,18 +281,64 @@ class ReportUseCaseIntTest {
       verify(mailService).send(any(OutgoingMail::class.java))
     }
 
+  /**
+   * Der eigentliche Durchstich: Bestätigen, dann verschickt der geplante Lauf
+   * die Veranstaltungen der kommenden Woche - nur freigegebene, nur künftige.
+   */
   @Test
-  fun `given a report exists, processReportJobs will send a report`() =
+  fun `a confirmed report is sent with the events of the coming week`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      val report = createReport()
+      reportUseCase.confirmReportFromToken(report.id)
+      reset(mailService)
+
+      reportUseCase.processReportJobs()
+
+      val captor = argumentCaptor<OutgoingMail>()
+      verify(mailService).send(captor.capture())
+      assertThat(captor.firstValue.to).containsExactly("email@somewhere")
+      assertThat(captor.firstValue.htmlContent)
+        .contains("future-released")
+        .doesNotContain("past-released")
+        .doesNotContain("future-unreleased")
+        // Jede Report-Mail braucht einen funktionierenden Abmeldelink.
+        .contains("/reports/delete/")
+        // Gescrapte Titel landen escaped in der Mail, nicht als HTML.
+        .contains("future-released &lt;b&gt;bold&lt;/b&gt;")
+        .doesNotContain("<b>bold</b>")
+        .doesNotContain("href=\"\"")
+    }
+
+  /**
+   * Vorher ging der Report auch an Adressen, die das Abo nie bestätigt haben.
+   * Und es gibt keine Erinnerung: die Bestätigungsanfrage geht genau einmal.
+   */
+  @Test
+  fun `an unconfirmed report is not sent and nobody is reminded`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
       createReport()
       reset(mailService)
 
       reportUseCase.processReportJobs()
 
-      verify(mailService).send(any(OutgoingMail::class.java))
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
     }
 
-  private suspend fun createReport() {
+  /**
+   * Gegen die echte Datenbank, weil hier zwei Fehler zugleich sassen: der
+   * RepositoryGuard verlangte Eigentümerschaft, und die erfundene UserId des
+   * anonymen Tokens verletzte den Fremdschlüssel fk_report__to__user.
+   */
+  @Test
+  fun `an anonymous visitor can subscribe to a public repository`() =
+    runTest(context = RequestContext(userId = UserId())) {
+      val report = createReport()
+
+      assertThat(reportRepository.findById(report.id)).isNotNull
+      assertThat(reportRepository.findById(report.id)!!.userId).isNull()
+    }
+
+  private suspend fun createReport(): Report =
     reportUseCase.createReport(
       repository.id,
       SegmentInput(
@@ -284,6 +363,4 @@ class ReportUseCaseIntTest {
         ),
       )
     )
-  }
-
 }
