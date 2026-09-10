@@ -18,6 +18,7 @@ import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.http.HttpApiJwtFilter
+import org.migor.feedless.http.HttpApiVersionHeaderFilter
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
@@ -83,6 +84,9 @@ class SecurityConfig {
   @Autowired(required = false)
   private var httpApiJwtFilter: HttpApiJwtFilter? = null
 
+  @Autowired(required = false)
+  private var httpApiVersionHeaderFilter: HttpApiVersionHeaderFilter? = null
+
   @Autowired
   private lateinit var authorizedClientService: OAuth2AuthorizedClientService
 
@@ -107,6 +111,12 @@ class SecurityConfig {
     var chain = conditionalOauth(http)
     httpApiJwtFilter?.let { filter ->
       chain = chain.addFilterBefore(filter, org.springframework.security.web.authentication.www.BasicAuthenticationFilter::class.java)
+      // Must land on the response before HttpApiJwtFilter can reject an unauthenticated
+      // request with sendError(401), so it is anchored immediately ahead of that filter
+      // rather than independently before BasicAuthenticationFilter.
+      httpApiVersionHeaderFilter?.let { versionFilter ->
+        chain = chain.addFilterBefore(versionFilter, HttpApiJwtFilter::class.java)
+      }
     }
     return chain
       .headers {

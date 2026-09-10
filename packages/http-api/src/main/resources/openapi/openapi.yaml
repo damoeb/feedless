@@ -27,6 +27,9 @@ paths:
       responses:
         '200':
           description: Authenticated user
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -63,6 +66,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -91,6 +97,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -110,6 +119,9 @@ paths:
       responses:
         '201':
           description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -127,6 +139,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -147,6 +162,9 @@ paths:
       responses:
         '200':
           description: Updated
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -163,6 +181,9 @@ paths:
       responses:
         '204':
           description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -194,6 +215,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -213,6 +237,9 @@ paths:
       responses:
         '201':
           description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -232,6 +259,8 @@ paths:
         '200':
           description: OK
           headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
             ETag:
               $ref: '#/components/headers/ETag'
           content:
@@ -257,6 +286,8 @@ paths:
         '200':
           description: Updated
           headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
             ETag:
               $ref: '#/components/headers/ETag'
           content:
@@ -277,6 +308,9 @@ paths:
       responses:
         '204':
           description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -302,6 +336,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -331,6 +368,8 @@ paths:
         '202':
           description: Queued
           headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
             Location:
               description: URL of the queued harvest
               schema:
@@ -360,6 +399,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -380,6 +422,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             text/plain:
               schema:
@@ -400,6 +445,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -418,6 +466,9 @@ paths:
       responses:
         '201':
           description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -436,6 +487,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -456,6 +510,9 @@ paths:
       responses:
         '200':
           description: Updated
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -472,6 +529,9 @@ paths:
       responses:
         '204':
           description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -485,6 +545,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -505,6 +568,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -520,6 +586,9 @@ paths:
       responses:
         '200':
           description: Groups the current user belongs to (as GroupAssignment)
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -538,6 +607,9 @@ paths:
       responses:
         '201':
           description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -560,6 +632,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -574,6 +649,9 @@ paths:
       responses:
         '204':
           description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         default:
@@ -595,6 +673,9 @@ paths:
       responses:
         '200':
           description: Members of the group
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -615,6 +696,9 @@ paths:
       responses:
         '201':
           description: Assignment created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
@@ -643,6 +727,9 @@ paths:
       responses:
         '204':
           description: Removed
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         default:
@@ -718,6 +805,12 @@ components:
         quoted.
       schema:
         type: string
+    X-Feedless-Version:
+      description: >
+        The instance's app.version. feedctl compares this against its own build version and
+        warns on mismatch.
+      schema:
+        type: string
   responses:
     Error:
       description: >
@@ -725,18 +818,27 @@ components:
         401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 409 `CONFLICT`,
         412 `PRECONDITION_FAILED`, 429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError`
         body. Since every route requires authentication, every operation can return 401.
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     Unauthorized:
       description: Missing or invalid authentication
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     BadRequest:
       description: Invalid request
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
@@ -744,6 +846,8 @@ components:
     TooManyRequests:
       description: Rate limit exceeded — retry after the interval in `Retry-After`
       headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
         Retry-After:
           description: Seconds to wait before retrying
           schema:
@@ -754,18 +858,27 @@ components:
             $ref: '#/components/schemas/ApiError'
     NotFound:
       description: Resource not found
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     Conflict:
       description: The resource's state does not allow the request, e.g. a real run of a disabled source
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     PreconditionFailed:
       description: If-Match did not match the resource's current ETag
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:

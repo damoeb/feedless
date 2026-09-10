@@ -132,6 +132,29 @@ class SecurityConfigIntTest {
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
   }
 
+  /**
+   * The version header is set by [org.migor.feedless.http.HttpApiVersionHeaderFilter], which
+   * must run ahead of [org.migor.feedless.http.HttpApiJwtFilter] in the real Spring Security
+   * filter chain so it lands on the 401 that filter writes via `sendError` before any
+   * controller runs — a unit test of either filter in isolation cannot prove that ordering.
+   */
+  @Test
+  fun whenRequestingApiV1WithoutAuth_ThenVersionHeaderPresentOn401() {
+    val restTemplate = TestRestTemplate()
+    val response = restTemplate.getForEntity("${baseEndpoint}/api/v1/repositories", String::class.java)
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
+    assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
+  }
+
+  @Test
+  fun whenCallingNonApiV1Url_ThenVersionHeaderAbsent() {
+    val restTemplate = TestRestTemplate()
+    val response = restTemplate.postForEntity("${baseEndpoint}/graphql", "", String::class.java)
+
+    assertThat(response.headers.getFirst("X-Feedless-Version")).isNull()
+  }
+
 //  @ParameterizedTest
 //  @CsvSource(value = [
 ////    "bucket/$feedId",
