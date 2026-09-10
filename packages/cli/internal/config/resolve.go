@@ -16,6 +16,12 @@ const (
 // use for a request. Host is empty when no host could be resolved at all
 // (no --host/FEEDCTL_HOST/default_host); otherwise it names the host that
 // has no usable token.
+//
+// It implements ExitCode() int (exit 4), so cmd/feedctl/main.go's run()
+// picks the right exit code whether a command builds this error directly
+// (as auth logout does) or gets it indirectly through Resolve /
+// client.NewFromConfig — run() only needs to recognize the ExitCode()
+// method, not either concrete error type.
 type NotLoggedInError struct {
 	Host string
 }
@@ -27,6 +33,11 @@ func (e *NotLoggedInError) Error() string {
 
 	return fmt.Sprintf("not logged in to %s — run: feedctl auth login --url <url>", e.Host)
 }
+
+// ExitCode is the process exit code feedctl uses when this error reaches
+// main: 4, matching every other "not authenticated" failure (see
+// cmd.ExitError, which auth login and auth status build directly).
+func (e *NotLoggedInError) ExitCode() int { return 4 }
 
 // Resolved is a host and token pair ready to build an authenticated
 // client with (see client.New / client.NewFromConfig).

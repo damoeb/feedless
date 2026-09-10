@@ -43,7 +43,7 @@ func TestNew_SendsBearerToken(t *testing.T) {
 		_, _ = w.Write([]byte(`{"id":"11111111-1111-1111-1111-111111111111","email":"someone@example.org","groups":[]}`))
 	})
 
-	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", &bytes.Buffer{})
+	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -70,7 +70,7 @@ func TestNew_NoToken_OmitsAuthorizationHeader(t *testing.T) {
 		w.WriteHeader(http.StatusUnauthorized)
 	})
 
-	c, err := New("h.example.org", srv.URL, "", "1.0.0", &bytes.Buffer{})
+	c, err := New("h.example.org", srv.URL, "", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -83,7 +83,7 @@ func TestNew_NoToken_OmitsAuthorizationHeader(t *testing.T) {
 }
 
 func TestGuardScheme_RefusesNonLoopbackHTTP(t *testing.T) {
-	c, err := New("evil.example.org", "http://evil.example.org", "the-token", "1.0.0", &bytes.Buffer{})
+	c, err := New("evil.example.org", "http://evil.example.org", "the-token", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -101,7 +101,7 @@ func TestGuardScheme_AllowsLoopbackHTTP(t *testing.T) {
 	// httptest.NewServer listens on 127.0.0.1, i.e. loopback http.
 	srv := newUserServer(t, "", nil)
 
-	c, err := New("localhost", srv.URL, "the-token", "1.0.0", &bytes.Buffer{})
+	c, err := New("localhost", srv.URL, "the-token", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -119,7 +119,7 @@ func TestGuardScheme_AllowsHTTPS(t *testing.T) {
 	// https:// is never guarded, regardless of host; use an https URL that
 	// intentionally fails to dial, to prove the guard itself did not fire
 	// (the error must be a network error, not the guard's message).
-	c, err := New("unreachable.invalid", "https://127.0.0.1:1", "the-token", "1.0.0", &bytes.Buffer{})
+	c, err := New("unreachable.invalid", "https://127.0.0.1:1", "the-token", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -137,7 +137,7 @@ func TestVersionWarning_PrintedOnceWhenVersionsDiffer(t *testing.T) {
 	srv := newUserServer(t, "9.9.9", nil)
 	stderr := &bytes.Buffer{}
 
-	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr)
+	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -165,7 +165,7 @@ func TestVersionWarning_NotPrintedWhenVersionsMatch(t *testing.T) {
 	srv := newUserServer(t, "1.0.0", nil)
 	stderr := &bytes.Buffer{}
 
-	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr)
+	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -183,7 +183,7 @@ func TestVersionWarning_NotPrintedForDevBuilds(t *testing.T) {
 	srv := newUserServer(t, "9.9.9", nil)
 	stderr := &bytes.Buffer{}
 
-	c, err := New("h.example.org", srv.URL, "the-token", "dev", stderr)
+	c, err := New("h.example.org", srv.URL, "the-token", "dev", stderr, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -201,7 +201,7 @@ func TestVersionWarning_NotPrintedForDevServer(t *testing.T) {
 	srv := newUserServer(t, "dev", nil)
 	stderr := &bytes.Buffer{}
 
-	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr)
+	c, err := New("h.example.org", srv.URL, "the-token", "1.0.0", stderr, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
 	}
@@ -212,6 +212,70 @@ func TestVersionWarning_NotPrintedForDevServer(t *testing.T) {
 
 	if stderr.Len() != 0 {
 		t.Errorf("stderr = %q, want empty when the server reports dev", stderr.String())
+	}
+}
+
+// TestVersionWarning_SharedWarner_PrintsOnceAcrossMultipleClients covers
+// requirement 8 for a command like `auth status` that builds one Client
+// per configured host: when every host's server disagrees with the CLI's
+// version, the whole invocation must still print exactly one warning, not
+// one per host. That only holds if every Client involved was built with
+// the *same* Warner.
+func TestVersionWarning_SharedWarner_PrintsOnceAcrossMultipleClients(t *testing.T) {
+	srv1 := newUserServer(t, "9.9.1", nil)
+	srv2 := newUserServer(t, "9.9.2", nil)
+	stderr := &bytes.Buffer{}
+	warner := NewWarner()
+
+	c1, err := New("h1.example.org", srv1.URL, "the-token", "1.0.0", stderr, warner)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	c2, err := New("h2.example.org", srv2.URL, "the-token", "1.0.0", stderr, warner)
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	if _, err := c1.API.GetAuthenticatedUserWithResponse(context.Background()); err != nil {
+		t.Fatalf("host 1 request error = %v", err)
+	}
+	if _, err := c2.API.GetAuthenticatedUserWithResponse(context.Background()); err != nil {
+		t.Fatalf("host 2 request error = %v", err)
+	}
+
+	out := stderr.String()
+	if got := strings.Count(out, "warning:"); got != 1 {
+		t.Errorf("warning count = %d, want exactly 1 across both hosts; stderr = %q", got, out)
+	}
+}
+
+// TestVersionWarning_SeparateWarners_PrintsOncePerClient is the control
+// for the test above: without a shared Warner (the pre-fix behavior),
+// each Client warns independently.
+func TestVersionWarning_SeparateWarners_PrintsOncePerClient(t *testing.T) {
+	srv1 := newUserServer(t, "9.9.1", nil)
+	srv2 := newUserServer(t, "9.9.2", nil)
+	stderr := &bytes.Buffer{}
+
+	c1, err := New("h1.example.org", srv1.URL, "the-token", "1.0.0", stderr, NewWarner())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	c2, err := New("h2.example.org", srv2.URL, "the-token", "1.0.0", stderr, NewWarner())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+
+	if _, err := c1.API.GetAuthenticatedUserWithResponse(context.Background()); err != nil {
+		t.Fatalf("host 1 request error = %v", err)
+	}
+	if _, err := c2.API.GetAuthenticatedUserWithResponse(context.Background()); err != nil {
+		t.Fatalf("host 2 request error = %v", err)
+	}
+
+	out := stderr.String()
+	if got := strings.Count(out, "warning:"); got != 2 {
+		t.Errorf("warning count = %d, want 2 (one per independent Warner); stderr = %q", got, out)
 	}
 }
 

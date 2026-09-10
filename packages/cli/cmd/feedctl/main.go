@@ -25,10 +25,8 @@ func main() {
 //
 // The root command sets SilenceErrors, so cobra never prints the error
 // itself — this is the one place that happens. SilenceUsage stays as the
-// root command configures it. An error exits 1, unless it carries a
-// *cmd.ExitError (errors.As), whose code is used instead — e.g. auth
-// commands exit 4 when not logged in or a token is rejected. C3 owns
-// richer error rendering (ApiError bodies) on top of this.
+// root command configures it. C3 owns richer error rendering (ApiError
+// bodies) on top of this.
 func run(args []string, stdout, stderr io.Writer) int {
 	root := cmd.NewRootCmd(version)
 	root.SetArgs(args)
@@ -42,9 +40,27 @@ func run(args []string, stdout, stderr io.Writer) int {
 
 	_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
 
-	var exitErr *cmd.ExitError
-	if errors.As(err, &exitErr) {
-		return exitErr.ExitCode()
+	return exitCodeFor(err)
+}
+
+// exitCoder is implemented by every error that carries the process exit
+// code feedctl should use — *cmd.ExitError (built directly by commands
+// like auth login/status) and *config.NotLoggedInError (returned by
+// config.Resolve and, through it, client.NewFromConfig — the entry point
+// C3-C5 commands use to get an authenticated client). run() only needs to
+// recognize this one method, not either concrete type, so any command
+// built on either error keeps working without main.go changing again.
+type exitCoder interface {
+	ExitCode() int
+}
+
+// exitCodeFor decides run()'s exit code for a non-nil error: the code from
+// an ExitCode() int method on err or anything it wraps (errors.As), else
+// the default of 1.
+func exitCodeFor(err error) int {
+	var ec exitCoder
+	if errors.As(err, &ec) {
+		return ec.ExitCode()
 	}
 
 	return 1

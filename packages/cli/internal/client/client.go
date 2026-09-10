@@ -3,8 +3,10 @@
 // generated internal/api client with two things that must apply to every
 // request regardless of which command makes it — the transport guard
 // (never send credentials over plain http to a non-loopback host) and a
-// one-time warning when the server's X-Feedless-Version disagrees with
-// this binary's version.
+// once-per-invocation warning when the server's X-Feedless-Version
+// disagrees with this binary's version (shared across every Client a
+// command builds via Warner, since a command like auth status builds one
+// Client per configured host).
 package client
 
 import (
@@ -14,6 +16,7 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
+	"sync/atomic"
 
 	"github.com/damoeb/feedless/packages/cli/internal/api"
 	"github.com/damoeb/feedless/packages/cli/internal/config"
@@ -27,11 +30,40 @@ type Client struct {
 	URL  string
 }
 
+// Warner gates the version-mismatch warning (see New) across every Client
+// built during one feedctl invocation, so it prints at most once in total
+// — not once per Client. A command that builds several Clients in one run
+// (auth status, looping over configured hosts) must create exactly one
+// Warner with NewWarner and pass it to every New call; a command that
+// builds only one Client can pass its own fresh NewWarner() (or use
+// NewFromConfig, which does this for it).
+type Warner struct {
+	fired atomic.Bool
+}
+
+// NewWarner returns a Warner that hasn't fired yet.
+func NewWarner() *Warner {
+	return &Warner{}
+}
+
+// fire writes msg to stderr the first time it is called on this Warner —
+// from this call or, once the Warner is shared across Clients, from any of
+// them — and is a silent no-op on every call after that.
+func (w *Warner) fire(stderr io.Writer, msg string) {
+	if w.fired.CompareAndSwap(false, true) {
+		_, _ = fmt.Fprint(stderr, msg)
+	}
+}
+
 // New builds a Client for host (the hosts.yml key / --host value) at
 // rawURL, authenticating requests with token (pass "" for none). Every
 // request goes through the transport guard and the version-mismatch
-// check; version-mismatch warnings are written to stderr.
-func New(host, rawURL, token, cliVersion string, stderr io.Writer) (*Client, error) {
+// check; a nil warner gets a private one, equivalent to NewWarner().
+func New(host, rawURL, token, cliVersion string, stderr io.Writer, warner *Warner) (*Client, error) {
+	if warner == nil {
+		warner = NewWarner()
+	}
+
 	base := strings.TrimRight(rawURL, "/")
 
 	transport := &guardedTransport{
@@ -40,6 +72,7 @@ func New(host, rawURL, token, cliVersion string, stderr io.Writer) (*Client, err
 		baseURL:    base,
 		cliVersion: cliVersion,
 		stderr:     stderr,
+		warner:     warner,
 	}
 
 	opts := []api.ClientOption{api.WithHTTPClient(&http.Client{Transport: transport})}
@@ -60,16 +93,17 @@ func New(host, rawURL, token, cliVersion string, stderr io.Writer) (*Client, err
 
 // NewFromConfig resolves the host and token to use per feedctl's standard
 // resolution order (config.Resolve) and builds an authenticated Client for
-// it. This is the entry point later commands use to get a ready client;
-// it returns *config.NotLoggedInError, unwrapped, when nothing is
-// resolved.
+// it, with its own private Warner (this function only ever builds one
+// Client, so there is nothing to share it with). This is the entry point
+// later commands use to get a ready client; it returns
+// *config.NotLoggedInError, unwrapped, when nothing is resolved.
 func NewFromConfig(cfg *config.Config, flagHost, cliVersion string, stderr io.Writer) (*Client, *config.Resolved, error) {
 	resolved, err := config.Resolve(cfg, flagHost)
 	if err != nil {
 		return nil, nil, err
 	}
 
-	c, err := New(resolved.Host, resolved.URL, resolved.Token, cliVersion, stderr)
+	c, err := New(resolved.Host, resolved.URL, resolved.Token, cliVersion, stderr, NewWarner())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -78,14 +112,19 @@ func NewFromConfig(cfg *config.Config, flagHost, cliVersion string, stderr io.Wr
 }
 
 // guardedTransport wraps an http.RoundTripper with the transport guard and
-// the once-per-Client version warning.
+// the version-mismatch check. It only ever examines the first response it
+// sees (checked) — later responses on the same Client are never
+// inspected, matching "after the first response of an invocation" — and
+// prints through warner, which is what actually limits printing to once
+// per invocation when several Clients share it.
 type guardedTransport struct {
 	next       http.RoundTripper
 	host       string
 	baseURL    string
 	cliVersion string
 	stderr     io.Writer
-	warned     bool
+	warner     *Warner
+	checked    bool
 }
 
 func (t *guardedTransport) RoundTrip(req *http.Request) (*http.Response, error) {
@@ -98,8 +137,8 @@ func (t *guardedTransport) RoundTrip(req *http.Request) (*http.Response, error) 
 		return resp, err
 	}
 
-	if !t.warned {
-		t.warned = true
+	if !t.checked {
+		t.checked = true
 		t.warnOnVersionMismatch(resp)
 	}
 
@@ -115,8 +154,9 @@ func (t *guardedTransport) warnOnVersionMismatch(resp *http.Response) {
 		return
 	}
 
-	_, _ = fmt.Fprintf(t.stderr, "warning: feedctl %s differs from %s version %s; download the matching build from %s/cli/\n",
+	msg := fmt.Sprintf("warning: feedctl %s differs from %s version %s; download the matching build from %s/cli/\n",
 		t.cliVersion, t.host, serverVersion, t.baseURL)
+	t.warner.fire(t.stderr, msg)
 }
 
 // guardScheme refuses to let a request go out over plain http unless it

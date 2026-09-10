@@ -48,6 +48,18 @@ func unauthorizedHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"message":"invalid token"}`))
 }
 
+// userServerWithVersion is userServer plus an X-Feedless-Version response
+// header, for exercising the version-mismatch warning (runCmd always
+// builds feedctl as version "1.0.0").
+func userServerWithVersion(t *testing.T, version, email string) *httptest.Server {
+	t.Helper()
+
+	return userServer(t, func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("X-Feedless-Version", version)
+		okUserHandler(email)(w, r)
+	})
+}
+
 func runCmd(args ...string) (stdout, stderr *bytes.Buffer, err error) {
 	root := NewRootCmd("1.0.0")
 	stdout, stderr = &bytes.Buffer{}, &bytes.Buffer{}
@@ -115,7 +127,14 @@ func TestAuthLogin_WithToken_Success(t *testing.T) {
 
 func TestAuthLogin_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 	withTempConfigHome(t)
-	keyring.MockInitWithError(errors.New("no secret service"))
+	// ErrUnsupportedPlatform is go-keyring's own sentinel for "no real
+	// backend on this OS" — the case config.isKeyringUnavailable can
+	// identify with certainty and StoreToken falls back for. See
+	// internal/config/keyring_unavailable_test.go for the Linux D-Bus
+	// cases (no Secret Service / no session bus) that also fall back, and
+	// TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing below
+	// for one that must not.
+	keyring.MockInitWithError(keyring.ErrUnsupportedPlatform)
 	srv := userServer(t, okUserHandler("someone@example.org"))
 
 	_, stderr, err := runCmdWithStdin("the-token\n", "auth", "login", "--url", srv.URL, "--with-token")
@@ -136,6 +155,37 @@ func TestAuthLogin_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 	}
 	if cfg.Hosts[hostOf(srv.URL)].Token != "the-token" {
 		t.Errorf("host entry Token = %q, want the-token stored as fallback", cfg.Hosts[hostOf(srv.URL)].Token)
+	}
+}
+
+// TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing is the
+// negative case for the fallback above: a keyring error that isn't
+// recognized as "no keyring exists" (a locked keychain, access denied, ...)
+// must fail the login outright, not silently downgrade to a plain-text
+// hosts.yml token.
+func TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing(t *testing.T) {
+	withTempConfigHome(t)
+	keyring.MockInitWithError(errors.New("keychain is locked"))
+	srv := userServer(t, okUserHandler("someone@example.org"))
+
+	_, stderr, err := runCmdWithStdin("the-token\n", "auth", "login", "--url", srv.URL, "--with-token")
+
+	if err == nil {
+		t.Fatal("Execute() error = nil, want an error for an unrecognized keyring failure")
+	}
+	if !strings.Contains(err.Error(), "keychain is locked") {
+		t.Errorf("error = %q, want it to include the underlying keyring error", err.Error())
+	}
+	if strings.Contains(stderr.String(), "the-token") {
+		t.Errorf("stderr = %q, must never contain the token", stderr.String())
+	}
+
+	cfg, loadErr := config.Load()
+	if loadErr != nil {
+		t.Fatalf("config.Load() error = %v", loadErr)
+	}
+	if len(cfg.Hosts) != 0 || cfg.DefaultHost != "" {
+		t.Errorf("config = %+v, want nothing stored after a failed login", cfg)
 	}
 }
 
@@ -259,6 +309,44 @@ func TestAuthStatus_FailedHost_ExitsWith1(t *testing.T) {
 	}
 }
 
+// TestAuthStatus_TwoMismatchedHosts_PrintsWarningOnce covers requirement
+// 8 through the real `auth status` command: it builds one client.Client
+// per configured host (see reportHostStatus), so without a Warner shared
+// across that loop, two hosts that both disagree with the CLI's version
+// would each print their own warning. One mismatched invocation — however
+// many hosts it touches — must print exactly one.
+func TestAuthStatus_TwoMismatchedHosts_PrintsWarningOnce(t *testing.T) {
+	withTempConfigHome(t)
+	srv1 := userServerWithVersion(t, "9.9.1", "first@example.org")
+	srv2 := userServerWithVersion(t, "9.9.2", "second@example.org")
+
+	cfg := &config.Config{
+		DefaultHost: hostOf(srv1.URL),
+		Hosts: map[string]config.HostEntry{
+			hostOf(srv1.URL): {URL: srv1.URL, User: "first@example.org"},
+			hostOf(srv2.URL): {URL: srv2.URL, User: "second@example.org"},
+		},
+	}
+	if err := keyring.Set(config.ServiceName, hostOf(srv1.URL), "token-1"); err != nil {
+		t.Fatalf("seeding keyring: %v", err)
+	}
+	if err := keyring.Set(config.ServiceName, hostOf(srv2.URL), "token-2"); err != nil {
+		t.Fatalf("seeding keyring: %v", err)
+	}
+	if err := cfg.Save(); err != nil {
+		t.Fatalf("cfg.Save() error = %v", err)
+	}
+
+	stdout, stderr, err := runCmd("auth", "status")
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stdout = %q", err, stdout.String())
+	}
+
+	if got := strings.Count(stderr.String(), "warning:"); got != 1 {
+		t.Errorf("warning count = %d, want exactly 1 across both mismatched hosts; stderr = %q", got, stderr.String())
+	}
+}
+
 // --- auth logout ---
 
 func TestAuthLogout_RemovesHostAndKeyringToken(t *testing.T) {
@@ -337,11 +425,20 @@ func hostOf(rawURL string) string {
 func assertExitCode(t *testing.T, err error, want int) {
 	t.Helper()
 
-	var exitErr *ExitError
-	if !errors.As(err, &exitErr) {
-		t.Fatalf("error = %v, want *ExitError", err)
+	var ec exitCoder
+	if !errors.As(err, &ec) {
+		t.Fatalf("error = %v, want an error with ExitCode()", err)
 	}
-	if exitErr.ExitCode() != want {
-		t.Errorf("ExitCode() = %d, want %d", exitErr.ExitCode(), want)
+	if got := ec.ExitCode(); got != want {
+		t.Errorf("ExitCode() = %d, want %d", got, want)
 	}
+}
+
+// exitCoder mirrors cmd/feedctl/main.go's unexported interface of the same
+// name: any error with an ExitCode() int method, whether it's a
+// *ExitError (auth login/status) or a *config.NotLoggedInError (auth
+// logout, and anything future commands get from config.Resolve /
+// client.NewFromConfig).
+type exitCoder interface {
+	ExitCode() int
 }

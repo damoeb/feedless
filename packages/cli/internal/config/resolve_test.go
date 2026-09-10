@@ -175,7 +175,10 @@ func TestStoreToken_KeyringAvailable_DoesNotFallBackToFile(t *testing.T) {
 	keyring.MockInit()
 	stderr := &bytes.Buffer{}
 
-	source, fileToken := StoreToken("h.example.org", "secret-token", stderr)
+	source, fileToken, err := StoreToken("h.example.org", "secret-token", stderr)
+	if err != nil {
+		t.Fatalf("StoreToken() error = %v", err)
+	}
 
 	if source != TokenSourceKeyring {
 		t.Errorf("source = %q, want %s", source, TokenSourceKeyring)
@@ -187,17 +190,24 @@ func TestStoreToken_KeyringAvailable_DoesNotFallBackToFile(t *testing.T) {
 		t.Errorf("stderr = %q, want empty when keyring succeeds", stderr.String())
 	}
 
-	got, err := keyring.Get(ServiceName, "h.example.org")
-	if err != nil || got != "secret-token" {
-		t.Errorf("keyring.Get() = (%q, %v), want (secret-token, nil)", got, err)
+	got, getErr := keyring.Get(ServiceName, "h.example.org")
+	if getErr != nil || got != "secret-token" {
+		t.Errorf("keyring.Get() = (%q, %v), want (secret-token, nil)", got, getErr)
 	}
 }
 
 func TestStoreToken_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
-	keyring.MockInitWithError(errors.New("no secret service"))
+	// ErrUnsupportedPlatform is go-keyring's own sentinel for "no real
+	// backend on this OS" — the one case isKeyringUnavailable can identify
+	// with total certainty; the Linux D-Bus cases are covered directly by
+	// TestIsKeyringUnavailable_* in keyring_unavailable_test.go.
+	keyring.MockInitWithError(keyring.ErrUnsupportedPlatform)
 	stderr := &bytes.Buffer{}
 
-	source, fileToken := StoreToken("h.example.org", "secret-token", stderr)
+	source, fileToken, err := StoreToken("h.example.org", "secret-token", stderr)
+	if err != nil {
+		t.Fatalf("StoreToken() error = %v", err)
+	}
 
 	if source != TokenSourceFile {
 		t.Errorf("source = %q, want %s", source, TokenSourceFile)
@@ -210,6 +220,31 @@ func TestStoreToken_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 	}
 	if containsToken(stderr.String(), "secret-token") {
 		t.Errorf("stderr = %q, must never contain the token itself", stderr.String())
+	}
+}
+
+func TestStoreToken_UnrecognizedKeyringError_FailsAndStoresNothing(t *testing.T) {
+	// A locked keychain, denied access, ErrSetDataTooBig, or any other
+	// error isKeyringUnavailable doesn't recognize as "no backend" must
+	// fail the login rather than silently falling back to a plain-text
+	// file — that would mask a real problem as if it were expected CI
+	// behavior.
+	keyring.MockInitWithError(errors.New("keychain is locked"))
+	stderr := &bytes.Buffer{}
+
+	source, fileToken, err := StoreToken("h.example.org", "secret-token", stderr)
+
+	if err == nil {
+		t.Fatal("StoreToken() error = nil, want an error for an unrecognized keyring failure")
+	}
+	if !strings.Contains(err.Error(), "keychain is locked") {
+		t.Errorf("error = %q, want it to include the underlying keyring error", err.Error())
+	}
+	if source != "" || fileToken != "" {
+		t.Errorf("StoreToken() = (%q, %q), want both empty: nothing should be stored", source, fileToken)
+	}
+	if stderr.Len() != 0 {
+		t.Errorf("stderr = %q, want empty: this is a hard failure, not the plain-text fallback warning", stderr.String())
 	}
 }
 

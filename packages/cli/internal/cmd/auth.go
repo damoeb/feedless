@@ -65,7 +65,7 @@ func runAuthLogin(cmd *cobra.Command, version, rawURL string, withToken bool) er
 		return err
 	}
 
-	apiClient, err := client.New(host, rawURL, token, version, cmd.ErrOrStderr())
+	apiClient, err := client.New(host, rawURL, token, version, cmd.ErrOrStderr(), client.NewWarner())
 	if err != nil {
 		return err
 	}
@@ -82,7 +82,11 @@ func runAuthLogin(cmd *cobra.Command, version, rawURL string, withToken bool) er
 
 	isFirstHost := len(cfg.Hosts) == 0
 
-	_, fileToken := config.StoreToken(host, token, cmd.ErrOrStderr())
+	_, fileToken, err := config.StoreToken(host, token, cmd.ErrOrStderr())
+	if err != nil {
+		return err
+	}
+
 	cfg.Hosts[host] = config.HostEntry{URL: rawURL, User: email, Token: fileToken}
 	if isFirstHost {
 		cfg.DefaultHost = host
@@ -197,9 +201,15 @@ func runAuthStatus(cmd *cobra.Command, version string) error {
 	}
 	sort.Strings(hosts)
 
+	// One Warner shared across every host's Client: status can build up to
+	// len(hosts) Clients in this single invocation, and the version
+	// mismatch warning must still print at most once overall, not once per
+	// host (requirement 8).
+	warner := client.NewWarner()
+
 	anyFailed := false
 	for _, host := range hosts {
-		if !reportHostStatus(cmd, version, cfg, host, host == resolvedHost) {
+		if !reportHostStatus(cmd, version, cfg, host, host == resolvedHost, warner) {
 			anyFailed = true
 		}
 	}
@@ -212,8 +222,10 @@ func runAuthStatus(cmd *cobra.Command, version string) error {
 }
 
 // reportHostStatus prints one host's status line and reports whether it is
-// authenticated.
-func reportHostStatus(cmd *cobra.Command, version string, cfg *config.Config, host string, isResolved bool) bool {
+// authenticated. warner is shared across every host reportHostStatus is
+// called for in one `auth status` run, so the version-mismatch warning
+// prints at most once for the whole command, not once per host.
+func reportHostStatus(cmd *cobra.Command, version string, cfg *config.Config, host string, isResolved bool, warner *client.Warner) bool {
 	entry := cfg.Hosts[host]
 	token, source := config.TokenForHost(cfg, host, isResolved)
 
@@ -221,7 +233,7 @@ func reportHostStatus(cmd *cobra.Command, version string, cfg *config.Config, ho
 	authenticated := false
 
 	if token != "" {
-		apiClient, err := client.New(host, entry.URL, token, version, cmd.ErrOrStderr())
+		apiClient, err := client.New(host, entry.URL, token, version, cmd.ErrOrStderr(), warner)
 		switch {
 		case err != nil:
 			status = fmt.Sprintf("error: %s", err)
@@ -276,10 +288,10 @@ func runAuthLogout(cmd *cobra.Command) error {
 	host := config.ResolveHost(cfg, flagHost)
 
 	if host == "" {
-		return NewExitError(4, "%s", (&config.NotLoggedInError{}).Error())
+		return &config.NotLoggedInError{}
 	}
 	if _, ok := cfg.Hosts[host]; !ok {
-		return NewExitError(4, "%s", (&config.NotLoggedInError{Host: host}).Error())
+		return &config.NotLoggedInError{Host: host}
 	}
 
 	config.RemoveToken(host)
