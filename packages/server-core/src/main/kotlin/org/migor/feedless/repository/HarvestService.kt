@@ -5,6 +5,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.harvest.Harvest
+import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestUseCasePort
 import org.migor.feedless.source.SourceId
@@ -29,12 +30,16 @@ class HarvestService(
     )
   }
 
-  override suspend fun findAllBySourceId(sourceId: SourceId, page: Int, pageSize: Int): List<Harvest> =
+  override suspend fun findAllBySourceId(sourceId: SourceId, dryRun: Boolean, page: Int, pageSize: Int): List<Harvest> =
     withContext(Dispatchers.IO) {
       harvestRepository.findAllBySourceId(
         sourceId,
-        dryRun = false,
+        dryRun = dryRun,
         PageRequest.of(page, pageSize).toPageableRequest()
       )
     }
+
+  override suspend fun findById(id: HarvestId): Harvest? = withContext(Dispatchers.IO) {
+    harvestRepository.findById(id)
+  }
 }

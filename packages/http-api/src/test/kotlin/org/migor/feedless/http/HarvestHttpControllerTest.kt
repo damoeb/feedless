@@ -9,6 +9,7 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
+import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.harvest.HarvestUseCasePort
 import org.migor.feedless.http.mapper.HttpHarvestMapper
 import org.migor.feedless.repository.Repository
@@ -55,34 +56,34 @@ class HarvestHttpControllerTest {
   private val access by lazy { RepositoryAccessFixture(repositoryUseCase, groupUseCase) }
 
   @Test
-  fun `listHarvests returns items and omits logs by default`() = runTest {
+  fun `listHarvests hides dry runs by default`() = runTest {
     val repo = access.givenRepository()
     val source = givenSource(repo.id)
-    val harvest = harvest(sourceId = source.id, logs = "very long harvest log output")
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(0), eq(21))).thenReturn(listOf(harvest))
+    val harvest = harvest(sourceId = source.id)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(21))).thenReturn(listOf(harvest))
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=20")
 
     assertStatus(result, 200)
     val body = result.response.contentAsString
+    assert(body.contains("\"status\":\"completed\"")) { body }
+    assert(body.contains("\"dryRun\":false")) { body }
     assert(body.contains("\"ok\":true")) { body }
     assert(body.contains("\"itemsAdded\":3")) { body }
-    assert(body.contains("\"logs\":\"\"")) { body }
     assert(body.contains("\"hasMore\":false")) { body }
-    assert(!body.contains("very long harvest log output")) { body }
   }
 
   @Test
-  fun `listHarvests includes logs when includeLogs is true`() = runTest {
+  fun `listHarvests dryRun=true shows only dry runs`() = runTest {
     val repo = access.givenRepository()
     val source = givenSource(repo.id)
-    val harvest = harvest(sourceId = source.id, logs = "full harvest log output")
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(0), eq(21))).thenReturn(listOf(harvest))
+    val harvest = harvest(sourceId = source.id, dryRun = true)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(true), eq(0), eq(21))).thenReturn(listOf(harvest))
 
-    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=20&includeLogs=true")
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=20&dryRun=true")
 
     assertStatus(result, 200)
-    assert(result.response.contentAsString.contains("full harvest log output")) { result.response.contentAsString }
+    assert(result.response.contentAsString.contains("\"dryRun\":true")) { result.response.contentAsString }
   }
 
   @Test
@@ -91,7 +92,7 @@ class HarvestHttpControllerTest {
     val source = givenSource(repo.id)
     // pageSize + 1 available: there really is a next page
     val harvests = List(3) { harvest(sourceId = source.id) }
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(0), eq(3))).thenReturn(harvests)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(3))).thenReturn(harvests)
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=2")
 
@@ -106,7 +107,7 @@ class HarvestHttpControllerTest {
     // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
     // page here and made every client fetch an empty one.
     val harvests = List(2) { harvest(sourceId = source.id) }
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(0), eq(3))).thenReturn(harvests)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(3))).thenReturn(harvests)
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=2")
 
@@ -118,7 +119,7 @@ class HarvestHttpControllerTest {
   fun `listHarvests answers a group member and a stranger on a public repository`() = runTest {
     val private = access.givenRepository()
     val public = access.givenRepository(EntityVisibility.isPublic)
-    whenever(harvestUseCase.findAllBySourceId(any(), any(), any())).thenReturn(emptyList())
+    whenever(harvestUseCase.findAllBySourceId(any(), any(), any(), any())).thenReturn(emptyList())
 
     assertStatus(mockMvc.getAs(access.member, harvestsUrl(private, givenSource(private.id))), 200)
     assertStatus(mockMvc.getAs(access.stranger, harvestsUrl(public, givenSource(public.id))), 200)
@@ -132,7 +133,7 @@ class HarvestHttpControllerTest {
       mockMvc.getAs(access.stranger, harvestsUrl(private, givenSource(private.id))),
       "repository ${private.id.uuid} not found",
     )
-    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any())
+    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any(), any())
   }
 
   @Test
@@ -144,7 +145,7 @@ class HarvestHttpControllerTest {
     val result = mockMvc.getAs(access.owner, "/api/v1/repositories/${repo.id.uuid}/sources/${sourceId.uuid}/harvests")
 
     assertNotFound(result, "source ${sourceId.uuid} not found")
-    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any())
+    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any(), any())
   }
 
   @Test
@@ -153,7 +154,176 @@ class HarvestHttpControllerTest {
     val foreign = givenSource(RepositoryId())
 
     assertNotFound(mockMvc.getAs(access.owner, harvestsUrl(repo, foreign)), "source ${foreign.id.uuid} not found")
-    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any())
+    verify(harvestUseCase, never()).findAllBySourceId(any(), any(), any(), any())
+  }
+
+  @Test
+  fun `getHarvest returns status and dryRun`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvest = harvest(sourceId = source.id, status = HarvestStatus.RUNNING)
+    whenever(harvestUseCase.findById(eq(harvest.id))).thenReturn(harvest)
+
+    val result = mockMvc.getAs(access.owner, harvestUrl(repo, source, harvest))
+
+    assertStatus(result, 200)
+    val body = result.response.contentAsString
+    assert(body.contains("\"status\":\"running\"")) { body }
+    assert(body.contains("\"dryRun\":false")) { body }
+  }
+
+  @Test
+  fun `getHarvest omits outcome fields while not completed`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvest = harvest(sourceId = source.id, status = HarvestStatus.QUEUED)
+    whenever(harvestUseCase.findById(eq(harvest.id))).thenReturn(harvest)
+
+    val result = mockMvc.getAs(access.owner, harvestUrl(repo, source, harvest))
+
+    assertStatus(result, 200)
+    // Not required by the schema any more — the mapper reports them as null rather than a
+    // fabricated `false`/`0`, matching the codebase's convention for other optional fields.
+    val body = result.response.contentAsString
+    assert(body.contains("\"ok\":null")) { body }
+    assert(body.contains("\"itemsAdded\":null")) { body }
+    assert(body.contains("\"itemsIgnored\":null")) { body }
+    assert(body.contains("\"finishedAt\":null")) { body }
+  }
+
+  @Test
+  fun `getHarvest includes outcome fields once completed`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvest = harvest(sourceId = source.id, status = HarvestStatus.COMPLETED)
+    whenever(harvestUseCase.findById(eq(harvest.id))).thenReturn(harvest)
+
+    val result = mockMvc.getAs(access.owner, harvestUrl(repo, source, harvest))
+
+    assertStatus(result, 200)
+    val body = result.response.contentAsString
+    assert(body.contains("\"ok\":true")) { body }
+    assert(body.contains("\"itemsAdded\":3")) { body }
+    assert(body.contains("\"itemsIgnored\":1")) { body }
+    assert(body.contains("\"finishedAt\"")) { body }
+  }
+
+  @Test
+  fun `getHarvest returns 404 when harvest missing`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvestId = HarvestId()
+    whenever(harvestUseCase.findById(eq(harvestId))).thenReturn(null)
+
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}/${harvestId.uuid}")
+
+    assertNotFound(result, "harvest ${harvestId.uuid} not found")
+  }
+
+  @Test
+  fun `getHarvest returns 404 when harvest belongs to another source`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val foreign = harvest(sourceId = SourceId())
+    whenever(harvestUseCase.findById(eq(foreign.id))).thenReturn(foreign)
+
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}/${foreign.id.uuid}")
+
+    assertNotFound(result, "harvest ${foreign.id.uuid} not found")
+  }
+
+  @Test
+  fun `getHarvest returns 404 when source missing`() = runTest {
+    val repo = access.givenRepository()
+    val sourceId = SourceId()
+    val harvestId = HarvestId()
+    whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(null)
+
+    val result = mockMvc.getAs(
+      access.owner,
+      "/api/v1/repositories/${repo.id.uuid}/sources/${sourceId.uuid}/harvests/${harvestId.uuid}",
+    )
+
+    assertNotFound(result, "source ${sourceId.uuid} not found")
+    verify(harvestUseCase, never()).findById(any())
+  }
+
+  @Test
+  fun `getHarvest returns 404 when repository access is denied`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+    val harvestId = HarvestId()
+
+    val result = mockMvc.getAs(access.stranger, "${harvestsUrl(private, source)}/${harvestId.uuid}")
+
+    assertNotFound(result, "repository ${private.id.uuid} not found")
+    verify(harvestUseCase, never()).findById(any())
+  }
+
+  @Test
+  fun `getHarvestLogs returns the log as text`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvest = harvest(sourceId = source.id, logs = "line one\nline two")
+    whenever(harvestUseCase.findById(eq(harvest.id))).thenReturn(harvest)
+
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}/${harvest.id.uuid}/logs")
+
+    assertStatus(result, 200)
+    val contentType = result.response.contentType
+    assert(contentType?.startsWith("text/plain") == true) { "$contentType" }
+    assert(result.response.contentAsString == "line one\nline two") { result.response.contentAsString }
+  }
+
+  @Test
+  fun `getHarvestLogs returns 404 when harvest missing`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val harvestId = HarvestId()
+    whenever(harvestUseCase.findById(eq(harvestId))).thenReturn(null)
+
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}/${harvestId.uuid}/logs")
+
+    assertNotFound(result, "harvest ${harvestId.uuid} not found")
+  }
+
+  @Test
+  fun `getHarvestLogs returns 404 when harvest belongs to another source`() = runTest {
+    val repo = access.givenRepository()
+    val source = givenSource(repo.id)
+    val foreign = harvest(sourceId = SourceId())
+    whenever(harvestUseCase.findById(eq(foreign.id))).thenReturn(foreign)
+
+    val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}/${foreign.id.uuid}/logs")
+
+    assertNotFound(result, "harvest ${foreign.id.uuid} not found")
+  }
+
+  @Test
+  fun `getHarvestLogs returns 404 when repository access is denied`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+    val harvestId = HarvestId()
+
+    val result = mockMvc.getAs(access.stranger, "${harvestsUrl(private, source)}/${harvestId.uuid}/logs")
+
+    assertNotFound(result, "repository ${private.id.uuid} not found")
+  }
+
+  @Test
+  fun `getHarvestLogs returns 404 when source missing`() = runTest {
+    val repo = access.givenRepository()
+    val sourceId = SourceId()
+    val harvestId = HarvestId()
+    whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(null)
+
+    val result = mockMvc.getAs(
+      access.owner,
+      "/api/v1/repositories/${repo.id.uuid}/sources/${sourceId.uuid}/harvests/${harvestId.uuid}/logs",
+    )
+
+    assertNotFound(result, "source ${sourceId.uuid} not found")
+    verify(harvestUseCase, never()).findById(any())
   }
 
   private fun givenSource(repositoryId: RepositoryId): Source {
@@ -171,9 +341,14 @@ class HarvestHttpControllerTest {
   private fun harvestsUrl(repo: Repository, source: Source) =
     "/api/v1/repositories/${repo.id.uuid}/sources/${source.id.uuid}/harvests"
 
+  private fun harvestUrl(repo: Repository, source: Source, harvest: Harvest) =
+    "${harvestsUrl(repo, source)}/${harvest.id.uuid}"
+
   private fun harvest(
     sourceId: SourceId = SourceId(),
     logs: String = "log line",
+    status: HarvestStatus = HarvestStatus.COMPLETED,
+    dryRun: Boolean = false,
   ) = Harvest(
     id = HarvestId(),
     errornous = false,
@@ -183,5 +358,7 @@ class HarvestHttpControllerTest {
     startedAt = LocalDateTime.of(2024, 1, 1, 12, 0),
     finishedAt = LocalDateTime.of(2024, 1, 1, 12, 5),
     sourceId = sourceId,
+    status = status,
+    dryRun = dryRun,
   )
 }

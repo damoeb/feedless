@@ -5,11 +5,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.data.jpa.repository.toPageRequest
 import org.migor.feedless.harvest.Harvest
+import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
+import kotlin.jvm.optionals.getOrNull
 
 @Component
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
@@ -21,6 +23,10 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
   ): List<Harvest> {
     return harvestDAO.findAllBySourceIdAndDryRunOrderByCreatedAtDesc(sourceId.uuid, dryRun, pageable.toPageRequest())
       .map { it.toDomain() }
+  }
+
+  override fun findById(id: HarvestId): Harvest? {
+    return harvestDAO.findById(id.uuid).getOrNull()?.toDomain()
   }
 
   override fun deleteAllTailingBySourceId() {

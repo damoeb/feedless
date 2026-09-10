@@ -244,8 +244,9 @@ paths:
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
-        - name: includeLogs
+        - name: dryRun
           in: query
+          description: Return only harvests whose dryRun matches this value.
           schema:
             type: boolean
             default: false
@@ -256,6 +257,45 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/HarvestListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+      - $ref: '#/components/parameters/HarvestId'
+    get:
+      tags: [Harvests]
+      operationId: getHarvest
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}/logs:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+      - $ref: '#/components/parameters/HarvestId'
+    get:
+      tags: [Harvests]
+      operationId: getHarvestLogs
+      summary: The harvest's log output as plain text
+      responses:
+        '200':
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
         '404':
           $ref: '#/components/responses/NotFound'
         default:
@@ -560,6 +600,13 @@ components:
         format: uuid
     RecordId:
       name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HarvestId:
+      name: harvestId
       in: path
       required: true
       schema:
@@ -1259,9 +1306,15 @@ components:
           type: string
         linkXPath:
           type: string
+    HarvestStatus:
+      type: string
+      enum:
+        - queued
+        - running
+        - completed
     Harvest:
       type: object
-      required: [id, sourceId, ok, itemsAdded, itemsIgnored, logs, startedAt]
+      required: [id, sourceId, status, dryRun, startedAt]
       properties:
         id:
           type: string
@@ -1270,20 +1323,26 @@ components:
           type: string
           format: uuid
           description: Source this harvest ran against — preserves provenance in merged lists
+        status:
+          $ref: '#/components/schemas/HarvestStatus'
+        dryRun:
+          type: boolean
         ok:
           type: boolean
+          description: Only meaningful when status is completed; omitted otherwise.
         itemsAdded:
           type: integer
+          description: Only meaningful when status is completed; omitted otherwise.
         itemsIgnored:
           type: integer
-        logs:
-          type: string
+          description: Only meaningful when status is completed; omitted otherwise.
         startedAt:
           type: string
           format: date-time
         finishedAt:
           type: string
           format: date-time
+          description: Only meaningful when status is completed; omitted otherwise.
     HarvestListResponse:
       type: object
       required: [items, hasMore]

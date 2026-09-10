@@ -133,6 +133,22 @@ class HarvestRepositoryIntTest {
   }
 
   @Test
+  fun `findById returns the harvest`() {
+    val saved = harvest(sourceA.id, LocalDateTime.now())
+
+    val found = harvestRepository.findById(saved.id)
+
+    assertThat(found?.id).isEqualTo(saved.id)
+  }
+
+  @Test
+  fun `findById returns null when the harvest does not exist`() {
+    val found = harvestRepository.findById(HarvestId())
+
+    assertThat(found).isNull()
+  }
+
+  @Test
   fun `findAllBySourceId returns newest first and filters by dryRun`() {
     val now = LocalDateTime.now()
     val oldest = harvest(sourceA.id, now.minusMinutes(3))
