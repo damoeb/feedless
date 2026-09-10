@@ -23,11 +23,27 @@ import (
 )
 
 // Client bundles the generated API client with the host and base URL it
-// was built for.
+// was built for, plus what `feedctl api` needs to make raw requests through
+// the same transport (guard + version warning) and auth as the generated
+// client: HTTP is the guarded *http.Client, APIBaseURL is rawURL + "/api/v1"
+// with no trailing slash, and Authorize sets the bearer token header a raw
+// *http.Request needs.
 type Client struct {
-	API  api.ClientWithResponsesInterface
-	Host string
-	URL  string
+	API        api.ClientWithResponsesInterface
+	Host       string
+	URL        string
+	HTTP       *http.Client
+	APIBaseURL string
+	token      string
+}
+
+// Authorize sets the Authorization header on req the same way every
+// request the generated API client makes is authorized (see New's token
+// parameter). It's a no-op when the Client was built without a token.
+func (c *Client) Authorize(req *http.Request) {
+	if c.token != "" {
+		req.Header.Set("Authorization", "Bearer "+c.token)
+	}
 }
 
 // Warner gates the version-mismatch warning (see New) across every Client
@@ -83,12 +99,21 @@ func New(host, rawURL, token, cliVersion string, stderr io.Writer, warner *Warne
 		}))
 	}
 
-	apiClient, err := api.NewClientWithResponses(base+"/api/v1", opts...)
+	apiBaseURL := base + "/api/v1"
+
+	apiClient, err := api.NewClientWithResponses(apiBaseURL, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("building API client for %s: %w", host, err)
 	}
 
-	return &Client{API: apiClient, Host: host, URL: rawURL}, nil
+	return &Client{
+		API:        apiClient,
+		Host:       host,
+		URL:        rawURL,
+		HTTP:       &http.Client{Transport: transport},
+		APIBaseURL: apiBaseURL,
+		token:      token,
+	}, nil
 }
 
 // NewFromConfig resolves the host and token to use per feedctl's standard

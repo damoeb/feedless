@@ -23,6 +23,7 @@ func NewRootCmd(version string) *cobra.Command {
 	root.PersistentFlags().String("host", "", "Feedless host to use (overrides FEEDCTL_HOST and the configured default host)")
 
 	root.AddCommand(newAuthCmd(version))
+	root.AddCommand(newAPICmd(version))
 
 	return root
 }

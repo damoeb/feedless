@@ -2,12 +2,17 @@ package main
 
 import (
 	"bytes"
+	"context"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"strings"
 	"testing"
 
 	"github.com/zalando/go-keyring"
 
 	"github.com/damoeb/feedless/packages/cli/internal/client"
+	"github.com/damoeb/feedless/packages/cli/internal/cmd"
 	"github.com/damoeb/feedless/packages/cli/internal/config"
 )
 
@@ -110,5 +115,102 @@ func TestExitCodeFor_NotLoggedInFromNewFromConfig_Is4(t *testing.T) {
 
 	if code := exitCodeFor(err); code != 4 {
 		t.Errorf("exitCodeFor(client.NewFromConfig() error) = %d, want 4", code)
+	}
+}
+
+// TestRun_APIError_RendersMessageAndFieldErrors exercises run()'s
+// extended error rendering end to end through `feedctl api`: a
+// VALIDATION_ERROR response's message and field errors (cmd.APIError,
+// C3's one error mapping) must reach stderr formatted exactly as
+// requirement 3 specifies — "error: <message>" then one indented
+// "field: message" line per field error — and the process must exit 1
+// (not 4; this is a 400, not a 401).
+func TestRun_APIError_RendersMessageAndFieldErrors(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	keyring.MockInit()
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"code":"VALIDATION_ERROR","message":"invalid request","errors":[{"field":"url","message":"must not be blank"}]}`))
+	}))
+	t.Cleanup(srv.Close)
+
+	host := strings.TrimPrefix(srv.URL, "http://")
+	if _, _, err := config.StoreToken(host, "tok", io.Discard); err != nil {
+		t.Fatalf("StoreToken() error = %v", err)
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+
+	cfg.Hosts[host] = config.HostEntry{URL: srv.URL, User: "tester"}
+	cfg.DefaultHost = host
+
+	if err := cfg.Save(); err != nil {
+		t.Fatalf("cfg.Save() error = %v", err)
+	}
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	code := run([]string{"api", "repositories"}, stdout, stderr)
+
+	if code != 1 {
+		t.Errorf("run() exit code = %d, want 1", code)
+	}
+
+	want := "error: invalid request\n  url: must not be blank\n"
+	if got := stderr.String(); got != want {
+		t.Errorf("stderr = %q, want %q", got, want)
+	}
+}
+
+// TestRunWithContext_CancelledContext_ExitsWithCode2AndCancelledMessage
+// drives run's SIGINT-cancellation mapping (requirement 3: exit code 2)
+// without sending the process a real signal — runWithContext takes the
+// context run() would otherwise build from signal.NotifyContext, so a test
+// can hand it one that's already cancelled and observe the same mapping
+// run() applies.
+func TestRunWithContext_CancelledContext_ExitsWithCode2AndCancelledMessage(t *testing.T) {
+	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
+	keyring.MockInit()
+
+	host := "example.invalid"
+	if _, _, err := config.StoreToken(host, "tok", io.Discard); err != nil {
+		t.Fatalf("StoreToken() error = %v", err)
+	}
+
+	cfg, err := config.Load()
+	if err != nil {
+		t.Fatalf("config.Load() error = %v", err)
+	}
+
+	cfg.Hosts[host] = config.HostEntry{URL: "http://" + host, User: "tester"}
+	cfg.DefaultHost = host
+
+	if err := cfg.Save(); err != nil {
+		t.Fatalf("cfg.Save() error = %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+
+	// auth status builds a Client and calls the API with cmd.Context() —
+	// already-cancelled, so the request fails immediately and the command
+	// itself returns a non-nil error (a *cmd.ExitError with code 1); run's
+	// cancellation check must override that to cmd.ExitCancelled.
+	code := runWithContext(ctx, []string{"auth", "status"}, stdout, stderr)
+
+	if code != cmd.ExitCancelled {
+		t.Errorf("runWithContext() exit code = %d, want %d (cmd.ExitCancelled)", code, cmd.ExitCancelled)
+	}
+	if !strings.Contains(stderr.String(), "cancelled") {
+		t.Errorf("stderr = %q, want it to mention cancellation", stderr.String())
 	}
 }
