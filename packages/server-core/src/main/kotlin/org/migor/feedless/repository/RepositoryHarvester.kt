@@ -18,8 +18,6 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
-import org.migor.feedless.data.jpa.harvest.HarvestEntity
-import org.migor.feedless.data.jpa.harvest.toDomain
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentRepository
@@ -30,7 +28,9 @@ import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
+import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
+import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.pipeline.plugins.images
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
@@ -45,7 +45,6 @@ import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.support.CronExpression
@@ -140,42 +139,11 @@ class RepositoryHarvester(
 
       sources
         .forEachIndexed { index, source ->
-          run {
-            val logCollector = LogCollector()
-            val harvest = HarvestEntity()
-            harvest.sourceId = source.id.uuid
-            harvest.startedAt = LocalDateTime.now()
-
-            try {
-              log.info("scraping source $currentPage/$index ${source.id}")
-              val retrieved = scrapeSource(source, logCollector)
-              harvest.itemsAdded = retrieved
-
-              val updatedSource = if (source.errorsInSuccession > 0) {
-                source.copy(errorsInSuccession = 0)
-              } else {
-                source
-              }.copy(
-                lastErrorMessage = null,
-                lastRecordsRetrieved = retrieved,
-                lastRefreshedAt = LocalDateTime.now()
-              )
-              sourceRepository.save(updatedSource)
-
-            } catch (e: Throwable) {
-              harvest.errornous = true
-              handleScrapeException(e, source, logCollector)
-            } finally {
-
-              harvest.finishedAt = LocalDateTime.now()
-              harvest.logs = StringUtils.abbreviate(logCollector.logs.joinToString("\n") {
-                "${
-                  it.time.toLocalDateTime().format(iso8601DateFormat)
-                }  ${it.message}"
-              }, "...", 32000)
-              harvestRepository.save(harvest.toDomain())
-            }
-          }
+          log.info("scraping source $currentPage/$index ${source.id}")
+          harvestSource(
+            source,
+            Harvest(sourceId = source.id, logs = "", startedAt = LocalDateTime.now(), finishedAt = null),
+          )
         }
     } while (sources.isNotEmpty())
 
@@ -200,6 +168,47 @@ class RepositoryHarvester(
 //    )
 //
 //    refineAndImportArticlesScheduled(corrId, articles, importer)
+  }
+
+  /**
+   * Harvests one source and records the outcome on [harvest]: scrape, import into records,
+   * update the source's error state, collect the log. The scheduled repository loop and the
+   * queued-harvest executor both run a source through here, so a run on demand behaves exactly
+   * like a scheduled one.
+   *
+   * [harvest] is saved as [HarvestStatus.COMPLETED] with `finishedAt` and the log, also when
+   * the scrape fails.
+   */
+  suspend fun harvestSource(source: Source, harvest: Harvest): Harvest {
+    val logCollector = LogCollector()
+    var outcome = harvest
+    try {
+      val retrieved = scrapeSource(source, logCollector)
+      outcome = outcome.copy(itemsAdded = retrieved)
+
+      val updatedSource = if (source.errorsInSuccession > 0) {
+        source.copy(errorsInSuccession = 0)
+      } else {
+        source
+      }.copy(
+        lastErrorMessage = null,
+        lastRecordsRetrieved = retrieved,
+        lastRefreshedAt = LocalDateTime.now()
+      )
+      sourceRepository.save(updatedSource)
+
+    } catch (e: Throwable) {
+      outcome = outcome.copy(errornous = true)
+      handleScrapeException(e, source, logCollector)
+    } finally {
+      outcome = outcome.copy(
+        status = HarvestStatus.COMPLETED,
+        finishedAt = LocalDateTime.now(),
+        logs = logCollector.toHarvestLog(),
+      )
+      harvestRepository.save(outcome)
+    }
+    return outcome
   }
 
   private suspend fun handleScrapeException(
