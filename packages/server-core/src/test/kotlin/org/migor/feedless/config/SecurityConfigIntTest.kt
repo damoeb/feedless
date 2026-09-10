@@ -26,6 +26,9 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.http.HttpStatus
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.context.ActiveProfiles
@@ -153,6 +156,33 @@ class SecurityConfigIntTest {
     val response = restTemplate.postForEntity("${baseEndpoint}/graphql", "", String::class.java)
 
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNull()
+  }
+
+  /**
+   * CorsFilter answers a valid preflight itself, without ever calling filterChain.doFilter(),
+   * so the version filter has to be registered ahead of CorsFilter (not merely ahead of
+   * HttpApiJwtFilter/BasicAuthenticationFilter, both later in the chain) for the header to
+   * reach an OPTIONS preflight response. `http://localhost:4200` is the origin the default
+   * `app.cors.allowedOrigins` config allows (see application.yaml), so CorsFilter answers this
+   * preflight with 2xx/OK rather than rejecting it.
+   */
+  @Test
+  fun whenSendingCorsPreflightToApiV1_ThenVersionHeaderPresent() {
+    val restTemplate = TestRestTemplate()
+    val headers = HttpHeaders()
+    headers.set(HttpHeaders.ORIGIN, "http://localhost:4200")
+    headers.set(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+    val request = HttpEntity<Void>(headers)
+
+    val response = restTemplate.exchange(
+      "${baseEndpoint}/api/v1/user",
+      HttpMethod.OPTIONS,
+      request,
+      String::class.java,
+    )
+
+    assertThat(response.statusCode.is2xxSuccessful).isTrue()
+    assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
 //  @ParameterizedTest

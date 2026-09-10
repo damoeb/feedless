@@ -54,6 +54,7 @@ import org.springframework.web.context.request.RequestContextListener
 import org.springframework.web.cors.CorsConfiguration
 import org.springframework.web.cors.CorsConfigurationSource
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource
+import org.springframework.web.filter.CorsFilter
 import java.net.URI
 import org.springframework.security.core.userdetails.User as BasicAuthUser
 import org.springframework.security.core.userdetails.UserDetails as BasicAuthUserDetails
@@ -109,14 +110,16 @@ class SecurityConfig {
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
     var chain = conditionalOauth(http)
+    // CorsFilter answers a valid preflight itself, without calling filterChain.doFilter(), so
+    // anything registered only relative to HttpApiJwtFilter/BasicAuthenticationFilter (both
+    // later in the chain) never runs for an OPTIONS preflight. Anchor the version filter to
+    // CorsFilter directly, and on its own bean's presence, so a preflight to /api/v1/** still
+    // carries the header even if HttpApiJwtFilter's profile were ever absent.
+    httpApiVersionHeaderFilter?.let { versionFilter ->
+      chain = chain.addFilterBefore(versionFilter, CorsFilter::class.java)
+    }
     httpApiJwtFilter?.let { filter ->
       chain = chain.addFilterBefore(filter, org.springframework.security.web.authentication.www.BasicAuthenticationFilter::class.java)
-      // Must land on the response before HttpApiJwtFilter can reject an unauthenticated
-      // request with sendError(401), so it is anchored immediately ahead of that filter
-      // rather than independently before BasicAuthenticationFilter.
-      httpApiVersionHeaderFilter?.let { versionFilter ->
-        chain = chain.addFilterBefore(versionFilter, HttpApiJwtFilter::class.java)
-      }
     }
     return chain
       .headers {
