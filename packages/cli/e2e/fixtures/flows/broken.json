@@ -1,0 +1,23 @@
+{
+  "sequence": [
+    {
+      "fetch": {
+        "get": {
+          "url": { "literal": "http://fixture/items.html" },
+          "forcePrerender": true
+        }
+      }
+    },
+    {
+      "extract": {
+        "fragmentName": "items",
+        "selectorBased": {
+          "fragmentName": "items",
+          "xpath": { "value": "//ul[@id='no-such-list']" },
+          "emit": ["text"],
+          "uniqueBy": "text"
+        }
+      }
+    }
+  ]
+}

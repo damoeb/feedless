@@ -46,6 +46,17 @@ val testTask = tasks.register<Exec>("test") {
   outputs.upToDateWhen { true }
 }
 
+// End-to-end smoke test (e2e/, build tag `e2e`): drives a real feedctl binary
+// against a real core, agent and PostGIS started with Testcontainers. Not
+// part of `test` — it needs Docker and built images, passed as
+// FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_AGENT_IMAGE (defaults: the published
+// damoeb/feedless:core-latest / agent-latest). Skips when Docker is absent.
+tasks.register<Exec>("e2eTest") {
+  commandLine("go", "test", "-tags", "e2e", "-count=1", "-timeout", "12m", "-v", "./e2e/...")
+
+  outputs.upToDateWhen { false }
+}
+
 val buildTask = tasks.register<Exec>("build") {
   val feedlessVersion = (findProperty("feedlessVersion") as String?) ?: "dev"
 

@@ -1,0 +1,248 @@
+//go:build e2e
+
+package e2e
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"path/filepath"
+	"reflect"
+	"strings"
+	"testing"
+	"time"
+)
+
+// scenarioTimeout bounds the whole scenario, stack startup included.
+const scenarioTimeout = 10 * time.Minute
+
+// fixtureItems are the item titles fixtures/site/items.html lists.
+var fixtureItems = []string{"Alpha item", "Bravo item", "Charlie item"}
+
+// TestBrokenSourceFixLoop runs the first feedctl use case end to end against
+// a real core, agent and database: a source breaks, the user finds it,
+// reads the failed harvest's log, dry-runs a fix without touching the saved
+// source, saves the fix and runs it for real. It closes with the stale-edit
+// guard (If-Match -> 412) the editor loop relies on.
+func TestBrokenSourceFixLoop(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), scenarioTimeout)
+	defer cancel()
+
+	SkipWithoutDocker(t)
+
+	bin := BuildFeedctl(t)
+	stack := StartStack(ctx, t)
+
+	token, err := MintAPIToken(ctx, stack.CoreURL, stack.RootEmail, stack.RootSecretKey)
+	if err != nil {
+		t.Fatalf("minting an API token: %v", err)
+	}
+
+	cli := NewFeedctl(t, bin)
+
+	login := cli.MustRun(ctx, 0, token, "auth", "login", "--url", stack.CoreURL, "--with-token")
+	if !strings.Contains(login.Stderr, "plain text") {
+		t.Fatalf("want the no-keyring file fallback warning, got:\n%s", login)
+	}
+
+	if hosts, err := os.ReadFile(cli.HostsFile()); err != nil || !strings.Contains(string(hosts), "token:") {
+		t.Fatalf("want the token stored in %s (err %v), got:\n%s", cli.HostsFile(), err, hosts)
+	}
+
+	brokenFlow := fixturePath(t, "flows", "broken.json")
+	fixedFlow := fixturePath(t, "flows", "fixed.json")
+
+	// The broken flow's XPath matches nothing on the fixture page. Its fetch
+	// is prerendered, so the agent runs the extract: it dereferences the
+	// first match, fails, and reports the run as not ok — a real error that
+	// counts towards errorsInSuccession, unlike the core's own "no items"
+	// outcome, which the harvester treats as transient and resets to 0.
+	t.Log("step 1: create a repository and a source whose flow extracts nothing")
+
+	repoID := createRepository(ctx, t, cli)
+	sourceID := createSource(ctx, t, cli, repoID, brokenFlow)
+
+	t.Log("step 2: a real run fails, and the source shows up as errored across repositories")
+
+	run := cli.MustRun(ctx, 1, "", "source", "run", sourceID, "-R", repoID)
+	if !strings.Contains(run.Stdout, "Result: failed") {
+		t.Fatalf("want a failed run summary, got:\n%s", run)
+	}
+
+	errored, found := erroredSources(ctx, t, cli)[sourceID]
+	if !found || errored.ErrorsInSuccession < 1 || errored.RepositoryID != repoID {
+		t.Fatalf("want source %s of repository %s listed by `source list --errored` with errorsInSuccession >= 1, got %+v (found %t)",
+			sourceID, repoID, errored, found)
+	}
+
+	t.Log("step 3: the failed harvest's log shows the failure")
+
+	harvests := DecodeStdout[[]harvestRow](t, cli.MustRun(ctx, 0, "",
+		"harvest", "list", "-R", repoID, "-S", sourceID, "--json", "id,status,ok"))
+	if len(harvests) == 0 || harvests[0].Status != "completed" || harvests[0].OK == nil || *harvests[0].OK {
+		t.Fatalf("want the newest harvest completed and failed, got %+v", harvests)
+	}
+
+	harvestLog := cli.MustRun(ctx, 0, "", "harvest", "view", harvests[0].ID, "-R", repoID, "-S", sourceID, "--log")
+	if !strings.Contains(harvestLog.Stdout, "scrape failed") {
+		t.Fatalf("want the harvest log to show the scrape failure, got:\n%s", harvestLog)
+	}
+
+	t.Log("step 4: a dry run of the fixed flow extracts the fixture items and leaves the source alone")
+
+	before := viewSource(ctx, t, cli, repoID, sourceID)
+
+	dryRun := cli.MustRun(ctx, 0, "", "source", "run", sourceID, "-R", repoID, "--dry-run", "--flow", fixedFlow)
+	for _, item := range fixtureItems {
+		if !strings.Contains(dryRun.Stdout, item) {
+			t.Fatalf("want the dry-run log to list %q, got:\n%s", item, dryRun)
+		}
+	}
+
+	after := viewSource(ctx, t, cli, repoID, sourceID)
+	if !reflect.DeepEqual(before.Flow, after.Flow) {
+		t.Fatalf("the dry run changed the saved flow:\nbefore %v\nafter  %v", before.Flow, after.Flow)
+	}
+
+	if before.ErrorsInSuccession != after.ErrorsInSuccession {
+		t.Fatalf("the dry run changed errorsInSuccession from %d to %d", before.ErrorsInSuccession, after.ErrorsInSuccession)
+	}
+
+	t.Log("step 5: saving the fix and running it for real succeeds, and the source is no longer errored")
+
+	cli.MustRun(ctx, 0, "", "source", "update", sourceID, "-R", repoID, "--flow", fixedFlow)
+
+	fixedRun := cli.MustRun(ctx, 0, "", "source", "run", sourceID, "-R", repoID)
+	if !strings.Contains(fixedRun.Stdout, "Result: succeeded") {
+		t.Fatalf("want a succeeded run summary, got:\n%s", fixedRun)
+	}
+
+	if _, stillErrored := erroredSources(ctx, t, cli)[sourceID]; stillErrored {
+		t.Fatalf("source %s is still listed by `source list --errored` after a successful run", sourceID)
+	}
+
+	t.Log("step 6: a PATCH with a stale ETag is refused with 412")
+
+	sourcePath := fmt.Sprintf("repositories/%s/sources/%s", repoID, sourceID)
+
+	etag := ResponseHeader(cli.MustRun(ctx, 0, "", "api", "-i", sourcePath), "ETag")
+	if etag == "" {
+		t.Fatal("GET of the source answered no ETag")
+	}
+
+	cli.MustRun(ctx, 0, "", "api", "-X", "PATCH", "-H", "If-Match: "+etag, "-f", "title=fixture items (renamed)", sourcePath)
+
+	stale := cli.Run(ctx, "", "api", "-i", "-X", "PATCH", "-H", "If-Match: "+etag, "-f", "title=lost update", sourcePath)
+	if stale.ExitCode == 0 || !strings.Contains(StatusLine(stale), " 412") {
+		t.Fatalf("want a PATCH with the stale ETag refused with 412, got:\n%s", stale)
+	}
+}
+
+type sourceRow struct {
+	ID                 string `json:"id"`
+	RepositoryID       string `json:"repositoryId"`
+	ErrorsInSuccession int    `json:"errorsInSuccession"`
+	Flow               any    `json:"flow"`
+}
+
+type harvestRow struct {
+	ID     string `json:"id"`
+	Status string `json:"status"`
+	OK     *bool  `json:"ok"`
+}
+
+func fixturePath(t *testing.T, elem ...string) string {
+	t.Helper()
+
+	path, err := filepath.Abs(filepath.Join(append([]string{"fixtures"}, elem...)...))
+	if err != nil {
+		t.Fatalf("resolving fixture %v: %v", elem, err)
+	}
+
+	return path
+}
+
+// createRepository creates an empty repository through `feedctl api` and
+// returns its id. Its refresh cron fires once a year, so the scheduler never
+// harvests it on its own while the scenario runs.
+func createRepository(ctx context.Context, t *testing.T, cli *Feedctl) string {
+	t.Helper()
+
+	body := writeJSON(t, map[string]any{
+		"product":     "feedless",
+		"title":       "feedctl e2e",
+		"description": "broken-source fix loop",
+		"refreshCron": "0 0 0 1 1 *",
+		"sources":     []any{},
+	})
+
+	repo := DecodeStdout[struct {
+		ID string `json:"id"`
+	}](t, cli.MustRun(ctx, 0, "", "api", "-X", "POST", "-H", "Content-Type: application/json", "--input", body, "repositories"))
+	if repo.ID == "" {
+		t.Fatal("creating the repository answered no id")
+	}
+
+	return repo.ID
+}
+
+// createSource creates a source running the flow in flowFile in repository
+// repoID through `feedctl api` and returns its id.
+func createSource(ctx context.Context, t *testing.T, cli *Feedctl, repoID, flowFile string) string {
+	t.Helper()
+
+	flow, err := os.ReadFile(flowFile)
+	if err != nil {
+		t.Fatalf("reading %s: %v", flowFile, err)
+	}
+
+	body := writeJSON(t, map[string]any{"title": "fixture items", "flow": json.RawMessage(flow)})
+
+	source := DecodeStdout[sourceRow](t, cli.MustRun(ctx, 0, "",
+		"api", "-X", "POST", "-H", "Content-Type: application/json", "--input", body, "repositories/"+repoID+"/sources"))
+	if source.ID == "" {
+		t.Fatal("creating the source answered no id")
+	}
+
+	return source.ID
+}
+
+// erroredSources is `feedctl source list --errored` without -R, i.e.
+// GET /user/sources across every repository the user can see, keyed by id.
+func erroredSources(ctx context.Context, t *testing.T, cli *Feedctl) map[string]sourceRow {
+	t.Helper()
+
+	rows := DecodeStdout[[]sourceRow](t, cli.MustRun(ctx, 0, "",
+		"source", "list", "--errored", "--json", "id,repositoryId,errorsInSuccession"))
+
+	byID := make(map[string]sourceRow, len(rows))
+	for _, row := range rows {
+		byID[row.ID] = row
+	}
+
+	return byID
+}
+
+func viewSource(ctx context.Context, t *testing.T, cli *Feedctl, repoID, sourceID string) sourceRow {
+	t.Helper()
+
+	return DecodeStdout[sourceRow](t, cli.MustRun(ctx, 0, "",
+		"source", "view", sourceID, "-R", repoID, "--json", "id,repositoryId,errorsInSuccession,flow"))
+}
+
+func writeJSON(t *testing.T, v any) string {
+	t.Helper()
+
+	data, err := json.Marshal(v)
+	if err != nil {
+		t.Fatalf("encoding request body: %v", err)
+	}
+
+	path := filepath.Join(t.TempDir(), "body.json")
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatalf("writing request body: %v", err)
+	}
+
+	return path
+}
