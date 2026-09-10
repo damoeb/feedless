@@ -11,8 +11,9 @@
 **Sequencing:** delivery is sliced so the broken-source use case works first, not last.
 
 1. **Slice 1 — the use case.** On `feature/http-api`: changes 1–3, because they rename or remove existing paths and `/api/v1` is unreleased, so the merge is the last point where they are not breaking changes; plus changes 4, 5, 7, 9, 10 and 11, which the fix loop needs. Then `feature/http-api` merges. On `feature/fl-cli`, in parallel: the Go skeleton, hosts and credentials, `auth`, `source list|view|update|run`, `harvest list|view`, `api`, distribution via `/cli/**`, and the end-to-end smoke test.
-2. **Slice 2 — the rest of the surface.** `repo`, `record`, `plan`, `group`, `member`, and change 6. All additive, so it can land after the merge.
-3. **Slice 3 — scoped secrets** as their own plan and branch, with the `secret` commands. Until then, every token that reaches `/api/v1` can touch every resource of its user — accepted for the interim because the API has no external consumers yet.
+2. **Slice 2 — repositories, records, sources.** `repo list|view|create|update|delete`, `record list|view|create|update|delete`, `source create|delete`, plus the server work those commands need: conditional requests (change 10) on repositories and records, and `GET /repositories` honouring `q`. It lands on `feature/feed-ctl` before the merge, so one final review covers slices 1 and 2.
+3. **Slice 3 — the rest of the surface.** `plan`, `group`, `member`, and change 6. All additive, so it can land after the merge.
+4. **Slice 4 — scoped secrets** as their own plan and branch, with the `secret` commands. Until then, every token that reaches `/api/v1` can touch every resource of its user — accepted for the interim because the API has no external consumers yet.
 
 ## Implementation
 
@@ -155,3 +156,18 @@ Dependencies: T1 first (it is the contract the server and the generated Go clien
 
 - [ ] **D1 Distribution.** Cross-compile darwin/linux × amd64/arm64 in the image build, bake into `server-core`, serve `/cli/feedctl-<os>-<arch>`, `/cli/SHA256SUMS`, `/cli/install.sh`; whitelist `/cli/**` in `SecurityConfig`.
 - [ ] **E1 End-to-end smoke.** Testcontainers: `server-core`, `agent`, PostGIS and a static fixture site; broken selector → `source list --errored` → `--dry-run` → fix → `source run` succeeds.
+
+## Slice 2 tasks
+
+Dependencies: T9 and T10 before C6/C7; C8 independent of both. Same conventions as slice 1: reuse `client.NewFromConfig`, the `output` layer, `cmd.NewAPIError`, the `-R` helper and the editor loop; every task ends green and is one Conventional Commit.
+
+**Server**
+
+- [ ] **T9 Conditional requests on repositories and records.** `ETag` on `GET /repositories/{id}` and `GET /repositories/{r}/records/{id}`, `If-Match` on their `PATCH` with `412` on mismatch — the same semantics as sources (T7). Generalise `SourceETagCalculator` into one ETag helper used by all three resources, so the rule cannot drift.
+- [ ] **T10 `GET /repositories` honours `q`.** The list and its `totalCount` apply the `q` full-text filter the spec already documents (today both ignore it).
+
+**CLI**
+
+- [ ] **C6 `repo list|view|create|update|delete`.** `list` with `--product`, `--visibility`, `--search`; `view <id>`; `create` from `--title`, `--product`, `--cron`, `--visibility` or `--input <file|->`; `update <id>` with field flags or `--editor` (the C4 editor loop, generalised over the resource, with `If-Match`/`412`); `delete <id>` asking for confirmation on a TTY unless `--yes`, refusing without `--yes` when not a TTY.
+- [ ] **C7 `record list|view|create|update|delete`.** All under `-R`; `create` from `--title`, `--url`, `--text`, `--tags` or `--input`; `update <id>` with field flags or `--editor`; `delete <id>…` accepts several ids and deletes them one request each, reporting each result; same `--yes` rule as C6.
+- [ ] **C8 `source create|delete`.** `create -R` from `--title`, `--tags`, `--flow <file|->` or `--input <file|->` (a full `SourceCreate`); `delete <id> -R` with the `--yes` rule.
