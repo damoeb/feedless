@@ -1,0 +1,226 @@
+#!/usr/bin/env bash
+# fl — Feedless HTTP API CLI (gh-style wrapper around /api/v1)
+#
+# Conventions mirror gh/bb: `fl <group> <verb>`, human tables by default,
+# `--json` for raw JSON, and `fl api` as a raw escape hatch. Command syntax
+# lives in `fl --help` / `fl <group> --help`; this file is the single source.
+set -euo pipefail
+
+FL_VERSION="0.1.0"
+
+# --- Errors -----------------------------------------------------------------
+
+fl_die() {
+  echo >&2 "error: $1"
+  exit "${2:-1}"
+}
+
+# --- Config resolution ------------------------------------------------------
+# Env only for now; `fl auth login` (Task 2) will add keychain/config fallbacks.
+
+fl_api_url() {
+  if [[ -n "${FL_API_URL:-}" ]]; then
+    # Trim any trailing slash so we can append `/api/v1` cleanly.
+    echo "${FL_API_URL%/}"
+    return
+  fi
+  fl_die "no API url configured — run: fl auth login (or set FL_API_URL)" 1
+}
+
+fl_token() {
+  if [[ -n "${FL_TOKEN:-}" ]]; then
+    echo "$FL_TOKEN"
+    return
+  fi
+  fl_die "no token configured — run: fl auth login (or set FL_TOKEN)" 1
+}
+
+# bb pins api.bitbucket.org and only allows loopback overrides. fl must reach
+# arbitrary self-hosted instances, so instead we refuse to put a bearer token
+# on the wire in cleartext unless the host is loopback.
+fl_check_insecure() {
+  local url="$1"
+  if [[ "$url" == http://* ]] &&
+    [[ ! "$url" =~ ^http://(localhost|127\.0\.0\.1|\[::1\])(:[0-9]+)?(/|$) ]]; then
+    fl_die "refusing to send token over plain http to a non-loopback host: $url" 1
+  fi
+}
+
+# --- HTTP core --------------------------------------------------------------
+
+# Print an ApiError from a failed response. Every Feedless error carries a
+# {code, message, corrId} body, but stay defensive: fall back to the raw body,
+# then to a bare status line, when fields are missing.
+fl_api_error() {
+  local http_code="$1" body="$2"
+  local code message corr_id
+  code="$(jq -r '.code // empty' <<<"$body" 2>/dev/null || true)"
+  message="$(jq -r '.message // empty' <<<"$body" 2>/dev/null || true)"
+  corr_id="$(jq -r '.corrId // empty' <<<"$body" 2>/dev/null || true)"
+
+  local msg="HTTP $http_code"
+  if [[ -n "$code" ]]; then
+    msg="$msg — $code: $message"
+  elif [[ -n "$message" ]]; then
+    msg="$msg — $message"
+  elif [[ -n "$body" ]]; then
+    msg="$msg — $body"
+  fi
+  [[ -n "$corr_id" ]] && msg="$msg (corrId=$corr_id)"
+  echo >&2 "error: $msg"
+}
+
+# fl_api_call METHOD PATH [extra curl args…]
+# Echoes the response body on success; on HTTP >=400 prints an ApiError to
+# stderr and returns 2. PATH is relative to /api/v1 and starts with a slash.
+fl_api_call() {
+  local method="$1" path="$2"
+  shift 2
+
+  local token url
+  token="$(fl_token)" || exit $?
+  url="$(fl_api_url)" || exit $?
+  fl_check_insecure "$url"
+
+  local response http_code body
+  response="$(curl -sS -w $'\n%{http_code}' -X "$method" \
+    -H "Authorization: Bearer ${token}" \
+    -H "Accept: application/json" \
+    "$@" \
+    "${url}/api/v1${path}")" || fl_die "request failed: could not reach ${url}" 2
+
+  http_code="$(tail -n1 <<<"$response")"
+  body="$(sed '$d' <<<"$response")"
+
+  if [[ "$http_code" -ge 400 ]]; then
+    fl_api_error "$http_code" "$body"
+    return 2
+  fi
+  printf '%s' "$body"
+}
+
+# fl_paginate PATH LIMIT [extra curl args…]
+# Walks page=0,1,… collecting `.items` until `.hasMore` is false, an empty page,
+# LIMIT items, or a 10-page safety cap. Echoes a JSON array.
+fl_paginate() {
+  local path="$1" limit="${2:-50}"
+  shift 2 || shift $#
+
+  local all='[]' page=0 sep='?'
+  [[ "$path" == *'?'* ]] && sep='&'
+
+  while ((page < 10)); do
+    local body items got has_more count
+    body="$(fl_api_call GET "${path}${sep}page=${page}&pageSize=100" "$@")" || return $?
+    items="$(jq -c '.items // []' <<<"$body")"
+    all="$(jq -c --argjson a "$all" --argjson b "$items" '$a + $b' <<<'null')"
+
+    count="$(jq 'length' <<<"$all")"
+    if ((count >= limit)); then
+      all="$(jq -c --argjson l "$limit" '.[:$l]' <<<"$all")"
+      break
+    fi
+
+    has_more="$(jq -r '.hasMore // false' <<<"$body")"
+    got="$(jq '.items | length' <<<"$body")"
+    [[ "$has_more" != "true" || "$got" -eq 0 ]] && break
+    page=$((page + 1))
+  done
+  printf '%s' "$all"
+}
+
+# --- Repo resolution --------------------------------------------------------
+# Used by source/record/harvest commands (Task 4+). -R / FL_REPO / positional.
+
+fl_require_repo() {
+  local positional="${1:-}"
+  local repo="${positional:-${_FL_REPO:-${FL_REPO:-}}}"
+  [[ -n "$repo" ]] || fl_die "no repository given — pass one, use -R <id>, or set FL_REPO" 1
+  echo "$repo"
+}
+
+# --- Commands ---------------------------------------------------------------
+
+cmd_api() {
+  local method="GET" data="" path=""
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --method|-X) method="$(echo "$2" | tr '[:lower:]' '[:upper:]')"; shift 2 ;;
+      --data|-d) data="$2"; shift 2 ;;
+      -*) fl_die "unknown flag for api: $1" 1 ;;
+      *) path="$1"; shift ;;
+    esac
+  done
+  [[ -n "$path" ]] || fl_die "api requires a path, e.g. fl api /user" 1
+  [[ "$path" == /* ]] || path="/$path"
+
+  local body
+  if [[ -n "$data" ]]; then
+    body="$(fl_api_call "$method" "$path" -H "Content-Type: application/json" --data "$data")" || exit $?
+  else
+    body="$(fl_api_call "$method" "$path")" || exit $?
+  fi
+
+  # Pretty-print JSON; pass through anything that isn't JSON (e.g. empty 204).
+  if [[ -n "$body" ]]; then
+    jq . <<<"$body" 2>/dev/null || printf '%s\n' "$body"
+  fi
+}
+
+# --- Usage ------------------------------------------------------------------
+
+usage() {
+  cat <<'EOF'
+fl — Feedless HTTP API CLI
+
+Usage: fl <command> [flags]
+
+Raw API:
+  api <path>          Make an authenticated request (escape hatch)
+
+Global flags:
+  -R, --repo <uuid>   Default repository for source/record/harvest commands
+      --json          Raw JSON output
+      --limit <n>     Max items to collect across pages
+  -v, --version       Print version
+
+Environment:
+  FL_API_URL          API base, e.g. https://feedless.example.com (no /api/v1)
+  FL_TOKEN            UserSecret value (overrides stored credentials)
+  FL_REPO             Default repository id
+
+Examples:
+  fl api /user
+  fl api /repositories --method POST --data '{"title":"News","description":"","product":"rssProxy","sources":[]}'
+EOF
+}
+
+# --- Global flags + dispatch ------------------------------------------------
+
+JSON_OUTPUT=0
+FL_LIMIT=""
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    -R|--repo)
+      [[ -n "${2:-}" ]] || fl_die "$1 requires a repository id" 1
+      _FL_REPO="$2"; shift 2 ;;
+    --json) JSON_OUTPUT=1; shift ;;
+    --limit)
+      [[ -n "${2:-}" ]] || fl_die "--limit requires a number" 1
+      FL_LIMIT="$2"; shift 2 ;;
+    -v|--version) echo "fl ${FL_VERSION}"; exit 0 ;;
+    *) break ;;
+  esac
+done
+# Referenced by commands added in later tasks; keep shellcheck quiet until then.
+export JSON_OUTPUT FL_LIMIT
+
+case "${1:-help}" in
+  api) shift; cmd_api "$@" ;;
+  help|--help|-h) usage ;;
+  *)
+    echo >&2 "error: unknown command: $1"
+    usage >&2
+    exit 1 ;;
+esac
