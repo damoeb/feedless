@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import kotlinx.coroutines.Dispatchers
 import org.springframework.core.CoroutinesUtils
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -13,6 +14,11 @@ import java.lang.reflect.Method
  *
  * Spring's default [ServletInvocableHandlerMethod] invokes suspend functions with an empty context;
  * this subclass mirrors GraphQL's `injectCapabilitiesFromSecurityContext()` at the MVC adapter edge.
+ *
+ * It keeps Spring's [Dispatchers.Unconfined] start: the handler proxy — and its `@PreAuthorize` — runs
+ * on the request thread while the security filter chain's context is still set. A context without a
+ * dispatcher would start the coroutine on [Dispatchers.Default], where method security sees no
+ * authentication at all.
  */
 class HttpApiServletInvocableHandlerMethod(handlerMethod: HandlerMethod) :
   ServletInvocableHandlerMethod(handlerMethod) {
@@ -23,7 +29,6 @@ class HttpApiServletInvocableHandlerMethod(handlerMethod: HandlerMethod) :
       ?.httpApiRequestContext()
       ?: return super.invokeSuspendingFunction(method, target, args)
 
-    val result = CoroutinesUtils.invokeSuspendingFunction(requestContext, method, target, *args)
-    return result
+    return CoroutinesUtils.invokeSuspendingFunction(Dispatchers.Unconfined + requestContext, method, target, *args)
   }
 }

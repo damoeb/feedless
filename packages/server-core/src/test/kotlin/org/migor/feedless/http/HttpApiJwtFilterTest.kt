@@ -2,6 +2,7 @@ package org.migor.feedless.http
 
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
@@ -16,6 +17,8 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
 
@@ -113,5 +116,36 @@ class HttpApiJwtFilterTest {
     filter.doFilter(request, response, chain)
 
     assert(requestContext?.userId == userId)
+  }
+
+  /**
+   * The suspend handler completes on an ASYNC dispatch this filter skips; the chain's
+   * SecurityContextHolderFilter loads the caller from the request-attribute repository there.
+   */
+  @Test
+  fun `saves the authenticated context where the async dispatch loads it`() {
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(UserId())
+    val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
+
+    val request = MockHttpServletRequest("GET", "/api/v1/user")
+    request.addHeader("Authorization", "Bearer $token")
+
+    filter.doFilter(request, MockHttpServletResponse(), mock(FilterChain::class.java))
+
+    val saved = RequestAttributeSecurityContextRepository().loadDeferredContext(request).get()
+    assertThat(saved.authentication).isInstanceOf(OAuth2AuthenticationToken::class.java)
+    assertThat(saved.authentication.isAuthenticated).isTrue()
+  }
+
+  @Test
+  fun `saves no context for an anonymous token`() {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val request = MockHttpServletRequest("GET", "/api/v1/user")
+    request.addHeader("Authorization", "Bearer $token")
+
+    filter.doFilter(request, MockHttpServletResponse(), mock(FilterChain::class.java))
+
+    assertThat(RequestAttributeSecurityContextRepository().containsContext(request)).isFalse()
   }
 }

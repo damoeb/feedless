@@ -16,6 +16,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.web.context.RequestAttributeSecurityContextRepository
+import org.springframework.security.web.context.SecurityContextRepository
 import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
@@ -26,6 +28,18 @@ class HttpApiJwtFilter(
 ) : OncePerRequestFilter() {
 
   private val log = LoggerFactory.getLogger(HttpApiJwtFilter::class.simpleName)
+
+  private val securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy()
+
+  /**
+   * Every `/api/v1` handler is a `suspend fun`, so Spring MVC completes it on an ASYNC dispatch that
+   * runs the security filter chain again. This filter does not run on that dispatch (a
+   * [OncePerRequestFilter] skips async dispatches); the chain's `SecurityContextHolderFilter` loads
+   * the context from this repository instead. A request attribute lives exactly as long as this one
+   * request, and it is the repository the stateless chain reads — the same default
+   * `BasicAuthenticationFilter` saves to.
+   */
+  private val securityContextRepository: SecurityContextRepository = RequestAttributeSecurityContextRepository()
 
   override fun shouldNotFilter(request: HttpServletRequest): Boolean {
     // No public auth issuance path on the HTTP API: every /api/v1/** request requires a UserSecret Bearer JWT.
@@ -44,7 +58,10 @@ class HttpApiJwtFilter(
           response.sendError(HttpStatus.UNAUTHORIZED.value(), "Authentication required")
           return@runBlocking false
         }
-        SecurityContextHolder.getContext().authentication = jwtToOAuth2AuthenticationToken(jwt)
+        val context = securityContextHolderStrategy.createEmptyContext()
+        context.authentication = jwtToOAuth2AuthenticationToken(jwt)
+        securityContextHolderStrategy.context = context
+        securityContextRepository.saveContext(context, request, response)
         request.setAttribute(HTTP_API_REQUEST_CONTEXT_ATTR, injectCapabilitiesFromSecurityContext())
         true
       } catch (e: Exception) {
