@@ -1,0 +1,129 @@
+# `feedctl` CLI, GitHub-aligned HTTP API, and Scoped Secrets
+
+<!-- CHALLENGE-THE-PLAN-METADATA
+{"rounds": 5, "categoriesCovered": ["technical-architecture", "technical-stack", "technical-build", "technical-testing", "domain-rules", "domain-lifecycle", "security-access", "security-credentials", "security-supply-chain", "ux-error", "ux-scripting", "ux-output", "performance", "scalability-quota", "trade-offs-scope"], "deferred": [], "askedQuestions": ["delivery slicing", "binary integrity", "piped output", "windows support", "token storage", "multiple hosts", "exit codes for failed harvests", "test strategy", "sequencing of API changes vs secrets vs merge", "which credentials /api/v1 accepts", "sync vs async source run", "definition of a broken source", "cross-repository errored lookup", "implementation language", "editor failure handling", "concurrent flow edits", "go toolchain in CI gate", "distribution and version compatibility", "dry-run quota", "dry-run retention and visibility"]}
+-->
+
+**Goal:** Ship `feedctl`, a `gh`-style CLI over `/api/v1`, whose first use case is finding broken sources, reading their last error, and fixing their flow (selectors, actions). Align `/api/v1` with GitHub's REST conventions while `feature/http-api` is still unmerged. Scoped secrets replace unscoped `UserSecret` tokens in a follow-up after the merge.
+
+**Builds on:** `feature/http-api` (REST `/api/v1`, 27 operations, unmerged). Branch: `feature/feed-ctl`, cut from `feature/http-api`; slice 1's server and CLI work both land here, so this branch supersedes `feature/http-api` and merges in its place. This plan supersedes `docs/superpowers/plans/2026-07-22-fl-http-api-cli.md`: the bash `fl` scaffold and its node:test mock-server suite are replaced by a Go implementation; what carries over is the command conventions and the rule that a token is never sent over plain `http://` unless the host is loopback.
+
+**Sequencing:** delivery is sliced so the broken-source use case works first, not last.
+
+1. **Slice 1 — the use case.** On `feature/http-api`: changes 1–3, because they rename or remove existing paths and `/api/v1` is unreleased, so the merge is the last point where they are not breaking changes; plus changes 4, 5, 7, 9, 10 and 11, which the fix loop needs. Then `feature/http-api` merges. On `feature/fl-cli`, in parallel: the Go skeleton, hosts and credentials, `auth`, `source list|view|update|run`, `harvest list|view`, `api`, distribution via `/cli/**`, and the end-to-end smoke test.
+2. **Slice 2 — the rest of the surface.** `repo`, `record`, `plan`, `group`, `member`, and change 6. All additive, so it can land after the merge.
+3. **Slice 3 — scoped secrets** as their own plan and branch, with the `secret` commands. Until then, every token that reaches `/api/v1` can touch every resource of its user — accepted for the interim because the API has no external consumers yet.
+
+## Implementation
+
+`feedctl` is a Go module in `packages/cli`, built into a single static binary like `gh`. Its HTTP client is generated from `packages/http-api/src/main/resources/openapi/openapi.yaml`, so a spec change that the CLI does not follow fails its build instead of failing at runtime against a server. Bash was the original choice (modelled on `bb`), but at 35+ commands with async polling, the `$EDITOR` round-trip, auto-pagination and keychain storage a single bash file loses typing and becomes hard to maintain; TypeScript was rejected because it would require Node 24 on every machine that runs the CLI.
+
+`packages/cli` becomes a Gradle module that shells out to Go, the same pattern as `agent` and `app-web` shelling out to yarn: its `lint` task runs `go vet` and `golangci-lint`, its `test` task runs `go test`, so `./gradlew lint test` stays the single Definition of Done and covers the CLI. CI and developer machines need a Go toolchain, pinned via `go.mod`'s `toolchain` directive.
+
+**Distribution:** each Feedless instance serves its own CLI build at `/cli/feedctl-<os>-<arch>` (darwin and linux, amd64 and arm64; Windows is not built — WSL covers it, and a Windows Credential Manager backend would be one more untested keyring path). Next to the binaries it serves `/cli/SHA256SUMS` and `/cli/install.sh`; `curl <host>/cli/install.sh | sh` detects OS and architecture, downloads the binary, and refuses to install on a checksum mismatch. This protects against corrupted or truncated downloads, not against a compromised instance — signing with a project key (cosign/minisign) is the upgrade path if that threat becomes relevant. Because Feedless is self-hosted, instances run different versions; a binary downloaded from the instance it talks to always matches that instance's API, which removes CLI/server compatibility management entirely. `./gradlew buildImages` cross-compiles the four binaries and bakes them into the `server-core` image (~30 MB larger — accepted for guaranteed compatibility). The `/cli/**` path is public: `HttpApiJwtFilter` only guards `/api/v1/**`, and `SecurityConfig` whitelists `/cli/**`. GitHub Releases and Homebrew were rejected because they would require actively maintaining a compatibility matrix between CLI and server versions.
+
+**Hosts and credentials:** `feedctl` knows several instances at once, like `gh` with multiple hostnames — typically a production instance and a local dev server. `feedctl auth login --url <host>` stores one token per host; one host is the default, and `--host` or `FEEDCTL_HOST` selects another per call. Tokens go into the OS keyring (macOS Keychain, Linux Secret Service); where no keyring exists — servers, CI — they fall back to a `0600` config file and `auth login` warns about it. `FEEDCTL_TOKEN` always wins over stored credentials. A binary downloaded from one instance may be pointed at another, so `feedctl` compares its own version with the host's `X-Feedless-Version` response header (change 11) and warns on mismatch instead of failing.
+
+**Testing:** Go tests run the commands against `httptest` mock servers whose responses are validated against `openapi.yaml`, so a mock cannot drift from the spec. A single end-to-end smoke test runs against a real `server-core`, `agent` and PostGIS via Testcontainers, plus a static fixture site: it creates a source with a deliberately broken selector, lets it fail, finds it with `source list --errored`, fixes it with a `--dry-run` and then a real `source run`, and asserts the harvest succeeds. It covers what the spec cannot — throttling, `412` on stale `If-Match`, async harvest completion. Mocks alone were rejected because exactly that server behaviour is what the first use case depends on.
+
+## First use case
+
+```
+feedctl source list --errored                               # across all repositories
+feedctl harvest list -R <repo> -S <src> --limit 1
+feedctl harvest view <id> -R <repo> -S <src> --log
+feedctl source run <src> -R <repo> --flow fix.json --dry-run
+feedctl source update <src> -R <repo> --flow fix.json       # or --editor
+feedctl source run <src> -R <repo>                          # harvest now
+```
+
+**What "broken" means is decided in the CLI, not the server.** The API exposes the raw `errorsInSuccession` counter (change 7) and accepts it as a threshold; `feedctl source list --errored[=N]` sends `minErrorsInSuccession=N`, default `N=1`. The default already excludes transient failures: the harvester resets `errorsInSuccession` to 0 on DNS, connection, resumable and no-items errors while still setting `lastErrorMessage`, so `lastErrorMessage` alone over-reports. The trade-off — every client may define "broken" differently — is accepted in exchange for letting the operator tune the threshold without a server release.
+
+Without `-R`, `--errored` uses the cross-repository endpoint `GET /user/sources` (change 9) — one request instead of one per repository, which at a few hundred repositories would also run into `@Throttled`. There is no way to pre-filter repositories instead: `Repository.sourcesCountWithProblems` is always `null` on the REST path, and on GraphQL it counts sources with `lastRecordsRetrieved == 0`, not failing ones.
+
+`source run` is asynchronous (change 5): the CLI receives a harvest id and polls `GET .../harvests/{id}` until the harvest finishes, printing its status, then its log on failure — the `gh run watch` model. `--no-wait` returns the harvest id immediately.
+
+`source update --editor` works like `kubectl edit`: the CLI fetches the source, opens its flow as JSON in `$EDITOR`, and on save validates it locally and sends the PATCH. If the JSON does not parse or the server answers `400`, the editor reopens with the user's text intact and the error as a comment block at the top; saving an unchanged or empty file aborts without a request. Nothing the user typed is lost on a failed attempt.
+
+## CLI conventions
+
+- Shape: `feedctl <entity> <action> [<id>] [flags]`.
+- Entities (singular): `repo`, `source`, `harvest`, `record`, `plan`, `group`, `member`, `secret`; plus `auth` and `api` as in `gh`.
+- Actions map 1:1 to HTTP: `list` (GET collection), `view` (GET item), `create` (POST), `update` (PATCH; field flags, `--input <file>`, or `--editor`), `delete` (DELETE), `run` (POST action). No other verbs.
+- The resource id is positional; everything else is a flag. Parent scope is a flag: `-R/--repo`, `-S/--source`, `-G/--group`, defaulting from `FEEDCTL_REPO` like `GH_REPO`.
+- Global flags: `--json [fields]`, `--jq <expr>`, `--limit <n>` (auto-paginates), `--yes` for `delete`.
+- Output follows `gh`: on a terminal, aligned tables with colour and truncated columns; when piped, tab-separated rows without colour or truncation, so `cut`/`awk` work without `--json`. `NO_COLOR` is honoured, and progress (polling a harvest, paginating) goes to stderr only.
+- `update` after a read sends `If-Match` (change 10): `--editor` always does, because it edits what it fetched; a `412` tells the user the resource changed underneath them and reopens the editor on the fresh version with their edit shown as a comment. A plain field-flag `update` without a prior read sends no `If-Match` and is last-write-wins.
+- Exit codes follow `gh`: `0` success, `1` error, `2` cancelled, `4` authentication required. `source run` without `--no-wait` exits `1` when the harvest completes with `ok: false`, so the fix loop is scriptable (`until feedctl source run …; do …; done`).
+
+## Command surface
+
+✅ exists on `feature/http-api` · ⚠️ exists but diverges from GitHub conventions · 🆕 needs a new endpoint
+
+| Command | Key flags | Endpoint | |
+|---|---|---|---|
+| `auth login` | `--url`, `--with-token` | validates via `GET /user` | ✅ |
+| `auth status` | | `GET /user` | ✅ |
+| `auth logout` | | (local) | ✅ |
+| `repo list` | `--product`, `--visibility`, `--search` | `GET /repositories` | ✅ |
+| `repo view <id>` | | `GET /repositories/{id}` | ✅ |
+| `repo create` | `--title`, `--product`, `--cron`, `--visibility`, `--input` | `POST /repositories` | ✅ |
+| `repo update <id>` | `--title`, `--cron`, `--visibility`, `--editor` | `PATCH /repositories/{id}` | ✅ |
+| `repo delete <id>` | `--yes` | `DELETE /repositories/{id}` | ✅ |
+| `source list` | `-R` (optional), `--disabled`, `--search`, `--errored[=N]` | `GET /repositories/{r}/sources`, without `-R`: `GET /user/sources` | ✅ / 🆕 |
+| `source view <id>` | `-R` | `GET /repositories/{r}/sources/{id}` | ✅ |
+| `source create` | `-R`, `--title`, `--tags`, `--input flow.json` | `POST /repositories/{r}/sources` | ✅ |
+| `source update <id>` | `-R`, `--title`, `--tags`, `--disabled`, `--flow <file>`, `--editor` | `PATCH /repositories/{r}/sources/{id}` | ✅ |
+| `source delete <id>` | `-R`, `--yes` | `DELETE /repositories/{r}/sources/{id}` | ✅ |
+| `source run <id>` | `-R`, `--flow <file>`, `--dry-run`, `--no-wait` | `POST /repositories/{r}/sources/{id}/harvests` → `202` | 🆕 |
+| `harvest list` | `-R`, `-S` | `GET /repositories/{r}/sources/{s}/harvests` | ✅ |
+| `harvest view <id>` | `-R`, `-S`, `--log` | `GET .../harvests/{id}`, `GET .../harvests/{id}/logs` | 🆕 |
+| `record list` | `-R` | `GET /records?repositoryId=` | ⚠️ |
+| `record view <id>` | | `GET /records/{id}` | ✅ |
+| `record create` | `-R`, `--title`, `--url`, `--text`, `--tags` | `POST /records` | ⚠️ |
+| `record update <id>` | `--title`, `--url`, `--text`, `--tags`, `--editor` | `PATCH /records/{id}` | ✅ |
+| `record delete <id>…` | `-R`, `--yes` | `DELETE /records` with body | ⚠️ |
+| `plan list` | | `GET /plans` | ✅ |
+| `plan view <id>` | | `GET /plans/{id}` | ✅ |
+| `group list` | | `GET /groups` | ✅ |
+| `group view <id>` | | `GET /groups/{id}` | ✅ |
+| `group create` | `--name` | `POST /groups` | ✅ |
+| `group update <id>` | `--name` | `PATCH /groups/{id}` | 🆕 |
+| `group delete <id>` | `--yes` | `DELETE /groups/{id}` | ✅ |
+| `member list` | `-G` | `GET /groups/{g}/members` | ✅ |
+| `member create` | `-G`, `--user`, `--role` | `POST /groups/{g}/members` | ✅ |
+| `member delete <userId>` | `-G`, `--yes` | `DELETE /groups/{g}/members/{userId}` | ✅ |
+| `secret list` | | `GET /user/secrets` | 🆕 (follow-up) |
+| `secret view <id>` | | `GET /user/secrets/{id}` | 🆕 (follow-up) |
+| `secret create` | `--name`, `--expires 90d`, `-R` (repeatable) or `-G`, `--permission source:write` (repeatable) | `POST /user/secrets` (value shown once) | 🆕 (follow-up) |
+| `secret update <id>` | `--name`, `--permission`, `--expires` | `PATCH /user/secrets/{id}` | 🆕 (follow-up) |
+| `secret delete <id>` | `--yes` | `DELETE /user/secrets/{id}` (revoke) | 🆕 (follow-up) |
+| `api <path>` | `-X`, `-f k=v`, `--input` | any | ✅ |
+
+## HTTP API changes (before merging `feature/http-api`)
+
+1. Nest records under repositories: `/repositories/{r}/records`, like sources.
+2. Replace `DELETE /records` with a body by `DELETE /repositories/{r}/records/{id}`; the CLI loops for multiple ids.
+3. Drop `/repositories/count`; add `totalCount` to list responses (GitHub's `total_count`).
+4. Add `GET .../harvests/{id}` and `GET .../harvests/{id}/logs` (GitHub `actions/runs/{id}/logs`); `includeLogs` becomes obsolete. `Harvest` gains `status` (`queued | running | completed`) and `dryRun`; `ok`, `itemsAdded`, `itemsIgnored` and `finishedAt` are only meaningful once `status` is `completed`.
+5. Add `POST .../harvests` to trigger a harvest (GitHub `workflow_dispatch`). It answers `202 Accepted` with the queued `Harvest` and a `Location` header, because a run goes through a headless-Chromium agent and can take minutes — a synchronous response would run into proxy and client timeouts. With `{"dryRun": true, "flow": …}` it is a dry run: the harvest is persisted with `dryRun: true` so it can be polled like any other, but the source's flow is not changed and extracted items are not stored as records. Dry runs are `@Throttled` like the other write endpoints, which protects agent capacity, but they do not count against the plan's quota — iterating on a broken selector must not cost the user their harvest budget. They never touch `errorsInSuccession` or `lastErrorMessage`, are hidden from `GET .../harvests` unless `?dryRun=true` is passed (`feedctl harvest list --dry-run`), and a scheduled job deletes them after 7 days so they do not accumulate in the source's harvest history.
+6. Add `PATCH /groups/{id}`.
+7. Expose `errorsInSuccession` on `Source`, and add `repositoryId` so a source listed outside its repository can be addressed with `-R`. `GET .../sources` accepts `minErrorsInSuccession`.
+8. ~~Pagination: `page`/`per_page` + `Link` header.~~ Dropped: it renames a query parameter on every list endpoint, so it could only land before the merge, and `page`/`pageSize` + `hasMore` is enough for the CLI's auto-pagination.
+9. Add `GET /user/sources` — sources across all repositories the caller can access, with the same filters as the per-repository list including `minErrorsInSuccession` (GitHub's `GET /user/issues`).
+10. Conditional requests: `GET` on a single resource returns an `ETag`; `PATCH` honours `If-Match` and answers `412 Precondition Failed` on mismatch. A `PATCH` with `flow` replaces the whole action sequence, so without this a CLI edit and a web-UI edit of the same source silently overwrite each other. The ETag is derived from the serialized resource, so no schema change is needed.
+11. Every `/api/v1` response carries `X-Feedless-Version`, so clients can detect a version mismatch with the instance they talk to.
+
+## Scoped secrets (follow-up plan, after the merge)
+
+**Today:** `UserSecret` is value, expiry, owner, `lastUsedAt` — no scope. `HttpApiJwtFilter` accepts any signed, non-anonymous JWT — a `UserSecret`-derived token as well as a 48-hour browser-session JWT — and reads capabilities from its claims; it never consults `t_user_secret`, so deleting a secret does not revoke it and `lastUsedAt` is never updated for API use. Creation exists only as GraphQL `createUserSecret` without parameters. This stays as-is until the follow-up lands.
+
+**Target:** long-term, `/api/v1` accepts only scoped secrets; the browser session is accepted solely on `/user/secrets`.
+
+- A secret has a name and a mandatory expiry (capped), a resource scope (one group or selected repositories — never "everything the user owns"), and per-entity permissions: `repo`, `source`, `harvest`, `record`, `group`, `member` each `read` or `write`; `plan` `read` only. There is no `secret` permission: tokens cannot mint tokens.
+- Token format: opaque string with a `fdl_` prefix (secret-scanner friendly, like `github_pat_`), stored as a hash; not a JWT. Every request looks the token up, so revocation is immediate and `lastUsedAt` is accurate.
+- Enforcement: permissions checked in the security layer; resource scope checked in the existing `require…InRepository` guards, and in `GET /user/sources`, which must only return sources inside the token's scope.
+- Bootstrap: the first secret is created in the web UI with a browser session (as on GitHub); the CLI takes it via `feedctl auth login --with-token`. A browser device flow may follow later.
+- `/user/secrets` endpoints require a browser session and return `403` for tokens.
+- Cutover: once scoped secrets exist, `/api/v1` stops accepting session JWTs and legacy `UserSecret` JWTs. Agents authenticate via `UserSecret` today (`Agent.secretKeyId`) and need their own `agent` scope before that cutover, or they break.
+- Schema changes land as a new additive Flyway migration (`V86+`).
