@@ -7,11 +7,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import {
-  AppConfigService,
-  AuthService,
-  ServerConfigService,
-} from '../../services';
+import { AuthService, ServerConfigService } from '../../services';
 import { ActivatedRoute, Router } from '@angular/router';
 import { debounce, interval, Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -32,6 +28,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { EmailLoginComponent } from '../../components/email-login/email-login.component';
 import { GqlAuthType, GqlProfileName } from '@feedless/graphql-api';
+import { environment } from '@feedless/core';
 
 @Component({
   selector: 'app-login-page',
@@ -58,7 +55,6 @@ export class LoginPage implements OnInit, OnDestroy {
   protected readonly serverConfig = inject(ServerConfigService);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly router = inject(Router);
-  private readonly appConfig = inject(AppConfigService);
   private readonly changeRef = inject(ChangeDetectorRef);
   private readonly authService = inject(AuthService);
 
@@ -78,7 +74,7 @@ export class LoginPage implements OnInit, OnDestroy {
     if (isDevMode()) {
       this.loginUrl = serverConfig.apiUrl + '/oauth2/authorization/github';
     } else {
-      this.loginUrl = `${serverConfig.apiUrl}/oauth2/authorization/${this.appConfig.activeProductConfig.id}`;
+      this.loginUrl = `${serverConfig.apiUrl}/oauth2/authorization/${environment.product}`;
     }
     addIcons({ logoGithub });
   }
