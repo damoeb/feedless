@@ -55,6 +55,55 @@ func TestAPI_AbsoluteURL_Refused(t *testing.T) {
 	}
 }
 
+func TestAPI_PathTraversal_Refused(t *testing.T) {
+	withTempConfigHome(t)
+
+	paths := []string{
+		"../x",
+		"a/../../x",
+		"%2e%2e/x",
+		"..%2Fx",
+		"//evil/x",
+	}
+
+	for _, p := range paths {
+		t.Run(p, func(t *testing.T) {
+			_, _, err := runCmd("api", p)
+			if err == nil {
+				t.Fatalf("Execute() error = nil for path %q, want it refused", p)
+			}
+			if !strings.Contains(err.Error(), "refusing") {
+				t.Errorf("error = %v, want it to mention 'refusing'", err)
+			}
+		})
+	}
+}
+
+func TestAPI_NormalPathsWithQuery_StillWork(t *testing.T) {
+	var gotPath string
+	var gotQuery url.Values
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		gotPath = r.URL.Path
+		gotQuery = r.URL.Query()
+		w.WriteHeader(http.StatusOK)
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	_, stderr, err := runCmd("api", "repositories?page=1")
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	if gotPath != "/api/v1/repositories" {
+		t.Errorf("path = %q, want /api/v1/repositories", gotPath)
+	}
+	if gotQuery.Get("page") != "1" {
+		t.Errorf("query = %v, want page=1", gotQuery)
+	}
+}
+
 func TestAPI_FieldsAndInput_MutuallyExclusive(t *testing.T) {
 	withTempConfigHome(t)
 

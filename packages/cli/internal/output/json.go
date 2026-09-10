@@ -9,6 +9,7 @@ import (
 
 	"github.com/itchyny/gojq"
 	"github.com/spf13/cobra"
+	"github.com/spf13/pflag"
 )
 
 // Row is one item's field values, keyed by the name --json accepts for it
@@ -18,21 +19,92 @@ import (
 // text a command chooses for TTY mode.
 type Row map[string]any
 
-// AddJSONFlags registers --json and --jq on cmd. Call it on every command
+// AddJSONFlags registers --json and --jq on cmd. fields lists the field
+// names --json accepts for this command, in the order printed when --json
+// is given with no value at all ("--json", or "--json" immediately
+// followed by another flag) — that case never reaches the command's RunE:
+// it's intercepted during flag parsing by JSONFlagErrorFunc (registered
+// once, on the root command, via root.SetFlagErrorFunc — see
+// cmd.NewRootCmd), which turns pflag's resulting error into a *FieldsError
+// built from the fields recorded here. Call AddJSONFlags on every command
 // that renders through this package (list and view alike). It doesn't
 // register --limit — see AddLimitFlag for list commands.
-func AddJSONFlags(cmd *cobra.Command) {
+func AddJSONFlags(cmd *cobra.Command, fields []string) {
 	flags := cmd.Flags()
 
-	flags.String("json", "",
-		"Output JSON; use --json=<fields> (comma-separated, needs the \"=\") to restrict it to those fields")
-	// Letting --json appear with no value (list-available-fields mode, see
-	// ReadJSONFlags) requires a non-empty NoOptDefVal — pflag only treats a
-	// flag's argument as optional when NoOptDefVal != "", so an empty
-	// string wouldn't do; jsonNoValueSentinel is never a real field list.
-	flags.Lookup("json").NoOptDefVal = jsonNoValueSentinel
+	flags.Var(&jsonFieldsValue{}, "json",
+		"Output JSON, optionally restricted to a comma-separated list of fields (--json a,b or --json=a,b)")
+	flags.Lookup("json").Annotations = map[string][]string{jsonFieldsAnnotation: fields}
 
 	flags.String("jq", "", "Filter --json output with a jq expression (requires --json)")
+}
+
+// jsonFieldsAnnotation is the pflag.Flag.Annotations key AddJSONFlags
+// stores a command's --json field names under; JSONFlagErrorFunc reads
+// them back to build a FieldsError.
+const jsonFieldsAnnotation = "output.json.fields"
+
+// jsonFieldsValue is --json's pflag.Value: a plain comma-separated field
+// list ("--json a,b" or "--json=a,b"). It deliberately has no NoOptDefVal
+// (see AddJSONFlags), so pflag always consumes exactly one following token
+// as its argument — including one that is itself another flag, e.g.
+// "--json --jq x" would otherwise silently treat "--jq" as a field name.
+// Set rejects any value starting with "-" for exactly that reason: pflag
+// wraps the rejection in a *pflag.InvalidValueError, which
+// JSONFlagErrorFunc recognizes (via errJSONValueLooksLikeFlag) the same way
+// it recognizes a bare, argument-less "--json" at the end of the
+// args (*pflag.ValueRequiredError) — both become the same FieldsError.
+type jsonFieldsValue struct {
+	fields []string
+}
+
+func (v *jsonFieldsValue) String() string { return strings.Join(v.fields, ",") }
+
+func (v *jsonFieldsValue) Type() string { return "jsonFields" }
+
+func (v *jsonFieldsValue) Set(raw string) error {
+	if strings.HasPrefix(raw, "-") {
+		return errJSONValueLooksLikeFlag
+	}
+
+	fields := strings.Split(raw, ",")
+	for i, f := range fields {
+		fields[i] = strings.TrimSpace(f)
+	}
+
+	v.fields = fields
+
+	return nil
+}
+
+// errJSONValueLooksLikeFlag is jsonFieldsValue.Set's sentinel for "the
+// token pflag handed me starts with '-', so this is almost certainly
+// another flag, not a field list" — see jsonFieldsValue's doc comment.
+var errJSONValueLooksLikeFlag = errors.New("looks like another flag, not a --json field list")
+
+// JSONFlagErrorFunc is a cobra FlagErrorFunc — register it once, on the
+// root command, via root.SetFlagErrorFunc(output.JSONFlagErrorFunc) — that
+// turns a bare "--json" into a *FieldsError listing the invoked command's
+// own field names (from the annotation AddJSONFlags recorded), matching
+// `gh <cmd> --json` with no value. It recognizes two shapes of "bare
+// --json", both produced by github.com/spf13/pflag during flag parsing —
+// *pflag.ValueRequiredError (--json is the last argument) and
+// *pflag.InvalidValueError wrapping errJSONValueLooksLikeFlag (--json is
+// immediately followed by another flag, e.g. "--json --jq x") — and passes
+// every other flag error (including --jq's own "needs an argument")
+// through unchanged.
+func JSONFlagErrorFunc(_ *cobra.Command, err error) error {
+	var valueRequired *pflag.ValueRequiredError
+	if errors.As(err, &valueRequired) && valueRequired.GetSpecifiedName() == "json" {
+		return &FieldsError{Fields: valueRequired.GetFlag().Annotations[jsonFieldsAnnotation]}
+	}
+
+	var invalidValue *pflag.InvalidValueError
+	if errors.As(err, &invalidValue) && errors.Is(err, errJSONValueLooksLikeFlag) && invalidValue.GetFlag().Name == "json" {
+		return &FieldsError{Fields: invalidValue.GetFlag().Annotations[jsonFieldsAnnotation]}
+	}
+
+	return err
 }
 
 // AddLimitFlag registers --limit on cmd, for list commands only (see
@@ -54,11 +126,9 @@ func ReadLimitFlag(cmd *cobra.Command) (int, error) {
 
 // JSONFlags is --json/--jq's parsed state for one command invocation.
 // Requested is false when --json wasn't passed at all — render the normal
-// table. Requested is true with Fields empty when --json was passed with no
-// value: the command must build a FieldsError with its available field
-// names and return it (ReadJSONFlags cannot do this itself — it doesn't
-// know the command's fields). Requested is true with Fields non-empty for
-// `--json a,b,c`.
+// table. Requested is true for `--json a,b,c` (or `--json=a,b,c`), with
+// Fields holding the parsed, trimmed list — always non-empty, since a bare
+// "--json" never reaches this point (see JSONFlagErrorFunc).
 type JSONFlags struct {
 	Requested bool
 	Fields    []string
@@ -66,9 +136,13 @@ type JSONFlags struct {
 }
 
 // ReadJSONFlags reads --json/--jq off cmd (call it in RunE, after cobra has
-// parsed flags). It fails if --jq is given without --json.
+// parsed flags — and so after JSONFlagErrorFunc has already handled a bare
+// --json). It fails if --jq is given without --json.
 func ReadJSONFlags(cmd *cobra.Command) (JSONFlags, error) {
 	jsonFlag := cmd.Flags().Lookup("json")
+	if jsonFlag == nil {
+		return JSONFlags{}, errors.New("--json is not registered on this command (call output.AddJSONFlags)")
+	}
 
 	jq, err := cmd.Flags().GetString("jq")
 	if err != nil {
@@ -83,22 +157,13 @@ func ReadJSONFlags(cmd *cobra.Command) (JSONFlags, error) {
 		return JSONFlags{}, nil
 	}
 
-	out := JSONFlags{Requested: true, JQ: jq}
-
-	if value := jsonFlag.Value.String(); value != "" && value != jsonNoValueSentinel {
-		for _, f := range strings.Split(value, ",") {
-			out.Fields = append(out.Fields, strings.TrimSpace(f))
-		}
+	val, ok := jsonFlag.Value.(*jsonFieldsValue)
+	if !ok {
+		return JSONFlags{}, fmt.Errorf("--json flag has unexpected type %T (want *jsonFieldsValue — was it registered by output.AddJSONFlags?)", jsonFlag.Value)
 	}
 
-	return out, nil
+	return JSONFlags{Requested: true, Fields: val.fields, JQ: jq}, nil
 }
-
-// jsonNoValueSentinel is --json's NoOptDefVal: what its Value holds when
-// given with no argument at all ("--json" alone, requesting the
-// list-available-fields error) as opposed to Changed=false (not given) or
-// an explicit field list.
-const jsonNoValueSentinel = "\x00"
 
 // FieldsError is what a command returns when --json was given with no
 // field list: main's default error rendering prints it as

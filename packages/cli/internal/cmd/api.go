@@ -85,8 +85,11 @@ func runAPI(cmd *cobra.Command, version string, req apiRequest) error {
 	if err != nil {
 		return fmt.Errorf("invalid path %q: %w", req.path, err)
 	}
-	if target.IsAbs() || target.Host != "" {
+	if target.IsAbs() || target.Host != "" || strings.HasPrefix(req.path, "//") {
 		return fmt.Errorf("refusing absolute URL %q: pass a path relative to /api/v1", req.path)
+	}
+	if err := rejectPathTraversal(target); err != nil {
+		return err
 	}
 
 	method := requestMethod(req)
@@ -155,6 +158,37 @@ func runAPI(cmd *cobra.Command, version string, req apiRequest) error {
 	}
 
 	return nil
+}
+
+// rejectPathTraversal refuses a path with a ".." segment anywhere in it —
+// checked against both u.Path (net/url's already-percent-decoded form,
+// which alone catches plain "../x", "a/../../x", and even an encoded
+// "%2e%2e/x" or "..%2Fx", since url.Parse decodes those into u.Path too)
+// and a second, explicit decode of u.EscapedPath(), as defense in depth
+// against any encoding url.Parse's own decoding doesn't normalize the same
+// way. Without this, "repositories/../../secret" would reach the server as
+// "/api/v1/repositories/../../secret" verbatim, letting a path argument
+// escape the /api/v1 prefix entirely.
+func rejectPathTraversal(u *url.URL) error {
+	if containsDotDotSegment(u.Path) {
+		return fmt.Errorf("refusing path %q: must not contain \"..\" segments", u.Path)
+	}
+
+	if decoded, err := url.PathUnescape(u.EscapedPath()); err == nil && containsDotDotSegment(decoded) {
+		return fmt.Errorf("refusing path %q: must not contain \"..\" segments", u.Path)
+	}
+
+	return nil
+}
+
+func containsDotDotSegment(path string) bool {
+	for _, segment := range strings.Split(path, "/") {
+		if segment == ".." {
+			return true
+		}
+	}
+
+	return false
 }
 
 // requestMethod picks the HTTP method: the -X flag's value when given,

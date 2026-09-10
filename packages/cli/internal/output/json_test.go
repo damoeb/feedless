@@ -3,28 +3,42 @@ package output
 import (
 	"bytes"
 	"encoding/json"
+	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/spf13/cobra"
 )
 
-func newTestCmdWithJSONFlags() *cobra.Command {
-	c := &cobra.Command{Use: "test", RunE: func(*cobra.Command, []string) error { return nil }}
-	AddJSONFlags(c)
+// testFields is the field list every newTestCmdWithJSONFlags command
+// registers, for tests to compare a *FieldsError's Fields against.
+var testFields = []string{"id", "url", "name"}
 
-	return c
+// newTestCmdWithJSONFlags builds a small root+subcommand tree mirroring
+// production: JSONFlagErrorFunc is registered on the root (as
+// cmd.NewRootCmd does), and --json/--jq live on the child command (as a
+// real data command would), so a bare --json is intercepted exactly the
+// way it is for a real invocation like `feedctl source list --json`.
+func newTestCmdWithJSONFlags() (root, sub *cobra.Command) {
+	root = &cobra.Command{Use: "root", SilenceErrors: true, SilenceUsage: true}
+	root.SetFlagErrorFunc(JSONFlagErrorFunc)
+
+	sub = &cobra.Command{Use: "sub", RunE: func(*cobra.Command, []string) error { return nil }}
+	AddJSONFlags(sub, testFields)
+	root.AddCommand(sub)
+
+	return root, sub
 }
 
 func TestReadJSONFlags_NotRequested(t *testing.T) {
-	c := newTestCmdWithJSONFlags()
-	c.SetArgs([]string{})
+	root, sub := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub"})
 
-	if err := c.Execute(); err != nil {
+	if err := root.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
 
-	flags, err := ReadJSONFlags(c)
+	flags, err := ReadJSONFlags(sub)
 	if err != nil {
 		t.Fatalf("ReadJSONFlags() error = %v", err)
 	}
@@ -34,65 +48,105 @@ func TestReadJSONFlags_NotRequested(t *testing.T) {
 	}
 }
 
-func TestReadJSONFlags_NoValue_RequestedWithNoFields(t *testing.T) {
-	c := newTestCmdWithJSONFlags()
-	c.SetArgs([]string{"--json"})
+// TestJSONFlagErrorFunc_BareJSON_AtEndOfArgs_ReturnsFieldsError covers a
+// bare "--json" as the last token: pflag's own *pflag.ValueRequiredError
+// (no more args to consume as the value).
+func TestJSONFlagErrorFunc_BareJSON_AtEndOfArgs_ReturnsFieldsError(t *testing.T) {
+	root, _ := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub", "--json"})
 
-	if err := c.Execute(); err != nil {
-		t.Fatalf("Execute() error = %v", err)
+	err := root.Execute()
+	if err == nil {
+		t.Fatal("Execute() error = nil, want a *FieldsError")
 	}
 
-	flags, err := ReadJSONFlags(c)
-	if err != nil {
-		t.Fatalf("ReadJSONFlags() error = %v", err)
+	fe, ok := err.(*FieldsError)
+	if !ok {
+		t.Fatalf("error type = %T, want *FieldsError", err)
+	}
+	if !reflect.DeepEqual(fe.Fields, testFields) {
+		t.Errorf("Fields = %v, want %v", fe.Fields, testFields)
 	}
 
-	if !flags.Requested {
-		t.Fatalf("Requested = false, want true")
-	}
-	if len(flags.Fields) != 0 {
-		t.Errorf("Fields = %v, want empty", flags.Fields)
+	// "exits 1" (the brief's requirement) is main.go's default for any
+	// error without its own ExitCode() — FieldsError must not override it.
+	if _, hasExitCode := err.(interface{ ExitCode() int }); hasExitCode {
+		t.Error("*FieldsError implements ExitCode(); it must not — it should fall back to the default exit 1")
 	}
 }
 
-// --json's value must be given with "=" (--json=a,b), not a following
-// space-separated arg: NoOptDefVal (which lets bare --json list available
-// fields, see TestReadJSONFlags_NoValue_RequestedWithNoFields) makes pflag
-// treat a space-separated next token as a positional argument, never the
-// flag's value — see pflag's parseLongArg.
-func TestReadJSONFlags_WithFields(t *testing.T) {
-	c := newTestCmdWithJSONFlags()
-	c.SetArgs([]string{"--json=id, url ,name"})
+// TestJSONFlagErrorFunc_BareJSON_FollowedByAnotherFlag_ReturnsFieldsError
+// covers "--json --jq x": without jsonFieldsValue's "-"-prefix rejection,
+// pflag would silently bind "--jq" as --json's value (see jsonFieldsValue's
+// doc comment) instead of recognizing this as a bare --json.
+func TestJSONFlagErrorFunc_BareJSON_FollowedByAnotherFlag_ReturnsFieldsError(t *testing.T) {
+	root, _ := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub", "--json", "--jq", ".id"})
 
-	if err := c.Execute(); err != nil {
+	err := root.Execute()
+	if err == nil {
+		t.Fatal("Execute() error = nil, want a *FieldsError")
+	}
+
+	fe, ok := err.(*FieldsError)
+	if !ok {
+		t.Fatalf("error type = %T, want *FieldsError", err)
+	}
+	if !reflect.DeepEqual(fe.Fields, testFields) {
+		t.Errorf("Fields = %v, want %v", fe.Fields, testFields)
+	}
+}
+
+func TestReadJSONFlags_WithFields_SpaceSeparated(t *testing.T) {
+	root, sub := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub", "--json", "id, url ,name"})
+
+	if err := root.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
 
-	flags, err := ReadJSONFlags(c)
+	flags, err := ReadJSONFlags(sub)
 	if err != nil {
 		t.Fatalf("ReadJSONFlags() error = %v", err)
 	}
 
 	want := []string{"id", "url", "name"}
-	if len(flags.Fields) != len(want) {
-		t.Fatalf("Fields = %v, want %v", flags.Fields, want)
+	if !reflect.DeepEqual(flags.Fields, want) {
+		t.Errorf("Fields = %v, want %v", flags.Fields, want)
 	}
-	for i, f := range want {
-		if flags.Fields[i] != f {
-			t.Errorf("Fields[%d] = %q, want %q", i, flags.Fields[i], f)
-		}
+	if !flags.Requested {
+		t.Error("Requested = false, want true")
+	}
+}
+
+func TestReadJSONFlags_WithFields_EqualsForm(t *testing.T) {
+	root, sub := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub", "--json=id, url ,name"})
+
+	if err := root.Execute(); err != nil {
+		t.Fatalf("Execute() error = %v", err)
+	}
+
+	flags, err := ReadJSONFlags(sub)
+	if err != nil {
+		t.Fatalf("ReadJSONFlags() error = %v", err)
+	}
+
+	want := []string{"id", "url", "name"}
+	if !reflect.DeepEqual(flags.Fields, want) {
+		t.Errorf("Fields = %v, want %v", flags.Fields, want)
 	}
 }
 
 func TestReadJSONFlags_JQWithoutJSON_Errors(t *testing.T) {
-	c := newTestCmdWithJSONFlags()
-	c.SetArgs([]string{"--jq", ".id"})
+	root, sub := newTestCmdWithJSONFlags()
+	root.SetArgs([]string{"sub", "--jq", ".id"})
 
-	if err := c.Execute(); err != nil {
+	if err := root.Execute(); err != nil {
 		t.Fatalf("Execute() error = %v", err)
 	}
 
-	if _, err := ReadJSONFlags(c); err == nil {
+	if _, err := ReadJSONFlags(sub); err == nil {
 		t.Fatal("ReadJSONFlags() error = nil, want an error for --jq without --json")
 	}
 }
