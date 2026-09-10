@@ -71,3 +71,33 @@ func resolveRepoID(cmd *cobra.Command, required bool) (id api.RepositoryId, pres
 
 	return id, true, nil
 }
+
+// addSourceFlag registers -S/--source on cmd, analogous to addRepoFlag
+// above. The harvest commands (C5) scope their work to one source's
+// harvests and always require it — unlike -R/--repo, -S has no environment
+// variable fallback (the brief doesn't specify one).
+func addSourceFlag(cmd *cobra.Command) {
+	cmd.Flags().StringP("source", "S", "", "Source to operate on (required)")
+}
+
+// resolveSourceID reads -S/--source off cmd and parses it as a UUID,
+// failing with the exact "-S/--source is required" message when it's
+// empty — mirroring resolveRepoID's required path, but always required (the
+// harvest commands never operate without a source).
+func resolveSourceID(cmd *cobra.Command) (api.SourceId, error) {
+	source, err := cmd.Flags().GetString("source")
+	if err != nil {
+		return api.SourceId{}, fmt.Errorf("reading --source: %w", err)
+	}
+
+	if source == "" {
+		return api.SourceId{}, errors.New("-S/--source is required")
+	}
+
+	id, err := uuid.Parse(source)
+	if err != nil {
+		return api.SourceId{}, fmt.Errorf("invalid -S/--source %q: %w", source, err)
+	}
+
+	return id, nil
+}

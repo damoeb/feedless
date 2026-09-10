@@ -11,7 +11,8 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// NewRootCmd builds the feedctl root command. version is embedded by main
+// NewRootCmd builds the feedctl root command with the full auth/api/source/
+// harvest command tree. version is embedded by main
 // via `-ldflags "-X main.version=..."` and printed by `feedctl --version`.
 func NewRootCmd(version string) *cobra.Command {
 	root := &cobra.Command{
@@ -37,6 +38,7 @@ func NewRootCmd(version string) *cobra.Command {
 	root.AddCommand(newAuthCmd(version))
 	root.AddCommand(newAPICmd(version))
 	root.AddCommand(newSourceCmd(version))
+	root.AddCommand(newHarvestCmd(version))
 
 	return root
 }

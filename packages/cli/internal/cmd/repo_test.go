@@ -124,3 +124,53 @@ func TestResolveRepoID_NotRequired_Absent_NotPresent(t *testing.T) {
 		t.Errorf("resolveRepoID() id = %q, want the zero UUID", id.String())
 	}
 }
+
+// --- -S/--source (addSourceFlag/resolveSourceID) ---
+
+func newSourceFlagTestCmd(t *testing.T) *cobra.Command {
+	t.Helper()
+
+	c := &cobra.Command{Use: "x"}
+	addSourceFlag(c)
+
+	return c
+}
+
+func TestResolveSourceID_ParsesUUID(t *testing.T) {
+	c := newSourceFlagTestCmd(t)
+	if err := c.Flags().Set("source", testSourceID); err != nil {
+		t.Fatalf("Set(--source) error = %v", err)
+	}
+
+	id, err := resolveSourceID(c)
+	if err != nil {
+		t.Fatalf("resolveSourceID() error = %v", err)
+	}
+	if id.String() != testSourceID {
+		t.Errorf("resolveSourceID() = %q, want %q", id.String(), testSourceID)
+	}
+}
+
+func TestResolveSourceID_Absent_Errors(t *testing.T) {
+	c := newSourceFlagTestCmd(t)
+
+	_, err := resolveSourceID(c)
+	if err == nil {
+		t.Fatal("resolveSourceID() error = nil, want -S/--source is required")
+	}
+	if err.Error() != "-S/--source is required" {
+		t.Errorf("resolveSourceID() error = %q, want %q", err.Error(), "-S/--source is required")
+	}
+}
+
+func TestResolveSourceID_InvalidUUID_Errors(t *testing.T) {
+	c := newSourceFlagTestCmd(t)
+	if err := c.Flags().Set("source", "not-a-uuid"); err != nil {
+		t.Fatalf("Set(--source) error = %v", err)
+	}
+
+	_, err := resolveSourceID(c)
+	if err == nil {
+		t.Fatal("resolveSourceID() error = nil, want an invalid-UUID error")
+	}
+}

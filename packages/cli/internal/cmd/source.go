@@ -19,9 +19,9 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newSourceCmd builds the `feedctl source` command group: list, view, and
-// update. Creating and deleting sources is out of scope for this slice
-// (the brief reserves source create|delete for later).
+// newSourceCmd builds the `feedctl source` command group: list, view,
+// update, and run (source_run.go). Creating and deleting sources is out of
+// scope for this slice (the brief reserves source create|delete for later).
 func newSourceCmd(version string) *cobra.Command {
 	source := &cobra.Command{
 		Use:   "source",
@@ -31,6 +31,7 @@ func newSourceCmd(version string) *cobra.Command {
 	source.AddCommand(newSourceListCmd(version))
 	source.AddCommand(newSourceViewCmd(version))
 	source.AddCommand(newSourceUpdateCmd(version))
+	source.AddCommand(newSourceRunCmd(version))
 
 	return source
 }
