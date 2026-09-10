@@ -36,6 +36,7 @@ func NewRootCmd(version string) *cobra.Command {
 
 	root.AddCommand(newAuthCmd(version))
 	root.AddCommand(newAPICmd(version))
+	root.AddCommand(newSourceCmd(version))
 
 	return root
 }
