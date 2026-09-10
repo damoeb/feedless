@@ -270,7 +270,8 @@ paths:
         until its `status` is `completed`. A real run uses the saved flow and imports records like a
         scheduled harvest. A dry run (`dryRun: true`) scrapes without importing records or touching the
         source, and writes the extracted items into the harvest log; it may carry a `flow` to test
-        instead of the saved one. Requires write access to the repository.
+        instead of the saved one. A dry run that extracts no items counts as failed (`ok: false`) — a
+        broken selector usually yields nothing rather than an error. Requires write access to the repository.
       requestBody:
         required: false
         content:
@@ -1386,7 +1387,9 @@ components:
           type: boolean
         ok:
           type: boolean
-          description: Only meaningful when status is completed; omitted otherwise.
+          description: >
+            Whether the harvest succeeded. Only meaningful when status is completed; omitted otherwise.
+            A dry run that extracted no items is not ok.
         itemsAdded:
           type: integer
           description: Only meaningful when status is completed; omitted otherwise.

@@ -32,8 +32,9 @@ class SourceDryRunner(
   /**
    * Scrapes [source] — whose actions may be an unsaved override flow — and records on [harvest]
    * the scrape log plus a summary of the extracted items. `itemsAdded` is the number of items
-   * extracted, `errornous` whether the scrape failed. [harvest] is saved as
-   * [HarvestStatus.COMPLETED], also when the scrape fails.
+   * extracted. `errornous` is set when the scrape failed or extracted no items — a flow that
+   * yields nothing does not work. [harvest] is saved as [HarvestStatus.COMPLETED], also when the
+   * scrape fails.
    */
   suspend fun dryRun(source: Source, harvest: Harvest): Harvest {
     val logCollector = LogCollector()
@@ -41,7 +42,12 @@ class SourceDryRunner(
     var summary: String? = null
     try {
       val items = extractedItems(scrapeService.scrape(source, logCollector))
-      outcome = outcome.copy(itemsAdded = items.size)
+      if (items.isEmpty()) {
+        // A broken selector usually yields nothing rather than an exception — that is what a
+        // dry run must catch, so extracting nothing fails it.
+        logCollector.log("dry run extracted no items")
+      }
+      outcome = outcome.copy(itemsAdded = items.size, errornous = items.isEmpty())
       summary = summarizeExtractedItems(items)
     } catch (e: Throwable) {
       log.info("dry run of source ${source.id} failed: ${e.message}")

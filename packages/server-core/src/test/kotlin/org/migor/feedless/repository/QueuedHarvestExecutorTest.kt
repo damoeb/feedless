@@ -144,8 +144,9 @@ class QueuedHarvestExecutorTest {
     verify(documentRepository, never()).saveAll(anyList())
     verify(sourceRepository, never()).save(any2())
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
+    // At least one item extracted: the dry run succeeded.
+    assertThat(done.itemsAdded).isGreaterThanOrEqualTo(1).isEqualTo(2)
     assertThat(done.errornous).isFalse()
-    assertThat(done.itemsAdded).isEqualTo(2)
     assertThat(done.logs).contains(
       "dry run extracted 2 item(s)",
       "1. First  https://example.org/1",
@@ -165,8 +166,12 @@ class QueuedHarvestExecutorTest {
     val done = executor.execute(claimed(dryRun = true))
 
     assertThat((scraped!!.actions.single() as FetchAction).url).isEqualTo("https://example.org/saved")
+    // Extracting nothing is a failed dry run: a broken selector yields no items, not an exception.
+    assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
+    assertThat(done.errornous).isTrue()
     assertThat(done.itemsAdded).isEqualTo(0)
-    assertThat(done.logs).contains("dry run extracted 0 item(s)")
+    assertThat(done.logs).contains("dry run extracted no items", "dry run extracted 0 item(s)")
+    verify(sourceRepository, never()).save(any2())
   }
 
   @Test
