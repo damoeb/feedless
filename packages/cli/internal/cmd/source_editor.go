@@ -138,6 +138,12 @@ func runFlowEditor(
 				return writeErr
 			}
 
+			// Mirrors the 400/412 branches below: the reopened file's body
+			// becomes the new baseline, so saving it back unchanged cancels
+			// the edit (per invalidJSONComment's own "leave it unchanged to
+			// cancel" instruction) instead of looping forever.
+			baseline = editedBody
+
 			continue
 		}
 

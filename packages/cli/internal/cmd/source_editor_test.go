@@ -276,6 +276,190 @@ func TestFlowEditor_InvalidJSON_ReopenedWithErrorComment(t *testing.T) {
 	}
 }
 
+// TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping is the
+// regression case for review round 1's Important finding: the invalid-JSON
+// branch used to leave baseline pointed at the original (valid) flow, so
+// saving the reopened file back unchanged never matched the cancel check
+// and the loop reopened the editor forever. It must now cancel exactly like
+// the 400/412 branches already did.
+func TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
+	patchCalls := 0
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("ETag", `"v1"`)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(sourceJSON(testSourceID, testRepoID, "T", 0, "")))
+		case http.MethodPatch:
+			patchCalls++
+			w.WriteHeader(http.StatusOK)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	apiClient := newEditorTestClient(t, srv.URL)
+	cmd, _, stderr := newEditorTestCmd()
+
+	calls := 0
+	editor := func(path string) error {
+		calls++
+		if calls == 1 {
+			return os.WriteFile(path, []byte("{ this is not valid json"), 0o600)
+		}
+
+		// Second call: the user exits without touching the reopened file —
+		// leave it exactly as written (comment block + their invalid text).
+		return nil
+	}
+
+	err := runFlowEditor(cmd, apiClient, mustUUID(t, testRepoID), mustUUID(t, testSourceID), sourceFieldOverrides{}, editor)
+
+	var cancelled *editCancelledError
+	if !errors.As(err, &cancelled) {
+		t.Fatalf("runFlowEditor() error = %v, want *editCancelledError", err)
+	}
+	if calls != 2 {
+		t.Errorf("editor called %d times, want exactly 2 (no third reopen — it must cancel, not loop)", calls)
+	}
+	if patchCalls != 0 {
+		t.Errorf("PATCH called %d times, want 0 (the flow was never valid, so no PATCH should ever be sent)", patchCalls)
+	}
+
+	path := findTempFilePath(t, stderr.String())
+	if !tempFileExists(t, path) {
+		t.Errorf("temp file %s missing, want it kept on cancellation", path)
+	}
+}
+
+// TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping proves the 400
+// branch — which already set baseline correctly — still cancels rather than
+// looping, alongside the invalid-JSON fix above.
+func TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
+	patchCalls := 0
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/json")
+			w.Header().Set("ETag", `"v1"`)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(sourceJSON(testSourceID, testRepoID, "T", 0, "")))
+		case http.MethodPatch:
+			patchCalls++
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusBadRequest)
+			_, _ = w.Write([]byte(`{"code":"BAD_REQUEST","message":"invalid flow"}`))
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	apiClient := newEditorTestClient(t, srv.URL)
+	cmd, _, stderr := newEditorTestCmd()
+
+	calls := 0
+	editor := func(path string) error {
+		calls++
+		if calls == 1 {
+			return os.WriteFile(path, []byte(otherFlowJSON), 0o600)
+		}
+
+		// Second call: leave the reopened file (server-error comment +
+		// their edit) untouched.
+		return nil
+	}
+
+	err := runFlowEditor(cmd, apiClient, mustUUID(t, testRepoID), mustUUID(t, testSourceID), sourceFieldOverrides{}, editor)
+
+	var cancelled *editCancelledError
+	if !errors.As(err, &cancelled) {
+		t.Fatalf("runFlowEditor() error = %v, want *editCancelledError", err)
+	}
+	if calls != 2 {
+		t.Errorf("editor called %d times, want exactly 2", calls)
+	}
+	if patchCalls != 1 {
+		t.Errorf("PATCH called %d times, want exactly 1 (no retry after an unchanged save)", patchCalls)
+	}
+
+	path := findTempFilePath(t, stderr.String())
+	if !tempFileExists(t, path) {
+		t.Errorf("temp file %s missing, want it kept on cancellation", path)
+	}
+}
+
+// TestFlowEditor_412_SavedUnchanged_CancelsInsteadOfLooping proves the 412
+// branch — which already set baseline to the fresh flow — still cancels
+// rather than looping when the user saves the reopened (fresh) file back
+// unchanged.
+func TestFlowEditor_412_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
+	getCalls := 0
+	patchCalls := 0
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			getCalls++
+			w.Header().Set("Content-Type", "application/json")
+
+			if getCalls == 1 {
+				w.Header().Set("ETag", `"v1"`)
+				w.WriteHeader(http.StatusOK)
+				_, _ = w.Write([]byte(sourceJSON(testSourceID, testRepoID, "T", 0, "")))
+
+				return
+			}
+
+			w.Header().Set("ETag", `"v2"`)
+			w.WriteHeader(http.StatusOK)
+			_, _ = w.Write([]byte(`{"id":"` + testSourceID + `","repositoryId":"` + testRepoID + `","title":"T",` +
+				`"errorsInSuccession":0,"lastErrorMessage":null,"flow":` + thirdFlowJSON + `}`))
+		case http.MethodPatch:
+			patchCalls++
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusPreconditionFailed)
+			_, _ = w.Write([]byte(`{"code":"PRECONDITION_FAILED","message":"stale"}`))
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	apiClient := newEditorTestClient(t, srv.URL)
+	cmd, _, stderr := newEditorTestCmd()
+
+	calls := 0
+	editor := func(path string) error {
+		calls++
+		if calls == 1 {
+			return os.WriteFile(path, []byte(otherFlowJSON), 0o600)
+		}
+
+		// Second call: leave the reopened (fresh-flow) file untouched.
+		return nil
+	}
+
+	err := runFlowEditor(cmd, apiClient, mustUUID(t, testRepoID), mustUUID(t, testSourceID), sourceFieldOverrides{}, editor)
+
+	var cancelled *editCancelledError
+	if !errors.As(err, &cancelled) {
+		t.Fatalf("runFlowEditor() error = %v, want *editCancelledError", err)
+	}
+	if getCalls != 2 {
+		t.Errorf("GET called %d times, want 2 (initial + 412 re-fetch)", getCalls)
+	}
+	if calls != 2 {
+		t.Errorf("editor called %d times, want exactly 2", calls)
+	}
+	if patchCalls != 1 {
+		t.Errorf("PATCH called %d times, want exactly 1 (no retry after an unchanged save of the fresh flow)", patchCalls)
+	}
+
+	path := findTempFilePath(t, stderr.String())
+	if !tempFileExists(t, path) {
+		t.Errorf("temp file %s missing, want it kept on cancellation", path)
+	}
+}
+
 func TestFlowEditor_400_ReopenedWithServerError(t *testing.T) {
 	patchCalls := 0
 
