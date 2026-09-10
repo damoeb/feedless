@@ -1,6 +1,7 @@
 package org.migor.feedless.report
 
 import io.micrometer.core.instrument.MeterRegistry
+import org.springframework.beans.factory.annotation.Value
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
@@ -9,7 +10,18 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentsFilter
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DatesWhereInput
+import org.migor.feedless.document.GeoPointInput
+import org.migor.feedless.document.GeoPointWhereInput
+import org.migor.feedless.document.GeoPointWhereNearInput
+import org.migor.feedless.document.RecordOrderBy
+import org.migor.feedless.document.ReleaseStatus
+import org.migor.feedless.document.SortOrder
+import org.migor.feedless.document.StringFilter
 import org.migor.feedless.generated.types.IntervalUnit
 import org.migor.feedless.generated.types.SegmentInput
 import org.migor.feedless.geo.LatLonPoint
@@ -29,6 +41,7 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
+import org.migor.feedless.template.TemplateVariant
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
@@ -53,6 +66,8 @@ class ReportUseCase(
   private val pluginService: PluginService,
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
+  private val documentRepository: DocumentRepository,
+  @Value("\${app.mail.sender}") private val mailSender: String,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -101,7 +116,7 @@ class ReportUseCase(
     }
 
     val cronSchedule = CronSchedule(
-      cronExpression = "",
+      cronExpression = interval.second,
       scheduledNextAt = nextReportedAt
     )
 
@@ -145,7 +160,7 @@ class ReportUseCase(
     )
     val body = templateService.renderTemplate(MailTemplateReportCreated(params))
     val mail = OutgoingMail(
-      from = "no-reply@feedless.org",
+      from = mailSender,
       to = listOf(segment.recipient.email.email),
       subject = "Reporter erstellt",
       htmlContent = body
@@ -179,22 +194,28 @@ class ReportUseCase(
       val cron = report.cronSchedule!!
       val now = LocalDateTime.now()
       try {
-
         val segment = report.segment!!
         val (repository, documents) = resolveSegment(segment)
 
         resolveReporterPlugin(report.reporterPlugin)
           .report(
             documents, repository, EventsReportPluginParams(
-              from = "no-reply@lokale.events",
+              from = mailSender,
               to = report.recipientEmail,
-              subject = "",
+              subject = repository.title,
               language = "de",
+              // Das Backend kennt kein Produkt: es reicht den Variantennamen
+              // durch, und die Vorlagenauflösung entscheidet, ob es dafür eine
+              // eigene Vorlage gibt.
+              templateVariant = repository.product.name,
             ).toPluginExecutionJson(), LogCollector()
           )
-
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
+      } finally {
+        // Auch nach einem erfolgreichen Versand fortschreiben. Vorher geschah
+        // das nur im Fehlerfall, wodurch ein zugestellter Report beim nächsten
+        // Lauf 60 Sekunden später erneut verschickt wurde - endlos.
         val next = nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
         withContext(Dispatchers.IO) {
           cronScheduleRepository.save(
@@ -211,9 +232,38 @@ class ReportUseCase(
   private suspend fun resolveReporterPlugin(plugin: PluginExecution): ReportPlugin<*> =
     pluginService.resolveById<ReportPlugin<*>>(plugin.id)!!
 
+  /**
+   * Übersetzt die [SegmentSpec] in eine Dokumentabfrage. Die Spec ist die
+   * Stelle, an der später das Empfehlungsprofil andockt - hier wird nur noch
+   * ausgeführt, was sie beschreibt.
+   */
   private fun resolveSegment(segment: Segmentation): Pair<Repository, List<Document>> {
     val repository = repositoryRepository.findById(segment.repositoryId)!!
+    val spec = segment.toSpec(LocalDateTime.now())
 
-    return Pair(repository, emptyList())
+    val documents = documentRepository.findAllFiltered(
+      repositoryId = spec.repositoryId,
+      filter = spec.toDocumentsFilter(),
+      orderBy = RecordOrderBy(startedAt = SortOrder.ASC),
+      status = ReleaseStatus.released,
+      tags = spec.tags,
+      pageable = PageableRequest(pageNumber = 0, pageSize = spec.maxSize),
+    )
+
+    return Pair(repository, documents)
   }
+
+  private fun SegmentSpec.toDocumentsFilter(): DocumentsFilter = DocumentsFilter(
+    repository = repositoryId,
+    startedAt = DatesWhereInput(after = from, before = until),
+    latLng = near?.let {
+      GeoPointWhereInput(
+        near = GeoPointWhereNearInput(
+          point = GeoPointInput(lat = it.lat, lng = it.lng),
+          distanceKm = it.distanceKm,
+        ),
+      )
+    },
+    tags = tags.takeIf { it.isNotEmpty() }?.let { StringFilter(`in` = it) },
+  )
 }

@@ -13,6 +13,7 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.template.FreemarkerTemplate
 import org.migor.feedless.template.TemplateService
+import org.migor.feedless.template.TemplateVariant
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -23,6 +24,12 @@ data class EventsReportPluginParams(
   val from: String,
   val to: String,
   val subject: String,
+  /**
+   * Name der Vorlagenvariante, üblicherweise das Produkt des Repositories.
+   * Der Versandpfad kennt kein Produkt - er reicht den Namen nur durch, und
+   * die Vorlagenauflösung entscheidet, ob es dafür eine eigene Vorlage gibt.
+   */
+  val templateVariant: String? = null,
 )
 
 fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
@@ -71,7 +78,10 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
       events = documents,
       deactivationLink = "",
     )
-    val eventCalendarMail = templateService.renderTemplate(MailTemplateEventCalendar(templateParams))
+    val eventCalendarMail = templateService.renderTemplate(
+      MailTemplateEventCalendar(templateParams),
+      params.templateVariant?.let { TemplateVariant(it) },
+    )
     mailService.send(
       OutgoingMail(
         from = params.from,

@@ -31,6 +31,7 @@ import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.EventsReportPlugin
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
@@ -46,6 +47,7 @@ import java.time.LocalDateTime
 
 class ReportUseCaseTest {
 
+  private lateinit var documentRepository: DocumentRepository
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var reportRepository: ReportRepository
   private lateinit var repositoryRepository: RepositoryRepository
@@ -77,6 +79,8 @@ class ReportUseCaseTest {
       listOf(eventsReportPlugin),
     )
 
+    documentRepository = mock(DocumentRepository::class.java)
+
     reportUseCase = ReportUseCase(
       reportRepository,
       mock(CronScheduleRepository::class.java),
@@ -88,6 +92,8 @@ class ReportUseCaseTest {
       pluginService,
       mailService,
       mock(ReportGuard::class.java),
+      documentRepository,
+      "no-reply@test.local",
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
