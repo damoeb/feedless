@@ -3,17 +3,42 @@ package org.migor.feedless.repository
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.toLocalDateTime
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
 /** Longest log a harvest keeps; longer logs are cut with an ellipsis. */
 internal const val HARVEST_LOG_MAX_LENGTH = 32000
 
-/** The collected statements as a harvest log: one timestamped line each, capped at [HARVEST_LOG_MAX_LENGTH]. */
-internal fun LogCollector.toHarvestLog(): String =
+private const val ELLIPSIS = "..."
+private const val APPENDIX_SEPARATOR = "\n\n"
+
+/** One harvest log line: an ISO timestamp, two spaces, the message. */
+internal fun harvestLogLine(time: LocalDateTime, message: String): String =
+  "${time.format(DateTimeFormatter.ISO_DATE_TIME)}  $message"
+
+/**
+ * The collected statements as a harvest log, one [harvestLogLine] each, capped at
+ * [HARVEST_LOG_MAX_LENGTH]. An [appendix] (a dry run's item summary) follows after a blank line;
+ * it is what the reader came for, so when the whole does not fit, the log gives way first — the
+ * appendix keeps up to half the limit.
+ */
+internal fun LogCollector.toHarvestLog(appendix: String? = null): String {
+  val log = logs.joinToString("\n") { harvestLogLine(it.time.toLocalDateTime(), it.message) }
+  if (appendix.isNullOrEmpty()) {
+    return StringUtils.abbreviate(log, ELLIPSIS, HARVEST_LOG_MAX_LENGTH)
+  }
+  val cutAppendix = StringUtils.abbreviate(appendix, ELLIPSIS, HARVEST_LOG_MAX_LENGTH / 2)
+  if (log.isEmpty()) {
+    return cutAppendix
+  }
+  val logBudget = HARVEST_LOG_MAX_LENGTH - APPENDIX_SEPARATOR.length - cutAppendix.length
+  return StringUtils.abbreviate(log, ELLIPSIS, logBudget) + APPENDIX_SEPARATOR + cutAppendix
+}
+
+/** [log] with [line] appended, capped at [HARVEST_LOG_MAX_LENGTH]. */
+internal fun appendHarvestLog(log: String, line: String): String =
   StringUtils.abbreviate(
-    logs.joinToString("\n") {
-      "${it.time.toLocalDateTime().format(DateTimeFormatter.ISO_DATE_TIME)}  ${it.message}"
-    },
-    "...",
+    if (log.isEmpty()) line else "$log\n$line",
+    ELLIPSIS,
     HARVEST_LOG_MAX_LENGTH,
   )

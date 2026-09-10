@@ -7,9 +7,11 @@ import org.migor.feedless.data.jpa.repository.toPageRequest
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
+import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
@@ -39,5 +41,26 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
 
   override fun save(harvest: Harvest): Harvest {
     return harvestDAO.save(harvest.toEntity()).toDomain()
+  }
+
+  // One transaction: the row locks from the SELECT are held until the rows are committed as running.
+  @Transactional
+  override fun claimQueued(limit: Int, now: LocalDateTime): List<Harvest> {
+    val claimed = harvestDAO.findQueuedForUpdateSkipLocked(limit)
+    claimed.forEach {
+      it.status = RUNNING
+      it.startedAt = now
+    }
+    return harvestDAO.saveAll(claimed).map { it.toDomain() }
+  }
+
+  @Transactional
+  override fun completeStaleRunning(startedBefore: LocalDateTime, now: LocalDateTime, message: String): Int {
+    return harvestDAO.completeAllRunningStartedBefore(startedBefore, now, message)
+  }
+
+  private companion object {
+    // t_harvest.status values — see HarvestMapper.harvestStatusToString.
+    val RUNNING = HarvestStatus.RUNNING.name.lowercase()
   }
 }

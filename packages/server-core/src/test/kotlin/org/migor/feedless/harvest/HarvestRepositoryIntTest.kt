@@ -25,9 +25,15 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
+import org.springframework.transaction.support.TransactionTemplate
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
+import java.util.concurrent.Callable
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.Executors
+import java.util.concurrent.TimeUnit
 
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -65,6 +71,9 @@ class HarvestRepositoryIntTest {
 
   @Autowired
   private lateinit var groupRepository: GroupRepository
+
+  @Autowired
+  private lateinit var transactionManager: PlatformTransactionManager
 
   private lateinit var sourceA: Source
   private lateinit var sourceB: Source
@@ -131,6 +140,106 @@ class HarvestRepositoryIntTest {
     // the JSON value itself - T3 treats flow as opaque, so only structural equality is guaranteed.
     assertThat(JsonParser.parseString(reloaded.flow)).isEqualTo(JsonParser.parseString(flowJson))
   }
+
+  @Test
+  fun `claimQueued claims the oldest queued harvests and marks them running`() {
+    harvestDAO.deleteAllInBatch()
+    val now = LocalDateTime.now()
+    val oldest = harvest(sourceA.id, now.minusMinutes(3), HarvestStatus.QUEUED)
+    val middle = harvest(sourceB.id, now.minusMinutes(2), HarvestStatus.QUEUED, dryRun = true)
+    val newest = harvest(sourceA.id, now.minusMinutes(1), HarvestStatus.QUEUED)
+    val running = harvest(sourceA.id, now.minusMinutes(10), HarvestStatus.RUNNING)
+    val completed = harvest(sourceA.id, now.minusMinutes(10), HarvestStatus.COMPLETED)
+    val claimedAt = now.withNano(0)
+
+    val claimed = harvestRepository.claimQueued(2, claimedAt)
+
+    assertThat(claimed.map { it.id }).containsExactly(oldest.id, middle.id)
+    assertThat(claimed).allSatisfy {
+      assertThat(it.status).isEqualTo(HarvestStatus.RUNNING)
+      assertThat(it.startedAt).isEqualTo(claimedAt)
+    }
+    assertThat(claimed.single { it.id == middle.id }.dryRun).isTrue()
+    assertThat(statusOf(oldest, middle, newest, running, completed)).containsExactly(
+      HarvestStatus.RUNNING, HarvestStatus.RUNNING, HarvestStatus.QUEUED, HarvestStatus.RUNNING, HarvestStatus.COMPLETED,
+    )
+    // The claimed rows are committed as running: nobody claims them again.
+    assertThat(harvestRepository.claimQueued(10, now).map { it.id }).containsExactly(newest.id)
+    assertThat(harvestRepository.claimQueued(10, now)).isEmpty()
+  }
+
+  @Test
+  fun `concurrent claimers skip each other's locked rows and get disjoint harvests`() {
+    harvestDAO.deleteAllInBatch()
+    val now = LocalDateTime.now()
+    val queued = (1..4).map { harvest(sourceA.id, now.minusMinutes(it.toLong()), HarvestStatus.QUEUED) }
+    val transactions = TransactionTemplate(transactionManager)
+    val firstClaimed = CountDownLatch(1)
+    val releaseFirst = CountDownLatch(1)
+    val executor = Executors.newFixedThreadPool(2)
+    try {
+      // The first claimer holds its row locks — its transaction stays open until released.
+      val first = executor.submit(Callable {
+        transactions.execute {
+          val claimed = harvestRepository.claimQueued(2, now)
+          firstClaimed.countDown()
+          releaseFirst.await(30, TimeUnit.SECONDS)
+          claimed
+        }!!
+      })
+      assertThat(firstClaimed.await(30, TimeUnit.SECONDS)).isTrue()
+
+      // Without SKIP LOCKED the second claimer would block on those rows until the timeout.
+      val second = executor.submit(Callable {
+        transactions.execute { harvestRepository.claimQueued(10, now) }!!
+      }).get(10, TimeUnit.SECONDS)
+
+      releaseFirst.countDown()
+      val firstIds = first.get(30, TimeUnit.SECONDS).map { it.id }
+      val secondIds = second.map { it.id }
+
+      assertThat(firstIds).hasSize(2).doesNotContainAnyElementsOf(secondIds)
+      assertThat(firstIds + secondIds).containsExactlyInAnyOrderElementsOf(queued.map { it.id })
+      assertThat(harvestRepository.claimQueued(10, now)).isEmpty()
+    } finally {
+      releaseFirst.countDown()
+      executor.shutdownNow()
+    }
+  }
+
+  @Test
+  fun `completeStaleRunning fails only harvests running longer than the cutoff`() {
+    harvestDAO.deleteAllInBatch()
+    val now = LocalDateTime.now().withNano(0)
+    val stale = harvestRepository.save(
+      Harvest(
+        sourceId = sourceA.id,
+        logs = "scrape started",
+        startedAt = now.minusMinutes(31),
+        finishedAt = null,
+        status = HarvestStatus.RUNNING,
+      )
+    )
+    val fresh = harvest(sourceA.id, now.minusMinutes(5), HarvestStatus.RUNNING)
+    val oldQueued = harvest(sourceA.id, now.minusHours(2), HarvestStatus.QUEUED)
+    val oldCompleted = harvest(sourceA.id, now.minusHours(2), HarvestStatus.COMPLETED)
+
+    val completed = harvestRepository.completeStaleRunning(now.minusMinutes(30), now, "timed out")
+
+    assertThat(completed).isEqualTo(1)
+    val failed = harvestRepository.findById(stale.id)!!
+    assertThat(failed.status).isEqualTo(HarvestStatus.COMPLETED)
+    assertThat(failed.errornous).isTrue()
+    assertThat(failed.finishedAt).isEqualTo(now)
+    assertThat(failed.logs).isEqualTo("scrape started\ntimed out")
+    assertThat(statusOf(fresh, oldQueued, oldCompleted)).containsExactly(
+      HarvestStatus.RUNNING, HarvestStatus.QUEUED, HarvestStatus.COMPLETED,
+    )
+    assertThat(harvestRepository.findById(oldCompleted.id)!!.errornous).isFalse()
+  }
+
+  private fun statusOf(vararg harvests: Harvest): List<HarvestStatus> =
+    harvests.map { harvestRepository.findById(it.id)!!.status }
 
   @Test
   fun `findById returns the harvest`() {

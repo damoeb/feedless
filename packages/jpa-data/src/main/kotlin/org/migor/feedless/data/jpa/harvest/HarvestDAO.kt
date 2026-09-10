@@ -7,6 +7,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.util.*
@@ -43,4 +44,37 @@ DELETE FROM t_harvest WHERE EXISTS(
   fun deleteAllTailingBySourceId()
 
   fun deleteAllByDryRunTrueAndStatusAndCreatedAtBefore(status: String, before: LocalDateTime)
+
+  /**
+   * Locks the oldest queued harvests. `SKIP LOCKED` makes a concurrent claimer pass over rows this
+   * transaction holds instead of waiting for them — and, once they are committed as `running`, the
+   * `status` filter excludes them — so two claimers always get disjoint sets.
+   */
+  @Query(
+    """
+    SELECT * FROM t_harvest
+    WHERE status = 'queued'
+    ORDER BY created_at ASC
+    LIMIT :limit
+    FOR UPDATE SKIP LOCKED
+  """, nativeQuery = true
+  )
+  fun findQueuedForUpdateSkipLocked(@Param("limit") limit: Int): List<HarvestEntity>
+
+  @Modifying
+  @Query(
+    """
+    UPDATE t_harvest
+    SET status = 'completed',
+        errornous = true,
+        finished_at = :now,
+        logs = concat_ws(E'\n', nullif(logs, ''), :message)
+    WHERE status = 'running' AND started_at < :startedBefore
+  """, nativeQuery = true
+  )
+  fun completeAllRunningStartedBefore(
+    @Param("startedBefore") startedBefore: LocalDateTime,
+    @Param("now") now: LocalDateTime,
+    @Param("message") message: String,
+  ): Int
 }

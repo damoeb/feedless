@@ -10,4 +10,17 @@ interface HarvestRepository {
   fun deleteAllTailingBySourceId()
   fun deleteAllDryRunByCreatedAtBefore(before: LocalDateTime)
   fun save(harvest: Harvest): Harvest
+
+  /**
+   * Claims up to [limit] queued harvests, oldest first, and marks them running as of [now] — in one
+   * transaction. Rows another claimer holds are skipped rather than waited for, so concurrent
+   * claimers (several scheduler instances) never get the same harvest.
+   */
+  fun claimQueued(limit: Int, now: LocalDateTime): List<Harvest>
+
+  /**
+   * Completes as failed every harvest still running that started before [startedBefore] — its run
+   * died with the process — appending [message] to its log. Returns how many were completed.
+   */
+  fun completeStaleRunning(startedBefore: LocalDateTime, now: LocalDateTime, message: String): Int
 }
