@@ -34,3 +34,25 @@ go build -ldflags "-X main.version=<version>" -o build/feedctl ./cmd/feedctl
 ## Generating the API client
 
 Run `go generate ./...` after `openapi.yaml` changes, then commit the regenerated `internal/api/client.gen.go`. `./gradlew :packages:cli:lint` runs the same regeneration and fails the build if the checked-in client drifted from the spec, so a spec change without a matching regeneration is caught in CI, not by users of the CLI.
+
+## Cross-compiling for each self-hosted instance
+
+Feedless is self-hosted, and instances run different versions, so each instance serves the `feedctl` build that matches its own API instead of a single downloadable release. `./gradlew :packages:cli:crossCompile` builds every platform this CLI supports and stages the files `packages/server-core`'s image serves under `/cli/**`:
+
+```
+./gradlew :packages:cli:crossCompile
+```
+
+This produces, under `packages/cli/build/dist/`:
+
+- `feedctl-darwin-amd64`, `feedctl-darwin-arm64`, `feedctl-linux-amd64`, `feedctl-linux-arm64` — statically linked (`CGO_ENABLED=0`), stripped (`-trimpath -ldflags "-s -w"`) binaries. No Windows build (out of scope for now).
+- `SHA256SUMS` — `sha256sum`-format checksums of the four binaries (`shasum -a 256 -c SHA256SUMS` verifies them).
+- `install.sh` — a copy of this directory's `install.sh`, unmodified; the server templates its `__FEEDCTL_BASE_URL__` placeholder per instance when it serves `/cli/install.sh` (see `CliInstallScriptController` in `packages/server-core`).
+
+Pass `-PfeedlessVersion=<version>` the same way `./gradlew :packages:cli:build` does, so the embedded `main.version` matches the release:
+
+```
+./gradlew -PfeedlessVersion=1.2.3 :packages:cli:crossCompile
+```
+
+`./gradlew :packages:server-core:buildAmdDockerImage` depends on `crossCompile` (via the `copyCliArtifacts` task) and bakes `packages/cli/build/dist/` into the image's `static/cli/`, so it's served automatically -- no separate step is needed to ship the CLI with a running instance. A local `bootRun` that never ran `crossCompile` simply 404s on `/cli/**`; it does not fail to start.
