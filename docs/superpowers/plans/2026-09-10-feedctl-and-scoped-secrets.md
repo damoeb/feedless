@@ -13,7 +13,7 @@
 1. **Slice 1 — the use case.** On `feature/http-api`: changes 1–3, because they rename or remove existing paths and `/api/v1` is unreleased, so the merge is the last point where they are not breaking changes; plus changes 4, 5, 7, 9, 10 and 11, which the fix loop needs. Then `feature/http-api` merges. On `feature/fl-cli`, in parallel: the Go skeleton, hosts and credentials, `auth`, `source list|view|update|run`, `harvest list|view`, `api`, distribution via `/cli/**`, and the end-to-end smoke test.
 2. **Slice 2 — repositories, records, sources.** `repo list|view|create|update|delete`, `record list|view|create|update|delete`, `source create|delete`, plus the server work those commands need: conditional requests (change 10) on repositories and records, and `GET /repositories` honouring `q`. It lands on `feature/feed-ctl` before the merge, so one final review covers slices 1 and 2.
 3. **Slice 3 — the rest of the surface.** `plan`, `group`, `member`, and change 6. All additive, so it can land after the merge.
-4. **Slice 4 — scoped secrets** as their own plan and branch, with the `secret` commands. Until then, every token that reaches `/api/v1` can touch every resource of its user — accepted for the interim because the API has no external consumers yet.
+4. **Slice 4 — scoped secrets** as their own plan and branch, managed in the web UI (no CLI commands), with re-authentication before creating or deleting a secret. Until then, every token that reaches `/api/v1` can touch every resource of its user — accepted for the interim because the API has no external consumers yet.
 
 ## Implementation
 
@@ -49,7 +49,7 @@ Without `-R`, `--errored` uses the cross-repository endpoint `GET /user/sources`
 ## CLI conventions
 
 - Shape: `feedctl <entity> <action> [<id>] [flags]`.
-- Entities (singular): `repo`, `source`, `harvest`, `record`, `plan`, `group`, `member`, `secret`; plus `auth` and `api` as in `gh`.
+- Entities (singular): `repo`, `source`, `harvest`, `record`, `plan`, `group`, `member`; plus `auth` and `api` as in `gh`. Secrets have no CLI commands: they are created and deleted in the web UI only (see Scoped secrets).
 - Actions map 1:1 to HTTP: `list` (GET collection), `view` (GET item), `create` (POST), `update` (PATCH; field flags, `--input <file>`, or `--editor`), `delete` (DELETE), `run` (POST action). No other verbs.
 - The resource id is positional; everything else is a flag. Parent scope is a flag: `-R/--repo`, `-S/--source`, `-G/--group`, defaulting from `FEEDCTL_REPO` like `GH_REPO`.
 - Global flags: `--json [fields]`, `--jq <expr>`, `--limit <n>` (auto-paginates), `--yes` for `delete`.
@@ -94,11 +94,6 @@ Without `-R`, `--errored` uses the cross-repository endpoint `GET /user/sources`
 | `member list` | `-G` | `GET /groups/{g}/members` | ✅ |
 | `member create` | `-G`, `--user`, `--role` | `POST /groups/{g}/members` | ✅ |
 | `member delete <userId>` | `-G`, `--yes` | `DELETE /groups/{g}/members/{userId}` | ✅ |
-| `secret list` | | `GET /user/secrets` | 🆕 (follow-up) |
-| `secret view <id>` | | `GET /user/secrets/{id}` | 🆕 (follow-up) |
-| `secret create` | `--name`, `--expires 90d`, `-R` (repeatable) or `-G`, `--permission source:write` (repeatable) | `POST /user/secrets` (value shown once) | 🆕 (follow-up) |
-| `secret update <id>` | `--name`, `--permission`, `--expires` | `PATCH /user/secrets/{id}` | 🆕 (follow-up) |
-| `secret delete <id>` | `--yes` | `DELETE /user/secrets/{id}` (revoke) | 🆕 (follow-up) |
 | `api <path>` | `-X`, `-f k=v`, `--input` | any | ✅ |
 
 ## HTTP API changes (before merging `feature/http-api`)
@@ -125,7 +120,8 @@ Without `-R`, `--errored` uses the cross-repository endpoint `GET /user/sources`
 - Token format: opaque string with a `fdl_` prefix (secret-scanner friendly, like `github_pat_`), stored as a hash; not a JWT. Every request looks the token up, so revocation is immediate and `lastUsedAt` is accurate.
 - Enforcement: permissions checked in the security layer; resource scope checked in the existing `require…InRepository` guards, and in `GET /user/sources`, which must only return sources inside the token's scope.
 - Bootstrap: the first secret is created in the web UI with a browser session (as on GitHub); the CLI takes it via `feedctl auth login --with-token`. A browser device flow may follow later.
-- `/user/secrets` endpoints require a browser session and return `403` for tokens.
+- `/user/secrets` endpoints require a browser session and return `403` for tokens. Secrets are managed in the web UI only; `feedctl` has no `secret` commands.
+- **Re-authentication before creating or deleting a secret** — scoped secrets and, until the cutover, the legacy unscoped `UserSecret` (GraphQL `createUserSecret` / `deleteUserSecret`). Feedless users have no password, so the confirmation follows the instance's authentication mode (like GitHub's sudo mode): `root` → re-enter `APP_ROOT_SECRET_KEY`; `mail` → a one-time code sent by email (existing `OneTimePasswordService`); `sso` → a fresh login at the SSO provider (`prompt=login`, `max_age=0`), accepted only if the provider's `auth_time` is fresh. A successful confirmation opens a 10-minute window (configurable) bound to the current session and recorded server-side; within it further create/delete actions need no new confirmation. Outside the window the server refuses with `403` and code `REAUTH_REQUIRED`, and the web UI runs the confirmation and retries. The window never extends itself and ends with the session.
 - Cutover: once scoped secrets exist, `/api/v1` stops accepting session JWTs and legacy `UserSecret` JWTs. Agents authenticate via `UserSecret` today (`Agent.secretKeyId`) and need their own `agent` scope before that cutover, or they break.
 - Schema changes land as a new additive Flyway migration with the next free `V<n>__` number.
 
