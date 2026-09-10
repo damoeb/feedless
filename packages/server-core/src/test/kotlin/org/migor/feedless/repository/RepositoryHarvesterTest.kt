@@ -32,7 +32,9 @@ import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
+import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PluginExecution
@@ -48,6 +50,7 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -128,6 +131,17 @@ class RepositoryHarvesterTest {
       }
     }
 
+    // The source's real-run slot is free.
+    `when`(harvestRepository.startRun(any2(), any2())).thenAnswer {
+      Harvest(
+        sourceId = it.arguments[0] as SourceId,
+        logs = "",
+        startedAt = it.arguments[1] as LocalDateTime,
+        finishedAt = null,
+        status = HarvestStatus.RUNNING,
+      )
+    }
+
     `when`(repositoryUseCase.findById(eq(repositoryId))).thenReturn(repository)
     `when`(repositoryRepository.findById(eq(repositoryId))).thenReturn(repository)
 
@@ -159,14 +173,9 @@ class RepositoryHarvesterTest {
       any2()
     )
 
-    verify(sourceRepository, times(1)).save(
-      source
-        .copy(
-          disabled = false,
-          errorsInSuccession = 1,
-          lastErrorMessage = "this is off"
-        )
-    )
+    // Incremented in the database, not saved from the (possibly stale) loaded source.
+    verify(sourceRepository, times(1)).recordHarvestFailed(eq(source.id), eq("this is off"), any2())
+    verify(sourceRepository, never()).save(any2())
   }
 
   @Test
@@ -296,12 +305,8 @@ class RepositoryHarvesterTest {
     )
 
     verify(sourceRepository, times(1))
-      .save(
-        source.copy(
-          errorsInSuccession = 0,
-          lastErrorMessage = "they warned us about this"
-        )
-      )
+      .recordHarvestInterrupted(eq(source.id), eq("they warned us about this"), any2())
+    verify(sourceRepository, never()).recordHarvestFailed(any2(), any2(), any2())
   }
 
   @Test

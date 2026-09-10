@@ -139,11 +139,15 @@ class RepositoryHarvester(
 
       sources
         .forEachIndexed { index, source ->
-          log.info("scraping source $currentPage/$index ${source.id}")
-          harvestSource(
-            source,
-            Harvest(sourceId = source.id, logs = "", startedAt = LocalDateTime.now(), finishedAt = null),
-          )
+          // Takes the source's one real-run slot, or finds it held by a harvest running elsewhere (on
+          // demand, or another scheduler instance): then the next scheduled run picks the source up.
+          val harvest = harvestRepository.startRun(source.id, LocalDateTime.now())
+          if (harvest == null) {
+            log.info("skipping source $currentPage/$index ${source.id}: a real harvest of it is running already")
+          } else {
+            log.info("scraping source $currentPage/$index ${source.id}")
+            harvestSource(source, harvest)
+          }
         }
     } while (sources.isNotEmpty())
 
@@ -176,8 +180,10 @@ class RepositoryHarvester(
    * queued-harvest executor both run a source through here, so a run on demand behaves exactly
    * like a scheduled one.
    *
-   * [harvest] is saved as [HarvestStatus.COMPLETED] with `finishedAt` and the log, also when
-   * the scrape fails.
+   * [harvest] is the source's running real harvest ([HarvestRepository.startRun], or a claimed
+   * queued one), which holds the source's one run slot. It is saved as [HarvestStatus.COMPLETED]
+   * with `finishedAt` and the log, also when the scrape fails — which frees the slot. The source's
+   * error state is updated atomically, never saved from [source], which may be stale.
    */
   suspend fun harvestSource(source: Source, harvest: Harvest): Harvest {
     val logCollector = LogCollector()
@@ -185,18 +191,7 @@ class RepositoryHarvester(
     try {
       val retrieved = scrapeSource(source, logCollector)
       outcome = outcome.copy(itemsAdded = retrieved)
-
-      val updatedSource = if (source.errorsInSuccession > 0) {
-        source.copy(errorsInSuccession = 0)
-      } else {
-        source
-      }.copy(
-        lastErrorMessage = null,
-        lastRecordsRetrieved = retrieved,
-        lastRefreshedAt = LocalDateTime.now()
-      )
-      sourceRepository.save(updatedSource)
-
+      sourceRepository.recordHarvestSucceeded(source.id, retrieved, LocalDateTime.now())
     } catch (e: Throwable) {
       outcome = outcome.copy(errornous = true)
       handleScrapeException(e, source, logCollector)
@@ -219,33 +214,21 @@ class RepositoryHarvester(
     log.error("scrape failed ${e?.message}")
     logCollector.log("scrape failed ${e?.message}")
 
-    val updatedSource =
-      if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
-        logCollector.log("scrape error '${e?.message}'")
-        logCollector.log("error count '${source.errorsInSuccession}'")
-        log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
+    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
+      logCollector.log("scrape error '${e?.message}'")
+      logCollector.log("error count '${source.errorsInSuccession}'")
+      log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
 
-        meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
+      meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
-        source.copy(
-          lastRecordsRetrieved = 0,
-          lastRefreshedAt = LocalDateTime.now(),
-          errorsInSuccession = source.errorsInSuccession + 1,
-          disabled = false,
-          lastErrorMessage = e?.message
-        )
+      sourceRepository.recordHarvestFailed(source.id, e?.message, LocalDateTime.now())
 //      if (source.disabled) {
 //        logCollector.log("disabled source")
 //        log.info("source ${source.id} disabled")
 //      }
-      } else {
-        source.copy(
-          errorsInSuccession = 0,
-          lastErrorMessage = e.message,
-          lastRefreshedAt = LocalDateTime.now()
-        )
-      }
-    sourceRepository.save(updatedSource)
+    } else {
+      sourceRepository.recordHarvestInterrupted(source.id, e.message, LocalDateTime.now())
+    }
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector): Int {

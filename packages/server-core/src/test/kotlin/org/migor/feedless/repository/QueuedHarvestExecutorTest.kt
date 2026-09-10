@@ -35,10 +35,12 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.springframework.dao.DataIntegrityViolationException
 import java.time.LocalDateTime
 import kotlin.coroutines.Continuation
 import kotlin.coroutines.CoroutineContext
@@ -115,7 +117,7 @@ class QueuedHarvestExecutorTest {
     assertThat(runAs?.userId).isEqualTo(owner)
     assertThat(runAs?.groupId).isEqualTo(repository.groupId)
     verify(documentRepository).saveAll(argThat { it.count() == 2 })
-    verify(sourceRepository).save(argThat { it.id == source.id && it.lastRecordsRetrieved == 2 && it.lastRefreshedAt != null })
+    verify(sourceRepository).recordHarvestSucceeded(eq(source.id), eq(2), any2())
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
     assertThat(done.errornous).isFalse()
     assertThat(done.itemsAdded).isEqualTo(2)
@@ -142,7 +144,7 @@ class QueuedHarvestExecutorTest {
 
     assertThat((scraped!!.actions.single() as FetchAction).url).isEqualTo("https://example.org/fixed")
     verify(documentRepository, never()).saveAll(anyList())
-    verify(sourceRepository, never()).save(any2())
+    verifySourceUntouched()
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
     // At least one item extracted: the dry run succeeded.
     assertThat(done.itemsAdded).isGreaterThanOrEqualTo(1).isEqualTo(2)
@@ -171,7 +173,7 @@ class QueuedHarvestExecutorTest {
     assertThat(done.errornous).isTrue()
     assertThat(done.itemsAdded).isEqualTo(0)
     assertThat(done.logs).contains("dry run extracted no items", "dry run extracted 0 item(s)")
-    verify(sourceRepository, never()).save(any2())
+    verifySourceUntouched()
   }
 
   @Test
@@ -183,7 +185,7 @@ class QueuedHarvestExecutorTest {
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
     assertThat(done.errornous).isTrue()
     assertThat(done.logs).contains("scrape failed no such element")
-    verify(sourceRepository, never()).save(any2())
+    verifySourceUntouched()
   }
 
   @Test
@@ -240,6 +242,24 @@ class QueuedHarvestExecutorTest {
     assertThat(cutoff).isBetween(before.minusMinutes(30), LocalDateTime.now().minusMinutes(30))
     assertThat(message).contains("harvest timed out: still running after 30 minutes")
     verify(harvestRepository).save(argThat { it.id == harvest.id && it.status == HarvestStatus.COMPLETED })
+  }
+
+  @Test
+  fun `a claim the database refuses leaves every harvest queued and the tick quiet`() {
+    `when`(harvestRepository.claimQueued(eq(QueuedHarvestExecutor.MAX_CONCURRENT_RUNS), any2()))
+      .thenThrow(DataIntegrityViolationException("uq_harvest_one_running_real_run_per_source"))
+
+    executor.executeQueuedHarvests()
+
+    verify(harvestRepository, never()).save(any2())
+    runTest { verify(scrapeService, never()).scrape(any2(), any2()) }
+  }
+
+  private fun verifySourceUntouched() {
+    verify(sourceRepository, never()).save(any2())
+    verify(sourceRepository, never()).recordHarvestSucceeded(any2(), anyInt(), any2())
+    verify(sourceRepository, never()).recordHarvestFailed(any2(), any2(), any2())
+    verify(sourceRepository, never()).recordHarvestInterrupted(any2(), any2(), any2())
   }
 
   private fun claimed(dryRun: Boolean, flow: String? = null) = Harvest(

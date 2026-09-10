@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -37,6 +38,58 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
     @Param("erroneous") erroneous: Boolean,
     @Param("errorMessage") errorMessage: String? = null
   )
+
+  // A harvest's outcome, each as one UPDATE that computes the new state in the database — never a
+  // save of a loaded copy — so overlapping harvests of a source cannot lose one another's update.
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = 0,
+            s.lastErrorMessage = null,
+            s.lastRecordsRetrieved = :recordsRetrieved,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestSucceeded(
+    @Param("id") id: UUID,
+    @Param("recordsRetrieved") recordsRetrieved: Int,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
+
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = s.errorsInSuccession + 1,
+            s.lastErrorMessage = :errorMessage,
+            s.lastRecordsRetrieved = 0,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestFailed(
+    @Param("id") id: UUID,
+    @Param("errorMessage") errorMessage: String?,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
+
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = 0,
+            s.lastErrorMessage = :errorMessage,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestInterrupted(
+    @Param("id") id: UUID,
+    @Param("errorMessage") errorMessage: String?,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
 
   fun countByRepositoryIdAndLastRecordsRetrieved(repositoryId: UUID, count: Int): Int
 

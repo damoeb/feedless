@@ -4,6 +4,7 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.UserId
+import java.time.LocalDateTime
 
 interface SourceRepository {
 
@@ -12,6 +13,21 @@ interface SourceRepository {
     erroneous: Boolean,
     errorMessage: String? = null
   )
+
+  // The outcome of a real harvest of source [id], each as one atomic update rather than a save of a
+  // loaded copy: harvests that overlap cannot lose an error count or overwrite an edit of the source.
+
+  /** The harvest succeeded: resets the error count and message, records [recordsRetrieved]. */
+  fun recordHarvestSucceeded(id: SourceId, recordsRetrieved: Int, refreshedAt: LocalDateTime)
+
+  /** The harvest failed: increments the error count in the database, records [errorMessage]. */
+  fun recordHarvestFailed(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime)
+
+  /**
+   * The harvest failed for a passing reason (rate limit, unreachable host, no items): resets the
+   * error count but records [errorMessage].
+   */
+  fun recordHarvestInterrupted(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime)
 
   fun countSourcesWithProblems(repositoryId: RepositoryId): Int
 

@@ -7,9 +7,11 @@ import com.linecorp.kotlinjdsl.querymodel.jpql.sort.Sortable
 import com.linecorp.kotlinjdsl.render.jpql.JpqlRenderContext
 import com.linecorp.kotlinjdsl.support.spring.data.jpa.extension.createQuery
 import jakarta.persistence.EntityManager
+import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_STR_DEFAULT
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.document.SortOrder
@@ -23,6 +25,8 @@ import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
+import java.time.LocalDateTime
 import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
@@ -37,6 +41,25 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
   ) {
     sourceDAO.setErrorState(id.uuid, erroneous, errorMessage)
   }
+
+  @Transactional
+  override fun recordHarvestSucceeded(id: SourceId, recordsRetrieved: Int, refreshedAt: LocalDateTime) {
+    sourceDAO.updateHarvestSucceeded(id.uuid, recordsRetrieved, refreshedAt)
+  }
+
+  @Transactional
+  override fun recordHarvestFailed(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime) {
+    sourceDAO.updateHarvestFailed(id.uuid, abbreviateErrorMessage(errorMessage), refreshedAt)
+  }
+
+  @Transactional
+  override fun recordHarvestInterrupted(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime) {
+    sourceDAO.updateHarvestInterrupted(id.uuid, abbreviateErrorMessage(errorMessage), refreshedAt)
+  }
+
+  // A bulk update bypasses SourceEntity.prePersist, which abbreviates the message on save.
+  private fun abbreviateErrorMessage(errorMessage: String?): String? =
+    StringUtils.abbreviate(errorMessage, LEN_STR_DEFAULT)
 
   override fun countSourcesWithProblems(
     repositoryId: RepositoryId,

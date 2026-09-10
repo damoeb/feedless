@@ -18,6 +18,7 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.dao.DataIntegrityViolationException
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -30,8 +31,12 @@ import kotlin.coroutines.cancellation.CancellationException
  * `FOR UPDATE SKIP LOCKED` (see [HarvestRepository.claimQueued]) — several scheduler instances
  * never run the same harvest — and runs them under the owning repository's [RequestContext].
  *
+ * A real run is claimed only while no other real run of its source runs — scheduled or queued, in
+ * any process; until then it stays queued and a later tick claims it. Dry runs are not limited.
+ *
  * Every claimed harvest ends [HarvestStatus.COMPLETED]: a run that throws is completed as failed,
- * and a run that dies with its process is completed as failed by the stale sweep.
+ * and a run that dies with its process is completed as failed by the stale sweep — which also
+ * frees its source for the next real run.
  */
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
@@ -52,7 +57,14 @@ class QueuedHarvestExecutor internal constructor(
       completeStaleRuns()
       // Claim no more than can run at once: a claimed harvest waiting for a permit would sit in
       // `running` without running.
-      val claimed = harvestRepository.claimQueued(MAX_CONCURRENT_RUNS, LocalDateTime.now())
+      val claimed = try {
+        harvestRepository.claimQueued(MAX_CONCURRENT_RUNS, LocalDateTime.now())
+      } catch (e: DataIntegrityViolationException) {
+        // A scheduled run of a claimed harvest's source started between the claim's lock and its
+        // commit, so the database refused the claim; every harvest of it is still queued.
+        log.info("a real harvest of a claimed source started meanwhile, claiming on the next tick")
+        emptyList()
+      }
       if (claimed.isNotEmpty()) {
         log.info("running ${claimed.size} queued harvests")
         runBlocking { executeAll(claimed) }

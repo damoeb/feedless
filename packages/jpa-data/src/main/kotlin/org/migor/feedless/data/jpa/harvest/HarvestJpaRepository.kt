@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
+import java.util.*
 import kotlin.jvm.optionals.getOrNull
 
 @Component
@@ -43,7 +44,18 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
     return harvestDAO.save(harvest.toEntity()).toDomain()
   }
 
+  @Transactional
+  override fun startRun(sourceId: SourceId, now: LocalDateTime): Harvest? {
+    val id = UUID.randomUUID()
+    return if (harvestDAO.insertRunningUnlessSourceRuns(id, sourceId.uuid, now) == 1) {
+      harvestDAO.findById(id).getOrNull()?.toDomain()
+    } else {
+      null
+    }
+  }
+
   // One transaction: the row locks from the SELECT are held until the rows are committed as running.
+  // Flushed here, so a refused claim surfaces from this call as a DataIntegrityViolationException.
   @Transactional
   override fun claimQueued(limit: Int, now: LocalDateTime): List<Harvest> {
     val claimed = harvestDAO.findQueuedForUpdateSkipLocked(limit)
@@ -51,7 +63,7 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
       it.status = RUNNING
       it.startedAt = now
     }
-    return harvestDAO.saveAll(claimed).map { it.toDomain() }
+    return harvestDAO.saveAllAndFlush(claimed).map { it.toDomain() }
   }
 
   @Transactional

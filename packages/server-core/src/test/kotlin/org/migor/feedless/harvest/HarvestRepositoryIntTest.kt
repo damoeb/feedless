@@ -147,8 +147,9 @@ class HarvestRepositoryIntTest {
     val now = LocalDateTime.now()
     val oldest = harvest(sourceA.id, now.minusMinutes(3), HarvestStatus.QUEUED)
     val middle = harvest(sourceB.id, now.minusMinutes(2), HarvestStatus.QUEUED, dryRun = true)
-    val newest = harvest(sourceA.id, now.minusMinutes(1), HarvestStatus.QUEUED)
-    val running = harvest(sourceA.id, now.minusMinutes(10), HarvestStatus.RUNNING)
+    val newest = harvest(sourceB.id, now.minusMinutes(1), HarvestStatus.QUEUED)
+    // A running dry run does not hold sourceA's real-run slot (a running real one would).
+    val running = harvest(sourceA.id, now.minusMinutes(10), HarvestStatus.RUNNING, dryRun = true)
     val completed = harvest(sourceA.id, now.minusMinutes(10), HarvestStatus.COMPLETED)
     val claimedAt = now.withNano(0)
 
@@ -172,7 +173,8 @@ class HarvestRepositoryIntTest {
   fun `concurrent claimers skip each other's locked rows and get disjoint harvests`() {
     harvestDAO.deleteAllInBatch()
     val now = LocalDateTime.now()
-    val queued = (1..4).map { harvest(sourceA.id, now.minusMinutes(it.toLong()), HarvestStatus.QUEUED) }
+    // Dry runs: real runs of one source are claimed one at a time (OneRealHarvestPerSourceIntTest).
+    val queued = (1..4).map { harvest(sourceA.id, now.minusMinutes(it.toLong()), HarvestStatus.QUEUED, dryRun = true) }
     val transactions = TransactionTemplate(transactionManager)
     val firstClaimed = CountDownLatch(1)
     val releaseFirst = CountDownLatch(1)
@@ -220,7 +222,8 @@ class HarvestRepositoryIntTest {
         status = HarvestStatus.RUNNING,
       )
     )
-    val fresh = harvest(sourceA.id, now.minusMinutes(5), HarvestStatus.RUNNING)
+    // Another source: sourceA's slot is held by the stale run.
+    val fresh = harvest(sourceB.id, now.minusMinutes(5), HarvestStatus.RUNNING)
     val oldQueued = harvest(sourceA.id, now.minusHours(2), HarvestStatus.QUEUED)
     val oldCompleted = harvest(sourceA.id, now.minusHours(2), HarvestStatus.COMPLETED)
 

@@ -53,20 +53,51 @@ DELETE FROM t_harvest WHERE EXISTS(
   fun deleteAllByDryRunTrueAndStatusAndCreatedAtBefore(status: String, before: LocalDateTime)
 
   /**
-   * Locks the oldest queued harvests. `SKIP LOCKED` makes a concurrent claimer pass over rows this
-   * transaction holds instead of waiting for them — and, once they are committed as `running`, the
-   * `status` filter excludes them — so two claimers always get disjoint sets.
+   * Locks the oldest claimable queued harvests. `SKIP LOCKED` makes a concurrent claimer pass over
+   * rows this transaction holds instead of waiting for them — and, once they are committed as
+   * `running`, the `status` filter excludes them — so two claimers always get disjoint sets.
+   *
+   * A real (non-dry) run is claimable only while no real run of its source is running and no older
+   * real run of it is queued: a claim never starts a second real harvest of a source (V89's partial
+   * unique index enforces that), and a source's real runs start in the order they were queued. A
+   * concurrent claimer holding the older one locked makes the newer one unclaimable too.
    */
   @Query(
     """
-    SELECT * FROM t_harvest
-    WHERE status = 'queued'
-    ORDER BY created_at ASC
+    SELECT h.* FROM t_harvest h
+    WHERE h.status = 'queued'
+      AND (h.dry_run OR NOT EXISTS (
+        SELECT 1 FROM t_harvest o
+        WHERE o.source_id = h.source_id
+          AND o.dry_run = false
+          AND (o.status = 'running'
+            OR (o.status = 'queued' AND (o.created_at, o.id) < (h.created_at, h.id)))
+      ))
+    ORDER BY h.created_at ASC, h.id ASC
     LIMIT :limit
-    FOR UPDATE SKIP LOCKED
+    FOR UPDATE OF h SKIP LOCKED
   """, nativeQuery = true
   )
   fun findQueuedForUpdateSkipLocked(@Param("limit") limit: Int): List<HarvestEntity>
+
+  /**
+   * Records a real harvest of [sourceId] as running, unless one is running already: V89's partial
+   * unique index refuses the row, and `ON CONFLICT DO NOTHING` turns that into 0 rows inserted
+   * instead of an error. An uncommitted conflicting row is waited for, so the answer is never a race.
+   */
+  @Modifying
+  @Query(
+    """
+    INSERT INTO t_harvest (id, created_at, errornous, items_added, items_ignored, logs, started_at, source_id, status, dry_run)
+    VALUES (:id, :startedAt, false, 0, 0, '', :startedAt, :sourceId, 'running', false)
+    ON CONFLICT DO NOTHING
+  """, nativeQuery = true
+  )
+  fun insertRunningUnlessSourceRuns(
+    @Param("id") id: UUID,
+    @Param("sourceId") sourceId: UUID,
+    @Param("startedAt") startedAt: LocalDateTime,
+  ): Int
 
   @Modifying
   @Query(
