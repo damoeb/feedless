@@ -126,4 +126,32 @@ Without `-R`, `--errored` uses the cross-repository endpoint `GET /user/sources`
 - Bootstrap: the first secret is created in the web UI with a browser session (as on GitHub); the CLI takes it via `feedctl auth login --with-token`. A browser device flow may follow later.
 - `/user/secrets` endpoints require a browser session and return `403` for tokens.
 - Cutover: once scoped secrets exist, `/api/v1` stops accepting session JWTs and legacy `UserSecret` JWTs. Agents authenticate via `UserSecret` today (`Agent.secretKeyId`) and need their own `agent` scope before that cutover, or they break.
-- Schema changes land as a new additive Flyway migration (`V86+`).
+- Schema changes land as a new additive Flyway migration with the next free `V<n>__` number.
+
+## Slice 1 tasks
+
+Dependencies: T1 first (it is the contract the server and the generated Go client both build from); T3 before T4 and T5; C1 before C2–C5; D1 after C1; E1 last. Each task ends green on its module's tests and is one Conventional Commit.
+
+**Server (Kotlin, `http-api` / `server-core` / `domain` / `jpa-data`)**
+
+- [ ] **T1 Contract.** Edit `openapi.yaml` for changes 1–5, 7, 9, 10 (ETag/If-Match headers, `412`) and 11 (response header). Regenerate and adapt the controllers so everything compiles: records move under `/repositories/{r}/records`, `DELETE /records` becomes per-id, `/repositories/count` is removed and list responses gain `totalCount`.
+- [ ] **T2 Access scoping.** `/api/v1` reads today check only the `user` capability: `RepositoryUseCase.findById` and `requireSourceInRepository` never compare owner or group, so any authenticated user can read another user's repository, sources and harvests by UUID. Every repository-scoped endpoint resolves the repository through one guard that requires the caller's user or group to own it and answers `404` otherwise (no existence leak). `GET /user/sources` (T6) uses the same rule as a query predicate.
+- [ ] **T3 Harvest model.** New migration adds `status` (`queued | running | completed`, default `completed`), `dry_run` (default `false`) and a nullable `flow` (JSON, the dry-run flow override) to `t_harvest`; domain, entity and mapper follow. Fix the harvester: it never sets `errornous` on a failed harvest (so the API reports every harvest as `ok`) and never sets `itemsAdded`. `findAllBySourceId` orders by `created_at DESC` — it is unordered today. `deleteAllTailingBySourceId` keeps the newest 4 per source *and* `dry_run`, so dry runs cannot push real harvests out; a scheduled job deletes dry runs older than 7 days.
+- [ ] **T4 Harvest endpoints.** `GET .../harvests/{id}` and `GET .../harvests/{id}/logs` (`text/plain`); `status` and `dryRun` on `Harvest`; list hides dry runs unless `?dryRun=true`; `includeLogs` removed.
+- [ ] **T5 Run endpoint.** `POST .../harvests` validates the optional `flow`, inserts a `queued` harvest and answers `202` with `Location`. The harvest runs in the scheduler layer (`AppLayer.scheduler`), which may be a different process from the API layer: a new executor claims queued harvests with `SELECT … FOR UPDATE SKIP LOCKED`, marks them `running`, and runs them under the repository owner's `RequestContext`. A real run goes through the existing scrape-and-import path and updates the source's error state; a dry run scrapes with the override flow, writes the extracted items into the harvest log, and touches neither records nor the source. `@Throttled`; not counted against the plan quota.
+- [ ] **T6 Sources.** `errorsInSuccession` and `repositoryId` on `Source`; `minErrorsInSuccession` on the per-repository list; `GET /user/sources` across the caller's repositories with the same filters.
+- [ ] **T7 Conditional requests.** `ETag` on `GET .../sources/{id}` (hash of the serialized source), `If-Match` on `PATCH` with `412` on mismatch. Slice 1 covers sources; other single resources follow in slice 2.
+- [ ] **T8 Version header.** `X-Feedless-Version` from `app.version` on every `/api/v1` response.
+
+**CLI (Go, `packages/cli`)**
+
+- [ ] **C1 Skeleton.** Go module with the client generated from `openapi.yaml` (`oapi-codegen`), a Gradle module whose `lint` runs `go vet` and `golangci-lint` and whose `test` runs `go test`, included in `settings.gradle.kts`. The bash `fl` scaffold and its node:test suite are removed.
+- [ ] **C2 Hosts and credentials.** `auth login|status|logout`; keyring with `0600` file fallback; `FEEDCTL_TOKEN`, `FEEDCTL_HOST`, `--host`; refuse to send a token over `http://` unless loopback; warn on `X-Feedless-Version` mismatch.
+- [ ] **C3 Output, exit codes, `api`.** TTY tables vs. tab-separated when piped, `--json [fields]`, `--jq`, `NO_COLOR`, progress on stderr; exit codes `0/1/2/4`; `feedctl api`.
+- [ ] **C4 `source list|view|update`.** `--errored[=N]` (without `-R` via `/user/sources`), `--flow <file>`, `--editor` with the `kubectl edit` loop and `If-Match`/`412` handling.
+- [ ] **C5 `source run`, `harvest list|view`.** Async polling, `--dry-run`, `--flow`, `--no-wait`, exit `1` on a failed harvest; `harvest view --log`.
+
+**Delivery**
+
+- [ ] **D1 Distribution.** Cross-compile darwin/linux × amd64/arm64 in the image build, bake into `server-core`, serve `/cli/feedctl-<os>-<arch>`, `/cli/SHA256SUMS`, `/cli/install.sh`; whitelist `/cli/**` in `SecurityConfig`.
+- [ ] **E1 End-to-end smoke.** Testcontainers: `server-core`, `agent`, PostGIS and a static fixture site; broken selector → `source list --errored` → `--dry-run` → fix → `source run` succeeds.
