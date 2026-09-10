@@ -167,20 +167,67 @@ class HttpApiAsyncDispatchSecurityIntTest {
    */
   @Test
   fun `PATCH a source with a stale If-Match answers 412 PRECONDITION_FAILED`() {
-    val source = sourceRepository.save(Source(title = "source of ${caller.id.uuid}", repositoryId = callerRepository.id))
-
-    val request = HttpRequest.newBuilder(
-      URI("http://localhost:$port/api/v1/repositories/${callerRepository.id.uuid}/sources/${source.id.uuid}"),
-    )
-      .header(HttpHeaders.AUTHORIZATION, "Bearer ${apiToken(caller)}")
-      .header(HttpHeaders.CONTENT_TYPE, "application/json")
-      .header(HttpHeaders.IF_MATCH, "\"stale\"")
-      .method("PATCH", HttpRequest.BodyPublishers.ofString("{\"title\":\"renamed\"}"))
-      .build()
-    val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+    val response = send("PATCH", ownSourcePath(), "{\"title\":\"renamed\"}", HttpHeaders.IF_MATCH to "\"stale\"")
 
     assertThat(response.statusCode()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value())
     assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
+  }
+
+  // Spring MVC's own exceptions on /api/v1 must keep their 4xx and still answer an ApiError.
+
+  @Test
+  fun `PATCH a source with a malformed JSON body answers 400 BAD_REQUEST`() {
+    val response = send("PATCH", ownSourcePath(), "{\"title\":")
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value())
+    assertThat(response.body()).contains("\"code\":\"BAD_REQUEST\"")
+  }
+
+  @Test
+  fun `GET sources of a non-UUID repository id answers 400 BAD_REQUEST`() {
+    val response = send("GET", "/api/v1/repositories/not-a-uuid/sources")
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value())
+    assertThat(response.body()).contains("\"code\":\"BAD_REQUEST\"")
+  }
+
+  @Test
+  fun `PUT on a PATCH-only source path answers 405 METHOD_NOT_ALLOWED`() {
+    val response = send("PUT", ownSourcePath(), "{\"title\":\"renamed\"}")
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.METHOD_NOT_ALLOWED.value())
+    assertThat(response.body()).contains("\"code\":\"METHOD_NOT_ALLOWED\"")
+  }
+
+  @Test
+  fun `GET an unknown api v1 path answers 404 NOT_FOUND`() {
+    val response = send("GET", "/api/v1/no-such-endpoint")
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.NOT_FOUND.value())
+    assertThat(response.body()).contains("\"code\":\"NOT_FOUND\"")
+  }
+
+  private fun ownSourcePath(): String {
+    val source = sourceRepository.save(Source(title = "source of ${caller.id.uuid}", repositoryId = callerRepository.id))
+    return "/api/v1/repositories/${callerRepository.id.uuid}/sources/${source.id.uuid}"
+  }
+
+  /** JDK client: unlike TestRestTemplate's default request factory it sends PATCH, and never retries or rewrites. */
+  private fun send(
+    method: String,
+    path: String,
+    body: String? = null,
+    vararg headers: Pair<String, String>,
+  ): HttpResponse<String> {
+    val builder = HttpRequest.newBuilder(URI("http://localhost:$port$path"))
+      .header(HttpHeaders.AUTHORIZATION, "Bearer ${apiToken(caller)}")
+      .header(HttpHeaders.ACCEPT, "application/json")
+    headers.forEach { (name, value) -> builder.header(name, value) }
+    if (body != null) {
+      builder.header(HttpHeaders.CONTENT_TYPE, "application/json")
+    }
+    builder.method(method, body?.let { HttpRequest.BodyPublishers.ofString(it) } ?: HttpRequest.BodyPublishers.noBody())
+    return HttpClient.newHttpClient().send(builder.build(), HttpResponse.BodyHandlers.ofString())
   }
 
   @Test
