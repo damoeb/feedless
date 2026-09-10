@@ -38,6 +38,7 @@ read-only.
 - **`Vertical` vs `VerticalFilter`**: a repository's `product` is always a concrete vertical;
   `all` exists only as a query-filter value.
 - **`Visibility`** is `private` / `public` on the wire (the domain enum is `isPrivate` / `isPublic`).
+- **Repository access is one rule** (`RepositoryAccessGuard`), applied to `/repositories/{repositoryId}` and everything below it. The owner and members of the owning group may read; the owner and group `owner`/`editor` members may write (a group `viewer` only reads). Anyone authenticated may `GET` a `public` repository and its sources, harvests and records, but not change them. A denied repository answers `404 NOT_FOUND` exactly like a missing one, never `403`, so a UUID does not reveal that it exists.
 - **Optional means absent, not zero.** `shareKey` is returned only to the owner; counters that a
   given path does not compute (`sourcesCount`, `recordCount`, …) are omitted rather than sent as `0`.
 - **`ScrapeAction` is a union.** Exactly one of `fetch`/`extract`/`execute`/`click`/`type`/`waitFor`/

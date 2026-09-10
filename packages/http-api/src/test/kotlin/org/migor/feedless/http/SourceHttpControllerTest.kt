@@ -4,10 +4,14 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.actions.FetchAction
+import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.http.mapper.HttpSourceMapper
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryUseCasePort
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -22,22 +26,20 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
-import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.delete
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.patch
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
-import java.util.UUID
 
 @WebMvcTest(controllers = [SourceHttpController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@Import(HttpSourceMapper::class, HttpScrapeFlowMapper::class, HttpApiExceptionHandler::class)
-@ActiveProfiles("test", AppLayer.api, AppProfiles.source)
+@Import(
+  HttpSourceMapper::class,
+  HttpScrapeFlowMapper::class,
+  HttpApiExceptionHandler::class,
+  RepositoryAccessGuard::class,
+  RequestContextBridge::class,
+)
+@ActiveProfiles("test", AppLayer.api, AppProfiles.source, AppProfiles.repository, AppProfiles.user)
 class SourceHttpControllerTest {
 
   @Autowired
@@ -49,117 +51,185 @@ class SourceHttpControllerTest {
   @MockitoBean
   private lateinit var sourceUseCase: SourceUseCasePort
 
+  @MockitoBean
+  private lateinit var repositoryUseCase: RepositoryUseCasePort
+
+  @MockitoBean
+  private lateinit var groupUseCase: GroupUseCasePort
+
+  private val access by lazy { RepositoryAccessFixture(repositoryUseCase, groupUseCase) }
+
   @Test
-  fun `listSources returns items for repository`() = runTest {
-    val repoId = UUID.randomUUID()
-    val source = source(
-      repositoryId = RepositoryId(repoId.toString()),
+  fun `listSources answers the owner, a group member, and a stranger on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+    val source = givenSource(private.id)
+    whenever(sourceRepository.findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull()))
+      .thenReturn(listOf(source))
+
+    val result = mockMvc.getAs(access.owner, sourcesUrl(private))
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains(source.id.uuid.toString())) { result.response.contentAsString }
+    assertStatus(mockMvc.getAs(access.member, sourcesUrl(private)), 200)
+    assertStatus(mockMvc.getAs(access.stranger, sourcesUrl(public)), 200)
+  }
+
+  @Test
+  fun `listSources answers a stranger on a private repository like a missing one`() = runTest {
+    val private = access.givenRepository()
+
+    assertNotFound(mockMvc.getAs(access.stranger, sourcesUrl(private)), "repository ${private.id.uuid} not found")
+    verify(sourceRepository, never()).findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `getSource answers a group member and a stranger on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertStatus(mockMvc.getAs(access.member, sourceUrl(private, givenSource(private.id))), 200)
+    assertStatus(mockMvc.getAs(access.stranger, sourceUrl(public, givenSource(public.id))), 200)
+  }
+
+  @Test
+  fun `getSource answers a stranger on a private repository like a missing one`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    assertNotFound(mockMvc.getAs(access.stranger, sourceUrl(private, source)), "repository ${private.id.uuid} not found")
+  }
+
+  @Test
+  fun `createSource lets the owner and a group member write`() = runTest {
+    val private = access.givenRepository()
+    val created = givenSource(private.id)
+    whenever(sourceUseCase.createSources(any(), eq(private.id))).thenReturn(listOf(created))
+
+    assertStatus(mockMvc.postAs(access.owner, sourcesUrl(private), CREATE), 201)
+    assertStatus(mockMvc.postAs(access.member, sourcesUrl(private), CREATE), 201)
+  }
+
+  @Test
+  fun `createSource answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(mockMvc.postAs(access.stranger, sourcesUrl(private), CREATE), "repository ${private.id.uuid} not found")
+    assertNotFound(mockMvc.postAs(access.stranger, sourcesUrl(public), CREATE), "repository ${public.id.uuid} not found")
+    verify(sourceUseCase, never()).createSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource lets the owner and a group member write`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    assertStatus(mockMvc.patchAs(access.owner, sourceUrl(private, source), UPDATE), 200)
+    assertStatus(mockMvc.patchAs(access.member, sourceUrl(private, source), UPDATE), 200)
+  }
+
+  @Test
+  fun `updateSource answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(
+      mockMvc.patchAs(access.stranger, sourceUrl(private, givenSource(private.id)), UPDATE),
+      "repository ${private.id.uuid} not found",
     )
-    whenever(
-      sourceRepository.findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull()),
-    ).thenReturn(listOf(source))
-
-    val mvcResult = mockMvc.get("/api/v1/repositories/$repoId/sources") {
-      param("page", "0")
-      param("pageSize", "20")
-    }.andReturn()
-
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.items[0].id").value(source.id.uuid.toString()))
-    } else {
-      assert(mvcResult.response.status == 200)
-      assert(mvcResult.response.contentAsString.contains(source.id.uuid.toString()))
-    }
+    assertNotFound(
+      mockMvc.patchAs(access.stranger, sourceUrl(public, givenSource(public.id)), UPDATE),
+      "repository ${public.id.uuid} not found",
+    )
+    verify(sourceUseCase, never()).updateSources(any(), any())
   }
 
   @Test
   fun `updateSource returns 404 when source missing`() = runTest {
-    val repoId = UUID.randomUUID()
-    val sourceId = UUID.randomUUID()
-    whenever(sourceRepository.findByIdWithActions(eq(SourceId(sourceId.toString())))).thenReturn(null)
+    val private = access.givenRepository()
+    val sourceId = SourceId()
+    whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(null)
 
-    val mvcResult = mockMvc.patch("/api/v1/repositories/$repoId/sources/$sourceId") {
-      contentType = MediaType.APPLICATION_JSON
-      content = """{"title":"updated"}"""
-    }.andReturn()
+    val result = mockMvc.patchAs(access.owner, "${sourcesUrl(private)}/${sourceId.uuid}", UPDATE)
 
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(result, "source ${sourceId.uuid} not found")
     verify(sourceUseCase, never()).updateSources(any(), any())
   }
 
   @Test
   fun `updateSource returns 404 when source belongs to another repository`() = runTest {
-    val repoId = UUID.randomUUID()
-    val otherRepoId = UUID.randomUUID()
-    val sourceId = UUID.randomUUID()
-    whenever(sourceRepository.findByIdWithActions(eq(SourceId(sourceId.toString())))).thenReturn(
-      source(
-        id = SourceId(sourceId.toString()),
-        repositoryId = RepositoryId(otherRepoId.toString()),
-      ),
-    )
+    val private = access.givenRepository()
+    val foreign = givenSource(RepositoryId())
 
-    val mvcResult = mockMvc.patch("/api/v1/repositories/$repoId/sources/$sourceId") {
-      contentType = MediaType.APPLICATION_JSON
-      content = """{"title":"updated"}"""
-    }.andReturn()
+    val result = mockMvc.patchAs(access.owner, sourceUrl(private, foreign), UPDATE)
 
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(result, "source ${foreign.id.uuid} not found")
     verify(sourceUseCase, never()).updateSources(any(), any())
   }
 
   @Test
+  fun `deleteSource lets the owner and a group member write`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    assertStatus(mockMvc.deleteAs(access.owner, sourceUrl(private, source)), 204)
+    assertStatus(mockMvc.deleteAs(access.member, sourceUrl(private, source)), 204)
+  }
+
+  @Test
+  fun `deleteSource answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(
+      mockMvc.deleteAs(access.stranger, sourceUrl(private, givenSource(private.id))),
+      "repository ${private.id.uuid} not found",
+    )
+    assertNotFound(
+      mockMvc.deleteAs(access.stranger, sourceUrl(public, givenSource(public.id))),
+      "repository ${public.id.uuid} not found",
+    )
+    verify(sourceUseCase, never()).deleteAllById(any(), any())
+  }
+
+  @Test
   fun `deleteSource returns 404 when source missing`() = runTest {
-    val repoId = UUID.randomUUID()
-    val sourceId = UUID.randomUUID()
-    whenever(sourceRepository.findByIdWithActions(eq(SourceId(sourceId.toString())))).thenReturn(null)
+    val private = access.givenRepository()
+    val sourceId = SourceId()
+    whenever(sourceRepository.findByIdWithActions(eq(sourceId))).thenReturn(null)
 
-    val mvcResult = mockMvc.delete("/api/v1/repositories/$repoId/sources/$sourceId").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(mockMvc.deleteAs(access.owner, "${sourcesUrl(private)}/${sourceId.uuid}"), "source ${sourceId.uuid} not found")
     verify(sourceUseCase, never()).deleteAllById(any(), any())
   }
 
   @Test
   fun `deleteSource returns 404 when source belongs to another repository`() = runTest {
-    val repoId = UUID.randomUUID()
-    val otherRepoId = UUID.randomUUID()
-    val sourceId = UUID.randomUUID()
-    whenever(sourceRepository.findByIdWithActions(eq(SourceId(sourceId.toString())))).thenReturn(
-      source(
-        id = SourceId(sourceId.toString()),
-        repositoryId = RepositoryId(otherRepoId.toString()),
-      ),
-    )
+    val private = access.givenRepository()
+    val foreign = givenSource(RepositoryId())
 
-    val mvcResult = mockMvc.delete("/api/v1/repositories/$repoId/sources/$sourceId").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(mockMvc.deleteAs(access.owner, sourceUrl(private, foreign)), "source ${foreign.id.uuid} not found")
     verify(sourceUseCase, never()).deleteAllById(any(), any())
   }
 
-  private fun source(
-    id: SourceId = SourceId(),
-    repositoryId: RepositoryId = RepositoryId(UUID.randomUUID().toString()),
-  ) = Source(
-    id = id,
-    title = "Test source",
-    repositoryId = repositoryId,
-    actions = listOf(
-      FetchAction(sourceId = id, url = "https://example.com"),
-    ),
-  )
+  private fun givenSource(repositoryId: RepositoryId): Source {
+    val id = SourceId()
+    val source = Source(
+      id = id,
+      title = "Test source",
+      repositoryId = repositoryId,
+      actions = listOf(FetchAction(sourceId = id, url = "https://example.com")),
+    )
+    whenever(sourceRepository.findByIdWithActions(eq(id))).thenReturn(source)
+    return source
+  }
 
-  private fun dispatchIfAsync(
-    mvcResult: org.springframework.test.web.servlet.MvcResult,
-    expectedStatus: org.springframework.test.web.servlet.ResultMatcher,
-  ) {
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult)).andExpect(expectedStatus)
-    } else {
-      expectedStatus.match(mvcResult)
-    }
+  private fun sourcesUrl(repo: Repository) = "/api/v1/repositories/${repo.id.uuid}/sources"
+
+  private fun sourceUrl(repo: Repository, source: Source) = "${sourcesUrl(repo)}/${source.id.uuid}"
+
+  private companion object {
+    const val UPDATE = """{"title":"updated"}"""
+    const val CREATE =
+      """{"title":"Test source","flow":{"sequence":[{"fetch":{"get":{"url":{"literal":"https://example.com"}}}}]}}"""
   }
 }

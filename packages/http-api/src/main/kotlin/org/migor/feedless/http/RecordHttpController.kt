@@ -26,10 +26,14 @@ import org.migor.feedless.http.api.model.Record as HttpRecord
 
 @RestController
 @RequestMapping("/api/v1")
-@Profile("${AppProfiles.document} & ${AppLayer.api}")
+// RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
+@Profile(
+  "${AppProfiles.document} & ${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}",
+)
 class RecordHttpController(
   private val documentUseCase: DocumentUseCasePort,
   private val documentGuard: DocumentGuardPort,
+  private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRecordMapper,
 ) : RecordsApi {
 
@@ -39,13 +43,10 @@ class RecordHttpController(
     page: Int,
     pageSize: Int,
   ): ResponseEntity<RecordListResponse> {
+    val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     // Ask for one more than the page holds: a full page is not evidence of a next one.
     val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
-    val fetched = documentUseCase
-      .findAllByRepositoryId(
-        RepositoryId(repositoryId.toString()),
-        pageable = pageable,
-      )
+    val fetched = documentUseCase.findAllByRepositoryId(repository.id, pageable = pageable)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(
       RecordListResponse(
@@ -60,7 +61,7 @@ class RecordHttpController(
     repositoryId: java.util.UUID,
     recordId: java.util.UUID,
   ): ResponseEntity<HttpRecord> {
-    val document = requireRecordForRead(repositoryId, recordId)
+    val document = requireRecord(RepositoryId(repositoryId), DocumentId(recordId), RepositoryAccess.read)
     return ResponseEntity.ok(mapper.toHttp(document))
   }
 
@@ -70,9 +71,8 @@ class RecordHttpController(
     repositoryId: java.util.UUID,
     recordCreate: RecordCreate,
   ): ResponseEntity<HttpRecord> {
-    val created = documentUseCase.createDocument(
-      mapper.toDomainCreate(RepositoryId(repositoryId.toString()), recordCreate),
-    )
+    val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.write)
+    val created = documentUseCase.createDocument(mapper.toDomainCreate(repository.id, recordCreate))
     return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toHttp(created))
   }
 
@@ -83,11 +83,9 @@ class RecordHttpController(
     recordId: java.util.UUID,
     recordUpdate: RecordUpdate,
   ): ResponseEntity<HttpRecord> {
-    requireRecordForWrite(repositoryId, recordId)
-    val updated = documentUseCase.updateDocument(
-      mapper.toDomainUpdate(recordUpdate),
-      DocumentId(recordId.toString()),
-    )
+    val id = DocumentId(recordId)
+    requireRecord(RepositoryId(repositoryId), id, RepositoryAccess.write)
+    val updated = documentUseCase.updateDocument(mapper.toDomainUpdate(recordUpdate), id)
     return ResponseEntity.ok(mapper.toHttp(updated))
   }
 
@@ -97,31 +95,26 @@ class RecordHttpController(
     repositoryId: java.util.UUID,
     recordId: java.util.UUID,
   ): ResponseEntity<Unit> {
-    requireRecordForWrite(repositoryId, recordId)
-    documentUseCase.deleteDocuments(
-      RepositoryId(repositoryId.toString()),
-      StringFilter(`in` = listOf(recordId.toString())),
-    )
+    val repoId = RepositoryId(repositoryId)
+    requireRecord(repoId, DocumentId(recordId), RepositoryAccess.write)
+    documentUseCase.deleteDocuments(repoId, StringFilter(`in` = listOf(recordId.toString())))
     return ResponseEntity.noContent().build()
   }
 
-  private suspend fun requireRecordForRead(
-    repositoryId: java.util.UUID,
-    recordId: java.util.UUID,
-  ): Document = requireInRepository(repositoryId, recordId, documentGuard.requireRead(DocumentId(recordId.toString())))
-
-  private suspend fun requireRecordForWrite(
-    repositoryId: java.util.UUID,
-    recordId: java.util.UUID,
-  ): Document = requireInRepository(repositoryId, recordId, documentGuard.requireWrite(DocumentId(recordId.toString())))
-
-  private fun requireInRepository(
-    repositoryId: java.util.UUID,
-    recordId: java.util.UUID,
-    document: Document,
+  /** The repository must pass [accessGuard] first; only then is the record looked up. */
+  private suspend fun requireRecord(
+    repositoryId: RepositoryId,
+    recordId: DocumentId,
+    access: RepositoryAccess,
   ): Document {
-    if (document.repositoryId != RepositoryId(repositoryId.toString())) {
-      throw NotFoundException("record $recordId not found in repository $repositoryId")
+    accessGuard.requireRepository(repositoryId, access)
+    val document = when (access) {
+      RepositoryAccess.read -> documentGuard.requireRead(recordId)
+      RepositoryAccess.write -> documentGuard.requireWrite(recordId)
+    }
+    // Same answer for a missing record and one of another repository.
+    if (document.repositoryId != repositoryId) {
+      throw NotFoundException("record ${recordId.uuid} not found")
     }
     return document
   }

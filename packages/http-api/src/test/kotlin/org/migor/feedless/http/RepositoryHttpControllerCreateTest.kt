@@ -33,7 +33,8 @@ class RepositoryHttpControllerCreateTest {
 
   private val repositoryUseCase: RepositoryUseCasePort = mock()
   private val mapper = HttpRepositoryMapper(HttpScrapeFlowMapper())
-  private val controller = RepositoryHttpController(repositoryUseCase, mapper)
+  // createRepository is not repository-scoped, so it never consults the guard.
+  private val controller = RepositoryHttpController(repositoryUseCase, mock<RepositoryAccessGuard>(), mapper)
 
   @AfterEach
   fun tearDown() {

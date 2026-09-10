@@ -2,7 +2,6 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.http.api.RepositoriesApi
@@ -13,7 +12,6 @@ import org.migor.feedless.http.api.model.Visibility
 import org.migor.feedless.http.mapper.HttpRepositoryMapper
 import org.migor.feedless.repository.FulltextQueryFilter
 import org.migor.feedless.repository.RepositoriesFilter
-import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCasePort
 import org.migor.feedless.repository.VerticalFilter
@@ -32,9 +30,11 @@ import kotlin.coroutines.coroutineContext
 
 @RestController
 @RequestMapping("/api/v1")
-@Profile("${AppProfiles.repository} & ${AppLayer.api}")
+// RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
+@Profile("${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}")
 class RepositoryHttpController(
   private val repositoryUseCase: RepositoryUseCasePort,
+  private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRepositoryMapper,
 ) : RepositoriesApi {
 
@@ -76,7 +76,7 @@ class RepositoryHttpController(
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   override suspend fun getRepository(repositoryId: java.util.UUID): ResponseEntity<HttpRepository> {
-    val repo = requireRepository(repositoryId)
+    val repo = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     val userId = currentUserId()
     return ResponseEntity.ok(mapper.toHttp(repo, userId != null && repo.ownerId == userId))
   }
@@ -87,12 +87,10 @@ class RepositoryHttpController(
     repositoryId: java.util.UUID,
     repositoryUpdate: RepositoryUpdate,
   ): ResponseEntity<HttpRepository> {
-    requireRepository(repositoryId)
-    repositoryUseCase.updateRepository(
-      RepositoryId(repositoryId.toString()),
-      mapper.toDomainUpdate(repositoryUpdate),
-    )
-    val updated = requireRepository(repositoryId)
+    val id = RepositoryId(repositoryId)
+    accessGuard.requireRepository(id, RepositoryAccess.write)
+    repositoryUseCase.updateRepository(id, mapper.toDomainUpdate(repositoryUpdate))
+    val updated = accessGuard.requireRepository(id, RepositoryAccess.write)
     val userId = currentUserId()
     return ResponseEntity.ok(mapper.toHttp(updated, userId != null && updated.ownerId == userId))
   }
@@ -100,15 +98,14 @@ class RepositoryHttpController(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
   override suspend fun deleteRepository(repositoryId: java.util.UUID): ResponseEntity<Unit> {
-    repositoryUseCase.delete(RepositoryId(repositoryId.toString()))
+    val id = RepositoryId(repositoryId)
+    // Check first: the use case answers a foreign repository with 403, which confirms it exists.
+    accessGuard.requireRepository(id, RepositoryAccess.write)
+    repositoryUseCase.delete(id)
     return ResponseEntity.noContent().build()
   }
 
   private suspend fun currentUserId(): UserId? = coroutineContext[RequestContext]?.userId
-
-  private suspend fun requireRepository(repositoryId: java.util.UUID): Repository =
-    repositoryUseCase.findById(RepositoryId(repositoryId.toString()))
-      ?: throw NotFoundException("repository $repositoryId not found")
 
   private fun toFilter(
     product: VerticalFilterDto?,

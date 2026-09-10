@@ -2,7 +2,6 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.http.api.SourcesApi
 import org.migor.feedless.http.api.model.SourceCreate
@@ -10,10 +9,9 @@ import org.migor.feedless.http.api.model.SourceListResponse
 import org.migor.feedless.http.api.model.SourceUpdate
 import org.migor.feedless.http.mapper.HttpSourceMapper
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCasePort
-import org.migor.feedless.source.Source
-import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.throttle.Throttled
 import org.springframework.context.annotation.Profile
@@ -26,10 +24,12 @@ import org.migor.feedless.http.api.model.Source as HttpSource
 
 @RestController
 @RequestMapping("/api/v1")
-@Profile("${AppProfiles.source} & ${AppLayer.api}")
+// RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
+@Profile("${AppProfiles.source} & ${AppProfiles.repository} & ${AppProfiles.user} & ${AppLayer.api}")
 class SourceHttpController(
   private val sourceUseCase: SourceUseCasePort,
   private val sourceRepository: SourceRepository,
+  private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpSourceMapper,
 ) : SourcesApi {
 
@@ -41,6 +41,7 @@ class SourceHttpController(
     disabled: Boolean?,
     like: String?,
   ): ResponseEntity<SourceListResponse> {
+    val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     // Ask for one more than the page holds: a full page is not evidence of a next one.
     val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
     val where = if (disabled == null && like == null) {
@@ -48,8 +49,7 @@ class SourceHttpController(
     } else {
       SourcesFilter(disabled = disabled, like = like)
     }
-    val fetched = sourceRepository
-      .findAllByRepositoryIdFiltered(RepositoryId(repositoryId.toString()), pageable, where, null)
+    val fetched = sourceRepository.findAllByRepositoryIdFiltered(repository.id, pageable, where, null)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(
       SourceListResponse(
@@ -65,9 +65,10 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceCreate: SourceCreate,
   ): ResponseEntity<HttpSource> {
+    val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.write)
     val created = sourceUseCase.createSources(
       listOf(mapper.toDomainSource(sourceCreate)),
-      RepositoryId(repositoryId.toString()),
+      repository.id,
     ).firstOrNull() ?: throw IllegalStateException("source was not created")
     return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toHttp(created))
   }
@@ -76,8 +77,10 @@ class SourceHttpController(
   override suspend fun getSource(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
-  ): ResponseEntity<HttpSource> =
-    ResponseEntity.ok(mapper.toHttp(requireSourceInRepository(repositoryId, sourceId)))
+  ): ResponseEntity<HttpSource> {
+    val source = accessGuard.requireSource(RepositoryId(repositoryId), SourceId(sourceId), RepositoryAccess.read)
+    return ResponseEntity.ok(mapper.toHttp(source))
+  }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
@@ -86,12 +89,11 @@ class SourceHttpController(
     sourceId: java.util.UUID,
     sourceUpdate: SourceUpdate,
   ): ResponseEntity<HttpSource> {
-    requireSourceInRepository(repositoryId, sourceId)
-    sourceUseCase.updateSources(
-      RepositoryId(repositoryId.toString()),
-      listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)),
-    )
-    return ResponseEntity.ok(mapper.toHttp(requireSourceInRepository(repositoryId, sourceId)))
+    val repoId = RepositoryId(repositoryId)
+    val id = SourceId(sourceId)
+    accessGuard.requireSource(repoId, id, RepositoryAccess.write)
+    sourceUseCase.updateSources(repoId, listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)))
+    return ResponseEntity.ok(mapper.toHttp(accessGuard.requireSource(repoId, id, RepositoryAccess.write)))
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -100,23 +102,10 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
   ): ResponseEntity<Unit> {
-    requireSourceInRepository(repositoryId, sourceId)
-    sourceUseCase.deleteAllById(
-      RepositoryId(repositoryId.toString()),
-      listOf(SourceId(sourceId.toString())),
-    )
+    val repoId = RepositoryId(repositoryId)
+    val id = SourceId(sourceId)
+    accessGuard.requireSource(repoId, id, RepositoryAccess.write)
+    sourceUseCase.deleteAllById(repoId, listOf(id))
     return ResponseEntity.noContent().build()
-  }
-
-  private suspend fun requireSourceInRepository(
-    repositoryId: java.util.UUID,
-    sourceId: java.util.UUID,
-  ): Source {
-    val source = sourceRepository.findByIdWithActions(SourceId(sourceId.toString()))
-      ?: throw NotFoundException("source $sourceId not found")
-    if (source.repositoryId != RepositoryId(repositoryId.toString())) {
-      throw NotFoundException("source $sourceId not found in repository $repositoryId")
-    }
-    return source
   }
 }

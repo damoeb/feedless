@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.document.Document
@@ -14,8 +15,12 @@ import org.migor.feedless.document.DocumentUpdate
 import org.migor.feedless.document.DocumentUseCasePort
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.StringFilter
+import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.http.mapper.HttpRecordMapper
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.source.SourceRepository
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -26,22 +31,21 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
 import org.springframework.context.annotation.Import
-import org.springframework.http.MediaType
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.web.servlet.MockMvc
-import org.springframework.test.web.servlet.delete
-import org.springframework.test.web.servlet.get
-import org.springframework.test.web.servlet.patch
-import org.springframework.test.web.servlet.post
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
 @WebMvcTest(controllers = [RecordHttpController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@Import(HttpRecordMapper::class, HttpApiExceptionHandler::class)
-@ActiveProfiles("test", AppLayer.api, AppProfiles.document)
+@Import(HttpRecordMapper::class, HttpApiExceptionHandler::class, RepositoryAccessGuard::class, RequestContextBridge::class)
+@ActiveProfiles(
+  "test",
+  AppLayer.api,
+  AppProfiles.document,
+  AppProfiles.repository,
+  AppProfiles.source,
+  AppProfiles.user,
+)
 class RecordHttpControllerTest {
 
   @Autowired
@@ -53,110 +57,228 @@ class RecordHttpControllerTest {
   @MockitoBean
   private lateinit var documentGuard: DocumentGuardPort
 
+  @MockitoBean
+  private lateinit var repositoryUseCase: RepositoryUseCasePort
+
+  @MockitoBean
+  private lateinit var groupUseCase: GroupUseCasePort
+
+  @MockitoBean
+  private lateinit var sourceRepository: SourceRepository
+
+  private val access by lazy { RepositoryAccessFixture(repositoryUseCase, groupUseCase) }
+
   @Test
   fun `getRecord returns record`() = runTest {
-    val repositoryId = RepositoryId()
-    val document = document(repositoryId = repositoryId)
-    whenever(documentGuard.requireRead(any())).thenReturn(document)
+    val repo = access.givenRepository()
+    val document = givenRecord(repo.id)
 
-    val mvcResult = mockMvc.get(
-      "/api/v1/repositories/${repositoryId.uuid}/records/${document.id.uuid}",
-    ).andReturn()
-    assertRecordResponse(mvcResult, document.id.uuid.toString(), document.title!!)
+    val result = mockMvc.getAs(access.owner, recordUrl(repo, document.id))
+
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains(document.id.uuid.toString())) { result.response.contentAsString }
+    assert(result.response.contentAsString.contains(document.title!!)) { result.response.contentAsString }
+  }
+
+  @Test
+  fun `getRecord answers a group member and a stranger on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertStatus(mockMvc.getAs(access.member, recordUrl(private, givenRecord(private.id).id)), 200)
+    assertStatus(mockMvc.getAs(access.stranger, recordUrl(public, givenRecord(public.id).id)), 200)
+  }
+
+  @Test
+  fun `getRecord answers a stranger on a private repository like a missing one`() = runTest {
+    val private = access.givenRepository()
+    val document = givenRecord(private.id)
+
+    assertNotFound(mockMvc.getAs(access.stranger, recordUrl(private, document.id)), "repository ${private.id.uuid} not found")
+    verify(documentGuard, never()).requireRead(any())
   }
 
   @Test
   fun `getRecord returns 404 when record belongs to another repository`() = runTest {
-    val repositoryId = RepositoryId()
-    val otherRepositoryId = RepositoryId()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireRead(eq(recordId))).thenReturn(document(id = recordId, repositoryId = otherRepositoryId))
+    val repo = access.givenRepository()
+    val foreign = givenRecord(RepositoryId())
 
-    val mvcResult = mockMvc.get("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(mockMvc.getAs(access.owner, recordUrl(repo, foreign.id)), "record ${foreign.id.uuid} not found")
   }
 
   @Test
   fun `getRecord returns 404 when record does not exist`() = runTest {
-    val repositoryId = RepositoryId()
+    val repo = access.givenRepository()
     val recordId = DocumentId()
-    whenever(documentGuard.requireRead(eq(recordId))).thenThrow(NotFoundException("record $recordId not found"))
+    whenever(documentGuard.requireRead(eq(recordId))).thenThrow(NotFoundException("record ${recordId.uuid} not found"))
 
-    val mvcResult = mockMvc.get("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
+    assertNotFound(mockMvc.getAs(access.owner, recordUrl(repo, recordId)), "record ${recordId.uuid} not found")
   }
 
   @Test
   fun `listRecords sets hasMore when a further item exists`() = runTest {
-    val repositoryId = RepositoryId()
+    val repo = access.givenRepository()
     // pageSize + 1 available: there really is a next page
-    val records = List(3) { document(repositoryId = repositoryId) }
-    whenever(
-      documentUseCase.findAllByRepositoryId(
-        eq(repositoryId),
-        anyOrNull(),
-        anyOrNull(),
-        any(),
-        any(),
-        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
-      ),
-    ).thenReturn(records)
+    givenRecordPage(repo.id, List(3) { document(repositoryId = repo.id) })
 
-    val mvcResult = mockMvc.get("/api/v1/repositories/${repositoryId.uuid}/records") {
-      param("page", "0")
-      param("pageSize", "2")
-    }.andReturn()
+    val result = mockMvc.getAs(access.owner, "${recordsUrl(repo)}?page=0&pageSize=2")
 
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.hasMore").value(true))
-        .andExpect(jsonPath("$.items.length()").value(2))
-    } else {
-      assert(mvcResult.response.status == 200)
-      assert(mvcResult.response.contentAsString.contains("\"hasMore\":true"))
-    }
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains("\"hasMore\":true")) { result.response.contentAsString }
   }
 
   @Test
   fun `listRecords sets hasMore false when page is not full`() = runTest {
-    val repositoryId = RepositoryId()
-    val records = listOf(document(repositoryId = repositoryId))
-    whenever(
-      documentUseCase.findAllByRepositoryId(
-        eq(repositoryId),
-        anyOrNull(),
-        anyOrNull(),
-        any(),
-        any(),
-        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
-      ),
-    ).thenReturn(records)
+    val repo = access.givenRepository()
+    givenRecordPage(repo.id, listOf(document(repositoryId = repo.id)))
 
-    val mvcResult = mockMvc.get("/api/v1/repositories/${repositoryId.uuid}/records") {
-      param("page", "0")
-      param("pageSize", "2")
-    }.andReturn()
+    val result = mockMvc.getAs(access.owner, "${recordsUrl(repo)}?page=0&pageSize=2")
 
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.hasMore").value(false))
-        .andExpect(jsonPath("$.items.length()").value(1))
-    } else {
-      assert(mvcResult.response.status == 200)
-      assert(mvcResult.response.contentAsString.contains("\"hasMore\":false"))
-    }
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains("\"hasMore\":false")) { result.response.contentAsString }
   }
 
   @Test
   fun `listRecords reports hasMore false when the last page is exactly full`() = runTest {
-    val repositoryId = RepositoryId()
+    val repo = access.givenRepository()
     // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
     // page here and made every client fetch an empty one.
-    val records = List(2) { document(repositoryId = repositoryId) }
+    givenRecordPage(repo.id, List(2) { document(repositoryId = repo.id) })
+
+    val result = mockMvc.getAs(access.owner, "${recordsUrl(repo)}?page=0&pageSize=2")
+
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains("\"hasMore\":false")) { result.response.contentAsString }
+  }
+
+  @Test
+  fun `listRecords answers a group member and a stranger on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+    givenRecordPage(private.id, emptyList())
+    givenRecordPage(public.id, emptyList())
+
+    assertStatus(mockMvc.getAs(access.member, "${recordsUrl(private)}?page=0&pageSize=2"), 200)
+    assertStatus(mockMvc.getAs(access.stranger, "${recordsUrl(public)}?page=0&pageSize=2"), 200)
+  }
+
+  @Test
+  fun `listRecords answers a stranger on a private repository like a missing one`() = runTest {
+    val private = access.givenRepository()
+
+    assertNotFound(mockMvc.getAs(access.stranger, recordsUrl(private)), "repository ${private.id.uuid} not found")
+    verify(documentUseCase, never()).findAllByRepositoryId(any(), anyOrNull(), anyOrNull(), any(), any(), any())
+  }
+
+  @Test
+  fun `createRecord lets the owner and a group member write`() = runTest {
+    val repo = access.givenRepository()
+    val created = document(repositoryId = repo.id)
+    whenever(documentUseCase.createDocument(any())).thenReturn(created)
+
+    val result = mockMvc.postAs(access.owner, recordsUrl(repo), CREATE)
+    assertStatus(result, 201)
+    assert(result.response.contentAsString.contains(created.id.uuid.toString())) { result.response.contentAsString }
+    assertStatus(mockMvc.postAs(access.member, recordsUrl(repo), CREATE), 201)
+    verify(documentUseCase, org.mockito.kotlin.times(2)).createDocument(any<DocumentCreate>())
+  }
+
+  @Test
+  fun `createRecord answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(mockMvc.postAs(access.stranger, recordsUrl(private), CREATE), "repository ${private.id.uuid} not found")
+    assertNotFound(mockMvc.postAs(access.stranger, recordsUrl(public), CREATE), "repository ${public.id.uuid} not found")
+    verify(documentUseCase, never()).createDocument(any())
+  }
+
+  @Test
+  fun `updateRecord lets the owner and a group member write`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+    val updated = document(id = record.id, repositoryId = repo.id, title = "Updated title")
+    whenever(documentUseCase.updateDocument(any(), eq(record.id))).thenReturn(updated)
+
+    val result = mockMvc.patchAs(access.owner, recordUrl(repo, record.id), UPDATE)
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains("Updated title")) { result.response.contentAsString }
+    assertStatus(mockMvc.patchAs(access.member, recordUrl(repo, record.id), UPDATE), 200)
+    verify(documentUseCase, org.mockito.kotlin.times(2)).updateDocument(any<DocumentUpdate>(), eq(record.id))
+  }
+
+  @Test
+  fun `updateRecord answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(
+      mockMvc.patchAs(access.stranger, recordUrl(private, givenRecord(private.id).id), UPDATE),
+      "repository ${private.id.uuid} not found",
+    )
+    assertNotFound(
+      mockMvc.patchAs(access.stranger, recordUrl(public, givenRecord(public.id).id), UPDATE),
+      "repository ${public.id.uuid} not found",
+    )
+    verify(documentUseCase, never()).updateDocument(any(), any())
+  }
+
+  @Test
+  fun `updateRecord returns 404 when record belongs to another repository`() = runTest {
+    val repo = access.givenRepository()
+    val foreign = givenRecord(RepositoryId())
+
+    assertNotFound(mockMvc.patchAs(access.owner, recordUrl(repo, foreign.id), UPDATE), "record ${foreign.id.uuid} not found")
+    verify(documentUseCase, never()).updateDocument(any(), any())
+  }
+
+  @Test
+  fun `deleteRecord lets the owner and a group member write`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+
+    assertStatus(mockMvc.deleteAs(access.owner, recordUrl(repo, record.id)), 204)
+    assertStatus(mockMvc.deleteAs(access.member, recordUrl(repo, record.id)), 204)
+    verify(documentUseCase, org.mockito.kotlin.times(2)).deleteDocuments(
+      eq(repo.id),
+      eq(StringFilter(`in` = listOf(record.id.uuid.toString()))),
+    )
+  }
+
+  @Test
+  fun `deleteRecord answers a stranger with 404 even on a public repository`() = runTest {
+    val private = access.givenRepository()
+    val public = access.givenRepository(EntityVisibility.isPublic)
+
+    assertNotFound(
+      mockMvc.deleteAs(access.stranger, recordUrl(private, givenRecord(private.id).id)),
+      "repository ${private.id.uuid} not found",
+    )
+    assertNotFound(
+      mockMvc.deleteAs(access.stranger, recordUrl(public, givenRecord(public.id).id)),
+      "repository ${public.id.uuid} not found",
+    )
+    verify(documentUseCase, never()).deleteDocuments(any(), any())
+  }
+
+  @Test
+  fun `deleteRecord returns 404 when record belongs to another repository`() = runTest {
+    val repo = access.givenRepository()
+    val foreign = givenRecord(RepositoryId())
+
+    assertNotFound(mockMvc.deleteAs(access.owner, recordUrl(repo, foreign.id)), "record ${foreign.id.uuid} not found")
+    verify(documentUseCase, never()).deleteDocuments(any(), any())
+  }
+
+  /** A record the document guard resolves for both reads and writes. */
+  private suspend fun givenRecord(repositoryId: RepositoryId): Document {
+    val document = document(repositoryId = repositoryId)
+    whenever(documentGuard.requireRead(eq(document.id))).thenReturn(document)
+    whenever(documentGuard.requireWrite(eq(document.id))).thenReturn(document)
+    return document
+  }
+
+  private suspend fun givenRecordPage(repositoryId: RepositoryId, records: List<Document>) {
     whenever(
       documentUseCase.findAllByRepositoryId(
         eq(repositoryId),
@@ -167,114 +289,11 @@ class RecordHttpControllerTest {
         eq(PageableRequest(pageNumber = 0, pageSize = 3)),
       ),
     ).thenReturn(records)
-
-    val mvcResult = mockMvc.get("/api/v1/repositories/${repositoryId.uuid}/records") {
-      param("page", "0")
-      param("pageSize", "2")
-    }.andReturn()
-
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.hasMore").value(false))
-        .andExpect(jsonPath("$.items.length()").value(2))
-    } else {
-      assert(mvcResult.response.status == 200)
-      assert(mvcResult.response.contentAsString.contains("\"hasMore\":false"))
-    }
   }
 
-  @Test
-  fun `createRecord returns 201`() = runTest {
-    val repositoryId = RepositoryId()
-    val created = document(repositoryId = repositoryId)
-    whenever(documentUseCase.createDocument(any())).thenReturn(created)
+  private fun recordsUrl(repo: Repository) = "/api/v1/repositories/${repo.id.uuid}/records"
 
-    val mvcResult = mockMvc.post("/api/v1/repositories/${repositoryId.uuid}/records") {
-      contentType = MediaType.APPLICATION_JSON
-      content = """
-        {
-          "title": "New record",
-          "url": "https://example.com/new",
-          "publishedAt": 1700000000000
-        }
-      """.trimIndent()
-    }.andReturn()
-
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isCreated)
-        .andExpect(jsonPath("$.id").value(created.id.uuid.toString()))
-        .andExpect(jsonPath("$.title").value(created.title))
-    } else {
-      assert(mvcResult.response.status == 201)
-      assert(mvcResult.response.contentAsString.contains(created.id.uuid.toString()))
-    }
-    verify(documentUseCase).createDocument(any<DocumentCreate>())
-  }
-
-  @Test
-  fun `updateRecord returns updated record`() = runTest {
-    val repositoryId = RepositoryId()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireWrite(eq(recordId))).thenReturn(document(id = recordId, repositoryId = repositoryId))
-    val updated = document(id = recordId, repositoryId = repositoryId, title = "Updated title")
-    whenever(documentUseCase.updateDocument(any(), eq(recordId))).thenReturn(updated)
-
-    val mvcResult = mockMvc.patch("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}") {
-      contentType = MediaType.APPLICATION_JSON
-      content = """{"title":"Updated title"}"""
-    }.andReturn()
-
-    assertRecordResponse(mvcResult, recordId.uuid.toString(), "Updated title")
-    verify(documentUseCase).updateDocument(any<DocumentUpdate>(), eq(recordId))
-  }
-
-  @Test
-  fun `updateRecord returns 404 when record belongs to another repository`() = runTest {
-    val repositoryId = RepositoryId()
-    val otherRepositoryId = RepositoryId()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireWrite(eq(recordId)))
-      .thenReturn(document(id = recordId, repositoryId = otherRepositoryId))
-
-    val mvcResult = mockMvc.patch("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}") {
-      contentType = MediaType.APPLICATION_JSON
-      content = """{"title":"Updated title"}"""
-    }.andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
-    verify(documentUseCase, never()).updateDocument(any(), any())
-  }
-
-  @Test
-  fun `deleteRecord returns 204`() = runTest {
-    val repositoryId = RepositoryId()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireWrite(eq(recordId))).thenReturn(document(id = recordId, repositoryId = repositoryId))
-
-    val mvcResult = mockMvc.delete("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNoContent)
-    verify(documentUseCase).deleteDocuments(
-      eq(repositoryId),
-      eq(StringFilter(`in` = listOf(recordId.uuid.toString()))),
-    )
-  }
-
-  @Test
-  fun `deleteRecord returns 404 when record belongs to another repository`() = runTest {
-    val repositoryId = RepositoryId()
-    val otherRepositoryId = RepositoryId()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireWrite(eq(recordId)))
-      .thenReturn(document(id = recordId, repositoryId = otherRepositoryId))
-
-    val mvcResult = mockMvc.delete("/api/v1/repositories/${repositoryId.uuid}/records/${recordId.uuid}").andReturn()
-
-    dispatchIfAsync(mvcResult, status().isNotFound)
-    verify(documentUseCase, never()).deleteDocuments(any(), any())
-  }
+  private fun recordUrl(repo: Repository, recordId: DocumentId) = "${recordsUrl(repo)}/${recordId.uuid}"
 
   private fun document(
     id: DocumentId = DocumentId(),
@@ -290,31 +309,8 @@ class RecordHttpControllerTest {
     status = ReleaseStatus.released,
   )
 
-  private fun assertRecordResponse(
-    mvcResult: org.springframework.test.web.servlet.MvcResult,
-    expectedId: String,
-    expectedTitle: String,
-  ) {
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult))
-        .andExpect(status().isOk)
-        .andExpect(jsonPath("$.id").value(expectedId))
-        .andExpect(jsonPath("$.title").value(expectedTitle))
-    } else {
-      assert(mvcResult.response.status == 200)
-      assert(mvcResult.response.contentAsString.contains(expectedId))
-      assert(mvcResult.response.contentAsString.contains(expectedTitle))
-    }
-  }
-
-  private fun dispatchIfAsync(
-    mvcResult: org.springframework.test.web.servlet.MvcResult,
-    expectedStatus: org.springframework.test.web.servlet.ResultMatcher,
-  ) {
-    if (mvcResult.request.asyncContext != null) {
-      mockMvc.perform(asyncDispatch(mvcResult)).andExpect(expectedStatus)
-    } else {
-      expectedStatus.match(mvcResult)
-    }
+  private companion object {
+    const val UPDATE = """{"title":"Updated title"}"""
+    const val CREATE = """{"title":"New record","url":"https://example.com/new","publishedAt":1700000000000}"""
   }
 }
