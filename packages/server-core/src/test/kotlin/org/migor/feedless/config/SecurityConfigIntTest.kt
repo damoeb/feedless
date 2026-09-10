@@ -136,6 +136,29 @@ class SecurityConfigIntTest {
   }
 
   /**
+   * feedctl builds are baked into every instance's image and must be
+   * downloadable without a token (curl .../cli/install.sh | sh). A file
+   * that is not present in this test run (no `:packages:cli:crossCompile`
+   * output on disk) still 404s rather than 401/403, proving the CLI static
+   * location is public regardless of whether the CLI was cross-compiled
+   * locally.
+   */
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "cli/install.sh",
+      "cli/SHA256SUMS",
+      "cli/feedctl-linux-amd64",
+    ]
+  )
+  fun whenCallingCliUrl_ThenNotUnauthorized(path: String) {
+    val restTemplate = TestRestTemplate()
+    val response = restTemplate.getForEntity("$baseEndpoint/$path", String::class.java)
+    assertThat(response.statusCode).isNotEqualTo(HttpStatus.UNAUTHORIZED)
+    assertThat(response.statusCode).isNotEqualTo(HttpStatus.FORBIDDEN)
+  }
+
+  /**
    * The version header is set by [org.migor.feedless.http.HttpApiVersionHeaderFilter], which
    * must run ahead of [org.migor.feedless.http.HttpApiJwtFilter] in the real Spring Security
    * filter chain so it lands on the 401 that filter writes via `sendError` before any

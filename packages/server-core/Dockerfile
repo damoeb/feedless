@@ -2,6 +2,11 @@ FROM amazoncorretto:24-alpine-jdk as build
 WORKDIR /usr/feedless
 COPY docker-entrypoint.sh pre-boot.sh ./
 COPY build/libs/app.jar app.jar
+# feedctl builds for every platform we support, so each self-hosted
+# instance serves the CLI build that matches its own API (see
+# CliInstallScriptController). Populated by :packages:cli:crossCompile via
+# the copyCliArtifacts Gradle task, ahead of this docker build.
+COPY build/cli static/cli
 
 
 FROM amazoncorretto:24-alpine-jdk

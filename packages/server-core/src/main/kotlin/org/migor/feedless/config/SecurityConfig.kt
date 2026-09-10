@@ -171,6 +171,7 @@ class SecurityConfig {
       "/article/**",
       "/a/**",
       "/attachment/**",
+      "/cli/**",
     )
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.oauth))) {
       urls.add("/login/oauth2/**")
