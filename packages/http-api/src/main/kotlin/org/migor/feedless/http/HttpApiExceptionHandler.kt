@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.ConflictException
 import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
@@ -41,6 +42,21 @@ class HttpApiExceptionHandler {
   @ExceptionHandler(IllegalArgumentException::class)
   fun handleBadRequest(ex: IllegalArgumentException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(HttpStatus.BAD_REQUEST, "BAD_REQUEST", ex.message ?: "invalid request", request)
+
+  /** A request field the schema accepts but the endpoint's own rules reject — reported like bean validation. */
+  @ExceptionHandler(InvalidFieldException::class)
+  fun handleInvalidField(ex: InvalidFieldException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(
+      HttpStatus.BAD_REQUEST,
+      "VALIDATION_ERROR",
+      "${ex.field}: ${ex.message}",
+      request,
+      errors = listOf(FieldError(field = ex.field, message = ex.message)),
+    )
+
+  @ExceptionHandler(ConflictException::class)
+  fun handleConflict(ex: ConflictException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(HttpStatus.CONFLICT, "CONFLICT", ex.message, request)
 
   @ExceptionHandler(TooManyRequestsException::class)
   fun handleTooManyRequests(ex: TooManyRequestsException, request: WebRequest): ResponseEntity<ApiError> =

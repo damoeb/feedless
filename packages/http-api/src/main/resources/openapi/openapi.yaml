@@ -261,6 +261,44 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
+    post:
+      tags: [Harvests]
+      operationId: runSource
+      summary: Run the source now, or dry-run it with an unsaved flow
+      description: >
+        Queues a harvest and answers at once; a scheduler runs it. Poll the harvest in `Location`
+        until its `status` is `completed`. A real run uses the saved flow and imports records like a
+        scheduled harvest. A dry run (`dryRun: true`) scrapes without importing records or touching the
+        source, and writes the extracted items into the harvest log; it may carry a `flow` to test
+        instead of the saved one. Requires write access to the repository.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestRequest'
+      responses:
+        '202':
+          description: Queued
+          headers:
+            Location:
+              description: URL of the queued harvest
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -616,8 +654,8 @@ components:
     Error:
       description: >
         Any error. Every error response — 400 `BAD_REQUEST` / `VALIDATION_ERROR`,
-        401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 429 `TOO_MANY_REQUESTS`,
-        500 `INTERNAL_ERROR` — carries an `ApiError` body. Since every route requires
+        401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 409 `CONFLICT`,
+        429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError` body. Since every route requires
         authentication, every operation can return 401.
       content:
         application/json:
@@ -648,6 +686,12 @@ components:
             $ref: '#/components/schemas/ApiError'
     NotFound:
       description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    Conflict:
+      description: The resource's state does not allow the request, e.g. a real run of a disabled source
       content:
         application/json:
           schema:
@@ -1312,6 +1356,19 @@ components:
         - queued
         - running
         - completed
+    HarvestRequest:
+      type: object
+      description: >
+        `flow` is the flow to dry-run instead of the saved one and is only allowed with `dryRun: true`
+        (a real run always uses the saved flow; save one with `PATCH`). It is validated like the flow of
+        `PATCH` — an invalid flow answers 400 `VALIDATION_ERROR` — and is never saved to the source.
+      properties:
+        dryRun:
+          type: boolean
+          default: false
+          description: Scrape without importing records or touching the source.
+        flow:
+          $ref: '#/components/schemas/ScrapeFlow'
     Harvest:
       type: object
       required: [id, sourceId, status, dryRun, startedAt]

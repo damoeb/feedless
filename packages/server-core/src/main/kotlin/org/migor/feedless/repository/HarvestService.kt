@@ -7,12 +7,14 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
+import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.harvest.HarvestUseCasePort
 import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.time.LocalDateTime
 
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
@@ -42,4 +44,20 @@ class HarvestService(
   override suspend fun findById(id: HarvestId): Harvest? = withContext(Dispatchers.IO) {
     harvestRepository.findById(id)
   }
+
+  override suspend fun enqueue(sourceId: SourceId, dryRun: Boolean, flow: String?): Harvest =
+    withContext(Dispatchers.IO) {
+      harvestRepository.save(
+        Harvest(
+          sourceId = sourceId,
+          logs = "",
+          // Replaced by the claim time once the scheduler picks the harvest up.
+          startedAt = LocalDateTime.now(),
+          finishedAt = null,
+          status = HarvestStatus.QUEUED,
+          dryRun = dryRun,
+          flow = flow,
+        )
+      )
+    }
 }

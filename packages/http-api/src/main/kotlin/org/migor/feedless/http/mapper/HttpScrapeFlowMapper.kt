@@ -1,5 +1,7 @@
 package org.migor.feedless.http.mapper
 
+import com.fasterxml.jackson.annotation.JsonInclude
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.google.gson.Gson
 import org.migor.feedless.actions.ClickPositionAction
 import org.migor.feedless.actions.ClickXpathAction
@@ -40,6 +42,9 @@ class HttpScrapeFlowMapper {
 
   private val gson = Gson()
 
+  // Jackson, like the HTTP layer that parsed the flow; nulls omitted so a stored flow reads like the request.
+  private val storedFlowJson = jacksonObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+
   fun toDomainSource(body: SourceCreate): Source =
     Source(
       id = body.id?.let { SourceId(it) } ?: SourceId(),
@@ -55,6 +60,21 @@ class HttpScrapeFlowMapper {
       requireExactlyOneKind(action, index)
       toDomainAction(action) ?: throw IllegalArgumentException("flow.sequence[$index] is not a known action")
     }
+
+  /**
+   * Validates [flow] exactly like [toDomainActions] and serializes it for a queued harvest. The
+   * stored form is the HTTP flow itself, and [storedFlowToDomainActions] maps it through
+   * [toDomainActions] again — so a queued run executes with the mapping it was validated with.
+   *
+   * @throws IllegalArgumentException when the flow is invalid
+   */
+  fun toStoredFlow(flow: ScrapeFlow): String {
+    toDomainActions(flow)
+    return storedFlowJson.writeValueAsString(flow)
+  }
+
+  fun storedFlowToDomainActions(storedFlow: String): List<ScrapeAction> =
+    toDomainActions(storedFlowJson.readValue(storedFlow, ScrapeFlow::class.java))
 
   /**
    * A ScrapeAction is a union: fetch, or click, or extract — never a combination. The

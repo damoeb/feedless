@@ -6,6 +6,9 @@ open class FatalHarvestException(override val message: String) : RuntimeExceptio
 class PermissionDeniedException(override val message: String) : FatalHarvestException(message)
 class NotFoundException(override val message: String) : RuntimeException()
 
+/** The resource's current state does not allow the request — mapped to 409 at the HTTP edge. */
+class ConflictException(override val message: String) : RuntimeException()
+
 /**
  * Rate limit exhausted. Thrown rather than swallowed so callers get a 429 (HTTP) or an
  * explicit error (GraphQL) instead of a silent null.
