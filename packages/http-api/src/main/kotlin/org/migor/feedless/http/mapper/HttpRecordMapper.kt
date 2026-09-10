@@ -33,13 +33,13 @@ class HttpRecordMapper {
       rawMimeType = getRawMimeType(document),
     )
 
-  fun toDomainCreate(body: RecordCreate): DocumentCreate =
+  fun toDomainCreate(repositoryId: RepositoryId, body: RecordCreate): DocumentCreate =
     DocumentCreate(
       title = body.title,
       url = body.url,
       // DocumentCreate still carries epoch millis internally; the wire format is RFC3339.
       publishedAt = body.publishedAt.toInstant().toEpochMilli(),
-      repositoryId = RepositoryId(body.repositoryId.toString()),
+      repositoryId = repositoryId,
       text = body.text,
       tags = body.tags,
       rawBase64 = body.rawBase64,

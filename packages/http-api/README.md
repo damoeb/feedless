@@ -16,7 +16,8 @@ cookie is still accepted for browser clients. Anonymous JWTs are not accepted on
 `/api/v1/**` routes require authentication. `GET /user` returns the authenticated user's `id`, `email`,
 and `groups`.
 
-REST `/records` ≡ GraphQL `Record` ≡ domain `Document`. Harvest and Plan are read-only.
+REST `/repositories/{repositoryId}/records` ≡ GraphQL `Record` ≡ domain `Document`. Harvest and Plan are
+read-only.
 
 ## Conventions
 
@@ -45,13 +46,12 @@ REST `/records` ≡ GraphQL `Record` ≡ domain `Document`. Harvest and Plan are
 
 ## Known gaps
 
-- `GET /records` has no filtering or sorting (no `publishedAfter`, tag, or query), so "records since
-  my last poll" means paging the whole collection. Offset paging over an append-heavy collection also
-  skips/duplicates rows as new records arrive — records want keyset pagination.
-- Records are repository-scoped but modelled at the top level, so `repositoryId` appears as a query
-  param on `GET`/`DELETE` and in the body on `POST`. `DELETE /records` also carries a request body.
+- `GET /repositories/{repositoryId}/records` has no filtering or sorting (no `publishedAfter`, tag,
+  or query), so "records since my last poll" means paging the whole collection. Offset paging over
+  an append-heavy collection also skips/duplicates rows as new records arrive — records want keyset
+  pagination.
 - `GroupMember` exposes only `userId`, and there is no `/users/{id}` to resolve it.
-- No `total` in list envelopes; `/repositories/count` fills the gap but requires a `product`.
+- Only `RepositoryListResponse` carries `totalCount`; other list envelopes have `hasMore` only.
 - No `ETag`/`If-Match` (concurrent `PATCH`es clobber) and no `Idempotency-Key` (a retried create
   after a timeout duplicates).
 - `PluginExecutionParams` hardcodes three plugin ids as fixed properties, so adding a plugin is a

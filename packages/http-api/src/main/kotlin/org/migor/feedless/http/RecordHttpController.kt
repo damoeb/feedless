@@ -2,14 +2,15 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentGuardPort
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentUseCasePort
 import org.migor.feedless.document.StringFilter
 import org.migor.feedless.http.api.RecordsApi
 import org.migor.feedless.http.api.model.RecordCreate
-import org.migor.feedless.http.api.model.RecordDeleteRequest
 import org.migor.feedless.http.api.model.RecordListResponse
 import org.migor.feedless.http.api.model.RecordUpdate
 import org.migor.feedless.http.mapper.HttpRecordMapper
@@ -55,24 +56,34 @@ class RecordHttpController(
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
-  override suspend fun getRecord(recordId: java.util.UUID): ResponseEntity<HttpRecord> {
-    val document = documentGuard.requireRead(DocumentId(recordId.toString()))
+  override suspend fun getRecord(
+    repositoryId: java.util.UUID,
+    recordId: java.util.UUID,
+  ): ResponseEntity<HttpRecord> {
+    val document = requireRecordForRead(repositoryId, recordId)
     return ResponseEntity.ok(mapper.toHttp(document))
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
-  override suspend fun createRecord(recordCreate: RecordCreate): ResponseEntity<HttpRecord> {
-    val created = documentUseCase.createDocument(mapper.toDomainCreate(recordCreate))
+  override suspend fun createRecord(
+    repositoryId: java.util.UUID,
+    recordCreate: RecordCreate,
+  ): ResponseEntity<HttpRecord> {
+    val created = documentUseCase.createDocument(
+      mapper.toDomainCreate(RepositoryId(repositoryId.toString()), recordCreate),
+    )
     return ResponseEntity.status(HttpStatus.CREATED).body(mapper.toHttp(created))
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
   override suspend fun updateRecord(
+    repositoryId: java.util.UUID,
     recordId: java.util.UUID,
     recordUpdate: RecordUpdate,
   ): ResponseEntity<HttpRecord> {
+    requireRecordForWrite(repositoryId, recordId)
     val updated = documentUseCase.updateDocument(
       mapper.toDomainUpdate(recordUpdate),
       DocumentId(recordId.toString()),
@@ -82,14 +93,36 @@ class RecordHttpController(
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
   @Throttled
-  override suspend fun deleteRecords(
+  override suspend fun deleteRecord(
     repositoryId: java.util.UUID,
-    recordDeleteRequest: RecordDeleteRequest,
+    recordId: java.util.UUID,
   ): ResponseEntity<Unit> {
+    requireRecordForWrite(repositoryId, recordId)
     documentUseCase.deleteDocuments(
       RepositoryId(repositoryId.toString()),
-      StringFilter(`in` = recordDeleteRequest.ids.map { it.toString() }),
+      StringFilter(`in` = listOf(recordId.toString())),
     )
     return ResponseEntity.noContent().build()
+  }
+
+  private suspend fun requireRecordForRead(
+    repositoryId: java.util.UUID,
+    recordId: java.util.UUID,
+  ): Document = requireInRepository(repositoryId, recordId, documentGuard.requireRead(DocumentId(recordId.toString())))
+
+  private suspend fun requireRecordForWrite(
+    repositoryId: java.util.UUID,
+    recordId: java.util.UUID,
+  ): Document = requireInRepository(repositoryId, recordId, documentGuard.requireWrite(DocumentId(recordId.toString())))
+
+  private fun requireInRepository(
+    repositoryId: java.util.UUID,
+    recordId: java.util.UUID,
+    document: Document,
+  ): Document {
+    if (document.repositoryId != RepositoryId(repositoryId.toString())) {
+      throw NotFoundException("record $recordId not found in repository $repositoryId")
+    }
+    return document
   }
 }

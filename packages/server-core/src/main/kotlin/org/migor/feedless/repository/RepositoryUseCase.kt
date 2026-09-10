@@ -287,6 +287,11 @@ class RepositoryUseCase(
       ?: repositoryRepository.countAllByVisibility(EntityVisibility.isPublic)
   }
 
+  override suspend fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int {
+    log.debug("countAllByUserId userId=$userId")
+    return repositoryRepository.countAllByUserId(where, userId)
+  }
+
   suspend fun updatePullsFromAnalytics(repositoryId: RepositoryId, pulls: Int) {
     log.debug("updatePullsFromAnalytics repositoryId=$repositoryId pulls=$pulls")
     val repository = repositoryRepository.findById(repositoryId)!!

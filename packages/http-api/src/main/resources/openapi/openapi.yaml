@@ -84,25 +84,6 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         default:
           $ref: '#/components/responses/Error'
-  /repositories/count:
-    get:
-      tags: [Repositories]
-      operationId: countRepositories
-      parameters:
-        - name: product
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/VerticalFilter'
-      responses:
-        '200':
-          description: OK
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CountResponse'
-        default:
-          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -279,17 +260,13 @@ paths:
           $ref: '#/components/responses/NotFound'
         default:
           $ref: '#/components/responses/Error'
-  /records:
+  /repositories/{repositoryId}/records:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
     get:
       tags: [Records]
       operationId: listRecords
       parameters:
-        - name: repositoryId
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
       responses:
@@ -321,31 +298,9 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         default:
           $ref: '#/components/responses/Error'
-    delete:
-      tags: [Records]
-      operationId: deleteRecords
-      parameters:
-        - name: repositoryId
-          in: query
-          required: true
-          schema:
-            type: string
-            format: uuid
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RecordDeleteRequest'
-      responses:
-        '204':
-          description: Deleted
-        '429':
-          $ref: '#/components/responses/TooManyRequests'
-        default:
-          $ref: '#/components/responses/Error'
-  /records/{recordId}:
+  /repositories/{repositoryId}/records/{recordId}:
     parameters:
+      - $ref: '#/components/parameters/RepositoryId'
       - $ref: '#/components/parameters/RecordId'
     get:
       tags: [Records]
@@ -377,6 +332,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Record'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Records]
+      operationId: deleteRecord
+      responses:
+        '204':
+          description: Deleted
         '404':
           $ref: '#/components/responses/NotFound'
         '429':
@@ -678,15 +645,9 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/GroupAssignment'
-    CountResponse:
-      type: object
-      required: [count]
-      properties:
-        count:
-          type: integer
     RepositoryListResponse:
       type: object
-      required: [items, hasMore]
+      required: [items, hasMore, totalCount]
       properties:
         items:
           type: array
@@ -694,6 +655,11 @@ components:
             $ref: '#/components/schemas/Repository'
         hasMore:
           type: boolean
+        totalCount:
+          type: integer
+          description: >
+            Total repositories matching the same filters (product, visibility, q) for the
+            same caller, independent of page/pageSize.
     SourceListResponse:
       type: object
       required: [items, hasMore]
@@ -743,7 +709,7 @@ components:
           type: string
     RecordCreate:
       type: object
-      required: [title, url, publishedAt, repositoryId]
+      required: [title, url, publishedAt]
       properties:
         title:
           type: string
@@ -752,9 +718,6 @@ components:
         publishedAt:
           type: string
           format: date-time
-        repositoryId:
-          type: string
-          format: uuid
         text:
           type: string
         tags:
@@ -778,15 +741,6 @@ components:
           type: array
           items:
             type: string
-    RecordDeleteRequest:
-      type: object
-      required: [ids]
-      properties:
-        ids:
-          type: array
-          items:
-            type: string
-            format: uuid
     RecordListResponse:
       type: object
       required: [items, hasMore]

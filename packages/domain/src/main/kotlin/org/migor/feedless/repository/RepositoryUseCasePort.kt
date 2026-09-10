@@ -16,4 +16,7 @@ interface RepositoryUseCasePort : RepositoryProvider {
   suspend fun findById(repositoryId: RepositoryId): Repository?
   suspend fun delete(repositoryId: RepositoryId)
   suspend fun countAll(userId: UserId?, product: Vertical): Int
+
+  /** Same filters (and caller-visibility rules) as [findAllByUserId], without paging. */
+  suspend fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int
 }

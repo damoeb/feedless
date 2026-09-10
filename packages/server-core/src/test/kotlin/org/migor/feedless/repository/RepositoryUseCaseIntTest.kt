@@ -8,6 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.actions.ExtractXpathAction
@@ -100,7 +101,9 @@ class RepositoryUseCaseIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    user = userUseCase.createUser("foo@bar.com")
+    // Data is not reset between tests in this class (shared Testcontainers Postgres), so each
+    // test needs its own user to avoid "user already exists".
+    user = userUseCase.createUser("foo+${java.util.UUID.randomUUID()}@bar.com")
     group = groupRepository.findAllByOwner(user.id).single()
   }
 
@@ -144,5 +147,36 @@ class RepositoryUseCaseIntTest {
     val extractAction = actions.get(1) as ExtractXpathActionEntity
     assertThat(extractAction.emitRaw).isEqualTo(arrayOf(ExtractEmit.text.name, ExtractEmit.pixel.name))
   }
+
+  @Test
+  fun `countAllByUserId counts with the same filters as findAllByUserId`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      // Private, so this doesn't leak into other users' "public" counts in this shared-DB test class.
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      // createUser already created an inbox repository — count relative to that baseline.
+      val baseline = repositoryUseCase.countAllByUserId(null, user.id)
+
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(product = Vertical.rssProxy, title = "r1", description = "d", refreshCron = ""),
+          RepositoryCreate(product = Vertical.visualDiff, title = "r2", description = "d", refreshCron = ""),
+        )
+      )
+
+      val totalCount = repositoryUseCase.countAllByUserId(null, user.id)
+      assertThat(totalCount).isEqualTo(baseline + 2)
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(pageNumber = 0, pageSize = 10), null, user.id))
+        .hasSize(totalCount)
+
+      val filteredCount = repositoryUseCase.countAllByUserId(
+        RepositoriesFilter(product = VerticalFilter(eq = Vertical.rssProxy)),
+        user.id,
+      )
+      assertThat(filteredCount).isEqualTo(1)
+    }
 
 }

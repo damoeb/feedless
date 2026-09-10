@@ -1,5 +1,6 @@
 package org.migor.feedless.data.jpa.repository
 
+import com.linecorp.kotlinjdsl.dsl.jpql.Jpql
 import com.linecorp.kotlinjdsl.querymodel.jpql.predicate.Predicatable
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -31,68 +32,12 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
     userId: UserId?
   ): List<Repository> {
     return repositoryDAO.findPage(pageable.toPageRequest()) {
-      val whereStatements = mutableListOf<Predicatable>()
-      where?.let {
-        where.visibility?.let { visibility ->
-          visibility.`in`?.let {
-            whereStatements.add(
-              path(RepositoryEntity::visibility).`in`(it),
-            )
-          }
-        }
-
-        userId?.let {
-          whereStatements.add(
-            path(RepositoryEntity::ownerId).eq(userId.uuid)
-          )
-        }
-
-        where.product?.let {
-          it.eq?.let {
-            whereStatements.add(
-              path(RepositoryEntity::product).eq(it)
-            )
-          }
-          it.`in`?.let { products ->
-            whereStatements.add(
-              path(RepositoryEntity::product).`in`(products)
-            )
-          }
-        }
-        where.tags?.let {
-          it.every?.let { every ->
-            whereStatements.add(
-              function(
-                Boolean::class,
-                "fl_array_contains",
-                path(RepositoryEntity::tags),
-                every,
-                true
-              )
-                .eq(true)
-            )
-          }
-          it.some?.let { some ->
-            whereStatements.add(
-              function(
-                Boolean::class,
-                "fl_array_contains",
-                path(RepositoryEntity::tags),
-                some,
-                false
-              )
-                .eq(true)
-            )
-          }
-        }
-      }
-
       select(
         entity(RepositoryEntity::class)
       ).from(
         entity(RepositoryEntity::class)
       ).whereAnd(
-        *whereStatements.toTypedArray(),
+        *repositoriesWhereStatements(where, userId).toTypedArray(),
         or(
           path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
           path(RepositoryEntity::ownerId).eq(userId?.uuid),
@@ -101,6 +46,85 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
         path(RepositoryEntity::lastUpdatedAt).desc()
       )
     }.toList().filterNotNull().map { it.toDomain() }
+  }
+
+  override fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int {
+    return repositoryDAO.findAll {
+      select(
+        count(RepositoryEntity::id)
+      ).from(
+        entity(RepositoryEntity::class)
+      ).whereAnd(
+        *repositoriesWhereStatements(where, userId).toTypedArray(),
+        or(
+          path(RepositoryEntity::visibility).eq(EntityVisibility.isPublic),
+          path(RepositoryEntity::ownerId).eq(userId?.uuid),
+        )
+      )
+    }.firstOrNull()?.toInt() ?: 0
+  }
+
+  /** Predicates shared by [findAll] and [countAllByUserId] — keeps totalCount consistent with the list. */
+  private fun Jpql.repositoriesWhereStatements(
+    where: RepositoriesFilter?,
+    userId: UserId?,
+  ): MutableList<Predicatable> {
+    val whereStatements = mutableListOf<Predicatable>()
+    where?.let {
+      where.visibility?.let { visibility ->
+        visibility.`in`?.let {
+          whereStatements.add(
+            path(RepositoryEntity::visibility).`in`(it),
+          )
+        }
+      }
+
+      userId?.let {
+        whereStatements.add(
+          path(RepositoryEntity::ownerId).eq(userId.uuid)
+        )
+      }
+
+      where.product?.let {
+        it.eq?.let {
+          whereStatements.add(
+            path(RepositoryEntity::product).eq(it)
+          )
+        }
+        it.`in`?.let { products ->
+          whereStatements.add(
+            path(RepositoryEntity::product).`in`(products)
+          )
+        }
+      }
+      where.tags?.let {
+        it.every?.let { every ->
+          whereStatements.add(
+            function(
+              Boolean::class,
+              "fl_array_contains",
+              path(RepositoryEntity::tags),
+              every,
+              true
+            )
+              .eq(true)
+          )
+        }
+        it.some?.let { some ->
+          whereStatements.add(
+            function(
+              Boolean::class,
+              "fl_array_contains",
+              path(RepositoryEntity::tags),
+              some,
+              false
+            )
+              .eq(true)
+          )
+        }
+      }
+    }
+    return whereStatements
   }
 
   override fun findAllWhereNextHarvestIsDue(

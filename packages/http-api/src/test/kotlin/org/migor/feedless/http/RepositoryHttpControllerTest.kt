@@ -57,6 +57,7 @@ class RepositoryHttpControllerTest {
       shareKey = "share-key",
     )
     whenever(repositoryUseCase.findAllByUserId(any(), anyOrNull(), anyOrNull())).thenReturn(listOf(repo))
+    whenever(repositoryUseCase.countAllByUserId(anyOrNull(), anyOrNull())).thenReturn(1)
 
     val mvcResult = mockMvc.get("/api/v1/repositories") {
       param("page", "0")
@@ -68,10 +69,12 @@ class RepositoryHttpControllerTest {
         .andExpect(status().isOk)
         .andExpect(jsonPath("$.items[0].id").value(repo.id.uuid.toString()))
         .andExpect(jsonPath("$.items[0].title").value(repo.title))
+        .andExpect(jsonPath("$.totalCount").value(1))
     } else {
       assert(mvcResult.response.status == 200)
       assert(mvcResult.response.contentAsString.contains(repo.id.uuid.toString()))
       assert(mvcResult.response.contentAsString.contains(repo.title))
+      assert(mvcResult.response.contentAsString.contains("\"totalCount\":1"))
     }
   }
 

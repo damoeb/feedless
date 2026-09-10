@@ -6,7 +6,6 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.http.api.RepositoriesApi
-import org.migor.feedless.http.api.model.CountResponse
 import org.migor.feedless.http.api.model.RepositoryCreate
 import org.migor.feedless.http.api.model.RepositoryListResponse
 import org.migor.feedless.http.api.model.RepositoryUpdate
@@ -58,6 +57,7 @@ class RepositoryHttpController(
       RepositoryListResponse(
         items = items,
         hasMore = fetched.size > pageSize,
+        totalCount = repositoryUseCase.countAllByUserId(where, userId),
       ),
     )
   }
@@ -102,15 +102,6 @@ class RepositoryHttpController(
   override suspend fun deleteRepository(repositoryId: java.util.UUID): ResponseEntity<Unit> {
     repositoryUseCase.delete(RepositoryId(repositoryId.toString()))
     return ResponseEntity.noContent().build()
-  }
-
-  @PreAuthorize("@capabilityService.hasCapability('user')")
-  override suspend fun countRepositories(product: VerticalFilterDto): ResponseEntity<CountResponse> {
-    val count = repositoryUseCase.countAll(
-      currentUserId(),
-      mapper.toDomainVertical(product),
-    )
-    return ResponseEntity.ok(CountResponse(count = count))
   }
 
   private suspend fun currentUserId(): UserId? = coroutineContext[RequestContext]?.userId
