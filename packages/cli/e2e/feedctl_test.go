@@ -139,9 +139,30 @@ func (f *Feedctl) Run(ctx context.Context, stdin string, args ...string) Result 
 		f.t.Fatalf("running feedctl %s: %v", strings.Join(args, " "), err)
 	}
 
-	f.t.Logf("$ feedctl %s -> exit %d", strings.Join(args, " "), res.ExitCode)
+	f.t.Logf("$ feedctl %s -> exit %d%s%s", strings.Join(args, " "), res.ExitCode,
+		indentedTail("stdout", res.Stdout), indentedTail("stderr", res.Stderr))
 
 	return res
+}
+
+// outputTailLines caps how much of each invocation's output Run echoes into
+// the test log: enough to read a summary, a harvest log or an error body.
+const outputTailLines = 15
+
+// indentedTail renders the last outputTailLines lines of out under a label,
+// or nothing when out is empty.
+func indentedTail(label, out string) string {
+	out = strings.TrimRight(out, "\n")
+	if out == "" {
+		return ""
+	}
+
+	lines := strings.Split(out, "\n")
+	if len(lines) > outputTailLines {
+		lines = append([]string{fmt.Sprintf("… (%d earlier lines)", len(lines)-outputTailLines)}, lines[len(lines)-outputTailLines:]...)
+	}
+
+	return "\n  " + label + ":\n    " + strings.Join(lines, "\n    ")
 }
 
 // MustRun is Run, failing the test with the full outcome unless feedctl

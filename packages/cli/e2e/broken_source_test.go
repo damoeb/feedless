@@ -52,6 +52,7 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 
 	brokenFlow := fixturePath(t, "flows", "broken.json")
 	fixedFlow := fixturePath(t, "flows", "fixed.json")
+	emptyFlow := fixturePath(t, "flows", "empty.json")
 
 	// The broken flow's XPath matches nothing on the fixture page. Its fetch
 	// is prerendered, so the agent runs the extract: it dereferences the
@@ -98,6 +99,15 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 		if !strings.Contains(dryRun.Stdout, item) {
 			t.Fatalf("want the dry-run log to list %q, got:\n%s", item, dryRun)
 		}
+	}
+
+	// A flow that extracts nothing does not work, even though nothing threw:
+	// its dry run is not ok (spec: "A dry run that extracted no items is not
+	// ok"). empty.json fetches statically, so the core itself runs the XPath
+	// and finds zero elements, rather than the agent failing on it.
+	emptyRun := cli.MustRun(ctx, 1, "", "source", "run", sourceID, "-R", repoID, "--dry-run", "--flow", emptyFlow)
+	if !strings.Contains(emptyRun.Stdout, "dry run extracted no items") {
+		t.Fatalf("want the zero-item dry run reported as extracting no items, got:\n%s", emptyRun)
 	}
 
 	after := viewSource(ctx, t, cli, repoID, sourceID)
