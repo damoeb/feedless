@@ -9,6 +9,9 @@ class NotFoundException(override val message: String) : RuntimeException()
 /** The resource's current state does not allow the request — mapped to 409 at the HTTP edge. */
 class ConflictException(override val message: String) : RuntimeException()
 
+/** An `If-Match` header did not match the resource's current ETag — mapped to 412 at the HTTP edge. */
+class PreconditionFailedException(override val message: String) : RuntimeException()
+
 /**
  * Rate limit exhausted. Thrown rather than swallowed so callers get a 429 (HTTP) or an
  * explicit error (GraphQL) instead of a silent null.

@@ -38,7 +38,8 @@ class SourceHttpControllerCreateTest {
   private val repositoryUseCase: RepositoryUseCasePort = mock()
   private val mapper = HttpSourceMapper(HttpScrapeFlowMapper())
   private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCasePort>())
-  private val controller = SourceHttpController(sourceUseCase, sourceRepository, accessGuard, mapper)
+  private val controller =
+    SourceHttpController(sourceUseCase, sourceRepository, accessGuard, mapper, SourceETagCalculator())
 
   @AfterEach
   fun tearDown() {

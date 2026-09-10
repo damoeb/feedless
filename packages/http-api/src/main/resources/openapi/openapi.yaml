@@ -231,6 +231,9 @@ paths:
       responses:
         '200':
           description: OK
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
@@ -242,6 +245,8 @@ paths:
     patch:
       tags: [Sources]
       operationId: updateSource
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
       requestBody:
         required: true
         content:
@@ -251,12 +256,17 @@ paths:
       responses:
         '200':
           description: Updated
+          headers:
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Source'
         '404':
           $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         default:
@@ -690,13 +700,31 @@ components:
       schema:
         type: string
         format: uuid
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: >
+        A strong ETag from a prior GET or PATCH of this source. Present and matching the
+        source's current ETag applies the update; present and different answers 412 without
+        applying it; `*` matches any existing source; absent behaves as an unconditional update
+        (last write wins).
+      schema:
+        type: string
+  headers:
+    ETag:
+      description: >
+        Strong ETag of this source's representation — a SHA-256 hash of its serialized JSON,
+        quoted.
+      schema:
+        type: string
   responses:
     Error:
       description: >
         Any error. Every error response — 400 `BAD_REQUEST` / `VALIDATION_ERROR`,
         401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 409 `CONFLICT`,
-        429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError` body. Since every route requires
-        authentication, every operation can return 401.
+        412 `PRECONDITION_FAILED`, 429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError`
+        body. Since every route requires authentication, every operation can return 401.
       content:
         application/json:
           schema:
@@ -732,6 +760,12 @@ components:
             $ref: '#/components/schemas/ApiError'
     Conflict:
       description: The resource's state does not allow the request, e.g. a real run of a disabled source
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    PreconditionFailed:
+      description: If-Match did not match the resource's current ETag
       content:
         application/json:
           schema:

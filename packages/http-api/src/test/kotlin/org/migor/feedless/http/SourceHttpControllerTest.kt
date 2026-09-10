@@ -42,6 +42,7 @@ import org.springframework.test.web.servlet.MockMvc
   HttpApiExceptionHandler::class,
   RepositoryAccessGuard::class,
   RequestContextBridge::class,
+  SourceETagCalculator::class,
 )
 @ActiveProfiles("test", AppLayer.api, AppProfiles.source, AppProfiles.repository, AppProfiles.user)
 class SourceHttpControllerTest {
@@ -159,6 +160,47 @@ class SourceHttpControllerTest {
   }
 
   @Test
+  fun `getSource sets a strong ETag that is stable for the same source and changes when it does`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    val first = mockMvc.getAs(access.owner, sourceUrl(private, source))
+    assertStatus(first, 200)
+    val etag = first.response.getHeader("ETag")
+    assert(etag != null && etag.startsWith("\"") && etag.endsWith("\"")) { "etag: $etag" }
+
+    val second = mockMvc.getAs(access.owner, sourceUrl(private, source))
+    assertStatus(second, 200)
+    assert(second.response.getHeader("ETag") == etag) { "expected $etag, got ${second.response.getHeader("ETag")}" }
+
+    whenever(sourceRepository.findByIdWithActions(eq(source.id))).thenReturn(source.copy(title = "a different title"))
+    val third = mockMvc.getAs(access.owner, sourceUrl(private, source))
+    assertStatus(third, 200)
+    assert(third.response.getHeader("ETag") != etag) { "expected a different ETag, got $etag again" }
+  }
+
+  @Test
+  fun `getSource sets an ETag even when lastRefreshedAt is set`() = runTest {
+    // A source that has actually run has a non-null lastRefreshedAt (an OffsetDateTime); the
+    // ETag calculator's JSON mapper must handle it rather than throwing.
+    val private = access.givenRepository()
+    val id = SourceId()
+    val source = Source(
+      id = id,
+      title = "Refreshed source",
+      repositoryId = private.id,
+      actions = listOf(FetchAction(sourceId = id, url = "https://example.com")),
+      lastRefreshedAt = java.time.LocalDateTime.now(),
+    )
+    whenever(sourceRepository.findByIdWithActions(eq(id))).thenReturn(source)
+
+    val result = mockMvc.getAs(access.owner, sourceUrl(private, source))
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+  }
+
+  @Test
   fun `createSource lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
     val created = givenSource(private.id)
@@ -223,6 +265,67 @@ class SourceHttpControllerTest {
     val result = mockMvc.patchAs(access.owner, sourceUrl(private, foreign), UPDATE)
 
     assertNotFound(result, "source ${foreign.id.uuid} not found")
+    verify(sourceUseCase, never()).updateSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource without If-Match succeeds unconditionally and returns a new ETag`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    val result = mockMvc.patchAs(access.owner, sourceUrl(private, source), UPDATE)
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(sourceUseCase).updateSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource with a matching If-Match applies the update and returns the new ETag`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+    val etag = requireNotNull(mockMvc.getAs(access.owner, sourceUrl(private, source)).response.getHeader("ETag"))
+
+    val result = mockMvc.patchAs(access.owner, sourceUrl(private, source), UPDATE, mapOf("If-Match" to etag))
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(sourceUseCase).updateSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource with If-Match star matches any existing source`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    val result = mockMvc.patchAs(access.owner, sourceUrl(private, source), UPDATE, mapOf("If-Match" to "*"))
+
+    assertStatus(result, 200)
+    verify(sourceUseCase).updateSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource with a stale If-Match answers 412 and never applies the update`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    val result = mockMvc.patchAs(access.owner, sourceUrl(private, source), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertStatus(result, 412)
+    val body = result.response.contentAsString
+    assert(body.contains("\"code\":\"PRECONDITION_FAILED\"")) { body }
+    verify(sourceUseCase, never()).updateSources(any(), any())
+  }
+
+  @Test
+  fun `updateSource answers a stranger with 404 even with a stale If-Match`() = runTest {
+    val private = access.givenRepository()
+    val source = givenSource(private.id)
+
+    val result =
+      mockMvc.patchAs(access.stranger, sourceUrl(private, source), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertNotFound(result, "repository ${private.id.uuid} not found")
     verify(sourceUseCase, never()).updateSources(any(), any())
   }
 

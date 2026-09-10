@@ -4,6 +4,7 @@ import org.migor.feedless.ConflictException
 import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.TooManyRequestsException
 import org.migor.feedless.http.api.model.ApiError
 import org.migor.feedless.http.api.model.FieldError
@@ -57,6 +58,10 @@ class HttpApiExceptionHandler {
   @ExceptionHandler(ConflictException::class)
   fun handleConflict(ex: ConflictException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(HttpStatus.CONFLICT, "CONFLICT", ex.message, request)
+
+  @ExceptionHandler(PreconditionFailedException::class)
+  fun handlePreconditionFailed(ex: PreconditionFailedException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(HttpStatus.PRECONDITION_FAILED, "PRECONDITION_FAILED", ex.message, request)
 
   @ExceptionHandler(TooManyRequestsException::class)
   fun handleTooManyRequests(ex: TooManyRequestsException, request: WebRequest): ResponseEntity<ApiError> =

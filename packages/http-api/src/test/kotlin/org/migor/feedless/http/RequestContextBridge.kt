@@ -69,12 +69,13 @@ fun MockMvc.postAs(userId: UserId, url: String, json: String): MvcResult =
     }.andReturn(),
   )
 
-fun MockMvc.patchAs(userId: UserId, url: String, json: String): MvcResult =
+fun MockMvc.patchAs(userId: UserId, url: String, json: String, headers: Map<String, String> = emptyMap()): MvcResult =
   complete(
     patch(url) {
       requestAttr(HTTP_API_REQUEST_CONTEXT_ATTR, RequestContext(userId = userId))
       contentType = MediaType.APPLICATION_JSON
       content = json
+      headers.forEach { (name, value) -> header(name, value) }
     }.andReturn(),
   )
 

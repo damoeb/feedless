@@ -3,6 +3,7 @@ package org.migor.feedless.http
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.http.api.SourcesApi
 import org.migor.feedless.http.api.model.SourceCreate
 import org.migor.feedless.http.api.model.SourceListResponse
@@ -31,6 +32,7 @@ class SourceHttpController(
   private val sourceRepository: SourceRepository,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpSourceMapper,
+  private val etagCalculator: SourceETagCalculator,
 ) : SourcesApi {
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -98,7 +100,8 @@ class SourceHttpController(
     sourceId: java.util.UUID,
   ): ResponseEntity<HttpSource> {
     val source = accessGuard.requireSource(RepositoryId(repositoryId), SourceId(sourceId), RepositoryAccess.read)
-    return ResponseEntity.ok(mapper.toHttp(source))
+    val httpSource = mapper.toHttp(source)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(httpSource)).body(httpSource)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -107,12 +110,21 @@ class SourceHttpController(
     repositoryId: java.util.UUID,
     sourceId: java.util.UUID,
     sourceUpdate: SourceUpdate,
+    ifMatch: String?,
   ): ResponseEntity<HttpSource> {
     val repoId = RepositoryId(repositoryId)
     val id = SourceId(sourceId)
-    accessGuard.requireSource(repoId, id, RepositoryAccess.write)
+    // Access guard first: a denied or missing repository/source answers 404, never 412 — a
+    // stale If-Match must never leak that a source exists.
+    val current = accessGuard.requireSource(repoId, id, RepositoryAccess.write)
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(mapper.toHttp(current))) {
+      throw PreconditionFailedException("source ${id.uuid} was modified since the ETag in If-Match")
+    }
+    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
+    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
     sourceUseCase.updateSources(repoId, listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)))
-    return ResponseEntity.ok(mapper.toHttp(accessGuard.requireSource(repoId, id, RepositoryAccess.write)))
+    val updated = mapper.toHttp(accessGuard.requireSource(repoId, id, RepositoryAccess.write))
+    return ResponseEntity.ok().eTag(etagCalculator.compute(updated)).body(updated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
