@@ -37,5 +37,6 @@ class CleanupExecutor(
     documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
     sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
     harvestRepository.deleteAllTailingBySourceId()
+    harvestRepository.deleteAllDryRunByCreatedAtBefore(now.minusDays(7))
   }
 }

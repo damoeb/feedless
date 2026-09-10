@@ -11,7 +11,6 @@ import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
-import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Service
 
 @Service
@@ -25,7 +24,8 @@ class HarvestService(
   suspend fun lastHarvests(sourceId: SourceId): List<Harvest> = withContext(Dispatchers.IO) {
     harvestRepository.findAllBySourceId(
       sourceId,
-      PageRequest.of(0, 1, Sort.by(Sort.Direction.DESC, "createdAt")).toPageableRequest()
+      dryRun = false,
+      PageRequest.of(0, 1).toPageableRequest()
     )
   }
 
@@ -33,7 +33,8 @@ class HarvestService(
     withContext(Dispatchers.IO) {
       harvestRepository.findAllBySourceId(
         sourceId,
-        PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "createdAt")).toPageableRequest()
+        dryRun = false,
+        PageRequest.of(page, pageSize).toPageableRequest()
       )
     }
 }

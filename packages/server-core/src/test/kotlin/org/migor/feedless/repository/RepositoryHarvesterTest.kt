@@ -75,6 +75,7 @@ class RepositoryHarvesterTest {
   private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
   private lateinit var documentRepository: DocumentRepository
   private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var harvestRepository: HarvestRepository
 
   @BeforeEach
   fun setUp() = runTest {
@@ -88,6 +89,7 @@ class RepositoryHarvesterTest {
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
     documentRepository = mock(DocumentRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
+    harvestRepository = mock(HarvestRepository::class.java)
 
     repositoryHarvester = RepositoryHarvester(
       documentUseCase,
@@ -99,7 +101,7 @@ class RepositoryHarvesterTest {
       meterRegistry,
       repositoryUseCase,
       repositoryRepository,
-      mock(HarvestRepository::class.java),
+      harvestRepository,
     )
 
     `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
@@ -166,6 +168,55 @@ class RepositoryHarvesterTest {
         )
     )
   }
+
+  @Test
+  fun `given scrape fails the harvest is recorded as errornous`() = runTest {
+    `when`(
+      scrapeService.scrape(
+        any2(),
+        any2()
+      )
+    ).thenThrow(
+      IllegalArgumentException("this is off")
+    )
+
+    repositoryHarvester.harvestRepository(repositoryId)
+
+    verify(harvestRepository, times(1)).save(argThat { it.errornous })
+  }
+
+  @Test
+  fun `given scrape succeeds the harvest records itemsAdded`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
+      `when`(
+        scrapeService.scrape(
+          any(Source::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeOutput(
+          outputs = listOf(
+            ScrapeActionOutput(
+              index = 0,
+              fragment = FragmentOutput(
+                fragmentName = "feed",
+                fragments = emptyList(),
+                items = listOf(
+                  newJsonItem(url = "https://example.org/1", title = "3"),
+                  newJsonItem(url = "https://example.org/3", title = "3"),
+                  newJsonItem(url = "https://example.org/4", title = "3"),
+                )
+              )
+            )
+          ),
+          time = 0
+        )
+      )
+
+      repositoryHarvester.harvestRepository(repositoryId)
+
+      verify(harvestRepository, times(1)).save(argThat { !it.errornous && it.itemsAdded == 3 })
+    }
 
   @Test
   @Disabled

@@ -149,6 +149,7 @@ class RepositoryHarvester(
             try {
               log.info("scraping source $currentPage/$index ${source.id}")
               val retrieved = scrapeSource(source, logCollector)
+              harvest.itemsAdded = retrieved
 
               val updatedSource = if (source.errorsInSuccession > 0) {
                 source.copy(errorsInSuccession = 0)
@@ -162,6 +163,7 @@ class RepositoryHarvester(
               sourceRepository.save(updatedSource)
 
             } catch (e: Throwable) {
+              harvest.errornous = true
               handleScrapeException(e, source, logCollector)
             } finally {
 

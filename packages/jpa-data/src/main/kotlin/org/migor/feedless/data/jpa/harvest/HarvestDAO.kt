@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 // todo no repository
@@ -15,7 +16,11 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
-  fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<HarvestEntity>
+  fun findAllBySourceIdAndDryRunOrderByCreatedAtDesc(
+    sourceId: UUID,
+    dryRun: Boolean,
+    pageable: PageRequest
+  ): List<HarvestEntity>
 
   @Modifying
   @Query(
@@ -24,9 +29,10 @@ interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
     SELECT
         id,
         source_id,
-        ROW_NUMBER() OVER (PARTITION BY source_id ORDER BY created_at DESC) AS row_num
+        ROW_NUMBER() OVER (PARTITION BY source_id, dry_run ORDER BY created_at DESC) AS row_num
     FROM
         t_harvest
+    WHERE status = 'completed'
 )
 DELETE FROM t_harvest WHERE EXISTS(
     SELECT 1 FROM ranked_entities
@@ -35,4 +41,6 @@ DELETE FROM t_harvest WHERE EXISTS(
   """, nativeQuery = true
   )
   fun deleteAllTailingBySourceId()
+
+  fun deleteAllByDryRunTrueAndStatusAndCreatedAtBefore(status: String, before: LocalDateTime)
 }

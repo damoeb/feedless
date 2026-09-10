@@ -10,6 +10,7 @@ import jakarta.persistence.Table
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
+import org.hibernate.type.SqlTypes
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.source.SourceEntity
@@ -45,6 +46,16 @@ open class HarvestEntity : EntityWithUUID() {
 
     @Column(name = StandardJpaFields.sourceId, nullable = false)
     open lateinit var sourceId: UUID
+
+    @Column(nullable = false, name = "status", length = 16)
+    open var status: String = "completed"
+
+    @Column(nullable = false, name = "dry_run")
+    open var dryRun: Boolean = false
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "flow")
+    open var flow: String? = null
 
     @ManyToOne(fetch = FetchType.LAZY)
     @OnDelete(action = OnDeleteAction.CASCADE)
