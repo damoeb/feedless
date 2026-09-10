@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.PropertyService
@@ -52,14 +53,22 @@ import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalAdjusters
 
 
 /** Ein Abmeldelink soll auch in einer alten Mail noch funktionieren. */
 private const val LINK_VALID_FOR_DAYS = 365L
+
+/**
+ * Freitag 08:00. Sechs Felder, wie Springs CronExpression sie verlangt - der
+ * früher gespeicherte Ausdruck "0 8 * * 0" hatte fünf, und jede Fortschreibung
+ * des Termins warf.
+ */
+const val WEEKLY_REPORT_CRON = "0 0 8 * * FRI"
+
+/** Letzter Tag des Monats, 08:00. */
+const val MONTHLY_REPORT_CRON = "0 0 8 L * *"
 
 @Service
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
@@ -75,7 +84,9 @@ class ReportUseCase(
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
   private val documentRepository: DocumentRepository,
-  @Value("\${app.mail.sender}") private val mailSender: String,
+  // Mit Vorgabewert: app.mail.sender steht nur in application-mail.yaml, und
+  // ohne das mail-Profil startete sonst kein Kontext, der Reports enthält.
+  @Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
   private val propertyService: PropertyService,
   private val userRepository: UserRepository,
   private val jwtTokenIssuer: JwtTokenIssuer,
@@ -102,20 +113,19 @@ class ReportUseCase(
   suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report = withContext(Dispatchers.IO) {
     log.info("createReport repositoryId=$repositoryId")
 
-    repositoryGuard.requireWrite(repositoryId)
+    // Lesen genügt: ein Abo auf ein öffentliches Repository ist der Normalfall,
+    // und sein Abonnent ist nicht dessen Eigentümer. requireWrite verlangte
+    // Eigentümerschaft und wies damit jeden anonymen Besucher ab. Private
+    // Repositories schützt requireRead weiterhin.
+    repositoryGuard.requireRead(repositoryId)
 
     val email = segment.recipient.email.email
 
-//      val isOwner = repository.ownerId == user?.id || repository.ownerId == resolveUserId()?.uuid
-    // todo enable this
-//    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
-//      throw IllegalArgumentException() // obscured access denied
-//    }
     val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
 
     val interval = when (segment.`when`.scheduled.interval) {
-      IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
-      IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
+      IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, MONTHLY_REPORT_CRON)
+      IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, WEEKLY_REPORT_CRON)
     }
 
     var segmentation = Segmentation(
@@ -136,11 +146,10 @@ class ReportUseCase(
 
     segmentationRepository.save(segmentation)
 
-    val nextReportedAt = if (interval.first == ChronoUnit.MONTHS) {
-      startingAt.with(TemporalAdjusters.lastDayOfMonth())
-    } else {
-      startingAt.with(TemporalAdjusters.next(DayOfWeek.FRIDAY))
-    }
+    // Der erste Termin fällt auf den Takt des Ausdrucks. Vorher lag er auf dem
+    // nächsten Freitag zur Uhrzeit des Anlegens, während der gespeicherte
+    // Ausdruck Sonntag 08:00 meinte.
+    val nextReportedAt = nextCronDate(interval.second, startingAt)
 
     val cronSchedule = CronSchedule(
       cronExpression = interval.second,
@@ -254,40 +263,75 @@ class ReportUseCase(
       val cron = report.cronSchedule!!
       val now = LocalDateTime.now()
       try {
-        val segment = report.segment!!
-        val (repository, documents) = resolveSegment(segment)
-
-        resolveReporterPlugin(report.reporterPlugin)
-          .report(
-            documents, repository, EventsReportPluginParams(
-              from = mailSender,
-              to = report.recipientEmail,
-              subject = repository.title,
-              language = "de",
-              // Das Backend kennt kein Produkt: es reicht den Variantennamen
-              // durch, und die Vorlagenauflösung entscheidet, ob es dafür eine
-              // eigene Vorlage gibt.
-              templateVariant = repository.product.name,
-            ).toPluginExecutionJson(), LogCollector()
-          )
+        sendReport(report)
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
       } finally {
         // Auch nach einem erfolgreichen Versand fortschreiben. Vorher geschah
         // das nur im Fehlerfall, wodurch ein zugestellter Report beim nächsten
-        // Lauf 60 Sekunden später erneut verschickt wurde - endlos.
-        val next = nextCronDate(cron.cronExpression, cron.scheduledNextAt ?: now)
-        withContext(Dispatchers.IO) {
-          cronScheduleRepository.save(
-            cron.copy(
-              scheduledNextAt = next,
-              executedLastAt = now
+        // Lauf 60 Sekunden später erneut verschickt wurde. Scheitert die
+        // Fortschreibung, darf das die übrigen Reports des Laufs nicht
+        // mitreissen.
+        try {
+          withContext(Dispatchers.IO) {
+            cronScheduleRepository.save(
+              cron.copy(
+                scheduledNextAt = nextRun(cron.cronExpression, now),
+                executedLastAt = now
+              )
             )
-          )
+          }
+        } catch (e: Exception) {
+          log.error("Failed to advance the schedule of report {}: {}", report.id, e.message, e)
         }
       }
     }
   }
+
+  private suspend fun sendReport(report: Report) {
+    val (repository, documents) = resolveSegment(report.segment!!)
+    if (!mayReceive(report, repository)) {
+      log.info("skipping report {}: repository {} is private and not owned by its recipient", report.id, repository.id)
+      return
+    }
+
+    resolveReporterPlugin(report.reporterPlugin)
+      .report(
+        documents, repository, EventsReportPluginParams(
+          from = mailSender,
+          to = report.recipientEmail,
+          subject = repository.title,
+          language = "de",
+          // Das Backend kennt kein Produkt: es reicht den Variantennamen
+          // durch, und die Vorlagenauflösung entscheidet, ob es dafür eine
+          // eigene Vorlage gibt.
+          templateVariant = repository.product.name,
+          deactivationLink = deactivationLink(report),
+        ).toPluginExecutionJson(), LogCollector()
+      )
+  }
+
+  /**
+   * Ein Abo auf ein Repository, das später privat wird, darf nicht weiter
+   * dessen Inhalte an eine fremde Adresse schicken. Aus einem privaten
+   * Repository bekommt nur sein Eigentümer Reports.
+   */
+  private fun mayReceive(report: Report, repository: Repository): Boolean =
+    repository.visibility == EntityVisibility.isPublic || repository.ownerId == report.userId
+
+  /**
+   * Der nächste Termin, immer ab jetzt gerechnet: ab einem weit
+   * zurückliegenden Termin gerechnet bliebe der Report fällig und ginge jede
+   * Minute erneut raus, bis er aufgeholt hätte. Bestandszeilen tragen noch den
+   * früher gespeicherten Leerstring - dann gilt der wöchentliche Standard,
+   * statt dass die Fortschreibung wirft.
+   */
+  private fun nextRun(cronExpression: String, now: LocalDateTime): LocalDateTime =
+    runCatching { nextCronDate(cronExpression, now) }
+      .getOrElse {
+        log.warn("invalid cron expression '{}', falling back to {}", cronExpression, WEEKLY_REPORT_CRON)
+        nextCronDate(WEEKLY_REPORT_CRON, now)
+      }
 
   private suspend fun resolveReporterPlugin(plugin: PluginExecution): ReportPlugin<*> =
     pluginService.resolveById<ReportPlugin<*>>(plugin.id)!!

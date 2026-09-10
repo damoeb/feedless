@@ -14,10 +14,11 @@
   <ul style="list-style: none; padding: 0;">
     <#list events as event>
       <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
-        <#if event.startingAt??>
-          <div style="color: #12775C; font-weight: 500;">${event.startingAt?string("EEEE, d. MMMM yyyy")}</div>
+        <#if event.date?has_content>
+          <div style="color: #12775C; font-weight: 500;">${event.date}</div>
         </#if>
-        <div style="font-weight: 600;"><#if event.url??><a href="${event.url}" style="color: #333; text-decoration: none;">${event.title!""}</a><#else>${event.title!""}</#if></div>
+        <#-- Titel und URL stammen aus gescrapten Quellen: escapen, .ftl.html escaped nicht automatisch -->
+        <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
       </li>
     </#list>
   </ul>
@@ -53,10 +54,11 @@
   <ul style="list-style: none; padding: 0;">
     <#list events as event>
       <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
-        <#if event.startingAt??>
-          <div style="color: #12775C; font-weight: 500;">${event.startingAt?string("EEEE, d. MMMM yyyy")}</div>
+        <#if event.date?has_content>
+          <div style="color: #12775C; font-weight: 500;">${event.date}</div>
         </#if>
-        <div style="font-weight: 600;"><#if event.url??><a href="${event.url}" style="color: #333; text-decoration: none;">${event.title!""}</a><#else>${event.title!""}</#if></div>
+        <#-- Titel und URL stammen aus gescrapten Quellen: escapen, .ftl.html escaped nicht automatisch -->
+        <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
       </li>
     </#list>
   </ul>

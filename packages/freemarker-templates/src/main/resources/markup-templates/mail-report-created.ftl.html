@@ -25,7 +25,7 @@
 <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
   <tr>
     <td style="padding: 8px; font-weight: bold;">Berichtsname:</td>
-    <td style="padding: 8px;">${reportName}</td>
+    <td style="padding: 8px;">${reportName?html}</td>
   </tr>
   <tr>
     <td style="padding: 8px; font-weight: bold;">Zeitplan (Cron):</td>
@@ -75,7 +75,7 @@
 <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
   <tr>
     <td style="padding: 8px; font-weight: bold;">Report Name:</td>
-    <td style="padding: 8px;">${reportName}</td>
+    <td style="padding: 8px;">${reportName?html}</td>
   </tr>
   <tr>
     <td style="padding: 8px; font-weight: bold;">Schedule (Cron):</td>

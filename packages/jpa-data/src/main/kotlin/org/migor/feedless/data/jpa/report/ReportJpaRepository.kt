@@ -8,6 +8,7 @@ import org.migor.feedless.report.ReportRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
@@ -22,6 +23,13 @@ class ReportJpaRepository(private val reportDAO: ReportDAO) : ReportRepository {
     reportDAO.deleteById(reportId.uuid)
   }
 
+  /**
+   * Das Mapping liest die lazy geladene segment-Relation und muss deshalb in
+   * der Transaktion laufen. Ohne sie scheiterte das Bestätigen und Abmelden
+   * über den Mail-Link: die suspend-Controller wechseln per withContext den
+   * Thread, und die an den Request-Thread gebundene Sitzung ist dort weg.
+   */
+  @Transactional(readOnly = true)
   override fun findById(reportId: ReportId): Report? {
     return reportDAO.findById(reportId.uuid).getOrNull()?.toDomain()
   }

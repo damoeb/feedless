@@ -18,6 +18,8 @@ import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class EventsReportPluginParams(
   val language: String,
@@ -30,6 +32,8 @@ data class EventsReportPluginParams(
    * die Vorlagenauflösung entscheidet, ob es dafür eine eigene Vorlage gibt.
    */
   val templateVariant: String? = null,
+  /** Der Abmeldelink dieses Reports. Ohne ihn ging jede Mail mit href="" raus. */
+  val deactivationLink: String? = null,
 )
 
 fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
@@ -39,9 +43,29 @@ fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
 }
 
 
+/**
+ * Was eine Report-Mail von einem Event zeigt, bereits formatiert.
+ *
+ * Vorformatiert, weil Freemarker ein LocalDateTime als Zeichenkette einpackt:
+ * startingAt?string("...") scheiterte daran, das Plugin warf, und der Report
+ * ging nie raus - sobald er auch nur ein Event enthielt. Nur das Datum, keine
+ * Uhrzeit: im Bestand ist sie überwiegend ein Default der Pipeline.
+ */
+data class ReportEventItem(
+  val title: String,
+  val url: String,
+  val date: String,
+)
+
+internal fun Document.toReportEventItem(locale: Locale): ReportEventItem = ReportEventItem(
+  title = title.orEmpty(),
+  url = url.orEmpty(),
+  date = startingAt?.format(DateTimeFormatter.ofPattern("EEEE, d. MMMM yyyy", locale)).orEmpty(),
+)
+
 data class EventCalendarMailParams(
   val language: String,
-  val events: List<Document>,
+  val events: List<ReportEventItem>,
   val deactivationLink: String,
 )
 
@@ -75,8 +99,8 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
 
     val templateParams = EventCalendarMailParams(
       language = params.language,
-      events = documents,
-      deactivationLink = "",
+      events = documents.map { it.toReportEventItem(Locale.forLanguageTag(params.language)) },
+      deactivationLink = params.deactivationLink ?: "",
     )
     val eventCalendarMail = templateService.renderTemplate(
       MailTemplateEventCalendar(templateParams),
