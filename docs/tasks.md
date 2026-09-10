@@ -45,7 +45,8 @@ Die Obergrenze von allem oben ist der Eventbestand. Heute: **3 094 Events in 90 
 - [ ] **Alle kath. Kirchen hinzufügen.**
 - [ ] **Alle Bibliotheken indexieren.**
 - [ ] **Externe Quellen hinzufügen** (allgemein).
-- [ ] **Monitoring auf Quellenausfälle.** Eine leere Ortsseite ist das Symptom eines kaputten Harvests. Bewusst *kein* `noindex` darauf — das würde genau das Warnsignal verstecken. Stattdessen: Alarm bei „Ort ohne Events seit X Tagen" und bei Quellen ohne Ertrag.
+- [ ] **Kaputte Quellen finden und reparieren.** In Arbeit auf `feature/feed-ctl` (Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md`): `feedctl source list --errored` findet Quellen mit wiederholten Fehlern über alle Repos (`GET /user/sources?minErrorsInSuccession=N`), `feedctl harvest view --log` zeigt den Grund, `feedctl source run --dry-run --flow fix.json` testet eine Korrektur, ohne sie zu speichern, und `feedctl source update --editor` speichert sie. Nebenbei behoben: Harvests meldeten bisher auch Fehlschläge als `ok`, und die Harvest-Liste war unsortiert.
+- [ ] **Monitoring auf Quellenausfälle.** Eine leere Ortsseite ist das Symptom eines kaputten Harvests. Bewusst *kein* `noindex` darauf — das würde genau das Warnsignal verstecken. Stattdessen: Alarm bei „Ort ohne Events seit X Tagen" und bei Quellen ohne Ertrag. Datenbasis ab `feature/feed-ctl`: `errorsInSuccession` pro Quelle und `GET /user/sources?minErrorsInSuccession=N`.
 - [ ] **LLM parst Daten.** Datumsextraktion ist der häufigste Grund, warum ein Event unbrauchbar ankommt.
 - [ ] **Orts-Cluster neu vermessen** (Block B). 312 der 487 befüllten Ortsseiten duplizieren heute exakt eine andere, weil der 10-km-Radius fix ist. Bewusst zurückgestellt, bis die Quellen überarbeitet sind — eine Anker-Regel auf heutigen Zahlen wäre auf Sand gebaut.
 
@@ -96,6 +97,22 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 - [ ] Agent-Subscriptions auf eine Message Queue umstellen
 - [ ] Klären, ob `nominatim-proxy` nach dem Wechsel auf admin.ch noch gebraucht wird
 
+## feedctl und HTTP-API
+
+Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `feature/feed-ctl`. Teil 1 (Broken-Source-Loop) und Teil 2 (Repos, Records, Sources) werden dort umgesetzt und zusammen gemergt; die Punkte hier sind das, was danach offen bleibt.
+
+- [ ] **Teil 3: `plan`, `group`, `member` in `feedctl`**, dazu `PATCH /groups/{id}` und ETag/If-Match für Groups.
+- [ ] **Teil 4: Scoped Secrets.** Tokens mit Scope (eine Group oder ausgewählte Repos, Rechte pro Entity, Pflicht-Ablaufdatum, `fdl_`-Präfix, nur der Hash gespeichert), verwaltet nur in der Web-UI. Anlegen und Löschen verlangt eine erneute Bestätigung je nach Anmeldeart (Root-Key, Einmal-Code per Mail, frischer SSO-Login), gültig 10 Minuten pro Session — auch für die heutigen unscoped Secrets. Danach akzeptiert `/api/v1` keine Session- und alten `UserSecret`-JWTs mehr; Agents brauchen vorher einen eigenen Scope. Offen: ob auch Änderungen, die Rechte ausweiten oder die Laufzeit verlängern, eine Bestätigung verlangen.
+- [ ] **Schreibrechte von Group-Editoren angleichen.** Der `RepositoryAccessGuard` auf `/api/v1` lässt Group-Mitglieder mit Rolle `editor` schreiben, `server-core` lehnt Update und Löschen von Repos aber ab, wenn der Aufrufer nicht Owner ist, und bei Sources, wenn seine Default-Group nicht die des Repos ist.
+- [ ] **`GET /repositories` zeigt eingeloggten Usern keine fremden öffentlichen Repos** — die `OR visibility = public`-Bedingung wird vom Owner-Filter überdeckt.
+- [ ] **Source in ein anderes Repo verschieben.** Gibt es nicht; heute nur neu anlegen und alte löschen, dabei geht die Harvest-Historie verloren.
+- [ ] **`feedctl` in CI ohne `hosts.yml`.** `FEEDCTL_HOST` und `FEEDCTL_TOKEN` allein reichen nicht; CI muss `auth login` ausführen und schreibt das Token dann im Klartext in eine Datei.
+- [ ] **`feedctl --host` normalisieren** (Schema, Gross-/Kleinschreibung) — heute ergibt `--host https://…` „not logged in".
+- [ ] **`feedctl source run` bei vorübergehenden Netzwerkfehlern.** Das Polling bricht mit Exit 1 ab, ohne Hinweis, dass der Harvest auf dem Server weiterläuft — nicht von einem fehlgeschlagenen Lauf zu unterscheiden. Retry oder Hinweis entscheiden.
+- [ ] **Harvests über 30 Minuten** können auf einer anderen Instanz kurz als fehlgeschlagen erscheinen (Sweep hängender Läufe), bevor das echte Ergebnis eintrifft.
+- [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl` — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
+- [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; die Linux- und darwin-amd64-Binaries einmal ausführen; optional signieren (cosign/minisign).
+
 ## Monetarisierung
 
 - [ ] Twint anbinden
@@ -105,7 +122,7 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] Google-Calendar-Integration in der UI
 - [ ] Element per Browser herunterladen
-- [ ] Trigger-Sync-Button reparieren
+- [ ] Trigger-Sync-Button reparieren — `POST /api/v1/repositories/{r}/sources/{s}/harvests` (auf `feature/feed-ctl`) startet einen Harvest sofort und liefert eine abfragbare Harvest-ID; der Button kann darauf aufbauen
 - [ ] Präzisieren, was an Feed und ical kaputt ist — beide Endpunkte antworten (`/f/{id}/atom`, `/f/{id}/cal`); vermutlich geht es um Auffindbarkeit oder um `ics` als Formatnamen
 
 ## Qualität und Betrieb
@@ -114,6 +131,9 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 - [ ] Express-Integrationstests. 301, 404 und Cache-Header sind heute nur als reine Funktionen getestet; die Verdrahtung wird von Hand geprüft, weil dem Projekt ein HTTP-Testharness fehlt
 - [ ] `app-web`-Testlauf reparieren: 115 Suites scheitern mit `TypeError: _lruCache is not a constructor` beim Jest-Bootstrap, **bevor ein einziger Test läuft**. Damit ist `./gradlew lint test` — die Definition of Done — dauerhaft rot
 - [ ] Kanton im Seitentitel doppelt: `Events in Bern (BE), BE`. Kosmetisch, aber im Titel sichtbar
+- [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft
+- [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`
+- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen
 
 ## Später oder unklar
 
