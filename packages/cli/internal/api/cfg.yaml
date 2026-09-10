@@ -1,0 +1,12 @@
+# oapi-codegen config for the feedctl Feedless API client.
+#
+# Regenerate with `go generate ./...` (see generate.go). Never hand-edit
+# client.gen.go — it carries oapi-codegen's DO NOT EDIT header, and the
+# Gradle `lint` task fails the build if it drifts from this spec.
+package: api
+output: client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  name-normalizer: ToCamelCase

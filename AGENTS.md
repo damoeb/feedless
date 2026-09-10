@@ -25,13 +25,13 @@ Six rules, each one a mistake this repo actively invites. Everything else is in 
 | `yarn start:feedless` (in `app-web`) | Serve one vertical — never bare `ng serve`. |
 | `npm run start:upcoming` (in `frontend`) | Serve one Nx app. |
 | `yarn codegen` (in `app-web`, `agent`) | Regenerate the GraphQL TS client after a schema change. |
-| `(cd packages/cli/tests && npm test)` | Test the `fl` CLI. |
+| `./gradlew :packages:cli:test` | Test the `feedctl` CLI. |
 
-Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via `./gradlew`.
+Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via `./gradlew`, Go 1.27 (`packages/cli`).
 
 ## Modules
 
-`packages/` holds 22 directories; **only 16 are Gradle modules.** `cli`, `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:cli:test` will fail.
+`packages/` holds 22 directories; **only 17 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
 
 | Module | Owns | Build |
 |---|---|---|
@@ -39,7 +39,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via 
 | `domain` | Shared domain types, repository interfaces, `AppProfiles`/`AppLayer`. Framework-light; changes ripple everywhere. | Gradle |
 | `jpa-data` | JPA entities, DAOs, MapStruct mappers, PostGIS types. | Gradle |
 | `graphql-api` | **Contract** — `schema.graphqls`. Generates the Kotlin DGS types and every TS client. | Gradle (codegen) |
-| `http-api` | **Contract** — `openapi.yaml` for `/api/v1`. Generates Kotlin Spring interfaces (`interfaceOnly`), implemented in `server-core`. | Gradle (codegen) |
+| `http-api` | **Contract** — `openapi.yaml` for `/api/v1`. Generates Kotlin Spring interfaces (`interfaceOnly`), implemented in `server-core`, and the `feedctl` Go client (`packages/cli`). | Gradle (codegen) |
 | `feed-parser` | RSS/Atom/JSON/calendar parsing, plus the lenient `BrokenXmlParser`. | Gradle |
 | `agent` | NestJS headless-Chromium worker. Dials out to the core over a GraphQL subscription; needs no public IP. Env vars in its `README.md`. | Gradle → yarn |
 | `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
@@ -51,7 +51,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via 
 | `mail-adapter` | Mailgun and native SMTP gateways, with a fallback config. | Gradle |
 | `freemarker-templates` | Freemarker rendering service. | Gradle |
 | `nominatim-proxy` | Standalone TS geocoding proxy. | Gradle → yarn |
-| `cli` | `bin/fl` — bash CLI over `/api/v1`, `gh`-style. Tests are a standalone npm project in `tests/`. | none |
+| `cli` | `feedctl` — a `gh`-style Go CLI over `/api/v1`. Its HTTP client (`internal/api`) is generated from `http-api`'s `openapi.yaml`; a spec change without regeneration fails `lint`'s generate-drift check. | Gradle → go |
 | `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter` | Empty stubs. Do not assume they work. | none |
 
 ## Pre-Commit Checklist
@@ -73,10 +73,11 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via 
 - **Agent env vars and local run** → [`packages/agent/README.md`](packages/agent/README.md)
 - **Feed format specs** → [`docs/rfcs/`](docs/rfcs/), [`docs/schemas/`](docs/schemas/)
 - **Plans and the plot lifecycle** → [`docs/plans/README.md`](docs/plans/README.md)
+- **`feedctl` build/test** → [`packages/cli/README.md`](packages/cli/README.md)
 
 `CONTRIBUTING.md` and `docs/development.md` are placeholders — do not rely on them.
 
-**Stack:** Kotlin / JDK 21 / Spring Boot / Netflix DGS / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 20–21, Ionic 8, Nx 22, NestJS, Node 24 · Gradle 8.9 · Docker
+**Stack:** Kotlin / JDK 21 / Spring Boot / Netflix DGS / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 20–21, Ionic 8, Nx 22, NestJS, Node 24 · Go 1.27 · Gradle 8.9 · Docker
 
 ## Plot Config
 
