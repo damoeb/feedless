@@ -107,12 +107,36 @@ class RecordHttpControllerTest {
   }
 
   @Test
-  fun `getRecord returns 404 when record does not exist`() = runTest {
+  fun `a missing record answers get, update and delete exactly like a record of another repository`() = runTest {
     val repo = access.givenRepository()
-    val recordId = DocumentId()
-    whenever(documentGuard.requireRead(eq(recordId))).thenThrow(NotFoundException("record ${recordId.uuid} not found"))
+    val missing = givenMissingRecord()
+    val foreign = givenRecord(RepositoryId()).id
 
-    assertNotFound(mockMvc.getAs(access.owner, recordUrl(repo, recordId)), "record ${recordId.uuid} not found")
+    for (recordId in listOf(missing, foreign)) {
+      val url = recordUrl(repo, recordId)
+      val responses = listOf(
+        mockMvc.getAs(access.owner, url),
+        mockMvc.patchAs(access.owner, url, UPDATE),
+        mockMvc.deleteAs(access.owner, url),
+      )
+      for (result in responses) {
+        assertNotFound(result, "record ${recordId.uuid} not found")
+        // DocumentGuard's own wording would tell a missing record from a foreign one.
+        assert(!result.response.contentAsString.contains("Document")) { result.response.contentAsString }
+      }
+    }
+    verify(documentUseCase, never()).updateDocument(any(), any())
+    verify(documentUseCase, never()).deleteDocuments(any(), any())
+  }
+
+  /** A record id DocumentGuard does not know, stubbed with the message production really sends. */
+  private suspend fun givenMissingRecord(): DocumentId {
+    val id = DocumentId()
+    // DocumentGuard.requireRead/requireWrite: NotFoundException("Document $id not found")
+    val productionMessage = NotFoundException("Document $id not found")
+    whenever(documentGuard.requireRead(eq(id))).thenThrow(productionMessage)
+    whenever(documentGuard.requireWrite(eq(id))).thenThrow(productionMessage)
+    return id
   }
 
   @Test
@@ -171,7 +195,7 @@ class RecordHttpControllerTest {
   }
 
   @Test
-  fun `createRecord lets the owner and a group member write`() = runTest {
+  fun `createRecord lets the owner and a group member through the guard to the use case`() = runTest {
     val repo = access.givenRepository()
     val created = document(repositoryId = repo.id)
     whenever(documentUseCase.createDocument(any())).thenReturn(created)
@@ -194,7 +218,7 @@ class RecordHttpControllerTest {
   }
 
   @Test
-  fun `updateRecord lets the owner and a group member write`() = runTest {
+  fun `updateRecord lets the owner and a group member through the guard to the use case`() = runTest {
     val repo = access.givenRepository()
     val record = givenRecord(repo.id)
     val updated = document(id = record.id, repositoryId = repo.id, title = "Updated title")
@@ -233,7 +257,7 @@ class RecordHttpControllerTest {
   }
 
   @Test
-  fun `deleteRecord lets the owner and a group member write`() = runTest {
+  fun `deleteRecord lets the owner and a group member through the guard to the use case`() = runTest {
     val repo = access.givenRepository()
     val record = givenRecord(repo.id)
 

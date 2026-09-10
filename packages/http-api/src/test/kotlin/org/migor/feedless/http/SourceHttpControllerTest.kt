@@ -100,7 +100,7 @@ class SourceHttpControllerTest {
   }
 
   @Test
-  fun `createSource lets the owner and a group member write`() = runTest {
+  fun `createSource lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
     val created = givenSource(private.id)
     whenever(sourceUseCase.createSources(any(), eq(private.id))).thenReturn(listOf(created))
@@ -120,7 +120,7 @@ class SourceHttpControllerTest {
   }
 
   @Test
-  fun `updateSource lets the owner and a group member write`() = runTest {
+  fun `updateSource lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
     val source = givenSource(private.id)
 
@@ -168,7 +168,7 @@ class SourceHttpControllerTest {
   }
 
   @Test
-  fun `deleteSource lets the owner and a group member write`() = runTest {
+  fun `deleteSource lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
     val source = givenSource(private.id)
 

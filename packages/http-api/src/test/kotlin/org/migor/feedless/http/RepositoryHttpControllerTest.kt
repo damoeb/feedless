@@ -144,7 +144,9 @@ class RepositoryHttpControllerTest {
   }
 
   @Test
-  fun `updateRepository lets the owner and a group member write`() = runTest {
+  // The use case is mocked: this proves the guard lets both through, not that server-core
+  // accepts the write (it does not yet for a group member — see the http-api README).
+  fun `updateRepository lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
 
     assertStatus(mockMvc.patchAs(access.owner, url(private), UPDATE), 200)
@@ -162,7 +164,9 @@ class RepositoryHttpControllerTest {
   }
 
   @Test
-  fun `deleteRepository lets the owner and a group member through to the use case`() = runTest {
+  // The use case is mocked: this proves the guard lets both through, not that server-core
+  // deletes for a group member (it answers 403 today — see the http-api README).
+  fun `deleteRepository lets the owner and a group member through the guard to the use case`() = runTest {
     val private = access.givenRepository()
 
     assertStatus(mockMvc.deleteAs(access.owner, url(private)), 204)

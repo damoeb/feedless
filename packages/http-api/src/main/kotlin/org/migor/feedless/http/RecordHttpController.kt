@@ -108,14 +108,21 @@ class RecordHttpController(
     access: RepositoryAccess,
   ): Document {
     accessGuard.requireRepository(repositoryId, access)
-    val document = when (access) {
-      RepositoryAccess.read -> documentGuard.requireRead(recordId)
-      RepositoryAccess.write -> documentGuard.requireWrite(recordId)
+    // A missing record and one of another repository must answer identically, so the
+    // document guard's own message ("Document … not found") never reaches the caller.
+    val document = try {
+      when (access) {
+        RepositoryAccess.read -> documentGuard.requireRead(recordId)
+        RepositoryAccess.write -> documentGuard.requireWrite(recordId)
+      }
+    } catch (e: NotFoundException) {
+      throw recordNotFound(recordId)
     }
-    // Same answer for a missing record and one of another repository.
     if (document.repositoryId != repositoryId) {
-      throw NotFoundException("record ${recordId.uuid} not found")
+      throw recordNotFound(recordId)
     }
     return document
   }
+
+  private fun recordNotFound(recordId: DocumentId) = NotFoundException("record ${recordId.uuid} not found")
 }
