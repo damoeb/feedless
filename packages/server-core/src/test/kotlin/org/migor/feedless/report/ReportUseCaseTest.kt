@@ -31,7 +31,13 @@ import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.EventsReportPlugin
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.session.JwtTokenIssuer
+import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
+import org.springframework.security.oauth2.jwt.Jwt
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
@@ -39,7 +45,6 @@ import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
-import org.migor.feedless.user.UserRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -48,6 +53,8 @@ import java.time.LocalDateTime
 class ReportUseCaseTest {
 
   private lateinit var documentRepository: DocumentRepository
+  private lateinit var propertyService: PropertyService
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var reportRepository: ReportRepository
   private lateinit var repositoryRepository: RepositoryRepository
@@ -80,6 +87,15 @@ class ReportUseCaseTest {
     )
 
     documentRepository = mock(DocumentRepository::class.java)
+    propertyService = mock(PropertyService::class.java)
+    `when`(propertyService.apiGatewayUrl).thenReturn("https://api.test.local")
+    jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
+    `when`(jwtTokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("t")
+        .header("alg", "HS256")
+        .claim("report_id", "x")
+        .build()
+    )
 
     reportUseCase = ReportUseCase(
       reportRepository,
@@ -94,6 +110,9 @@ class ReportUseCaseTest {
       mock(ReportGuard::class.java),
       documentRepository,
       "no-reply@test.local",
+      propertyService,
+      userRepository,
+      jwtTokenIssuer,
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }

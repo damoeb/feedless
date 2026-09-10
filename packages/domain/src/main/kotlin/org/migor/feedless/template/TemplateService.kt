@@ -7,6 +7,7 @@ abstract class FreemarkerTemplate<T>(val templateName: String) {
 data class ReportCreatedParams(
   val language: String,
   val deactivationLink: String,
+  val confirmationLink: String,
   val reportName: String,
   val cronExpression: String,
   val nextScheduledAt: String,

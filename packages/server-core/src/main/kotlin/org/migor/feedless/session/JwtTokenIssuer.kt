@@ -74,6 +74,22 @@ class JwtTokenIssuer(
     )
   }
 
+  /**
+   * Für Links in Report-Mails. Das Token nennt genau einen Report und trägt
+   * bewusst keine Nutzer-Capability: der Empfänger ist meist anonym, und der
+   * Besitz des signierten Links ist der Nachweis.
+   */
+  fun createJwtForReport(reportId: String, validForDays: Long): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report"))).increment()
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
+        JwtParameterNames.REPORT_ID to reportId,
+      ),
+      validForDays.days,
+    )
+  }
+
   fun createJwtForCapabilities(capabilities: List<Capability<out Any>>): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")

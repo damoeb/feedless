@@ -5,6 +5,10 @@ import org.springframework.beans.factory.annotation.Value
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.actions.PluginExecutionJson
@@ -42,7 +46,8 @@ import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.template.TemplateVariant
-import org.migor.feedless.user.userId
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.user.userIdMaybe
 import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -52,6 +57,9 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.time.temporal.TemporalAdjusters
 
+
+/** Ein Abmeldelink soll auch in einer alten Mail noch funktionieren. */
+private const val LINK_VALID_FOR_DAYS = 365L
 
 @Service
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
@@ -68,7 +76,26 @@ class ReportUseCase(
   private val reportGuard: ReportGuard,
   private val documentRepository: DocumentRepository,
   @Value("\${app.mail.sender}") private val mailSender: String,
+  private val propertyService: PropertyService,
+  private val userRepository: UserRepository,
+  private val jwtTokenIssuer: JwtTokenIssuer,
 ) {
+
+  /**
+   * Beide Links tragen dasselbe Token: es nennt den Report, und sein Besitz
+   * ist der Nachweis. Ein Jahr Gültigkeit, damit ein Abmeldelink auch in einer
+   * alten Mail noch funktioniert.
+   */
+  private fun confirmationLink(report: Report): String =
+    reportLink(ApiUrls.reportConfirm, report)
+
+  private fun deactivationLink(report: Report): String =
+    reportLink(ApiUrls.reportDelete, report)
+
+  private fun reportLink(path: String, report: Report): String {
+    val token = jwtTokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
+    return "${propertyService.apiGatewayUrl}$path/${report.id.uuid}?token=${token.tokenValue}"
+  }
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
 
@@ -142,30 +169,63 @@ class ReportUseCase(
         params = PluginExecutionJson()
       ),
       cronScheduleId = cronSchedule.id,
-      userId = coroutineContext.userId()
+      // Ein anonymes Token trägt eine frisch erfundene UserId, zu der keine
+      // Zeile in t_user gehört. Gespeichert verletzt sie fk_report__to__user,
+      // und genau das ist der Weg, den ein Abo ohne Konto nimmt.
+      userId = coroutineContext.userIdMaybe()?.takeIf { userRepository.findById(it) != null }
     )
 
     meterRegistry.counter(AppMetrics.createReport)
-    sendReportCreatedMail(segment)
-    reportRepository.save(report)
+    val saved = reportRepository.save(report)
+    sendAuthorizationMail(saved, nextReportedAt)
+    saved
   }
 
-  private suspend fun sendReportCreatedMail(segment: SegmentInput) {
+  /**
+   * Genau eine Anfrage, keine Erinnerungen. Wer nicht bestätigt, bekommt
+   * nichts - der Report bleibt unbestätigt liegen.
+   */
+  private suspend fun sendAuthorizationMail(report: Report, nextReportedAt: LocalDateTime) {
     val params = ReportCreatedParams(
       language = "de",
-      deactivationLink = "",
-      reportName = "",
-      cronExpression = "",
-      nextScheduledAt = "",
+      deactivationLink = deactivationLink(report),
+      confirmationLink = confirmationLink(report),
+      reportName = report.recipientName,
+      cronExpression = report.cronSchedule?.cronExpression ?: "",
+      nextScheduledAt = nextReportedAt.toString(),
     )
     val body = templateService.renderTemplate(MailTemplateReportCreated(params))
     val mail = OutgoingMail(
       from = mailSender,
-      to = listOf(segment.recipient.email.email),
-      subject = "Reporter erstellt",
+      to = listOf(report.recipientEmail),
+      subject = "Bitte bestätige dein Abo",
       htmlContent = body
     )
     mailService.send(mail)
+  }
+
+  /**
+   * Für den Link aus der Mail. Der Besitz des signierten Tokens ist hier der
+   * Nachweis - der Empfänger ist typischerweise nicht angemeldet, deshalb
+   * läuft dieser Pfad bewusst nicht über den ReportGuard.
+   */
+  suspend fun confirmReportFromToken(reportId: ReportId) = withContext(Dispatchers.IO) {
+    log.info("confirmReportFromToken reportId=$reportId")
+    val report = reportRepository.findById(reportId) ?: throw NotFoundException("Report $reportId not found")
+    if (!report.authorized) {
+      reportRepository.save(
+        report.copy(
+          authorized = true,
+          authorizedAt = LocalDateTime.now(),
+        )
+      )
+    }
+  }
+
+  /** Wie [confirmReportFromToken]: der Link ist der Nachweis. */
+  suspend fun deleteReportFromToken(reportId: ReportId) = withContext(Dispatchers.IO) {
+    log.info("deleteReportFromToken reportId=$reportId")
+    reportRepository.deleteById(reportId)
   }
 
   suspend fun deleteReport(reportId: ReportId) = withContext(Dispatchers.IO) {

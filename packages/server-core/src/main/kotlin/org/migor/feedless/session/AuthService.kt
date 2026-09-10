@@ -19,6 +19,13 @@ object JwtParameterNames {
   const val CAPABILITIES = "capabilities"
   const val TYPE = "token_type"
   const val HOST = "host"
+
+  /**
+   * Trägt die Report-Id in Bestätigungs- und Abmeldelinks. Der Besitz des
+   * signierten Tokens ist dort der Nachweis - die Empfänger sind
+   * typischerweise nicht angemeldet.
+   */
+  const val REPORT_ID = "report_id"
 }
 
 enum class AuthTokenType(val value: String) {

@@ -14,6 +14,10 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.report} & ${AppLayer.repository}")
 interface ReportDAO : JpaRepository<ReportEntity, UUID> {
+  /**
+   * Nur bestätigte Empfänger. Ohne den authorized-Filter gingen Reports auch
+   * an Adressen, die das Abo nie bestätigt haben.
+   */
   @Query(
     value = """
       select distinct r from ReportEntity r
@@ -21,6 +25,7 @@ interface ReportDAO : JpaRepository<ReportEntity, UUID> {
       join fetch r.segment
       join fetch r.cronSchedule
       where r.disabled = false
+      and  r.authorized = true
       and  c.scheduledNextAt < :now
     """
   )
