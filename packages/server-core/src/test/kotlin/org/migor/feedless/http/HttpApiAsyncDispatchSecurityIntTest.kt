@@ -28,6 +28,8 @@ import org.migor.feedless.repository.InboxService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -45,6 +47,10 @@ import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
+import java.net.URI
+import java.net.http.HttpClient
+import java.net.http.HttpRequest
+import java.net.http.HttpResponse
 import java.util.UUID
 
 /**
@@ -106,6 +112,9 @@ class HttpApiAsyncDispatchSecurityIntTest {
   @Autowired
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
 
+  @Autowired
+  private lateinit var sourceRepository: SourceRepository
+
   @MockitoBean
   private lateinit var featureService: FeatureService
 
@@ -144,9 +153,34 @@ class HttpApiAsyncDispatchSecurityIntTest {
   fun `GET a stranger's private repository sources answers 404 for a valid API token`() {
     val response = get("/api/v1/repositories/${strangerRepository.id.uuid}/sources", apiToken(caller))
 
-    // The guard's own answer — not a 404 that merely looks the same because the call never got there.
+    // The guard's own answer, rendered by HttpApiExceptionHandler as an ApiError — not a 404 that merely
+    // looks the same because the call never got there, or because another advice answered it.
     assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
-    assertThat(response.body).contains("repository ${strangerRepository.id.uuid} not found")
+    assertThat(response.body)
+      .contains("\"code\":\"NOT_FOUND\"")
+      .contains("\"message\":\"repository ${strangerRepository.id.uuid} not found\"")
+  }
+
+  /**
+   * A non-NotFound domain error must keep its own status and ApiError code on the real container:
+   * feedctl branches on both for every error path.
+   */
+  @Test
+  fun `PATCH a source with a stale If-Match answers 412 PRECONDITION_FAILED`() {
+    val source = sourceRepository.save(Source(title = "source of ${caller.id.uuid}", repositoryId = callerRepository.id))
+
+    val request = HttpRequest.newBuilder(
+      URI("http://localhost:$port/api/v1/repositories/${callerRepository.id.uuid}/sources/${source.id.uuid}"),
+    )
+      .header(HttpHeaders.AUTHORIZATION, "Bearer ${apiToken(caller)}")
+      .header(HttpHeaders.CONTENT_TYPE, "application/json")
+      .header(HttpHeaders.IF_MATCH, "\"stale\"")
+      .method("PATCH", HttpRequest.BodyPublishers.ofString("{\"title\":\"renamed\"}"))
+      .build()
+    val response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString())
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value())
+    assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
   }
 
   @Test

@@ -12,6 +12,8 @@ import org.migor.feedless.session.AuthCredentialsException
 import org.migor.feedless.session.AuthUserNotFoundException
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.MDC
+import org.springframework.core.Ordered
+import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -21,6 +23,13 @@ import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
 import org.springframework.web.context.request.WebRequest
 
+/**
+ * The error contract of every `/api/v1` controller: an [ApiError] body with the status and `code`
+ * feedctl branches on. It must win over the app's unscoped `@ControllerAdvice`, whose catch-all
+ * answers any exception with a bare 404 — without an explicit order, bean registration order decides.
+ * The `basePackages` scope confines this precedence to the HTTP API controllers.
+ */
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = ["org.migor.feedless.http"])
 class HttpApiExceptionHandler {
 
