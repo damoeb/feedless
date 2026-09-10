@@ -8,6 +8,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.UnavailableException
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
@@ -21,9 +22,11 @@ import org.migor.feedless.otp.OneTimePasswordId
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -40,7 +43,8 @@ class MailAuthenticationService(
   private val featureService: FeatureService,
   private val userRepository: UserRepository,
   private val mailService: MailService,
-  private val oneTimePasswordService: OneTimePasswordService
+  private val oneTimePasswordService: OneTimePasswordService,
+  private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
 ) {
   private val log = LoggerFactory.getLogger(MailAuthenticationService::class.simpleName)
 
@@ -102,9 +106,11 @@ class MailAuthenticationService(
       throw error
     }
 
+    val actingGroup = userGroupAssignmentRepository.actingGroupOf(otp.userId)
+
     oneTimePasswordRepository.deleteById(otpId)
 
-    val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(otp.userId)))
+    val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(otp.userId), GroupCapability(actingGroup)))
 
     response.addCookie(cookieProvider.createTokenCookie(jwt))
 

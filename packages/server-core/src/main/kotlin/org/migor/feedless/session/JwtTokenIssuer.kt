@@ -12,8 +12,10 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -101,10 +103,11 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForApi(user: User): Jwt {
+  /** The `createUserSecret` API token: acts as [user] in [actingGroup], which callers resolve with [actingGroupOf]. */
+  fun createJwtForApi(user: User, actingGroup: GroupAndRole): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for service")
-    val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id));
+    val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id), GroupCapability(actingGroup))
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.API.value,

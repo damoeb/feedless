@@ -15,16 +15,15 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connector.github.GithubCapability
-import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.http.HttpApiJwtFilter
 import org.migor.feedless.http.HttpApiVersionHeaderFilter
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
-import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
@@ -210,7 +209,8 @@ class SecurityConfig {
     }
   }
 
-  private fun handleSuccess(
+  // internal for SecurityConfigSsoTokenTest
+  internal fun handleSuccess(
     request: HttpServletRequest,
     response: HttpServletResponse,
     authentication: Authentication?
@@ -247,11 +247,8 @@ class SecurityConfig {
     return UserCapability(user.id);
   }
 
-  private fun createGroupCapability(user: User): GroupCapability {
-    val group = userGroupAssignmentRepository.findAllByUserId(user.id)
-      .firstOrNull { it.role == RoleInGroup.owner }!!
-    return GroupCapability(GroupAndRole(group.groupId, group.role))
-  }
+  private fun createGroupCapability(user: User): GroupCapability =
+    GroupCapability(userGroupAssignmentRepository.actingGroupOf(user.id))
 
   private fun createGithubCapability(authToken: String): GithubCapability {
     return GithubCapability(authToken)

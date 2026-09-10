@@ -8,9 +8,12 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.group.GroupAndRole
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userGroup.RoleInGroup
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -26,6 +29,7 @@ class HttpApiJwtFilterTest {
 
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
   private lateinit var filter: HttpApiJwtFilter
+  private val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
 
   @BeforeEach
   fun setUp() {
@@ -83,7 +87,7 @@ class HttpApiJwtFilterTest {
     val user = mock(User::class.java)
     val userId = UserId()
     `when`(user.id).thenReturn(userId)
-    val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
+    val token = jwtTokenIssuer.createJwtForApi(user, actingGroup).tokenValue
 
     val request = MockHttpServletRequest("GET", "/api/v1/repositories")
     request.addHeader("Authentication", "Bearer $token")
@@ -96,6 +100,7 @@ class HttpApiJwtFilterTest {
     filter.doFilter(request, response, chain)
 
     assert(requestContext?.userId == userId)
+    assert(requestContext?.groupId == actingGroup.groupId)
   }
 
   @Test
@@ -103,7 +108,7 @@ class HttpApiJwtFilterTest {
     val user = mock(User::class.java)
     val userId = UserId()
     `when`(user.id).thenReturn(userId)
-    val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
+    val token = jwtTokenIssuer.createJwtForApi(user, actingGroup).tokenValue
 
     val request = MockHttpServletRequest("GET", "/api/v1/user")
     request.addHeader("Authorization", "Bearer $token")
@@ -116,6 +121,7 @@ class HttpApiJwtFilterTest {
     filter.doFilter(request, response, chain)
 
     assert(requestContext?.userId == userId)
+    assert(requestContext?.groupId == actingGroup.groupId)
   }
 
   /**
@@ -126,7 +132,7 @@ class HttpApiJwtFilterTest {
   fun `saves the authenticated context where the async dispatch loads it`() {
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(UserId())
-    val token = jwtTokenIssuer.createJwtForApi(user).tokenValue
+    val token = jwtTokenIssuer.createJwtForApi(user, actingGroup).tokenValue
 
     val request = MockHttpServletRequest("GET", "/api/v1/user")
     request.addHeader("Authorization", "Bearer $token")

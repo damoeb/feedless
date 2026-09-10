@@ -1,6 +1,7 @@
 package org.migor.feedless.http
 
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -11,7 +12,9 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
+import org.migor.feedless.any2
 import org.migor.feedless.api.graphql.ServerConfigResolver
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -27,13 +30,18 @@ import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.InboxService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.secrets.UserSecretUseCase
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.SessionTokenPort
+import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
-import org.migor.feedless.userSecret.UserSecretRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
@@ -68,7 +76,6 @@ import java.util.UUID
   types = [
     OAuth2AuthorizedClientService::class,
     ServerConfigResolver::class,
-    UserSecretRepository::class,
     PaymentUseCase::class,
     ProductRepository::class,
     ProductUseCase::class,
@@ -94,6 +101,7 @@ import java.util.UUID
   AppProfiles.repository,
   AppProfiles.source,
   AppProfiles.scrape,
+  AppProfiles.secrets,
 )
 class HttpApiAsyncDispatchSecurityIntTest {
 
@@ -114,6 +122,18 @@ class HttpApiAsyncDispatchSecurityIntTest {
 
   @Autowired
   private lateinit var sourceRepository: SourceRepository
+
+  @Autowired
+  private lateinit var userSecretUseCase: UserSecretUseCase
+
+  @Autowired
+  private lateinit var sessionTokenPort: SessionTokenPort
+
+  @Autowired
+  private lateinit var planConstraintsService: PlanConstraintsService
+
+  @Autowired
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
 
   @MockitoBean
   private lateinit var featureService: FeatureService
@@ -173,6 +193,45 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
   }
 
+  /**
+   * A write lands in the group the token acts in. Tokens minted by `createUserSecret` (API JWT) and
+   * `authUser` (session JWT) used to carry no group, so creating a repository crashed with a 500.
+   */
+  @Test
+  fun `POST repositories answers 201 in the caller's owner group for an API token from createUserSecret`() {
+    val token = runBlocking {
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+    }
+
+    assertCreatesRepositoryInOwnerGroup(token)
+  }
+
+  @Test
+  fun `POST repositories answers 201 in the caller's owner group for a session token from authUser`() {
+    val secretKey = runBlocking {
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+    }
+    val token = runBlocking { sessionTokenPort.authenticateUser(caller.email, secretKey).token }
+
+    assertCreatesRepositoryInOwnerGroup(token)
+  }
+
+  private fun assertCreatesRepositoryInOwnerGroup(token: String) {
+    whenever(planConstraintsService.coerceVisibility(any2(), anyOrNull())).thenReturn(EntityVisibility.isPrivate)
+    val title = "created by ${caller.id.uuid}"
+
+    val response = send(
+      "POST",
+      "/api/v1/repositories",
+      "{\"product\":\"feedless\",\"sources\":[],\"title\":\"$title\",\"description\":\"\"}",
+      token = token,
+    )
+
+    assertThat(response.statusCode()).describedAs(response.body()).isEqualTo(HttpStatus.CREATED.value())
+    val created = repositoryRepository.findByTitleAndOwnerId(title, caller.id)!!
+    assertThat(created.groupId).isEqualTo(groupRepository.findAllByOwner(caller.id).single().id)
+  }
+
   // Spring MVC's own exceptions on /api/v1 must keep their 4xx and still answer an ApiError.
 
   @Test
@@ -218,9 +277,10 @@ class HttpApiAsyncDispatchSecurityIntTest {
     path: String,
     body: String? = null,
     vararg headers: Pair<String, String>,
+    token: String = apiToken(caller),
   ): HttpResponse<String> {
     val builder = HttpRequest.newBuilder(URI("http://localhost:$port$path"))
-      .header(HttpHeaders.AUTHORIZATION, "Bearer ${apiToken(caller)}")
+      .header(HttpHeaders.AUTHORIZATION, "Bearer $token")
       .header(HttpHeaders.ACCEPT, "application/json")
     headers.forEach { (name, value) -> builder.header(name, value) }
     if (body != null) {
@@ -246,7 +306,8 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
-  private fun apiToken(user: User): String = jwtTokenIssuer.createJwtForApi(user).tokenValue
+  private fun apiToken(user: User): String =
+    jwtTokenIssuer.createJwtForApi(user, userGroupAssignmentRepository.actingGroupOf(user.id)).tokenValue
 
   private fun get(path: String, token: String?): ResponseEntity<String> {
     val headers = HttpHeaders()

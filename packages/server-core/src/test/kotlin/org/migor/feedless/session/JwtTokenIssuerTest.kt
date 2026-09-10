@@ -14,8 +14,11 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.group.GroupAndRole
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecret
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
@@ -101,13 +104,26 @@ class JwtTokenIssuerTest {
   }
 
   @Test
+  fun `createJwtForApi carries the user and the acting group`() = runTest {
+    val userId = UserId()
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(userId)
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val jwt = jwtTokenIssuer.createJwtForApi(user, actingGroup)
+
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  @Test
   fun `createJwtForApi creates a properly signed JWT`() = runTest {
     // given
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(UserId())
 
     // when
-    val jwt = jwtTokenIssuer.createJwtForApi(user)
+    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner))
 
     // then
     assertThat(jwt.tokenValue).isNotNull()

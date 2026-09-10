@@ -11,6 +11,7 @@ import org.migor.feedless.http.api.model.FieldError
 import org.migor.feedless.session.AuthCredentialsException
 import org.migor.feedless.session.AuthUserNotFoundException
 import org.migor.feedless.util.CryptUtil
+import org.slf4j.LoggerFactory
 import org.slf4j.MDC
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
@@ -42,6 +43,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = ["org.migor.feedless.http"])
 class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
+
+  private val log = LoggerFactory.getLogger(HttpApiExceptionHandler::class.simpleName)
 
   @ExceptionHandler(AuthUserNotFoundException::class)
   fun handleAuthUserNotFound(ex: AuthUserNotFoundException, request: WebRequest): ResponseEntity<ApiError> =
@@ -109,9 +112,19 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
       },
     )
 
+  /**
+   * Anything no other handler maps is a server bug. Log it — stack trace, method and path, under the
+   * answer's corrId — before answering 500, or it leaves no trace in the core log. The path carries no
+   * query string, and no headers are logged, so no credential reaches the log.
+   */
   @ExceptionHandler(Exception::class)
-  fun handleGeneric(ex: Exception, request: WebRequest): ResponseEntity<ApiError> =
-    errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", ex.message ?: "unexpected error", request)
+  fun handleGeneric(ex: Exception, request: WebRequest): ResponseEntity<ApiError> {
+    val response =
+      errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", ex.message ?: "unexpected error", request)
+    val method = (request as? ServletWebRequest)?.httpMethod?.name() ?: "UNKNOWN"
+    log.error("unexpected error on $method ${response.body?.path} corrId=${response.body?.corrId}", ex)
+    return response
+  }
 
   override fun handleMethodArgumentNotValid(
     ex: MethodArgumentNotValidException,

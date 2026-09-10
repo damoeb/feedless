@@ -7,8 +7,10 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.userId
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -28,7 +30,8 @@ import kotlin.time.ExperimentalTime
 class UserSecretUseCase(
   private val userSecretRepository: UserSecretRepository,
   private val userRepository: UserRepository,
-  private val jwtTokenIssuer: JwtTokenIssuer
+  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(UserSecretUseCase::class.simpleName)
@@ -37,7 +40,7 @@ class UserSecretUseCase(
     log.info("createUserSecret")
     val userId = coroutineContext.userId()
     val user = userRepository.findById(userId)!!
-    val token = jwtTokenIssuer.createJwtForApi(user)
+    val token = jwtTokenIssuer.createJwtForApi(user, userGroupAssignmentRepository.actingGroupOf(user.id))
 
     userSecretRepository.save(
       UserSecret(

@@ -7,11 +7,13 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -45,6 +47,9 @@ class StatefulAuthService : AuthService() {
   @Autowired
   private lateinit var userSecretRepository: UserSecretRepository
 
+  @Autowired
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
+
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String
 
@@ -73,7 +78,8 @@ class StatefulAuthService : AuthService() {
     userSecretRepository.findBySecretKeyValue(secretKey, email)
       ?: throw IllegalArgumentException("secretKey does not match")
 
-    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id)))
+    val actingGroup = userGroupAssignmentRepository.actingGroupOf(user.id)
+    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id), GroupCapability(actingGroup)))
   }
 
   override suspend fun findUserById(userId: UserId): User? = withContext(Dispatchers.IO) {
