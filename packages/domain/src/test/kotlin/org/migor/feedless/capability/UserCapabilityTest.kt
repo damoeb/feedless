@@ -13,13 +13,13 @@ class UserCapabilityTest {
     val userId = UserId()
     val userCapability = UserCapability(userId)
 
-    val jsonString = toJson(userCapability)
+    // JwtTokenIssuer stores only the capability payload, the UserId
+    val jsonString = toJson(userCapability.capabilityPayload)
     val capability = UnresolvedCapability(UserCapability.ID, jsonString)
 
     val actual = UserCapability.resolve(capability)
 
-    assertEquals(userId.uuid, actual.userId.uuid)
-    assertEquals(UserCapability.ID.value, actual.capabilityId.value)
+    assertEquals(userId, actual)
   }
 
   @Test
