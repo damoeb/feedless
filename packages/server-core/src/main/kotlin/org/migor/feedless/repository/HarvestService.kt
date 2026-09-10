@@ -4,6 +4,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
@@ -32,12 +33,15 @@ class HarvestService(
     )
   }
 
+  // pageSize is the true, requested page size — this asks for one extra row (limit = pageSize +
+  // 1) so listHarvests can answer hasMore from one call, without shifting where the next page's
+  // offset starts (see PageableRequest.withExtraForHasMore).
   override suspend fun findAllBySourceId(sourceId: SourceId, dryRun: Boolean, page: Int, pageSize: Int): List<Harvest> =
     withContext(Dispatchers.IO) {
       harvestRepository.findAllBySourceId(
         sourceId,
         dryRun = dryRun,
-        PageRequest.of(page, pageSize).toPageableRequest()
+        PageableRequest.withExtraForHasMore(page, pageSize)
       )
     }
 

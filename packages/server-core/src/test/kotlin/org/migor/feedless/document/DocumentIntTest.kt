@@ -10,6 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
@@ -228,6 +229,62 @@ class DocumentIntTest {
         pageable = PageRequest.of(0, 10).toPageableRequest(),
       )
       assertThat(documents.size).isEqualTo(1)
+    }
+
+  @Test
+  fun `findAllFiltered pages without skipping or repeating rows, mirroring listRecords' ask-for-one-extra pattern`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+      val pageWalkRepo = repositoryRepository.save(
+        Repository(
+          title = "page-walk",
+          description = "d",
+          sourcesSyncCron = "",
+          shareKey = "pagewalk",
+          product = Vertical.rssProxy,
+          ownerId = repository.ownerId,
+          groupId = repository.groupId,
+        )
+      )
+      (1..5).forEach { n ->
+        documentRepository.save(
+          Document(
+            url = "http://localhost:8080/walk-$n",
+            title = "walk-$n",
+            text = "",
+            repositoryId = pageWalkRepo.id,
+            status = ReleaseStatus.released,
+            publishedAt = past.minusMinutes(n.toLong()),
+            contentHash = CryptUtil.sha1(newCorrId()),
+            startingAt = past,
+            createdAt = past,
+          )
+        )
+      }
+
+      // Canonical, un-paginated order this walk must reproduce (default: publishedAt desc).
+      val all = documentUseCase.findAllByRepositoryId(
+        repositoryId = pageWalkRepo.id,
+        status = ReleaseStatus.released,
+        pageable = PageableRequest(0, 10),
+      )
+      assertThat(all).hasSize(5)
+
+      // Mirrors RecordHttpController.listRecords: ask for one more than the page holds.
+      var page = 0
+      val returned = mutableListOf<DocumentId>()
+      while (true) {
+        val fetched = documentUseCase.findAllByRepositoryId(
+          repositoryId = pageWalkRepo.id,
+          status = ReleaseStatus.released,
+          pageable = PageableRequest.withExtraForHasMore(page, 2),
+        )
+        val hasMore = fetched.size > 2
+        returned.addAll(fetched.take(2).map { it.id })
+        if (!hasMore) break
+        page++
+      }
+
+      assertThat(returned).containsExactlyElementsOf(all.map { it.id })
     }
 
   @Test

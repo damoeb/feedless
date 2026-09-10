@@ -44,7 +44,7 @@ class SourceHttpController(
   ): ResponseEntity<SourceListResponse> {
     val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     // Ask for one more than the page holds: a full page is not evidence of a next one.
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
     val where = toFilter(disabled, like, minErrorsInSuccession)
     val fetched = sourceRepository.findAllByRepositoryIdFiltered(repository.id, pageable, where, null)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
@@ -66,7 +66,7 @@ class SourceHttpController(
   ): ResponseEntity<SourceListResponse> {
     val (userId, groupIds) = accessGuard.requireCallerScope()
     // Ask for one more than the page holds: a full page is not evidence of a next one.
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
     val where = toFilter(disabled, like, minErrorsInSuccession)
     val fetched = sourceRepository.findAllForUser(userId, groupIds, pageable, where)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }

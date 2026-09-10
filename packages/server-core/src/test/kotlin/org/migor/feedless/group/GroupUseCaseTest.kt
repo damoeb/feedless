@@ -251,7 +251,7 @@ class GroupUseCaseTest {
 
 
   @Test
-  fun `listMembers returns paged assignments for members`() =
+  fun `listMembers returns paged assignments for members, plus one extra row so the caller can answer hasMore`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       mockCurrentUserRoleForGroup(RoleInGroup.viewer)
       val member1 = UserGroupAssignment(userId = UserId(), groupId = groupId, role = RoleInGroup.owner)
@@ -261,7 +261,30 @@ class GroupUseCaseTest {
 
       val page = groupUseCase.listMembers(groupId, page = 1, pageSize = 1)
 
-      assertThat(page).containsExactly(member2)
+      // GroupHttpController.listGroupMembers takes the true pageSize (member2) itself and uses
+      // the extra row (member3) only to answer hasMore, without a second request.
+      assertThat(page).containsExactly(member2, member3)
+    }
+
+  @Test
+  fun `listMembers pages without skipping or repeating rows, mirroring listGroupMembers' ask-for-one-extra pattern`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockCurrentUserRoleForGroup(RoleInGroup.viewer)
+      val members = (1..5).map { UserGroupAssignment(userId = UserId(), groupId = groupId, role = RoleInGroup.viewer) }
+      `when`(userGroupAssignmentRepository.findAllByGroupId(groupId)).thenReturn(members)
+
+      // Mirrors GroupHttpController.listGroupMembers: ask for one more than the page holds.
+      var page = 0
+      val returned = mutableListOf<UserGroupAssignment>()
+      while (true) {
+        val fetched = groupUseCase.listMembers(groupId, page = page, pageSize = 2)
+        val hasMore = fetched.size > 2
+        returned.addAll(fetched.take(2))
+        if (!hasMore) break
+        page++
+      }
+
+      assertThat(returned).containsExactlyElementsOf(members)
     }
 
   @Test

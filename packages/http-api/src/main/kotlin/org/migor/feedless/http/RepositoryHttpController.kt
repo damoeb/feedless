@@ -47,7 +47,7 @@ class RepositoryHttpController(
     q: String?,
   ): ResponseEntity<RepositoryListResponse> {
     // Ask for one more than the page holds: a full page is not evidence of a next one.
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
     val where = toFilter(product, visibility, q)
     val userId = currentUserId()
     val fetched = repositoryUseCase.findAllByUserId(pageable, where, userId)

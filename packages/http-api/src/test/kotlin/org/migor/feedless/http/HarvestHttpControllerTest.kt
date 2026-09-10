@@ -71,7 +71,7 @@ class HarvestHttpControllerTest {
     val repo = access.givenRepository()
     val source = givenSource(repo.id)
     val harvest = harvest(sourceId = source.id)
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(21))).thenReturn(listOf(harvest))
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(20))).thenReturn(listOf(harvest))
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=20")
 
@@ -89,7 +89,7 @@ class HarvestHttpControllerTest {
     val repo = access.givenRepository()
     val source = givenSource(repo.id)
     val harvest = harvest(sourceId = source.id, dryRun = true)
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(true), eq(0), eq(21))).thenReturn(listOf(harvest))
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(true), eq(0), eq(20))).thenReturn(listOf(harvest))
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=20&dryRun=true")
 
@@ -103,7 +103,7 @@ class HarvestHttpControllerTest {
     val source = givenSource(repo.id)
     // pageSize + 1 available: there really is a next page
     val harvests = List(3) { harvest(sourceId = source.id) }
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(3))).thenReturn(harvests)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(2))).thenReturn(harvests)
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=2")
 
@@ -118,7 +118,7 @@ class HarvestHttpControllerTest {
     // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
     // page here and made every client fetch an empty one.
     val harvests = List(2) { harvest(sourceId = source.id) }
-    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(3))).thenReturn(harvests)
+    whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(2))).thenReturn(harvests)
 
     val result = mockMvc.getAs(access.owner, "${harvestsUrl(repo, source)}?page=0&pageSize=2")
 

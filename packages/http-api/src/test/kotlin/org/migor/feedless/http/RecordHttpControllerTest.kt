@@ -310,7 +310,7 @@ class RecordHttpControllerTest {
         anyOrNull(),
         any(),
         any(),
-        eq(PageableRequest(pageNumber = 0, pageSize = 3)),
+        eq(PageableRequest.withExtraForHasMore(0, 2)),
       ),
     ).thenReturn(records)
   }

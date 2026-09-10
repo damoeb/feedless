@@ -175,17 +175,27 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
         )
         .orderBy(
           *sortableStatements.toTypedArray(),
-          path(SourceEntity::createdAt).desc()
+          path(SourceEntity::createdAt).desc(),
+          // Tiebreaker: createdAt alone is not unique (bulk creates can share a timestamp), and
+          // without one, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+          path(SourceEntity::id).asc(),
         )
     }
 
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    q.setMaxResults(pageable.pageSize)
-    q.setFirstResult(pageable.pageSize * pageable.pageNumber)
-    return sourceDAO.findAllWithActionsByIdIn(q.resultList).sortedBy { it.lastRecordsRetrieved }
-      .map { it.toDomain() }
+    // limit is pageSize (or pageSize + 1 for a "fetch one extra to answer hasMore" page) — offset
+    // always uses the true pageSize, so it never shifts when limit does (see T6 review).
+    q.setMaxResults(pageable.limit)
+    q.setFirstResult(pageable.offset)
+    // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards
+    // — otherwise take(pageSize) at the caller can drop the wrong (non-"extra") row (T6 review
+    // round 1: this previously re-sorted by lastRecordsRetrieved, which restores no order at all
+    // when every row ties on it, as every never-yet-harvested source does).
+    val orderedIds = q.resultList
+    val byId = sourceDAO.findAllWithActionsByIdIn(orderedIds).associateBy { it.id }
+    return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }
   }
 
   override fun findAllForUser(
@@ -243,14 +253,21 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
         .orderBy(
           path(SourceEntity::errorsInSuccession).desc(),
           path(SourceEntity::lastRefreshedAt).desc().nullsLast(),
+          // Tiebreakers: neither key above is unique (every never-refreshed source has
+          // lastRefreshedAt = null, every healthy one has errorsInSuccession = 0), and without a
+          // unique final key, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+          path(SourceEntity::createdAt).desc(),
+          path(SourceEntity::id).asc(),
         )
     }
 
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    q.setMaxResults(pageable.pageSize)
-    q.setFirstResult(pageable.pageSize * pageable.pageNumber)
+    // limit is pageSize (or pageSize + 1 for a "fetch one extra to answer hasMore" page) — offset
+    // always uses the true pageSize, so it never shifts when limit does (see T6 review).
+    q.setMaxResults(pageable.limit)
+    q.setFirstResult(pageable.offset)
     // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards.
     val orderedIds = q.resultList
     val byId = sourceDAO.findAllWithActionsByIdIn(orderedIds).associateBy { it.id }

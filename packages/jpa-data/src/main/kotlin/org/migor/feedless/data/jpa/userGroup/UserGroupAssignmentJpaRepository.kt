@@ -33,7 +33,7 @@ class UserGroupAssignmentJpaRepository(private val userGroupAssignmentDAO: UserG
   }
 
   override fun findAllByGroupId(groupId: GroupId): List<UserGroupAssignment> {
-    return userGroupAssignmentDAO.findAllByGroupId(groupId.uuid).map { it.toDomain() }
+    return userGroupAssignmentDAO.findAllByGroupIdOrderByCreatedAtAscIdAsc(groupId.uuid).map { it.toDomain() }
   }
 
 }

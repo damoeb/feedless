@@ -17,6 +17,7 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import java.time.LocalDateTime
@@ -43,7 +44,10 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
           path(RepositoryEntity::ownerId).eq(userId?.uuid),
         )
       ).orderBy(
-        path(RepositoryEntity::lastUpdatedAt).desc()
+        path(RepositoryEntity::lastUpdatedAt).desc(),
+        // Tiebreaker: lastUpdatedAt alone is not unique (bulk creates can share a timestamp),
+        // and without one, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+        path(RepositoryEntity::id).asc(),
       )
     }.toList().filterNotNull().map { it.toDomain() }
   }
@@ -205,7 +209,12 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
 
 }
 
-fun PageableRequest.toPageRequest(): PageRequest {
+/**
+ * A [PageRequest] when [PageableRequest.limit] is the plain [PageableRequest.pageSize] (the
+ * overwhelming majority of callers) — a [OffsetLimitPageRequest] otherwise, so a request built
+ * with [PageableRequest.withExtraForHasMore] fetches one extra row without shifting [offset].
+ */
+fun PageableRequest.toPageRequest(): Pageable {
   val sort = if (sortBy.isEmpty()) {
     Sort.unsorted()
   } else {
@@ -219,5 +228,9 @@ fun PageableRequest.toPageRequest(): PageRequest {
       }
     )
   }
-  return PageRequest.of(pageNumber, pageSize, sort)
+  return if (limit == pageSize) {
+    PageRequest.of(pageNumber, pageSize, sort)
+  } else {
+    OffsetLimitPageRequest(offset.toLong(), limit, sort)
+  }
 }

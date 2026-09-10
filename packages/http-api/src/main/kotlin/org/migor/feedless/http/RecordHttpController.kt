@@ -45,7 +45,7 @@ class RecordHttpController(
   ): ResponseEntity<RecordListResponse> {
     val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     // Ask for one more than the page holds: a full page is not evidence of a next one.
-    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
     val fetched = documentUseCase.findAllByRepositoryId(repository.id, pageable = pageable)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(

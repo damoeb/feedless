@@ -274,6 +274,29 @@ class HarvestRepositoryIntTest {
   }
 
   @Test
+  fun `findAllBySourceId pages without skipping or repeating rows, mirroring listHarvests' ask-for-one-extra pattern`() {
+    val now = LocalDateTime.now().withNano(0)
+    val created = (1..5).map { n -> harvest(sourceA.id, now.minusMinutes(n.toLong())) }
+
+    // Canonical, un-paginated order this walk must reproduce (createdAt desc).
+    val all = harvestRepository.findAllBySourceId(sourceA.id, dryRun = false, PageableRequest(0, 10))
+    assertThat(all.map { it.id }).containsExactlyElementsOf(created.map { it.id })
+
+    // Mirrors HarvestService.findAllBySourceId: ask for one more than the page holds.
+    var page = 0
+    val returned = mutableListOf<HarvestId>()
+    while (true) {
+      val fetched = harvestRepository.findAllBySourceId(sourceA.id, dryRun = false, PageableRequest.withExtraForHasMore(page, 2))
+      val hasMore = fetched.size > 2
+      returned.addAll(fetched.take(2).map { it.id })
+      if (!hasMore) break
+      page++
+    }
+
+    assertThat(returned).containsExactlyElementsOf(all.map { it.id })
+  }
+
+  @Test
   fun `findAllBySourceId returns only dry runs when dryRun is true`() {
     val now = LocalDateTime.now()
     val dryRun = harvest(sourceA.id, now, dryRun = true)

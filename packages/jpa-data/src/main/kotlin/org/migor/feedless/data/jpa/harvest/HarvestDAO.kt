@@ -3,7 +3,7 @@ package org.migor.feedless.data.jpa.harvest
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -17,10 +17,17 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
-  fun findAllBySourceIdAndDryRunOrderByCreatedAtDesc(
-    sourceId: UUID,
-    dryRun: Boolean,
-    pageable: PageRequest
+  // createdAt alone is not unique (harvests can be created within the same millisecond), so a
+  // trailing id tiebreaker keeps LIMIT/OFFSET pagination from repeating or dropping rows.
+  @Query(
+    """SELECT h FROM HarvestEntity h
+    WHERE h.sourceId = :sourceId AND h.dryRun = :dryRun
+    ORDER BY h.createdAt DESC, h.id ASC"""
+  )
+  fun findAllBySourceIdAndDryRun(
+    @Param("sourceId") sourceId: UUID,
+    @Param("dryRun") dryRun: Boolean,
+    pageable: Pageable,
   ): List<HarvestEntity>
 
   @Modifying

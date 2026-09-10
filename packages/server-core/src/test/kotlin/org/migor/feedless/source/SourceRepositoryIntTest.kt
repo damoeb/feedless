@@ -219,4 +219,43 @@ class SourceRepositoryIntTest {
     assertThat(page0.map { it.id }).containsExactly(s1.id, s2.id)
     assertThat(page1.map { it.id }).containsExactly(s3.id)
   }
+
+  @Test
+  fun `findAllForUser pages without skipping or repeating rows, mirroring listUserSources' ask-for-one-extra pattern`() {
+    // Distinct errorsInSuccession fully determines order on its own, independent of the
+    // createdAt/id tiebreakers — isolates this test to the offset/limit bug (T6 review round 1).
+    val now = LocalDateTime.now().withNano(0)
+    val sources = (5 downTo 1).map { n -> createSource(ownRepo.id, errorsInSuccession = n, lastRefreshedAt = now) }
+
+    // Mirrors SourceHttpController.listUserSources: ask for one more than the page holds.
+    val page0 = sourceRepository.findAllForUser(owner.id, emptyList(), PageableRequest.withExtraForHasMore(0, 2))
+    val page1 = sourceRepository.findAllForUser(owner.id, emptyList(), PageableRequest.withExtraForHasMore(1, 2))
+    val page2 = sourceRepository.findAllForUser(owner.id, emptyList(), PageableRequest.withExtraForHasMore(2, 2))
+
+    // What the controller would actually return to the caller from each page (fetched.take(pageSize)).
+    val returned = page0.take(2) + page1.take(2) + page2.take(2)
+    assertThat(returned.map { it.id }).containsExactlyElementsOf(sources.map { it.id })
+
+    // hasMore = fetched.size > pageSize on each page.
+    assertThat(page0).hasSize(3)
+    assertThat(page1).hasSize(3)
+    assertThat(page2).hasSize(1)
+  }
+
+  @Test
+  fun `findAllByRepositoryIdFiltered pages without skipping or repeating rows, mirroring listSources' ask-for-one-extra pattern`() {
+    val sources = (1..5).map { n -> createSource(ownRepo.id, title = "walk-$n") }
+
+    // Mirrors SourceHttpController.listSources: ask for one more than the page holds.
+    val page0 = sourceRepository.findAllByRepositoryIdFiltered(ownRepo.id, PageableRequest.withExtraForHasMore(0, 2))
+    val page1 = sourceRepository.findAllByRepositoryIdFiltered(ownRepo.id, PageableRequest.withExtraForHasMore(1, 2))
+    val page2 = sourceRepository.findAllByRepositoryIdFiltered(ownRepo.id, PageableRequest.withExtraForHasMore(2, 2))
+
+    val returned = page0.take(2) + page1.take(2) + page2.take(2)
+    assertThat(returned.map { it.id }).containsExactlyElementsOf(sources.reversed().map { it.id })
+
+    assertThat(page0).hasSize(3)
+    assertThat(page1).hasSize(3)
+    assertThat(page2).hasSize(1)
+  }
 }

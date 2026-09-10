@@ -23,7 +23,7 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
     dryRun: Boolean,
     pageable: PageableRequest
   ): List<Harvest> {
-    return harvestDAO.findAllBySourceIdAndDryRunOrderByCreatedAtDesc(sourceId.uuid, dryRun, pageable.toPageRequest())
+    return harvestDAO.findAllBySourceIdAndDryRun(sourceId.uuid, dryRun, pageable.toPageRequest())
       .map { it.toDomain() }
   }
 

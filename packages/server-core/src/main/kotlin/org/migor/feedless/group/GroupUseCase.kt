@@ -64,6 +64,12 @@ class GroupUseCase(
     }
   }
 
+  // pageSize is the true, requested page size: drop uses it as-is (so the offset of every page
+  // stays correct), and take asks for one extra row (limit = pageSize + 1) so the caller can
+  // answer hasMore from one call. Inflating pageSize itself before calling this — as the old
+  // GroupHttpController.listGroupMembers did — shifts the offset too and skips a row at every
+  // page boundary (T6 review). findAllByGroupId is ordered (createdAt asc, id asc) so drop/take
+  // is deterministic.
   override suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment> =
     withContext(Dispatchers.IO) {
       log.info("listMembers groupId=$groupId page=$page pageSize=$pageSize")
@@ -72,7 +78,7 @@ class GroupUseCase(
       val fixedPageSize = pageSize.coerceAtLeast(0).coerceAtMost(100)
       userGroupAssignmentRepository.findAllByGroupId(groupId)
         .drop(fixedPage * fixedPageSize)
-        .take(fixedPageSize)
+        .take(fixedPageSize + 1)
     }
 
   override suspend fun addUserToGroup(

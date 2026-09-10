@@ -20,5 +20,8 @@ interface UserGroupAssignmentDAO : JpaRepository<UserGroupAssignmentEntity, UUID
   )
   fun findAllByUserId(@Param("id") userId: UUID): List<UserGroupAssignmentEntity>
   fun findByUserIdAndGroupId(userId: UUID, groupId: UUID): UserGroupAssignmentEntity?
-  fun findAllByGroupId(groupId: UUID): List<UserGroupAssignmentEntity>
+
+  // GroupUseCase.listMembers paginates this in memory (drop/take); an explicit, unique order
+  // (createdAt alone can tie) keeps that deterministic across pages.
+  fun findAllByGroupIdOrderByCreatedAtAscIdAsc(groupId: UUID): List<UserGroupAssignmentEntity>
 }

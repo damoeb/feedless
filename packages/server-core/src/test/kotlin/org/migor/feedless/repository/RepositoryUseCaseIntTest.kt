@@ -179,4 +179,36 @@ class RepositoryUseCaseIntTest {
       assertThat(filteredCount).isEqualTo(1)
     }
 
+  @Test
+  fun `findAllByUserId pages without skipping or repeating rows, mirroring listRepositories' ask-for-one-extra pattern`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      repositoryUseCase.create(
+        (1..5).map {
+          RepositoryCreate(product = Vertical.rssProxy, title = "page-walk-$it", description = "d", refreshCron = "")
+        }
+      )
+
+      val totalCount = repositoryUseCase.countAllByUserId(null, user.id)
+      // The canonical, un-paginated order this walk must reproduce exactly.
+      val all = repositoryUseCase.findAllByUserId(PageableRequest(0, totalCount), null, user.id)
+
+      // Mirrors RepositoryHttpController.listRepositories: ask for one more than the page holds.
+      var page = 0
+      val returned = mutableListOf<RepositoryId>()
+      while (true) {
+        val fetched = repositoryUseCase.findAllByUserId(PageableRequest.withExtraForHasMore(page, 2), null, user.id)
+        val hasMore = fetched.size > 2
+        returned.addAll(fetched.take(2).map { it.id })
+        if (!hasMore) break
+        page++
+      }
+
+      assertThat(returned).containsExactlyElementsOf(all.map { it.id })
+    }
+
 }
