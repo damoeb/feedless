@@ -20,5 +20,9 @@ func NewRootCmd(version string) *cobra.Command {
 	root.Version = version
 	root.SetVersionTemplate("feedctl version {{.Version}}\n")
 
+	root.PersistentFlags().String("host", "", "Feedless host to use (overrides FEEDCTL_HOST and the configured default host)")
+
+	root.AddCommand(newAuthCmd(version))
+
 	return root
 }

@@ -2,6 +2,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -24,18 +25,27 @@ func main() {
 //
 // The root command sets SilenceErrors, so cobra never prints the error
 // itself — this is the one place that happens. SilenceUsage stays as the
-// root command configures it. C3 owns richer error rendering (ApiError
-// bodies, exit codes) on top of this.
+// root command configures it. An error exits 1, unless it carries a
+// *cmd.ExitError (errors.As), whose code is used instead — e.g. auth
+// commands exit 4 when not logged in or a token is rejected. C3 owns
+// richer error rendering (ApiError bodies) on top of this.
 func run(args []string, stdout, stderr io.Writer) int {
 	root := cmd.NewRootCmd(version)
 	root.SetArgs(args)
 	root.SetOut(stdout)
 	root.SetErr(stderr)
 
-	if err := root.Execute(); err != nil {
-		_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
-		return 1
+	err := root.Execute()
+	if err == nil {
+		return 0
 	}
 
-	return 0
+	_, _ = fmt.Fprintf(stderr, "error: %s\n", err)
+
+	var exitErr *cmd.ExitError
+	if errors.As(err, &exitErr) {
+		return exitErr.ExitCode()
+	}
+
+	return 1
 }
