@@ -10,10 +10,14 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.any2
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.TokenAuthenticator
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userGroup.RoleInGroup
+import org.migor.feedless.userGroup.UserGroupAssignment
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
@@ -40,7 +44,34 @@ class HttpApiJwtFilterTest {
     `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
     `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")
     jwtTokenIssuer = JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
-    filter = HttpApiJwtFilter(jwtTokenIssuer)
+    // The token's user owns actingGroup, and no other group.
+    val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
+    `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(any2(), any2())).thenAnswer {
+      val userId = it.arguments[0] as UserId
+      val groupId = it.arguments[1] as GroupId
+      if (groupId == actingGroup.groupId) UserGroupAssignment(userId = userId, groupId = groupId, role = RoleInGroup.owner) else null
+    }
+    filter = HttpApiJwtFilter(jwtTokenIssuer, TokenAuthenticator(userGroupAssignmentRepository))
+  }
+
+  @Test
+  fun `stores a RequestContext without the group when the user no longer owns the token's group`() {
+    val user = mock(User::class.java)
+    val userId = UserId()
+    `when`(user.id).thenReturn(userId)
+    val token = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner)).tokenValue
+
+    val request = MockHttpServletRequest("GET", "/api/v1/user")
+    request.addHeader("Authorization", "Bearer $token")
+    var requestContext: RequestContext? = null
+    val chain = FilterChain { req, _ ->
+      requestContext = req.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR) as? RequestContext
+    }
+
+    filter.doFilter(request, MockHttpServletResponse(), chain)
+
+    assertThat(requestContext?.userId).isEqualTo(userId)
+    assertThat(requestContext?.groupId).isNull()
   }
 
   @Test

@@ -15,6 +15,7 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -230,6 +231,41 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.statusCode()).describedAs(response.body()).isEqualTo(HttpStatus.CREATED.value())
     val created = repositoryRepository.findByTitleAndOwnerId(title, caller.id)!!
     assertThat(created.groupId).isEqualTo(groupRepository.findAllByOwner(caller.id).single().id)
+  }
+
+  /** An API token lives 356 days; the group it carries counts only while the caller still owns it. */
+  @Test
+  fun `POST repositories answers 403 NO_ACTING_GROUP once the caller no longer owns the token's group`() {
+    val token = runBlocking {
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+    }
+    val ownerGroup = groupRepository.findAllByOwner(caller.id).single()
+    userGroupAssignmentRepository.delete(userGroupAssignmentRepository.findByUserIdAndGroupId(caller.id, ownerGroup.id)!!)
+
+    assertRefusedForLackOfActingGroup(token)
+  }
+
+  @Test
+  fun `POST repositories answers 403 NO_ACTING_GROUP for a token that carries no group`() {
+    // The shape of every token issued before tokens carried the acting group.
+    val token = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(caller.id))).tokenValue
+
+    assertRefusedForLackOfActingGroup(token)
+  }
+
+  private fun assertRefusedForLackOfActingGroup(token: String) {
+    val title = "refused for ${caller.id.uuid}"
+
+    val response = send(
+      "POST",
+      "/api/v1/repositories",
+      "{\"product\":\"feedless\",\"sources\":[],\"title\":\"$title\",\"description\":\"\"}",
+      token = token,
+    )
+
+    assertThat(response.statusCode()).describedAs(response.body()).isEqualTo(HttpStatus.FORBIDDEN.value())
+    assertThat(response.body()).contains("\"code\":\"NO_ACTING_GROUP\"").contains("Create a new token")
+    assertThat(repositoryRepository.findByTitleAndOwnerId(title, caller.id)).isNull()
   }
 
   // Spring MVC's own exceptions on /api/v1 must keep their 4xx and still answer an ApiError.

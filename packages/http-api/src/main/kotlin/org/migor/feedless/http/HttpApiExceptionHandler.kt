@@ -10,6 +10,7 @@ import org.migor.feedless.http.api.model.ApiError
 import org.migor.feedless.http.api.model.FieldError
 import org.migor.feedless.session.AuthCredentialsException
 import org.migor.feedless.session.AuthUserNotFoundException
+import org.migor.feedless.session.NoActingGroupException
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.slf4j.MDC
@@ -57,6 +58,11 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler(PermissionDeniedException::class)
   fun handlePermissionDenied(ex: PermissionDeniedException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.message ?: "permission denied", request)
+
+  /** The token acts in no group the user still owns: a new token fixes it, so say so. */
+  @ExceptionHandler(NoActingGroupException::class)
+  fun handleNoActingGroup(ex: NoActingGroupException, request: WebRequest): ResponseEntity<ApiError> =
+    errorResponse(HttpStatus.FORBIDDEN, "NO_ACTING_GROUP", ex.message ?: "create a new token", request)
 
   @ExceptionHandler(NotFoundException::class)
   fun handleNotFound(ex: NotFoundException, request: WebRequest): ResponseEntity<ApiError> =

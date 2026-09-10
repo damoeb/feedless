@@ -32,7 +32,10 @@ import org.springframework.web.context.request.ServletRequestAttributes
 @Component
 @Deprecated("use DataFetchingEnvironment directly instead")
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
-class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
+class JwtRequestFilter(
+  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val tokenAuthenticator: TokenAuthenticator,
+) : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
   override fun doFilter(request: ServletRequest, response: ServletResponse, chain: FilterChain) {
@@ -40,7 +43,7 @@ class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
       runBlocking {
         runCatching {
           SecurityContextHolder.getContext().authentication =
-            jwtToOAuth2AuthenticationToken(jwtTokenIssuer.decodeJwt(request))
+            tokenAuthenticator.authenticate(jwtTokenIssuer.decodeJwt(request), request)
         }.onFailure { log.debug(it.message) }
       }
       val attributes = ServletRequestAttributes(request)
@@ -60,9 +63,12 @@ class JwtRequestFilter(private val jwtTokenIssuer: JwtTokenIssuer) : Filter {
 
 }
 
-fun jwtToOAuth2AuthenticationToken(jwtToken: Jwt): OAuth2AuthenticationToken {
+/** Requests authenticate through [TokenAuthenticator], which decides which of the token's capabilities count. */
+fun jwtToOAuth2AuthenticationToken(
+  jwtToken: Jwt,
+  authorities: List<GrantedAuthority> = jwtToken.capabilities(),
+): OAuth2AuthenticationToken {
   val attributes = mapOf("dummy" to "wef")
-  val authorities: List<GrantedAuthority> = jwtToken.capabilities()
 
   val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
   val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")

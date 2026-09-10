@@ -25,6 +25,7 @@ import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
@@ -61,6 +62,7 @@ import kotlin.time.Duration.Companion.seconds
     UserSecretUseCase::class,
     UserRepository::class,
     GroupRepository::class,
+    UserGroupAssignmentRepository::class,
     OneTimePasswordService::class,
     GroupRepository::class,
   ]

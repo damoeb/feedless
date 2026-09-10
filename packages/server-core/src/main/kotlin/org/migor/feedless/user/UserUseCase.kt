@@ -34,6 +34,7 @@ import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.session.NoActingGroupException
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.slf4j.LoggerFactory
@@ -370,8 +371,14 @@ fun CoroutineContext.userIdMaybe(): UserId? {
   return this[RequestContext]?.userId
 }
 
+/**
+ * The group this request acts in.
+ *
+ * @throws NoActingGroupException if the request has none: its token carries no group, or one the user
+ * no longer owns (see `TokenAuthenticator`).
+ */
 fun CoroutineContext.groupId(): GroupId {
-  return this[RequestContext]?.groupId!!
+  return this[RequestContext]?.groupId ?: throw NoActingGroupException.forRequest()
 }
 
 fun CoroutineContext.isAdmin(): Boolean {

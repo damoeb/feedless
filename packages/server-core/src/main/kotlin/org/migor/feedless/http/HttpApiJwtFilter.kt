@@ -10,8 +10,8 @@ import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.TokenAuthenticator
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
-import org.migor.feedless.session.jwtToOAuth2AuthenticationToken
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -25,6 +25,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class HttpApiJwtFilter(
   private val jwtTokenIssuer: JwtTokenIssuer,
+  private val tokenAuthenticator: TokenAuthenticator,
 ) : OncePerRequestFilter() {
 
   private val log = LoggerFactory.getLogger(HttpApiJwtFilter::class.simpleName)
@@ -59,7 +60,7 @@ class HttpApiJwtFilter(
           return@runBlocking false
         }
         val context = securityContextHolderStrategy.createEmptyContext()
-        context.authentication = jwtToOAuth2AuthenticationToken(jwt)
+        context.authentication = tokenAuthenticator.authenticate(jwt, request)
         securityContextHolderStrategy.context = context
         securityContextRepository.saveContext(context, request, response)
         request.setAttribute(HTTP_API_REQUEST_CONTEXT_ATTR, injectCapabilitiesFromSecurityContext())
