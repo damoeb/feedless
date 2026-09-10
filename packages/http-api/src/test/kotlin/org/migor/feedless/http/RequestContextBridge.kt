@@ -56,6 +56,10 @@ class RequestContextBridge {
 fun MockMvc.getAs(userId: UserId, url: String): MvcResult =
   complete(get(url) { requestAttr(HTTP_API_REQUEST_CONTEXT_ATTR, RequestContext(userId = userId)) }.andReturn())
 
+/** No [RequestContext] attribute at all — an anonymous caller, the same as a missing Bearer token. */
+fun MockMvc.getAnonymous(url: String): MvcResult =
+  complete(get(url).andReturn())
+
 fun MockMvc.postAs(userId: UserId, url: String, json: String): MvcResult =
   complete(
     post(url) {

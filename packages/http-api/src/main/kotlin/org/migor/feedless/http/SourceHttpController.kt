@@ -40,16 +40,35 @@ class SourceHttpController(
     pageSize: Int,
     disabled: Boolean?,
     like: String?,
+    minErrorsInSuccession: Int?,
   ): ResponseEntity<SourceListResponse> {
     val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     // Ask for one more than the page holds: a full page is not evidence of a next one.
     val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
-    val where = if (disabled == null && like == null) {
-      null
-    } else {
-      SourcesFilter(disabled = disabled, like = like)
-    }
+    val where = toFilter(disabled, like, minErrorsInSuccession)
     val fetched = sourceRepository.findAllByRepositoryIdFiltered(repository.id, pageable, where, null)
+    val items = fetched.take(pageSize).map { mapper.toHttp(it) }
+    return ResponseEntity.ok(
+      SourceListResponse(
+        items = items,
+        hasMore = fetched.size > pageSize,
+      ),
+    )
+  }
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  override suspend fun listUserSources(
+    page: Int,
+    pageSize: Int,
+    disabled: Boolean?,
+    like: String?,
+    minErrorsInSuccession: Int?,
+  ): ResponseEntity<SourceListResponse> {
+    val (userId, groupIds) = accessGuard.requireCallerScope()
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val pageable = PageableRequest(pageNumber = page, pageSize = pageSize + 1)
+    val where = toFilter(disabled, like, minErrorsInSuccession)
+    val fetched = sourceRepository.findAllForUser(userId, groupIds, pageable, where)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(
       SourceListResponse(
@@ -108,4 +127,11 @@ class SourceHttpController(
     sourceUseCase.deleteAllById(repoId, listOf(id))
     return ResponseEntity.noContent().build()
   }
+
+  private fun toFilter(disabled: Boolean?, like: String?, minErrorsInSuccession: Int?): SourcesFilter? =
+    if (disabled == null && like == null && minErrorsInSuccession == null) {
+      null
+    } else {
+      SourcesFilter(disabled = disabled, like = like, minErrorsInSuccession = minErrorsInSuccession)
+    }
 }

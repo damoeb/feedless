@@ -10,14 +10,17 @@ import jakarta.persistence.EntityManager
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.actions.FetchActionEntity
 import org.migor.feedless.document.SortOrder
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceOrderBy
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourcesFilter
+import org.migor.feedless.user.UserId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import java.util.*
@@ -103,6 +106,11 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
             path(SourceEntity::disabled).eq(it),
           )
         }
+        it.minErrorsInSuccession?.let { min ->
+          whereStatements.add(
+            path(SourceEntity::errorsInSuccession).ge(min),
+          )
+        }
         it.id?.let {
           it.eq?.let {
             whereStatements.add(path(SourceEntity::id).eq(UUID.fromString(it)))
@@ -178,5 +186,74 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     q.setFirstResult(pageable.pageSize * pageable.pageNumber)
     return sourceDAO.findAllWithActionsByIdIn(q.resultList).sortedBy { it.lastRecordsRetrieved }
       .map { it.toDomain() }
+  }
+
+  override fun findAllForUser(
+    userId: UserId,
+    groupIds: List<GroupId>,
+    pageable: PageableRequest,
+    where: SourcesFilter?,
+  ): List<Source> {
+    val whereStatements = mutableListOf<Predicatable>()
+    val query = jpql {
+      where?.let {
+        it.like?.let { like ->
+          if (like.length > 2) {
+            whereStatements.add(
+              or(
+                path(SourceEntity::title).like("%$like%"),
+                path(FetchActionEntity::url).like("%$like%"),
+              )
+            )
+          }
+        }
+        it.disabled?.let {
+          whereStatements.add(
+            path(SourceEntity::disabled).eq(it),
+          )
+        }
+        it.minErrorsInSuccession?.let { min ->
+          whereStatements.add(
+            path(SourceEntity::errorsInSuccession).ge(min),
+          )
+        }
+      }
+
+      // Owner, or member (any role) of the owning group — public repositories of others are
+      // excluded. A query predicate, not a post-filter, so pagination stays correct.
+      val accessPredicate = if (groupIds.isEmpty()) {
+        path(RepositoryEntity::ownerId).eq(userId.uuid)
+      } else {
+        or(
+          path(RepositoryEntity::ownerId).eq(userId.uuid),
+          path(RepositoryEntity::groupId).`in`(groupIds.map { it.uuid }),
+        )
+      }
+
+      select(path(SourceEntity::id))
+        .from(
+          entity(SourceEntity::class),
+          join(FetchActionEntity::class).on(path(FetchActionEntity::sourceId).eq(path(SourceEntity::id))),
+          join(RepositoryEntity::class).on(path(RepositoryEntity::id).eq(path(SourceEntity::repositoryId))),
+        )
+        .whereAnd(
+          accessPredicate,
+          *whereStatements.toTypedArray(),
+        )
+        .orderBy(
+          path(SourceEntity::errorsInSuccession).desc(),
+          path(SourceEntity::lastRefreshedAt).desc().nullsLast(),
+        )
+    }
+
+    val context = JpqlRenderContext()
+
+    val q = entityManager.createQuery(query, context)
+    q.setMaxResults(pageable.pageSize)
+    q.setFirstResult(pageable.pageSize * pageable.pageNumber)
+    // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards.
+    val orderedIds = q.resultList
+    val byId = sourceDAO.findAllWithActionsByIdIn(orderedIds).associateBy { it.id }
+    return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }
   }
 }

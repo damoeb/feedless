@@ -158,6 +158,33 @@ class RepositoryAccessGuardTest {
     assert(missingEx.message == "source ${missingId.uuid} not found") { missingEx.message!! }
   }
 
+  @Test
+  fun `requireCallerScope resolves the caller's own id and its group memberships`() = runTest {
+    val member = givenMember(RoleInGroup.viewer)
+
+    val (userId, groupIds) = asUser(member) { guard.requireCallerScope() }
+
+    assert(userId == member) { userId }
+    assert(groupIds == listOf(groupId)) { groupIds }
+  }
+
+  @Test
+  fun `requireCallerScope returns no groups for a caller in none`() = runTest {
+    whenever(groupUseCase.findAllByUserId(eq(stranger))).thenReturn(emptyList())
+
+    val (userId, groupIds) = asUser(stranger) { guard.requireCallerScope() }
+
+    assert(userId == stranger) { userId }
+    assert(groupIds.isEmpty()) { groupIds }
+  }
+
+  @Test
+  fun `requireCallerScope answers a caller without a user id like a denied repository`() = runTest {
+    assertNotFound { withContext(RequestContext(userId = null)) { guard.requireCallerScope() } }
+    assertNotFound { guard.requireCallerScope() }
+    verify(groupUseCase, never()).findAllByUserId(any())
+  }
+
   private suspend fun givenRepository(visibility: EntityVisibility): Repository {
     val repo = Repository(
       title = "feed",

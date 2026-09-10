@@ -6,6 +6,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.actions.FetchAction
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.http.mapper.HttpSourceMapper
@@ -16,6 +17,9 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCasePort
+import org.migor.feedless.source.SourcesFilter
+import org.migor.feedless.userGroup.RoleInGroup
+import org.migor.feedless.userGroup.UserGroupAssignment
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.eq
@@ -70,6 +74,8 @@ class SourceHttpControllerTest {
     val result = mockMvc.getAs(access.owner, sourcesUrl(private))
     assertStatus(result, 200)
     assert(result.response.contentAsString.contains(source.id.uuid.toString())) { result.response.contentAsString }
+    assert(result.response.contentAsString.contains("\"repositoryId\":\"${private.id.uuid}\"")) { result.response.contentAsString }
+    assert(result.response.contentAsString.contains("\"errorsInSuccession\":${source.errorsInSuccession}")) { result.response.contentAsString }
     assertStatus(mockMvc.getAs(access.member, sourcesUrl(private)), 200)
     assertStatus(mockMvc.getAs(access.stranger, sourcesUrl(public)), 200)
   }
@@ -80,6 +86,59 @@ class SourceHttpControllerTest {
 
     assertNotFound(mockMvc.getAs(access.stranger, sourcesUrl(private)), "repository ${private.id.uuid} not found")
     verify(sourceRepository, never()).findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull())
+  }
+
+  @Test
+  fun `listSources passes minErrorsInSuccession through as a SourcesFilter`() = runTest {
+    val private = access.givenRepository()
+    whenever(sourceRepository.findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull()))
+      .thenReturn(emptyList())
+
+    mockMvc.getAs(access.owner, "${sourcesUrl(private)}?minErrorsInSuccession=3")
+
+    verify(sourceRepository).findAllByRepositoryIdFiltered(
+      eq(private.id),
+      any(),
+      eq(SourcesFilter(minErrorsInSuccession = 3)),
+      anyOrNull(),
+    )
+  }
+
+  @Test
+  fun `listUserSources returns sources across every repository the caller owns or belongs to`() = runTest {
+    val groupId = GroupId()
+    whenever(groupUseCase.findAllByUserId(eq(access.owner))).thenReturn(
+      listOf(UserGroupAssignment(role = RoleInGroup.editor, userId = access.owner, groupId = groupId)),
+    )
+    val source = givenSource(RepositoryId())
+    whenever(sourceRepository.findAllForUser(eq(access.owner), eq(listOf(groupId)), any(), anyOrNull()))
+      .thenReturn(listOf(source))
+
+    val result = mockMvc.getAs(access.owner, "/api/v1/user/sources")
+
+    assertStatus(result, 200)
+    assert(result.response.contentAsString.contains(source.id.uuid.toString())) { result.response.contentAsString }
+  }
+
+  @Test
+  fun `listUserSources passes disabled, like, and minErrorsInSuccession through as a SourcesFilter`() = runTest {
+    whenever(groupUseCase.findAllByUserId(eq(access.owner))).thenReturn(emptyList())
+    whenever(sourceRepository.findAllForUser(any(), any(), any(), anyOrNull())).thenReturn(emptyList())
+
+    mockMvc.getAs(access.owner, "/api/v1/user/sources?disabled=true&like=foo&minErrorsInSuccession=1")
+
+    verify(sourceRepository).findAllForUser(
+      eq(access.owner),
+      eq(emptyList()),
+      any(),
+      eq(SourcesFilter(disabled = true, like = "foo", minErrorsInSuccession = 1)),
+    )
+  }
+
+  @Test
+  fun `listUserSources answers a caller without a user id like a denied repository`() = runTest {
+    assertNotFound(mockMvc.getAnonymous("/api/v1/user/sources"), "user not found")
+    verify(sourceRepository, never()).findAllForUser(any(), any(), any(), anyOrNull())
   }
 
   @Test

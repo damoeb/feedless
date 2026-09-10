@@ -6,6 +6,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCasePort
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
@@ -49,6 +50,19 @@ class RepositoryAccessGuard(
       throw repositoryNotFound(repositoryId)
     }
     return repository
+  }
+
+  /**
+   * The caller's cross-repository access scope, for endpoints like `GET /user/sources` that query
+   * across every repository at once instead of checking one — the same rule [mayAccess] applies
+   * per repository (owner, or member of its group, any role), expressed here as the inputs to a
+   * query predicate so pagination stays correct. No user id → the same [NotFoundException] a
+   * denied or missing repository answers with.
+   */
+  suspend fun requireCallerScope(): Pair<UserId, List<GroupId>> {
+    val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw NotFoundException("user not found")
+    val groupIds = groupUseCase.findAllByUserId(userId).map { it.groupId }
+    return userId to groupIds
   }
 
   /** [requireRepository], then the source — which must belong to that repository. */

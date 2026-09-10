@@ -1,7 +1,9 @@
 package org.migor.feedless.source
 
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.UserId
 
 interface SourceRepository {
 
@@ -28,6 +30,20 @@ interface SourceRepository {
     pageable: PageableRequest,
     where: SourcesFilter? = null,
     orders: List<SourceOrderBy>? = null
+  ): List<Source>
+
+  /**
+   * Sources across every repository [userId] owns or belongs to via its owning group (any role) —
+   * the same per-repository access rule http-api's RepositoryAccessGuard applies, expressed here
+   * as a query predicate so pagination stays correct. Public repositories of other users are not
+   * included. Ordered by errorsInSuccession desc, then lastRefreshedAt desc — the most broken
+   * sources come first.
+   */
+  fun findAllForUser(
+    userId: UserId,
+    groupIds: List<GroupId>,
+    pageable: PageableRequest,
+    where: SourcesFilter? = null,
   ): List<Source>
 
 }

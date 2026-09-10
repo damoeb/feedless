@@ -35,6 +35,40 @@ paths:
           $ref: '#/components/responses/Unauthorized'
         default:
           $ref: '#/components/responses/Error'
+  /user/sources:
+    get:
+      tags: [Sources]
+      operationId: listUserSources
+      summary: List sources across every repository the caller owns or belongs to via its owning group
+      description: >
+        Mirrors GitHub's GET /user/issues: repositories of other users are never included, even
+        public ones. Use minErrorsInSuccession to find broken sources without one request per
+        repository.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: disabled
+          in: query
+          schema:
+            type: boolean
+        - name: like
+          in: query
+          schema:
+            type: string
+        - name: minErrorsInSuccession
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceListResponse'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories:
     get:
       tags: [Repositories]
@@ -152,6 +186,11 @@ paths:
           in: query
           schema:
             type: string
+        - name: minErrorsInSuccession
+          in: query
+          schema:
+            type: integer
+            minimum: 1
       responses:
         '200':
           description: OK
@@ -996,7 +1035,7 @@ components:
           $ref: '#/components/schemas/Retention'
     Source:
       type: object
-      required: [id, title, flow]
+      required: [id, title, flow, repositoryId, errorsInSuccession]
       properties:
         id:
           type: string
@@ -1005,6 +1044,9 @@ components:
           type: string
         flow:
           $ref: '#/components/schemas/ScrapeFlow'
+        repositoryId:
+          type: string
+          format: uuid
         disabled:
           type: boolean
         lastRefreshedAt:
@@ -1012,6 +1054,12 @@ components:
           format: date-time
         lastRecordsRetrieved:
           type: integer
+        errorsInSuccession:
+          type: integer
+          description: >
+            Consecutive real failures. The harvester resets this to 0 on a transient failure
+            (DNS, connection, resumable, no items) even while it still sets lastErrorMessage —
+            this counter, not the message, is the signal that a source is actually broken.
         latLng:
           $ref: '#/components/schemas/GeoPoint'
         tags:

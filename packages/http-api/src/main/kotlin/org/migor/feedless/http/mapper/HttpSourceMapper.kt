@@ -21,9 +21,11 @@ class HttpSourceMapper(
       id = source.id.uuid,
       title = source.title,
       flow = scrapeFlowMapper.toHttpFlow(source.actions),
+      repositoryId = requireNotNull(source.repositoryId) { "source ${source.id.uuid} has no repositoryId" }.uuid,
       disabled = source.disabled,
       lastRefreshedAt = source.lastRefreshedAt?.toOffsetDateTime(),
       lastRecordsRetrieved = source.lastRecordsRetrieved,
+      errorsInSuccession = source.errorsInSuccession,
       latLng = source.latLon?.let { GeoPoint(lat = it.latitude, lng = it.longitude) },
       tags = source.tags?.toList(),
       // Not computed on this path — omit rather than report a hardcoded 0.
