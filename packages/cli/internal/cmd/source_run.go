@@ -98,7 +98,7 @@ func runSourceRunCmd(cmd *cobra.Command, version, idArg string, f sourceRunFlags
 		return err
 	}
 
-	return runSourceRun(cmd, apiClient, repoID, sourceID, f, flow, jf, productionPollDeps())
+	return runSourceRun(cmd, apiClient, repoID, sourceID, f, flow, jf, productionPollDeps(cmd.ErrOrStderr()))
 }
 
 // runSourceRun is `source run`'s core logic: queue the harvest

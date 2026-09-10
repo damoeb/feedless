@@ -33,8 +33,9 @@ func realSleep(ctx context.Context, d time.Duration) error {
 
 // pollDeps bundles harvestPoller's injectable seams — sleep/now for tests,
 // isTTY for the status line — so `source run`'s cobra wiring passes
-// productionPollDeps() while a test passes its own fakes directly to
-// runSourceRun, without going through cobra flag parsing or a real clock.
+// productionPollDeps(cmd.ErrOrStderr()) while a test passes its own fakes
+// directly to runSourceRun, without going through cobra flag parsing or a
+// real clock.
 type pollDeps struct {
 	sleep pollSleepFunc
 	now   func() time.Time
@@ -42,9 +43,28 @@ type pollDeps struct {
 }
 
 // productionPollDeps is what newSourceRunCmd's RunE actually uses: a real
-// sleeper, the real clock, and the real stdout TTY detection.
-func productionPollDeps() pollDeps {
-	return pollDeps{sleep: realSleep, now: time.Now, isTTY: output.IsTerminal(os.Stdout)}
+// sleeper, the real clock, and TTY detection based on stderr — via
+// progressIsTTY(stderr), where the progress status line is actually
+// written (harvestPoller.reportStatus) — not stdout, which is a different
+// stream that can be redirected independently (e.g. `2>log`, or CI log
+// capture piping only stderr). Callers pass cmd.ErrOrStderr().
+func productionPollDeps(stderr io.Writer) pollDeps {
+	return pollDeps{sleep: realSleep, now: time.Now, isTTY: progressIsTTY(stderr)}
+}
+
+// progressIsTTY reports whether w — the writer the run progress status line
+// actually goes to — is a terminal. Only an *os.File can be one; anything
+// else (a *bytes.Buffer in a test, a pipe, an io.MultiWriter, …) never is,
+// so this is the single decision point both production (cmd.ErrOrStderr(),
+// which is os.Stderr unless a test overrides it) and tests share, instead
+// of each guessing from a different stream.
+func progressIsTTY(w io.Writer) bool {
+	f, ok := w.(*os.File)
+	if !ok {
+		return false
+	}
+
+	return output.IsTerminal(f)
 }
 
 // pollDelay returns the wait before poll number n (0-based): 1s before the

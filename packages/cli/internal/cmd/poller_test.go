@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -237,5 +239,94 @@ func TestFormatElapsed(t *testing.T) {
 		if got := formatElapsed(tt.d); got != tt.want {
 			t.Errorf("formatElapsed(%v) = %q, want %q", tt.d, got, tt.want)
 		}
+	}
+}
+
+// --- progressIsTTY / productionPollDeps: the isTTY decision must come from
+// the actual writer the status line is written to (stderr), never from
+// os.Stdout — a prior version hardcoded output.IsTerminal(os.Stdout), which
+// mis-detects the moment stdout and stderr disagree (2>err.log with stdout
+// still a terminal writes raw \r/\x1b[K into the log; stdout redirected
+// with stderr a terminal wrongly suppresses the progress line). These
+// tests exercise the decision function itself and productionPollDeps'
+// wiring to it, not just the harvestPoller.isTTY field a caller could set
+// to anything (already covered by TestHarvestPoller_Wait_TTY_… above).
+
+func TestProgressIsTTY_NonFileWriter_False(t *testing.T) {
+	// A *bytes.Buffer — what every test's cmd.ErrOrStderr() actually is —
+	// can never be a terminal, regardless of what the real process's stdout
+	// or stderr happens to be.
+	if progressIsTTY(&bytes.Buffer{}) {
+		t.Error("progressIsTTY(&bytes.Buffer{}) = true, want false")
+	}
+}
+
+func TestProgressIsTTY_RegularFile_False(t *testing.T) {
+	// An *os.File satisfies the type assertion but a plain regular file
+	// (as opposed to a real terminal device) still isn't a terminal —
+	// proves the function actually calls output.IsTerminal rather than
+	// treating every *os.File as one.
+	f, err := os.CreateTemp(t.TempDir(), "not-a-tty")
+	if err != nil {
+		t.Fatalf("os.CreateTemp() error = %v", err)
+	}
+	t.Cleanup(func() { _ = f.Close() })
+
+	if progressIsTTY(f) {
+		t.Error("progressIsTTY(regular file) = true, want false")
+	}
+}
+
+func TestProductionPollDeps_IsTTY_ComesFromGivenWriter_NotStdout(t *testing.T) {
+	// The regression this guards against: isTTY used to be
+	// output.IsTerminal(os.Stdout), decided independently of which writer
+	// the status line actually goes to. productionPollDeps now takes that
+	// writer as a parameter — cmd.ErrOrStderr() in production — so there is
+	// no way for it to consult os.Stdout at all; passing a *bytes.Buffer
+	// (never a terminal) must always yield isTTY == false, whatever the
+	// test process's real stdout is.
+	deps := productionPollDeps(&bytes.Buffer{})
+	if deps.isTTY {
+		t.Error("productionPollDeps(&bytes.Buffer{}).isTTY = true, want false")
+	}
+
+	if deps.sleep == nil || deps.now == nil {
+		t.Error("productionPollDeps() left sleep or now nil")
+	}
+}
+
+// TestHarvestPoller_ProgressIsTTYFalse_NeverWritesControlCharsToStderr is
+// the end-to-end proof, at the harvestPoller level, that a non-terminal
+// stderr writer (the case productionPollDeps(cmd.ErrOrStderr()) now
+// guarantees whenever stderr isn't a real *os.File terminal) never receives
+// the \r / \x1b[K progress control sequences — even across a multi-poll
+// queued -> running -> completed sequence that would otherwise report
+// status on every step.
+func TestHarvestPoller_ProgressIsTTYFalse_NeverWritesControlCharsToStderr(t *testing.T) {
+	statuses := []api.HarvestStatus{api.Queued, api.Running, api.Running, api.Completed}
+	call := 0
+
+	var stderr bytes.Buffer
+
+	p := &harvestPoller{
+		fetch: func(_ context.Context) (api.Harvest, error) {
+			h := api.Harvest{Status: statuses[call], StartedAt: time.Now()}
+			call++
+
+			return h, nil
+		},
+		sleep:  alwaysSleepsOK,
+		now:    time.Now,
+		stderr: &stderr,
+		isTTY:  progressIsTTY(&stderr), // &stderr is a *bytes.Buffer, never a terminal
+	}
+
+	if _, err := p.Wait(context.Background()); err != nil {
+		t.Fatalf("Wait() error = %v", err)
+	}
+
+	out := stderr.String()
+	if strings.Contains(out, "\r") || strings.Contains(out, "\x1b[") {
+		t.Errorf("stderr = %q, want no \\r or \\x1b[ control sequences (stderr here isn't a terminal)", out)
 	}
 }
