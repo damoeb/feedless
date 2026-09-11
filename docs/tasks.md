@@ -115,7 +115,7 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **`feedctl source run` bei vorübergehenden Netzwerkfehlern.** Das Polling bricht mit Exit 1 ab, ohne Hinweis, dass der Harvest auf dem Server weiterläuft — nicht von einem fehlgeschlagenen Lauf zu unterscheiden. Retry oder Hinweis entscheiden.
 - [ ] **Harvests über 30 Minuten** können auf einer anderen Instanz kurz als fehlgeschlagen erscheinen (Sweep hängender Läufe), bevor das echte Ergebnis eintrifft.
 - [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl`, und die *Standard*-Reihenfolge ist eine andere (vorher pro Seite nach `lastRecordsRetrieved`, jetzt `createdAt desc`) — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
-- [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; die Linux- und darwin-amd64-Binaries einmal ausführen; optional signieren (cosign/minisign).
+- [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; optional signieren (cosign/minisign).
 - [ ] **`install.sh`-Fehlerfälle.** Scheitert `curl`, bricht das Skript ohne eigene Meldung ab; eine `http`-Basis-URL wird akzeptiert, obwohl `SHA256SUMS` vom selben Host kommt.
 - [ ] **`getHarvestLogs` legt `produces=text/plain` fest.**
 - [ ] **`/user/sources` joint `FetchActionEntity` direkt:** Sources mit zwei Fetch-Actions erscheinen doppelt, solche ohne fehlen — ein `EXISTS` nur für `like` verwenden.
@@ -155,7 +155,8 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft. Das Test-`import.sql` dupliziert zudem den Index aus V89
 - [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`; ausserdem bleibt der Start der Container unter Docker gelegentlich hängen
 - [ ] **`./gradlew lint` in `app-web`** ist `prettier --write .` und verändert Dateien
-- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen, und das `server-core`-Image startet nur, wenn dabei `APP_VERSION`, `APP_BUILD_TIMESTAMP` und `APP_GIT_COMMIT` als Build-Argumente gesetzt sind (Defaults im Dockerfile oder dokumentieren)
+- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen. Das `server-core`-Image braucht dabei `--build-context cli=../cli` (seine Go-Stage baut `feedctl` daraus) und startet nur, wenn `APP_VERSION`, `APP_BUILD_TIMESTAMP` und `APP_GIT_COMMIT` als Build-Argumente gesetzt sind; die Befehlszeile steht in `packages/cli/README.md`, Defaults im Dockerfile fehlen weiterhin
+- [ ] **Release-Build ohne Docker.** `scripts/build.sh` führt `./gradlew bundle` in `amazoncorretto:24` aus, ohne Docker-CLI und ohne Docker-Socket — `bundle` kann dort kein Image bauen. Klären, wie Releases tatsächlich gebaut werden
 
 ## Später oder unklar
 

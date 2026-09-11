@@ -37,24 +37,26 @@ go build -ldflags "-X main.version=<version>" -o build/feedctl ./cmd/feedctl
 
 Run `go generate ./...` after `openapi.yaml` changes, then commit the regenerated `internal/api/client.gen.go`. `./gradlew :packages:cli:lint` runs the same regeneration and fails the build if the checked-in client drifted from the spec, so a spec change without a matching regeneration is caught in CI, not by users of the CLI.
 
-## Cross-compiling for each self-hosted instance
+Every Go task in Gradle (`lint`'s checks, `test`, `build`, `e2eTest`) first runs `./gradlew :packages:cli:checkGo`. It reads the required version from `go.mod` (the `toolchain` line, else the `go` line), asks `go env GOVERSION` which toolchain `go` actually selects in this module, and fails with a clear message when `go` is not on PATH or the selected toolchain is older — for example because `GOTOOLCHAIN=local` stops `go` from downloading the pinned one. Any Go ≥ 1.21 passes with the default `GOTOOLCHAIN=auto`, since it downloads the pinned toolchain itself.
 
-Feedless is self-hosted, and instances run different versions, so each instance serves the `feedctl` build that matches its own API instead of a single downloadable release. `./gradlew :packages:cli:crossCompile` builds every platform this CLI supports and stages the files `packages/server-core`'s image serves under `/cli/**`:
+## The binaries each self-hosted instance serves
 
-```
-./gradlew :packages:cli:crossCompile
-```
+Feedless is self-hosted, and instances run different versions, so each instance serves the `feedctl` build that matches its own API instead of a single downloadable release. The `server-core` image builds those binaries itself: the first stage of `packages/server-core/Dockerfile` is a Go stage (`golang:1.27.1-alpine`, which must match the `toolchain` line in `go.mod`) that reads this directory as the BuildKit named build context `cli` and puts into the image's `static/cli/`, served under `/cli/**`:
 
-This produces, under `packages/cli/build/dist/`:
-
-- `feedctl-darwin-amd64`, `feedctl-darwin-arm64`, `feedctl-linux-amd64`, `feedctl-linux-arm64` — statically linked (`CGO_ENABLED=0`), stripped (`-trimpath -ldflags "-s -w"`) binaries. No Windows build (out of scope for now).
+- `feedctl-darwin-amd64`, `feedctl-darwin-arm64`, `feedctl-linux-amd64`, `feedctl-linux-arm64` — statically linked (`CGO_ENABLED=0`), stripped (`-trimpath -ldflags "-s -w"`) binaries whose `main.version` is the image's `APP_VERSION` build argument (`dev` if unset). No Windows build (out of scope for now).
 - `SHA256SUMS` — `sha256sum`-format checksums of the four binaries (`shasum -a 256 -c SHA256SUMS` verifies them).
 - `install.sh` — a copy of this directory's `install.sh`, unmodified; the server templates its `__FEEDCTL_BASE_URL__` placeholder per instance when it serves `/cli/install.sh` (see `CliInstallScriptController` in `packages/server-core`).
 
-Pass `-PfeedlessVersion=<version>` the same way `./gradlew :packages:cli:build` does, so the embedded `main.version` matches the release:
+The Go stage runs on the build host's own platform (`--platform=$BUILDPLATFORM`) and cross-compiles, so an `amd64` image builds natively on an `arm64` host. Building the image therefore needs Docker with BuildKit, but no local Go. `./gradlew :packages:server-core:buildAmdDockerImage` passes the context as `--build-context cli=<absolute path of packages/cli>`. To build the image by hand, run `./gradlew :packages:server-core:bootJar` and then, from `packages/server-core`:
 
 ```
-./gradlew -PfeedlessVersion=1.2.3 :packages:cli:crossCompile
+docker build \
+  --build-context cli=../cli \
+  --build-arg APP_VERSION=1.2.3 \
+  --build-arg APP_BUILD_TIMESTAMP=$(date +%s)000 \
+  --build-arg APP_GIT_COMMIT=$(git rev-parse --short HEAD) \
+  -t feedless:core-local \
+  .
 ```
 
-`./gradlew :packages:server-core:buildAmdDockerImage` depends on `crossCompile` (via the `copyCliArtifacts` task) and bakes `packages/cli/build/dist/` into the image's `static/cli/`, so it's served automatically -- no separate step is needed to ship the CLI with a running instance. A local `bootRun` that never ran `crossCompile` simply 404s on `/cli/**`; it does not fail to start.
+A relative `--build-context` path is resolved from the current directory, not from the build context. The core only starts when all three build arguments are set. A local `bootRun` has no `static/cli/`, so it 404s on `/cli/**`; it does not fail to start.

@@ -184,3 +184,4 @@ Dependencies: T9 and T10 before C6/C7; C8 independent of both. Same conventions 
 - Deleting a group, or removing an owner from one, is refused with `409 CONFLICT` when it would leave a member without an owned group or the group without an owner; deleting a group that still owns repositories is refused the same way, and a delete is now one transaction.
 - A `500` from `/api/v1` answers the fixed message `unexpected error` with its `corrId`; the internal error text is only logged.
 - `GET /api/v1/status` is public and reveals the server version, build commit/date and the number of connected agents.
+- The `server-core` image builds `feedctl` itself in a Go stage; building the image needs BuildKit (`--build-context cli=…`), not a local Go.
