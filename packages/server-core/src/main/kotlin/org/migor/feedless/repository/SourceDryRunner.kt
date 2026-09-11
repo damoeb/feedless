@@ -15,11 +15,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 
-/**
- * Dry runs: scrape a source to see what it would yield, without importing records and without
- * touching the source — no error state, no `lastRefreshedAt`. The user iterates on a flow this
- * way before saving it.
- */
+/** A dry run leaves the source untouched (no error state, no lastRefreshedAt) and imports nothing. */
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service} & ${AppLayer.scheduler}")
 class SourceDryRunner(
@@ -29,13 +25,7 @@ class SourceDryRunner(
 
   private val log = LoggerFactory.getLogger(SourceDryRunner::class.simpleName)
 
-  /**
-   * Scrapes [source] — whose actions may be an unsaved override flow — and records on [harvest]
-   * the scrape log plus a summary of the extracted items. `itemsAdded` is the number of items
-   * extracted. `errornous` is set when the scrape failed or extracted no items — a flow that
-   * yields nothing does not work. [harvest] is saved as [HarvestStatus.COMPLETED], also when the
-   * scrape fails.
-   */
+  /** Extracting no items fails the run: a flow that yields nothing doesn't work. [harvest] is completed even on failure. */
   suspend fun dryRun(source: Source, harvest: Harvest): Harvest {
     val logCollector = LogCollector()
     var outcome = harvest
@@ -43,8 +33,7 @@ class SourceDryRunner(
     try {
       val items = extractedItems(scrapeService.scrape(source, logCollector))
       if (items.isEmpty()) {
-        // A broken selector usually yields nothing rather than an exception — that is what a
-        // dry run must catch, so extracting nothing fails it.
+        // A broken selector usually yields nothing rather than throwing.
         logCollector.log("dry run extracted no items")
       }
       outcome = outcome.copy(itemsAdded = items.size, errornous = items.isEmpty())

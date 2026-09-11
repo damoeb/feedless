@@ -15,15 +15,7 @@ import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import java.nio.charset.StandardCharsets
 
-/**
- * feedctl (packages/cli) is cross-compiled and baked into every self-hosted
- * instance's image by the Go stage of packages/server-core/Dockerfile, so a
- * `curl .../cli/install.sh | sh`
- * against any instance always installs the CLI build matching that
- * instance's API. The binaries and SHA256SUMS are plain static files served
- * from the CLI static location (`/cli/`, all paths); only install.sh needs
- * templating, to bake in this instance's own public URL.
- */
+/** Serves install.sh with this instance's URL templated in, so an install always matches the instance's API. */
 @Controller
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class CliInstallScriptController(
@@ -40,21 +32,14 @@ class CliInstallScriptController(
   fun installScript(): ResponseEntity<String> {
     val resource = resourceLoader.getResource(installScriptLocation)
     if (!resource.exists()) {
-      // Only the image's Go stage populates static/cli, so a local bootRun
-      // has none -- 404, rather than failing bootRun (see
-      // packages/cli/README.md).
+      // Only the image's Go stage fills static/cli, so a local bootRun answers 404.
       log.debug("$installScriptLocation not found, feedctl was not cross-compiled into static/cli")
       return ResponseEntity.notFound().build()
     }
 
     val baseUrl = propertyService.apiGatewayUrl
     if (!FeedctlBaseUrlValidator.isValid(baseUrl)) {
-      // baseUrl is templated straight into a double-quoted shell assignment
-      // in install.sh; serving it unvalidated would let a misconfigured
-      // apiGatewayUrl run arbitrary shell on every `curl | sh` install. Log
-      // the actual value (it's an operator config value logged at startup
-      // by PropertyService already, not attacker input) but never echo it
-      // into the response.
+      // An unvalidated baseUrl would run arbitrary shell on every curl | sh. It's operator config, so logging it is fine; never echo it.
       log.error("app.apiGatewayUrl='$baseUrl' is not a valid feedctl base URL; refusing to serve /cli/install.sh")
       return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
         .contentType(MediaType.TEXT_PLAIN)

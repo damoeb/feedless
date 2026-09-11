@@ -29,13 +29,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
-/**
- * feedctl builds are cross-compiled and baked into the image separately
- * (the Go stage of packages/server-core/Dockerfile); this test only covers what
- * CliInstallScriptController is responsible for: templating install.sh with
- * this instance's own public URL. See SecurityConfigIntTest for the CLI
- * static location's public whitelisting.
- */
+/** Covers only the templating; binaries come from the image's Go stage, public access is in SecurityConfigIntTest. */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
@@ -84,9 +78,7 @@ class CliInstallScriptControllerIntTest {
     val restTemplate = TestRestTemplate()
     baseEndpoint = "http://localhost:$port"
 
-    // No feedctl build on disk for the default `app.cli.installScriptLocation`
-    // (only the image's Go stage produces one) -- must not fail bootRun (see
-    // packages/cli/README.md), just 404.
+    // No feedctl build on disk outside the image: 404, not a failed bootRun.
     val response = restTemplate.getForEntity("$baseEndpoint/cli/install.sh", String::class.java)
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)

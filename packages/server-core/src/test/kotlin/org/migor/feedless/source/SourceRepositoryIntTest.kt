@@ -29,11 +29,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 
-/**
- * Covers T6: [SourcesFilter.minErrorsInSuccession] on the per-repository list, and the
- * cross-repository query behind `GET /user/sources` — the access predicate (owner, or member of
- * the owning group, any role; a stranger's public repository excluded) and its fixed ordering.
- */
+/** The access predicate and ordering of the query behind GET /user/sources. */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
@@ -222,8 +218,7 @@ class SourceRepositoryIntTest {
 
   @Test
   fun `findAllForUser pages without skipping or repeating rows, mirroring listUserSources' ask-for-one-extra pattern`() {
-    // Distinct errorsInSuccession fully determines order on its own, independent of the
-    // createdAt/id tiebreakers — isolates this test to the offset/limit bug (T6 review round 1).
+    // Distinct errorsInSuccession fixes the order without tiebreakers, isolating the offset/limit handling.
     val now = LocalDateTime.now().withNano(0)
     val sources = (5 downTo 1).map { n -> createSource(ownRepo.id, errorsInSuccession = n, lastRefreshedAt = now) }
 

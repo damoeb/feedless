@@ -111,11 +111,7 @@ class SecurityConfig {
   @Bean
   fun filterChain(http: HttpSecurity): SecurityFilterChain {
     var chain = conditionalOauth(http)
-    // CorsFilter answers a valid preflight itself, without calling filterChain.doFilter(), so
-    // anything registered only relative to HttpApiJwtFilter/BasicAuthenticationFilter (both
-    // later in the chain) never runs for an OPTIONS preflight. Anchor the version filter to
-    // CorsFilter directly, and on its own bean's presence, so a preflight to /api/v1/** still
-    // carries the header even if HttpApiJwtFilter's profile were ever absent.
+    // CorsFilter answers preflights itself, so the version filter is anchored to it to reach OPTIONS requests too.
     httpApiVersionHeaderFilter?.let { versionFilter ->
       chain = chain.addFilterBefore(versionFilter, CorsFilter::class.java)
     }
@@ -140,8 +136,7 @@ class SecurityConfig {
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests {
         it.requestMatchers(*(whitelistedUrls())).permitAll()
-        // The one public /api/v1 operation: GET, and HEAD (Spring MVC serves it for GET mappings), on
-        // exactly this path; HttpApiJwtFilter skips the same requests.
+        // The one public /api/v1 operation; HttpApiJwtFilter skips the same requests.
         it.requestMatchers(HttpMethod.GET, StatusHttpController.PUBLIC_STATUS_PATH).permitAll()
         it.requestMatchers(HttpMethod.HEAD, StatusHttpController.PUBLIC_STATUS_PATH).permitAll()
         it.requestMatchers("/api/v1/**").authenticated()
@@ -152,8 +147,7 @@ class SecurityConfig {
   }
 
   private fun whitelistedUrls(): Array<String> {
-    // No public auth issuance path — every /api/v1/** requires UserSecret Bearer, except GET/HEAD /api/v1/status,
-    // which filterChain permits on its own (method-scoped, so it is not in this list).
+    // Every /api/v1/** needs a Bearer token (GET /api/v1/status is permitted separately).
     // Do not add /api/v1/auth, /api/v1/user or any other /api/v1 path to this whitelist.
     val urls = mutableListOf(
       "/graphql",

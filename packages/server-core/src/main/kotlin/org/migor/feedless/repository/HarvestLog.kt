@@ -16,12 +16,7 @@ private const val APPENDIX_SEPARATOR = "\n\n"
 internal fun harvestLogLine(time: LocalDateTime, message: String): String =
   "${time.format(DateTimeFormatter.ISO_DATE_TIME)}  $message"
 
-/**
- * The collected statements as a harvest log, one [harvestLogLine] each, capped at
- * [HARVEST_LOG_MAX_LENGTH]. An [appendix] (a dry run's item summary) follows after a blank line;
- * it is what the reader came for, so when the whole does not fit, the log gives way first — the
- * appendix keeps up to half the limit.
- */
+/** When it doesn't fit, the log gives way before the [appendix] (what the reader came for), which keeps up to half the limit. */
 internal fun LogCollector.toHarvestLog(appendix: String? = null): String {
   val log = logs.joinToString("\n") { harvestLogLine(it.time.toLocalDateTime(), it.message) }
   if (appendix.isNullOrEmpty()) {

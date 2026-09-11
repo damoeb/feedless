@@ -48,12 +48,7 @@ class GroupUseCase(
     group
   }
 
-  /**
-   * Deletes the group and its member assignments in one transaction. Every login and every new token
-   * needs a group the user owns ([org.migor.feedless.session.actingGroupOf]), so the delete is refused
-   * — with nothing changed — when it would leave a member without one, and when the group still owns
-   * repositories (their `group_id` is NOT NULL, so the database would refuse it half-way anyway).
-   */
+  /** Refused, with nothing changed, if a member would lose their last owned group (no login or token then), or the group still owns repositories. */
   override suspend fun delete(groupId: GroupId) = withContext(Dispatchers.IO) {
     log.info("delete groupId=$groupId")
     groupGuard.requireWrite(groupId)
@@ -84,12 +79,7 @@ class GroupUseCase(
     }
   }
 
-  // pageSize is the true, requested page size: drop uses it as-is (so the offset of every page
-  // stays correct), and take asks for one extra row (limit = pageSize + 1) so the caller can
-  // answer hasMore from one call. Inflating pageSize itself before calling this — as the old
-  // GroupHttpController.listGroupMembers did — shifts the offset too and skips a row at every
-  // page boundary (T6 review). findAllByGroupId is ordered (createdAt asc, id asc) so drop/take
-  // is deterministic.
+  // drop uses the true pageSize and take one extra for hasMore; the unique order keeps drop/take deterministic.
   override suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment> =
     withContext(Dispatchers.IO) {
       log.info("listMembers groupId=$groupId page=$page pageSize=$pageSize")
@@ -118,10 +108,7 @@ class GroupUseCase(
     userGroupAssignmentRepository.save(newAssigment)
   }
 
-  /**
-   * Removing an owner is refused when it would leave the group without an owner, or the removed user
-   * without any group they own — the latter could no longer log in or create a token.
-   */
+  /** Refused if the group would lose its last owner, or the user their last owned group (no login or token then). */
   override suspend fun removeUserFromGroup(groupId: GroupId, userId: UserId) = withContext(Dispatchers.IO) {
     log.info("removeUserFromGroup userId=$userId groupId=$groupId")
     groupGuard.requireWrite(groupId)

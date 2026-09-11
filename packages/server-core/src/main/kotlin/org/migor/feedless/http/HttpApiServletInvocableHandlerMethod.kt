@@ -9,16 +9,8 @@ import org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHan
 import java.lang.reflect.Method
 
 /**
- * HTTP-edge bridge: propagates [RequestContext] from the servlet request (set by [HttpApiJwtFilter])
- * into the coroutine context for suspend MVC controller methods.
- *
- * Spring's default [ServletInvocableHandlerMethod] invokes suspend functions with an empty context;
- * this subclass mirrors GraphQL's `injectCapabilitiesFromSecurityContext()` at the MVC adapter edge.
- *
- * It keeps Spring's [Dispatchers.Unconfined] start: the handler proxy — and its `@PreAuthorize` — runs
- * on the request thread while the security filter chain's context is still set. A context without a
- * dispatcher would start the coroutine on [Dispatchers.Default], where method security sees no
- * authentication at all.
+ * Puts the [RequestContext] set by [HttpApiJwtFilter] into the coroutine context of suspend controllers.
+ * Keeps the Unconfined start, so @PreAuthorize runs on the request thread while the security context is set.
  */
 class HttpApiServletInvocableHandlerMethod(handlerMethod: HandlerMethod) :
   ServletInvocableHandlerMethod(handlerMethod) {

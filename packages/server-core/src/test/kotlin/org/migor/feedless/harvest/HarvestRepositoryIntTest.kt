@@ -136,8 +136,7 @@ class HarvestRepositoryIntTest {
 
     val reloaded = harvestDAO.findById(saved.id.uuid).get()
 
-    // jsonb round-trips through Postgres, which re-serializes (key order, spacing) but preserves
-    // the JSON value itself - T3 treats flow as opaque, so only structural equality is guaranteed.
+    // jsonb re-serializes, so only structural equality holds.
     assertThat(JsonParser.parseString(reloaded.flow)).isEqualTo(JsonParser.parseString(flowJson))
   }
 

@@ -22,10 +22,7 @@ class ThrottleAspect {
 
   @Around("@annotation(org.migor.feedless.api.throttle.Throttled) || @annotation(org.migor.feedless.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
-    // tryAquire throws HostOverloadingException when the bucket is empty; this guards the
-    // other half of its Boolean contract. Returning null instead — as this used to — would
-    // surface as a 200 with an empty body (HTTP) or a null field (GraphQL), and the caller
-    // would never learn it was throttled.
+    // Returning null would read as a 200 with an empty body, and the caller would never learn it was throttled.
     if (!ipThrottle.tryAquire(joinPoint)) {
       log.debug("throttled ${joinPoint.signature.name}")
       throw TooManyRequestsException("rate limit exceeded for ${joinPoint.signature.name}")

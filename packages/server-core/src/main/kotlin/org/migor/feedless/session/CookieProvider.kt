@@ -32,8 +32,7 @@ class CookieProvider {
     val cookie = Cookie(name, "")
     cookie.isHttpOnly = true
     cookie.maxAge = 0
-    // Must match the path the cookie was set with, or the browser keeps the original. Leaving it
-    // unset also left Cookie.getPath() null, which blew up mapping to HttpSetCookie.path: String.
+    // Must match the path the cookie was set with, or the browser keeps the original.
     cookie.path = "/"
     return cookie
   }

@@ -175,15 +175,8 @@ class RepositoryHarvester(
   }
 
   /**
-   * Harvests one source and records the outcome on [harvest]: scrape, import into records,
-   * update the source's error state, collect the log. The scheduled repository loop and the
-   * queued-harvest executor both run a source through here, so a run on demand behaves exactly
-   * like a scheduled one.
-   *
-   * [harvest] is the source's running real harvest ([HarvestRepository.startRun], or a claimed
-   * queued one), which holds the source's one run slot. It is saved as [HarvestStatus.COMPLETED]
-   * with `finishedAt` and the log, also when the scrape fails — which frees the slot. The source's
-   * error state is updated atomically, never saved from [source], which may be stale.
+   * Shared by scheduled and queued runs, so both behave alike. Completing [harvest] frees the source's run slot, also on failure;
+   * the error state is updated atomically, never saved from the possibly stale [source].
    */
   suspend fun harvestSource(source: Source, harvest: Harvest): Harvest {
     val logCollector = LogCollector()

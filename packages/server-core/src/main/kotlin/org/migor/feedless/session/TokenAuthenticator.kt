@@ -15,15 +15,8 @@ import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Component
 
 /**
- * Turns a verified JWT into the request's authentication. Both JWT filters — [JwtRequestFilter] (GraphQL,
- * cookies) and `HttpApiJwtFilter` (`/api/v1`) — build it here, so every `RequestContext` that
- * [injectCapabilitiesFromSecurityContext] reads comes from this one place.
- *
- * A token's group claim was checked when the token was issued, but an API token lives 356 days. So the
- * claim counts only while the user still owns that group ([ownsGroup], the issuance rule). Otherwise the
- * authentication carries no group, and a write that needs one fails with [NoActingGroupException].
- * The verdict is kept on the request: one request costs at most one lookup, even though several filters
- * and the async re-dispatch authenticate it.
+ * Both JWT filters authenticate here. An API token lives 356 days, so its group claim counts only while the user still owns that group;
+ * the verdict is cached on the request, so one request costs at most one lookup.
  */
 @Component
 @Profile("${AppProfiles.session} & ${AppLayer.service}")

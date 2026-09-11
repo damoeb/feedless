@@ -4,14 +4,7 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.io.File
 
-/**
- * Guards `spring.flyway.target` in `application-database.yaml` against silently lagging behind
- * the migrations actually shipped in `src/main/resources/db/migration/`.
- *
- * Flyway stops applying migrations once it reaches `target`, so a migration added without also
- * raising the target is present on disk, validated by Flyway, but never applied. This is a fast,
- * Spring-free/Docker-free unit test: it reads the two files directly, no application context.
- */
+/** Flyway stops at spring.flyway.target, so a migration added without raising it is never applied. */
 class FlywayTargetTest {
 
   private val migrationFilePattern = Regex("""^V(\d+)__.*\.sql$""")
@@ -50,11 +43,7 @@ class FlywayTargetTest {
 
   private fun applicationDatabaseYaml() = resolveServerCoreFile("src/main/resources/application-database.yaml")
 
-  /**
-   * Resolves a path relative to the `server-core` module root, independent of whether the test
-   * runner's working directory is the module itself (Gradle's default for `./gradlew :packages:server-core:test`)
-   * or the repository root (e.g. some IDE run configurations).
-   */
+  /** Works from the module or the repository root (IDE run configurations). */
   private fun resolveServerCoreFile(relativePath: String): File {
     val fromModuleRoot = File(relativePath)
     if (fromModuleRoot.exists()) {

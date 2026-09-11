@@ -101,8 +101,7 @@ class RepositoryUseCaseIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    // Data is not reset between tests in this class (shared Testcontainers Postgres), so each
-    // test needs its own user to avoid "user already exists".
+    // Shared database, so each test needs its own user.
     user = userUseCase.createUser("foo+${java.util.UUID.randomUUID()}@bar.com")
     group = groupRepository.findAllByOwner(user.id).single()
   }
@@ -268,11 +267,7 @@ class RepositoryUseCaseIntTest {
       assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), noMatch, user.id)).isEmpty()
       assertThat(repositoryUseCase.countAllByUserId(noMatch, user.id)).isEqualTo(0)
 
-      // Blank q is no filter at all: same result as an equivalent filter with no text predicate.
-      // (Comparing against a bare `null` where-filter is not apples-to-apples here: the ownerId
-      // scoping predicate only applies when `where` is non-null, so a `null` filter can also
-      // surface other users' public repositories via the outer visibility-OR clause — a
-      // pre-existing quirk this task leaves untouched.)
+      // Blank q means no filter. Not compared with a null filter, which also surfaces other users' public repositories.
       val noText = RepositoriesFilter(text = null)
       val unfiltered = repositoryUseCase.countAllByUserId(noText, user.id)
       val blankQ = RepositoriesFilter(text = FulltextQueryFilter(query = "   "))

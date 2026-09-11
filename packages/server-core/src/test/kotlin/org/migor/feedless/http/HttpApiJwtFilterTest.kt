@@ -217,10 +217,7 @@ class HttpApiJwtFilterTest {
     assert(requestContext?.groupId == actingGroup.groupId)
   }
 
-  /**
-   * The suspend handler completes on an ASYNC dispatch this filter skips; the chain's
-   * SecurityContextHolderFilter loads the caller from the request-attribute repository there.
-   */
+  /** The async dispatch skips this filter; SecurityContextHolderFilter reloads the caller from the request attribute. */
   @Test
   fun `saves the authenticated context where the async dispatch loads it`() {
     val user = mock(User::class.java)

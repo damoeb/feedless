@@ -46,11 +46,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoSpyBean
 import java.time.LocalDateTime
 import java.util.UUID
 
-/**
- * Every login path and every new token needs a group the user owns, so the group endpoints must not
- * let one call take a user's last owned group away. Runs against Postgres: the refusals read the
- * real assignments, and the rollback test needs a real transaction.
- */
+/** No call may take a user's last owned group away (no login or token then). Runs against Postgres for real transactions. */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext

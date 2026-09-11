@@ -71,12 +71,7 @@ class QueryResolverIntTest {
     mockSecurityContext()
   }
 
-  /**
-   * SecurityContextHolder is a thread-local and Gradle reuses test worker threads. Leaving the
-   * mocked SecurityContext installed poisons every later test on the same thread: a mock swallows
-   * `setAuthentication(...)`, so code that authenticates a request silently keeps reading this
-   * stale token.
-   */
+  /** SecurityContextHolder is thread-local and Gradle reuses worker threads, so a leftover mock poisons later tests. */
   @AfterEach
   fun tearDown() {
     SecurityContextHolder.clearContext()

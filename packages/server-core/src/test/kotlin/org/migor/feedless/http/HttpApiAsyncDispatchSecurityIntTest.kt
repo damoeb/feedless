@@ -65,13 +65,7 @@ import java.net.http.HttpRequest
 import java.net.http.HttpResponse
 import java.util.UUID
 
-/**
- * Every `/api/v1` handler is a `suspend fun`, so on a real servlet container Spring MVC completes it
- * through an ASYNC dispatch that runs the security filter chain a second time. MockMvc controller
- * tests never see that dispatch, so this drives the endpoints through a real port with a token
- * minted the way production mints API tokens: the caller must be authenticated at the URL level,
- * in `@PreAuthorize`, and in [RepositoryAccessGuard] (which reads the coroutine's RequestContext).
- */
+/** Suspend handlers finish on an ASYNC dispatch that reruns the security chain; MockMvc never sees it, so this uses a real port. */
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
@@ -188,10 +182,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
       .contains("\"message\":\"repository ${strangerRepository.id.uuid} not found\"")
   }
 
-  /**
-   * A non-NotFound domain error must keep its own status and ApiError code on the real container:
-   * feedctl branches on both for every error path.
-   */
+  /** feedctl branches on the status and ApiError code of every error. */
   @Test
   fun `PATCH a source with a stale If-Match answers 412 PRECONDITION_FAILED`() {
     val response = send("PATCH", ownSourcePath(), "{\"title\":\"renamed\"}", HttpHeaders.IF_MATCH to "\"stale\"")
@@ -200,11 +191,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
   }
 
-  /**
-   * Repositories share the same [ETagCalculator] and exception mapping as sources, but only a
-   * real port dispatch (see the class doc) proves `HttpApiExceptionHandler`'s ordering actually
-   * answers 412 here rather than falling through to the app's unscoped `@ControllerAdvice`.
-   */
+  /** Only a real port dispatch proves the exception handler's ordering answers 412. */
   @Test
   fun `PATCH a repository with a stale If-Match answers 412 PRECONDITION_FAILED`() {
     val response = send(
@@ -218,10 +205,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
   }
 
-  /**
-   * A write lands in the group the token acts in. Tokens minted by `createUserSecret` (API JWT) and
-   * `authUser` (session JWT) used to carry no group, so creating a repository crashed with a 500.
-   */
+  /** A write lands in the group the token acts in, for both API and session tokens. */
   @Test
   fun `POST repositories answers 201 in the caller's owner group for an API token from createUserSecret`() {
     val token = runBlocking {

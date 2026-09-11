@@ -58,13 +58,8 @@ import java.util.concurrent.TimeUnit.SECONDS
 import javax.sql.DataSource
 
 /**
- * T14: at most one real (non-dry-run) harvest per source runs at a time — enforced by the database,
- * because the scheduler and the API may be different processes — and a source's error state is
- * updated atomically, so overlapping harvests cannot lose an increment.
- *
- * The harvester and the queued-harvest executor run for real against Postgres; only the scrape
- * (and what a successful import would touch) is mocked. The overlap tests hold one transaction
- * open and wait until the other session is blocked on it, so the overlap is real, not likely.
+ * At most one real harvest per source, enforced by the database since scheduler and API may be separate processes.
+ * The overlap tests hold one transaction open until the other session blocks on it, so the overlap is real.
  */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -228,7 +223,7 @@ class OneRealHarvestPerSourceIntTest {
 
   @Test
   fun `two overlapping failed harvests, both loaded before either finished, leave errorsInSuccession at 2`() = runBlocking<Unit> {
-    // The E1 race: the scheduled run and the on-demand run both load the source at 0 errors.
+    // Both runs load the source at 0 errors.
     val loadedByFirst = sourceRepository.findByIdWithActions(source.id)!!
     val loadedBySecond = sourceRepository.findByIdWithActions(source.id)!!
 

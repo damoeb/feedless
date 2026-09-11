@@ -371,12 +371,7 @@ fun CoroutineContext.userIdMaybe(): UserId? {
   return this[RequestContext]?.userId
 }
 
-/**
- * The group this request acts in.
- *
- * @throws NoActingGroupException if the request has none: its token carries no group, or one the user
- * no longer owns (see `TokenAuthenticator`).
- */
+/** @throws NoActingGroupException if the token carries no group, or one the user no longer owns. */
 fun CoroutineContext.groupId(): GroupId {
   return this[RequestContext]?.groupId ?: throw NoActingGroupException.forRequest()
 }

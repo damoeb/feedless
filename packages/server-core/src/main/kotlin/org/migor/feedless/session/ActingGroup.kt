@@ -8,15 +8,8 @@ import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 
 /**
- * The group a user token acts in: the oldest group the user holds an [RoleInGroup.owner] assignment in.
- *
- * Every path that issues a token for a user — SSO login, the `authUser` and magic-mail session logins,
- * and the `createUserSecret` API token — puts this group into the token next to the user, so every
- * request made with it has a `RequestContext.groupId` to write into. A token only ever carries a group
- * the user owns, and [ownsGroup] re-checks that on every request ([TokenAuthenticator]).
- *
- * @throws NoActingGroupException if the user owns no group — no token is issued then, rather than one
- * that fails on its first write.
+ * The group every issued token acts in: the user's oldest owned group, re-checked per request by [ownsGroup].
+ * Throws [NoActingGroupException] rather than issue a token that fails on its first write.
  */
 fun UserGroupAssignmentRepository.actingGroupOf(userId: UserId): GroupAndRole =
   findAllByUserId(userId)

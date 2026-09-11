@@ -10,13 +10,7 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
-/**
- * Backs the public `GET /api/v1/status`. Version, commit and build date come from the same
- * properties GraphQL `serverSettings` reads (`app.version`, `APP_GIT_COMMIT`, `APP_BUILD_TIMESTAMP`).
- *
- * The agent registry only exists with the agent profile; without it no agent can connect, so the
- * count is 0 rather than the status endpoint requiring that profile.
- */
+/** The agent count is 0 without the agent profile, rather than the endpoint requiring it. */
 @Service
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 class ServerStatusService(
@@ -28,8 +22,7 @@ class ServerStatusService(
 
   private val log = LoggerFactory.getLogger(ServerStatusService::class.simpleName)
 
-  // Parsed once, at startup: an image built without a valid APP_BUILD_TIMESTAMP must not turn a
-  // health check into a 500, so it reports 0 instead — and says so once.
+  // Parsed once: a bad APP_BUILD_TIMESTAMP reports 0 instead of turning a health check into a 500.
   private val buildDate: Long = try {
     parseBuildTimestamp(buildTimestamp)
   } catch (e: IllegalArgumentException) {

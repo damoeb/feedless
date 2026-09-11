@@ -30,23 +30,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
 /**
- * install.sh substitutes __FEEDCTL_BASE_URL__ straight into a
- * double-quoted shell assignment, so a misconfigured `apiGatewayUrl`
- * (PropertyService only requires it non-empty) must never reach the
- * templated response -- see FeedctlBaseUrlValidator and
- * CliInstallScriptController. This is a separate SpringBootTest from
- * CliInstallScriptControllerWithFixtureIntTest because `app.apiGatewayUrl`
- * is fixed per context.
- *
- * The configured value below has to be a `java.net.URI`-legal string (a
- * query string, `?q=1`) rather than one with a raw quote/backtick/space:
- * `HttpService` also parses `apiGatewayUrl` eagerly on startup via
- * `URI(apiGatewayUrl).toURL()`, so a URL that isn't valid URI syntax at all
- * fails ApplicationContext startup outright with a BeanCreationException,
- * before CliInstallScriptController ever gets a request to refuse.
- * FeedctlBaseUrlValidator's character allow-list rejects `?` regardless
- * (see FeedctlBaseUrlValidatorTest for the shell-metacharacter cases this
- * allow-list actually exists for).
+ * A misconfigured apiGatewayUrl must never reach the templated install.sh; a separate context, since the URL is fixed per context.
+ * The value must still be a legal URI (HttpService parses it at startup), so it uses `?`, which the allow-list rejects too.
  */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(

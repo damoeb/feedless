@@ -29,13 +29,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
 
-/**
- * Separate SpringBootTest from CliInstallScriptControllerIntTest because
- * `app.cli.installScriptLocation` is fixed per context: this one points at
- * a fixture standing in for the real, cross-compiled install.sh (see
- * packages/server-core/src/test/resources/cli/install-fixture.sh) to prove
- * templating end to end.
- */
+/** A separate context, since installScriptLocation is fixed per context; the fixture proves templating end to end. */
 @ExtendWith(SpringExtension::class)
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,

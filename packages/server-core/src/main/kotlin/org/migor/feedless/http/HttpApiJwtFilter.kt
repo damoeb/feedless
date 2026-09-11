@@ -32,21 +32,11 @@ class HttpApiJwtFilter(
 
   private val securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy()
 
-  /**
-   * Every `/api/v1` handler is a `suspend fun`, so Spring MVC completes it on an ASYNC dispatch that
-   * runs the security filter chain again. This filter does not run on that dispatch (a
-   * [OncePerRequestFilter] skips async dispatches); the chain's `SecurityContextHolderFilter` loads
-   * the context from this repository instead. A request attribute lives exactly as long as this one
-   * request, and it is the repository the stateless chain reads — the same default
-   * `BasicAuthenticationFilter` saves to.
-   */
+  /** The async re-dispatch of suspend handlers skips this filter, so the context is stored where SecurityContextHolderFilter reloads it. */
   private val securityContextRepository: SecurityContextRepository = RequestAttributeSecurityContextRepository()
 
   override fun shouldNotFilter(request: HttpServletRequest): Boolean {
-    // No public auth issuance path on the HTTP API: every /api/v1/** request requires a UserSecret Bearer JWT,
-    // except GET (and HEAD, which Spring MVC serves for it) on exactly /api/v1/status — the one public
-    // operation (StatusHttpController). It is never authenticated, so a missing, expired or invalid token
-    // all get its 200 instead of this filter's 401.
+    // Every /api/v1 request needs a Bearer JWT, except GET/HEAD /api/v1/status, which is public.
     return !request.requestURI.startsWith("/api/v1/") || isPublicStatusRequest(request)
   }
 

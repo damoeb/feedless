@@ -136,14 +136,7 @@ class SecurityConfigIntTest {
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
   }
 
-  /**
-   * feedctl builds are baked into every instance's image and must be
-   * downloadable without a token (curl .../cli/install.sh | sh). A file
-   * that is not present in this test run (the binaries only exist in the
-   * image, built by its Go stage) still 404s rather than 401/403, proving
-   * the CLI static location is public regardless of whether feedctl was
-   * built.
-   */
+  /** A CLI file missing from this run still answers 404, not 401/403: the CLI downloads are public whether or not feedctl was built. */
   @ParameterizedTest
   @CsvSource(
     value = [
@@ -159,12 +152,7 @@ class SecurityConfigIntTest {
     assertThat(response.statusCode).isNotEqualTo(HttpStatus.FORBIDDEN)
   }
 
-  /**
-   * The version header is set by [org.migor.feedless.http.HttpApiVersionHeaderFilter], which
-   * must run ahead of [org.migor.feedless.http.HttpApiJwtFilter] in the real Spring Security
-   * filter chain so it lands on the 401 that filter writes via `sendError` before any
-   * controller runs — a unit test of either filter in isolation cannot prove that ordering.
-   */
+  /** Only the real filter chain proves the version filter runs before HttpApiJwtFilter's 401. */
   @Test
   fun whenRequestingApiV1WithoutAuth_ThenVersionHeaderPresentOn401() {
     val restTemplate = TestRestTemplate()
@@ -174,10 +162,7 @@ class SecurityConfigIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
-  /**
-   * GET /api/v1/status is the one public /api/v1 operation. This context has no agent profile, so
-   * there is no agent registry and the count must still answer, as 0.
-   */
+  /** No agent profile here, so the count must still answer, as 0. */
   @Test
   fun whenRequestingStatusWithoutAuth_ThenOkWithAllFields() {
     val response = TestRestTemplate().getForEntity("${baseEndpoint}/api/v1/status", String::class.java)
@@ -239,11 +224,7 @@ class SecurityConfigIntTest {
     assertThat(response.headers().firstValue("X-Feedless-Version")).isPresent()
   }
 
-  /**
-   * Pins the exact-path, GET/HEAD-only match both gates (SecurityConfig's permitAll and
-   * HttpApiJwtFilter's skip) rely on: no neighbour of /api/v1/status may answer the status. Sent raw
-   * (JDK client, no re-encoding), so the firewall may answer 400 instead of 401 — either is fine.
-   */
+  /** No neighbour of /api/v1/status may answer the status; sent raw, so a firewall 400 is as good as a 401. */
   @ParameterizedTest
   @CsvSource(
     value = [
@@ -278,14 +259,7 @@ class SecurityConfigIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNull()
   }
 
-  /**
-   * CorsFilter answers a valid preflight itself, without ever calling filterChain.doFilter(),
-   * so the version filter has to be registered ahead of CorsFilter (not merely ahead of
-   * HttpApiJwtFilter/BasicAuthenticationFilter, both later in the chain) for the header to
-   * reach an OPTIONS preflight response. `http://localhost:4200` is the origin the default
-   * `app.cors.allowedOrigins` config allows (see application.yaml), so CorsFilter answers this
-   * preflight with 2xx/OK rather than rejecting it.
-   */
+  /** CorsFilter answers preflights itself, so the header reaches OPTIONS only if the filter runs ahead of it. */
   @Test
   fun whenSendingCorsPreflightToApiV1_ThenVersionHeaderPresent() {
     val restTemplate = TestRestTemplate()

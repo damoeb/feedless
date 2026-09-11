@@ -26,17 +26,8 @@ import java.time.LocalDateTime
 import kotlin.coroutines.cancellation.CancellationException
 
 /**
- * Runs the harvests `POST .../harvests` queued. The API and the scheduler may be different
- * processes, so the database is the queue: each tick claims queued rows with
- * `FOR UPDATE SKIP LOCKED` (see [HarvestRepository.claimQueued]) — several scheduler instances
- * never run the same harvest — and runs them under the owning repository's [RequestContext].
- *
- * A real run is claimed only while no other real run of its source runs — scheduled or queued, in
- * any process; until then it stays queued and a later tick claims it. Dry runs are not limited.
- *
- * Every claimed harvest ends [HarvestStatus.COMPLETED]: a run that throws is completed as failed,
- * and a run that dies with its process is completed as failed by the stale sweep — which also
- * frees its source for the next real run.
+ * Runs queued harvests. The API and scheduler may be separate processes, so the database is the queue (SKIP LOCKED claims).
+ * Every claimed harvest ends COMPLETED: a throw completes it as failed, a dead process via the stale sweep.
  */
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
@@ -60,8 +51,7 @@ class QueuedHarvestExecutor internal constructor(
       val claimed = try {
         harvestRepository.claimQueued(MAX_CONCURRENT_RUNS, LocalDateTime.now())
       } catch (e: DataIntegrityViolationException) {
-        // A scheduled run of a claimed harvest's source started between the claim's lock and its
-        // commit, so the database refused the claim; every harvest of it is still queued.
+        // A real run of that source started between lock and commit, so the database refused the claim; all stay queued.
         log.info("a real harvest of a claimed source started meanwhile, claiming on the next tick")
         emptyList()
       }

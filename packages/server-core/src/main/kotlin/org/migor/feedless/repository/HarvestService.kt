@@ -33,9 +33,7 @@ class HarvestService(
     )
   }
 
-  // pageSize is the true, requested page size — this asks for one extra row (limit = pageSize +
-  // 1) so listHarvests can answer hasMore from one call, without shifting where the next page's
-  // offset starts (see PageableRequest.withExtraForHasMore).
+  // Asks for one extra row for hasMore without shifting the offset.
   override suspend fun findAllBySourceId(sourceId: SourceId, dryRun: Boolean, page: Int, pageSize: Int): List<Harvest> =
     withContext(Dispatchers.IO) {
       harvestRepository.findAllBySourceId(
