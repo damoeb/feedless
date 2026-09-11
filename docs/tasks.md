@@ -76,6 +76,7 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] Twint-Beitrag (5 CHF), um eine Community zu gründen — **Twint fehlt technisch vollständig**, während Stripe als Modul existiert
 - [ ] Community hat Organisator
+- [ ] **Veranstalter als eigene Community**, wie ein YouTube-Kanal. Hängt mit „Community hat Organisator" zusammen.
 - [ ] Karma-Profil
 - [ ] Visitenkarten
 
@@ -83,6 +84,8 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] **Events kategorisieren.** `packages/document-classifier` (fastText) und `categories.yaml` existieren, sind aber **nirgends in `server-core` referenziert**. Der grösste ungenutzte Baustein im Repo: Kategorien geben Filter-UI, eine zweite URL-Achse (`/events/in/CH/ZG/Zug/konzerte`) und deutlich bessere Mail-Abos auf einmal
 - [ ] Konzept für Event-Tagging
+- [ ] **Veranstaltungsorte als eigene Entities** statt Freitext im Event. Grundlage für „Strassenadressen für Veranstaltungsorte" und den Veranstaltungsort in den Custom Attributes.
+- [ ] **Redaktioneller Inhalt**, z. B. „Die besten Cafés in Wollishofen".
 - [ ] Klassifikations-Plugin in die Pipeline hängen
 - [ ] Summary-Plugin → GenAI-Plugin
 
@@ -104,7 +107,8 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **Teil 3: `plan`, `group`, `member` in `feedctl`**, dazu `PATCH /groups/{id}` und ETag/If-Match für Groups.
 - [ ] **Teil 4: Scoped Secrets.** Tokens mit Scope (eine Group oder ausgewählte Repos, Rechte pro Entity, Pflicht-Ablaufdatum, `fdl_`-Präfix, nur der Hash gespeichert), verwaltet nur in der Web-UI. Anlegen und Löschen verlangt eine erneute Bestätigung je nach Anmeldeart (Root-Key, Einmal-Code per Mail, frischer SSO-Login), gültig 10 Minuten pro Session — auch für die heutigen unscoped Secrets. Danach akzeptiert `/api/v1` keine Session- und alten `UserSecret`-JWTs mehr; Agents brauchen vorher einen eigenen Scope. Offen: ob auch Änderungen, die Rechte ausweiten oder die Laufzeit verlängern, eine Bestätigung verlangen.
 - [ ] **Schreibrechte von Group-Editoren angleichen.** Der `RepositoryAccessGuard` auf `/api/v1` lässt Group-Mitglieder mit Rolle `editor` schreiben, `server-core` lehnt Update und Löschen von Repos aber ab, wenn der Aufrufer nicht Owner ist, und bei Sources, wenn seine Default-Group nicht die des Repos ist.
-- [ ] **`GET /repositories` zeigt eingeloggten Usern keine fremden öffentlichen Repos** — die `OR visibility = public`-Bedingung wird vom Owner-Filter überdeckt.
+- [ ] **`GET /repositories` liefert je nach Filter eine andere Menge.** Ohne Filter kommen die eigenen und alle fremden öffentlichen Repos, mit `product`/`visibility`/`q` nur die eigenen (der Owner-Filter sitzt im `where`, das ohne Filter `null` ist); Repos der eigenen Groups fehlen in beiden Fällen. Eine Regel festlegen, z. B. wie GitHubs `GET /user/repos`: eigene und Group-Repos.
+- [ ] **Account-Status in `feedctl status`.** Mit Login zusätzlich Angaben zum eigenen Account (z. B. Anzahl Repos, Plan) — offen, was genau.
 - [ ] **Source in ein anderes Repo verschieben.** Gibt es nicht; heute nur neu anlegen und alte löschen, dabei geht die Harvest-Historie verloren.
 - [ ] **`feedctl` in CI ohne `hosts.yml`.** `FEEDCTL_HOST` und `FEEDCTL_TOKEN` allein reichen nicht; CI muss `auth login` ausführen und schreibt das Token dann im Klartext in eine Datei.
 - [ ] **`feedctl --host` normalisieren** (Schema, Gross-/Kleinschreibung) — heute ergibt `--host https://…` „not logged in".
