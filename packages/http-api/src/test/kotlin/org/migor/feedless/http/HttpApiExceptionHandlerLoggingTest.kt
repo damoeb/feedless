@@ -50,4 +50,20 @@ class HttpApiExceptionHandlerLoggingTest {
       .doesNotContain("secret")
     assertThat(event.throwableProxy.className).isEqualTo(NullPointerException::class.java.name)
   }
+
+  @Test
+  fun `handleGeneric answers a fixed message and keeps the internal error text in the log only`() {
+    val request = MockHttpServletRequest("DELETE", "/api/v1/groups/1")
+    val internalText = "ERROR: update or delete on table \"t_group\" violates foreign key constraint \"fk_x\""
+    val exception = IllegalStateException(internalText)
+
+    val response = HttpApiExceptionHandler().handleGeneric(exception, ServletWebRequest(request))
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.INTERNAL_SERVER_ERROR)
+    assertThat(response.body!!.code).isEqualTo("INTERNAL_ERROR")
+    assertThat(response.body!!.message).isEqualTo("unexpected error")
+    assertThat(response.body!!.corrId).isNotBlank()
+    assertThat(response.body!!.toString()).doesNotContain("t_group").doesNotContain("fk_x")
+    assertThat(appender.list.single().throwableProxy.message).isEqualTo(internalText)
+  }
 }

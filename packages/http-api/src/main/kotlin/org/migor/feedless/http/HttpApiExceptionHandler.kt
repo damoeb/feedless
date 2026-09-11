@@ -45,6 +45,11 @@ import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExcep
 @RestControllerAdvice(basePackages = ["org.migor.feedless.http"])
 class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
 
+  companion object {
+    /** The only message a 500 answers with; the detail stays in the log. */
+    const val UNEXPECTED_ERROR = "unexpected error"
+  }
+
   private val log = LoggerFactory.getLogger(HttpApiExceptionHandler::class.simpleName)
 
   @ExceptionHandler(AuthUserNotFoundException::class)
@@ -122,11 +127,13 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
    * Anything no other handler maps is a server bug. Log it — stack trace, method and path, under the
    * answer's corrId — before answering 500, or it leaves no trace in the core log. The path carries no
    * query string, and no headers are logged, so no credential reaches the log.
+   *
+   * The answer carries a fixed [UNEXPECTED_ERROR] message, never `ex.message`: that text can hold SQL,
+   * constraint names or NPE details. The corrId in the body is the caller's handle on the log line.
    */
   @ExceptionHandler(Exception::class)
   fun handleGeneric(ex: Exception, request: WebRequest): ResponseEntity<ApiError> {
-    val response =
-      errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", ex.message ?: "unexpected error", request)
+    val response = errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", UNEXPECTED_ERROR, request)
     val method = (request as? ServletWebRequest)?.httpMethod?.name() ?: "UNKNOWN"
     log.error("unexpected error on $method ${response.body?.path} corrId=${response.body?.corrId}", ex)
     return response
@@ -167,7 +174,12 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
     if ((request as? ServletWebRequest)?.response?.isCommitted == true) {
       return null
     }
-    val message = (body as? ProblemDetail)?.detail ?: ex.message ?: "invalid request"
+    // A 500 from Spring MVC itself is as internal as any other: same fixed message as handleGeneric.
+    val message = if (statusCode.value() == HttpStatus.INTERNAL_SERVER_ERROR.value()) {
+      UNEXPECTED_ERROR
+    } else {
+      (body as? ProblemDetail)?.detail ?: ex.message ?: "invalid request"
+    }
     return errorResponse(statusCode, codeFor(statusCode), message, request, headers = headers).asAny()
   }
 
