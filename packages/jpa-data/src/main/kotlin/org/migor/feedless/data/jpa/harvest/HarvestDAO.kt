@@ -17,8 +17,7 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface HarvestDAO : JpaRepository<HarvestEntity, UUID> {
-  // createdAt alone is not unique (harvests can be created within the same millisecond), so a
-  // trailing id tiebreaker keeps LIMIT/OFFSET pagination from repeating or dropping rows.
+  // createdAt can tie; the id tiebreaker keeps pagination stable.
   @Query(
     """SELECT h FROM HarvestEntity h
     WHERE h.sourceId = :sourceId AND h.dryRun = :dryRun
@@ -53,14 +52,8 @@ DELETE FROM t_harvest WHERE EXISTS(
   fun deleteAllByDryRunTrueAndStatusAndCreatedAtBefore(status: String, before: LocalDateTime)
 
   /**
-   * Locks the oldest claimable queued harvests. `SKIP LOCKED` makes a concurrent claimer pass over
-   * rows this transaction holds instead of waiting for them — and, once they are committed as
-   * `running`, the `status` filter excludes them — so two claimers always get disjoint sets.
-   *
-   * A real (non-dry) run is claimable only while no real run of its source is running and no older
-   * real run of it is queued: a claim never starts a second real harvest of a source (V89's partial
-   * unique index enforces that), and a source's real runs start in the order they were queued. A
-   * concurrent claimer holding the older one locked makes the newer one unclaimable too.
+   * SKIP LOCKED gives concurrent claimers disjoint sets. A real run is claimable only with no running or older queued real run
+   * of its source, so real runs never overlap (V89's unique index) and start in queue order.
    */
   @Query(
     """
@@ -80,11 +73,7 @@ DELETE FROM t_harvest WHERE EXISTS(
   )
   fun findQueuedForUpdateSkipLocked(@Param("limit") limit: Int): List<HarvestEntity>
 
-  /**
-   * Records a real harvest of [sourceId] as running, unless one is running already: V89's partial
-   * unique index refuses the row, and `ON CONFLICT DO NOTHING` turns that into 0 rows inserted
-   * instead of an error. An uncommitted conflicting row is waited for, so the answer is never a race.
-   */
+  /** V89's partial unique index plus ON CONFLICT DO NOTHING: 0 rows when a real harvest already runs. */
   @Modifying
   @Query(
     """

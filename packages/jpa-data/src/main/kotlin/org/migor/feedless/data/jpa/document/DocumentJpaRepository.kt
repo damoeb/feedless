@@ -161,8 +161,7 @@ class DocumentJpaRepository(private val documentDAO: DocumentDAO, private val en
           orderBy?.let {
             path(DocumentEntity::startingAt).asc().nullsLast()
           } ?: path(DocumentEntity::publishedAt).desc(),
-          // Tiebreaker: neither key above is unique, and without one, LIMIT/OFFSET pagination
-          // can repeat or drop rows across pages.
+          // Neither key is unique; without a tiebreaker pagination repeats or drops rows.
           path(DocumentEntity::id).asc(),
         )
     }
@@ -170,12 +169,10 @@ class DocumentJpaRepository(private val documentDAO: DocumentDAO, private val en
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    // limit is pageSize (or pageSize + 1 for a "fetch one extra to answer hasMore" page) — offset
-    // always uses the true pageSize, so it never shifts when limit does (see T6 review).
+    // offset uses the true pageSize, so fetching one extra never shifts it.
     q.setMaxResults(pageable.limit)
     q.setFirstResult(pageable.offset)
-    // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards
-    // — otherwise take(pageSize) at the caller can drop the wrong (non-"extra") row.
+    // The IN-fetch loses order; restore it so the caller's take(pageSize) drops the right row.
     val orderedIds = q.resultList
     val byId = documentDAO.findAllWithAttachmentsByIdIn(orderedIds).associateBy { it.id }
     return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }

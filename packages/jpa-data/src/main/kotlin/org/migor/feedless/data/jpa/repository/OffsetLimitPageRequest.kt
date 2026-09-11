@@ -3,14 +3,7 @@ package org.migor.feedless.data.jpa.repository
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 
-/**
- * A [Pageable] whose offset is independent of its fetch size. Spring Data's own [org.springframework.data.domain.PageRequest]
- * always computes `offset = pageNumber * pageSize`, which cannot express "page N of size S, but
- * fetch S + 1 rows this time" — the `hasMore`-without-a-second-request pattern used across
- * `/api/v1` list endpoints (see `PageableRequest.limit`). Without this, inflating the Spring Data
- * page size to fetch one extra row also inflates the offset, and every page after the first skips
- * one row.
- */
+/** A [Pageable] whose offset doesn't depend on its fetch size: PageRequest can't fetch S + 1 rows without shifting the offset. */
 class OffsetLimitPageRequest(
   private val offsetValue: Long,
   private val limitValue: Int,

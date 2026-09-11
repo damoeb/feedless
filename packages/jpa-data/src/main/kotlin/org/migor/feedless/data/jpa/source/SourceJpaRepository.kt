@@ -199,8 +199,7 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
         .orderBy(
           *sortableStatements.toTypedArray(),
           path(SourceEntity::createdAt).desc(),
-          // Tiebreaker: createdAt alone is not unique (bulk creates can share a timestamp), and
-          // without one, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+          // createdAt alone isn't unique; without a tiebreaker pagination repeats or drops rows.
           path(SourceEntity::id).asc(),
         )
     }
@@ -208,14 +207,10 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    // limit is pageSize (or pageSize + 1 for a "fetch one extra to answer hasMore" page) — offset
-    // always uses the true pageSize, so it never shifts when limit does (see T6 review).
+    // offset uses the true pageSize, so fetching one extra never shifts it.
     q.setMaxResults(pageable.limit)
     q.setFirstResult(pageable.offset)
-    // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards
-    // — otherwise take(pageSize) at the caller can drop the wrong (non-"extra") row (T6 review
-    // round 1: this previously re-sorted by lastRecordsRetrieved, which restores no order at all
-    // when every row ties on it, as every never-yet-harvested source does).
+    // The IN-fetch loses order; restore it so the caller's take(pageSize) drops the right row.
     val orderedIds = q.resultList
     val byId = sourceDAO.findAllWithActionsByIdIn(orderedIds).associateBy { it.id }
     return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }
@@ -252,8 +247,7 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
         }
       }
 
-      // Owner, or member (any role) of the owning group — public repositories of others are
-      // excluded. A query predicate, not a post-filter, so pagination stays correct.
+      // Owner or group member, as a query predicate rather than a post-filter, so pagination stays correct.
       val accessPredicate = if (groupIds.isEmpty()) {
         path(RepositoryEntity::ownerId).eq(userId.uuid)
       } else {
@@ -276,9 +270,7 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
         .orderBy(
           path(SourceEntity::errorsInSuccession).desc(),
           path(SourceEntity::lastRefreshedAt).desc().nullsLast(),
-          // Tiebreakers: neither key above is unique (every never-refreshed source has
-          // lastRefreshedAt = null, every healthy one has errorsInSuccession = 0), and without a
-          // unique final key, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+          // Neither key is unique; without a tiebreaker pagination repeats or drops rows.
           path(SourceEntity::createdAt).desc(),
           path(SourceEntity::id).asc(),
         )
@@ -287,8 +279,7 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    // limit is pageSize (or pageSize + 1 for a "fetch one extra to answer hasMore" page) — offset
-    // always uses the true pageSize, so it never shifts when limit does (see T6 review).
+    // offset uses the true pageSize, so fetching one extra never shifts it.
     q.setMaxResults(pageable.limit)
     q.setFirstResult(pageable.offset)
     // The IN-fetch below does not preserve order, so re-apply the query's own ordering afterwards.

@@ -39,8 +39,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
     @Param("errorMessage") errorMessage: String? = null
   )
 
-  // A harvest's outcome, each as one UPDATE that computes the new state in the database — never a
-  // save of a loaded copy — so overlapping harvests of a source cannot lose one another's update.
+  // Each outcome is one UPDATE computed in the database, so overlapping harvests can't lose each other's update.
   @Modifying
   @Query(
     """

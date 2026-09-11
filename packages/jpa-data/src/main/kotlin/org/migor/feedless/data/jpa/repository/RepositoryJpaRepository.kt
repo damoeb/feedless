@@ -45,8 +45,7 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
         )
       ).orderBy(
         path(RepositoryEntity::lastUpdatedAt).desc(),
-        // Tiebreaker: lastUpdatedAt alone is not unique (bulk creates can share a timestamp),
-        // and without one, LIMIT/OFFSET pagination can repeat or drop rows across pages.
+        // lastUpdatedAt can tie; without a tiebreaker pagination repeats or drops rows.
         path(RepositoryEntity::id).asc(),
       )
     }.toList().filterNotNull().map { it.toDomain() }
@@ -129,9 +128,7 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
       }
 
       where.text?.query?.takeIf { it.isNotBlank() }?.let { query ->
-        // Case-insensitive substring match on title OR description. '%'/'_' are LIKE
-        // wildcards — escape them (and the escape char itself) so the user's text matches
-        // literally rather than being interpreted as a pattern.
+        // Escape LIKE wildcards so the user's text matches literally.
         val likeEscapeChar = '\\'
         val escaped = query
           .replace("$likeEscapeChar", "$likeEscapeChar$likeEscapeChar")
@@ -227,11 +224,7 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
 
 }
 
-/**
- * A [PageRequest] when [PageableRequest.limit] is the plain [PageableRequest.pageSize] (the
- * overwhelming majority of callers) — a [OffsetLimitPageRequest] otherwise, so a request built
- * with [PageableRequest.withExtraForHasMore] fetches one extra row without shifting [offset].
- */
+/** An [OffsetLimitPageRequest] only when fetching an extra row, so [offset] doesn't shift. */
 fun PageableRequest.toPageRequest(): Pageable {
   val sort = if (sortBy.isEmpty()) {
     Sort.unsorted()
