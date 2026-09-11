@@ -110,8 +110,22 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **`feedctl --host` normalisieren** (Schema, Gross-/Kleinschreibung) — heute ergibt `--host https://…` „not logged in".
 - [ ] **`feedctl source run` bei vorübergehenden Netzwerkfehlern.** Das Polling bricht mit Exit 1 ab, ohne Hinweis, dass der Harvest auf dem Server weiterläuft — nicht von einem fehlgeschlagenen Lauf zu unterscheiden. Retry oder Hinweis entscheiden.
 - [ ] **Harvests über 30 Minuten** können auf einer anderen Instanz kurz als fehlgeschlagen erscheinen (Sweep hängender Läufe), bevor das echte Ergebnis eintrifft.
-- [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl` — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
+- [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl`, und die *Standard*-Reihenfolge ist eine andere (vorher pro Seite nach `lastRecordsRetrieved`, jetzt `createdAt desc`) — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
 - [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; die Linux- und darwin-amd64-Binaries einmal ausführen; optional signieren (cosign/minisign).
+- [ ] **`install.sh`-Fehlerfälle.** Scheitert `curl`, bricht das Skript ohne eigene Meldung ab; eine `http`-Basis-URL wird akzeptiert, obwohl `SHA256SUMS` vom selben Host kommt.
+- [ ] **`getHarvestLogs` legt `produces=text/plain` fest.**
+- [ ] **`/user/sources` joint `FetchActionEntity` direkt:** Sources mit zwei Fetch-Actions erscheinen doppelt, solche ohne fehlen — ein `EXISTS` nur für `like` verwenden.
+- [ ] **`GET /repositories/{id}`** liefert `retention` und `pushNotificationsMuted` nicht.
+- [ ] **Group-Endpunkte** antworten Nicht-Mitgliedern mit 403 (`findByIdForUser`) und mit 500, wenn ein bestehendes Mitglied nochmals hinzugefügt wird.
+- [ ] **`@PreAuthorize`-Ablehnungen antworten 401 statt 403** — `feedctl` schlägt dann ein Login vor.
+- [ ] **`HttpExceptionHandler`** importiert `kotlin.io.AccessDeniedException` und bildet jede Exception auf 404 ab (bestehend).
+- [ ] **Authentifizierung bei Datenbankausfall:** Scheitert die Prüfung der Group-Ownership (DB weg), antwortet die Anfrage mit 401.
+- [ ] **`SessionService.injectCapabilitiesFromJwt`** (Löschlink im Report) baut einen Request-Kontext ohne die erneute Group-Prüfung; `groupId.first()` wirft bei Tokens ohne Group.
+- [ ] **GraphQL bildet `NoActingGroupException` auf `UNKNOWN` ab.**
+- [ ] **`enableSaasProduct` läuft beim Signup ohne Group-Kontext** (bestehend).
+- [ ] **Harvest-Executor:** erwartete Claim-Konkurrenz wird als ERROR geloggt; der `DataIntegrityViolationException`-Catch ist zu breit (auf den Indexnamen aus V89 prüfen); der Fehlerpfad kann ein bereits gespeichertes Scrape-Log verwerfen; eine Source, die während der Warteschlange gelöscht wird, loggt einen FK-Fehler; die Parallelität läuft auf einem einzigen `runBlocking`-Thread; echte On-Demand-Läufe erhöhen `lastUpdatedAt` nicht (danach wählt `DocumentUseCase` aus).
+- [ ] **`SourceUseCase.updateSources`** speichert noch eine geladene Kopie der Source (kann den Fehlerzustand des Harvests überschreiben).
+- [ ] **`feedctl`-Kleinigkeiten:** Keyring „unavailable" behandelt jeden `net.OpError` als fehlenden Keyring (auf Dial-Fehler beschränken); `auth logout` meldet Erfolg, auch wenn das Löschen im Keyring scheiterte; Login-Fehler ausser 401 enden mit Exit 4; `hosts.yml` wird nicht atomar geschrieben; Tokens haben keine `String()`-Redaktion; `auth status` endet ohne Hosts mit Exit 0; `Paginate` schützt nicht vor `hasMore` bei null Einträgen; `launchSystemEditor` ist ungetestet.
 
 ## Monetarisierung
 
@@ -131,8 +145,9 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] Express-Integrationstests. 301, 404 und Cache-Header sind heute nur als reine Funktionen getestet; die Verdrahtung wird von Hand geprüft, weil dem Projekt ein HTTP-Testharness fehlt
 - [ ] `app-web`-Testlauf reparieren: 115 Suites scheitern mit `TypeError: _lruCache is not a constructor` beim Jest-Bootstrap, **bevor ein einziger Test läuft**. Damit ist `./gradlew lint test` — die Definition of Done — dauerhaft rot
 - [ ] Kanton im Seitentitel doppelt: `Events in Bern (BE), BE`. Kosmetisch, aber im Titel sichtbar
-- [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft
-- [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`
+- [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft. Das Test-`import.sql` dupliziert zudem den Index aus V89
+- [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`; ausserdem bleibt der Start der Container unter Docker gelegentlich hängen
+- [ ] **`./gradlew lint` in `app-web`** ist `prettier --write .` und verändert Dateien
 - [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen
 
 ## Später oder unklar
