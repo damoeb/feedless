@@ -117,6 +117,9 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **`/user/sources` joint `FetchActionEntity` direkt:** Sources mit zwei Fetch-Actions erscheinen doppelt, solche ohne fehlen — ein `EXISTS` nur für `like` verwenden.
 - [ ] **`GET /repositories/{id}`** liefert `retention` und `pushNotificationsMuted` nicht.
 - [ ] **Group-Endpunkte** antworten Nicht-Mitgliedern mit 403 (`findByIdForUser`) und mit 500, wenn ein bestehendes Mitglied nochmals hinzugefügt wird.
+- [ ] **Letzter-Owner-Prüfung ohne Sperre.** Die Prüfungen beim Löschen einer Group und beim Entfernen eines Mitglieds sperren keine Zeilen: Zwei gleichzeitige Anfragen können beide durchgehen, etwa zwei Löschungen der einzigen zwei eigenen Groups eines Users — der ist danach ausgesperrt, bis Root es repariert. `SELECT … FOR UPDATE` auf die Zuordnungen der betroffenen User.
+- [ ] **`t_plan.group_id` ohne Fremdschlüssel.** Nach dem Löschen einer Group kann ihr Plan auf eine nicht mehr existierende Group zeigen; heute liest das niemand (Pläne werden pro User gesucht), beim Umbau auf Group-Pläne aber schon.
+- [ ] **500-Antworten von `/api/v1` ignorieren die Request-`corrId`.** `JwtRequestFilter` setzt sie (oder übernimmt `x-corr-id`), `HttpApiExceptionHandler` erzeugt trotzdem eine neue — das Request-Attribut lesen, neue ID nur als Rückfall. Der Zweig, der Springs eigene 500er vereinheitlicht, ist ungetestet.
 - [ ] **`@PreAuthorize`-Ablehnungen antworten 401 statt 403** — `feedctl` schlägt dann ein Login vor.
 - [ ] **`HttpExceptionHandler`** importiert `kotlin.io.AccessDeniedException` und bildet jede Exception auf 404 ab (bestehend).
 - [ ] **Authentifizierung bei Datenbankausfall:** Scheitert die Prüfung der Group-Ownership (DB weg), antwortet die Anfrage mit 401.
@@ -148,7 +151,7 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft. Das Test-`import.sql` dupliziert zudem den Index aus V89
 - [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`; ausserdem bleibt der Start der Container unter Docker gelegentlich hängen
 - [ ] **`./gradlew lint` in `app-web`** ist `prettier --write .` und verändert Dateien
-- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen
+- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:agent:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen, und das `server-core`-Image startet nur, wenn dabei `APP_VERSION`, `APP_BUILD_TIMESTAMP` und `APP_GIT_COMMIT` als Build-Argumente gesetzt sind (Defaults im Dockerfile oder dokumentieren)
 
 ## Später oder unklar
 
