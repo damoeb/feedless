@@ -6,6 +6,7 @@ import org.migor.feedless.document.DocumentClass
 import org.migor.feedless.document.DocumentClassifier
 import org.migor.feedless.document.DocumentClassifierModel
 import org.slf4j.LoggerFactory
+import kotlin.math.exp
 
 
 class FastTextDocumentClassifier : DocumentClassifier {
@@ -17,6 +18,6 @@ class FastTextDocumentClassifier : DocumentClassifier {
     ft.loadModel(model.model)
 
     val text = "${document.title} ${document.text}"
-    return ft.predictProba(text, 3).map { DocumentClass(it.label, it.logProb.toDouble()) }
+    return ft.predictProba(text, 3).map { DocumentClass(it.label, exp(it.logProb.toDouble())) }
   }
 }
