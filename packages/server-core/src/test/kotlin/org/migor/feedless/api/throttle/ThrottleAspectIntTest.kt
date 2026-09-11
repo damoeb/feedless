@@ -64,7 +64,6 @@ import kotlin.time.Duration.Companion.seconds
     GroupRepository::class,
     UserGroupAssignmentRepository::class,
     OneTimePasswordService::class,
-    GroupRepository::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)

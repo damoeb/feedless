@@ -67,7 +67,6 @@ const val rootSecretKey = "barBarBarKey"
     UserGroupAssignmentRepository::class,
     GroupRepository::class,
     UserGuard::class,
-    GroupRepository::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class)
