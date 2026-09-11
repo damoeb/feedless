@@ -11,4 +11,5 @@ interface AgentRepository {
   fun saveAll(agents: List<Agent>): List<Agent>
   fun deleteById(id: AgentId)
   fun save(agent: Agent): Agent
+  fun count(): Long
 }

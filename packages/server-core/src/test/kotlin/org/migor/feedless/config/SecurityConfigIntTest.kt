@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -171,6 +172,62 @@ class SecurityConfigIntTest {
 
     assertThat(response.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
+  }
+
+  /**
+   * GET /api/v1/status is the one public /api/v1 operation. This context has no agent profile, so
+   * there is no agent registry and the count must still answer, as 0.
+   */
+  @Test
+  fun whenRequestingStatusWithoutAuth_ThenOkWithAllFields() {
+    val response = TestRestTemplate().getForEntity("${baseEndpoint}/api/v1/status", String::class.java)
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
+    val body = ObjectMapper().readTree(response.body)
+    assertThat(body.fieldNames().asSequence().toSet()).containsExactlyInAnyOrder("version", "build", "agents")
+    assertThat(body["version"].asText()).isEqualTo(response.headers.getFirst("X-Feedless-Version"))
+    assertThat(body["build"]["commit"].isTextual).isTrue()
+    assertThat(body["build"]["date"].isIntegralNumber).isTrue()
+    assertThat(body["agents"].fieldNames().asSequence().toList()).containsExactly("connected")
+    assertThat(body["agents"]["connected"].asInt()).isEqualTo(0)
+  }
+
+  @Test
+  fun whenRequestingStatusWithAnInvalidToken_ThenStillOk() {
+    val headers = HttpHeaders()
+    headers.setBearerAuth("not-a-jwt")
+
+    val response = TestRestTemplate().exchange(
+      "${baseEndpoint}/api/v1/status",
+      HttpMethod.GET,
+      HttpEntity<Void>(headers),
+      String::class.java,
+    )
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+  }
+
+  @Test
+  fun whenPostingToStatusWithoutAuth_ThenUnauthorized() {
+    val response = TestRestTemplate().postForEntity("${baseEndpoint}/api/v1/status", "", String::class.java)
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
+  }
+
+  /** Permitting GET /api/v1/status must not open any other /api/v1 path. */
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "api/v1/user",
+      "api/v1/plans",
+      "api/v1/status/extra",
+    ]
+  )
+  fun whenRequestingOtherApiV1PathWithoutAuth_ThenUnauthorized(path: String) {
+    val response = TestRestTemplate().getForEntity("${baseEndpoint}/$path", String::class.java)
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
   }
 
   @Test

@@ -33,4 +33,13 @@ class StatefulAgentRegistry(
   override suspend fun save(agent: Agent): Agent = withContext(Dispatchers.IO) {
     agentRepository.save(agent)
   }
+
+  /**
+   * Every row in `t_agent`, so the count is cluster-wide: each pod writes a row for the agents
+   * connected to it, `AgentSyncExecutor` refreshes those rows every 2 minutes and deletes rows not
+   * refreshed for 2 minutes — an agent that just dropped can still count for up to that long.
+   */
+  override suspend fun countConnected(): Int = withContext(Dispatchers.IO) {
+    agentRepository.count().toInt()
+  }
 }

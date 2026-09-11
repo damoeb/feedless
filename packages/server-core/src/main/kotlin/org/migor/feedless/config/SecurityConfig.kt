@@ -18,6 +18,7 @@ import org.migor.feedless.connector.github.GithubCapability
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.http.HttpApiJwtFilter
 import org.migor.feedless.http.HttpApiVersionHeaderFilter
+import org.migor.feedless.http.StatusHttpController
 import org.migor.feedless.session.JwtRequestFilter
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.actingGroupOf
@@ -34,6 +35,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.context.annotation.PropertySource
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
+import org.springframework.http.HttpMethod
 import org.springframework.security.config.Customizer
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity
 import org.springframework.security.config.annotation.web.builders.HttpSecurity
@@ -138,6 +140,8 @@ class SecurityConfig {
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests {
         it.requestMatchers(*(whitelistedUrls())).permitAll()
+        // The one public /api/v1 operation, GET only; HttpApiJwtFilter skips the same request.
+        it.requestMatchers(HttpMethod.GET, StatusHttpController.PUBLIC_STATUS_PATH).permitAll()
         it.requestMatchers("/api/v1/**").authenticated()
         it.requestMatchers("/actuator/**").hasAnyRole(metricRole)
         it.requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
@@ -146,8 +150,9 @@ class SecurityConfig {
   }
 
   private fun whitelistedUrls(): Array<String> {
-    // No public auth issuance path — all /api/v1/** require UserSecret Bearer.
-    // Do not add /api/v1/auth or /api/v1/user to whitelist.
+    // No public auth issuance path — every /api/v1/** requires UserSecret Bearer, except GET /api/v1/status,
+    // which filterChain permits on its own (method-scoped, so it is not in this list).
+    // Do not add /api/v1/auth, /api/v1/user or any other /api/v1 path to this whitelist.
     val urls = mutableListOf(
       "/graphql",
       "/actuator/health",

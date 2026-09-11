@@ -30,4 +30,6 @@ class StatelessAgentRegistry : AgentRegistry {
     registry.add(agent)
     return agent
   }
+
+  override suspend fun countConnected(): Int = registry.size
 }

@@ -42,4 +42,8 @@ class AgentJpaRepository(private val agentDAO: AgentDAO) : AgentRepository {
     return agentDAO.save(agent.toEntity()).toDomain()
   }
 
+  override fun count(): Long {
+    return agentDAO.count()
+  }
+
 }

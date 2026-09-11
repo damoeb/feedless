@@ -114,6 +114,56 @@ class HttpApiJwtFilterTest {
   }
 
   @Test
+  fun `skips GET status without a token`() {
+    val request = MockHttpServletRequest("GET", "/api/v1/status")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+    verify(chain).doFilter(request, response)
+  }
+
+  @Test
+  fun `skips GET status even with an invalid token`() {
+    val request = MockHttpServletRequest("GET", "/api/v1/status")
+    request.addHeader("Authorization", "Bearer not-a-jwt")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+    verify(chain).doFilter(request, response)
+    assertThat(RequestAttributeSecurityContextRepository().containsContext(request)).isFalse()
+  }
+
+  @Test
+  fun `returns 401 for a non-GET status request without a token`() {
+    val request = MockHttpServletRequest("POST", "/api/v1/status")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assertThat(response.status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
+    verify(chain, never()).doFilter(request, response)
+  }
+
+  @Test
+  fun `returns 401 for a path below status without a token`() {
+    val request = MockHttpServletRequest("GET", "/api/v1/status/extra")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assertThat(response.status).isEqualTo(HttpStatus.UNAUTHORIZED.value())
+    verify(chain, never()).doFilter(request, response)
+  }
+
+  @Test
   fun `continues chain and stores RequestContext when token is valid via deprecated Authentication header`() {
     val user = mock(User::class.java)
     val userId = UserId()

@@ -221,7 +221,7 @@ class LicenseUseCase { // todo split up into provider and usecase
 
   fun getBuildDate(): Long {
     log.debug("getBuildDate")
-    return buildTimestamp!!.toLong()
+    return parseBuildTimestamp(buildTimestamp)
   }
 
   fun hasValidLicenseOrLicenseNotNeeded(): Boolean {
@@ -249,7 +249,7 @@ class LicenseUseCase { // todo split up into provider and usecase
 
   fun getTrialUntil(): Long {
     log.debug("getTrialUntil")
-    return buildTimestamp!!.toLong() + getTrialDuration()
+    return getBuildDate() + getTrialDuration()
   }
 
   fun getTrialDuration(): Long {
