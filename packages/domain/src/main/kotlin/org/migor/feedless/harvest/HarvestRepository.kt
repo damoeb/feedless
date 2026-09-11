@@ -11,29 +11,15 @@ interface HarvestRepository {
   fun deleteAllDryRunByCreatedAtBefore(before: LocalDateTime)
   fun save(harvest: Harvest): Harvest
 
-  /**
-   * Records a real (non-dry) harvest of [sourceId] as running as of [now] and returns it — or returns
-   * null, recording nothing, when a real harvest of that source is running already, in any process.
-   * At most one real harvest per source runs at a time; completing the returned harvest (or the
-   * stale sweep, [completeStaleRunning]) frees the source again. Dry runs neither take nor block it.
-   */
+  /** Returns null, recording nothing, when a real harvest of the source already runs in any process; dry runs don't count. */
   fun startRun(sourceId: SourceId, now: LocalDateTime): Harvest?
 
   /**
-   * Claims up to [limit] queued harvests, oldest first, and marks them running as of [now] — in one
-   * transaction. Rows another claimer holds are skipped rather than waited for, so concurrent
-   * claimers (several scheduler instances) never get the same harvest.
-   *
-   * A real harvest is claimed only while no real harvest of its source runs and no older real one of
-   * it is queued; until then it stays queued for a later call. Should a real harvest of a claimed
-   * source start between the claim's lock and its commit ([startRun]), the database refuses the
-   * claim: this throws, and every harvest of the call stays queued.
+   * Claims queued harvests with SKIP LOCKED, so concurrent schedulers never get the same one.
+   * A real harvest waits while its source has a running or older queued real harvest; racing [startRun] makes this throw.
    */
   fun claimQueued(limit: Int, now: LocalDateTime): List<Harvest>
 
-  /**
-   * Completes as failed every harvest still running that started before [startedBefore] — its run
-   * died with the process — appending [message] to its log. Returns how many were completed.
-   */
+  /** Fails running harvests started before [startedBefore]: their process died. */
   fun completeStaleRunning(startedBefore: LocalDateTime, now: LocalDateTime, message: String): Int
 }

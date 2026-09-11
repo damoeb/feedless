@@ -2,12 +2,7 @@ package org.migor.feedless.session
 
 import org.migor.feedless.user.UserId
 
-/**
- * There is no group the user owns to act in. Raised when a token would be issued for a user who owns
- * no group, and when a request needs its acting group but carries none the user still owns: a token
- * issued before tokens carried a group, or one whose group the user has since been removed from or
- * demoted in. Mapped to 403 `NO_ACTING_GROUP` on `/api/v1`.
- */
+/** The user owns no group the token could act in, e.g. an old token or one for a group they've left. 403 NO_ACTING_GROUP. */
 class NoActingGroupException(message: String) : RuntimeException(message) {
   companion object {
     fun forIssuance(userId: UserId) =

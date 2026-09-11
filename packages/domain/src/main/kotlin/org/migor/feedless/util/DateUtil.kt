@@ -24,10 +24,7 @@ fun Long.toLocalDateTime(): LocalDateTime {
   return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneOffset.UTC)
 }
 
-/**
- * Domain [LocalDateTime]s are UTC — see [toMillis], which has always interpreted them that way.
- * These two make that explicit on the wire so clients don't have to guess a zone.
- */
+/** Domain LocalDateTimes are UTC (see [toMillis]); these make that explicit on the wire. */
 fun LocalDateTime.toOffsetDateTime(): OffsetDateTime {
   return this.atOffset(ZoneOffset.UTC)
 }
