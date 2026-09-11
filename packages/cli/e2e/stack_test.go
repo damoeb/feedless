@@ -70,6 +70,12 @@ func StartStack(ctx context.Context, t *testing.T) *Stack {
 	rootEmail := "e2e-root@feedless.test"
 	rootSecretKey := randomHex(t)
 	dbPassword := randomHex(t)
+	jwtSecret := randomHex(t)
+	actuatorPassword := randomHex(t)
+
+	for _, secret := range []string{rootSecretKey, dbPassword, jwtSecret, actuatorPassword} {
+		RegisterSecret(secret)
+	}
 
 	nw, err := network.New(ctx)
 	if err != nil {
@@ -136,8 +142,8 @@ func StartStack(ctx context.Context, t *testing.T) *Stack {
 			"APP_AUTHENTICATION":      "authRoot",
 			"APP_ROOT_EMAIL":          rootEmail,
 			"APP_ROOT_SECRET_KEY":     rootSecretKey,
-			"APP_JWT_SECRET":          randomHex(t),
-			"APP_ACTUATOR_PASSWORD":   randomHex(t),
+			"APP_JWT_SECRET":          jwtSecret,
+			"APP_ACTUATOR_PASSWORD":   actuatorPassword,
 			"APP_API_GATEWAY_URL":     "http://localhost:8080",
 			"APP_HOST_URL":            "http://localhost:4200",
 			"APP_WHITELISTED_HOSTS":   "core",
@@ -252,7 +258,7 @@ func dumpLogs(t *testing.T, name string, ctr testcontainers.Container) {
 	}
 
 	t.Logf("===== %s container logs (last %d lines) =====\n%s\n===== end of %s container logs =====",
-		name, len(lines), strings.Join(lines, "\n"), name)
+		name, len(lines), Redact(strings.Join(lines, "\n")), name)
 }
 
 // fixtureSiteFiles copies every file under fixtures/site/ into nginx's

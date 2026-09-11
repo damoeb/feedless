@@ -33,9 +33,10 @@ type Result struct {
 	ExitCode int
 }
 
+// String renders r for a failure message, with credentials redacted.
 func (r Result) String() string {
-	return fmt.Sprintf("$ feedctl %s\nexit %d\n--- stdout ---\n%s\n--- stderr ---\n%s",
-		strings.Join(r.Args, " "), r.ExitCode, r.Stdout, r.Stderr)
+	return Redact(fmt.Sprintf("$ feedctl %s\nexit %d\n--- stdout ---\n%s\n--- stderr ---\n%s",
+		strings.Join(r.Args, " "), r.ExitCode, r.Stdout, r.Stderr))
 }
 
 // BuildFeedctl builds ./cmd/feedctl into a temp directory and returns the
@@ -113,9 +114,23 @@ func (f *Feedctl) HostsFile() string {
 }
 
 // Run runs feedctl with args, feeding it stdin, and returns its outcome
-// whatever the exit code. It fails the test only when the process cannot be
-// run at all.
+// whatever the exit code, echoing the invocation and the tail of its output
+// (redacted) into the test log. It fails the test only when the process
+// cannot be run at all.
 func (f *Feedctl) Run(ctx context.Context, stdin string, args ...string) Result {
+	f.t.Helper()
+
+	res := f.RunQuiet(ctx, stdin, args...)
+
+	f.t.Logf("%s", Redact(fmt.Sprintf("$ feedctl %s -> exit %d%s%s", strings.Join(args, " "), res.ExitCode,
+		indentedTail("stdout", res.Stdout), indentedTail("stderr", res.Stderr))))
+
+	return res
+}
+
+// RunQuiet is Run without the echo into the test log — for polling loops,
+// whose every iteration would otherwise flood it.
+func (f *Feedctl) RunQuiet(ctx context.Context, stdin string, args ...string) Result {
 	f.t.Helper()
 
 	cmd := exec.CommandContext(ctx, f.bin, args...)
@@ -138,9 +153,6 @@ func (f *Feedctl) Run(ctx context.Context, stdin string, args ...string) Result 
 	default:
 		f.t.Fatalf("running feedctl %s: %v", strings.Join(args, " "), err)
 	}
-
-	f.t.Logf("$ feedctl %s -> exit %d%s%s", strings.Join(args, " "), res.ExitCode,
-		indentedTail("stdout", res.Stdout), indentedTail("stderr", res.Stderr))
 
 	return res
 }

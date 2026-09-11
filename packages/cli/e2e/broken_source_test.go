@@ -46,8 +46,15 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 		t.Fatalf("want the no-keyring file fallback warning, got:\n%s", login)
 	}
 
-	if hosts, err := os.ReadFile(cli.HostsFile()); err != nil || !strings.Contains(string(hosts), "token:") {
-		t.Fatalf("want the token stored in %s (err %v), got:\n%s", cli.HostsFile(), err, hosts)
+	// hosts.yml holds the live token in plain text: check for it, never print it.
+	hosts, err := os.ReadFile(cli.HostsFile())
+	if err != nil {
+		t.Fatalf("reading %s: %v", cli.HostsFile(), err)
+	}
+
+	if !strings.Contains(string(hosts), "token: "+token) {
+		t.Fatalf("want the token stored in %s by the no-keyring file fallback, but it is not there (contents withheld: the file holds credentials)",
+			cli.HostsFile())
 	}
 
 	brokenFlow := fixturePath(t, "flows", "broken.json")
@@ -63,6 +70,11 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 
 	repoID := createRepository(ctx, t, cli)
 	sourceID := createSource(ctx, t, cli, repoID, brokenFlow)
+
+	// The scheduler harvests a new repository once on its own, seconds after
+	// creation (see createRepository). Let that run finish first, so every
+	// harvest from here on is one the scenario started.
+	waitForHarvestsToSettle(ctx, t, cli, repoID, sourceID, true)
 
 	t.Log("step 2: a real run fails, and the source shows up as errored across repositories")
 
@@ -91,6 +103,10 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 	}
 
 	t.Log("step 4: a dry run of the fixed flow extracts the fixture items and leaves the source alone")
+
+	// Nothing may be harvesting the source while the snapshots are taken, or
+	// its error state could change underneath the "unchanged" check.
+	waitForHarvestsToSettle(ctx, t, cli, repoID, sourceID, false)
 
 	before := viewSource(ctx, t, cli, repoID, sourceID)
 
@@ -174,8 +190,12 @@ func fixturePath(t *testing.T, elem ...string) string {
 }
 
 // createRepository creates an empty repository through `feedctl api` and
-// returns its id. Its refresh cron fires once a year, so the scheduler never
-// harvests it on its own while the scenario runs.
+// returns its id. The core creates repositories without a next-harvest time,
+// so its scheduler harvests every source of a new repository once, a few
+// seconds after creation, whatever the refresh cron says (intended
+// behaviour). The yearly cron only keeps it from harvesting again during the
+// scenario; the scenario waits for that initial harvest to finish
+// (waitForHarvestsToSettle) before it runs the source itself.
 func createRepository(ctx context.Context, t *testing.T, cli *Feedctl) string {
 	t.Helper()
 
@@ -232,6 +252,53 @@ func erroredSources(ctx context.Context, t *testing.T, cli *Feedctl) map[string]
 	}
 
 	return byID
+}
+
+// settleTimeout bounds each wait for a source's harvests to settle.
+const settleTimeout = 2 * time.Minute
+
+// waitForHarvestsToSettle polls the source's real harvests until none is
+// queued or running and, when wantCompleted, at least one has completed. It
+// fails the test at settleTimeout.
+func waitForHarvestsToSettle(ctx context.Context, t *testing.T, cli *Feedctl, repoID, sourceID string, wantCompleted bool) {
+	t.Helper()
+
+	deadline := time.Now().Add(settleTimeout)
+
+	for {
+		res := cli.RunQuiet(ctx, "", "harvest", "list", "-R", repoID, "-S", sourceID, "--json", "id,status")
+		if res.ExitCode != 0 {
+			t.Fatalf("listing the source's harvests:\n%s", res)
+		}
+
+		busy, completed := 0, 0
+
+		for _, h := range DecodeStdout[[]harvestRow](t, res) {
+			switch h.Status {
+			case "queued", "running":
+				busy++
+			case "completed":
+				completed++
+			}
+		}
+
+		if busy == 0 && (!wantCompleted || completed > 0) {
+			t.Logf("harvests of source %s settled: %d completed, none queued or running", sourceID, completed)
+
+			return
+		}
+
+		if time.Now().After(deadline) {
+			t.Fatalf("harvests of source %s did not settle within %s: %d queued or running, %d completed",
+				sourceID, settleTimeout, busy, completed)
+		}
+
+		select {
+		case <-ctx.Done():
+			t.Fatalf("waiting for the harvests of source %s to settle: %v", sourceID, ctx.Err())
+		case <-time.After(time.Second):
+		}
+	}
 }
 
 func viewSource(ctx context.Context, t *testing.T, cli *Feedctl, repoID, sourceID string) sourceRow {

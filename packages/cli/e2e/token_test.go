@@ -37,6 +37,8 @@ func MintAPIToken(ctx context.Context, coreURL, email, secretKey string) (string
 		return "", errors.New("authUser answered no token")
 	}
 
+	RegisterSecret(login.AuthUser.Token)
+
 	var secret struct {
 		CreateUserSecret struct {
 			Value string `json:"value"`
@@ -52,11 +54,14 @@ func MintAPIToken(ctx context.Context, coreURL, email, secretKey string) (string
 		return "", errors.New("createUserSecret answered no value")
 	}
 
+	RegisterSecret(secret.CreateUserSecret.Value)
+
 	return secret.CreateUserSecret.Value, nil
 }
 
 // graphqlRequest POSTs one GraphQL operation to coreURL/graphql and decodes
-// its data into out. A GraphQL error is an error, even on HTTP 200.
+// its data into out. A GraphQL error is an error, even on HTTP 200. Response
+// bodies can carry tokens, so every error quotes them through Redact.
 func graphqlRequest(ctx context.Context, coreURL, bearer, query string, variables map[string]any, out any) error {
 	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
 	if err != nil {
@@ -85,7 +90,7 @@ func graphqlRequest(ctx context.Context, coreURL, bearer, query string, variable
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("HTTP %s: %s", resp.Status, body)
+		return fmt.Errorf("HTTP %s: %s", resp.Status, Redact(string(body)))
 	}
 
 	var envelope struct {
@@ -96,7 +101,7 @@ func graphqlRequest(ctx context.Context, coreURL, bearer, query string, variable
 	}
 
 	if err := json.Unmarshal(body, &envelope); err != nil {
-		return fmt.Errorf("decoding response %q: %w", body, err)
+		return fmt.Errorf("decoding response %q: %w", Redact(string(body)), err)
 	}
 
 	if len(envelope.Errors) > 0 {
@@ -105,11 +110,11 @@ func graphqlRequest(ctx context.Context, coreURL, bearer, query string, variable
 			messages[i] = e.Message
 		}
 
-		return fmt.Errorf("GraphQL errors: %s", strings.Join(messages, "; "))
+		return fmt.Errorf("GraphQL errors: %s", Redact(strings.Join(messages, "; ")))
 	}
 
 	if err := json.Unmarshal(envelope.Data, out); err != nil {
-		return fmt.Errorf("decoding data %q: %w", envelope.Data, err)
+		return fmt.Errorf("decoding data %q: %w", Redact(string(envelope.Data)), err)
 	}
 
 	return nil
