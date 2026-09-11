@@ -10,6 +10,12 @@ metadata:
     app.kubernetes.io/part-of: feedless
 spec:
   replicas: 1
+  # keep the old pod serving until the new one is ready
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
   selector:
     matchLabels:
       app: feedless-core
@@ -208,14 +214,30 @@ spec:
             - name: feedless-cert-volume
               mountPath: /usr/feedless/feedless.pem
               subPath: feedless.pem
-      #          livenessProbe:
-      #            httpGet:
-      #              path: /actuator/health
-      #              port: 8080
-      #            initialDelaySeconds: 20
-      #            periodSeconds: 20
-      #            timeoutSeconds: 6
-      #            failureThreshold: 4
+          # boot incl. Flyway migrations gets up to 60 min before liveness takes over
+          startupProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 360
+          # no traffic while the app or its database is unhealthy; never restarts the pod
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          # JVM state only, so an external outage cannot trigger restarts
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 20
+            timeoutSeconds: 6
+            failureThreshold: 4
       volumes:
         - name: feedless-cert-volume
           secret:

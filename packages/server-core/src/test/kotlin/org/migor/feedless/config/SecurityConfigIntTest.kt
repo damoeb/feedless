@@ -115,6 +115,21 @@ class SecurityConfigIntTest {
     assertThat(HttpStatus.FORBIDDEN).isNotEqualTo(response.statusCode)
   }
 
+  // kubelet probes carry no credentials
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "health",
+      "health/liveness",
+      "health/readiness",
+    ]
+  )
+  fun whenProbingHealthWithoutAuth_ThenSuccess(path: String) {
+    val restTemplate = TestRestTemplate()
+    val response = restTemplate.getForEntity("$actuatorEndpoint/$path", String::class.java)
+    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+  }
+
 //  @ParameterizedTest
 //  @CsvSource(value = [
 ////    "bucket/$feedId",
