@@ -102,8 +102,12 @@ func TestSafeText_ReplacesC0Controls(t *testing.T) {
 }
 
 func TestSafeText_ReplacesC1Controls(t *testing.T) {
-	got := SafeText("a\u0080b\u009fc") // U+0080 (lowest C1) and U+009F (highest C1)
-	want := "a�b�c"
+	// U+0080 and U+0085 (NEL) -- deliberately not U+0090/U+0098/U+009B/
+	// U+009C/U+009D/U+009E/U+009F, which SafeText treats specially as
+	// string-type-sequence introducers/terminator rather than as generic C1
+	// controls; those are covered by their own tests below.
+	got := SafeText("a\u0080b\u0085c")
+	want := "a\ufffdb\ufffdc"
 	if got != want {
 		t.Errorf("SafeText() = %q, want %q", got, want)
 	}
@@ -177,22 +181,60 @@ func TestSafeText_UnterminatedCSI_WithEmbeddedNewline_KeepsTextAfterNewline(t *t
 	}
 }
 
-func TestSafeText_OSCAbortedByBareESC_DoesNotRunToEndOfInput(t *testing.T) {
-	// The ESC right after "0;title" isn't part of an ST (not followed by
-	// '\\'), so per xterm behaviour it aborts the OSC in progress instead of
-	// being folded into its (already-invalid) payload; that ESC is then
-	// reprocessed on its own (here: followed by '\n', which isn't a
-	// recognizable continuation of anything, so just the ESC is dropped).
-	// What this pins down is the part that matters for the fix: the abort
-	// stops the scan right there — it does not run all the way to the end
-	// of input the way the unterminated case used to, so "after" survives.
-	got := SafeText("before\x1b]0;title\x1b\nafter")
-	want := "before\nafter"
+// TestSafeText_MalformedOSC_SecondESCAfterMultipleLines_DoesNotHideThem is
+// round 2's regression case: an earlier "abort on a non-ST ESC" fix still
+// dropped the entire span between the introducer and the aborting ESC —
+// so a hostile page could still hide arbitrary multi-line text by placing
+// a second ESC anywhere after an unterminated OSC introducer. Per the
+// (deliberately narrow) rule skipStringSequence now implements, only the
+// introducer itself is ever dropped once the sequence is malformed —
+// content already scanned is never discarded with it.
+func TestSafeText_MalformedOSC_SecondESCAfterMultipleLines_DoesNotHideThem(t *testing.T) {
+	got := SafeText("head\x1b]0;x then lots of text\nline2\nline3\x1bZtail")
+	if strings.ContainsRune(got, 0x1b) {
+		t.Errorf("SafeText() = %q, want no raw ESC (0x1b)", got)
+	}
+	if !strings.Contains(got, "line2") || !strings.Contains(got, "line3") {
+		t.Errorf("SafeText() = %q, want line2 and line3 preserved", got)
+	}
+}
+
+func TestSafeText_MalformedOSC_SecretLineThenSecondESC_DoesNotHideLine2(t *testing.T) {
+	got := SafeText("head\x1b]0;secret line1\nline2\x1bZtail")
+	if strings.ContainsRune(got, 0x1b) {
+		t.Errorf("SafeText() = %q, want no raw ESC (0x1b)", got)
+	}
+	if !strings.Contains(got, "line2") {
+		t.Errorf("SafeText() = %q, want line2 preserved", got)
+	}
+}
+
+func TestSafeText_OSCBodyContainsNewlineBeforeBEL_EverythingAfterIntroducerVisible(t *testing.T) {
+	// The '\n' inside the would-be OSC body makes it malformed before the
+	// BEL is ever reached (real OSC payloads never legitimately contain a
+	// newline), so only the two-rune introducer is dropped — the '\n', the
+	// literal BEL-that-never-terminated-anything (replaced with the
+	// placeholder, like any other stray C0 control), and everything around
+	// them stay visible.
+	got := SafeText("before\x1b]0;line1\nline2\x07after")
+	if strings.ContainsRune(got, 0x1b) {
+		t.Errorf("SafeText() = %q, want no raw ESC (0x1b)", got)
+	}
+	for _, want := range []string{"before", "line1", "line2", "after"} {
+		if !strings.Contains(got, want) {
+			t.Errorf("SafeText() = %q, want it to contain %q", got, want)
+		}
+	}
+}
+
+func TestSafeText_ProperlyTerminatedOSC8AndOSC0_OneLine_RemovedButTextKept(t *testing.T) {
+	// Regression guard: a real, single-line OSC 8 hyperlink and OSC 0 title
+	// write — both properly BEL-terminated before any '\n'/'\r'/ESC — must
+	// still be removed in full, surrounding text kept.
+	got := SafeText("see \x1b]8;;https://evil.example\x07here\x1b]8;;\x07 now\x1b]0;pwned title\x07 done")
+	want := "see here now done"
 	if got != want {
 		t.Errorf("SafeText() = %q, want %q", got, want)
-	}
-	if strings.ContainsRune(got, 0x1b) {
-		t.Errorf("SafeText() = %q, want no raw ESC", got)
 	}
 }
 
@@ -227,11 +269,34 @@ func TestSafeText_C1CSIIntroducer_NeutralizedWithoutSwallowingPayload(t *testing
 	}
 }
 
-func TestSafeText_C1OSCIntroducer_NeutralizedWithoutSwallowingPayload(t *testing.T) {
+// TestSafeText_C1OSCIntroducer_RecognizedAndStrippedWhenTerminated: unlike
+// the 8-bit CSI introducer above, round 2 has SafeText recognize the 8-bit
+// OSC introducer (U+009D) as a genuine string-type sequence start, with the
+// same termination rules as its 7-bit "ESC ]" form (see
+// skipStringSequence) — a properly BEL/ST-terminated one is removed in
+// full, content included, not merely neutralized byte-by-byte.
+func TestSafeText_C1OSCIntroducer_RecognizedAndStrippedWhenTerminated(t *testing.T) {
 	c1OSC := string(rune(0x9d)) // U+009D, 8-bit OSC
 
 	got := SafeText("before" + c1OSC + "0;title\x07after")
-	want := "before�0;title�after"
+	want := "beforeafter"
+	if got != want {
+		t.Errorf("SafeText() = %q, want %q", got, want)
+	}
+	if strings.ContainsRune(got, 0x9d) {
+		t.Errorf("SafeText() = %q, want the raw C1 byte gone", got)
+	}
+}
+
+// TestSafeText_C1OSCIntroducer_Malformed_DropsOnlyIntroducer pins the same
+// "drop only the introducer" rule for the 8-bit form: with no BEL/ST before
+// the end of input, only the one-rune U+009D introducer is dropped, and the
+// payload is shown (sanitized) like ordinary text instead of hidden.
+func TestSafeText_C1OSCIntroducer_Malformed_DropsOnlyIntroducer(t *testing.T) {
+	c1OSC := string(rune(0x9d)) // U+009D, 8-bit OSC
+
+	got := SafeText("before" + c1OSC + "0;title unterminated")
+	want := "before0;title unterminated"
 	if got != want {
 		t.Errorf("SafeText() = %q, want %q", got, want)
 	}
