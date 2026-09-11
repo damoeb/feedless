@@ -137,6 +137,8 @@ class SecurityConfig {
     val urls = mutableListOf(
       "/graphql",
       "/actuator/health",
+      "/actuator/health/liveness",
+      "/actuator/health/readiness",
       "/subscriptions",
       ApiUrls.transformFeed,
       ApiUrls.webToFeed,
