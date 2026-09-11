@@ -20,8 +20,7 @@ import (
 )
 
 // newSourceCmd builds the `feedctl source` command group: list, view,
-// update, and run (source_run.go). Creating and deleting sources is out of
-// scope for this slice (the brief reserves source create|delete for later).
+// create, update, delete, and run (source_run.go).
 func newSourceCmd(version string) *cobra.Command {
 	source := &cobra.Command{
 		Use:   "source",
@@ -30,7 +29,9 @@ func newSourceCmd(version string) *cobra.Command {
 
 	source.AddCommand(newSourceListCmd(version))
 	source.AddCommand(newSourceViewCmd(version))
+	source.AddCommand(newSourceCreateCmd(version))
 	source.AddCommand(newSourceUpdateCmd(version))
+	source.AddCommand(newSourceDeleteCmd(version))
 	source.AddCommand(newSourceRunCmd(version))
 
 	return source
@@ -330,6 +331,150 @@ func renderSourceView(w io.Writer, s api.Source) error {
 	return nil
 }
 
+// --- create ---
+
+func newSourceCreateCmd(version string) *cobra.Command {
+	var title, tagsRaw, flowPath, inputPath string
+
+	createCmd := &cobra.Command{
+		Use:   "create",
+		Short: "Create a source in a repository",
+		Args:  cobra.NoArgs,
+		RunE: func(cmd *cobra.Command, _ []string) error {
+			return runSourceCreate(cmd, version, sourceCreateFlags{
+				title:        title,
+				titleChanged: cmd.Flags().Changed("title"),
+				tags:         tagsRaw,
+				tagsChanged:  cmd.Flags().Changed("tags"),
+				flowPath:     flowPath,
+				flowChanged:  cmd.Flags().Changed("flow"),
+				inputPath:    inputPath,
+				inputChanged: cmd.Flags().Changed("input"),
+			})
+		},
+	}
+
+	addRepoFlag(createCmd)
+	output.AddJSONFlags(createCmd, sourceViewJSONFields)
+
+	flags := createCmd.Flags()
+	flags.StringVar(&title, "title", "", "Title (required unless --input)")
+	flags.StringVar(&tagsRaw, "tags", "", "Comma-separated tags")
+	flags.StringVar(&flowPath, "flow", "",
+		"ScrapeFlow JSON read from this file, or - for stdin (required unless --input, same reader as `source update --flow`)")
+	flags.StringVar(&inputPath, "input", "",
+		"Read a full SourceCreate JSON document from this file, or - for stdin (mutually exclusive with the field flags)")
+
+	return createCmd
+}
+
+type sourceCreateFlags struct {
+	title        string
+	titleChanged bool
+	tags         string
+	tagsChanged  bool
+	flowPath     string
+	flowChanged  bool
+	inputPath    string
+	inputChanged bool
+}
+
+// runSourceCreate builds a SourceCreate body from --title/--tags/--flow, or
+// from a full document via --input, and POSTs it to
+// /repositories/{r}/sources. Every local check — the --input/field-flags
+// mutual exclusion, --title and --flow being required unless --input, and
+// --flow's JSON parsing (via readScrapeFlow, the same reader `source update
+// --flow` uses) — runs before -R is resolved or any request is made, per
+// the brief's "validated locally before any request".
+func runSourceCreate(cmd *cobra.Command, version string, f sourceCreateFlags) error {
+	jf, err := output.ReadJSONFlags(cmd)
+	if err != nil {
+		return err
+	}
+
+	usesFieldFlags := f.titleChanged || f.tagsChanged || f.flowChanged
+	if f.inputChanged && usesFieldFlags {
+		return errors.New("--input and the field flags (--title, --tags, --flow) are mutually exclusive")
+	}
+
+	var body api.SourceCreate
+
+	if f.inputChanged {
+		body, err = readSourceCreate(cmd, f.inputPath)
+		if err != nil {
+			return err
+		}
+	} else {
+		if !f.titleChanged {
+			return errors.New("--title is required unless --input is given")
+		}
+		if !f.flowChanged {
+			return errors.New("--flow is required unless --input is given")
+		}
+
+		flow, flowErr := readScrapeFlow(cmd, f.flowPath)
+		if flowErr != nil {
+			return flowErr
+		}
+
+		body = api.SourceCreate{Title: f.title, Flow: flow}
+
+		if f.tagsChanged {
+			tags := splitTags(f.tags)
+			body.Tags = &tags
+		}
+	}
+
+	repoID, _, err := resolveRepoID(cmd, true)
+	if err != nil {
+		return err
+	}
+
+	apiClient, err := newAPIClient(cmd, version)
+	if err != nil {
+		return err
+	}
+
+	resp, err := apiClient.API.CreateSourceWithResponse(cmd.Context(), repoID, body)
+	if err != nil {
+		return err
+	}
+	if apiErr := NewAPIError(resp, ""); apiErr != nil {
+		return apiErr
+	}
+
+	if jf.Requested {
+		return output.PrintJSONObject(cmd.OutOrStdout(), sourceRow(*resp.JSON201, true), jf.Fields, jf.JQ)
+	}
+
+	return renderSourceView(cmd.OutOrStdout(), *resp.JSON201)
+}
+
+// readSourceCreate reads --input's value: path's file content, or stdin
+// when path is "-", parsed as a full SourceCreate document (including its
+// flow). Invalid JSON fails here — a local error before any request.
+func readSourceCreate(cmd *cobra.Command, path string) (api.SourceCreate, error) {
+	var data []byte
+	var err error
+
+	if path == "-" {
+		data, err = io.ReadAll(cmd.InOrStdin())
+	} else {
+		data, err = os.ReadFile(path)
+	}
+
+	if err != nil {
+		return api.SourceCreate{}, fmt.Errorf("reading --input %s: %w", path, err)
+	}
+
+	var body api.SourceCreate
+	if err := json.Unmarshal(data, &body); err != nil {
+		return api.SourceCreate{}, fmt.Errorf("invalid --input JSON: %w", err)
+	}
+
+	return body, nil
+}
+
 // --- update ---
 
 func newSourceUpdateCmd(version string) *cobra.Command {
@@ -468,6 +613,95 @@ func applyFieldUpdate(
 	}
 
 	return renderSourceView(cmd.OutOrStdout(), *resp.JSON200)
+}
+
+// --- delete ---
+
+func newSourceDeleteCmd(version string) *cobra.Command {
+	var yes bool
+
+	deleteCmd := &cobra.Command{
+		Use:   "delete <id>",
+		Short: "Delete a source",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			return runSourceDelete(cmd, version, args[0], yes)
+		},
+	}
+
+	addRepoFlag(deleteCmd)
+	deleteCmd.Flags().BoolVar(&yes, "yes", false, "Skip the confirmation prompt")
+
+	return deleteCmd
+}
+
+func runSourceDelete(cmd *cobra.Command, version, idArg string, yes bool) error {
+	repoID, _, err := resolveRepoID(cmd, true)
+	if err != nil {
+		return err
+	}
+
+	sourceID, err := parseSourceID(idArg)
+	if err != nil {
+		return err
+	}
+
+	apiClient, err := newAPIClient(cmd, version)
+	if err != nil {
+		return err
+	}
+
+	return deleteSource(cmd, apiClient, repoID, sourceID, stdinIsTTY(cmd.InOrStdin()), yes)
+}
+
+// deleteSource is `source delete`'s actual logic, mirroring
+// deleteRepository (repository.go) exactly: fetch the title first so the
+// prompt can name it — skipped entirely with --yes, and also skipped for
+// the non-TTY-without-yes case, where confirmDelete refuses unconditionally
+// before any request — then confirm via confirmDelete, then DELETE.
+//
+// Kept independent of cobra flag parsing and of
+// client.NewFromConfig/config.Load, and takes isTTY as an explicit
+// parameter rather than detecting it itself, so the TTY-accepted and
+// TTY-declined paths (unreachable via a full cobra Execute(), whose test
+// stdin is never a real *os.File) can be exercised directly against an
+// httptest server — see source_create_delete_test.go's TestDeleteSource_*
+// cases.
+func deleteSource(cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId, isTTY, yes bool) error {
+	title := sourceID.String()
+
+	if !yes {
+		if !isTTY {
+			return confirmDelete(cmd, isTTY, yes, "")
+		}
+
+		resp, getErr := apiClient.API.GetSourceWithResponse(cmd.Context(), repoID, sourceID)
+		if getErr != nil {
+			return getErr
+		}
+		if apiErr := NewAPIError(resp, fmt.Sprintf("source %s", sourceID)); apiErr != nil {
+			return apiErr
+		}
+
+		title = resp.JSON200.Title
+	}
+
+	prompt := fmt.Sprintf("Delete source %s (%s)?", title, sourceID)
+	if err := confirmDelete(cmd, isTTY, yes, prompt); err != nil {
+		return err
+	}
+
+	delResp, err := apiClient.API.DeleteSourceWithResponse(cmd.Context(), repoID, sourceID)
+	if err != nil {
+		return err
+	}
+	if apiErr := NewAPIError(delResp, fmt.Sprintf("source %s", sourceID)); apiErr != nil {
+		return apiErr
+	}
+
+	_, _ = fmt.Fprintf(cmd.OutOrStdout(), "deleted %s\n", sourceID)
+
+	return nil
 }
 
 // readScrapeFlow reads --flow's value: path's file content, or stdin when
