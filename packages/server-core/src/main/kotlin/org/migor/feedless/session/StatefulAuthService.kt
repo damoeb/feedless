@@ -7,6 +7,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
@@ -72,9 +73,16 @@ class StatefulAuthService : AuthService() {
     resolveWhitelistedHosts()
   }
 
+  /**
+   * The root login: email + secret key trade for a session token only for the root (admin) account.
+   * Every other user logs in through SSO or magic mail; a stored user-secret value is not a password.
+   */
   override suspend fun authenticateUser(email: String, secretKey: String): Jwt = withContext(Dispatchers.IO) {
-    log.debug("authUser")
+    log.debug("authRoot")
     val user = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
+    if (!user.admin) {
+      throw PermissionDeniedException("account is not root")
+    }
     userSecretRepository.findBySecretKeyValue(secretKey, email)
       ?: throw IllegalArgumentException("secretKey does not match")
 

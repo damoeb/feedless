@@ -3,12 +3,14 @@ package org.migor.feedless.http
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.agent.AgentService
 import org.migor.feedless.any
@@ -38,6 +40,7 @@ import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.User
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.`when`
@@ -111,6 +114,9 @@ class HttpApiAsyncDispatchSecurityIntTest {
 
   @Autowired
   private lateinit var userUseCase: UserUseCase
+
+  @Autowired
+  private lateinit var userRepository: UserRepository
 
   @Autowired
   private lateinit var groupRepository: GroupRepository
@@ -225,14 +231,28 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertCreatesRepositoryInOwnerGroup(token)
   }
 
+  /** `authUser` is the root login, so the caller is promoted to root (admin) first. */
   @Test
   fun `POST repositories answers 201 in the caller's owner group for a session token from authUser`() {
+    userRepository.save(caller.copy(admin = true))
     val secretKey = runBlocking {
       withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
     }
     val token = runBlocking { sessionTokenPort.authenticateUser(caller.email, secretKey).token }
 
     assertCreatesRepositoryInOwnerGroup(token)
+  }
+
+  /** A stored user-secret value is not a password: only the root account may trade it for a session. */
+  @Test
+  fun `authUser refuses a non-root account even with a valid secret key`() {
+    val secretKey = runBlocking {
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+    }
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java)
+      .isThrownBy { runBlocking { sessionTokenPort.authenticateUser(caller.email, secretKey) } }
+      .withMessage("account is not root")
   }
 
   private fun assertCreatesRepositoryInOwnerGroup(token: String) {

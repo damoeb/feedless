@@ -7,6 +7,7 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUser
+import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
@@ -20,10 +21,11 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.test.util.ReflectionTestUtils
 
-/** The `authUser` session token (root and email + secret-key logins) acts in the user's owner group. */
+/** The `authUser` session token is the root login, and it acts in the root user's owner group. */
 class StatefulAuthServiceTest {
 
-  private val user = randomUser()
+  private val user = randomUser().copy(admin = true)
+  private val nonRootUser = randomUser()
   private val secretKey = "secret-key"
   private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
   private lateinit var authService: StatefulAuthService
@@ -32,8 +34,11 @@ class StatefulAuthServiceTest {
   fun setUp() {
     val userRepository = mock(UserRepository::class.java)
     `when`(userRepository.findByEmail(user.email)).thenReturn(user)
+    `when`(userRepository.findByEmail(nonRootUser.email)).thenReturn(nonRootUser)
     val userSecretRepository = mock(UserSecretRepository::class.java)
     `when`(userSecretRepository.findBySecretKeyValue(secretKey, user.email)).thenReturn(mock(UserSecret::class.java))
+    `when`(userSecretRepository.findBySecretKeyValue(secretKey, nonRootUser.email))
+      .thenReturn(mock(UserSecret::class.java))
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
 
     val propertyService = mock(PropertyService::class.java)
@@ -68,5 +73,16 @@ class StatefulAuthServiceTest {
     assertThatExceptionOfType(NoActingGroupException::class.java).isThrownBy {
       runTest { authService.authenticateUser(user.email, secretKey) }
     }
+  }
+
+  @Test
+  fun `authenticateUser refuses a non-root account even with a matching secret key`() {
+    `when`(userGroupAssignmentRepository.findAllByUserId(nonRootUser.id)).thenReturn(
+      listOf(UserGroupAssignment(userId = nonRootUser.id, groupId = GroupId(), role = RoleInGroup.owner))
+    )
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java)
+      .isThrownBy { runTest { authService.authenticateUser(nonRootUser.email, secretKey) } }
+      .withMessage("account is not root")
   }
 }
