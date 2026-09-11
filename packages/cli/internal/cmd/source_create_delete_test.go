@@ -317,6 +317,45 @@ func TestDeleteSource_TTY_Accepted_FetchesTitleAndDeletes(t *testing.T) {
 	}
 }
 
+func TestDeleteSource_TTY_NoYes_TitleGET404_NotFound_NoPromptNoDelete(t *testing.T) {
+	var sawDelete bool
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodGet:
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(`{"code":"NOT_FOUND","message":"nope"}`))
+		case http.MethodDelete:
+			sawDelete = true
+			w.WriteHeader(http.StatusNoContent)
+		}
+	}))
+	t.Cleanup(srv.Close)
+
+	apiClient := newEditorTestClient(t, srv.URL)
+	cmd, _, stderr := newConfirmTestCmd("y\n")
+
+	err := deleteSource(cmd, apiClient, mustUUID(t, testRepoID), mustUUID(t, testSourceID), true, false)
+
+	var apiErr *APIError
+	if !errors.As(err, &apiErr) {
+		t.Fatalf("deleteSource() error = %v, want *APIError", err)
+	}
+	if !strings.Contains(apiErr.Error(), "not found") {
+		t.Errorf("error = %v, want it to mention not found", apiErr)
+	}
+	if apiErr.ExitCode() != 1 {
+		t.Errorf("ExitCode() = %d, want 1", apiErr.ExitCode())
+	}
+	if strings.Contains(stderr.String(), "Delete source") {
+		t.Errorf("stderr = %q, want no prompt written when the title GET 404s", stderr.String())
+	}
+	if sawDelete {
+		t.Error("DELETE was called despite the title GET returning 404")
+	}
+}
+
 func TestDeleteSource_TTY_Declined_ExitCode2_NoDelete(t *testing.T) {
 	var sawDelete bool
 
