@@ -32,7 +32,7 @@ class SourceHttpController(
   private val sourceRepository: SourceRepository,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpSourceMapper,
-  private val etagCalculator: SourceETagCalculator,
+  private val etagCalculator: ETagCalculator,
 ) : SourcesApi {
 
   @PreAuthorize("@capabilityService.hasCapability('user')")

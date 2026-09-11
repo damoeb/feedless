@@ -6,17 +6,16 @@ import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import org.springframework.stereotype.Component
 import java.security.MessageDigest
 import java.util.HexFormat
-import org.migor.feedless.http.api.model.Source as HttpSource
 
 /**
- * The single place that turns a source's HTTP representation into a strong ETag — a quoted,
- * lowercase-hex SHA-256 of the same JSON the `Source` endpoints serialize. `SourceHttpController`
- * calls this from both `getSource` (to set the response header) and `updateSource` (to compare
- * against `If-Match`, and to set the new header on success), so the two can never disagree about
- * what a source's ETag is.
+ * The single place that turns any HTTP model object's representation into a strong ETag — a
+ * quoted, lowercase-hex SHA-256 of the same JSON the endpoint serializes. `SourceHttpController`,
+ * `RepositoryHttpController`, and `RecordHttpController` all call this from both their `get*`
+ * (to set the response header) and `update*` (to compare against `If-Match`, and to set the new
+ * header on success) methods, so a resource's GET and PATCH can never disagree about its ETag.
  */
 @Component
-class SourceETagCalculator {
+class ETagCalculator {
 
   // jacksonObjectMapper() only registers the Kotlin module — without JavaTimeModule, a source
   // with a non-null lastRefreshedAt (an OffsetDateTime) throws InvalidDefinitionException instead
@@ -26,8 +25,8 @@ class SourceETagCalculator {
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 
   /** A strong ETag, e.g. `"3f2504e0…"` — quotes included, ready for the `ETag`/`If-Match` headers. */
-  fun compute(source: HttpSource): String {
-    val bytes = json.writeValueAsBytes(source)
+  fun compute(value: Any): String {
+    val bytes = json.writeValueAsBytes(value)
     val digest = MessageDigest.getInstance("SHA-256").digest(bytes)
     return "\"${HexFormat.of().formatHex(digest)}\""
   }

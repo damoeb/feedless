@@ -42,7 +42,7 @@ import org.springframework.test.web.servlet.MockMvc
   HttpApiExceptionHandler::class,
   RepositoryAccessGuard::class,
   RequestContextBridge::class,
-  SourceETagCalculator::class,
+  ETagCalculator::class,
 )
 @ActiveProfiles("test", AppLayer.api, AppProfiles.source, AppProfiles.repository, AppProfiles.user)
 class SourceHttpControllerTest {
