@@ -1,12 +1,7 @@
-# feedctl (packages/cli) is built here, in the image, for every platform we
-# support, so each self-hosted instance serves the CLI build that matches its
-# own API (see CliInstallScriptController). The Go sources come from the
-# BuildKit named build context `cli` (`--build-context cli=../cli`, as
-# buildAmdDockerImage passes it), so building this image needs no local Go.
-# $BUILDPLATFORM keeps the Go build native on any host; Go cross-compiles the
-# four targets itself, without emulation. The golang tag must match the
-# `toolchain` line in packages/cli/go.mod.
+# Each instance serves the feedctl build matching its own API. Sources come from
+# `--build-context cli=../cli`; the tag must match packages/cli/go.mod's toolchain.
 FROM --platform=$BUILDPLATFORM golang:1.27.1-alpine AS feedctl
+# Fail on a tag/go.mod mismatch instead of downloading another toolchain.
 ENV GOTOOLCHAIN=local
 WORKDIR /src
 COPY --from=cli go.mod go.sum ./
@@ -64,8 +59,7 @@ RUN touch license.key && chown java:java license.key
 USER java
 COPY --from=build \
   --chown=java:java /usr/feedless/* ./
-# An explicit destination: the glob copy above flattens directories, so it
-# cannot place static/cli.
+# Not via the glob copy above: it flattens directories.
 COPY --from=feedctl --chown=java:java /out/ static/cli/
 
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/

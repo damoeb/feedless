@@ -33,9 +33,7 @@ const (
 	postgisImage = "postgis/postgis:17-3.5-alpine"
 	fixtureImage = "nginx:alpine"
 
-	// coreAPIGatewayURL is the core's configured public URL
-	// (APP_API_GATEWAY_URL), which it templates into /cli/install.sh. It is
-	// not CoreURL: the core's port is published on a random host port.
+	// Templated into /cli/install.sh; unlike CoreURL, not the published port.
 	coreAPIGatewayURL = "http://localhost:8080"
 
 	coreStartupTimeout  = 5 * time.Minute

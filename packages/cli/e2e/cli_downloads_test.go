@@ -18,8 +18,7 @@ import (
 	"testing"
 )
 
-// feedctlDownloads are the binaries the core image ships in static/cli (built
-// by the Go stage of packages/server-core/Dockerfile), in SHA256SUMS order.
+// In SHA256SUMS order.
 var feedctlDownloads = []string{
 	"feedctl-darwin-amd64",
 	"feedctl-darwin-arm64",
@@ -27,12 +26,7 @@ var feedctlDownloads = []string{
 	"feedctl-linux-arm64",
 }
 
-// checkCLIDownloads checks, without a token, that the core serves the feedctl
-// downloads under /cli/**: SHA256SUMS naming the four binaries, install.sh
-// templated with the core's public URL, and the host platform's binary, which
-// must match its checksum and run. It guards the image layout — the core only
-// serves files from static/cli, and a build that put them anywhere else
-// shipped an image whose /cli/** answered 404.
+// Guards the image layout: an image with the binaries outside static/cli answered 404 on /cli/**.
 func checkCLIDownloads(ctx context.Context, t *testing.T, coreURL, gatewayURL string) {
 	t.Helper()
 
@@ -66,8 +60,7 @@ func checkCLIDownloads(ctx context.Context, t *testing.T, coreURL, gatewayURL st
 			t.Fatalf("%s --version: %v\n%s", name, err, out)
 		}
 
-		// The image builds feedctl with its APP_VERSION, which is also the
-		// core's app.version that /api/v1/status reports.
+		// The image embeds its APP_VERSION, which the core also reports as its version.
 		want := "feedctl version " + serverVersion(ctx, t, coreURL)
 		if got := strings.TrimSpace(string(out)); got != want {
 			t.Fatalf("want the downloaded %s to print %q, got %q", name, want, got)
@@ -75,8 +68,6 @@ func checkCLIDownloads(ctx context.Context, t *testing.T, coreURL, gatewayURL st
 	})
 }
 
-// parseSHA256Sums checks that sums is sha256sum output for exactly the
-// feedctl downloads, in order, and returns each file's hex digest.
 func parseSHA256Sums(t *testing.T, sums string) map[string]string {
 	t.Helper()
 
@@ -99,8 +90,6 @@ func parseSHA256Sums(t *testing.T, sums string) map[string]string {
 	return digests
 }
 
-// getCLIDownload GETs coreURL/cli/<name> without credentials and fails the
-// test unless the core answers 200.
 func getCLIDownload(ctx context.Context, t *testing.T, coreURL, name string) []byte {
 	t.Helper()
 
@@ -112,7 +101,6 @@ func getCLIDownload(ctx context.Context, t *testing.T, coreURL, name string) []b
 	return body
 }
 
-// serverVersion returns the version GET /api/v1/status reports.
 func serverVersion(ctx context.Context, t *testing.T, coreURL string) string {
 	t.Helper()
 

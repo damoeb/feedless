@@ -237,9 +237,7 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 
 val buildTask = tasks.findByPath("build")!!.dependsOn("test", "bootJar")
 
-// The image builds feedctl itself, in a Go stage of the Dockerfile, from the
-// CLI sources passed as the BuildKit named context `cli` -- no local Go and
-// no Gradle dependency on packages/cli.
+// The Dockerfile's Go stage builds feedctl from this context.
 val cliSourceDir = project(":packages:cli").projectDir.absolutePath
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {

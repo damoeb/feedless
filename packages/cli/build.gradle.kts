@@ -3,8 +3,7 @@
 // which shells out to yarn).
 val openapiSpec = "../http-api/src/main/resources/openapi/openapi.yaml"
 
-// A Go version as (major, minor, patch); a pre-release (go1.27rc1) sorts
-// before the release it precedes, so it gets patch -1.
+// A pre-release (go1.27rc1) gets patch -1, so it sorts before go1.27.0.
 data class GoVersion(val major: Int, val minor: Int, val patch: Int) : Comparable<GoVersion> {
   override fun compareTo(other: GoVersion): Int =
     compareValuesBy(this, other, GoVersion::major, GoVersion::minor, GoVersion::patch)
@@ -14,8 +13,6 @@ data class GoVersion(val major: Int, val minor: Int, val patch: Int) : Comparabl
   companion object {
     private val pattern = Regex("""(\d+)\.(\d+)(?:\.(\d+))?([a-z]+\d*)?""")
 
-    // Accepts "1.27", "1.27.1", "go1.27.1", "go1.27rc1" and GOVERSION
-    // strings such as "go1.27.1 X:boringcrypto" or "devel go1.28-abc123".
     fun parse(text: String): GoVersion? {
       val match = pattern.find(text) ?: return null
       val (major, minor, patch, preRelease) = match.destructured
@@ -32,8 +29,6 @@ data class GoVersion(val major: Int, val minor: Int, val patch: Int) : Comparabl
   }
 }
 
-// The toolchain go.mod asks for: its `toolchain goX.Y.Z` line, else its
-// `go X.Y[.Z]` line.
 fun requiredGoVersion(goMod: String): GoVersion {
   val lines = goMod.lines().map { it.trim() }
   val line = lines.firstOrNull { it.startsWith("toolchain ") }
@@ -43,10 +38,7 @@ fun requiredGoVersion(goMod: String): GoVersion {
     ?: throw GradleException("Cannot parse the Go version in go.mod: `$line`")
 }
 
-// Every Go task needs the toolchain go.mod pins. `go env GOVERSION` reports
-// the toolchain `go` actually selects in this module (after GOTOOLCHAIN=auto
-// switched to, and if needed downloaded, the pinned one), so a missing or too
-// old Go fails here with a clear message instead of as a compile error.
+// `go env GOVERSION` reports the toolchain actually selected, after GOTOOLCHAIN switching.
 val checkGoTask = tasks.register("checkGo") {
   val moduleDir = projectDir
   val goMod = file("go.mod")
@@ -140,9 +132,7 @@ tasks.register<Exec>("e2eTest") {
   outputs.upToDateWhen { false }
 }
 
-// The binaries each self-hosted instance serves under /cli/** are built by
-// the Go stage of packages/server-core/Dockerfile, not here; this is the
-// host-platform build for local use.
+// Host build only; the binaries served under /cli/** come from server-core's Dockerfile.
 val buildTask = tasks.register<Exec>("build") {
   dependsOn(checkGoTask)
   val feedlessVersion = (findProperty("feedlessVersion") as String?) ?: "dev"
