@@ -1,13 +1,19 @@
 package org.migor.feedless.status
 
+import ch.qos.logback.classic.Level
+import ch.qos.logback.classic.Logger
+import ch.qos.logback.classic.spi.ILoggingEvent
+import ch.qos.logback.core.read.ListAppender
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
-import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import org.migor.feedless.agent.AgentRegistry
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
+import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
 
 class ServerStatusServiceTest {
@@ -31,12 +37,29 @@ class ServerStatusServiceTest {
     assertThat(status.connectedAgents).isEqualTo(0)
   }
 
-  @Test
-  fun `refuses a build timestamp that is not epoch millis`() {
-    assertThatExceptionOfType(IllegalArgumentException::class.java)
-      .isThrownBy { kotlinx.coroutines.runBlocking { service(buildTimestamp = "yesterday").status() } }
-      .withMessageContaining("APP_BUILD_TIMESTAMP")
-  }
+  @ParameterizedTest
+  @ValueSource(strings = ["", "yesterday"])
+  fun `reports build date 0 and warns once at startup when the build timestamp is missing or invalid`(raw: String) =
+    runTest {
+      val logger = LoggerFactory.getLogger(ServerStatusService::class.simpleName) as Logger
+      val previousLevel = logger.level
+      val appender = ListAppender<ILoggingEvent>().also { it.start() }
+      logger.level = Level.WARN
+      logger.addAppender(appender)
+      try {
+        val service = service(buildTimestamp = raw)
+        service.status()
+        val status = service.status()
+
+        assertThat(status.buildDate).isEqualTo(0)
+        assertThat(appender.list.filter { it.level == Level.WARN }.map { it.formattedMessage })
+          .singleElement()
+          .satisfies({ assertThat(it).contains("APP_BUILD_TIMESTAMP") })
+      } finally {
+        logger.detachAppender(appender)
+        logger.level = previousLevel
+      }
+    }
 
   private fun service(
     registry: AgentRegistry? = null,
