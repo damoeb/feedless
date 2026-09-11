@@ -134,6 +134,61 @@ func TestStatus_Unauthorized_Exits1Not4(t *testing.T) {
 	if exitCodeOf(err) != 1 {
 		t.Fatalf("exit = %d (err %v), want 1", exitCodeOf(err), err)
 	}
+
+	if !strings.Contains(err.Error(), "may predate GET /api/v1/status") {
+		t.Errorf("error = %q, want the hint that the instance may predate the endpoint", err.Error())
+	}
+}
+
+func TestStatus_NotFound_HintsAtAnOlderInstance(t *testing.T) {
+	srv := statusServer(t, http.StatusNotFound, `{"code":"NOT_FOUND","message":"no such endpoint"}`, "1.0.0", nil)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	_, _, err := runCmd("status")
+	if exitCodeOf(err) != 1 {
+		t.Fatalf("exit = %d (err %v), want 1", exitCodeOf(err), err)
+	}
+
+	if !strings.Contains(err.Error(), "may predate GET /api/v1/status") {
+		t.Errorf("error = %q, want the hint that the instance may predate the endpoint", err.Error())
+	}
+}
+
+func TestStatus_MalformedJSON_ReportsAnInvalidResponse(t *testing.T) {
+	srv := statusServer(t, http.StatusOK, `{"version":`, "1.0.0", nil)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, _, err := runCmd("status")
+	if exitCodeOf(err) != 1 {
+		t.Fatalf("exit = %d (err %v), want 1", exitCodeOf(err), err)
+	}
+
+	if !strings.Contains(err.Error(), "invalid server response") || strings.Contains(err.Error(), "contacting") {
+		t.Errorf("error = %q, want it reported as an invalid server response, not as a connection failure", err.Error())
+	}
+
+	if stdout.String() != "" {
+		t.Errorf("stdout = %q, want nothing", stdout.String())
+	}
+}
+
+func TestStatus_NonJSONAnswer_ReportsAnInvalidResponse(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("<html>login</html>"))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	_, _, err := runCmd("status")
+	if exitCodeOf(err) != 1 {
+		t.Fatalf("exit = %d (err %v), want 1", exitCodeOf(err), err)
+	}
+
+	if !strings.Contains(err.Error(), "invalid server response") {
+		t.Errorf("error = %q, want it reported as an invalid server response", err.Error())
+	}
 }
 
 func TestStatus_Unreachable_Exits1(t *testing.T) {

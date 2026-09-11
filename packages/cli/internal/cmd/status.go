@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"strings"
 	"time"
@@ -76,17 +77,34 @@ func runStatus(cmd *cobra.Command, version string, asJSON bool, jq string) error
 
 	resp, err := apiClient.API.GetStatusWithResponse(cmd.Context())
 	if err != nil {
-		return fmt.Errorf("contacting %s: %w", host, err)
+		// The generated client fails the same way for a request that never
+		// got an answer and for an answer whose JSON does not parse; only the
+		// former is a *url.Error (http.Client wraps every transport failure,
+		// the transport guard's refusal included).
+		var urlErr *url.Error
+		if errors.As(err, &urlErr) {
+			return fmt.Errorf("contacting %s: %w", host, err)
+		}
+
+		return NewExitError(1, "status of %s: invalid server response: %s", host, output.SafeText(err.Error()))
 	}
 
-	// Any error answer exits 1 — a 401 too: from an instance that predates
-	// GET /status, logging in (what exit 4 means) would not help.
-	if apiErr := NewAPIError(resp, "GET /api/v1/status (the instance may predate it)"); apiErr != nil {
-		return NewExitError(1, "status of %s: %s", host, apiErr.Error())
+	if apiErr := NewAPIError(resp, "GET /api/v1/status"); apiErr != nil {
+		msg := apiErr.Error()
+
+		// An instance that predates GET /status answers 404, or 401 like for
+		// any /api/v1 path it does not know. Either way this exits 1, not 4:
+		// logging in would not help.
+		if code := resp.StatusCode(); code == http.StatusUnauthorized || code == http.StatusNotFound {
+			msg += " (the instance may predate GET /api/v1/status)"
+		}
+
+		return NewExitError(1, "status of %s: %s", host, msg)
 	}
 
 	if resp.JSON200 == nil {
-		return NewExitError(1, "status of %s: unexpected response (%s)", host, resp.Status())
+		return NewExitError(1, "status of %s: invalid server response (%s, %s)", host, resp.Status(),
+			output.SafeText(resp.HTTPResponse.Header.Get("Content-Type")))
 	}
 
 	if asJSON {
