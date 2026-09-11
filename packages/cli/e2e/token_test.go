@@ -13,11 +13,11 @@ import (
 	"strings"
 )
 
-// MintAPIToken obtains an API token for the user identified by email and
-// secretKey the way a user gets one today: log in over GraphQL (authUser,
-// which answers a session JWT), then create a user secret with that session
-// (createUserSecret, which answers an API JWT). The second is what the web
-// UI hands a user to paste into `feedctl auth login --with-token`.
+// MintAPIToken obtains an API token for the root account identified by email
+// and secretKey: log in over GraphQL (authUser, which answers a session JWT
+// and refuses every non-root account), then create a user secret with that
+// session (createUserSecret, which answers an API JWT). The second is what
+// the web UI hands a user to paste into `feedctl auth login --with-token`.
 func MintAPIToken(ctx context.Context, coreURL, email, secretKey string) (string, error) {
 	var login struct {
 		AuthUser struct {
