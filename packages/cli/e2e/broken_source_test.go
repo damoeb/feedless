@@ -20,6 +20,48 @@ const scenarioTimeout = 10 * time.Minute
 // fixtureItems are the item titles fixtures/site/items.html lists.
 var fixtureItems = []string{"Alpha item", "Bravo item", "Charlie item"}
 
+// statusPollTimeout bounds how long `feedctl status` may take to see the
+// agent. StartStack already waited for the core to log it; this covers the
+// registry write racing that log line.
+const statusPollTimeout = 30 * time.Second
+
+// waitForConnectedAgent polls `feedctl status --host <coreURL> --json`, with
+// no login, until it exits 0 reporting at least one connected agent, then
+// checks the human output once.
+func waitForConnectedAgent(ctx context.Context, t *testing.T, cli *Feedctl, coreURL string) {
+	t.Helper()
+
+	type serverStatus struct {
+		Agents struct {
+			Connected int `json:"connected"`
+		} `json:"agents"`
+	}
+
+	deadline := time.Now().Add(statusPollTimeout)
+
+	for {
+		res := cli.RunQuiet(ctx, "", "status", "--host", coreURL, "--json")
+		if res.ExitCode == 0 && DecodeStdout[serverStatus](t, res).Agents.Connected >= 1 {
+			break
+		}
+
+		if time.Now().After(deadline) {
+			t.Fatalf("want feedctl status to report a connected agent within %s, last run:\n%s", statusPollTimeout, res)
+		}
+
+		select {
+		case <-ctx.Done():
+			t.Fatalf("waiting for feedctl status to report a connected agent: %v", ctx.Err())
+		case <-time.After(2 * time.Second):
+		}
+	}
+
+	status := cli.MustRun(ctx, 0, "", "status", "--host", coreURL)
+	if !strings.Contains(status.Stdout, "Server:   "+coreURL+"\n") || !strings.Contains(status.Stdout, " connected\n") {
+		t.Fatalf("want the status summary for %s, got:\n%s", coreURL, status)
+	}
+}
+
 // TestBrokenSourceFixLoop runs the first feedctl use case end to end against
 // a real core, agent and database: a source breaks, the user finds it,
 // reads the failed harvest's log, dry-runs a fix without touching the saved
@@ -41,9 +83,18 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 
 	cli := NewFeedctl(t, bin)
 
+	t.Log("step 0: feedctl status answers without a login and reports the connected agent")
+
+	waitForConnectedAgent(ctx, t, cli, stack.CoreURL)
+
 	login := cli.MustRun(ctx, 0, token, "auth", "login", "--url", stack.CoreURL, "--with-token")
 	if !strings.Contains(login.Stderr, "plain text") {
 		t.Fatalf("want the no-keyring file fallback warning, got:\n%s", login)
+	}
+
+	// Logged in, status resolves the default host on its own.
+	if status := cli.MustRun(ctx, 0, "", "status"); !strings.Contains(status.Stdout, "Server:   "+stack.CoreURL+"\n") {
+		t.Fatalf("want status to ask the logged-in default host, got:\n%s", status)
 	}
 
 	// hosts.yml holds the live token in plain text: check for it, never print it.
