@@ -127,6 +127,24 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
           )
         }
       }
+
+      where.text?.query?.takeIf { it.isNotBlank() }?.let { query ->
+        // Case-insensitive substring match on title OR description. '%'/'_' are LIKE
+        // wildcards — escape them (and the escape char itself) so the user's text matches
+        // literally rather than being interpreted as a pattern.
+        val likeEscapeChar = '\\'
+        val escaped = query
+          .replace("$likeEscapeChar", "$likeEscapeChar$likeEscapeChar")
+          .replace("%", "${likeEscapeChar}%")
+          .replace("_", "${likeEscapeChar}_")
+        val pattern = "%${escaped.lowercase()}%"
+        whereStatements.add(
+          or(
+            lower(path(RepositoryEntity::title)).like(pattern, likeEscapeChar),
+            lower(path(RepositoryEntity::description)).like(pattern, likeEscapeChar),
+          )
+        )
+      }
     }
     return whereStatements
   }

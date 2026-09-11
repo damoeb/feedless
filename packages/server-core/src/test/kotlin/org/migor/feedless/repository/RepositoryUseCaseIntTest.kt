@@ -211,4 +211,159 @@ class RepositoryUseCaseIntTest {
       assertThat(returned).containsExactlyElementsOf(all.map { it.id })
     }
 
+  @Test
+  fun `q matches title or description, case-insensitively, and totalCount agrees with the list`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "Alpha-$marker-Title",
+            description = "unrelated",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "unrelated",
+            description = "Beta-$marker-Description",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "no match here",
+            description = "nor here",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      // Matches the title hit, case-insensitively.
+      val byTitle = RepositoriesFilter(text = FulltextQueryFilter(query = "alpha-$marker-title".uppercase()))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byTitle, user.id))
+        .extracting("title")
+        .containsExactly("Alpha-$marker-Title")
+      assertThat(repositoryUseCase.countAllByUserId(byTitle, user.id)).isEqualTo(1)
+
+      // Matches the description hit.
+      val byDescription = RepositoriesFilter(text = FulltextQueryFilter(query = "beta-$marker-description"))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byDescription, user.id))
+        .extracting("description")
+        .containsExactly("Beta-$marker-Description")
+      assertThat(repositoryUseCase.countAllByUserId(byDescription, user.id)).isEqualTo(1)
+
+      // A substring spanning both hits.
+      val byMarker = RepositoriesFilter(text = FulltextQueryFilter(query = marker))
+      val matchedByMarker = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byMarker, user.id)
+      assertThat(matchedByMarker).hasSize(2)
+      assertThat(repositoryUseCase.countAllByUserId(byMarker, user.id)).isEqualTo(matchedByMarker.size)
+
+      // A query matching nothing.
+      val noMatch = RepositoriesFilter(text = FulltextQueryFilter(query = "definitely-$marker-nope"))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), noMatch, user.id)).isEmpty()
+      assertThat(repositoryUseCase.countAllByUserId(noMatch, user.id)).isEqualTo(0)
+
+      // Blank q is no filter at all: same result as an equivalent filter with no text predicate.
+      // (Comparing against a bare `null` where-filter is not apples-to-apples here: the ownerId
+      // scoping predicate only applies when `where` is non-null, so a `null` filter can also
+      // surface other users' public repositories via the outer visibility-OR clause — a
+      // pre-existing quirk this task leaves untouched.)
+      val noText = RepositoriesFilter(text = null)
+      val unfiltered = repositoryUseCase.countAllByUserId(noText, user.id)
+      val blankQ = RepositoriesFilter(text = FulltextQueryFilter(query = "   "))
+      assertThat(repositoryUseCase.countAllByUserId(blankQ, user.id)).isEqualTo(unfiltered)
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, unfiltered), blankQ, user.id))
+        .hasSize(unfiltered)
+    }
+
+  @Test
+  fun `q treats percent and underscore as literal characters, not LIKE wildcards`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "50%-$marker-off_sale",
+            description = "d",
+            refreshCron = "",
+          ),
+          // If '%'/'_' were treated as wildcards, this would spuriously match "50%-...-off_sale" too.
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "50X$marker-offZsale",
+            description = "d",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      val literal = RepositoriesFilter(text = FulltextQueryFilter(query = "%-$marker-off_"))
+      val matched = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), literal, user.id)
+      assertThat(matched).extracting("title").containsExactly("50%-$marker-off_sale")
+      assertThat(repositoryUseCase.countAllByUserId(literal, user.id)).isEqualTo(1)
+    }
+
+  @Test
+  fun `q combines with the product filter`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "combo-$marker-rss",
+            description = "d",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.visualDiff,
+            title = "combo-$marker-visual",
+            description = "d",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      val filter = RepositoriesFilter(
+        product = VerticalFilter(eq = Vertical.rssProxy),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      val matched = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), filter, user.id)
+      assertThat(matched).extracting("title").containsExactly("combo-$marker-rss")
+      assertThat(repositoryUseCase.countAllByUserId(filter, user.id)).isEqualTo(1)
+
+      // Also combines with the visibility filter (both repos above were created isPrivate).
+      val withVisibility = RepositoriesFilter(
+        visibility = VisibilityFilter(`in` = listOf(EntityVisibility.isPrivate)),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), withVisibility, user.id))
+        .extracting("title")
+        .containsExactlyInAnyOrder("combo-$marker-rss", "combo-$marker-visual")
+      assertThat(repositoryUseCase.countAllByUserId(withVisibility, user.id)).isEqualTo(2)
+
+      val wrongVisibility = RepositoriesFilter(
+        visibility = VisibilityFilter(`in` = listOf(EntityVisibility.isPublic)),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), wrongVisibility, user.id)).isEmpty()
+      assertThat(repositoryUseCase.countAllByUserId(wrongVisibility, user.id)).isEqualTo(0)
+    }
+
 }
