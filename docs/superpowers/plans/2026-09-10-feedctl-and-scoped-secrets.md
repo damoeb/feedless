@@ -177,7 +177,7 @@ Dependencies: T9 and T10 before C6/C7; C8 independent of both. Same conventions 
 - GraphQL `Repository.sources` honours `order`, and its default order changed (was per page by `lastRecordsRetrieved`, now `createdAt desc`).
 - `/cli/**` downloads (`feedctl` binaries, `SHA256SUMS`, `install.sh`) are public.
 - The `server-core` image grows by about 30 MB (the four `feedctl` binaries).
-- Migrations V86–V89 take short locks on `t_harvest`.
+- Migrations V87–V90 take short locks on `t_harvest`.
 - During a rolling deploy, the old pods' cleanup job can delete queued, running and dry-run harvests: deploy the scheduler last, or accept the loss.
 - `/api/v1` was not functional on a real container before this branch (401 on every suspend endpoint), so no existing client depends on its previous behaviour.
 - `authUser` is root-only again: any other account gets `account is not root`.
