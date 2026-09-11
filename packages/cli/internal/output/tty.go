@@ -1,9 +1,4 @@
-// Package output is feedctl's shared rendering layer: the table printer
-// every list/view command uses for its default (human) output, the
-// --json/--jq machinery for its machine-readable output, and the --limit
-// pagination helper for list commands. Every entity command (source,
-// harvest, …) builds on this instead of formatting its own output, so
-// `feedctl X list` and `feedctl Y list` behave identically.
+// Package output is the shared rendering layer, so every list and view command behaves the same.
 package output
 
 import (
@@ -12,11 +7,7 @@ import (
 	"golang.org/x/term"
 )
 
-// IsTerminal reports whether f is a terminal feedctl should format tables,
-// color, and truncation for. Commands call this once, on the real
-// os.Stdout, and thread the result through (to NewTablePrinter, TTY-only
-// JSON pretty-printing, …) so it can be overridden with a fixed value in
-// tests instead of depending on the process's actual stdout.
+// Commands call IsTerminal once and pass the result on, so tests can fix it.
 func IsTerminal(f *os.File) bool {
 	if f == nil {
 		return false
@@ -25,10 +16,7 @@ func IsTerminal(f *os.File) bool {
 	return term.IsTerminal(int(f.Fd()))
 }
 
-// TerminalWidth returns f's terminal width in columns, or 80 if it can't be
-// determined (f isn't a terminal, or the ioctl fails). Like IsTerminal,
-// commands call this once on the real stdout and pass the result in;
-// NewTablePrinter treats width <= 0 as "don't truncate".
+// TerminalWidth returns 80 when the width can't be determined.
 func TerminalWidth(f *os.File) int {
 	if f == nil {
 		return 80
@@ -42,8 +30,7 @@ func TerminalWidth(f *os.File) int {
 	return width
 }
 
-// noColor reports whether colour should be suppressed: NO_COLOR is set (to
-// any value — https://no-color.org) or the output isn't a terminal.
+// See https://no-color.org.
 func noColor(isTTY bool) bool {
 	if !isTTY {
 		return true

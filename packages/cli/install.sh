@@ -1,16 +1,6 @@
 #!/bin/sh
-# Installs feedctl, the Feedless CLI, from the instance that serves this
-# script. Downloading from the instance guarantees the CLI build matches
-# that instance's API version -- there is no CLI/server compatibility
-# matrix to maintain.
-#
-# Usage:
-#   curl -fsSL <instance>/cli/install.sh | sh
-#   curl -fsSL <instance>/cli/install.sh | sh -s -- --dir /custom/path
-#
-# FEEDCTL_BASE_URL is baked in by the instance that serves this script. Set
-# it explicitly to run this script against a plain file server (e.g. for
-# local testing) that has not substituted it.
+# Installs feedctl from the instance serving this script, so the CLI always matches that instance's API.
+# Usage: curl -fsSL <instance>/cli/install.sh | sh [-s -- --dir <path>]
 set -eu
 
 FEEDCTL_BASE_URL="${FEEDCTL_BASE_URL:-__FEEDCTL_BASE_URL__}"

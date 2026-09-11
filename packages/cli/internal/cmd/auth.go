@@ -17,9 +17,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/config"
 )
 
-// newAuthCmd builds the `feedctl auth` command group: login, status, and
-// logout. version is threaded through to the HTTP client so it can warn on
-// a server version mismatch (see internal/client).
 func newAuthCmd(version string) *cobra.Command {
 	auth := &cobra.Command{
 		Use:   "auth",
@@ -32,8 +29,6 @@ func newAuthCmd(version string) *cobra.Command {
 
 	return auth
 }
-
-// --- login ---
 
 func newAuthLoginCmd(version string) *cobra.Command {
 	var rawURL string
@@ -101,8 +96,6 @@ func runAuthLogin(cmd *cobra.Command, version, rawURL string, withToken bool) er
 	return nil
 }
 
-// hostFromURL validates rawURL and extracts the host name (host:port) that
-// keys hosts.yml and the OS keyring.
 func hostFromURL(rawURL string) (string, error) {
 	parsed, err := url.Parse(rawURL)
 	if err != nil || parsed.Host == "" || (parsed.Scheme != "http" && parsed.Scheme != "https") {
@@ -112,11 +105,7 @@ func hostFromURL(rawURL string) (string, error) {
 	return parsed.Host, nil
 }
 
-// readToken obtains the token to log in with: from stdin when withToken is
-// set (feedctl auth login --with-token, mirroring gh auth login
-// --with-token), otherwise via a hidden prompt when stdin is a terminal.
-// Reading interactively when stdin isn't a terminal is refused rather than
-// silently blocking.
+// Without a terminal, reading interactively is refused rather than silently blocking.
 func readToken(cmd *cobra.Command, withToken bool) (string, error) {
 	if withToken {
 		data, err := io.ReadAll(cmd.InOrStdin())
@@ -153,9 +142,7 @@ func readToken(cmd *cobra.Command, withToken bool) (string, error) {
 	return token, nil
 }
 
-// verifyToken calls GET /user to validate token, returning the
-// authenticated user's email on success. A non-200 response (most notably
-// 401) fails with exit code 4: the caller must not store anything.
+// verifyToken exits 4 on a non-200; the caller must not store anything.
 func verifyToken(ctx context.Context, apiClient *client.Client, host string) (string, error) {
 	resp, err := apiClient.API.GetAuthenticatedUserWithResponse(ctx)
 	if err != nil {
@@ -168,8 +155,6 @@ func verifyToken(ctx context.Context, apiClient *client.Client, host string) (st
 
 	return string(resp.JSON200.Email), nil
 }
-
-// --- status ---
 
 func newAuthStatusCmd(version string) *cobra.Command {
 	return &cobra.Command{
@@ -201,10 +186,7 @@ func runAuthStatus(cmd *cobra.Command, version string) error {
 	}
 	sort.Strings(hosts)
 
-	// One Warner shared across every host's Client: status can build up to
-	// len(hosts) Clients in this single invocation, and the version
-	// mismatch warning must still print at most once overall, not once per
-	// host (requirement 8).
+	// One Warner for all hosts, so the version warning prints once.
 	warner := client.NewWarner()
 
 	anyFailed := false
@@ -221,10 +203,6 @@ func runAuthStatus(cmd *cobra.Command, version string) error {
 	return nil
 }
 
-// reportHostStatus prints one host's status line and reports whether it is
-// authenticated. warner is shared across every host reportHostStatus is
-// called for in one `auth status` run, so the version-mismatch warning
-// prints at most once for the whole command, not once per host.
 func reportHostStatus(cmd *cobra.Command, version string, cfg *config.Config, host string, isResolved bool, warner *client.Warner) bool {
 	entry := cfg.Hosts[host]
 	token, source := config.TokenForHost(cfg, host, isResolved)
@@ -265,8 +243,6 @@ func reportHostStatus(cmd *cobra.Command, version string, cfg *config.Config, ho
 
 	return authenticated
 }
-
-// --- logout ---
 
 func newAuthLogoutCmd() *cobra.Command {
 	return &cobra.Command{
@@ -310,9 +286,6 @@ func runAuthLogout(cmd *cobra.Command) error {
 	return nil
 }
 
-// nextDefaultHost picks a deterministic replacement default host after the
-// current one is removed: the lexicographically first of what remains, or
-// "" if none remain.
 func nextDefaultHost(hosts map[string]config.HostEntry) string {
 	if len(hosts) == 0 {
 		return ""

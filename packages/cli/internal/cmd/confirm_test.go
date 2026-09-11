@@ -10,12 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// newConfirmTestCmd builds a bare *cobra.Command wired for direct,
-// non-cobra-Execute testing of confirmDelete (and, in repository_test.go,
-// deleteRepository) — same shape as source_editor_test.go's
-// newEditorTestCmd. A context is set explicitly since cobra.Command.ctx is
-// nil until SetContext/ExecuteContext runs it, and deleteRepository's own
-// tests pass cmd.Context() straight into the generated API client.
+// The context is set explicitly: cobra leaves it nil outside Execute, and the API client needs one.
 func newConfirmTestCmd(stdin string) (*cobra.Command, *bytes.Buffer, *bytes.Buffer) {
 	c := &cobra.Command{}
 	c.SetContext(context.Background())
@@ -61,8 +56,7 @@ func TestConfirmDelete_NotTTY_NoYes_RefusedWithExactMessage(t *testing.T) {
 		t.Errorf("error = %q, want the exact brief message", err.Error())
 	}
 
-	// A plain error (not an ExitError/exitCoder) falls back to feedctl's
-	// default exit code 1, not ExitCancelled.
+	// A plain error exits 1, not ExitCancelled.
 	var cancelled *deleteDeclinedError
 	if errors.As(err, &cancelled) {
 		t.Error("error is *deleteDeclinedError, want a plain refusal error (exit 1, not 2)")

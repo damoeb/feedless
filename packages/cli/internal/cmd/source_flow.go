@@ -7,11 +7,7 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/api"
 )
 
-// prettyFlow renders flow as indented JSON — the same shape `--flow`
-// accepts back ({"sequence": [...]}) — for the editor temp file and for
-// comparison against what the user saved. MarshalIndent on a ScrapeFlow
-// value never fails (no channels/funcs/cyclic values in the schema); "{}"
-// is an unreachable-in-practice fallback, not a real error path.
+// "{}" is an unreachable fallback: a ScrapeFlow always marshals.
 func prettyFlow(flow api.ScrapeFlow) string {
 	b, err := json.MarshalIndent(flow, "", "  ")
 	if err != nil {
@@ -21,9 +17,6 @@ func prettyFlow(flow api.ScrapeFlow) string {
 	return string(b)
 }
 
-// flowActionLines renders flow's sequence as `view`'s numbered action list
-// ("1. fetch https://…", "2. click //xpath", "3. extract fragment … xpath
-// …" — see the brief's exact examples).
 func flowActionLines(flow api.ScrapeFlow) []string {
 	lines := make([]string, 0, len(flow.Sequence))
 	for i, a := range flow.Sequence {
@@ -33,9 +26,7 @@ func flowActionLines(flow api.ScrapeFlow) []string {
 	return lines
 }
 
-// describeAction renders one ScrapeAction as a short human-readable line.
-// ScrapeAction is a "exactly one of" union (see its doc comment in
-// client.gen.go); the switch picks whichever property is set.
+// ScrapeAction is a one-of union; the switch picks whichever property is set.
 func describeAction(a api.ScrapeAction) string {
 	switch {
 	case a.Fetch != nil:

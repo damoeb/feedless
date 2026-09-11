@@ -18,20 +18,14 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/client"
 )
 
-// otherFlowJSON, thirdFlowJSON: alternative valid ScrapeFlow bodies, distinct
-// from validFlowJSON (source_test.go) and from each other, so tests can
-// prove a fake editor's successive rewrites are actually round-tripped.
+// Distinct flows, so tests can tell successive rewrites apart.
 const (
 	otherFlowJSON  = `{"sequence":[{"fetch":{"get":{"url":{"literal":"https://example.com/other"}}}}]}`
 	thirdFlowJSON  = `{"sequence":[{"fetch":{"get":{"url":{"literal":"https://example.com/third"}}}}]}`
 	fourthFlowJSON = `{"sequence":[{"fetch":{"get":{"url":{"literal":"https://example.com/fourth"}}}}]}`
 )
 
-// newEditorTestCmd builds a bare *cobra.Command wired the way runFlowEditor
-// needs (Context/Out/Err) without going through cobra's Execute — the
-// editor loop is tested as its own unit, independent of flag parsing,
-// config.Load, and the keyring (per the brief: "make the editor injectable
-// ... and must not touch the real keyring").
+// newEditorTestCmd tests the editor loop without flag parsing, config or keyring.
 func newEditorTestCmd() (*cobra.Command, *bytes.Buffer, *bytes.Buffer) {
 	c := &cobra.Command{}
 	c.SetContext(context.Background())
@@ -65,8 +59,6 @@ func mustUUID(t *testing.T, s string) uuid.UUID {
 	return id
 }
 
-// rewriteEditor returns an editorFunc that overwrites the file with content
-// every time it's called — a fake editor script/function per the brief.
 func rewriteEditor(content string) editorFunc {
 	return func(path string) error {
 		return os.WriteFile(path, []byte(content), 0o600)
@@ -91,8 +83,6 @@ func tempFileExists(t *testing.T, path string) bool {
 	return false
 }
 
-// findTempFilePath extracts the only line source_editor.go's runFlowEditor
-// prints on any non-success exit path: the kept temp file's path.
 func findTempFilePath(t *testing.T, stderr string) string {
 	t.Helper()
 
@@ -276,12 +266,6 @@ func TestFlowEditor_InvalidJSON_ReopenedWithErrorComment(t *testing.T) {
 	}
 }
 
-// TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping is the
-// regression case for review round 1's Important finding: the invalid-JSON
-// branch used to leave baseline pointed at the original (valid) flow, so
-// saving the reopened file back unchanged never matched the cancel check
-// and the loop reopened the editor forever. It must now cancel exactly like
-// the 400/412 branches already did.
 func TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
 	patchCalls := 0
 
@@ -309,8 +293,7 @@ func TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping(t *testin
 			return os.WriteFile(path, []byte("{ this is not valid json"), 0o600)
 		}
 
-		// Second call: the user exits without touching the reopened file —
-		// leave it exactly as written (comment block + their invalid text).
+		// Second call: leave the reopened file untouched.
 		return nil
 	}
 
@@ -333,9 +316,6 @@ func TestFlowEditor_InvalidJSON_SavedUnchanged_CancelsInsteadOfLooping(t *testin
 	}
 }
 
-// TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping proves the 400
-// branch — which already set baseline correctly — still cancels rather than
-// looping, alongside the invalid-JSON fix above.
 func TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
 	patchCalls := 0
 
@@ -365,8 +345,7 @@ func TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
 			return os.WriteFile(path, []byte(otherFlowJSON), 0o600)
 		}
 
-		// Second call: leave the reopened file (server-error comment +
-		// their edit) untouched.
+		// Second call: leave the reopened file untouched.
 		return nil
 	}
 
@@ -389,10 +368,6 @@ func TestFlowEditor_400_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
 	}
 }
 
-// TestFlowEditor_412_SavedUnchanged_CancelsInsteadOfLooping proves the 412
-// branch — which already set baseline to the fresh flow — still cancels
-// rather than looping when the user saves the reopened (fresh) file back
-// unchanged.
 func TestFlowEditor_412_SavedUnchanged_CancelsInsteadOfLooping(t *testing.T) {
 	getCalls := 0
 	patchCalls := 0
@@ -551,8 +526,7 @@ func TestFlowEditor_412_RefetchesAndReopensWithFreshFlowAndCommentedEdit_SecondS
 				return
 			}
 
-			// Second GET (the 412 re-fetch): a different flow, as if
-			// someone else saved in between.
+			// The 412 re-fetch returns a different flow, as if someone else saved.
 			w.Header().Set("ETag", `"v2"`)
 			w.WriteHeader(http.StatusOK)
 			_, _ = w.Write([]byte(`{"id":"` + testSourceID + `","repositoryId":"` + testRepoID + `","title":"T",` +
@@ -606,8 +580,7 @@ func TestFlowEditor_412_RefetchesAndReopensWithFreshFlowAndCommentedEdit_SecondS
 			sawCommentedPreviousEdit = true
 		}
 
-		// Replace with a fourth, distinct flow so the retry isn't a no-op
-		// cancellation against the fresh baseline just written.
+		// A fourth flow, so the retry isn't a no-op against the fresh baseline.
 		return os.WriteFile(path, []byte(fourthFlowJSON), 0o600)
 	}
 

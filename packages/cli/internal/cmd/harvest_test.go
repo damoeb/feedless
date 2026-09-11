@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-// --- harvest list ---
-
 func TestHarvestList_HitsHarvestsEndpoint_NoDryRunParamByDefault(t *testing.T) {
 	var gotPath string
 	var gotQuery url.Values
@@ -155,8 +153,6 @@ func TestHarvestList_MissingRepo_Errors(t *testing.T) {
 	}
 }
 
-// --- harvest view ---
-
 func TestHarvestView_Summary(t *testing.T) {
 	okTrue := "true"
 
@@ -214,11 +210,6 @@ func TestHarvestView_Log_PrintsOnlyLogText_WithTextPlainAccept(t *testing.T) {
 	}
 }
 
-// --- C9: control-sequence sanitization ---
-
-// maliciousLog is a harvest log body with a CSI clear-screen (ESC [ 2 J)
-// and an OSC 0 terminal-title write (ESC ] 0 ; ... BEL) mixed into
-// otherwise ordinary log lines.
 func maliciousLog() string {
 	esc, bel := string(rune(0x1b)), string(rune(0x07))
 
@@ -234,9 +225,7 @@ func TestHarvestView_Log_Piped_KeepsRawControlSequences(t *testing.T) {
 	t.Cleanup(srv.Close)
 	setupLoggedInHost(t, srv.URL, "tok")
 
-	// runCmd's stdout is a *bytes.Buffer, never a terminal — this exercises
-	// exactly the non-TTY branch `harvest view --log > file` relies on to
-	// save the server's exact bytes.
+	// A *bytes.Buffer is never a terminal: the verbatim branch `--log > file` relies on.
 	stdout, stderr, err := runCmd("harvest", "view", testHarvestID, "-R", testRepoID, "-S", testSourceID, "--log")
 	if err != nil {
 		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())

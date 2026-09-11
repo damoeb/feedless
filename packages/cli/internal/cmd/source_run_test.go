@@ -18,13 +18,7 @@ import (
 
 const testHarvestID = "44444444-4444-4444-4444-444444444444"
 
-// harvestJSON builds a Harvest response body. Per the schema ("Only
-// meaningful when status is completed; omitted otherwise" — see
-// internal/api/client.gen.go's Harvest doc comments), ok/itemsAdded are
-// only ever non-null together: passing ok == nil (not completed yet) always
-// serializes itemsAdded as null too, regardless of the itemsAdded argument,
-// so a queued/running fixture can't accidentally claim a non-null item
-// count a real server would never send.
+// ok and itemsAdded are only non-null together, as a real server sends them.
 func harvestJSON(id, sourceID, status string, dryRun bool, ok *string, itemsAdded int, startedAt, finishedAt string) string {
 	okField := "null"
 	itemsAddedField := "null"
@@ -52,8 +46,6 @@ func harvestJSON(id, sourceID, status string, dryRun bool, ok *string, itemsAdde
 	}`
 }
 
-// --- source run: local validation ---
-
 func TestSourceRun_FlowWithoutDryRun_LocalErrorBeforeAnyRequest(t *testing.T) {
 	called := false
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -74,8 +66,6 @@ func TestSourceRun_FlowWithoutDryRun_LocalErrorBeforeAnyRequest(t *testing.T) {
 		t.Error("server was called, want --flow/--dry-run validated locally first")
 	}
 }
-
-// --- source run: --no-wait ---
 
 func TestSourceRun_NoWait_PrintsIDAndExitsZero(t *testing.T) {
 	var gotPath, gotMethod string
@@ -126,8 +116,6 @@ func TestSourceRun_NoWait_JSON_PrintsQueuedHarvest(t *testing.T) {
 		t.Errorf("row = %v, unexpected", row)
 	}
 }
-
-// --- source run: request body ---
 
 func TestSourceRun_DryRunWithFlow_SendsDryRunAndFlowInBody(t *testing.T) {
 	dir := t.TempDir()
@@ -183,18 +171,8 @@ func TestSourceRun_RealRun_NoDryRunNoFlowInBody(t *testing.T) {
 	}
 }
 
-// --- source run: waiting, via the direct runSourceRun seam ---
-//
-// These call runSourceRun directly with a fake sleeper/clock (pollDeps),
-// bypassing cobra flag parsing, config.Load and the keyring entirely —
-// mirroring the seam runFlowEditor/source_editor_test.go use for
-// `source update --editor`. The command-tree tests above already prove the
-// flag wiring (newSourceRunCmd -> runSourceRunCmd); these prove the wait
-// loop without ever really sleeping.
+// These call runSourceRun directly with a fake sleeper and clock, so the wait loop never really sleeps.
 
-// runSourceRunViaSeam builds a client.Client against srvURL and a bare
-// cobra.Command (Context/Out/Err, via newEditorTestCmd), then calls
-// runSourceRun directly with deps.
 func runSourceRunViaSeam(
 	t *testing.T, srvURL string, f sourceRunFlags, flow *api.ScrapeFlow, deps pollDeps,
 ) (stdout, stderr string, err error) {
@@ -210,11 +188,7 @@ func runSourceRunViaSeam(
 	return stdoutBuf.String(), stderrBuf.String(), runErr
 }
 
-// harvestSequenceServer serves POST .../harvests once (queued, the initial
-// RunSource response) and GET .../harvests/{id} statuses[0], statuses[1], …
-// on successive polls (repeating the last entry once exhausted). getCalls
-// counts the GET calls made, for tests that assert the poller actually
-// looped rather than stopping early.
+// harvestSequenceServer repeats the last status once exhausted; getCalls counts the polls.
 func harvestSequenceServer(t *testing.T, statuses []string, ok *string, itemsAdded int, dryRun bool) (srv *httptest.Server, getCalls *int32) {
 	t.Helper()
 
@@ -367,13 +341,7 @@ func TestSourceRun_Waits_JSON_PrintsFinalHarvest_NoLog(t *testing.T) {
 	}
 }
 
-// TestSourceRun_Interrupted_StopsPolling_PrintsHint_ReturnsCancelled
-// simulates Ctrl-C arriving while `source run` is waiting: the initial
-// POST .../harvests must succeed first (an interrupt before that has no
-// harvest id to print a hint about), then the injected sleeper cancels the
-// context and returns ctx.Err() the moment the poller asks it to wait —
-// standing in for the real SIGINT -> cmd.Context() cancellation main.go's
-// run() wires up, without sending a real signal or really sleeping.
+// The fake sleeper cancels the context, standing in for SIGINT.
 func TestSourceRun_Interrupted_StopsPolling_PrintsHint_ReturnsCancelled(t *testing.T) {
 	var getCalled bool
 
@@ -427,9 +395,6 @@ func TestSourceRun_Interrupted_StopsPolling_PrintsHint_ReturnsCancelled(t *testi
 	}
 }
 
-// TestSourceRun_FullCommandTree_MissingSource_MissingRepo drives `source
-// run` through the real command tree (flag wiring, resolveRepoID) rather
-// than the direct-seam helpers above.
 func TestSourceRun_FullCommandTree_MissingSource_MissingRepo(t *testing.T) {
 	withTempConfigHome(t)
 

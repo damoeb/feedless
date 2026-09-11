@@ -15,8 +15,6 @@ const (
 	testSourceID = "33333333-3333-3333-3333-333333333333"
 )
 
-// validFlowJSON is a ScrapeFlow with one action of each kind view's
-// numbered action list documents in the brief: fetch, click, extract.
 const validFlowJSON = `{"sequence":[
   {"fetch":{"get":{"url":{"literal":"https://example.com"}}}},
   {"click":{"element":{"xpath":{"value":"//button"}}}},
@@ -44,8 +42,6 @@ func itoa(n int) string {
 	b, _ := json.Marshal(n)
 	return string(b)
 }
-
-// --- source list ---
 
 func TestSourceList_WithRepo_HitsRepoEndpoint_PassesMinErrorsInSuccession(t *testing.T) {
 	var gotPath string
@@ -104,8 +100,6 @@ func TestSourceList_Errored_WithValue(t *testing.T) {
 		t.Errorf("minErrorsInSuccession = %q, want 5", gotQuery.Get("minErrorsInSuccession"))
 	}
 }
-
-// --- C9: control-sequence sanitization ---
 
 func TestSourceList_MaliciousLastErrorMessage_TableCellHasNoEscapeSequences(t *testing.T) {
 	esc := string(rune(0x1b))
@@ -216,8 +210,6 @@ func TestSourceList_BareJSON_ListsFields(t *testing.T) {
 	}
 }
 
-// --- source view ---
-
 func TestSourceView_RendersActionListAndFields(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet || r.URL.Path != "/api/v1/repositories/"+testRepoID+"/sources/"+testSourceID {
@@ -257,11 +249,7 @@ func TestSourceView_MaliciousTitleAndLastError_NoEscapeSequences(t *testing.T) {
 	maliciousTitle := esc + "[2Jhijacked title"
 	maliciousError := "before " + esc + "]0;pwned" + string(rune(0x07)) + " after"
 
-	// sourceJSON's own title param is spliced in unescaped (fine for the
-	// plain titles every other test uses); this test's title needs real
-	// JSON escaping (via json.Marshal) to carry raw control bytes as valid
-	// JSON, so the body is built by hand instead, reusing sourceJSON's own
-	// shape (including validFlowJSON, this file's fixed flow constant).
+	// Built by hand: sourceJSON doesn't escape, and raw control bytes need json.Marshal.
 	titleJSON, err := json.Marshal(maliciousTitle)
 	if err != nil {
 		t.Fatalf("json.Marshal(title): %v", err)
@@ -358,8 +346,6 @@ func TestSourceView_404(t *testing.T) {
 		t.Errorf("error = %v, want it to say not found", err)
 	}
 }
-
-// --- source update (field flags / --flow, non-editor path) ---
 
 func TestSourceUpdate_FieldFlags_NoIfMatch(t *testing.T) {
 	var gotIfMatch string
@@ -525,8 +511,6 @@ func TestSourceUpdate_400_NonEditorPath_Fails(t *testing.T) {
 		t.Errorf("error = %v, want the server's message", err)
 	}
 }
-
-// --- helpers ---
 
 func writeFile(t *testing.T, path, content string) {
 	t.Helper()

@@ -20,14 +20,9 @@ const scenarioTimeout = 10 * time.Minute
 // fixtureItems are the item titles fixtures/site/items.html lists.
 var fixtureItems = []string{"Alpha item", "Bravo item", "Charlie item"}
 
-// statusPollTimeout bounds how long `feedctl status` may take to see the
-// agent. StartStack already waited for the core to log it; this covers the
-// registry write racing that log line.
+// StartStack saw the core log the agent; this covers the registry write racing that line.
 const statusPollTimeout = 30 * time.Second
 
-// waitForConnectedAgent polls `feedctl status --host <coreURL> --json`, with
-// no login, until it exits 0 reporting at least one connected agent, then
-// checks the human output once.
 func waitForConnectedAgent(ctx context.Context, t *testing.T, cli *Feedctl, coreURL string) {
 	t.Helper()
 
@@ -62,11 +57,7 @@ func waitForConnectedAgent(ctx context.Context, t *testing.T, cli *Feedctl, core
 	}
 }
 
-// TestBrokenSourceFixLoop runs the first feedctl use case end to end against
-// a real core, agent and database: a source breaks, the user finds it,
-// reads the failed harvest's log, dry-runs a fix without touching the saved
-// source, saves the fix and runs it for real. It closes with the stale-edit
-// guard (If-Match -> 412) the editor loop relies on.
+// A source breaks, the user finds it, reads the log, dry-runs a fix, then saves and runs it; ends with the If-Match guard.
 func TestBrokenSourceFixLoop(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), scenarioTimeout)
 	defer cancel()
@@ -119,19 +110,14 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 	fixedFlow := fixturePath(t, "flows", "fixed.json")
 	emptyFlow := fixturePath(t, "flows", "empty.json")
 
-	// The broken flow's XPath matches nothing on the fixture page. Its fetch
-	// is prerendered, so the agent runs the extract: it dereferences the
-	// first match, fails, and reports the run as not ok — a real error that
-	// counts towards errorsInSuccession, unlike the core's own "no items"
-	// outcome, which the harvester treats as transient and resets to 0.
+	// The fetch is prerendered, so the agent fails on the empty match: a real error that counts towards errorsInSuccession,
+	// unlike the core's "no items" outcome, which the harvester treats as transient.
 	t.Log("step 1: create a repository and a source whose flow extracts nothing")
 
 	repoID := createRepository(ctx, t, cli)
 	sourceID := createSource(ctx, t, cli, repoID, brokenFlow)
 
-	// The scheduler harvests a new repository once on its own, seconds after
-	// creation (see createRepository). Let that run finish first, so every
-	// harvest from here on is one the scenario started.
+	// The scheduler harvests a new repository once by itself; let that finish first.
 	waitForHarvestsToSettle(ctx, t, cli, repoID, sourceID, true)
 
 	t.Log("step 2: a real run fails, and the source shows up as errored across repositories")
@@ -162,8 +148,7 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 
 	t.Log("step 4: a dry run of the fixed flow extracts the fixture items and leaves the source alone")
 
-	// Nothing may be harvesting the source while the snapshots are taken, or
-	// its error state could change underneath the "unchanged" check.
+	// A harvest running during the snapshots could change the error state under the "unchanged" check.
 	waitForHarvestsToSettle(ctx, t, cli, repoID, sourceID, false)
 
 	before := viewSource(ctx, t, cli, repoID, sourceID)
@@ -175,10 +160,7 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 		}
 	}
 
-	// A flow that extracts nothing does not work, even though nothing threw:
-	// its dry run is not ok (spec: "A dry run that extracted no items is not
-	// ok"). empty.json fetches statically, so the core itself runs the XPath
-	// and finds zero elements, rather than the agent failing on it.
+	// No items means not ok. empty.json fetches statically, so the core runs the XPath, not the agent.
 	emptyRun := cli.MustRun(ctx, 1, "", "source", "run", sourceID, "-R", repoID, "--dry-run", "--flow", emptyFlow)
 	if !strings.Contains(emptyRun.Stdout, "dry run extracted no items") {
 		t.Fatalf("want the zero-item dry run reported as extracting no items, got:\n%s", emptyRun)
@@ -247,13 +229,7 @@ func fixturePath(t *testing.T, elem ...string) string {
 	return path
 }
 
-// createRepository creates an empty repository through `feedctl api` and
-// returns its id. The core creates repositories without a next-harvest time,
-// so its scheduler harvests every source of a new repository once, a few
-// seconds after creation, whatever the refresh cron says (intended
-// behaviour). The yearly cron only keeps it from harvesting again during the
-// scenario; the scenario waits for that initial harvest to finish
-// (waitForHarvestsToSettle) before it runs the source itself.
+// New repositories have no next-harvest time, so the scheduler harvests them once right away; the yearly cron prevents more.
 func createRepository(ctx context.Context, t *testing.T, cli *Feedctl) string {
 	t.Helper()
 
@@ -275,8 +251,6 @@ func createRepository(ctx context.Context, t *testing.T, cli *Feedctl) string {
 	return repo.ID
 }
 
-// createSource creates a source running the flow in flowFile in repository
-// repoID through `feedctl api` and returns its id.
 func createSource(ctx context.Context, t *testing.T, cli *Feedctl, repoID, flowFile string) string {
 	t.Helper()
 
@@ -296,8 +270,7 @@ func createSource(ctx context.Context, t *testing.T, cli *Feedctl, repoID, flowF
 	return source.ID
 }
 
-// erroredSources is `feedctl source list --errored` without -R, i.e.
-// GET /user/sources across every repository the user can see, keyed by id.
+// Without -R: across every repository the user can see.
 func erroredSources(ctx context.Context, t *testing.T, cli *Feedctl) map[string]sourceRow {
 	t.Helper()
 
@@ -315,9 +288,6 @@ func erroredSources(ctx context.Context, t *testing.T, cli *Feedctl) map[string]
 // settleTimeout bounds each wait for a source's harvests to settle.
 const settleTimeout = 2 * time.Minute
 
-// waitForHarvestsToSettle polls the source's real harvests until none is
-// queued or running and, when wantCompleted, at least one has completed. It
-// fails the test at settleTimeout.
 func waitForHarvestsToSettle(ctx context.Context, t *testing.T, cli *Feedctl, repoID, sourceID string, wantCompleted bool) {
 	t.Helper()
 

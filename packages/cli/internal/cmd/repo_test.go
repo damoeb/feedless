@@ -125,8 +125,6 @@ func TestResolveRepoID_NotRequired_Absent_NotPresent(t *testing.T) {
 	}
 }
 
-// --- -S/--source (addSourceFlag/resolveSourceID) ---
-
 func newSourceFlagTestCmd(t *testing.T) *cobra.Command {
 	t.Helper()
 

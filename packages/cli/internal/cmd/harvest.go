@@ -17,11 +17,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newHarvestCmd builds the `feedctl harvest` command group: list and view.
-// Running a source (`source run`) lives on the `source` command group
-// instead — see source_run.go — but shares this file's rendering helpers
-// (harvestRow, printHarvestSummary, printHarvestLog) since both print the
-// same Harvest shape.
 func newHarvestCmd(version string) *cobra.Command {
 	harvest := &cobra.Command{
 		Use:   "harvest",
@@ -34,14 +29,9 @@ func newHarvestCmd(version string) *cobra.Command {
 	return harvest
 }
 
-// harvestJSONFields is the field list --json accepts for a Harvest — shared
-// by `harvest list`, `harvest view`, and `source run` (see source_run.go),
-// since all three print the same shape.
 var harvestJSONFields = []string{
 	"id", "sourceId", "status", "dryRun", "ok", "itemsAdded", "itemsIgnored", "startedAt", "finishedAt",
 }
-
-// --- list ---
 
 func newHarvestListCmd(version string) *cobra.Command {
 	var dryRun bool
@@ -109,10 +99,7 @@ func runHarvestList(cmd *cobra.Command, version string, dryRun bool) error {
 	return renderHarvestTable(cmd, items)
 }
 
-// fetchHarvestsPage fetches one page of harvests for output.Paginate. dryRun
-// sets the DryRun filter only when true — the server's default (no
-// dryRun param) already lists real runs, dry runs only with
-// ?dryRun=true (brief, "What was implemented" server notes).
+// Without the dryRun param the server lists real runs only.
 func fetchHarvestsPage(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId,
 	page, pageSize int, dryRun bool,
@@ -163,8 +150,6 @@ func renderHarvestTable(cmd *cobra.Command, items []api.Harvest) error {
 	return tp.Render()
 }
 
-// tableResult is `harvest list`'s RESULT column: "ok"/"failed"/"-" (brief,
-// requirement 2, exact wording).
 func tableResult(ok *bool) string {
 	if ok == nil {
 		return "-"
@@ -175,8 +160,6 @@ func tableResult(ok *bool) string {
 
 	return "failed"
 }
-
-// --- view ---
 
 func newHarvestViewCmd(version string) *cobra.Command {
 	var showLog bool
@@ -240,8 +223,6 @@ func runHarvestView(cmd *cobra.Command, version, idArg string, showLog bool) err
 	return printHarvestSummary(cmd.OutOrStdout(), h)
 }
 
-// --- shared helpers (source_run.go uses these too) ---
-
 func parseHarvestID(idArg string) (api.HarvestId, error) {
 	id, err := uuid.Parse(idArg)
 	if err != nil {
@@ -251,8 +232,6 @@ func parseHarvestID(idArg string) (api.HarvestId, error) {
 	return id, nil
 }
 
-// fetchHarvest is GET .../harvests/{id}, shared by harvest view and
-// source_run.go's poller.
 func fetchHarvest(
 	ctx context.Context, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId, harvestID api.HarvestId,
 ) (api.Harvest, error) {
@@ -267,15 +246,7 @@ func fetchHarvest(
 	return *resp.JSON200, nil
 }
 
-// printHarvestLog GETs .../harvests/{id}/logs with Accept: text/plain
-// (brief, requirement 5 — the endpoint also produces application/json,
-// which would return a JSON-quoted string for a JSON Accept) and writes the
-// plain-text body to stdout via sanitizeHarvestLog: sanitized
-// (output.SafeText) when stdout is a terminal, verbatim when it's piped —
-// so `harvest view --log > file` keeps saving the exact bytes the server
-// sent, while a log printed straight to a terminal can't hide/forge output,
-// rewrite the terminal title, or write to the clipboard via an embedded
-// escape sequence.
+// Accept: text/plain, since JSON would quote the log. Sanitized on a TTY; verbatim when piped, so "> file" keeps the exact bytes.
 func printHarvestLog(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId, harvestID api.HarvestId,
 ) error {
@@ -296,12 +267,7 @@ func printHarvestLog(
 	return nil
 }
 
-// sanitizeHarvestLog is printHarvestLog's TTY decision as a pure function,
-// isTTY passed in rather than detected here — the same "isTTY as an
-// explicit, testable parameter" seam poller.go's harvestPoller/pollDeps use
-// — so a test can exercise both branches directly, without a real terminal
-// (output.IsTerminal(os.Stdout) is always false under `go test`, and per
-// this task's constraints, tests must not read a real TTY either).
+// isTTY is a parameter so tests can cover both branches.
 func sanitizeHarvestLog(body []byte, isTTY bool) []byte {
 	if !isTTY {
 		return body
@@ -316,10 +282,6 @@ func acceptTextPlain(_ context.Context, req *http.Request) error {
 	return nil
 }
 
-// printHarvestSummary writes h's completion summary — result, dry run,
-// items, duration (brief, requirement 1: "result (succeeded/failed), dry
-// run yes/no, items (itemsAdded), duration") — shared by `source run`
-// (after waiting) and `harvest view` (without --log).
 func printHarvestSummary(w io.Writer, h api.Harvest) error {
 	lines := []struct{ label, value string }{
 		{"Result", summaryResult(h.Ok)},
@@ -337,9 +299,7 @@ func printHarvestSummary(w io.Writer, h api.Harvest) error {
 	return nil
 }
 
-// summaryResult is the summary's "Result" line: "succeeded"/"failed"/"-"
-// (brief, requirement 1, exact wording — deliberately different from the
-// list table's "ok"/"failed", which requirement 2 spells out separately).
+// Deliberately "succeeded", unlike the list table's "ok".
 func summaryResult(ok *bool) string {
 	if ok == nil {
 		return "-"
@@ -367,8 +327,6 @@ func harvestItems(n *int) string {
 	return strconv.Itoa(*n)
 }
 
-// harvestDuration is finished-started, rounded to the second, or "-" while
-// the harvest hasn't finished yet (finished is nil for queued/running).
 func harvestDuration(started time.Time, finished *time.Time) string {
 	if finished == nil {
 		return "-"
@@ -377,7 +335,6 @@ func harvestDuration(started time.Time, finished *time.Time) string {
 	return finished.Sub(started).Round(time.Second).String()
 }
 
-// harvestRow builds a Harvest's --json Row (harvestJSONFields' key set).
 func harvestRow(h api.Harvest) output.Row {
 	return output.Row{
 		"id":           h.Id.String(),

@@ -10,15 +10,9 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// testFields is the field list every newTestCmdWithJSONFlags command
-// registers, for tests to compare a *FieldsError's Fields against.
 var testFields = []string{"id", "url", "name"}
 
-// newTestCmdWithJSONFlags builds a small root+subcommand tree mirroring
-// production: JSONFlagErrorFunc is registered on the root (as
-// cmd.NewRootCmd does), and --json/--jq live on the child command (as a
-// real data command would), so a bare --json is intercepted exactly the
-// way it is for a real invocation like `feedctl source list --json`.
+// JSONFlagErrorFunc sits on the root and --json on the child, as in production.
 func newTestCmdWithJSONFlags() (root, sub *cobra.Command) {
 	root = &cobra.Command{Use: "root", SilenceErrors: true, SilenceUsage: true}
 	root.SetFlagErrorFunc(JSONFlagErrorFunc)
@@ -48,9 +42,6 @@ func TestReadJSONFlags_NotRequested(t *testing.T) {
 	}
 }
 
-// TestJSONFlagErrorFunc_BareJSON_AtEndOfArgs_ReturnsFieldsError covers a
-// bare "--json" as the last token: pflag's own *pflag.ValueRequiredError
-// (no more args to consume as the value).
 func TestJSONFlagErrorFunc_BareJSON_AtEndOfArgs_ReturnsFieldsError(t *testing.T) {
 	root, _ := newTestCmdWithJSONFlags()
 	root.SetArgs([]string{"sub", "--json"})
@@ -68,17 +59,12 @@ func TestJSONFlagErrorFunc_BareJSON_AtEndOfArgs_ReturnsFieldsError(t *testing.T)
 		t.Errorf("Fields = %v, want %v", fe.Fields, testFields)
 	}
 
-	// "exits 1" (the brief's requirement) is main.go's default for any
-	// error without its own ExitCode() — FieldsError must not override it.
+	// Exit 1 is main's default; FieldsError must not override it.
 	if _, hasExitCode := err.(interface{ ExitCode() int }); hasExitCode {
 		t.Error("*FieldsError implements ExitCode(); it must not — it should fall back to the default exit 1")
 	}
 }
 
-// TestJSONFlagErrorFunc_BareJSON_FollowedByAnotherFlag_ReturnsFieldsError
-// covers "--json --jq x": without jsonFieldsValue's "-"-prefix rejection,
-// pflag would silently bind "--jq" as --json's value (see jsonFieldsValue's
-// doc comment) instead of recognizing this as a bare --json.
 func TestJSONFlagErrorFunc_BareJSON_FollowedByAnotherFlag_ReturnsFieldsError(t *testing.T) {
 	root, _ := newTestCmdWithJSONFlags()
 	root.SetArgs([]string{"sub", "--json", "--jq", ".id"})

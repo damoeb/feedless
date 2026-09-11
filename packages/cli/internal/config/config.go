@@ -1,8 +1,4 @@
-// Package config owns feedctl's per-host configuration: the hosts.yml file
-// (host URLs, users, and — only when no OS keyring is available — tokens
-// stored in plain text), the OS keyring, and the host/token resolution
-// order every command follows. internal/client builds on top of it to
-// construct an authenticated API client; see client.NewFromConfig.
+// Package config owns hosts.yml, the OS keyring and host/token resolution.
 package config
 
 import (
@@ -18,30 +14,23 @@ const (
 	appDirName = "feedctl"
 	fileName   = "hosts.yml"
 
-	// dirPerm and filePerm are enforced on every save, regardless of the
-	// process umask or a pre-existing file/directory with looser
-	// permissions: hosts.yml can hold a plain-text token.
+	// Enforced on every save, whatever the umask: hosts.yml can hold a plain-text token.
 	dirPerm  os.FileMode = 0o700
 	filePerm os.FileMode = 0o600
 )
 
-// HostEntry is one configured host's record in hosts.yml.
 type HostEntry struct {
 	URL  string `yaml:"url"`
 	User string `yaml:"user"`
-	// Token is only ever populated when the token could not be stored in
-	// the OS keyring; see StoreToken. Most host entries omit it entirely.
+	// Set only when the OS keyring was unavailable; see StoreToken.
 	Token string `yaml:"token,omitempty"`
 }
 
-// Config is the parsed content of hosts.yml.
 type Config struct {
 	DefaultHost string               `yaml:"default_host,omitempty"`
 	Hosts       map[string]HostEntry `yaml:"hosts,omitempty"`
 }
 
-// Dir returns the directory hosts.yml lives in: $XDG_CONFIG_HOME/feedctl,
-// falling back to ~/.config/feedctl.
 func Dir() (string, error) {
 	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
 		return filepath.Join(xdg, appDirName), nil
@@ -55,7 +44,6 @@ func Dir() (string, error) {
 	return filepath.Join(home, ".config", appDirName), nil
 }
 
-// Path returns the full path to hosts.yml.
 func Path() (string, error) {
 	dir, err := Dir()
 	if err != nil {
@@ -65,8 +53,7 @@ func Path() (string, error) {
 	return filepath.Join(dir, fileName), nil
 }
 
-// Load reads hosts.yml. A missing file is not an error: it returns an
-// empty Config, as if no host had ever been configured.
+// A missing file loads as an empty Config.
 func Load() (*Config, error) {
 	path, err := Path()
 	if err != nil {
@@ -93,9 +80,6 @@ func Load() (*Config, error) {
 	return cfg, nil
 }
 
-// Save writes hosts.yml, creating its directory if necessary. The
-// directory is always left at 0700 and the file at 0600, even if either
-// already existed with looser permissions.
 func (c *Config) Save() error {
 	dir, err := Dir()
 	if err != nil {

@@ -19,17 +19,13 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// ExitUsage is exit code 2 — the command cannot run with what it was given
-// (feedctl status with no host to ask). It shares its value with
-// ExitCancelled.
+// ExitUsage shares its value with ExitCancelled.
 const ExitUsage = 2
 
 // statusBuildTimeLayout renders the server's build time, always in UTC.
 const statusBuildTimeLayout = "2006-01-02 15:04 UTC"
 
-// newStatusCmd builds `feedctl status`: GET /api/v1/status, the one public
-// operation, so it needs no login. It exits 0 only when the server answers
-// and at least one prerender agent is connected — a script can gate on it.
+// newStatusCmd needs no login; it exits 0 only if an agent is connected, so scripts can gate on it.
 func newStatusCmd(version string) *cobra.Command {
 	var asJSON bool
 
@@ -77,10 +73,7 @@ func runStatus(cmd *cobra.Command, version string, asJSON bool, jq string) error
 
 	resp, err := apiClient.API.GetStatusWithResponse(cmd.Context())
 	if err != nil {
-		// The generated client fails the same way for a request that never
-		// got an answer and for an answer whose JSON does not parse; only the
-		// former is a *url.Error (http.Client wraps every transport failure,
-		// the transport guard's refusal included).
+		// Only a request that never got an answer is a *url.Error; a JSON parse failure isn't.
 		var urlErr *url.Error
 		if errors.As(err, &urlErr) {
 			return fmt.Errorf("contacting %s: %w", host, err)
@@ -92,9 +85,7 @@ func runStatus(cmd *cobra.Command, version string, asJSON bool, jq string) error
 	if apiErr := NewAPIError(resp, "GET /api/v1/status"); apiErr != nil {
 		msg := apiErr.Error()
 
-		// An instance that predates GET /status answers 404, or 401 like for
-		// any /api/v1 path it does not know. Either way this exits 1, not 4:
-		// logging in would not help.
+		// Older instances answer 404 or 401 for GET /status; exit 1, since logging in wouldn't help.
 		if code := resp.StatusCode(); code == http.StatusUnauthorized || code == http.StatusNotFound {
 			msg += " (the instance may predate GET /api/v1/status)"
 		}
@@ -124,11 +115,7 @@ func runStatus(cmd *cobra.Command, version string, asJSON bool, jq string) error
 	return nil
 }
 
-// resolveStatusTarget picks the host to ask and the base URL to reach it
-// on. The host resolves like every other command's (--host > FEEDCTL_HOST >
-// default host), falling back to the only configured host; a configured
-// host is reached on its stored URL, an absolute URL as given, and any
-// other host name over https.
+// Configured hosts use their stored URL, absolute URLs are used as given, other names get https.
 func resolveStatusTarget(cmd *cobra.Command) (host, baseURL string, err error) {
 	flagHost, _ := cmd.Flags().GetString("host")
 
@@ -165,8 +152,7 @@ func resolveStatusTarget(cmd *cobra.Command) (host, baseURL string, err error) {
 	return parsed.Host, strings.TrimRight(host, "/"), nil
 }
 
-// renderStatus prints the human summary. Version and commit are
-// server-provided text, so they go through output.SafeText.
+// Version and commit are server-provided, so they're sanitized.
 func renderStatus(w io.Writer, baseURL, cliVersion string, s api.ServerStatus) error {
 	built := time.UnixMilli(s.Build.Date).UTC().Format(statusBuildTimeLayout)
 
@@ -186,8 +172,6 @@ func renderStatus(w io.Writer, baseURL, cliVersion string, s api.ServerStatus) e
 	return nil
 }
 
-// printStatusJSON prints the server's response body, indented, or the
-// results of jq applied to it.
 func printStatusJSON(w io.Writer, body []byte, jq string) error {
 	if jq != "" {
 		var generic any

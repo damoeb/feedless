@@ -1,8 +1,7 @@
 version: "2"
 
 run:
-  # Lint the end-to-end tests too (e2e/, which only builds with this tag),
-  # so they can't rot unnoticed between the runs that need Docker.
+  # Lint e2e/ too, so it can't rot between the Docker runs that need it.
   build-tags:
     - e2e
 

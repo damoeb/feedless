@@ -12,10 +12,7 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/client"
 )
 
-// repositoryEditorNouns is `repo update --editor`'s editorNouns: unlike
-// source (where the editable document is just the flow field, embedded
-// within a wider SourceUpdate), the whole updatable document IS the
-// RepositoryUpdate shape here.
+// The whole RepositoryUpdate is editable, unlike source where only the flow is.
 func repositoryEditorNouns(repoID api.RepositoryId) editorNouns {
 	return editorNouns{
 		Subject: fmt.Sprintf("repository %s", repoID),
@@ -23,19 +20,7 @@ func repositoryEditorNouns(repoID api.RepositoryId) editorNouns {
 	}
 }
 
-// repositoryToUpdate maps a GET response's Repository onto the
-// RepositoryUpdate shape `repo update --editor` presents for editing.
-//
-// Only the fields both schemas share — title, description, refreshCron,
-// visibility — can be prefilled from what GET returns. retention and
-// pushNotificationsMuted are never returned by GET /repositories/{id}
-// (openapi.yaml's Repository schema has no such properties; only
-// RepositoryCreate/RepositoryUpdate do), so they're left unset in the
-// initial document — the editor's baseline simply omits them. The user can
-// still add either field to the JSON before saving; the server applies
-// whatever the PATCH body sends, same as any other RepositoryUpdate.
-// Flagged in the task report as a server-side (http-api) schema gap, out of
-// this task's scope to fix.
+// GET never returns retention or pushNotificationsMuted, so they start unset; the user can still add them.
 func repositoryToUpdate(r api.Repository) api.RepositoryUpdate {
 	title := r.Title
 	description := r.Description
@@ -50,18 +35,6 @@ func repositoryToUpdate(r api.Repository) api.RepositoryUpdate {
 	}
 }
 
-// runRepositoryEditor is `repo update --editor`'s loop: GET the repository
-// and its ETag, let the user edit its updatable fields (title, description,
-// refreshCron, visibility, retention, pushNotificationsMuted) as JSON via
-// the generalized runEditorLoop (editor.go), and PATCH the result.
-// overrides carries --title/--description/--cron/--visibility, applied on
-// top of the edited document after it's parsed — a field flag always wins
-// over whatever the same field held in the JSON, mirroring source update
-// --editor's own overrides (sourceFieldOverrides).
-//
-// Kept as its own small unit, independent of cobra flag parsing and of
-// client.NewFromConfig/config.Load, exercised directly against an httptest
-// server with a fake editorFunc — see repository_editor_test.go.
 func runRepositoryEditor(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId,
 	overrides repositoryFieldOverrides, editor editorFunc,
@@ -70,9 +43,7 @@ func runRepositoryEditor(
 
 	var etag string
 
-	// fetch is shared by the initial GET (cfg.get) and attempt's own
-	// re-fetch on a 412 — both need to keep etag (captured by this
-	// closure) current for the next PATCH attempt.
+	// Shared by the initial GET and the 412 re-fetch, so the etag stays current.
 	fetch := func(ctx context.Context) (string, error) {
 		resp, err := apiClient.API.GetRepositoryWithResponse(ctx, repoID)
 		if err != nil {
@@ -145,8 +116,6 @@ func runRepositoryEditor(
 	return runEditorLoop(cmd, cfg, editor)
 }
 
-// applyRepositoryOverrides folds --title/--description/--cron/--visibility
-// into update in place, after it's been parsed from the edited JSON.
 func applyRepositoryOverrides(update *api.RepositoryUpdate, overrides repositoryFieldOverrides) {
 	if overrides.title != nil {
 		update.Title = overrides.title

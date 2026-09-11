@@ -56,11 +56,6 @@ func TestRun_Version_Succeeds(t *testing.T) {
 	}
 }
 
-// TestRun_NotLoggedIn_ExitsWith4AndPrintsError exercises run()'s exit-code
-// mapping end to end through an actual command: internal/cmd's auth
-// logout returns a *config.NotLoggedInError directly when there is
-// nothing to log out of, and run() must recognize its ExitCode() method
-// (4, not the default 1) while still printing the error to stderr.
 func TestRun_NotLoggedIn_ExitsWith4AndPrintsError(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	t.Setenv("FEEDCTL_HOST", "")
@@ -80,17 +75,7 @@ func TestRun_NotLoggedIn_ExitsWith4AndPrintsError(t *testing.T) {
 	}
 }
 
-// TestExitCodeFor_NotLoggedInFromResolve_Is4 and
-// TestExitCodeFor_NotLoggedInFromNewFromConfig_Is4 test exitCodeFor — the
-// exact function run() uses to pick a process exit code — against real
-// errors produced by config.Resolve and client.NewFromConfig, the shared
-// resolution path every future C3-C5 command builds its authenticated
-// client on. There is no such command yet to drive through run() as a full
-// subprocess-style invocation (only auth's own subcommands exist, and they
-// each have bespoke host/token handling per their own requirements), so
-// this is the most direct way to prove that any future command relying on
-// NewFromConfig — not just auth logout's hand-built error — exits 4, not
-// the default 1, the moment it's wired up.
+// These cover exitCodeFor against real errors from the resolution path every command uses.
 func TestExitCodeFor_NotLoggedInFromResolve_Is4(t *testing.T) {
 	cfg := &config.Config{}
 
@@ -118,13 +103,6 @@ func TestExitCodeFor_NotLoggedInFromNewFromConfig_Is4(t *testing.T) {
 	}
 }
 
-// TestRun_APIError_RendersMessageAndFieldErrors exercises run()'s
-// extended error rendering end to end through `feedctl api`: a
-// VALIDATION_ERROR response's message and field errors (cmd.APIError,
-// C3's one error mapping) must reach stderr formatted exactly as
-// requirement 3 specifies — "error: <message>" then one indented
-// "field: message" line per field error — and the process must exit 1
-// (not 4; this is a 400, not a 401).
 func TestRun_APIError_RendersMessageAndFieldErrors(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	keyring.MockInit()
@@ -168,12 +146,6 @@ func TestRun_APIError_RendersMessageAndFieldErrors(t *testing.T) {
 	}
 }
 
-// TestRunWithContext_CancelledContext_ExitsWithCode2AndCancelledMessage
-// drives run's SIGINT-cancellation mapping (requirement 3: exit code 2)
-// without sending the process a real signal — runWithContext takes the
-// context run() would otherwise build from signal.NotifyContext, so a test
-// can hand it one that's already cancelled and observe the same mapping
-// run() applies.
 func TestRunWithContext_CancelledContext_ExitsWithCode2AndCancelledMessage(t *testing.T) {
 	t.Setenv("XDG_CONFIG_HOME", t.TempDir())
 	keyring.MockInit()
@@ -201,10 +173,7 @@ func TestRunWithContext_CancelledContext_ExitsWithCode2AndCancelledMessage(t *te
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
 
-	// auth status builds a Client and calls the API with cmd.Context() —
-	// already-cancelled, so the request fails immediately and the command
-	// itself returns a non-nil error (a *cmd.ExitError with code 1); run's
-	// cancellation check must override that to cmd.ExitCancelled.
+	// The request fails on the cancelled context; run must still map it to exit 2.
 	code := runWithContext(ctx, []string{"auth", "status"}, stdout, stderr)
 
 	if code != cmd.ExitCancelled {

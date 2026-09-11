@@ -197,10 +197,7 @@ func TestStoreToken_KeyringAvailable_DoesNotFallBackToFile(t *testing.T) {
 }
 
 func TestStoreToken_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
-	// ErrUnsupportedPlatform is go-keyring's own sentinel for "no real
-	// backend on this OS" — the one case isKeyringUnavailable can identify
-	// with total certainty; the Linux D-Bus cases are covered directly by
-	// TestIsKeyringUnavailable_* in keyring_unavailable_test.go.
+	// The one "no keyring" case identifiable with certainty; the D-Bus cases are in keyring_unavailable_test.go.
 	keyring.MockInitWithError(keyring.ErrUnsupportedPlatform)
 	stderr := &bytes.Buffer{}
 
@@ -224,11 +221,7 @@ func TestStoreToken_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 }
 
 func TestStoreToken_UnrecognizedKeyringError_FailsAndStoresNothing(t *testing.T) {
-	// A locked keychain, denied access, ErrSetDataTooBig, or any other
-	// error isKeyringUnavailable doesn't recognize as "no backend" must
-	// fail the login rather than silently falling back to a plain-text
-	// file — that would mask a real problem as if it were expected CI
-	// behavior.
+	// Any unrecognized keyring error must fail, not fall back to plain text.
 	keyring.MockInitWithError(errors.New("keychain is locked"))
 	stderr := &bytes.Buffer{}
 

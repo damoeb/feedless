@@ -12,18 +12,10 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// editorFunc opens path in the user's editor and blocks until they exit —
-// the seam every `update --editor` command is injected through, so tests
-// can supply a fake editor (a function that rewrites the file, or a script)
-// instead of launching a real one. launchSystemEditor is the production
-// implementation.
+// editorFunc is the seam tests replace with a fake editor.
 type editorFunc func(path string) error
 
-// launchSystemEditor runs $VISUAL, else $EDITOR, else vi on path,
-// connected to the process's own stdio so an interactive editor works
-// normally. It runs the editor command through "sh -c" so an editor value
-// containing its own arguments (e.g. "code --wait") works, the same way
-// git/gh invoke $EDITOR.
+// launchSystemEditor goes through "sh -c" so an editor with arguments (e.g. "code --wait") works, like git.
 func launchSystemEditor(path string) error {
 	editor := os.Getenv("VISUAL")
 	if editor == "" {
@@ -46,13 +38,7 @@ func launchSystemEditor(path string) error {
 	return nil
 }
 
-// editCancelledError is returned by runEditorLoop when the user's edit was
-// empty or unchanged. It implements the same two extension-point
-// interfaces *cmd.APIError does (see main.go's errorRenderer and
-// exitCoder), so it goes through the exact same rendering/exit-code path: a
-// plain "Edit cancelled, no changes made." line (no "error: " prefix — this
-// isn't a failure, it's a deliberate no-op) and exit code 2
-// (cmd.ExitCancelled, the same code reserved for exactly this case).
+// editCancelledError prints a plain message instead of "error:" and exits 2: cancelling is not a failure.
 type editCancelledError struct{}
 
 func (e *editCancelledError) Error() string { return "edit cancelled, no changes made" }
@@ -63,82 +49,35 @@ func (e *editCancelledError) RenderError(w io.Writer) {
 
 func (e *editCancelledError) ExitCode() int { return ExitCancelled }
 
-// editorNouns is the small set of resource-specific words runEditorLoop's
-// comment-block builders need to read naturally, whatever's being edited:
-//   - Subject: the ID-qualified description used only in the initial
-//     header comment, e.g. "the flow for source <id>" (source update
-//     --editor) or "repository <id>" (repo update --editor).
-//   - Noun: the editable document's own name, used everywhere else —
-//     "Could not parse the edited <Noun> as JSON", "The server rejected
-//     this <Noun>", "The <Noun> changed on the server ...". "flow" for
-//     source, "repository" for repo.
+// Subject is ID-qualified ("repository <id>") for the header; Noun is used everywhere else.
 type editorNouns struct {
 	Subject string
 	Noun    string
 }
 
-// editorAttemptResult is what editorLoopConfig.attempt returns for one save
-// attempt. Done true means the save succeeded and attempt has already
-// rendered the result itself (to cmd.OutOrStdout()) — runEditorLoop deletes
-// the temp file and returns nil. Done false means the attempt was rejected
-// in a recoverable way (an invalid document per the server, or a stale
-// ETag): Comment and Body become the reopened temp file's new comment
-// header and editable content respectively, and Body becomes the next
-// baseline against which "saved unchanged" is checked. A non-nil error from
-// attempt is terminal: runEditorLoop keeps the temp file, prints its path,
-// and returns the error unchanged (e.g. a 404/429/5xx via NewAPIError).
+// A non-nil error from attempt is terminal; Done false reopens the editor with Comment and Body.
 type editorAttemptResult struct {
 	Done    bool
 	Comment string
 	Body    string
 }
 
-// editorLoopConfig bundles everything runEditorLoop needs to drive one
-// kubectl-edit-style `update --editor` flow, independent of which resource
-// is being edited — source update (source_editor.go's runFlowEditor) and
-// repo update (repository_editor.go's runRepositoryEditor) each build one
-// and hand it to runEditorLoop; no other command duplicates this loop.
 type editorLoopConfig struct {
-	// tempFilePattern is os.CreateTemp's pattern for the editor's temp
-	// file, e.g. "feedctl-source-<id>-*.json" / "feedctl-repo-<id>-*.json".
 	tempFilePattern string
 
 	nouns editorNouns
 
-	// get fetches the current editable document, pretty-printed as JSON,
-	// and records its ETag internally (via a closure shared with attempt,
-	// so a 412's re-fetch inside attempt updates the same state) — called
-	// once, up front.
+	// get shares the ETag with attempt, so a 412 re-fetch inside attempt updates it.
 	get func(ctx context.Context) (body string, err error)
 
-	// validate parses editedBody into whatever Go type actually represents
-	// the document (api.ScrapeFlow, api.RepositoryUpdate, …), so a
-	// syntactically valid but wrongly-shaped edit is still caught locally,
-	// before any request — matching the original source-only behavior this
-	// loop generalizes. A non-nil error reopens the editor with
-	// invalidJSONComment.
+	// validate parses into the real type, so a wrongly shaped edit is caught before any request.
 	validate func(editedBody string) error
 
-	// attempt sends one PATCH built from editedBody (already validated)
-	// and whatever ETag/overrides the resource-specific closure is
-	// tracking, and reports the outcome — see editorAttemptResult. A 412
-	// conflict is attempt's own responsibility to resolve (re-fetch via
-	// the same mechanism as get, returning the fresh document as Body and
-	// conflictComment(nouns, editedBody) as Comment).
+	// attempt resolves a 412 itself: re-fetch, return the fresh document with conflictComment.
 	attempt func(ctx context.Context, editedBody string) (editorAttemptResult, error)
 }
 
-// runEditorLoop is the resource-agnostic kubectl-edit loop shared by every
-// entity's `update --editor`: GET (via cfg.get), write a temp file, open
-// the editor, and on save either apply it (cfg.attempt reports Done),
-// reopen the editor with an explanatory comment (invalid JSON — checked
-// here via cfg.validate — or a recoverable rejection reported by
-// cfg.attempt), or stop because the edit was empty/unchanged
-// (*editCancelledError, exit 2). Kept independent of cobra flag parsing and
-// of client.NewFromConfig/config.Load, so both source_editor_test.go and
-// repository_editor_test.go can drive their resource-specific wrappers
-// directly against an httptest server with a fake editorFunc — see also
-// editor_test.go for tests of this loop's own generic behavior.
+// runEditorLoop is the kubectl-edit-style loop behind every `update --editor`.
 func runEditorLoop(cmd *cobra.Command, cfg editorLoopConfig, editor editorFunc) error {
 	ctx := cmd.Context()
 
@@ -159,9 +98,7 @@ func runEditorLoop(cmd *cobra.Command, cfg editorLoopConfig, editor editorFunc) 
 			_ = os.Remove(tmpPath)
 			return
 		}
-		// "On any exit path other than success, keep the temp file and
-		// print its path so no work is lost" — applies uniformly,
-		// including the cancelled-edit case.
+		// Keep the temp file on every non-success exit so no work is lost.
 		_, _ = fmt.Fprintln(cmd.ErrOrStderr(), tmpPath)
 	}()
 
@@ -185,9 +122,7 @@ func runEditorLoop(cmd *cobra.Command, cfg editorLoopConfig, editor editorFunc) 
 				return writeErr
 			}
 
-			// Mirrors the reopen branches below: the reopened file's body
-			// becomes the new baseline, so saving it back unchanged
-			// cancels the edit instead of looping forever.
+			// The reopened body is the new baseline, so saving it unchanged cancels instead of looping.
 			baseline = editedBody
 
 			continue
@@ -195,11 +130,7 @@ func runEditorLoop(cmd *cobra.Command, cfg editorLoopConfig, editor editorFunc) 
 
 		result, attemptErr := cfg.attempt(ctx, editedBody)
 		if result.Done {
-			// Matches the loop's original (pre-generalization) behavior:
-			// a successful save always deletes the temp file, even if
-			// attempt's own error is non-nil (e.g. a rendering failure
-			// after an already-applied PATCH) — the update itself
-			// succeeded.
+			// The PATCH was applied, so drop the temp file even if rendering failed.
 			success = true
 		}
 
@@ -219,9 +150,6 @@ func runEditorLoop(cmd *cobra.Command, cfg editorLoopConfig, editor editorFunc) 
 	}
 }
 
-// createEditorTempFile creates the editor's temp file with comment plus
-// body as its content, named per pattern (os.CreateTemp's pattern
-// argument).
 func createEditorTempFile(pattern, comment, body string) (string, error) {
 	f, err := os.CreateTemp("", pattern)
 	if err != nil {
@@ -254,8 +182,6 @@ func writeEditorFile(path, comment, body string) error {
 	return nil
 }
 
-// stripCommentLines drops every line whose first non-space character is
-// '#' — the tool's own comment block.
 func stripCommentLines(s string) string {
 	lines := strings.Split(s, "\n")
 	kept := lines[:0]
@@ -300,11 +226,7 @@ func invalidJSONComment(nouns editorNouns, err error) string {
 	)
 }
 
-// serverErrorComment takes message/fieldErrors as plain values rather than
-// an api.ApiError directly, so editor.go stays decoupled from the api
-// package: each resource-specific wrapper (source_editor.go,
-// repository_editor.go) already has its own typed ApiError in scope for
-// its 400 branch and renders fieldErrors itself (see fieldErrorLines).
+// Plain values instead of api.ApiError keep editor.go independent of the api package.
 func serverErrorComment(nouns editorNouns, message string, fieldErrors []string) string {
 	lines := []string{fmt.Sprintf("The server rejected this %s: %s", nouns.Noun, message)}
 
@@ -315,14 +237,7 @@ func serverErrorComment(nouns editorNouns, message string, fieldErrors []string)
 	return commentBlock(lines...)
 }
 
-// prettyJSON marshals v as indented JSON for an editor's temp file — the
-// shared helper every `update --editor` wrapper uses to build its initial
-// baseline document (source_editor.go's prettyFlow predates this and stays
-// separate since it renders just the flow field, not a whole document; new
-// resources — e.g. C7's record update --editor — should use this one
-// directly). Falls back to "{}" on a marshal error (only reachable for a
-// type with a broken MarshalJSON; every generated api.* type marshals
-// cleanly).
+// prettyJSON falls back to "{}"; only a broken MarshalJSON can fail.
 func prettyJSON(v any) string {
 	b, err := json.MarshalIndent(v, "", "  ")
 	if err != nil {

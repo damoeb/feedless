@@ -15,9 +15,7 @@ import (
 	"testing"
 )
 
-// Feedctl drives a feedctl binary as a subprocess, the way a user runs it:
-// with its own HOME and XDG_CONFIG_HOME, and none of the FEEDCTL_* variables
-// of the shell the tests run in.
+// Feedctl runs with its own HOME and none of the shell's FEEDCTL_* variables.
 type Feedctl struct {
 	t         *testing.T
 	bin       string
@@ -25,7 +23,6 @@ type Feedctl struct {
 	env       []string
 }
 
-// Result is one feedctl invocation's outcome.
 type Result struct {
 	Args     []string
 	Stdout   string
@@ -39,14 +36,8 @@ func (r Result) String() string {
 		strings.Join(r.Args, " "), r.ExitCode, r.Stdout, r.Stderr))
 }
 
-// BuildFeedctl builds ./cmd/feedctl into a temp directory and returns the
-// binary's path. It is the real feedctl, with one file added to
-// internal/config through `go build -overlay` (testdata/keyring_unavailable.go):
-// it makes every OS keyring call fail as "no keyring on this platform", so
-// `auth login` stores its token in hosts.yml under the test's
-// XDG_CONFIG_HOME instead of the developer's keychain. On macOS go-keyring
-// always shells out to /usr/bin/security, so no environment variable can
-// achieve the same.
+// BuildFeedctl overlays testdata/keyring_unavailable.go so tokens land in hosts.yml, not the developer's keychain;
+// on macOS go-keyring always shells out to /usr/bin/security, so no environment variable can do this.
 func BuildFeedctl(t *testing.T) string {
 	t.Helper()
 
@@ -84,7 +75,6 @@ func BuildFeedctl(t *testing.T) string {
 	return bin
 }
 
-// NewFeedctl returns a runner for bin with a fresh, empty configuration.
 func NewFeedctl(t *testing.T, bin string) *Feedctl {
 	t.Helper()
 
@@ -108,15 +98,11 @@ func NewFeedctl(t *testing.T, bin string) *Feedctl {
 	return &Feedctl{t: t, bin: bin, configDir: configDir, env: env}
 }
 
-// HostsFile is the hosts.yml this runner's feedctl reads and writes.
 func (f *Feedctl) HostsFile() string {
 	return filepath.Join(f.configDir, "feedctl", "hosts.yml")
 }
 
-// Run runs feedctl with args, feeding it stdin, and returns its outcome
-// whatever the exit code, echoing the invocation and the tail of its output
-// (redacted) into the test log. It fails the test only when the process
-// cannot be run at all.
+// Run fails the test only when the process can't run at all.
 func (f *Feedctl) Run(ctx context.Context, stdin string, args ...string) Result {
 	f.t.Helper()
 
@@ -128,8 +114,7 @@ func (f *Feedctl) Run(ctx context.Context, stdin string, args ...string) Result 
 	return res
 }
 
-// RunQuiet is Run without the echo into the test log — for polling loops,
-// whose every iteration would otherwise flood it.
+// RunQuiet skips the log echo, which would flood polling loops.
 func (f *Feedctl) RunQuiet(ctx context.Context, stdin string, args ...string) Result {
 	f.t.Helper()
 
@@ -157,12 +142,8 @@ func (f *Feedctl) RunQuiet(ctx context.Context, stdin string, args ...string) Re
 	return res
 }
 
-// outputTailLines caps how much of each invocation's output Run echoes into
-// the test log: enough to read a summary, a harvest log or an error body.
 const outputTailLines = 15
 
-// indentedTail renders the last outputTailLines lines of out under a label,
-// or nothing when out is empty.
 func indentedTail(label, out string) string {
 	out = strings.TrimRight(out, "\n")
 	if out == "" {
@@ -177,8 +158,6 @@ func indentedTail(label, out string) string {
 	return "\n  " + label + ":\n    " + strings.Join(lines, "\n    ")
 }
 
-// MustRun is Run, failing the test with the full outcome unless feedctl
-// exits with wantExit.
 func (f *Feedctl) MustRun(ctx context.Context, wantExit int, stdin string, args ...string) Result {
 	f.t.Helper()
 
@@ -190,8 +169,6 @@ func (f *Feedctl) MustRun(ctx context.Context, wantExit int, stdin string, args 
 	return res
 }
 
-// DecodeStdout decodes res's stdout as JSON into T, failing the test with
-// the full outcome when it isn't.
 func DecodeStdout[T any](t *testing.T, res Result) T {
 	t.Helper()
 
@@ -203,9 +180,6 @@ func DecodeStdout[T any](t *testing.T, res Result) T {
 	return v
 }
 
-// ResponseHeader returns the value of header name in the output of
-// `feedctl api -i`: a status line, one "Name: value" line per header, a
-// blank line, then the body.
 func ResponseHeader(res Result, name string) string {
 	for _, line := range strings.Split(res.Stdout, "\n")[1:] {
 		if line == "" {
@@ -221,8 +195,6 @@ func ResponseHeader(res Result, name string) string {
 	return ""
 }
 
-// StatusLine returns the status line of `feedctl api -i` output, e.g.
-// "HTTP/1.1 412 Precondition Failed".
 func StatusLine(res Result) string {
 	line, _, _ := strings.Cut(res.Stdout, "\n")
 

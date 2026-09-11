@@ -1,9 +1,3 @@
-// record.go implements `feedctl record list|view|create|update|delete`
-// (task C7). Every record command is scoped to one repository via -R/--repo
-// (addRepoFlag/resolveRepoID, from repo.go — added in C4), since records
-// live under /repositories/{repositoryId}/records[/{recordId}]. Attachments,
-// raw bodies (rawBase64/rawMimeType), and bulk import are out of scope per
-// the brief.
 package cmd
 
 import (
@@ -22,8 +16,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newRecordCmd builds the `feedctl record` command group: list, view,
-// create, update, delete.
 func newRecordCmd(version string) *cobra.Command {
 	record := &cobra.Command{
 		Use:   "record",
@@ -39,20 +31,12 @@ func newRecordCmd(version string) *cobra.Command {
 	return record
 }
 
-// recordListJSONFields is `record list`'s --json field list: the Record
-// schema's scalar fields only (per the brief), excluding the array field
-// "tags" (reserved for view, mirroring how source reserves "flow" to view
-// only) and rawBase64/rawMimeType (out of scope — attachments/raw bodies).
+// "tags" is view-only, like source's "flow".
 var recordListJSONFields = []string{
 	"id", "url", "title", "text", "html", "imageUrl", "createdAt", "publishedAt", "updatedAt", "startingAt",
 }
 
-// recordViewJSONFields is `record view`'s (and `record create`'s, which
-// prints the created record the same way) --json field list: list's fields
-// plus "tags" — "--json prints the record" (brief, requirement 2).
 var recordViewJSONFields = append(append([]string{}, recordListJSONFields...), "tags")
-
-// --- list ---
 
 func newRecordListCmd(version string) *cobra.Command {
 	listCmd := &cobra.Command{
@@ -144,8 +128,6 @@ func renderRecordTable(cmd *cobra.Command, items []api.Record) error {
 	return tp.Render()
 }
 
-// --- view ---
-
 func newRecordViewCmd(version string) *cobra.Command {
 	viewCmd := &cobra.Command{
 		Use:   "view <id>",
@@ -198,10 +180,6 @@ func runRecordView(cmd *cobra.Command, version, idArg string) error {
 	return renderRecordView(cmd.OutOrStdout(), *resp.JSON200)
 }
 
-// renderRecordView prints r the way `record view` and a successful `record
-// create`/`record update` (editor or field-flag path alike) all render it:
-// title, url, published/created/updated, tags, image url, then the text in
-// full (never truncated) — matching the brief's field list exactly.
 func renderRecordView(w io.Writer, r api.Record) error {
 	fields := []struct{ label, value string }{
 		{"Title", stringOrDash(r.Title)},
@@ -229,8 +207,6 @@ func renderRecordView(w io.Writer, r api.Record) error {
 
 	return nil
 }
-
-// --- create ---
 
 func newRecordCreateCmd(version string) *cobra.Command {
 	var title, url, text, tagsRaw, published, inputPath string
@@ -363,9 +339,6 @@ func runRecordCreate(cmd *cobra.Command, version string, f recordCreateFlags) er
 	return renderRecordView(cmd.OutOrStdout(), *resp.JSON201)
 }
 
-// readRecordCreate reads --input's value: path's file content, or stdin
-// when path is "-", parsed as a full RecordCreate document. Invalid JSON
-// fails here — a local error before any request.
 func readRecordCreate(cmd *cobra.Command, path string) (api.RecordCreate, error) {
 	var data []byte
 	var err error
@@ -387,8 +360,6 @@ func readRecordCreate(cmd *cobra.Command, path string) (api.RecordCreate, error)
 
 	return body, nil
 }
-
-// --- update ---
 
 func newRecordUpdateCmd(version string) *cobra.Command {
 	var title, url, text, tagsRaw string
@@ -438,12 +409,7 @@ type recordUpdateFlags struct {
 	useEditor    bool
 }
 
-// recordFieldOverrides is the subset of RecordUpdate driven by field flags
-// (--title/--url/--text/--tags) — shared between the direct-PATCH path
-// (runRecordUpdate) and the editor loop (runRecordEditor in
-// record_editor.go), mirroring repositoryFieldOverrides/sourceFieldOverrides:
-// a field flag always wins over whatever the same field held in the edited
-// JSON document, applied after parsing it.
+// A field flag always wins over the same field in the edited document.
 type recordFieldOverrides struct {
 	title *string
 	url   *string
@@ -496,9 +462,7 @@ func runRecordUpdate(cmd *cobra.Command, version, idArg string, f recordUpdateFl
 	return applyRecordFieldUpdate(cmd, apiClient, repoID, recordID, overrides)
 }
 
-// applyRecordFieldUpdate sends one PATCH built purely from field flags,
-// without an If-Match header — "no If-Match: last write wins", mirroring
-// repo/source update's non-editor path.
+// No If-Match here: last write wins.
 func applyRecordFieldUpdate(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, recordID api.RecordId, overrides recordFieldOverrides,
 ) error {
@@ -524,8 +488,6 @@ func recordOverridesToUpdate(o recordFieldOverrides) api.RecordUpdate {
 	}
 }
 
-// --- delete ---
-
 func newRecordDeleteCmd(version string) *cobra.Command {
 	var yes bool
 
@@ -550,8 +512,7 @@ func runRecordDelete(cmd *cobra.Command, version string, idArgs []string, yes bo
 		return err
 	}
 
-	// Every id is parsed (and so validated) up front, before any request —
-	// "invalid UUIDs are rejected before any request" (brief, requirement 5).
+	// Validate every id before any request.
 	ids := make([]api.RecordId, len(idArgs))
 	for i, a := range idArgs {
 		id, parseErr := parseRecordID(a)
@@ -570,19 +531,7 @@ func runRecordDelete(cmd *cobra.Command, version string, idArgs []string, yes bo
 	return deleteRecords(cmd, apiClient, repoID, ids, stdinIsTTY(cmd.InOrStdin()), yes)
 }
 
-// deleteRecords confirms once for the whole batch (via confirmDelete — no
-// GET needed to name anything, unlike repo delete's single-resource
-// prompt), then DELETEs each id in order, printing one "deleted <id>" line
-// per successful id to stdout (cmd.OutOrStdout()) or one "error: <id>:
-// <message>" line per failed id to stderr (cmd.ErrOrStderr()) — stdout
-// stays data-only, so a script capturing it to learn what was deleted
-// never gets error text mixed in — and continuing after a failure. Returns
-// a non-nil error (exit 1) if any id failed, nil (exit 0) otherwise.
-//
-// Kept independent of cobra flag parsing and of
-// client.NewFromConfig/config.Load, taking isTTY as an explicit parameter,
-// so it can be exercised directly against an httptest server with an
-// injected isTTY/yes/stdin combination — see record_test.go.
+// deleteRecords continues past failures; errors go to stderr so stdout lists only what was deleted.
 func deleteRecords(cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, ids []api.RecordId, isTTY, yes bool) error {
 	prompt := fmt.Sprintf("Delete %d records from %s?", len(ids), repoID)
 	if err := confirmDelete(cmd, isTTY, yes, prompt); err != nil {
@@ -619,12 +568,7 @@ func deleteRecords(cmd *cobra.Command, apiClient *client.Client, repoID api.Repo
 	return nil
 }
 
-// recordDeleteFailedError signals a batch delete's exit code (1) without
-// re-printing anything to stderr: deleteRecords already printed one
-// "deleted <id>" line (stdout) or "error: <id>: <message>" line (stderr)
-// per id as it went, so main's default "error: <message>\n" rendering
-// would be a redundant, less specific summary line — RenderError is a
-// deliberate no-op.
+// recordDeleteFailedError only sets exit 1: deleteRecords already reported each id.
 type recordDeleteFailedError struct{}
 
 func (e *recordDeleteFailedError) Error() string { return "one or more records failed to delete" }
@@ -632,8 +576,6 @@ func (e *recordDeleteFailedError) Error() string { return "one or more records f
 func (e *recordDeleteFailedError) RenderError(io.Writer) {}
 
 func (e *recordDeleteFailedError) ExitCode() int { return 1 }
-
-// --- shared helpers ---
 
 func parseRecordID(idArg string) (api.RecordId, error) {
 	id, err := uuid.Parse(idArg)
@@ -644,9 +586,6 @@ func parseRecordID(idArg string) (api.RecordId, error) {
 	return id, nil
 }
 
-// recordRow builds a record's --json Row, covering every field in
-// recordViewJSONFields (a superset of recordListJSONFields — narrow()
-// drops whatever the caller didn't ask for).
 func recordRow(r api.Record) output.Row {
 	return output.Row{
 		"id":          r.Id.String(),

@@ -19,9 +19,6 @@ func statusBody(version string, connected int) string {
 	return `{"version":` + string(v) + `,"build":{"commit":"abc123","date":1757000000000},"agents":{"connected":` + itoa(connected) + `}}`
 }
 
-// statusServer answers GET /api/v1/status with status and body, stamping
-// serverVersion as X-Feedless-Version. It records the Authorization header
-// of the last request into *gotAuth when gotAuth is non-nil.
 func statusServer(t *testing.T, status int, body, serverVersion string, gotAuth *string) *httptest.Server {
 	t.Helper()
 
@@ -44,8 +41,7 @@ func statusServer(t *testing.T, status int, body, serverVersion string, gotAuth 
 	return srv
 }
 
-// exitCodeOf mirrors main.go's exitCodeFor: 0 for no error, the error's
-// ExitCode() when it has one, else 1.
+// Mirrors main.go's exitCodeFor.
 func exitCodeOf(err error) int {
 	if err == nil {
 		return 0
@@ -123,9 +119,7 @@ func TestStatus_ServerError_Exits1(t *testing.T) {
 	}
 }
 
-// An instance older than GET /status answers 401 (every other /api/v1 path
-// needs a token). That is not something `feedctl auth login` fixes, so it
-// exits 1, not 4.
+// Logging in can't fix an instance older than GET /status, so it exits 1, not 4.
 func TestStatus_Unauthorized_Exits1Not4(t *testing.T) {
 	srv := statusServer(t, http.StatusUnauthorized, `{"code":"UNAUTHORIZED","message":"Authentication required"}`, "1.0.0", nil)
 	setupLoggedInHost(t, srv.URL, "tok")

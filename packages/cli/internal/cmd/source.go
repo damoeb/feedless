@@ -19,8 +19,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newSourceCmd builds the `feedctl source` command group: list, view,
-// create, update, delete, and run (source_run.go).
 func newSourceCmd(version string) *cobra.Command {
 	source := &cobra.Command{
 		Use:   "source",
@@ -37,19 +35,13 @@ func newSourceCmd(version string) *cobra.Command {
 	return source
 }
 
-// sourceListJSONFields and sourceViewJSONFields are the field names --json
-// accepts for `source list` and `source view` respectively (see
-// output.AddJSONFlags): view adds "flow" on top of list's set, matching
-// "--json prints the source" (requirement 2) — the full Source, not just
-// the summary columns view's textual output shows.
+// view adds "flow": --json prints the full source, not just the summary.
 var (
 	sourceListJSONFields = []string{
 		"id", "title", "repositoryId", "disabled", "errorsInSuccession", "lastRefreshedAt", "lastErrorMessage", "tags",
 	}
 	sourceViewJSONFields = append(append([]string{}, sourceListJSONFields...), "flow")
 )
-
-// --- list ---
 
 func newSourceListCmd(version string) *cobra.Command {
 	var search string
@@ -164,10 +156,6 @@ func runSourceList(cmd *cobra.Command, version string, f sourceListFlags) error 
 	return renderSourceTable(cmd, items, withRepo)
 }
 
-// fetchSourcesPage fetches one page of sources for output.Paginate: the
-// per-repository endpoint (GET /repositories/{r}/sources) when withRepo,
-// otherwise GET /user/sources across every repository the caller can see —
-// requirement 1's "With -R: per-repository endpoint; without: /user/sources".
 func fetchSourcesPage(
 	cmd *cobra.Command, apiClient *client.Client, withRepo bool, repoID api.RepositoryId,
 	page, pageSize int, disabled *bool, like *string, minErrors *int,
@@ -230,8 +218,6 @@ func renderSourceTable(cmd *cobra.Command, items []api.Source, withRepo bool) er
 	return tp.Render()
 }
 
-// --- view ---
-
 func newSourceViewCmd(version string) *cobra.Command {
 	viewCmd := &cobra.Command{
 		Use:   "view <id>",
@@ -284,11 +270,7 @@ func runSourceView(cmd *cobra.Command, version, idArg string) error {
 	return renderSourceView(cmd.OutOrStdout(), *resp.JSON200)
 }
 
-// renderSourceView prints s the way `source view` and a successful `source
-// update` (editor or field-flag path alike) both render it: title,
-// repository, disabled, errors in succession, last run, last error (in
-// full — never truncated, unlike the list table's LAST ERROR column), tags,
-// and the flow as a numbered action list.
+// The last error is printed in full, unlike the list's LAST ERROR column.
 func renderSourceView(w io.Writer, s api.Source) error {
 	disabled := s.Disabled != nil && *s.Disabled
 
@@ -330,8 +312,6 @@ func renderSourceView(w io.Writer, s api.Source) error {
 
 	return nil
 }
-
-// --- create ---
 
 func newSourceCreateCmd(version string) *cobra.Command {
 	var title, tagsRaw, flowPath, inputPath string
@@ -379,13 +359,7 @@ type sourceCreateFlags struct {
 	inputChanged bool
 }
 
-// runSourceCreate builds a SourceCreate body from --title/--tags/--flow, or
-// from a full document via --input, and POSTs it to
-// /repositories/{r}/sources. Every local check — the --input/field-flags
-// mutual exclusion, --title and --flow being required unless --input, and
-// --flow's JSON parsing (via readScrapeFlow, the same reader `source update
-// --flow` uses) — runs before -R is resolved or any request is made, per
-// the brief's "validated locally before any request".
+// All local checks run before -R is resolved, so bad input never costs a request.
 func runSourceCreate(cmd *cobra.Command, version string, f sourceCreateFlags) error {
 	jf, err := output.ReadJSONFlags(cmd)
 	if err != nil {
@@ -450,9 +424,6 @@ func runSourceCreate(cmd *cobra.Command, version string, f sourceCreateFlags) er
 	return renderSourceView(cmd.OutOrStdout(), *resp.JSON201)
 }
 
-// readSourceCreate reads --input's value: path's file content, or stdin
-// when path is "-", parsed as a full SourceCreate document (including its
-// flow). Invalid JSON fails here — a local error before any request.
 func readSourceCreate(cmd *cobra.Command, path string) (api.SourceCreate, error) {
 	var data []byte
 	var err error
@@ -474,8 +445,6 @@ func readSourceCreate(cmd *cobra.Command, path string) (api.SourceCreate, error)
 
 	return body, nil
 }
-
-// --- update ---
 
 func newSourceUpdateCmd(version string) *cobra.Command {
 	var title string
@@ -529,11 +498,7 @@ type sourceUpdateFlags struct {
 	useEditor       bool
 }
 
-// sourceFieldOverrides is the subset of SourceUpdate driven by field flags
-// (--title/--tags/--disabled) — shared between the direct-PATCH path
-// (runSourceUpdate) and the editor loop (runFlowEditor), since "other flags
-// may be combined with --editor; they go into the same PATCH" (brief,
-// requirement 3).
+// Field flags combine with --editor into the same PATCH.
 type sourceFieldOverrides struct {
 	title    *string
 	tags     *[]string
@@ -595,9 +560,7 @@ func runSourceUpdate(cmd *cobra.Command, version, idArg string, f sourceUpdateFl
 	return applyFieldUpdate(cmd, apiClient, repoID, sourceID, overrides, flowFromFile)
 }
 
-// applyFieldUpdate sends one PATCH built from field flags and/or --flow,
-// without an If-Match header — "no If-Match: last write wins" (brief,
-// requirement 3).
+// No If-Match here: last write wins.
 func applyFieldUpdate(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId,
 	overrides sourceFieldOverrides, flow *api.ScrapeFlow,
@@ -614,8 +577,6 @@ func applyFieldUpdate(
 
 	return renderSourceView(cmd.OutOrStdout(), *resp.JSON200)
 }
-
-// --- delete ---
 
 func newSourceDeleteCmd(version string) *cobra.Command {
 	var yes bool
@@ -654,19 +615,7 @@ func runSourceDelete(cmd *cobra.Command, version, idArg string, yes bool) error 
 	return deleteSource(cmd, apiClient, repoID, sourceID, stdinIsTTY(cmd.InOrStdin()), yes)
 }
 
-// deleteSource is `source delete`'s actual logic, mirroring
-// deleteRepository (repository.go) exactly: fetch the title first so the
-// prompt can name it — skipped entirely with --yes, and also skipped for
-// the non-TTY-without-yes case, where confirmDelete refuses unconditionally
-// before any request — then confirm via confirmDelete, then DELETE.
-//
-// Kept independent of cobra flag parsing and of
-// client.NewFromConfig/config.Load, and takes isTTY as an explicit
-// parameter rather than detecting it itself, so the TTY-accepted and
-// TTY-declined paths (unreachable via a full cobra Execute(), whose test
-// stdin is never a real *os.File) can be exercised directly against an
-// httptest server — see source_create_delete_test.go's TestDeleteSource_*
-// cases.
+// deleteSource takes isTTY explicitly so tests can reach the TTY paths a cobra Execute() can't.
 func deleteSource(cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId, isTTY, yes bool) error {
 	title := sourceID.String()
 
@@ -704,9 +653,6 @@ func deleteSource(cmd *cobra.Command, apiClient *client.Client, repoID api.Repos
 	return nil
 }
 
-// readScrapeFlow reads --flow's value: path's file content, or stdin when
-// path is "-", parsed as a ScrapeFlow ({"sequence": [...]}). Invalid JSON
-// fails here — a local error before any request, per the brief.
 func readScrapeFlow(cmd *cobra.Command, path string) (api.ScrapeFlow, error) {
 	var data []byte
 	var err error
@@ -743,11 +689,6 @@ func splitTags(raw string) []string {
 	return tags
 }
 
-// --- shared helpers ---
-
-// newAPIClient resolves config and builds the authenticated client every
-// source command uses — the same client.NewFromConfig entry point every
-// other command family goes through.
 func newAPIClient(cmd *cobra.Command, version string) (*client.Client, error) {
 	flagHost, _ := cmd.Flags().GetString("host")
 
@@ -773,9 +714,6 @@ func parseSourceID(idArg string) (api.SourceId, error) {
 	return id, nil
 }
 
-// sourceRow builds a source's --json Row. includeFlow adds the "flow" key
-// (view only — list's JSON output stays to the summary fields the table
-// shows, matching sourceListJSONFields).
 func sourceRow(s api.Source, includeFlow bool) output.Row {
 	row := output.Row{
 		"id":                 s.Id.String(),
@@ -835,9 +773,6 @@ func tagsOrDash(tags *[]string) string {
 	return strings.Join(*tags, ", ")
 }
 
-// firstLine returns s's first line (list's LAST ERROR column shows only
-// this, regardless of TTY truncation, which the table printer already
-// handles separately), or "-" when s is nil/empty.
 func firstLine(s *string) string {
 	if s == nil || *s == "" {
 		return "-"
@@ -850,9 +785,6 @@ func firstLine(s *string) string {
 	return *s
 }
 
-// formatLastRun renders t as a relative duration on a TTY ("3h ago") or
-// RFC 3339 when piped — matching the brief's LAST RUN column spec — and
-// "-" when t is nil (never refreshed).
 func formatLastRun(t *time.Time, isTTY bool) string {
 	if t == nil {
 		return "-"

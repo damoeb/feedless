@@ -1,6 +1,4 @@
-// feedctl is a Go module; Gradle shells out to `go` rather than modeling the
-// build with a Java/Kotlin plugin (mirrors packages/agent/build.gradle.kts,
-// which shells out to yarn).
+// Gradle shells out to go, the way packages/agent shells out to yarn.
 val openapiSpec = "../http-api/src/main/resources/openapi/openapi.yaml"
 
 // A pre-release (go1.27rc1) gets patch -1, so it sorts before go1.27.0.
@@ -93,10 +91,7 @@ val golangciLintTask = tasks.register<Exec>("golangciLint") {
   outputs.upToDateWhen { true }
 }
 
-// A spec change that nobody regenerated the client for must fail the gate,
-// not surface as a silent drift bug later. `go generate` rewrites
-// internal/api/client.gen.go from openapiSpec; if that leaves a diff, the
-// checked-in client is stale.
+// Fails the gate when openapi.yaml changed but client.gen.go wasn't regenerated.
 val generateDriftCheckTask = tasks.register<Exec>("generateDriftCheck") {
   dependsOn(checkGoTask)
   commandLine("sh", "-c", "go generate ./... && git diff --exit-code -- internal/api")
@@ -120,11 +115,7 @@ val testTask = tasks.register<Exec>("test") {
   outputs.upToDateWhen { true }
 }
 
-// End-to-end smoke test (e2e/, build tag `e2e`): drives a real feedctl binary
-// against a real core, agent and PostGIS started with Testcontainers. Not
-// part of `test` — it needs Docker and built images, passed as
-// FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_AGENT_IMAGE (defaults: the published
-// damoeb/feedless:core-latest / agent-latest). Skips when Docker is absent.
+// Not part of test: needs Docker and the images named by FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_AGENT_IMAGE.
 tasks.register<Exec>("e2eTest") {
   dependsOn(checkGoTask)
   commandLine("go", "test", "-tags", "e2e", "-count=1", "-timeout", "12m", "-v", "./e2e/...")

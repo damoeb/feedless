@@ -12,14 +12,10 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/api"
 )
 
-// fakeClock lets a test control p.now() deterministically without a real
-// clock.
 type fakeClock struct{ t time.Time }
 
 func (c *fakeClock) now() time.Time { return c.t }
 
-// noSleep is a pollSleepFunc that returns instantly instead of really
-// sleeping — every poller test uses this (or a variant), never realSleep.
 func noSleep(ctx context.Context, _ time.Duration) error {
 	return ctx.Err()
 }
@@ -195,8 +191,6 @@ func TestHarvestPoller_Wait_TTY_ReportsQueuedAndRunningStatusLines(t *testing.T)
 	if !bytes.Contains([]byte(out), []byte("running… 00:42")) {
 		t.Errorf("stderr = %q, want it to contain %q", out, "running… 00:42")
 	}
-	// Wait must move past the status line once polling stops, so whatever
-	// prints next starts on its own line.
 	if out[len(out)-1] != '\n' {
 		t.Errorf("stderr = %q, want it to end with a newline once polling stops", out)
 	}
@@ -242,30 +236,16 @@ func TestFormatElapsed(t *testing.T) {
 	}
 }
 
-// --- progressIsTTY / productionPollDeps: the isTTY decision must come from
-// the actual writer the status line is written to (stderr), never from
-// os.Stdout — a prior version hardcoded output.IsTerminal(os.Stdout), which
-// mis-detects the moment stdout and stderr disagree (2>err.log with stdout
-// still a terminal writes raw \r/\x1b[K into the log; stdout redirected
-// with stderr a terminal wrongly suppresses the progress line). These
-// tests exercise the decision function itself and productionPollDeps'
-// wiring to it, not just the harvestPoller.isTTY field a caller could set
-// to anything (already covered by TestHarvestPoller_Wait_TTY_… above).
+// isTTY must come from stderr, where the status line goes, never from os.Stdout.
 
 func TestProgressIsTTY_NonFileWriter_False(t *testing.T) {
-	// A *bytes.Buffer — what every test's cmd.ErrOrStderr() actually is —
-	// can never be a terminal, regardless of what the real process's stdout
-	// or stderr happens to be.
 	if progressIsTTY(&bytes.Buffer{}) {
 		t.Error("progressIsTTY(&bytes.Buffer{}) = true, want false")
 	}
 }
 
 func TestProgressIsTTY_RegularFile_False(t *testing.T) {
-	// An *os.File satisfies the type assertion but a plain regular file
-	// (as opposed to a real terminal device) still isn't a terminal —
-	// proves the function actually calls output.IsTerminal rather than
-	// treating every *os.File as one.
+	// A regular file is an *os.File but not a terminal.
 	f, err := os.CreateTemp(t.TempDir(), "not-a-tty")
 	if err != nil {
 		t.Fatalf("os.CreateTemp() error = %v", err)
@@ -278,13 +258,7 @@ func TestProgressIsTTY_RegularFile_False(t *testing.T) {
 }
 
 func TestProductionPollDeps_IsTTY_ComesFromGivenWriter_NotStdout(t *testing.T) {
-	// The regression this guards against: isTTY used to be
-	// output.IsTerminal(os.Stdout), decided independently of which writer
-	// the status line actually goes to. productionPollDeps now takes that
-	// writer as a parameter — cmd.ErrOrStderr() in production — so there is
-	// no way for it to consult os.Stdout at all; passing a *bytes.Buffer
-	// (never a terminal) must always yield isTTY == false, whatever the
-	// test process's real stdout is.
+	// productionPollDeps can't consult os.Stdout: it only sees the writer it's given.
 	deps := productionPollDeps(&bytes.Buffer{})
 	if deps.isTTY {
 		t.Error("productionPollDeps(&bytes.Buffer{}).isTTY = true, want false")
@@ -295,13 +269,6 @@ func TestProductionPollDeps_IsTTY_ComesFromGivenWriter_NotStdout(t *testing.T) {
 	}
 }
 
-// TestHarvestPoller_ProgressIsTTYFalse_NeverWritesControlCharsToStderr is
-// the end-to-end proof, at the harvestPoller level, that a non-terminal
-// stderr writer (the case productionPollDeps(cmd.ErrOrStderr()) now
-// guarantees whenever stderr isn't a real *os.File terminal) never receives
-// the \r / \x1b[K progress control sequences — even across a multi-poll
-// queued -> running -> completed sequence that would otherwise report
-// status on every step.
 func TestHarvestPoller_ProgressIsTTYFalse_NeverWritesControlCharsToStderr(t *testing.T) {
 	statuses := []api.HarvestStatus{api.Queued, api.Running, api.Running, api.Completed}
 	call := 0

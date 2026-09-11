@@ -71,9 +71,7 @@ func TestSafeText_StripsBareTrailingESC(t *testing.T) {
 }
 
 func TestSafeText_ShortEscapeSequenceConsumesItsFinalByte(t *testing.T) {
-	// ESC directly followed by a byte in the 0x30-0x7E "final byte" range
-	// (here 'c', VT100's RIS/reset) is itself a complete (if terse) escape
-	// sequence per ECMA-48 — both bytes are dropped, not just the ESC.
+	// ESC 'c' (RIS) is a complete sequence per ECMA-48: both bytes go.
 	got := SafeText("hello\x1bcworld")
 	want := "helloworld"
 	if got != want {
@@ -82,10 +80,7 @@ func TestSafeText_ShortEscapeSequenceConsumesItsFinalByte(t *testing.T) {
 }
 
 func TestSafeText_UnrecognizableESCDropsOnlyESC(t *testing.T) {
-	// ESC followed by a C0 control character isn't a valid intermediate
-	// (0x20-0x2F) or final byte (0x30-0x7E) — only the ESC itself is
-	// dropped; the control character right after it is still replaced on
-	// its own.
+	// Only the ESC is dropped; the control after it is replaced on its own.
 	got := SafeText("hello\x1b\x01world")
 	want := "hello�world"
 	if got != want {
@@ -102,10 +97,7 @@ func TestSafeText_ReplacesC0Controls(t *testing.T) {
 }
 
 func TestSafeText_ReplacesC1Controls(t *testing.T) {
-	// U+0080 and U+0085 (NEL) -- deliberately not U+0090/U+0098/U+009B/
-	// U+009C/U+009D/U+009E/U+009F, which SafeText treats specially as
-	// string-type-sequence introducers/terminator rather than as generic C1
-	// controls; those are covered by their own tests below.
+	// Not the C1 codes SafeText treats as string introducers; those have their own tests.
 	got := SafeText("a\u0080b\u0085c")
 	want := "a\ufffdb\ufffdc"
 	if got != want {
@@ -149,8 +141,6 @@ func TestSafeText_NoBypassThroughMixedContent(t *testing.T) {
 	}
 }
 
-// --- C9 fix round 1: unterminated sequences must not hide later text ---
-
 func TestSafeText_UnterminatedOSC_NoNewline_DoesNotHideTrailingText(t *testing.T) {
 	got := SafeText("a\x1b]0;tb rest")
 	want := "a0;tb rest"
@@ -181,14 +171,7 @@ func TestSafeText_UnterminatedCSI_WithEmbeddedNewline_KeepsTextAfterNewline(t *t
 	}
 }
 
-// TestSafeText_MalformedOSC_SecondESCAfterMultipleLines_DoesNotHideThem is
-// round 2's regression case: an earlier "abort on a non-ST ESC" fix still
-// dropped the entire span between the introducer and the aborting ESC —
-// so a hostile page could still hide arbitrary multi-line text by placing
-// a second ESC anywhere after an unterminated OSC introducer. Per the
-// (deliberately narrow) rule skipStringSequence now implements, only the
-// introducer itself is ever dropped once the sequence is malformed —
-// content already scanned is never discarded with it.
+// A second ESC after an unterminated OSC must not hide the lines in between.
 func TestSafeText_MalformedOSC_SecondESCAfterMultipleLines_DoesNotHideThem(t *testing.T) {
 	got := SafeText("head\x1b]0;x then lots of text\nline2\nline3\x1bZtail")
 	if strings.ContainsRune(got, 0x1b) {
@@ -210,12 +193,7 @@ func TestSafeText_MalformedOSC_SecretLineThenSecondESC_DoesNotHideLine2(t *testi
 }
 
 func TestSafeText_OSCBodyContainsNewlineBeforeBEL_EverythingAfterIntroducerVisible(t *testing.T) {
-	// The '\n' inside the would-be OSC body makes it malformed before the
-	// BEL is ever reached (real OSC payloads never legitimately contain a
-	// newline), so only the two-rune introducer is dropped — the '\n', the
-	// literal BEL-that-never-terminated-anything (replaced with the
-	// placeholder, like any other stray C0 control), and everything around
-	// them stay visible.
+	// The '\n' makes the OSC malformed before BEL, so only the introducer is dropped.
 	got := SafeText("before\x1b]0;line1\nline2\x07after")
 	if strings.ContainsRune(got, 0x1b) {
 		t.Errorf("SafeText() = %q, want no raw ESC (0x1b)", got)
@@ -228,9 +206,6 @@ func TestSafeText_OSCBodyContainsNewlineBeforeBEL_EverythingAfterIntroducerVisib
 }
 
 func TestSafeText_ProperlyTerminatedOSC8AndOSC0_OneLine_RemovedButTextKept(t *testing.T) {
-	// Regression guard: a real, single-line OSC 8 hyperlink and OSC 0 title
-	// write — both properly BEL-terminated before any '\n'/'\r'/ESC — must
-	// still be removed in full, surrounding text kept.
 	got := SafeText("see \x1b]8;;https://evil.example\x07here\x1b]8;;\x07 now\x1b]0;pwned title\x07 done")
 	want := "see here now done"
 	if got != want {
@@ -239,8 +214,6 @@ func TestSafeText_ProperlyTerminatedOSC8AndOSC0_OneLine_RemovedButTextKept(t *te
 }
 
 func TestSafeText_CSIWithFinalByte_StillProperlyTerminated(t *testing.T) {
-	// Regression guard alongside the unterminated-sequence fix: a
-	// well-formed, terminated CSI sequence must still be dropped in full.
 	got := SafeText("before\x1b[38;5;196mafter")
 	want := "beforeafter"
 	if got != want {
@@ -248,14 +221,7 @@ func TestSafeText_CSIWithFinalByte_StillProperlyTerminated(t *testing.T) {
 	}
 }
 
-// C1 (8-bit) introducers: U+009B is the single-byte CSI equivalent of
-// ESC '[', and U+009D is the single-byte OSC equivalent of ESC ']'. SafeText
-// does not special-case them as sequence introducers — being C1 controls,
-// isStrippedControl already replaces the raw byte itself with the
-// placeholder, which independently neutralizes it (a real terminal will
-// never see the byte that would have started the 8-bit sequence). These
-// tests pin that this is genuinely safe — no swallowing, no leftover raw
-// C1 byte — not just untested.
+// U+009B is not an introducer; replacing the raw byte already neutralizes it.
 func TestSafeText_C1CSIIntroducer_NeutralizedWithoutSwallowingPayload(t *testing.T) {
 	c1CSI := string(rune(0x9b)) // U+009B, 8-bit CSI
 
@@ -269,12 +235,6 @@ func TestSafeText_C1CSIIntroducer_NeutralizedWithoutSwallowingPayload(t *testing
 	}
 }
 
-// TestSafeText_C1OSCIntroducer_RecognizedAndStrippedWhenTerminated: unlike
-// the 8-bit CSI introducer above, round 2 has SafeText recognize the 8-bit
-// OSC introducer (U+009D) as a genuine string-type sequence start, with the
-// same termination rules as its 7-bit "ESC ]" form (see
-// skipStringSequence) — a properly BEL/ST-terminated one is removed in
-// full, content included, not merely neutralized byte-by-byte.
 func TestSafeText_C1OSCIntroducer_RecognizedAndStrippedWhenTerminated(t *testing.T) {
 	c1OSC := string(rune(0x9d)) // U+009D, 8-bit OSC
 
@@ -288,10 +248,6 @@ func TestSafeText_C1OSCIntroducer_RecognizedAndStrippedWhenTerminated(t *testing
 	}
 }
 
-// TestSafeText_C1OSCIntroducer_Malformed_DropsOnlyIntroducer pins the same
-// "drop only the introducer" rule for the 8-bit form: with no BEL/ST before
-// the end of input, only the one-rune U+009D introducer is dropped, and the
-// payload is shown (sanitized) like ordinary text instead of hidden.
 func TestSafeText_C1OSCIntroducer_Malformed_DropsOnlyIntroducer(t *testing.T) {
 	c1OSC := string(rune(0x9d)) // U+009D, 8-bit OSC
 

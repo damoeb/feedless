@@ -16,9 +16,6 @@ const (
 	testRecordID3 = "99999999-9999-9999-9999-999999999999"
 )
 
-// recordJSON builds a minimal Record JSON body covering every required
-// field of the schema (id, url, createdAt, publishedAt, updatedAt) plus the
-// optional ones these tests check (title, text, tags, imageUrl).
 func recordJSON(id, url, title string) string {
 	return `{
 		"id": "` + id + `",
@@ -32,8 +29,6 @@ func recordJSON(id, url, title string) string {
 		"updatedAt": "2024-01-03T00:00:00Z"
 	}`
 }
-
-// --- record list ---
 
 func TestRecordList_MissingRepo_Errors(t *testing.T) {
 	withTempConfigHome(t)
@@ -152,8 +147,6 @@ func TestRecordList_Limit_Paginates(t *testing.T) {
 	}
 }
 
-// --- record view ---
-
 func TestRecordView_RendersFields(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet || r.URL.Path != "/api/v1/repositories/"+testRepoID+"/records/"+testRecordID {
@@ -217,14 +210,7 @@ func TestRecordView_JSON_PrintsRecord_IncludingTags(t *testing.T) {
 	}
 }
 
-// --- C9: control-sequence sanitization ---
-
-// maliciousRecordJSON builds a Record JSON body whose title and text embed
-// a CSI clear-screen (ESC [ 2 J) and an OSC 52 clipboard-write
-// (ESC ] 5 2 ; c ; <base64> BEL) -- the exact scenario the task brief's
-// verification section calls out. Built via json.Marshal (not string
-// concatenation) so the raw control bytes end up correctly JSON-escaped on
-// the wire, exactly as a real server response would encode them.
+// json.Marshal escapes the raw control bytes the way a real server would.
 func maliciousRecordJSON(id string) string {
 	esc, bel := string(rune(0x1b)), string(rune(0x07))
 
@@ -341,8 +327,6 @@ func TestRecordView_404(t *testing.T) {
 		t.Errorf("error = %v, want it to say not found", err)
 	}
 }
-
-// --- record create ---
 
 func TestRecordCreate_FromFlags(t *testing.T) {
 	var gotBody map[string]any
@@ -471,8 +455,6 @@ func TestRecordCreate_InvalidPublished_Errors(t *testing.T) {
 	}
 }
 
-// --- record update (field flags, non-editor) ---
-
 func TestRecordUpdate_FieldFlags_NoIfMatch(t *testing.T) {
 	var gotIfMatch string
 	var gotBody map[string]any
@@ -567,8 +549,6 @@ func TestRecordUpdate_MissingRepo_Errors(t *testing.T) {
 	}
 }
 
-// --- record delete ---
-
 func TestRecordDelete_MissingRepo_Errors(t *testing.T) {
 	withTempConfigHome(t)
 
@@ -631,9 +611,7 @@ func TestRecordDelete_ThreeIds_SecondFails_TwoDeletedOneErrorLine_Exit1(t *testi
 		t.Errorf("DELETE calls = %v, want all three ids in order", deleteCalls)
 	}
 
-	// stdout carries only the successful deletes, in order — no error text
-	// mixed in, so a script capturing stdout alone learns exactly what was
-	// deleted.
+	// stdout lists only successful deletes, so scripts can rely on it.
 	outLines := strings.Split(strings.TrimRight(stdout.String(), "\n"), "\n")
 	if len(outLines) != 2 {
 		t.Fatalf("stdout lines = %v, want 2 (the two successful deletes)", outLines)

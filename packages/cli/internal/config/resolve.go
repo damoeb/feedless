@@ -5,23 +5,12 @@ import (
 	"os"
 )
 
-// EnvHost and EnvToken are the environment variables that participate in
-// host/token resolution (see Resolve).
 const (
 	EnvHost  = "FEEDCTL_HOST"
 	EnvToken = "FEEDCTL_TOKEN"
 )
 
-// NotLoggedInError means feedctl could not resolve a host and a token to
-// use for a request. Host is empty when no host could be resolved at all
-// (no --host/FEEDCTL_HOST/default_host); otherwise it names the host that
-// has no usable token.
-//
-// It implements ExitCode() int (exit 4), so cmd/feedctl/main.go's run()
-// picks the right exit code whether a command builds this error directly
-// (as auth logout does) or gets it indirectly through Resolve /
-// client.NewFromConfig — run() only needs to recognize the ExitCode()
-// method, not either concrete error type.
+// NotLoggedInError has an empty Host when no host resolved at all.
 type NotLoggedInError struct {
 	Host string
 }
@@ -34,13 +23,9 @@ func (e *NotLoggedInError) Error() string {
 	return fmt.Sprintf("not logged in to %s — run: feedctl auth login --url <url>", e.Host)
 }
 
-// ExitCode is the process exit code feedctl uses when this error reaches
-// main: 4, matching every other "not authenticated" failure (see
-// cmd.ExitError, which auth login and auth status build directly).
+// ExitCode is 4, like every other auth failure.
 func (e *NotLoggedInError) ExitCode() int { return 4 }
 
-// Resolved is a host and token pair ready to build an authenticated
-// client with (see client.New / client.NewFromConfig).
 type Resolved struct {
 	Host        string
 	URL         string
@@ -48,10 +33,7 @@ type Resolved struct {
 	TokenSource string
 }
 
-// ResolveHost picks which host a command should act on: the --host flag
-// value (if non-empty), else FEEDCTL_HOST, else the configured default
-// host. It never errors — an empty result means no host could be
-// resolved.
+// ResolveHost returns "" when no host resolves.
 func ResolveHost(cfg *Config, flagHost string) string {
 	if flagHost != "" {
 		return flagHost
@@ -63,11 +45,7 @@ func ResolveHost(cfg *Config, flagHost string) string {
 	return cfg.DefaultHost
 }
 
-// TokenForHost resolves the token to use for host: FEEDCTL_TOKEN (only
-// when applyEnv is true — callers pass true for the single host a command
-// is actually targeting, false when merely listing other configured hosts,
-// since the env var isn't itself host-scoped), else the OS keyring, else
-// the plain-text fallback in hosts.yml.
+// FEEDCTL_TOKEN isn't host-scoped, so applyEnv is true only for the targeted host.
 func TokenForHost(cfg *Config, host string, applyEnv bool) (token, source string) {
 	if applyEnv {
 		if t := os.Getenv(EnvToken); t != "" {
@@ -86,15 +64,7 @@ func TokenForHost(cfg *Config, host string, applyEnv bool) (token, source string
 	return "", ""
 }
 
-// Resolve follows feedctl's standard resolution order for the host a
-// command should act on and the token to authenticate with:
-//
-//	host:  --host flag > FEEDCTL_HOST > default_host
-//	token: FEEDCTL_TOKEN > keyring > hosts.yml
-//
-// It fails with *NotLoggedInError when no host can be resolved, when the
-// resolved host has no usable token, or when the resolved host has a
-// token but no configured URL to reach it on.
+// Resolve order. Host: --host > FEEDCTL_HOST > default_host. Token: FEEDCTL_TOKEN > keyring > hosts.yml.
 func Resolve(cfg *Config, flagHost string) (*Resolved, error) {
 	host := ResolveHost(cfg, flagHost)
 	if host == "" {

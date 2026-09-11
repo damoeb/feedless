@@ -19,11 +19,7 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newAPICmd builds `feedctl api`, the raw escape hatch to /api/v1: given a
-// path relative to it, it makes one authenticated HTTP request through the
-// same client every other command uses (client.NewFromConfig — transport
-// guard, bearer token, version warning; never a separate http.Client) and
-// prints the response.
+// newAPICmd goes through client.NewFromConfig, so raw requests get the same guard, token and version warning.
 func newAPICmd(version string) *cobra.Command {
 	var method string
 	var fields []string
@@ -63,9 +59,6 @@ func newAPICmd(version string) *cobra.Command {
 	return apiCmd
 }
 
-// apiRequest is newAPICmd's flags, gathered into one value so runAPI's
-// signature stays independent of cobra's flag wiring and easy to call from
-// tests.
 type apiRequest struct {
 	path           string
 	method         string
@@ -160,15 +153,7 @@ func runAPI(cmd *cobra.Command, version string, req apiRequest) error {
 	return nil
 }
 
-// rejectPathTraversal refuses a path with a ".." segment anywhere in it —
-// checked against both u.Path (net/url's already-percent-decoded form,
-// which alone catches plain "../x", "a/../../x", and even an encoded
-// "%2e%2e/x" or "..%2Fx", since url.Parse decodes those into u.Path too)
-// and a second, explicit decode of u.EscapedPath(), as defense in depth
-// against any encoding url.Parse's own decoding doesn't normalize the same
-// way. Without this, "repositories/../../secret" would reach the server as
-// "/api/v1/repositories/../../secret" verbatim, letting a path argument
-// escape the /api/v1 prefix entirely.
+// rejectPathTraversal keeps a path from escaping /api/v1; the escaped path is checked too, as defense in depth.
 func rejectPathTraversal(u *url.URL) error {
 	if containsDotDotSegment(u.Path) {
 		return fmt.Errorf("refusing path %q: must not contain \"..\" segments", u.Path)
@@ -191,9 +176,6 @@ func containsDotDotSegment(path string) bool {
 	return false
 }
 
-// requestMethod picks the HTTP method: the -X flag's value when given,
-// otherwise GET, or POST when a body was given (-f or --input) — matching
-// "Default method: GET, or POST when a body is given."
 func requestMethod(req apiRequest) string {
 	if req.methodSet {
 		return strings.ToUpper(req.method)
@@ -206,11 +188,7 @@ func requestMethod(req apiRequest) string {
 	return http.MethodGet
 }
 
-// buildRequestPayload resolves req's body (or query parameters, on GET)
-// from -f and/or --input: a body reader and its Content-Type for --input
-// (sent verbatim) or -f on a non-GET method (a JSON object of the
-// resolved key/value pairs); query parameters for -f on a GET method. Only
-// one of the two return values is ever non-empty.
+// -f on GET becomes query parameters; otherwise a JSON body.
 func buildRequestPayload(cmd *cobra.Command, method string, req apiRequest) (io.Reader, string, url.Values, error) {
 	switch {
 	case req.inputPath != "":
@@ -248,8 +226,6 @@ func buildRequestPayload(cmd *cobra.Command, method string, req apiRequest) (io.
 	}
 }
 
-// readInput reads --input's value: path's file content, or stdin when path
-// is "-".
 func readInput(cmd *cobra.Command, path string) ([]byte, error) {
 	if path == "-" {
 		data, err := io.ReadAll(cmd.InOrStdin())
@@ -268,8 +244,6 @@ func readInput(cmd *cobra.Command, path string) ([]byte, error) {
 	return data, nil
 }
 
-// resolveFields parses each -f value as key=value, resolving key=@file to
-// the trimmed content of file.
 func resolveFields(fields []string) (map[string]string, error) {
 	out := make(map[string]string, len(fields))
 
@@ -294,7 +268,6 @@ func resolveFields(fields []string) (map[string]string, error) {
 	return out, nil
 }
 
-// applyHeaders sets each -H 'Name: value' header on req.
 func applyHeaders(req *http.Request, headers []string) error {
 	for _, h := range headers {
 		name, value, ok := strings.Cut(h, ":")
@@ -308,10 +281,7 @@ func applyHeaders(req *http.Request, headers []string) error {
 	return nil
 }
 
-// writeAPIResponse writes resp to w: the status line and sorted headers
-// first when includeHeaders is set (-i), then the body — pretty-printed
-// when it's JSON and isTTY, verbatim otherwise (including when it isn't
-// valid JSON, so a malformed body still reaches the user unmodified).
+// A body that isn't valid JSON is printed verbatim.
 func writeAPIResponse(w io.Writer, resp *http.Response, body []byte, includeHeaders, isTTY bool) {
 	if includeHeaders {
 		_, _ = fmt.Fprintf(w, "%s %s\n", resp.Proto, resp.Status)
@@ -335,8 +305,6 @@ func writeAPIResponse(w io.Writer, resp *http.Response, body []byte, includeHead
 	_, _ = w.Write(formatBody(body, resp.Header.Get("Content-Type"), isTTY))
 }
 
-// formatBody pretty-prints body with 2-space indentation when contentType
-// is JSON and isTTY, and returns it verbatim otherwise.
 func formatBody(body []byte, contentType string, isTTY bool) []byte {
 	if !isTTY || !strings.Contains(contentType, "json") {
 		return ensureTrailingNewline(body)
@@ -360,10 +328,7 @@ func ensureTrailingNewline(body []byte) []byte {
 	return append(body, '\n')
 }
 
-// isTerminalWriter reports whether w is a terminal — false for anything
-// that isn't an *os.File (a bytes.Buffer in tests included), which is
-// exactly what makes the TTY decision injectable in tests: they choose
-// what SetOut points at.
+// Anything but an *os.File is not a terminal, which lets tests choose via SetOut.
 func isTerminalWriter(w io.Writer) bool {
 	f, ok := w.(*os.File)
 	if !ok {
@@ -373,10 +338,7 @@ func isTerminalWriter(w io.Writer) bool {
 	return output.IsTerminal(f)
 }
 
-// rawResponse adapts a raw net/http response (status code + already-read
-// body) to the apiResponse interface NewAPIError expects, so `feedctl api`
-// can reuse the same error mapping as every command built on the generated
-// client, despite not having a typed …Response value of its own.
+// rawResponse lets `feedctl api` reuse NewAPIError's error mapping.
 type rawResponse struct {
 	status int
 	body   []byte

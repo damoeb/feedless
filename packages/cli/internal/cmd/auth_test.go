@@ -13,9 +13,7 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/config"
 )
 
-// withTempConfigHome points XDG_CONFIG_HOME at a fresh temp directory and
-// resets the keyring to an in-memory mock, so tests never touch the real
-// ~/.config/feedctl or the real OS keyring.
+// withTempConfigHome keeps tests off the real ~/.config/feedctl and OS keyring.
 func withTempConfigHome(t *testing.T) {
 	t.Helper()
 
@@ -48,9 +46,7 @@ func unauthorizedHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte(`{"message":"invalid token"}`))
 }
 
-// userServerWithVersion is userServer plus an X-Feedless-Version response
-// header, for exercising the version-mismatch warning (runCmd always
-// builds feedctl as version "1.0.0").
+// runCmd always builds feedctl as version "1.0.0".
 func userServerWithVersion(t *testing.T, version, email string) *httptest.Server {
 	t.Helper()
 
@@ -84,8 +80,6 @@ func runCmdWithStdin(stdin string, args ...string) (stdout, stderr *bytes.Buffer
 
 	return stdout, stderr, err
 }
-
-// --- auth login ---
 
 func TestAuthLogin_WithToken_Success(t *testing.T) {
 	withTempConfigHome(t)
@@ -127,13 +121,7 @@ func TestAuthLogin_WithToken_Success(t *testing.T) {
 
 func TestAuthLogin_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 	withTempConfigHome(t)
-	// ErrUnsupportedPlatform is go-keyring's own sentinel for "no real
-	// backend on this OS" — the case config.isKeyringUnavailable can
-	// identify with certainty and StoreToken falls back for. See
-	// internal/config/keyring_unavailable_test.go for the Linux D-Bus
-	// cases (no Secret Service / no session bus) that also fall back, and
-	// TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing below
-	// for one that must not.
+	// ErrUnsupportedPlatform is the "no keyring" case StoreToken falls back for.
 	keyring.MockInitWithError(keyring.ErrUnsupportedPlatform)
 	srv := userServer(t, okUserHandler("someone@example.org"))
 
@@ -158,11 +146,7 @@ func TestAuthLogin_KeyringUnavailable_FallsBackToFileAndWarns(t *testing.T) {
 	}
 }
 
-// TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing is the
-// negative case for the fallback above: a keyring error that isn't
-// recognized as "no keyring exists" (a locked keychain, access denied, ...)
-// must fail the login outright, not silently downgrade to a plain-text
-// hosts.yml token.
+// A keyring error that isn't "no keyring" (locked, access denied) must not downgrade to plain text.
 func TestAuthLogin_UnrecognizedKeyringError_FailsAndStoresNothing(t *testing.T) {
 	withTempConfigHome(t)
 	keyring.MockInitWithError(errors.New("keychain is locked"))
@@ -247,8 +231,6 @@ func TestAuthLogin_WithoutTokenFlag_NonTerminalStdin_Errors(t *testing.T) {
 	}
 }
 
-// --- auth status ---
-
 func TestAuthStatus_NoHosts_ReportsNotLoggedIn(t *testing.T) {
 	withTempConfigHome(t)
 
@@ -309,12 +291,7 @@ func TestAuthStatus_FailedHost_ExitsWith1(t *testing.T) {
 	}
 }
 
-// TestAuthStatus_TwoMismatchedHosts_PrintsWarningOnce covers requirement
-// 8 through the real `auth status` command: it builds one client.Client
-// per configured host (see reportHostStatus), so without a Warner shared
-// across that loop, two hosts that both disagree with the CLI's version
-// would each print their own warning. One mismatched invocation — however
-// many hosts it touches — must print exactly one.
+// auth status builds one Client per host; the shared Warner must still warn only once.
 func TestAuthStatus_TwoMismatchedHosts_PrintsWarningOnce(t *testing.T) {
 	withTempConfigHome(t)
 	srv1 := userServerWithVersion(t, "9.9.1", "first@example.org")
@@ -346,8 +323,6 @@ func TestAuthStatus_TwoMismatchedHosts_PrintsWarningOnce(t *testing.T) {
 		t.Errorf("warning count = %d, want exactly 1 across both mismatched hosts; stderr = %q", got, stderr.String())
 	}
 }
-
-// --- auth logout ---
 
 func TestAuthLogout_RemovesHostAndKeyringToken(t *testing.T) {
 	withTempConfigHome(t)
@@ -416,8 +391,6 @@ func TestAuthLogout_NotLoggedIn_ExitsWith4(t *testing.T) {
 	}
 }
 
-// --- helpers ---
-
 func hostOf(rawURL string) string {
 	return strings.TrimPrefix(strings.TrimPrefix(rawURL, "https://"), "http://")
 }
@@ -434,11 +407,7 @@ func assertExitCode(t *testing.T, err error, want int) {
 	}
 }
 
-// exitCoder mirrors cmd/feedctl/main.go's unexported interface of the same
-// name: any error with an ExitCode() int method, whether it's a
-// *ExitError (auth login/status) or a *config.NotLoggedInError (auth
-// logout, and anything future commands get from config.Resolve /
-// client.NewFromConfig).
+// Mirrors main.go's unexported interface.
 type exitCoder interface {
 	ExitCode() int
 }

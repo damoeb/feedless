@@ -116,9 +116,7 @@ func TestGuardScheme_AllowsLoopbackHTTP(t *testing.T) {
 }
 
 func TestGuardScheme_AllowsHTTPS(t *testing.T) {
-	// https:// is never guarded, regardless of host; use an https URL that
-	// intentionally fails to dial, to prove the guard itself did not fire
-	// (the error must be a network error, not the guard's message).
+	// https is never guarded; an undialable URL shows the guard didn't fire.
 	c, err := New("unreachable.invalid", "https://127.0.0.1:1", "the-token", "1.0.0", &bytes.Buffer{}, nil)
 	if err != nil {
 		t.Fatalf("New() error = %v", err)
@@ -215,12 +213,6 @@ func TestVersionWarning_NotPrintedForDevServer(t *testing.T) {
 	}
 }
 
-// TestVersionWarning_SharedWarner_PrintsOnceAcrossMultipleClients covers
-// requirement 8 for a command like `auth status` that builds one Client
-// per configured host: when every host's server disagrees with the CLI's
-// version, the whole invocation must still print exactly one warning, not
-// one per host. That only holds if every Client involved was built with
-// the *same* Warner.
 func TestVersionWarning_SharedWarner_PrintsOnceAcrossMultipleClients(t *testing.T) {
 	srv1 := newUserServer(t, "9.9.1", nil)
 	srv2 := newUserServer(t, "9.9.2", nil)
@@ -249,9 +241,7 @@ func TestVersionWarning_SharedWarner_PrintsOnceAcrossMultipleClients(t *testing.
 	}
 }
 
-// TestVersionWarning_SeparateWarners_PrintsOncePerClient is the control
-// for the test above: without a shared Warner (the pre-fix behavior),
-// each Client warns independently.
+// Control for the test above.
 func TestVersionWarning_SeparateWarners_PrintsOncePerClient(t *testing.T) {
 	srv1 := newUserServer(t, "9.9.1", nil)
 	srv2 := newUserServer(t, "9.9.2", nil)

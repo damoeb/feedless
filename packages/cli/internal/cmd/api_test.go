@@ -13,12 +13,7 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/config"
 )
 
-// setupLoggedInHost writes hosts.yml and stores token in the (mocked)
-// keyring for srvURL's host, as if `auth login` had already run, without
-// needing srv to serve /user — so tests can point their own httptest
-// handler at whatever path `feedctl api` targets. It returns the host name
-// (hostOf(srvURL)) for callers that need it, and makes it the default host,
-// so `feedctl api <path>` needs no --host.
+// setupLoggedInHost fakes a finished auth login without the server serving /user.
 func setupLoggedInHost(t *testing.T, srvURL, token string) string {
 	t.Helper()
 	withTempConfigHome(t)
@@ -153,10 +148,7 @@ func TestAPI_GET_FieldsBecomeQueryParams(t *testing.T) {
 	t.Cleanup(srv.Close)
 	setupLoggedInHost(t, srv.URL, "tok")
 
-	// -X GET is explicit here: -f alone (no --method) defaults to POST (see
-	// TestAPI_FieldsWithoutMethodFlag_DefaultToPOSTJSONBody) — it's the
-	// *effective* method, GET either way, that routes -f to the query
-	// string instead of a JSON body.
+	// -f alone defaults to POST; only an effective GET sends -f as query parameters.
 	_, stderr, err := runCmd("api", "repositories", "-X", "GET", "-f", "q=hello", "-f", "page=2")
 	if err != nil {
 		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
@@ -313,12 +305,7 @@ func TestAPI_401_ExitsWithCode4(t *testing.T) {
 	t.Cleanup(srv.Close)
 	setupLoggedInHost(t, srv.URL, "tok")
 
-	// root.SilenceErrors is true (see root.go), so Execute() only returns
-	// the error — main.go's run() is what prints it to stderr (see
-	// TestAPIError_RenderError_PrintsMessageAndFieldErrors for that
-	// rendering, and cmd/feedctl/main_test.go for the equivalent full
-	// stderr assertion on a different error type). Here it's enough to
-	// check the error itself carries the right exit code and message.
+	// SilenceErrors leaves printing to main; checking the error itself is enough here.
 	_, _, err := runCmd("api", "repositories")
 	if err == nil {
 		t.Fatal("Execute() error = nil, want an error for a 401 response")

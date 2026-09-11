@@ -1,10 +1,3 @@
-// repository.go implements `feedctl repo list|view|create|update|delete`
-// (task C6). It lives in a separate file from repo.go on purpose: repo.go
-// already holds the -R/--repo flag/resolution helpers `source`/`harvest`
-// share (added in C4), and reusing that filename for the repository entity
-// commands would collide with it — see the task report for the naming
-// note. The cobra command group itself is still named "repo"
-// (`feedctl repo ...`), matching the brief.
 package cmd
 
 import (
@@ -24,8 +17,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
-// newRepositoryCmd builds the `feedctl repo` command group: list, view,
-// create, update, delete.
 func newRepositoryCmd(version string) *cobra.Command {
 	repo := &cobra.Command{
 		Use:   "repo",
@@ -41,19 +32,12 @@ func newRepositoryCmd(version string) *cobra.Command {
 	return repo
 }
 
-// repositoryJSONFields is the field list --json accepts on every repo
-// command (list/view/create alike, since — unlike source's "flow" — the
-// Repository schema has no single expensive field worth reserving for view
-// only): every scalar (and tags, an array, following sourceListJSONFields'
-// own precedent) property of the Repository schema.
 var repositoryJSONFields = []string{
 	"id", "title", "description", "shareKey", "ownerId", "product", "visibility", "refreshCron",
 	"tags", "createdAt", "lastUpdatedAt", "nextUpdateAt", "documentCount", "archived",
 	"pullsPerMonth", "currentUserIsOwner", "pushNotificationsEnabled",
 	"sourcesCount", "sourcesCountWithProblems", "disabledFrom",
 }
-
-// --- list ---
 
 func newRepositoryListCmd(version string) *cobra.Command {
 	var product, visibility, search string
@@ -175,8 +159,6 @@ func renderRepositoryTable(cmd *cobra.Command, items []api.Repository) error {
 	return tp.Render()
 }
 
-// --- view ---
-
 func newRepositoryViewCmd(version string) *cobra.Command {
 	viewCmd := &cobra.Command{
 		Use:   "view <id>",
@@ -223,16 +205,7 @@ func runRepositoryView(cmd *cobra.Command, version, idArg string) error {
 	return renderRepositoryView(cmd.OutOrStdout(), *resp.JSON200)
 }
 
-// renderRepositoryView prints r the way `repo view` and a successful `repo
-// update` (editor or field-flag path alike) both render it: title,
-// description, product, visibility, cron, retention, created/updated/next
-// update, archived, and document count — matching the brief's field list.
-//
-// Retention always prints "-": GET /repositories (openapi.yaml's
-// Repository schema) never returns it — only RepositoryCreate/
-// RepositoryUpdate accept it — so there is nothing to show here. Flagged in
-// the task report; fixing it is a server-side (http-api) schema change,
-// out of this task's scope.
+// Retention always prints "-": the Repository schema doesn't return it.
 func renderRepositoryView(w io.Writer, r api.Repository) error {
 	fields := []struct{ label, value string }{
 		{"Title", r.Title},
@@ -256,8 +229,6 @@ func renderRepositoryView(w io.Writer, r api.Repository) error {
 
 	return nil
 }
-
-// --- create ---
 
 func newRepositoryCreateCmd(version string) *cobra.Command {
 	var title, description, product, cron, visibility, inputPath string
@@ -377,9 +348,6 @@ func runRepositoryCreate(cmd *cobra.Command, version string, f repositoryCreateF
 	return renderRepositoryView(cmd.OutOrStdout(), *resp.JSON201)
 }
 
-// readRepositoryCreate reads --input's value: path's file content, or
-// stdin when path is "-", parsed as a full RepositoryCreate document.
-// Invalid JSON fails here — a local error before any request.
 func readRepositoryCreate(cmd *cobra.Command, path string) (api.RepositoryCreate, error) {
 	var data []byte
 	var err error
@@ -401,8 +369,6 @@ func readRepositoryCreate(cmd *cobra.Command, path string) (api.RepositoryCreate
 
 	return body, nil
 }
-
-// --- update ---
 
 func newRepositoryUpdateCmd(version string) *cobra.Command {
 	var title, description, cron, visibility string
@@ -450,12 +416,7 @@ type repositoryUpdateFlags struct {
 	useEditor         bool
 }
 
-// repositoryFieldOverrides is the subset of RepositoryUpdate driven by
-// field flags (--title/--description/--cron/--visibility) — shared between
-// the direct-PATCH path (runRepositoryUpdate) and the editor loop
-// (runRepositoryEditor in repository_editor.go), mirroring
-// sourceFieldOverrides: a field flag always wins over whatever the same
-// field held in the edited JSON document, applied after parsing it.
+// A field flag always wins over the same field in the edited document.
 type repositoryFieldOverrides struct {
 	title       *string
 	description *string
@@ -503,9 +464,7 @@ func runRepositoryUpdate(cmd *cobra.Command, version, idArg string, f repository
 	return applyRepositoryFieldUpdate(cmd, apiClient, repoID, overrides)
 }
 
-// applyRepositoryFieldUpdate sends one PATCH built purely from field flags,
-// without an If-Match header — "no If-Match: last write wins", mirroring
-// source update's non-editor path.
+// No If-Match here: last write wins.
 func applyRepositoryFieldUpdate(cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, overrides repositoryFieldOverrides) error {
 	patch := repositoryOverridesToUpdate(overrides)
 
@@ -528,8 +487,6 @@ func repositoryOverridesToUpdate(o repositoryFieldOverrides) api.RepositoryUpdat
 		Visibility:  o.visibility,
 	}
 }
-
-// --- delete ---
 
 func newRepositoryDeleteCmd(version string) *cobra.Command {
 	var yes bool
@@ -562,26 +519,9 @@ func runRepositoryDelete(cmd *cobra.Command, version, idArg string, yes bool) er
 	return deleteRepository(cmd, apiClient, repoID, stdinIsTTY(cmd.InOrStdin()), yes)
 }
 
-// deleteRepository is `repo delete`'s actual logic: fetch the title (unless
-// --yes, in which case the prompt — and so the GET needed only to name it —
-// is skipped entirely, mirroring C8's source delete), confirm via
-// confirmDelete, then DELETE.
-//
-// Kept independent of cobra flag parsing and of
-// client.NewFromConfig/config.Load, and takes isTTY as an explicit
-// parameter rather than detecting it itself, so it can be exercised
-// directly against an httptest server with an injected isTTY/yes/stdin
-// combination — including the TTY-accepted and TTY-declined paths, which a
-// full cobra Execute() can never reach in a test (test stdin is never a
-// real *os.File) — see repository_test.go's TestDeleteRepository_* cases.
+// deleteRepository takes isTTY explicitly so tests can reach the TTY paths a cobra Execute() can't.
 func deleteRepository(cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, isTTY, yes bool) error {
-	// Fetching the title first so the prompt names it — skipped entirely
-	// with --yes (the prompt itself is skipped then too), and also skipped
-	// for the non-TTY-without-yes case: confirmDelete refuses that
-	// unconditionally, so checking it here first (with a throwaway prompt
-	// it never uses) means that refusal happens before any request, the
-	// same as every other "fail fast, before touching the network" guard
-	// elsewhere in this package.
+	// Non-TTY without --yes is refused before any request; the title is only fetched for the prompt.
 	title := repoID.String()
 
 	if !yes {
@@ -618,8 +558,6 @@ func deleteRepository(cmd *cobra.Command, apiClient *client.Client, repoID api.R
 	return nil
 }
 
-// --- shared helpers ---
-
 func parseRepositoryID(idArg string) (api.RepositoryId, error) {
 	id, err := uuid.Parse(idArg)
 	if err != nil {
@@ -629,8 +567,6 @@ func parseRepositoryID(idArg string) (api.RepositoryId, error) {
 	return id, nil
 }
 
-// repositoryRow builds a repository's --json Row, covering every field in
-// repositoryJSONFields.
 func repositoryRow(r api.Repository) output.Row {
 	return output.Row{
 		"id":                       r.Id.String(),
@@ -656,8 +592,7 @@ func repositoryRow(r api.Repository) output.Row {
 	}
 }
 
-// intOrNil and boolOrNil are harvest.go's — reused here rather than
-// redeclared (same *int/*bool -> any nil-or-value shape).
+// intOrNil and boolOrNil live in harvest.go.
 
 func int64OrNil(v *int64) any {
 	if v == nil {

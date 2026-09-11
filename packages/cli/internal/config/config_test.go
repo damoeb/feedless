@@ -7,9 +7,7 @@ import (
 	"testing"
 )
 
-// withTempConfigHome points XDG_CONFIG_HOME at a fresh temp directory for
-// the duration of the test, so Load/Save never touch the real
-// ~/.config/feedctl.
+// Keeps Load/Save off the real ~/.config/feedctl.
 func withTempConfigHome(t *testing.T) string {
 	t.Helper()
 

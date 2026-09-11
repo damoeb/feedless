@@ -13,11 +13,7 @@ import (
 	"strings"
 )
 
-// MintAPIToken obtains an API token for the root account identified by email
-// and secretKey: log in over GraphQL (authUser, which answers a session JWT
-// and refuses every non-root account), then create a user secret with that
-// session (createUserSecret, which answers an API JWT). The second is what
-// the web UI hands a user to paste into `feedctl auth login --with-token`.
+// MintAPIToken logs in over GraphQL, then creates a user secret: the API token the web UI hands out.
 func MintAPIToken(ctx context.Context, coreURL, email, secretKey string) (string, error) {
 	var login struct {
 		AuthUser struct {
@@ -59,9 +55,7 @@ func MintAPIToken(ctx context.Context, coreURL, email, secretKey string) (string
 	return secret.CreateUserSecret.Value, nil
 }
 
-// graphqlRequest POSTs one GraphQL operation to coreURL/graphql and decodes
-// its data into out. A GraphQL error is an error, even on HTTP 200. Response
-// bodies can carry tokens, so every error quotes them through Redact.
+// Response bodies can carry tokens, so every error goes through Redact.
 func graphqlRequest(ctx context.Context, coreURL, bearer, query string, variables map[string]any, out any) error {
 	payload, err := json.Marshal(map[string]any{"query": query, "variables": variables})
 	if err != nil {

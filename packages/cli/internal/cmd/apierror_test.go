@@ -9,8 +9,6 @@ import (
 	"github.com/damoeb/feedless/packages/cli/internal/api"
 )
 
-// fakeResponse is a minimal apiResponse for tests that don't need a real
-// generated …Response type.
 type fakeResponse struct {
 	status int
 	body   []byte
@@ -112,8 +110,6 @@ func TestAPIError_RenderError_NoFieldErrors_OnlyPrintsMessage(t *testing.T) {
 		t.Errorf("RenderError() = %q, want %q", got, want)
 	}
 }
-
-// --- C9 fix round 1: server error text must not reach stderr unsanitized ---
 
 func TestAPIError_RenderError_SanitizesMessageAndFieldErrors(t *testing.T) {
 	esc, bel := string(rune(0x1b)), string(rune(0x07))

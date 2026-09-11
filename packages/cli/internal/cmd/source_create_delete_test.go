@@ -9,8 +9,6 @@ import (
 	"testing"
 )
 
-// --- source create ---
-
 func TestSourceCreate_FromFlags(t *testing.T) {
 	var gotPath string
 	var gotBody map[string]any
@@ -190,8 +188,6 @@ func TestSourceCreate_JSONOutput(t *testing.T) {
 		t.Errorf("json = %v, want a flow key", got)
 	}
 }
-
-// --- source delete ---
 
 func TestSourceDelete_Yes_DeletesWithoutPrompt_NoGET(t *testing.T) {
 	var sawGet, sawDelete bool

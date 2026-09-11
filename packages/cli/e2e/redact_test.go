@@ -8,12 +8,9 @@ import (
 	"sync"
 )
 
-// CI keeps test output for a long time, so nothing the tests log or fail
-// with may carry a live credential: every string that can contain output
-// from feedctl, the core or a container goes through Redact first.
+// CI keeps test output for a long time, so everything logged goes through Redact.
 var (
-	// jwtPattern matches anything JWT-shaped (base64url header starting
-	// with {"…, payload, signature) — session tokens, API tokens.
+	// Anything JWT-shaped: session and API tokens.
 	jwtPattern = regexp.MustCompile(`eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*`)
 
 	secretsMu sync.Mutex

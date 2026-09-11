@@ -12,23 +12,10 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// Row is one item's field values, keyed by the name --json accepts for it
-// (e.g. Row{"id": s.Id, "url": s.Url}). Commands build one Row per item
-// (list commands) or a single Row (view commands) to hand to
-// PrintJSONList/PrintJSONObject; the same keys double as the table header
-// text a command chooses for TTY mode.
+// Row maps --json field names to values.
 type Row map[string]any
 
-// AddJSONFlags registers --json and --jq on cmd. fields lists the field
-// names --json accepts for this command, in the order printed when --json
-// is given with no value at all ("--json", or "--json" immediately
-// followed by another flag) — that case never reaches the command's RunE:
-// it's intercepted during flag parsing by JSONFlagErrorFunc (registered
-// once, on the root command, via root.SetFlagErrorFunc — see
-// cmd.NewRootCmd), which turns pflag's resulting error into a *FieldsError
-// built from the fields recorded here. Call AddJSONFlags on every command
-// that renders through this package (list and view alike). It doesn't
-// register --limit — see AddLimitFlag for list commands.
+// AddJSONFlags registers --json and --jq; a bare --json is caught by JSONFlagErrorFunc.
 func AddJSONFlags(cmd *cobra.Command, fields []string) {
 	flags := cmd.Flags()
 
@@ -39,21 +26,9 @@ func AddJSONFlags(cmd *cobra.Command, fields []string) {
 	flags.String("jq", "", "Filter --json output with a jq expression (requires --json)")
 }
 
-// jsonFieldsAnnotation is the pflag.Flag.Annotations key AddJSONFlags
-// stores a command's --json field names under; JSONFlagErrorFunc reads
-// them back to build a FieldsError.
 const jsonFieldsAnnotation = "output.json.fields"
 
-// jsonFieldsValue is --json's pflag.Value: a plain comma-separated field
-// list ("--json a,b" or "--json=a,b"). It deliberately has no NoOptDefVal
-// (see AddJSONFlags), so pflag always consumes exactly one following token
-// as its argument — including one that is itself another flag, e.g.
-// "--json --jq x" would otherwise silently treat "--jq" as a field name.
-// Set rejects any value starting with "-" for exactly that reason: pflag
-// wraps the rejection in a *pflag.InvalidValueError, which
-// JSONFlagErrorFunc recognizes (via errJSONValueLooksLikeFlag) the same way
-// it recognizes a bare, argument-less "--json" at the end of the
-// args (*pflag.ValueRequiredError) — both become the same FieldsError.
+// jsonFieldsValue rejects values starting with "-", so "--json --jq x" isn't read as a field list.
 type jsonFieldsValue struct {
 	fields []string
 }
@@ -77,22 +52,9 @@ func (v *jsonFieldsValue) Set(raw string) error {
 	return nil
 }
 
-// errJSONValueLooksLikeFlag is jsonFieldsValue.Set's sentinel for "the
-// token pflag handed me starts with '-', so this is almost certainly
-// another flag, not a field list" — see jsonFieldsValue's doc comment.
 var errJSONValueLooksLikeFlag = errors.New("looks like another flag, not a --json field list")
 
-// JSONFlagErrorFunc is a cobra FlagErrorFunc — register it once, on the
-// root command, via root.SetFlagErrorFunc(output.JSONFlagErrorFunc) — that
-// turns a bare "--json" into a *FieldsError listing the invoked command's
-// own field names (from the annotation AddJSONFlags recorded), matching
-// `gh <cmd> --json` with no value. It recognizes two shapes of "bare
-// --json", both produced by github.com/spf13/pflag during flag parsing —
-// *pflag.ValueRequiredError (--json is the last argument) and
-// *pflag.InvalidValueError wrapping errJSONValueLooksLikeFlag (--json is
-// immediately followed by another flag, e.g. "--json --jq x") — and passes
-// every other flag error (including --jq's own "needs an argument")
-// through unchanged.
+// JSONFlagErrorFunc turns a bare --json into a *FieldsError listing the command's fields, like gh.
 func JSONFlagErrorFunc(_ *cobra.Command, err error) error {
 	var valueRequired *pflag.ValueRequiredError
 	if errors.As(err, &valueRequired) && valueRequired.GetSpecifiedName() == "json" {
@@ -107,14 +69,10 @@ func JSONFlagErrorFunc(_ *cobra.Command, err error) error {
 	return err
 }
 
-// AddLimitFlag registers --limit on cmd, for list commands only (see
-// Paginate). def is the default limit — the brief specifies 30 for every
-// list command C4/C5 add.
 func AddLimitFlag(cmd *cobra.Command, def int) {
 	cmd.Flags().Int("limit", def, "Maximum number of items to fetch")
 }
 
-// ReadLimitFlag reads back the --limit value AddLimitFlag registered.
 func ReadLimitFlag(cmd *cobra.Command) (int, error) {
 	limit, err := cmd.Flags().GetInt("limit")
 	if err != nil {
@@ -124,20 +82,13 @@ func ReadLimitFlag(cmd *cobra.Command) (int, error) {
 	return limit, nil
 }
 
-// JSONFlags is --json/--jq's parsed state for one command invocation.
-// Requested is false when --json wasn't passed at all — render the normal
-// table. Requested is true for `--json a,b,c` (or `--json=a,b,c`), with
-// Fields holding the parsed, trimmed list — always non-empty, since a bare
-// "--json" never reaches this point (see JSONFlagErrorFunc).
+// Fields is never empty when Requested: a bare --json never gets this far.
 type JSONFlags struct {
 	Requested bool
 	Fields    []string
 	JQ        string
 }
 
-// ReadJSONFlags reads --json/--jq off cmd (call it in RunE, after cobra has
-// parsed flags — and so after JSONFlagErrorFunc has already handled a bare
-// --json). It fails if --jq is given without --json.
 func ReadJSONFlags(cmd *cobra.Command) (JSONFlags, error) {
 	jsonFlag := cmd.Flags().Lookup("json")
 	if jsonFlag == nil {
@@ -165,10 +116,7 @@ func ReadJSONFlags(cmd *cobra.Command) (JSONFlags, error) {
 	return JSONFlags{Requested: true, Fields: val.fields, JQ: jq}, nil
 }
 
-// FieldsError is what a command returns when --json was given with no
-// field list: main's default error rendering prints it as
-// "error: specify one or more …\n  <field>\n  <field>\n" and exits 1,
-// mirroring `gh <cmd> --json` with no value.
+// FieldsError lists the valid --json fields, like `gh <cmd> --json` without a value.
 type FieldsError struct {
 	Fields []string
 }
@@ -184,10 +132,6 @@ func (e *FieldsError) Error() string {
 	return strings.Join(lines, "\n")
 }
 
-// PrintJSONList writes rows as a JSON array to w: every key of every row
-// when fields is empty, or each row narrowed to just the named keys
-// otherwise. jq, when non-empty, filters the (possibly narrowed) array
-// through a github.com/itchyny/gojq expression before printing — see RunJQ.
 func PrintJSONList(w io.Writer, rows []Row, fields []string, jq string) error {
 	narrowed := make([]map[string]any, len(rows))
 	for i, r := range rows {
@@ -197,16 +141,11 @@ func PrintJSONList(w io.Writer, rows []Row, fields []string, jq string) error {
 	return printJSON(w, narrowed, jq)
 }
 
-// PrintJSONObject writes row as a single JSON object to w, narrowed and
-// jq-filtered the same way as PrintJSONList.
 func PrintJSONObject(w io.Writer, row Row, fields []string, jq string) error {
 	return printJSON(w, narrow(row, fields), jq)
 }
 
-// narrow returns a copy of r containing only the keys in fields, or all of
-// r's keys when fields is empty. A field name not present in r is silently
-// dropped (a command should validate field names against its own Fields()
-// list before calling this, e.g. by way of FieldsError).
+// Unknown fields are dropped silently; callers validate them first.
 func narrow(r Row, fields []string) map[string]any {
 	if len(fields) == 0 {
 		out := make(map[string]any, len(r))
@@ -240,9 +179,7 @@ func printJSON(w io.Writer, data any, jq string) error {
 		return nil
 	}
 
-	// gojq operates on plain decoded-JSON values (map[string]interface{},
-	// []interface{}, float64, …), not arbitrary Go structs/maps — round-trip
-	// through encoding/json to get there regardless of what Row held.
+	// gojq needs plain decoded-JSON values, not Go maps or structs.
 	raw, err := json.Marshal(data)
 	if err != nil {
 		return fmt.Errorf("encoding JSON: %w", err)
@@ -256,11 +193,7 @@ func printJSON(w io.Writer, data any, jq string) error {
 	return RunJQ(w, jq, generic)
 }
 
-// RunJQ evaluates expr (github.com/itchyny/gojq syntax) against input (a
-// value produced by encoding/json.Unmarshal into an any — not an arbitrary
-// Go struct) and writes each result gojq yields as its own indented JSON
-// value to w, one per line, matching the jq/gojq CLI tools' own behavior
-// for an expression like `.[] | .id` that yields more than one result.
+// RunJQ prints each result as its own value, like the jq CLI.
 func RunJQ(w io.Writer, expr string, input any) error {
 	query, err := gojq.Parse(expr)
 	if err != nil {

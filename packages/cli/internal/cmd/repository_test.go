@@ -17,8 +17,6 @@ const (
 	testRepoName = "My Repo"
 )
 
-// repositoryJSON builds a minimal Repository JSON body covering every
-// required field of the schema, plus the ones these tests check.
 func repositoryJSON(id, title, product, visibility, cron string, archived bool) string {
 	return `{
 		"id": "` + id + `",
@@ -34,8 +32,6 @@ func repositoryJSON(id, title, product, visibility, cron string, archived bool) 
 		"archived": ` + strconv.FormatBool(archived) + `
 	}`
 }
-
-// --- repo list ---
 
 func TestRepositoryList_PassesFilters_AndRendersTable(t *testing.T) {
 	var gotPath string
@@ -159,8 +155,6 @@ func TestRepositoryList_Limit_Paginates(t *testing.T) {
 	}
 }
 
-// --- repo view ---
-
 func TestRepositoryView_RendersFields(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != http.MethodGet || r.URL.Path != "/api/v1/repositories/"+testRepoID2 {
@@ -194,17 +188,12 @@ func TestRepositoryView_RendersFields(t *testing.T) {
 	}
 }
 
-// --- C9: control-sequence sanitization ---
-
 func TestRepositoryView_MaliciousTitleAndDescription_NoEscapeSequences(t *testing.T) {
 	esc := string(rune(0x1b))
 	maliciousTitle := esc + "[2Jhijacked title"
 	maliciousDescription := "before " + esc + "]0;pwned" + string(rune(0x07)) + " after"
 
-	// repositoryJSON's own title param is spliced in unescaped (fine for
-	// the plain titles every other test uses); this test needs real JSON
-	// escaping (via json.Marshal) to carry raw control bytes as valid JSON,
-	// so the body is built by hand instead.
+	// Built by hand: repositoryJSON doesn't escape, and raw control bytes need json.Marshal.
 	titleJSON, err := json.Marshal(maliciousTitle)
 	if err != nil {
 		t.Fatalf("json.Marshal(title): %v", err)
@@ -290,8 +279,6 @@ func TestRepositoryView_404(t *testing.T) {
 		t.Errorf("error = %v, want it to say not found", err)
 	}
 }
-
-// --- repo create ---
 
 func TestRepositoryCreate_FromFlags(t *testing.T) {
 	var gotBody map[string]any
@@ -394,8 +381,6 @@ func TestRepositoryCreate_MissingProduct_Errors(t *testing.T) {
 	}
 }
 
-// --- repo update (field flags, non-editor) ---
-
 func TestRepositoryUpdate_FieldFlags_NoIfMatch(t *testing.T) {
 	var gotIfMatch string
 	var gotBody map[string]any
@@ -475,9 +460,7 @@ func TestRepositoryUpdate_InvalidID_Errors(t *testing.T) {
 	}
 }
 
-// --- repo delete (cobra wiring: --yes and the non-TTY refusal; the
-// TTY-accepted/declined paths are covered directly against deleteRepository
-// below, since a full cobra Execute()'s stdin is never a real *os.File) ---
+// The TTY paths are tested directly against deleteRepository: cobra's test stdin is never a real *os.File.
 
 func TestRepositoryDelete_Yes_DeletesWithoutPrompt_NoGET(t *testing.T) {
 	var sawGet, sawDelete bool

@@ -12,15 +12,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// These tests exercise runEditorLoop's own generic behavior directly,
-// against a minimal fake editorLoopConfig — no HTTP, no source/repository
-// specifics — proving the generalized loop itself (temp-file lifecycle,
-// unchanged/empty cancellation, invalid-JSON reopen, a resource's own
-// "reopen" outcome, a terminal attempt error) works independently of any
-// one consumer. source_editor_test.go and repository_editor_test.go cover
-// the same branches again through each resource-specific wrapper
-// (runFlowEditor / runRepositoryEditor), proving the wiring, not the loop
-// itself, which is why these tests stay deliberately generic.
+// These cover runEditorLoop itself; the per-resource editor tests cover the wiring.
 
 func newLoopTestCmd() (*cobra.Command, *bytes.Buffer, *bytes.Buffer) {
 	c := &cobra.Command{}
@@ -167,8 +159,7 @@ func TestRunEditorLoop_InvalidJSON_ReopenedWithComment_ThenCancelsIfUnchanged(t 
 			return os.WriteFile(path, []byte("{ not valid"), 0o600)
 		}
 
-		// Second call: leave the reopened file untouched — must cancel,
-		// not reopen a third time.
+		// Second call: leave the reopened file untouched; this must cancel.
 		return nil
 	}
 
@@ -239,8 +230,7 @@ func TestRunEditorLoop_AttemptReopen_RewritesFileAndReopensEditor(t *testing.T) 
 			sawRewrittenBody = true
 		}
 
-		// Save a further change so this isn't a no-op against the new
-		// baseline (which is now `{"n":3}`).
+		// A further change, so this isn't a no-op against the new baseline.
 		return os.WriteFile(path, []byte(`{"n":4}`), 0o600)
 	}
 
