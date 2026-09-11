@@ -44,13 +44,15 @@ class HttpApiJwtFilter(
 
   override fun shouldNotFilter(request: HttpServletRequest): Boolean {
     // No public auth issuance path on the HTTP API: every /api/v1/** request requires a UserSecret Bearer JWT,
-    // except GET /api/v1/status — the one public operation (StatusHttpController). It is never authenticated,
-    // so a missing, expired or invalid token all get its 200 instead of this filter's 401.
+    // except GET (and HEAD, which Spring MVC serves for it) on exactly /api/v1/status — the one public
+    // operation (StatusHttpController). It is never authenticated, so a missing, expired or invalid token
+    // all get its 200 instead of this filter's 401.
     return !request.requestURI.startsWith("/api/v1/") || isPublicStatusRequest(request)
   }
 
   private fun isPublicStatusRequest(request: HttpServletRequest): Boolean =
-    request.method == "GET" && request.requestURI == StatusHttpController.PUBLIC_STATUS_PATH
+    (request.method == "GET" || request.method == "HEAD") &&
+      request.requestURI == StatusHttpController.PUBLIC_STATUS_PATH
 
   override fun doFilterInternal(
     request: HttpServletRequest,

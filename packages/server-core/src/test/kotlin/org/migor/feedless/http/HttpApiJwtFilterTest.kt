@@ -140,6 +140,18 @@ class HttpApiJwtFilterTest {
   }
 
   @Test
+  fun `skips HEAD status without a token`() {
+    val request = MockHttpServletRequest("HEAD", "/api/v1/status")
+    val response = MockHttpServletResponse()
+    val chain = mock(FilterChain::class.java)
+
+    filter.doFilter(request, response, chain)
+
+    assertThat(response.status).isEqualTo(HttpStatus.OK.value())
+    verify(chain).doFilter(request, response)
+  }
+
+  @Test
   fun `returns 401 for a non-GET status request without a token`() {
     val request = MockHttpServletRequest("POST", "/api/v1/status")
     val response = MockHttpServletResponse()

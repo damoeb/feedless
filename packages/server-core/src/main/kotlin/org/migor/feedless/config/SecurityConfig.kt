@@ -140,8 +140,10 @@ class SecurityConfig {
       .httpBasic(Customizer.withDefaults())
       .authorizeHttpRequests {
         it.requestMatchers(*(whitelistedUrls())).permitAll()
-        // The one public /api/v1 operation, GET only; HttpApiJwtFilter skips the same request.
+        // The one public /api/v1 operation: GET, and HEAD (Spring MVC serves it for GET mappings), on
+        // exactly this path; HttpApiJwtFilter skips the same requests.
         it.requestMatchers(HttpMethod.GET, StatusHttpController.PUBLIC_STATUS_PATH).permitAll()
+        it.requestMatchers(HttpMethod.HEAD, StatusHttpController.PUBLIC_STATUS_PATH).permitAll()
         it.requestMatchers("/api/v1/**").authenticated()
         it.requestMatchers("/actuator/**").hasAnyRole(metricRole)
         it.requestMatchers("/actuator/prometheus").hasAnyRole(metricRole)
@@ -150,7 +152,7 @@ class SecurityConfig {
   }
 
   private fun whitelistedUrls(): Array<String> {
-    // No public auth issuance path — every /api/v1/** requires UserSecret Bearer, except GET /api/v1/status,
+    // No public auth issuance path — every /api/v1/** requires UserSecret Bearer, except GET/HEAD /api/v1/status,
     // which filterChain permits on its own (method-scoped, so it is not in this list).
     // Do not add /api/v1/auth, /api/v1/user or any other /api/v1 path to this whitelist.
     val urls = mutableListOf(

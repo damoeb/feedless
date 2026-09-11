@@ -230,6 +230,46 @@ class SecurityConfigIntTest {
     assertThat(response.statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
   }
 
+  /** Uptime monitors often probe with HEAD, which Spring MVC serves for the GET mapping. */
+  @Test
+  fun whenSendingHeadToStatusWithoutAuth_ThenOk() {
+    val response = sendRaw("HEAD", "/api/v1/status")
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value())
+    assertThat(response.headers().firstValue("X-Feedless-Version")).isPresent()
+  }
+
+  /**
+   * Pins the exact-path, GET/HEAD-only match both gates (SecurityConfig's permitAll and
+   * HttpApiJwtFilter's skip) rely on: no neighbour of /api/v1/status may answer the status. Sent raw
+   * (JDK client, no re-encoding), so the firewall may answer 400 instead of 401 — either is fine.
+   */
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "GET,/api/v1/status/",
+      "GET,/api/v1/status/x",
+      "GET,/api/v1/status;x=y",
+      "GET,/api/v1/st%61tus",
+      "POST,/api/v1/status",
+      "PUT,/api/v1/status",
+      "DELETE,/api/v1/status",
+    ]
+  )
+  fun whenRequestingAStatusVariantWithoutAuth_ThenNotTheStatus(method: String, path: String) {
+    val response = sendRaw(method, path)
+
+    assertThat(response.statusCode()).describedAs("$method $path").isNotEqualTo(HttpStatus.OK.value())
+    assertThat(response.body()).describedAs("$method $path").doesNotContain("\"agents\"").doesNotContain("\"build\"")
+  }
+
+  private fun sendRaw(method: String, path: String): java.net.http.HttpResponse<String> {
+    val request = java.net.http.HttpRequest.newBuilder(java.net.URI("$baseEndpoint$path"))
+      .method(method, java.net.http.HttpRequest.BodyPublishers.noBody())
+      .build()
+    return java.net.http.HttpClient.newHttpClient().send(request, java.net.http.HttpResponse.BodyHandlers.ofString())
+  }
+
   @Test
   fun whenCallingNonApiV1Url_ThenVersionHeaderAbsent() {
     val restTemplate = TestRestTemplate()
