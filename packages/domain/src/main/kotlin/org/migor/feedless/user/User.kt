@@ -13,7 +13,7 @@ data class User(
   val validatedEmailAt: LocalDateTime? = null,
   val admin: Boolean = false,
   val anonymous: Boolean = false,
-  val lastLogin: LocalDateTime,
+  val lastLogin: LocalDateTime? = null,
   val karma: Int = 0,
   val spammingSubmissions: Boolean = false,
   val spammingVotes: Boolean = false,

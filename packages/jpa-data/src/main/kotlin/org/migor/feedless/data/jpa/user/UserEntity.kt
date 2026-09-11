@@ -70,7 +70,7 @@ open class UserEntity : EntityWithUUID() {
   open var anonymous: Boolean = false
 
   @Column(name = "last_login")
-  open var lastLogin: LocalDateTime = LocalDateTime.now()
+  open var lastLogin: LocalDateTime? = null
 
   @Column(nullable = false, name = "karma")
   open var karma: Int = 0
