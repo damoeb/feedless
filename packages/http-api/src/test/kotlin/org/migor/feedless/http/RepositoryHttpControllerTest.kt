@@ -164,6 +164,28 @@ class RepositoryHttpControllerTest {
   }
 
   @Test
+  fun `getRepository keeps the same ETag when only server-owned fields change`() = runTest {
+    // A scheduled harvest tick rewrites lastUpdatedAt and nextUpdateAt — none of that is
+    // something a caller edited, so it must not invalidate an ETag a
+    // `feedctl repo update --editor` session is holding onto.
+    val private = access.givenRepository()
+
+    val first = mockMvc.getAs(access.owner, url(private))
+    assertStatus(first, 200)
+    val etag = first.response.getHeader("ETag")
+
+    whenever(repositoryUseCase.findById(eq(private.id))).thenReturn(
+      private.copy(
+        lastUpdatedAt = java.time.LocalDateTime.now(),
+        triggerScheduledNextAt = java.time.LocalDateTime.now().plusHours(1),
+      ),
+    )
+    val second = mockMvc.getAs(access.owner, url(private))
+    assertStatus(second, 200)
+    assert(second.response.getHeader("ETag") == etag) { "expected $etag, got ${second.response.getHeader("ETag")}" }
+  }
+
+  @Test
   // The use case is mocked: this proves the guard lets both through, not that server-core
   // accepts the write (it does not yet for a group member — see the http-api README).
   fun `updateRepository lets the owner and a group member through the guard to the use case`() = runTest {

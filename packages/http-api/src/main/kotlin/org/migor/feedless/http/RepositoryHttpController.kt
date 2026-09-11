@@ -2,6 +2,7 @@ package org.migor.feedless.http
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.capability.RequestContext
@@ -13,6 +14,7 @@ import org.migor.feedless.http.api.model.Visibility
 import org.migor.feedless.http.mapper.HttpRepositoryMapper
 import org.migor.feedless.repository.FulltextQueryFilter
 import org.migor.feedless.repository.RepositoriesFilter
+import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCasePort
 import org.migor.feedless.repository.VerticalFilter
@@ -81,7 +83,7 @@ class RepositoryHttpController(
     val repo = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     val userId = currentUserId()
     val httpRepo = mapper.toHttp(repo, userId != null && repo.ownerId == userId)
-    return ResponseEntity.ok().eTag(etagCalculator.compute(httpRepo)).body(httpRepo)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(repo))).body(httpRepo)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -96,8 +98,7 @@ class RepositoryHttpController(
     // Access guard first: a denied or missing repository answers 404, never 412 — a stale
     // If-Match must never leak that a repository exists.
     val current = accessGuard.requireRepository(id, RepositoryAccess.write)
-    val currentHttp = mapper.toHttp(current, userId != null && current.ownerId == userId)
-    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(currentHttp)) {
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(current))) {
       throw PreconditionFailedException("repository ${id.uuid} was modified since the ETag in If-Match")
     }
     // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
@@ -105,7 +106,7 @@ class RepositoryHttpController(
     repositoryUseCase.updateRepository(id, mapper.toDomainUpdate(repositoryUpdate))
     val updated = accessGuard.requireRepository(id, RepositoryAccess.write)
     val httpUpdated = mapper.toHttp(updated, userId != null && updated.ownerId == userId)
-    return ResponseEntity.ok().eTag(etagCalculator.compute(httpUpdated)).body(httpUpdated)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(updated))).body(httpUpdated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -134,4 +135,35 @@ class RepositoryHttpController(
       text = q?.let { FulltextQueryFilter(query = it) },
     )
   }
+
+  /**
+   * The fields a client can actually change via [RepositoryUpdate] — title, description,
+   * refreshCron, visibility, retention, and pushNotificationsMuted (the domain field is named
+   * pushNotificationsEnabled; PATCH's pushNotificationsMuted writes it directly, see
+   * [HttpRepositoryMapper]). Excludes lastUpdatedAt and nextUpdateAt: every scheduled harvest
+   * tick rewrites those, so hashing them made a harvest landing between a CLI GET and PATCH
+   * answer a spurious 412 even though nobody edited the repository. Built from the domain
+   * entity rather than the HTTP response so it can include retention (not exposed on
+   * Repository's response body) and never silently grows with a field added to that response
+   * later.
+   */
+  private fun editableFields(repo: Repository) = RepositoryEditableFields(
+    title = repo.title,
+    description = repo.description,
+    refreshCron = repo.sourcesSyncCron,
+    visibility = repo.visibility,
+    pushNotificationsMuted = repo.pushNotificationsEnabled,
+    retentionMaxCapacity = repo.retentionMaxCapacity,
+    retentionMaxAgeDays = repo.retentionMaxAgeDays,
+  )
+
+  private data class RepositoryEditableFields(
+    val title: String,
+    val description: String,
+    val refreshCron: String,
+    val visibility: EntityVisibility,
+    val pushNotificationsMuted: Boolean,
+    val retentionMaxCapacity: Int?,
+    val retentionMaxAgeDays: Int?,
+  )
 }

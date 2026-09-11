@@ -65,7 +65,7 @@ class RecordHttpController(
   ): ResponseEntity<HttpRecord> {
     val document = requireRecord(RepositoryId(repositoryId), DocumentId(recordId), RepositoryAccess.read)
     val httpRecord = mapper.toHttp(document)
-    return ResponseEntity.ok().eTag(etagCalculator.compute(httpRecord)).body(httpRecord)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(httpRecord))).body(httpRecord)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -91,14 +91,14 @@ class RecordHttpController(
     // Access guard (and the record lookup) first: a denied or missing repository/record answers
     // 404, never 412 — a stale If-Match must never leak that a record exists.
     val current = requireRecord(RepositoryId(repositoryId), id, RepositoryAccess.write)
-    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(mapper.toHttp(current))) {
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(mapper.toHttp(current)))) {
       throw PreconditionFailedException("record ${id.uuid} was modified since the ETag in If-Match")
     }
     // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
     // check and both apply — acceptable for slice 1 per the plan; no locking added here.
     val updated = documentUseCase.updateDocument(mapper.toDomainUpdate(recordUpdate), id)
     val httpUpdated = mapper.toHttp(updated)
-    return ResponseEntity.ok().eTag(etagCalculator.compute(httpUpdated)).body(httpUpdated)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(httpUpdated))).body(httpUpdated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -137,4 +137,23 @@ class RecordHttpController(
   }
 
   private fun recordNotFound(recordId: DocumentId) = NotFoundException("record ${recordId.uuid} not found")
+
+  /**
+   * The fields a client can actually change via [RecordUpdate] — title, text, url, tags.
+   * Excludes updatedAt, which the server can rewrite independent of a user edit; hashing it
+   * made an unrelated server-side change answer a spurious 412.
+   */
+  private fun editableFields(record: HttpRecord) = RecordEditableFields(
+    title = record.title,
+    text = record.text,
+    url = record.url,
+    tags = record.tags,
+  )
+
+  private data class RecordEditableFields(
+    val title: String?,
+    val text: String?,
+    val url: String,
+    val tags: List<String>?,
+  )
 }

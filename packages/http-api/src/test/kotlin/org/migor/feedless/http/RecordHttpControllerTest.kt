@@ -133,6 +133,25 @@ class RecordHttpControllerTest {
   }
 
   @Test
+  fun `getRecord keeps the same ETag when only server-owned fields change`() = runTest {
+    // updatedAt is rewritten by the server independent of a user edit — it must not invalidate
+    // an ETag a `feedctl record update --editor` session is holding onto.
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+
+    val first = mockMvc.getAs(access.owner, recordUrl(repo, record.id))
+    assertStatus(first, 200)
+    val etag = first.response.getHeader("ETag")
+
+    whenever(documentGuard.requireRead(eq(record.id))).thenReturn(
+      record.copy(updatedAt = java.time.LocalDateTime.now().plusDays(1)),
+    )
+    val second = mockMvc.getAs(access.owner, recordUrl(repo, record.id))
+    assertStatus(second, 200)
+    assert(second.response.getHeader("ETag") == etag) { "expected $etag, got ${second.response.getHeader("ETag")}" }
+  }
+
+  @Test
   fun `a missing record answers get, update and delete exactly like a record of another repository`() = runTest {
     val repo = access.givenRepository()
     val missing = givenMissingRecord()

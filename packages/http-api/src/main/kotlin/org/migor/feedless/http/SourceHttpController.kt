@@ -5,6 +5,8 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.http.api.SourcesApi
+import org.migor.feedless.http.api.model.GeoPoint
+import org.migor.feedless.http.api.model.ScrapeFlow
 import org.migor.feedless.http.api.model.SourceCreate
 import org.migor.feedless.http.api.model.SourceListResponse
 import org.migor.feedless.http.api.model.SourceUpdate
@@ -101,7 +103,7 @@ class SourceHttpController(
   ): ResponseEntity<HttpSource> {
     val source = accessGuard.requireSource(RepositoryId(repositoryId), SourceId(sourceId), RepositoryAccess.read)
     val httpSource = mapper.toHttp(source)
-    return ResponseEntity.ok().eTag(etagCalculator.compute(httpSource)).body(httpSource)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(httpSource))).body(httpSource)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -117,14 +119,14 @@ class SourceHttpController(
     // Access guard first: a denied or missing repository/source answers 404, never 412 — a
     // stale If-Match must never leak that a source exists.
     val current = accessGuard.requireSource(repoId, id, RepositoryAccess.write)
-    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(mapper.toHttp(current))) {
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(mapper.toHttp(current)))) {
       throw PreconditionFailedException("source ${id.uuid} was modified since the ETag in If-Match")
     }
     // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
     // check and both apply — acceptable for slice 1 per the plan; no locking added here.
     sourceUseCase.updateSources(repoId, listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)))
     val updated = mapper.toHttp(accessGuard.requireSource(repoId, id, RepositoryAccess.write))
-    return ResponseEntity.ok().eTag(etagCalculator.compute(updated)).body(updated)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(updated))).body(updated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -146,4 +148,26 @@ class SourceHttpController(
     } else {
       SourcesFilter(disabled = disabled, like = like, minErrorsInSuccession = minErrorsInSuccession)
     }
+
+  /**
+   * The fields a client can actually change via [SourceUpdate] — title, tags, disabled, latLng,
+   * flow. Excludes lastRefreshedAt, lastRecordsRetrieved, errorsInSuccession, and
+   * lastErrorMessage: every harvest tick rewrites those, so hashing them made a harvest landing
+   * between a CLI GET and PATCH answer a spurious 412 even though nobody edited the source.
+   */
+  private fun editableFields(source: HttpSource) = SourceEditableFields(
+    title = source.title,
+    tags = source.tags,
+    disabled = source.disabled,
+    latLng = source.latLng,
+    flow = source.flow,
+  )
+
+  private data class SourceEditableFields(
+    val title: String,
+    val tags: List<String>?,
+    val disabled: Boolean?,
+    val latLng: GeoPoint?,
+    val flow: ScrapeFlow,
+  )
 }
