@@ -33,6 +33,11 @@ const (
 	postgisImage = "postgis/postgis:17-3.5-alpine"
 	fixtureImage = "nginx:alpine"
 
+	// coreAPIGatewayURL is the core's configured public URL
+	// (APP_API_GATEWAY_URL), which it templates into /cli/install.sh. It is
+	// not CoreURL: the core's port is published on a random host port.
+	coreAPIGatewayURL = "http://localhost:8080"
+
 	coreStartupTimeout  = 5 * time.Minute
 	agentConnectTimeout = 2 * time.Minute
 	logTailLines        = 400
@@ -144,7 +149,7 @@ func StartStack(ctx context.Context, t *testing.T) *Stack {
 			"APP_ROOT_SECRET_KEY":     rootSecretKey,
 			"APP_JWT_SECRET":          jwtSecret,
 			"APP_ACTUATOR_PASSWORD":   actuatorPassword,
-			"APP_API_GATEWAY_URL":     "http://localhost:8080",
+			"APP_API_GATEWAY_URL":     coreAPIGatewayURL,
 			"APP_HOST_URL":            "http://localhost:4200",
 			"APP_WHITELISTED_HOSTS":   "core",
 			"APP_MAIL_SENDER":         "noreply@feedless.test",

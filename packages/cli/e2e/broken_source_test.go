@@ -87,6 +87,14 @@ func TestBrokenSourceFixLoop(t *testing.T) {
 
 	waitForConnectedAgent(ctx, t, cli, stack.CoreURL)
 
+	// A subtest, so a failure is reported by name without ending the
+	// scenario, and a host without a shipped build skips only its binary.
+	t.Log("step 0b: the core serves the feedctl downloads under /cli/** without a token")
+
+	t.Run("cli downloads", func(t *testing.T) {
+		checkCLIDownloads(ctx, t, stack.CoreURL, coreAPIGatewayURL)
+	})
+
 	login := cli.MustRun(ctx, 0, token, "auth", "login", "--url", stack.CoreURL, "--with-token")
 	if !strings.Contains(login.Stderr, "plain text") {
 		t.Fatalf("want the no-keyring file fallback warning, got:\n%s", login)
