@@ -167,3 +167,19 @@ Dependencies: T9 and T10 before C6/C7; C8 independent of both. Same conventions 
 - [ ] **C6 `repo list|view|create|update|delete`.** `list` with `--product`, `--visibility`, `--search`; `view <id>`; `create` from `--title`, `--product`, `--cron`, `--visibility` or `--input <file|->`; `update <id>` with field flags or `--editor` (the C4 editor loop, generalised over the resource, with `If-Match`/`412`); `delete <id>` asking for confirmation on a TTY unless `--yes`, refusing without `--yes` when not a TTY.
 - [ ] **C7 `record list|view|create|update|delete`.** All under `-R`; `create` from `--title`, `--url`, `--text`, `--tags` or `--input`; `update <id>` with field flags or `--editor`; `delete <id>…` accepts several ids and deletes them one request each, reporting each result; same `--yes` rule as C6.
 - [ ] **C8 `source create|delete`.** `create -R` from `--title`, `--tags`, `--flow <file|->` or `--input <file|->` (a full `SourceCreate`); `delete <id> -R` with the `--yes` rule.
+
+## Release notes (slices 1 and 2)
+
+- Every login path (SSO, magic mail, `authUser`) and every new token (`createUserSecret`) now requires the user to own a group; a user who owns none can no longer log in or create a token.
+- Session and API tokens carry the user's group, and every request with a cookie or token re-checks that the user still owns it (one extra database lookup per request).
+- Tokens issued before this change carry no group: writes made with them answer `403 NO_ACTING_GROUP`, and they must be recreated.
+- The `Authorization` header now takes precedence over the `TOKEN` cookie on GraphQL too, as it already did on `/api/v1`.
+- GraphQL `Repository.sources` honours `order`, and its default order changed (was per page by `lastRecordsRetrieved`, now `createdAt desc`).
+- `/cli/**` downloads (`feedctl` binaries, `SHA256SUMS`, `install.sh`) are public.
+- The `server-core` image grows by about 30 MB (the four `feedctl` binaries).
+- Migrations V86–V89 take short locks on `t_harvest`.
+- During a rolling deploy, the old pods' cleanup job can delete queued, running and dry-run harvests: deploy the scheduler last, or accept the loss.
+- `/api/v1` was not functional on a real container before this branch (401 on every suspend endpoint), so no existing client depends on its previous behaviour.
+- `authUser` is root-only again: any other account gets `account is not root`.
+- Deleting a group, or removing an owner from one, is refused with `409 CONFLICT` when it would leave a member without an owned group or the group without an owner; deleting a group that still owns repositories is refused the same way, and a delete is now one transaction.
+- A `500` from `/api/v1` answers the fixed message `unexpected error` with its `corrId`; the internal error text is only logged.
