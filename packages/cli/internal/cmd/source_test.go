@@ -105,6 +105,37 @@ func TestSourceList_Errored_WithValue(t *testing.T) {
 	}
 }
 
+// --- C9: control-sequence sanitization ---
+
+func TestSourceList_MaliciousLastErrorMessage_TableCellHasNoEscapeSequences(t *testing.T) {
+	esc := string(rune(0x1b))
+	maliciousError := esc + "[2J" + esc + "]0;pwned" + string(rune(0x07)) + "boom"
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"items":[` + sourceJSON(testSourceID, testRepoID, "Source", 1, maliciousError) + `],"hasMore":false}`))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("source", "list", "-R", testRepoID)
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	out := stdout.String()
+	if strings.ContainsRune(out, 0x1b) {
+		t.Errorf("stdout = %q, want no ESC (0x1b) in the rendered table", out)
+	}
+	if strings.ContainsRune(out, 0x07) {
+		t.Errorf("stdout = %q, want no BEL (0x07) in the rendered table", out)
+	}
+	if !strings.Contains(out, "boom") {
+		t.Errorf("stdout = %q, want the sanitized error text preserved", out)
+	}
+}
+
 func TestSourceList_Errored_LessThanOne_Errors(t *testing.T) {
 	withTempConfigHome(t)
 
@@ -218,6 +249,57 @@ func TestSourceView_RendersActionListAndFields(t *testing.T) {
 		if !strings.Contains(out, want) {
 			t.Errorf("stdout = %q, want it to contain %q", out, want)
 		}
+	}
+}
+
+func TestSourceView_MaliciousTitleAndLastError_NoEscapeSequences(t *testing.T) {
+	esc := string(rune(0x1b))
+	maliciousTitle := esc + "[2Jhijacked title"
+	maliciousError := "before " + esc + "]0;pwned" + string(rune(0x07)) + " after"
+
+	// sourceJSON's own title param is spliced in unescaped (fine for the
+	// plain titles every other test uses); this test's title needs real
+	// JSON escaping (via json.Marshal) to carry raw control bytes as valid
+	// JSON, so the body is built by hand instead, reusing sourceJSON's own
+	// shape (including validFlowJSON, this file's fixed flow constant).
+	titleJSON, err := json.Marshal(maliciousTitle)
+	if err != nil {
+		t.Fatalf("json.Marshal(title): %v", err)
+	}
+
+	errJSON, err := json.Marshal(maliciousError)
+	if err != nil {
+		t.Fatalf("json.Marshal(lastError): %v", err)
+	}
+
+	body := `{"id":"` + testSourceID + `","repositoryId":"` + testRepoID + `","title":` + string(titleJSON) +
+		`,"errorsInSuccession":1,"lastErrorMessage":` + string(errJSON) + `,"flow":` + validFlowJSON + `}`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(body))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("source", "view", testSourceID, "-R", testRepoID)
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	out := stdout.String()
+	if strings.ContainsRune(out, 0x1b) {
+		t.Errorf("stdout = %q, want no ESC (0x1b) anywhere in the view", out)
+	}
+	if strings.ContainsRune(out, 0x07) {
+		t.Errorf("stdout = %q, want no BEL (0x07) anywhere in the view", out)
+	}
+	if !strings.Contains(out, "Title: hijacked title") {
+		t.Errorf("stdout = %q, want the sanitized title", out)
+	}
+	if !strings.Contains(out, "before") || !strings.Contains(out, "after") {
+		t.Errorf("stdout = %q, want the text around the stripped OSC sequence preserved", out)
 	}
 }
 

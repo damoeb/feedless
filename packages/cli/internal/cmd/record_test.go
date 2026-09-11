@@ -217,6 +217,113 @@ func TestRecordView_JSON_PrintsRecord_IncludingTags(t *testing.T) {
 	}
 }
 
+// --- C9: control-sequence sanitization ---
+
+// maliciousRecordJSON builds a Record JSON body whose title and text embed
+// a CSI clear-screen (ESC [ 2 J) and an OSC 52 clipboard-write
+// (ESC ] 5 2 ; c ; <base64> BEL) -- the exact scenario the task brief's
+// verification section calls out. Built via json.Marshal (not string
+// concatenation) so the raw control bytes end up correctly JSON-escaped on
+// the wire, exactly as a real server response would encode them.
+func maliciousRecordJSON(id string) string {
+	esc, bel := string(rune(0x1b)), string(rune(0x07))
+
+	body := map[string]any{
+		"id":          id,
+		"url":         "https://example.com/a",
+		"title":       esc + "[2Jclear-screen title",
+		"text":        "before " + esc + "]52;c;ZXZpbA==" + bel + " after",
+		"tags":        []string{},
+		"createdAt":   "2024-01-01T00:00:00Z",
+		"publishedAt": "2024-01-02T00:00:00Z",
+		"updatedAt":   "2024-01-03T00:00:00Z",
+	}
+
+	b, err := json.Marshal(body)
+	if err != nil {
+		panic(err) // unreachable: body is a plain map of strings/slices
+	}
+
+	return string(b)
+}
+
+func TestRecordList_MaliciousTitle_TableCellHasNoEscapeSequences(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"items":[` + maliciousRecordJSON(testRecordID) + `],"hasMore":false}`))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("record", "list", "-R", testRepoID)
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	out := stdout.String()
+	if strings.ContainsRune(out, 0x1b) {
+		t.Errorf("stdout = %q, want no ESC (0x1b) in the rendered table", out)
+	}
+	if !strings.Contains(out, "clear-screen title") {
+		t.Errorf("stdout = %q, want the sanitized title text preserved", out)
+	}
+}
+
+func TestRecordView_MaliciousTitleAndText_NoEscapeSequences(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(maliciousRecordJSON(testRecordID)))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("record", "view", testRecordID, "-R", testRepoID)
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	out := stdout.String()
+	if strings.ContainsRune(out, 0x1b) {
+		t.Errorf("stdout = %q, want no ESC (0x1b) anywhere in the view", out)
+	}
+	if strings.ContainsRune(out, 0x07) {
+		t.Errorf("stdout = %q, want no BEL (0x07) anywhere in the view", out)
+	}
+	if !strings.Contains(out, "Title: clear-screen title") {
+		t.Errorf("stdout = %q, want the sanitized title", out)
+	}
+	if !strings.Contains(out, "before") || !strings.Contains(out, "after") {
+		t.Errorf("stdout = %q, want the text around the stripped OSC 52 sequence preserved", out)
+	}
+}
+
+func TestRecordView_JSON_PreservesRawControlSequences(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(maliciousRecordJSON(testRecordID)))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("record", "view", testRecordID, "-R", testRepoID, "--json=title,text")
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	var row map[string]any
+	if err := json.Unmarshal(stdout.Bytes(), &row); err != nil {
+		t.Fatalf("stdout isn't valid JSON: %v (%s)", err, stdout.String())
+	}
+
+	title, _ := row["title"].(string)
+	if !strings.ContainsRune(title, 0x1b) {
+		t.Errorf("--json title = %q, want the raw ESC byte preserved (machine-readable output must be byte-exact)", title)
+	}
+}
+
 func TestRecordView_404(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

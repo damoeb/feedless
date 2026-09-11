@@ -86,9 +86,15 @@ func NewTablePrinter(w io.Writer, isTTY bool, width int) *TablePrinter {
 	}
 }
 
-// AddField adds one cell to the row currently being built.
+// AddField adds one cell to the row currently being built. text is passed
+// through SafeCell first — every table cell is sanitized this way,
+// regardless of isTTY (TTY-aligned rendering and piped TSV alike), so a
+// malicious title, url, or error message can never inject a control
+// sequence through a table; colour (WithColor) is applied later, at
+// render time, to the already-sanitized text, so it's never itself
+// stripped.
 func (t *TablePrinter) AddField(text string, opts ...FieldOption) {
-	f := field{text: text}
+	f := field{text: SafeCell(text)}
 	for _, opt := range opts {
 		opt(&f)
 	}

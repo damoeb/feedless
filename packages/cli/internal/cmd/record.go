@@ -214,7 +214,7 @@ func renderRecordView(w io.Writer, r api.Record) error {
 	}
 
 	for _, f := range fields {
-		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, f.value); err != nil {
+		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, output.SafeText(f.value)); err != nil {
 			return fmt.Errorf("writing record view: %w", err)
 		}
 	}
@@ -223,7 +223,7 @@ func renderRecordView(w io.Writer, r api.Record) error {
 		return fmt.Errorf("writing record view: %w", err)
 	}
 
-	if _, err := fmt.Fprintln(w, stringOrDash(r.Text)); err != nil {
+	if _, err := fmt.Fprintln(w, output.SafeText(stringOrDash(r.Text))); err != nil {
 		return fmt.Errorf("writing record view: %w", err)
 	}
 

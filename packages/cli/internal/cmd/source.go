@@ -303,7 +303,7 @@ func renderSourceView(w io.Writer, s api.Source) error {
 	}
 
 	for _, f := range fields {
-		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, f.value); err != nil {
+		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, output.SafeText(f.value)); err != nil {
 			return fmt.Errorf("writing source view: %w", err)
 		}
 	}
@@ -323,7 +323,7 @@ func renderSourceView(w io.Writer, s api.Source) error {
 	}
 
 	for _, a := range actions {
-		if _, err := fmt.Fprintf(w, "  %s\n", a); err != nil {
+		if _, err := fmt.Fprintf(w, "  %s\n", output.SafeText(a)); err != nil {
 			return fmt.Errorf("writing source view: %w", err)
 		}
 	}
@@ -683,7 +683,7 @@ func deleteSource(cmd *cobra.Command, apiClient *client.Client, repoID api.Repos
 			return apiErr
 		}
 
-		title = resp.JSON200.Title
+		title = output.SafeText(resp.JSON200.Title)
 	}
 
 	prompt := fmt.Sprintf("Delete source %s (%s)?", title, sourceID)

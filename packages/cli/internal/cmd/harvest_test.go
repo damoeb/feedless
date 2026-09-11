@@ -214,6 +214,62 @@ func TestHarvestView_Log_PrintsOnlyLogText_WithTextPlainAccept(t *testing.T) {
 	}
 }
 
+// --- C9: control-sequence sanitization ---
+
+// maliciousLog is a harvest log body with a CSI clear-screen (ESC [ 2 J)
+// and an OSC 0 terminal-title write (ESC ] 0 ; ... BEL) mixed into
+// otherwise ordinary log lines.
+func maliciousLog() string {
+	esc, bel := string(rune(0x1b)), string(rune(0x07))
+
+	return "line one\n" + esc + "[2J" + esc + "]0;pwned" + bel + "line two\n"
+}
+
+func TestHarvestView_Log_Piped_KeepsRawControlSequences(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/plain")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(maliciousLog()))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	// runCmd's stdout is a *bytes.Buffer, never a terminal — this exercises
+	// exactly the non-TTY branch `harvest view --log > file` relies on to
+	// save the server's exact bytes.
+	stdout, stderr, err := runCmd("harvest", "view", testHarvestID, "-R", testRepoID, "-S", testSourceID, "--log")
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	if stdout.String() != maliciousLog() {
+		t.Errorf("stdout = %q, want the raw log body byte-for-byte (piped output must stay byte-exact)", stdout.String())
+	}
+}
+
+func TestSanitizeHarvestLog_NonTTY_ReturnsRawBytes(t *testing.T) {
+	in := []byte(maliciousLog())
+
+	got := sanitizeHarvestLog(in, false)
+	if string(got) != string(in) {
+		t.Errorf("sanitizeHarvestLog(_, false) = %q, want the input unchanged", got)
+	}
+}
+
+func TestSanitizeHarvestLog_TTY_StripsControlSequences(t *testing.T) {
+	got := sanitizeHarvestLog([]byte(maliciousLog()), true)
+
+	if strings.ContainsRune(string(got), 0x1b) {
+		t.Errorf("sanitizeHarvestLog(_, true) = %q, want no ESC (0x1b)", got)
+	}
+	if strings.ContainsRune(string(got), 0x07) {
+		t.Errorf("sanitizeHarvestLog(_, true) = %q, want no BEL (0x07)", got)
+	}
+	if !strings.Contains(string(got), "line one") || !strings.Contains(string(got), "line two") {
+		t.Errorf("sanitizeHarvestLog(_, true) = %q, want the surrounding log text preserved", got)
+	}
+}
+
 func TestHarvestView_JSON_PrintsHarvest(t *testing.T) {
 	okFalse := "false"
 

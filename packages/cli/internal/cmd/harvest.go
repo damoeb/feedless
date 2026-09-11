@@ -270,7 +270,12 @@ func fetchHarvest(
 // printHarvestLog GETs .../harvests/{id}/logs with Accept: text/plain
 // (brief, requirement 5 — the endpoint also produces application/json,
 // which would return a JSON-quoted string for a JSON Accept) and writes the
-// plain-text body verbatim to stdout.
+// plain-text body to stdout via sanitizeHarvestLog: sanitized
+// (output.SafeText) when stdout is a terminal, verbatim when it's piped —
+// so `harvest view --log > file` keeps saving the exact bytes the server
+// sent, while a log printed straight to a terminal can't hide/forge output,
+// rewrite the terminal title, or write to the clipboard via an embedded
+// escape sequence.
 func printHarvestLog(
 	cmd *cobra.Command, apiClient *client.Client, repoID api.RepositoryId, sourceID api.SourceId, harvestID api.HarvestId,
 ) error {
@@ -282,11 +287,27 @@ func printHarvestLog(
 		return apiErr
 	}
 
-	if _, err := cmd.OutOrStdout().Write(resp.Body); err != nil {
+	body := sanitizeHarvestLog(resp.Body, output.IsTerminal(os.Stdout))
+
+	if _, err := cmd.OutOrStdout().Write(body); err != nil {
 		return fmt.Errorf("writing harvest log: %w", err)
 	}
 
 	return nil
+}
+
+// sanitizeHarvestLog is printHarvestLog's TTY decision as a pure function,
+// isTTY passed in rather than detected here — the same "isTTY as an
+// explicit, testable parameter" seam poller.go's harvestPoller/pollDeps use
+// — so a test can exercise both branches directly, without a real terminal
+// (output.IsTerminal(os.Stdout) is always false under `go test`, and per
+// this task's constraints, tests must not read a real TTY either).
+func sanitizeHarvestLog(body []byte, isTTY bool) []byte {
+	if !isTTY {
+		return body
+	}
+
+	return []byte(output.SafeText(string(body)))
 }
 
 func acceptTextPlain(_ context.Context, req *http.Request) error {
@@ -308,7 +329,7 @@ func printHarvestSummary(w io.Writer, h api.Harvest) error {
 	}
 
 	for _, l := range lines {
-		if _, err := fmt.Fprintf(w, "%s: %s\n", l.label, l.value); err != nil {
+		if _, err := fmt.Fprintf(w, "%s: %s\n", l.label, output.SafeText(l.value)); err != nil {
 			return fmt.Errorf("writing harvest summary: %w", err)
 		}
 	}

@@ -249,7 +249,7 @@ func renderRepositoryView(w io.Writer, r api.Repository) error {
 	}
 
 	for _, f := range fields {
-		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, f.value); err != nil {
+		if _, err := fmt.Fprintf(w, "%s: %s\n", f.label, output.SafeText(f.value)); err != nil {
 			return fmt.Errorf("writing repository view: %w", err)
 		}
 	}
@@ -597,7 +597,7 @@ func deleteRepository(cmd *cobra.Command, apiClient *client.Client, repoID api.R
 			return apiErr
 		}
 
-		title = resp.JSON200.Title
+		title = output.SafeText(resp.JSON200.Title)
 	}
 
 	prompt := fmt.Sprintf("Delete repository %s (%s)?", title, repoID)

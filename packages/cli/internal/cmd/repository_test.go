@@ -194,6 +194,59 @@ func TestRepositoryView_RendersFields(t *testing.T) {
 	}
 }
 
+// --- C9: control-sequence sanitization ---
+
+func TestRepositoryView_MaliciousTitleAndDescription_NoEscapeSequences(t *testing.T) {
+	esc := string(rune(0x1b))
+	maliciousTitle := esc + "[2Jhijacked title"
+	maliciousDescription := "before " + esc + "]0;pwned" + string(rune(0x07)) + " after"
+
+	// repositoryJSON's own title param is spliced in unescaped (fine for
+	// the plain titles every other test uses); this test needs real JSON
+	// escaping (via json.Marshal) to carry raw control bytes as valid JSON,
+	// so the body is built by hand instead.
+	titleJSON, err := json.Marshal(maliciousTitle)
+	if err != nil {
+		t.Fatalf("json.Marshal(title): %v", err)
+	}
+
+	descJSON, err := json.Marshal(maliciousDescription)
+	if err != nil {
+		t.Fatalf("json.Marshal(description): %v", err)
+	}
+
+	body := `{"id":"` + testRepoID2 + `","title":` + string(titleJSON) + `,"description":` + string(descJSON) +
+		`,"ownerId":"` + testOwnerID + `","product":"feedless","visibility":"private","refreshCron":"",` +
+		`"tags":[],"createdAt":"2024-01-01T00:00:00Z","lastUpdatedAt":"2024-01-02T00:00:00Z","archived":false}`
+
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(body))
+	}))
+	t.Cleanup(srv.Close)
+	setupLoggedInHost(t, srv.URL, "tok")
+
+	stdout, stderr, err := runCmd("repo", "view", testRepoID2)
+	if err != nil {
+		t.Fatalf("Execute() error = %v, stderr = %q", err, stderr.String())
+	}
+
+	out := stdout.String()
+	if strings.ContainsRune(out, 0x1b) {
+		t.Errorf("stdout = %q, want no ESC (0x1b) anywhere in the view", out)
+	}
+	if strings.ContainsRune(out, 0x07) {
+		t.Errorf("stdout = %q, want no BEL (0x07) anywhere in the view", out)
+	}
+	if !strings.Contains(out, "Title: hijacked title") {
+		t.Errorf("stdout = %q, want the sanitized title", out)
+	}
+	if !strings.Contains(out, "before") || !strings.Contains(out, "after") {
+		t.Errorf("stdout = %q, want the text around the stripped OSC sequence preserved", out)
+	}
+}
+
 func TestRepositoryView_JSON_PrintsRepository(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
