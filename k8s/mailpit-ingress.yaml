@@ -1,0 +1,43 @@
+# Basic auth for mailpit.feedless.org.
+#
+# The credentials are not committed. Create the secret once before applying:
+#   kubectl create secret generic mailpit-basic-auth \
+#     --type=kubernetes.io/basic-auth \
+#     --from-literal=username=<user> --from-literal=password=<password>
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: mailpit-basic-auth
+  # Must match the `default-` prefix in the router.middlewares annotation below.
+  namespace: default
+spec:
+  basicAuth:
+    secret: mailpit-basic-auth
+    realm: "Authentication Required"
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mailpit-ingress
+  annotations:
+    app.kubernetes.io/name: mailpit-ingress
+    cert-manager.io/cluster-issuer: letsencrypt
+    # HTTP -> HTTPS is handled cluster-wide by ports.web.redirectTo in traefik.yaml.
+    traefik.ingress.kubernetes.io/router.middlewares: default-mailpit-basic-auth@kubernetescrd
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+        - mailpit.feedless.org
+      secretName: feedless-org-tls
+  rules:
+    - host: mailpit.feedless.org
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: mailpit
+                port:
+                  number: 8025

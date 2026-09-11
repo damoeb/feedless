@@ -1,0 +1,104 @@
+# Catch-all SMTP sink for feedless-core, active with the `mailpit` Spring profile.
+# SMTP stays cluster-internal; the web UI is exposed behind basic auth in mailpit-ingress.yaml.
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mailpit-pv
+  labels:
+    type: local
+spec:
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  hostPath:
+    path: /opt/feedless/data/mailpit
+
+---
+
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mailpit-pvc
+spec:
+  storageClassName: manual
+  volumeName: mailpit-pv
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mailpit
+  labels:
+    app: mailpit
+spec:
+  replicas: 1
+  # single SQLite file on a RWO volume, so never run two pods at once
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: mailpit
+  template:
+    metadata:
+      labels:
+        app: mailpit
+    spec:
+      containers:
+        - name: mailpit
+          image: axllent/mailpit:v1.31.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: http
+              containerPort: 8025
+            - name: smtp
+              containerPort: 1025
+          env:
+            - name: MP_DATABASE
+              value: /data/mailpit.db
+            - name: MP_MAX_MESSAGES
+              value: "5000"
+          volumeMounts:
+            - name: mailpit-data
+              mountPath: /data
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /livez
+              port: http
+            periodSeconds: 20
+      volumes:
+        - name: mailpit-data
+          persistentVolumeClaim:
+            claimName: mailpit-pvc
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mailpit
+spec:
+  selector:
+    app: mailpit
+  ports:
+    - name: http
+      port: 8025
+      targetPort: http
+      protocol: TCP
+    - name: smtp
+      port: 1025
+      targetPort: smtp
+      protocol: TCP
