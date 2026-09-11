@@ -95,14 +95,12 @@ class RepositoryHttpController(
   ): ResponseEntity<HttpRepository> {
     val id = RepositoryId(repositoryId)
     val userId = currentUserId()
-    // Access guard first: a denied or missing repository answers 404, never 412 — a stale
-    // If-Match must never leak that a repository exists.
+    // Guard first: a stale If-Match must not leak that a repository exists (404, never 412).
     val current = accessGuard.requireRepository(id, RepositoryAccess.write)
     if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(current))) {
       throw PreconditionFailedException("repository ${id.uuid} was modified since the ETag in If-Match")
     }
-    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
-    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
+    // The check-then-update race is accepted; no locking.
     repositoryUseCase.updateRepository(id, mapper.toDomainUpdate(repositoryUpdate))
     val updated = accessGuard.requireRepository(id, RepositoryAccess.write)
     val httpUpdated = mapper.toHttp(updated, userId != null && updated.ownerId == userId)
@@ -136,17 +134,7 @@ class RepositoryHttpController(
     )
   }
 
-  /**
-   * The fields a client can actually change via [RepositoryUpdate] — title, description,
-   * refreshCron, visibility, retention, and pushNotificationsMuted (the domain field is named
-   * pushNotificationsEnabled; PATCH's pushNotificationsMuted writes it directly, see
-   * [HttpRepositoryMapper]). Excludes lastUpdatedAt and nextUpdateAt: every scheduled harvest
-   * tick rewrites those, so hashing them made a harvest landing between a CLI GET and PATCH
-   * answer a spurious 412 even though nobody edited the repository. Built from the domain
-   * entity rather than the HTTP response so it can include retention (not exposed on
-   * Repository's response body) and never silently grows with a field added to that response
-   * later.
-   */
+  /** Excludes lastUpdatedAt/nextUpdateAt, which harvests rewrite (spurious 412s); built from the domain entity to include retention. */
   private fun editableFields(repo: Repository) = RepositoryEditableFields(
     title = repo.title,
     description = repo.description,

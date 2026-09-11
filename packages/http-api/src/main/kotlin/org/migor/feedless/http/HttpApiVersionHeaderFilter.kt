@@ -11,14 +11,8 @@ import org.springframework.stereotype.Component
 import org.springframework.web.filter.OncePerRequestFilter
 
 /**
- * Stamps every `/api/v1` response with the running instance's version, so `feedctl` can
- * compare its own build version against the instance it talks to and warn on mismatch.
- *
- * Registered in `SecurityConfig` with the same profile as `HttpApiJwtFilter` and ordered
- * immediately before it in the security filter chain, so the header is already on the
- * response by the time that filter (or any downstream handler/exception handler) writes a
- * status — including the 401 `HttpApiJwtFilter` sends for an unauthenticated request, before
- * a controller ever runs.
+ * Stamps every /api/v1 response with the instance version so feedctl can warn on a mismatch.
+ * Runs before HttpApiJwtFilter, so even its 401 carries the header.
  */
 @Component
 @Profile("${AppProfiles.session} & ${AppLayer.service}")

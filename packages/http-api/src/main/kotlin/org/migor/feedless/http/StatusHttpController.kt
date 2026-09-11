@@ -12,11 +12,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RestController
 
-/**
- * The one public `/api/v1` operation (`security: []` in openapi.yaml). `SecurityConfig` permits
- * [PUBLIC_STATUS_PATH] for GET without authentication and `HttpApiJwtFilter` skips it, so a
- * missing, expired or invalid token all answer the same 200.
- */
+/** The one public /api/v1 operation: a missing, expired or invalid token all answer the same 200. */
 @RestController
 @RequestMapping("/api/v1")
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")

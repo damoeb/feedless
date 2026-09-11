@@ -115,8 +115,7 @@ class HarvestHttpControllerTest {
   fun `listHarvests reports hasMore false when the last page is exactly full`() = runTest {
     val repo = access.givenRepository()
     val source = givenSource(repo.id)
-    // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
-    // page here and made every client fetch an empty one.
+    // Exactly pageSize available: there is no next page.
     val harvests = List(2) { harvest(sourceId = source.id) }
     whenever(harvestUseCase.findAllBySourceId(eq(source.id), eq(false), eq(0), eq(2))).thenReturn(harvests)
 
@@ -193,8 +192,7 @@ class HarvestHttpControllerTest {
     val result = mockMvc.getAs(access.owner, harvestUrl(repo, source, harvest))
 
     assertStatus(result, 200)
-    // Not required by the schema any more — the mapper reports them as null rather than a
-    // fabricated `false`/`0`, matching the codebase's convention for other optional fields.
+    // Omitted until finished, not reported as false/0.
     val body = result.response.contentAsString
     assert(body.contains("\"ok\":null")) { body }
     assert(body.contains("\"itemsAdded\":null")) { body }

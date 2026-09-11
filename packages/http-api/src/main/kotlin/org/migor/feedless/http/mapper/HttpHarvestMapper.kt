@@ -18,8 +18,7 @@ class HttpHarvestMapper {
       status = toHttpStatus(harvest.status),
       dryRun = harvest.dryRun,
       startedAt = harvest.startedAt.toOffsetDateTime(),
-      // Outcome fields are only meaningful once the harvest has finished — omit them while
-      // queued or running rather than report a misleading zero/false.
+      // Outcome fields are omitted until the harvest finishes, rather than a misleading zero/false.
       ok = if (completed) !harvest.errornous else null,
       itemsAdded = if (completed) harvest.itemsAdded else null,
       itemsIgnored = if (completed) harvest.itemsIgnored else null,

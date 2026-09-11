@@ -43,9 +43,7 @@ class HarvestHttpController(
     dryRun: Boolean,
   ): ResponseEntity<HarvestListResponse> {
     val source = accessGuard.requireSource(RepositoryId(repositoryId), SourceId(sourceId), RepositoryAccess.read)
-    // findAllBySourceId asks for one more than the page holds internally, so a full page is not
-    // evidence of a next one — pageSize here must stay the true requested size (see T6 review:
-    // inflating it here too would shift the offset of every later page).
+    // findAllBySourceId already asks for one extra; inflating pageSize here too would shift every later page.
     val fetched = harvestUseCase.findAllBySourceId(source.id, dryRun, page, pageSize)
     val items = fetched.take(pageSize).map { mapper.toHttp(it) }
     return ResponseEntity.ok(

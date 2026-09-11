@@ -26,14 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.async
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
 
-/**
- * [AutoConfigureMockMvc] disables servlet filters (`addFilters = false`), so [HttpApiJwtFilter]
- * (which lives in `server-core` and is not on this module's test classpath anyway) never runs here.
- * The 401 case below is therefore exercised purely through [AuthUseCasePort] throwing
- * [AuthCredentialsException], which [HttpApiExceptionHandler] maps to 401 — it does NOT assert
- * anything about filter-level/whitelist behavior. Filter- and whitelist-level auth enforcement is
- * covered separately by `HttpApiJwtFilterTest` and `SecurityConfigIntTest` in `server-core`.
- */
+/** Filters are off here, so the 401 comes from the exception mapping; filter-level auth is tested in server-core. */
 @WebMvcTest(controllers = [AuthHttpController::class])
 @AutoConfigureMockMvc(addFilters = false)
 @Import(HttpAuthMapper::class, HttpGroupMapper::class, HttpApiExceptionHandler::class)

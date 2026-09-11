@@ -7,19 +7,11 @@ import org.springframework.stereotype.Component
 import java.security.MessageDigest
 import java.util.HexFormat
 
-/**
- * The single place that turns any HTTP model object's representation into a strong ETag — a
- * quoted, lowercase-hex SHA-256 of the same JSON the endpoint serializes. `SourceHttpController`,
- * `RepositoryHttpController`, and `RecordHttpController` all call this from both their `get*`
- * (to set the response header) and `update*` (to compare against `If-Match`, and to set the new
- * header on success) methods, so a resource's GET and PATCH can never disagree about its ETag.
- */
+/** The one ETag source for GET and PATCH, so they never disagree: a quoted SHA-256 of the endpoint's JSON. */
 @Component
 class ETagCalculator {
 
-  // jacksonObjectMapper() only registers the Kotlin module — without JavaTimeModule, a source
-  // with a non-null lastRefreshedAt (an OffsetDateTime) throws InvalidDefinitionException instead
-  // of hashing.
+  // Needs JavaTimeModule, or an OffsetDateTime field throws instead of hashing.
   private val json = jacksonObjectMapper()
     .registerModule(JavaTimeModule())
     .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)

@@ -134,8 +134,7 @@ class RecordHttpControllerTest {
 
   @Test
   fun `getRecord keeps the same ETag when only server-owned fields change`() = runTest {
-    // updatedAt is rewritten by the server independent of a user edit — it must not invalidate
-    // an ETag a `feedctl record update --editor` session is holding onto.
+    // A server-side updatedAt rewrite must not invalidate an editor session's ETag.
     val repo = access.givenRepository()
     val record = givenRecord(repo.id)
 
@@ -210,8 +209,7 @@ class RecordHttpControllerTest {
   @Test
   fun `listRecords reports hasMore false when the last page is exactly full`() = runTest {
     val repo = access.givenRepository()
-    // Exactly pageSize available. The old `items.size == pageSize` rule claimed a next
-    // page here and made every client fetch an empty one.
+    // Exactly pageSize available: there is no next page.
     givenRecordPage(repo.id, List(2) { document(repositoryId = repo.id) })
 
     val result = mockMvc.getAs(access.owner, "${recordsUrl(repo)}?page=0&pageSize=2")

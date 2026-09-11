@@ -88,14 +88,12 @@ class RecordHttpController(
     ifMatch: String?,
   ): ResponseEntity<HttpRecord> {
     val id = DocumentId(recordId)
-    // Access guard (and the record lookup) first: a denied or missing repository/record answers
-    // 404, never 412 — a stale If-Match must never leak that a record exists.
+    // Guard first: a stale If-Match must not leak that a record exists (404, never 412).
     val current = requireRecord(RepositoryId(repositoryId), id, RepositoryAccess.write)
     if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(mapper.toHttp(current)))) {
       throw PreconditionFailedException("record ${id.uuid} was modified since the ETag in If-Match")
     }
-    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
-    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
+    // The check-then-update race is accepted; no locking.
     val updated = documentUseCase.updateDocument(mapper.toDomainUpdate(recordUpdate), id)
     val httpUpdated = mapper.toHttp(updated)
     return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(httpUpdated))).body(httpUpdated)
@@ -138,11 +136,7 @@ class RecordHttpController(
 
   private fun recordNotFound(recordId: DocumentId) = NotFoundException("record ${recordId.uuid} not found")
 
-  /**
-   * The fields a client can actually change via [RecordUpdate] — title, text, url, tags.
-   * Excludes updatedAt, which the server can rewrite independent of a user edit; hashing it
-   * made an unrelated server-side change answer a spurious 412.
-   */
+  /** Excludes updatedAt, which the server rewrites (spurious 412s). */
   private fun editableFields(record: HttpRecord) = RecordEditableFields(
     title = record.title,
     text = record.text,

@@ -61,13 +61,7 @@ class HttpScrapeFlowMapper {
       toDomainAction(action) ?: throw IllegalArgumentException("flow.sequence[$index] is not a known action")
     }
 
-  /**
-   * Validates [flow] exactly like [toDomainActions] and serializes it for a queued harvest. The
-   * stored form is the HTTP flow itself, and [storedFlowToDomainActions] maps it through
-   * [toDomainActions] again — so a queued run executes with the mapping it was validated with.
-   *
-   * @throws IllegalArgumentException when the flow is invalid
-   */
+  /** Stores the HTTP flow itself, so a queued run is mapped exactly as it was validated. */
   fun toStoredFlow(flow: ScrapeFlow): String {
     toDomainActions(flow)
     return storedFlowJson.writeValueAsString(flow)
@@ -76,11 +70,7 @@ class HttpScrapeFlowMapper {
   fun storedFlowToDomainActions(storedFlow: String): List<ScrapeAction> =
     toDomainActions(storedFlowJson.readValue(storedFlow, ScrapeFlow::class.java))
 
-  /**
-   * A ScrapeAction is a union: fetch, or click, or extract — never a combination. The
-   * schema cannot express that (no oneOf), and picking the first non-null field would
-   * silently discard the rest, so reject ambiguous actions instead.
-   */
+  /** The schema can't express oneOf, and taking the first non-null kind would silently drop the rest. */
   private fun requireExactlyOneKind(action: HttpScrapeAction, index: Int) {
     val set = listOfNotNull(
       action.fetch?.let { "fetch" },

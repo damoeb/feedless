@@ -98,10 +98,7 @@ class RepositoryHttpControllerCreateTest {
     assert(body.visibility == org.migor.feedless.http.api.model.Visibility.private)
   }
 
-  /**
-   * In production HttpApiServletInvocableHandlerMethod puts the RequestContext into the
-   * coroutine context; here we do it directly.
-   */
+  /** Does what HttpApiServletInvocableHandlerMethod does in production. */
   private suspend fun <T> asUser(userId: UserId, block: suspend () -> T): T {
     val requestContext = RequestContext(groupId = GroupId(), userId = userId)
     bindRequestContext(requestContext)

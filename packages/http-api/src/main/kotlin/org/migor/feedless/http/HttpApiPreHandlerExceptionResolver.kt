@@ -14,16 +14,8 @@ import org.springframework.web.servlet.HandlerExceptionResolver
 import org.springframework.web.servlet.ModelAndView
 
 /**
- * Answers Spring MVC's errors on `/api/v1` that happen before a controller is chosen — a wrong
- * method (405), an unsupported Content-Type (415), no acceptable representation (406), an unknown
- * path (404) — with the same [ApiError][org.migor.feedless.http.api.model.ApiError] mapping as
- * [HttpApiExceptionHandler].
- *
- * Without a handler method there is no controller type, and Spring applies only unscoped advices to
- * such errors; [HttpApiExceptionHandler] is scoped to the API controllers' package, so the app's
- * unscoped advice answered them instead (a 405 came back as a bare 400). This resolver runs ahead of
- * Spring's own resolvers, only for `/api/v1/` requests without a handler method, and passes
- * anything the API mapping doesn't know on to them.
+ * Gives /api/v1 errors raised before a controller is chosen (405, 415, 406, 404) the [HttpApiExceptionHandler] mapping;
+ * that advice is package-scoped, so Spring would hand them to the app's unscoped advice instead.
  */
 @Component
 @Profile(AppLayer.api)

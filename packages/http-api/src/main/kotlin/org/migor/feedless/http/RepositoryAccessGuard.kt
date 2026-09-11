@@ -26,14 +26,8 @@ enum class RepositoryAccess {
 }
 
 /**
- * The single access rule for `/repositories/{repositoryId}` and everything nested below it.
- *
- * A caller may access a repository when it owns it or is a member of its owning group — the
- * same group assignments `GET /user` reports. A group `viewer` may only read. A public
- * repository may be read by any authenticated caller; writing it still needs the rule above.
- *
- * A denied repository answers exactly like a missing one — the same [NotFoundException] and
- * message, so the API answers 404 and never confirms that a UUID exists.
+ * The access rule for /repositories/{id} and below: owner or group member; viewers only read; public repositories are readable by all.
+ * A denial answers 404 like a missing repository, so the API never confirms a UUID exists.
  */
 @Component
 @Profile("${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}")
@@ -52,13 +46,7 @@ class RepositoryAccessGuard(
     return repository
   }
 
-  /**
-   * The caller's cross-repository access scope, for endpoints like `GET /user/sources` that query
-   * across every repository at once instead of checking one — the same rule [mayAccess] applies
-   * per repository (owner, or member of its group, any role), expressed here as the inputs to a
-   * query predicate so pagination stays correct. No user id → the same [NotFoundException] a
-   * denied or missing repository answers with.
-   */
+  /** The [mayAccess] rule as query inputs, so cross-repository listings paginate correctly. */
   suspend fun requireCallerScope(): Pair<UserId, List<GroupId>> {
     val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw NotFoundException("user not found")
     val groupIds = groupUseCase.findAllByUserId(userId).map { it.groupId }

@@ -181,9 +181,7 @@ class SourceHttpControllerTest {
 
   @Test
   fun `getSource keeps the same ETag when only server-owned fields change`() = runTest {
-    // A harvest tick rewrites lastRefreshedAt, lastRecordsRetrieved, errorsInSuccession, and
-    // lastErrorMessage — none of that is something a caller edited, so it must not invalidate an
-    // ETag a `feedctl source update --editor` session is holding onto.
+    // Harvest-written fields must not invalidate an ETag an editor session holds.
     val private = access.givenRepository()
     val source = givenSource(private.id)
 
@@ -206,8 +204,7 @@ class SourceHttpControllerTest {
 
   @Test
   fun `getSource sets an ETag even when lastRefreshedAt is set`() = runTest {
-    // A source that has actually run has a non-null lastRefreshedAt (an OffsetDateTime); the
-    // ETag calculator's JSON mapper must handle it rather than throwing.
+    // A non-null OffsetDateTime must hash, not throw.
     val private = access.givenRepository()
     val id = SourceId()
     val source = Source(

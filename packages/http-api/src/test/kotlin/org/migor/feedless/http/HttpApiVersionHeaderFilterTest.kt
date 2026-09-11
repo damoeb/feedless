@@ -26,9 +26,7 @@ class HttpApiVersionHeaderFilterTest {
 
   @Test
   fun `stamps the header before any downstream status is written`() {
-    // The filter must set the header unconditionally, ahead of whatever a controller or
-    // exception handler later does to the response (200, 404, or - via HttpApiJwtFilter,
-    // registered right after this filter in SecurityConfig - a 401).
+    // Set unconditionally, before any handler writes a status (including HttpApiJwtFilter's 401).
     val request = MockHttpServletRequest("GET", "/api/v1/user")
     val response = MockHttpServletResponse()
     val chain = FilterChain { _, res ->

@@ -104,7 +104,6 @@ class RepositoryHttpControllerTest {
 
     val result = mockMvc.getAs(UserId(), "/api/v1/repositories/${repositoryId.uuid}")
 
-    // Used to be an empty body from ResponseEntity.notFound(), so clients parsing .code got null.
     assertNotFound(result, "repository ${repositoryId.uuid} not found")
     assert(result.response.contentAsString.contains("\"corrId\"")) { result.response.contentAsString }
   }
@@ -121,7 +120,6 @@ class RepositoryHttpControllerTest {
     } else {
       mvcResult
     }
-    // Previously fell through to handleGeneric and looked like a 500.
     assert(result.response.status == 429) { "was ${result.response.status}" }
     assert(result.response.getHeader("Retry-After") == "42")
     assert(result.response.contentAsString.contains("\"code\":\"TOO_MANY_REQUESTS\""))
@@ -165,9 +163,7 @@ class RepositoryHttpControllerTest {
 
   @Test
   fun `getRepository keeps the same ETag when only server-owned fields change`() = runTest {
-    // A scheduled harvest tick rewrites lastUpdatedAt and nextUpdateAt — none of that is
-    // something a caller edited, so it must not invalidate an ETag a
-    // `feedctl repo update --editor` session is holding onto.
+    // Harvest-written fields must not invalidate an ETag an editor session holds.
     val private = access.givenRepository()
 
     val first = mockMvc.getAs(access.owner, url(private))

@@ -12,10 +12,7 @@ import org.migor.feedless.userGroup.UserGroupAssignment
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.whenever
 
-/**
- * The callers every repository-scoped endpoint is tested with — the owner, an editor of the
- * owning group, and a stranger — stubbed into the two ports the real [RepositoryAccessGuard] reads.
- */
+/** The owner, an editor of the owning group and a stranger, stubbed into the ports the real guard reads. */
 class RepositoryAccessFixture(
   private val repositoryUseCase: RepositoryUseCasePort,
   private val groupUseCase: GroupUseCasePort,

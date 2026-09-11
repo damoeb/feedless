@@ -22,12 +22,7 @@ import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandl
 import org.springframework.web.servlet.mvc.method.annotation.ServletInvocableHandlerMethod
 import java.lang.reflect.Method
 
-/**
- * Test double for server-core's `HttpApiServletInvocableHandlerMethod`: carries the
- * [RequestContext] from the servlet request into the coroutine context of a suspend
- * controller method. Without it a WebMvcTest runs every call anonymously, and the
- * access guard would deny it.
- */
+/** Stands in for server-core's HttpApiServletInvocableHandlerMethod; without it every call is anonymous and denied. */
 @TestConfiguration
 class RequestContextBridge {
 

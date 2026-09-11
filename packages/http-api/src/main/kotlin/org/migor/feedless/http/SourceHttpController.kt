@@ -116,14 +116,12 @@ class SourceHttpController(
   ): ResponseEntity<HttpSource> {
     val repoId = RepositoryId(repositoryId)
     val id = SourceId(sourceId)
-    // Access guard first: a denied or missing repository/source answers 404, never 412 — a
-    // stale If-Match must never leak that a source exists.
+    // Guard first: a stale If-Match must not leak that a source exists (404, never 412).
     val current = accessGuard.requireSource(repoId, id, RepositoryAccess.write)
     if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(mapper.toHttp(current)))) {
       throw PreconditionFailedException("source ${id.uuid} was modified since the ETag in If-Match")
     }
-    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
-    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
+    // The check-then-update race is accepted; no locking.
     sourceUseCase.updateSources(repoId, listOf(mapper.toDomainUpdate(sourceId, sourceUpdate)))
     val updated = mapper.toHttp(accessGuard.requireSource(repoId, id, RepositoryAccess.write))
     return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(updated))).body(updated)
@@ -149,12 +147,7 @@ class SourceHttpController(
       SourcesFilter(disabled = disabled, like = like, minErrorsInSuccession = minErrorsInSuccession)
     }
 
-  /**
-   * The fields a client can actually change via [SourceUpdate] — title, tags, disabled, latLng,
-   * flow. Excludes lastRefreshedAt, lastRecordsRetrieved, errorsInSuccession, and
-   * lastErrorMessage: every harvest tick rewrites those, so hashing them made a harvest landing
-   * between a CLI GET and PATCH answer a spurious 412 even though nobody edited the source.
-   */
+  /** Excludes the harvest-written fields (lastRefreshedAt, errorsInSuccession, ...), which caused spurious 412s. */
   private fun editableFields(source: HttpSource) = SourceEditableFields(
     title = source.title,
     tags = source.tags,

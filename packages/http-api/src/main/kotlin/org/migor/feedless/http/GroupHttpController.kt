@@ -47,9 +47,7 @@ class GroupHttpController(
     page: Int,
     pageSize: Int,
   ): ResponseEntity<GroupMemberListResponse> {
-    // listMembers asks for one more than the page holds internally, so a full page is not
-    // evidence of a next one — pageSize here must stay the true requested size (see T6 review:
-    // inflating it here too would shift the offset of every later page).
+    // listMembers already asks for one extra; inflating pageSize here too would shift every later page.
     val fetched = groupUseCase.listMembers(GroupId(groupId), page, pageSize)
     val items = fetched.take(pageSize).map { mapper.toHttpMember(it) }
     return ResponseEntity.ok(

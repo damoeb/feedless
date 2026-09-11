@@ -29,18 +29,7 @@ import org.springframework.web.context.request.ServletWebRequest
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
 
-/**
- * The error contract of every `/api/v1` controller: an [ApiError] body with the status and `code`
- * feedctl branches on. It must win over the app's unscoped `@ControllerAdvice`, whose catch-all
- * answers any exception with a bare 404 — without an explicit order, bean registration order decides.
- * The `basePackages` scope confines this precedence to the HTTP API controllers.
- *
- * Spring picks the first advice with any matching handler, so this one also answers Spring MVC's own
- * exceptions (unreadable body, type mismatch, missing parameter, ...). Extending
- * [ResponseEntityExceptionHandler] keeps Spring's status for each of them; [handleExceptionInternal]
- * only renders the body as an [ApiError]. Errors raised before a controller is chosen reach this
- * mapping through [HttpApiPreHandlerExceptionResolver].
- */
+/** The /api/v1 error contract; highest precedence, or the app's unscoped catch-all advice answers a bare 404. */
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(basePackages = ["org.migor.feedless.http"])
 class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
@@ -106,11 +95,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
       headers = HttpHeaders().apply { set(HttpHeaders.RETRY_AFTER, ex.retryAfter.seconds.toString()) },
     )
 
-  /**
-   * The throttle layer raises this. Without an explicit mapping it fell through to
-   * handleGeneric and every rate-limited call looked like a 500, so clients had no way to
-   * tell "back off" from "the server is broken".
-   */
+  /** Rate limiting must read as "back off", not as a 500. */
   @ExceptionHandler(HostOverloadingException::class)
   fun handleHostOverloading(ex: HostOverloadingException, request: WebRequest): ResponseEntity<ApiError> =
     errorResponse(
@@ -124,12 +109,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
     )
 
   /**
-   * Anything no other handler maps is a server bug. Log it — stack trace, method and path, under the
-   * answer's corrId — before answering 500, or it leaves no trace in the core log. The path carries no
-   * query string, and no headers are logged, so no credential reaches the log.
-   *
-   * The answer carries a fixed [UNEXPECTED_ERROR] message, never `ex.message`: that text can hold SQL,
-   * constraint names or NPE details. The corrId in the body is the caller's handle on the log line.
+   * Logs the stack trace under the corrId, then answers a fixed message: ex.message can hold SQL or constraint names.
    */
   @ExceptionHandler(Exception::class)
   fun handleGeneric(ex: Exception, request: WebRequest): ResponseEntity<ApiError> {
@@ -151,8 +131,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
     return errorResponse(
       HttpStatus.BAD_REQUEST,
       "VALIDATION_ERROR",
-      // Summarise every failing field — reporting only the first one made callers
-      // fix-and-retry once per field.
+      // Every failing field, so callers don't fix-and-retry once per field.
       fieldErrors.joinToString("; ") { "${it.field}: ${it.message}" }.ifEmpty { "validation failed" },
       request,
       errors = fieldErrors,
@@ -160,10 +139,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
     ).asAny()
   }
 
-  /**
-   * Every other Spring MVC exception [ResponseEntityExceptionHandler] knows: keep Spring's status and
-   * headers (e.g. `Allow` on a 405), answer an [ApiError] whose `code` names that status.
-   */
+  /** Keeps Spring's status and headers (e.g. Allow on a 405). */
   override fun handleExceptionInternal(
     ex: Exception,
     body: Any?,

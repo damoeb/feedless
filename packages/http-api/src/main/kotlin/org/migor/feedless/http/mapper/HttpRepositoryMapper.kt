@@ -25,8 +25,7 @@ class HttpRepositoryMapper(
       id = repo.id.uuid,
       title = repo.title,
       description = repo.description,
-      // shareKey is a capability secret: omit it entirely for non-owners rather than
-      // shipping an empty string that reads like a real (blank) key.
+      // shareKey is a capability secret: omit it for non-owners rather than send a blank one.
       shareKey = repo.shareKey.takeIf { currentUserIsOwner },
       ownerId = repo.ownerId.uuid,
       product = toHttpVertical(repo.product),
