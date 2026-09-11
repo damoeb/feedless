@@ -59,6 +59,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via 
 - [ ] `./gradlew lint test` passes with exit code 0
 - [ ] Generated code regenerated, not hand-edited, if a schema or grammar changed
 - [ ] Flyway migrations additive only
+- [ ] Code comments in English and as concise as possible: the code says how, a comment says only why
 - [ ] Commit subject is `type(scope): …`
 - [ ] Only this session's scope is staged
 
