@@ -37,6 +37,7 @@ func NewRootCmd(version string) *cobra.Command {
 
 	root.AddCommand(newAuthCmd(version))
 	root.AddCommand(newAPICmd(version))
+	root.AddCommand(newRepositoryCmd(version))
 	root.AddCommand(newSourceCmd(version))
 	root.AddCommand(newHarvestCmd(version))
 
