@@ -142,6 +142,8 @@ paths:
           headers:
             X-Feedless-Version:
               $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
@@ -153,6 +155,8 @@ paths:
     patch:
       tags: [Repositories]
       operationId: updateRepository
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
       requestBody:
         required: true
         content:
@@ -165,12 +169,16 @@ paths:
           headers:
             X-Feedless-Version:
               $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Repository'
         '404':
           $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         default:
@@ -490,6 +498,8 @@ paths:
           headers:
             X-Feedless-Version:
               $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
@@ -501,6 +511,8 @@ paths:
     patch:
       tags: [Records]
       operationId: updateRecord
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
       requestBody:
         required: true
         content:
@@ -513,12 +525,16 @@ paths:
           headers:
             X-Feedless-Version:
               $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Record'
         '404':
           $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
         '429':
           $ref: '#/components/responses/TooManyRequests'
         default:
@@ -792,16 +808,16 @@ components:
       in: header
       required: false
       description: >
-        A strong ETag from a prior GET or PATCH of this source. Present and matching the
-        source's current ETag applies the update; present and different answers 412 without
-        applying it; `*` matches any existing source; absent behaves as an unconditional update
-        (last write wins).
+        A strong ETag from a prior GET or PATCH of this resource (a source, repository, or
+        record). Present and matching the resource's current ETag applies the update; present
+        and different answers 412 without applying it; `*` matches any existing resource;
+        absent behaves as an unconditional update (last write wins).
       schema:
         type: string
   headers:
     ETag:
       description: >
-        Strong ETag of this source's representation — a SHA-256 hash of its serialized JSON,
+        Strong ETag of this resource's representation — a SHA-256 hash of its serialized JSON,
         quoted.
       schema:
         type: string

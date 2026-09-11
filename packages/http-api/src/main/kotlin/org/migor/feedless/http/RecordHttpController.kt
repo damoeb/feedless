@@ -4,6 +4,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentGuardPort
 import org.migor.feedless.document.DocumentId
@@ -35,6 +36,7 @@ class RecordHttpController(
   private val documentGuard: DocumentGuardPort,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRecordMapper,
+  private val etagCalculator: ETagCalculator,
 ) : RecordsApi {
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -62,7 +64,8 @@ class RecordHttpController(
     recordId: java.util.UUID,
   ): ResponseEntity<HttpRecord> {
     val document = requireRecord(RepositoryId(repositoryId), DocumentId(recordId), RepositoryAccess.read)
-    return ResponseEntity.ok(mapper.toHttp(document))
+    val httpRecord = mapper.toHttp(document)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(httpRecord)).body(httpRecord)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -82,11 +85,20 @@ class RecordHttpController(
     repositoryId: java.util.UUID,
     recordId: java.util.UUID,
     recordUpdate: RecordUpdate,
+    ifMatch: String?,
   ): ResponseEntity<HttpRecord> {
     val id = DocumentId(recordId)
-    requireRecord(RepositoryId(repositoryId), id, RepositoryAccess.write)
+    // Access guard (and the record lookup) first: a denied or missing repository/record answers
+    // 404, never 412 — a stale If-Match must never leak that a record exists.
+    val current = requireRecord(RepositoryId(repositoryId), id, RepositoryAccess.write)
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(mapper.toHttp(current))) {
+      throw PreconditionFailedException("record ${id.uuid} was modified since the ETag in If-Match")
+    }
+    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
+    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
     val updated = documentUseCase.updateDocument(mapper.toDomainUpdate(recordUpdate), id)
-    return ResponseEntity.ok(mapper.toHttp(updated))
+    val httpUpdated = mapper.toHttp(updated)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(httpUpdated)).body(httpUpdated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")

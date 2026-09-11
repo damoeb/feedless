@@ -43,6 +43,7 @@ import java.time.Duration
   HttpApiExceptionHandler::class,
   RepositoryAccessGuard::class,
   RequestContextBridge::class,
+  ETagCalculator::class,
 )
 @ActiveProfiles("test", AppLayer.api, AppProfiles.repository, AppProfiles.source, AppProfiles.user)
 class RepositoryHttpControllerTest {
@@ -144,6 +145,25 @@ class RepositoryHttpControllerTest {
   }
 
   @Test
+  fun `getRepository sets a strong ETag that is stable for the same repository and changes when it does`() = runTest {
+    val private = access.givenRepository()
+
+    val first = mockMvc.getAs(access.owner, url(private))
+    assertStatus(first, 200)
+    val etag = first.response.getHeader("ETag")
+    assert(etag != null && etag.startsWith("\"") && etag.endsWith("\"")) { "etag: $etag" }
+
+    val second = mockMvc.getAs(access.owner, url(private))
+    assertStatus(second, 200)
+    assert(second.response.getHeader("ETag") == etag) { "expected $etag, got ${second.response.getHeader("ETag")}" }
+
+    whenever(repositoryUseCase.findById(eq(private.id))).thenReturn(private.copy(title = "a different title"))
+    val third = mockMvc.getAs(access.owner, url(private))
+    assertStatus(third, 200)
+    assert(third.response.getHeader("ETag") != etag) { "expected a different ETag, got $etag again" }
+  }
+
+  @Test
   // The use case is mocked: this proves the guard lets both through, not that server-core
   // accepts the write (it does not yet for a group member — see the http-api README).
   fun `updateRepository lets the owner and a group member through the guard to the use case`() = runTest {
@@ -160,6 +180,61 @@ class RepositoryHttpControllerTest {
 
     assertNotFound(mockMvc.patchAs(access.stranger, url(private), UPDATE), "repository ${private.id.uuid} not found")
     assertNotFound(mockMvc.patchAs(access.stranger, url(public), UPDATE), "repository ${public.id.uuid} not found")
+    verify(repositoryUseCase, never()).updateRepository(any(), any())
+  }
+
+  @Test
+  fun `updateRepository without If-Match succeeds unconditionally and returns a new ETag`() = runTest {
+    val private = access.givenRepository()
+
+    val result = mockMvc.patchAs(access.owner, url(private), UPDATE)
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(repositoryUseCase).updateRepository(any(), any())
+  }
+
+  @Test
+  fun `updateRepository with a matching If-Match applies the update and returns the new ETag`() = runTest {
+    val private = access.givenRepository()
+    val etag = requireNotNull(mockMvc.getAs(access.owner, url(private)).response.getHeader("ETag"))
+
+    val result = mockMvc.patchAs(access.owner, url(private), UPDATE, mapOf("If-Match" to etag))
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(repositoryUseCase).updateRepository(any(), any())
+  }
+
+  @Test
+  fun `updateRepository with If-Match star matches any existing repository`() = runTest {
+    val private = access.givenRepository()
+
+    val result = mockMvc.patchAs(access.owner, url(private), UPDATE, mapOf("If-Match" to "*"))
+
+    assertStatus(result, 200)
+    verify(repositoryUseCase).updateRepository(any(), any())
+  }
+
+  @Test
+  fun `updateRepository with a stale If-Match answers 412 and never applies the update`() = runTest {
+    val private = access.givenRepository()
+
+    val result = mockMvc.patchAs(access.owner, url(private), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertStatus(result, 412)
+    val body = result.response.contentAsString
+    assert(body.contains("\"code\":\"PRECONDITION_FAILED\"")) { body }
+    verify(repositoryUseCase, never()).updateRepository(any(), any())
+  }
+
+  @Test
+  fun `updateRepository answers a stranger with 404 even with a stale If-Match`() = runTest {
+    val private = access.givenRepository()
+
+    val result = mockMvc.patchAs(access.stranger, url(private), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertNotFound(result, "repository ${private.id.uuid} not found")
     verify(repositoryUseCase, never()).updateRepository(any(), any())
   }
 

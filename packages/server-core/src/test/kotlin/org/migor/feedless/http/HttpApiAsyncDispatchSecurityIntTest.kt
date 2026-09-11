@@ -195,6 +195,24 @@ class HttpApiAsyncDispatchSecurityIntTest {
   }
 
   /**
+   * Repositories share the same [ETagCalculator] and exception mapping as sources, but only a
+   * real port dispatch (see the class doc) proves `HttpApiExceptionHandler`'s ordering actually
+   * answers 412 here rather than falling through to the app's unscoped `@ControllerAdvice`.
+   */
+  @Test
+  fun `PATCH a repository with a stale If-Match answers 412 PRECONDITION_FAILED`() {
+    val response = send(
+      "PATCH",
+      "/api/v1/repositories/${callerRepository.id.uuid}",
+      "{\"title\":\"renamed\"}",
+      HttpHeaders.IF_MATCH to "\"stale\"",
+    )
+
+    assertThat(response.statusCode()).isEqualTo(HttpStatus.PRECONDITION_FAILED.value())
+    assertThat(response.body()).contains("\"code\":\"PRECONDITION_FAILED\"")
+  }
+
+  /**
    * A write lands in the group the token acts in. Tokens minted by `createUserSecret` (API JWT) and
    * `authUser` (session JWT) used to carry no group, so creating a repository crashed with a 500.
    */

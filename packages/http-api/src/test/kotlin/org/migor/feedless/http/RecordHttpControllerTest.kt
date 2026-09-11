@@ -37,7 +37,13 @@ import org.springframework.test.web.servlet.MockMvc
 
 @WebMvcTest(controllers = [RecordHttpController::class])
 @AutoConfigureMockMvc(addFilters = false)
-@Import(HttpRecordMapper::class, HttpApiExceptionHandler::class, RepositoryAccessGuard::class, RequestContextBridge::class)
+@Import(
+  HttpRecordMapper::class,
+  HttpApiExceptionHandler::class,
+  RepositoryAccessGuard::class,
+  RequestContextBridge::class,
+  ETagCalculator::class,
+)
 @ActiveProfiles(
   "test",
   AppLayer.api,
@@ -104,6 +110,26 @@ class RecordHttpControllerTest {
     val foreign = givenRecord(RepositoryId())
 
     assertNotFound(mockMvc.getAs(access.owner, recordUrl(repo, foreign.id)), "record ${foreign.id.uuid} not found")
+  }
+
+  @Test
+  fun `getRecord sets a strong ETag that is stable for the same record and changes when it does`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+
+    val first = mockMvc.getAs(access.owner, recordUrl(repo, record.id))
+    assertStatus(first, 200)
+    val etag = first.response.getHeader("ETag")
+    assert(etag != null && etag.startsWith("\"") && etag.endsWith("\"")) { "etag: $etag" }
+
+    val second = mockMvc.getAs(access.owner, recordUrl(repo, record.id))
+    assertStatus(second, 200)
+    assert(second.response.getHeader("ETag") == etag) { "expected $etag, got ${second.response.getHeader("ETag")}" }
+
+    whenever(documentGuard.requireRead(eq(record.id))).thenReturn(record.copy(title = "a different title"))
+    val third = mockMvc.getAs(access.owner, recordUrl(repo, record.id))
+    assertStatus(third, 200)
+    assert(third.response.getHeader("ETag") != etag) { "expected a different ETag, got $etag again" }
   }
 
   @Test
@@ -253,6 +279,70 @@ class RecordHttpControllerTest {
     val foreign = givenRecord(RepositoryId())
 
     assertNotFound(mockMvc.patchAs(access.owner, recordUrl(repo, foreign.id), UPDATE), "record ${foreign.id.uuid} not found")
+    verify(documentUseCase, never()).updateDocument(any(), any())
+  }
+
+  @Test
+  fun `updateRecord without If-Match succeeds unconditionally and returns a new ETag`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+    whenever(documentUseCase.updateDocument(any(), eq(record.id))).thenReturn(record)
+
+    val result = mockMvc.patchAs(access.owner, recordUrl(repo, record.id), UPDATE)
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(documentUseCase).updateDocument(any(), eq(record.id))
+  }
+
+  @Test
+  fun `updateRecord with a matching If-Match applies the update and returns the new ETag`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+    whenever(documentUseCase.updateDocument(any(), eq(record.id))).thenReturn(record)
+    val etag = requireNotNull(mockMvc.getAs(access.owner, recordUrl(repo, record.id)).response.getHeader("ETag"))
+
+    val result = mockMvc.patchAs(access.owner, recordUrl(repo, record.id), UPDATE, mapOf("If-Match" to etag))
+
+    assertStatus(result, 200)
+    assert(result.response.getHeader("ETag") != null) { "expected an ETag header" }
+    verify(documentUseCase).updateDocument(any(), eq(record.id))
+  }
+
+  @Test
+  fun `updateRecord with If-Match star matches any existing record`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+    whenever(documentUseCase.updateDocument(any(), eq(record.id))).thenReturn(record)
+
+    val result = mockMvc.patchAs(access.owner, recordUrl(repo, record.id), UPDATE, mapOf("If-Match" to "*"))
+
+    assertStatus(result, 200)
+    verify(documentUseCase).updateDocument(any(), eq(record.id))
+  }
+
+  @Test
+  fun `updateRecord with a stale If-Match answers 412 and never applies the update`() = runTest {
+    val repo = access.givenRepository()
+    val record = givenRecord(repo.id)
+
+    val result = mockMvc.patchAs(access.owner, recordUrl(repo, record.id), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertStatus(result, 412)
+    val body = result.response.contentAsString
+    assert(body.contains("\"code\":\"PRECONDITION_FAILED\"")) { body }
+    verify(documentUseCase, never()).updateDocument(any(), any())
+  }
+
+  @Test
+  fun `updateRecord answers a stranger with 404 even with a stale If-Match`() = runTest {
+    val private = access.givenRepository()
+    val record = givenRecord(private.id)
+
+    val result =
+      mockMvc.patchAs(access.stranger, recordUrl(private, record.id), UPDATE, mapOf("If-Match" to "\"stale\""))
+
+    assertNotFound(result, "repository ${private.id.uuid} not found")
     verify(documentUseCase, never()).updateDocument(any(), any())
   }
 

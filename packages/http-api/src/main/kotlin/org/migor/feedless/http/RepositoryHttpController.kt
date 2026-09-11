@@ -3,6 +3,7 @@ package org.migor.feedless.http
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
+import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.http.api.RepositoriesApi
 import org.migor.feedless.http.api.model.RepositoryCreate
@@ -36,6 +37,7 @@ class RepositoryHttpController(
   private val repositoryUseCase: RepositoryUseCasePort,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRepositoryMapper,
+  private val etagCalculator: ETagCalculator,
 ) : RepositoriesApi {
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -78,7 +80,8 @@ class RepositoryHttpController(
   override suspend fun getRepository(repositoryId: java.util.UUID): ResponseEntity<HttpRepository> {
     val repo = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
     val userId = currentUserId()
-    return ResponseEntity.ok(mapper.toHttp(repo, userId != null && repo.ownerId == userId))
+    val httpRepo = mapper.toHttp(repo, userId != null && repo.ownerId == userId)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(httpRepo)).body(httpRepo)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
@@ -86,13 +89,23 @@ class RepositoryHttpController(
   override suspend fun updateRepository(
     repositoryId: java.util.UUID,
     repositoryUpdate: RepositoryUpdate,
+    ifMatch: String?,
   ): ResponseEntity<HttpRepository> {
     val id = RepositoryId(repositoryId)
-    accessGuard.requireRepository(id, RepositoryAccess.write)
+    val userId = currentUserId()
+    // Access guard first: a denied or missing repository answers 404, never 412 — a stale
+    // If-Match must never leak that a repository exists.
+    val current = accessGuard.requireRepository(id, RepositoryAccess.write)
+    val currentHttp = mapper.toHttp(current, userId != null && current.ownerId == userId)
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(currentHttp)) {
+      throw PreconditionFailedException("repository ${id.uuid} was modified since the ETag in If-Match")
+    }
+    // Check-then-update race: two PATCHes with the same (matching) If-Match can both pass this
+    // check and both apply — acceptable for slice 1 per the plan; no locking added here.
     repositoryUseCase.updateRepository(id, mapper.toDomainUpdate(repositoryUpdate))
     val updated = accessGuard.requireRepository(id, RepositoryAccess.write)
-    val userId = currentUserId()
-    return ResponseEntity.ok(mapper.toHttp(updated, userId != null && updated.ownerId == userId))
+    val httpUpdated = mapper.toHttp(updated, userId != null && updated.ownerId == userId)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(httpUpdated)).body(httpUpdated)
   }
 
   @PreAuthorize("@capabilityService.hasCapability('user')")
