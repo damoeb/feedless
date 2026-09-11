@@ -45,6 +45,7 @@ import java.util.*
     Index(name = "document_published_at_idx", columnList = StandardJpaFields.publishedAt),
     Index(name = "document_starting_at_idx", columnList = StandardJpaFields.startingAt),
     Index(name = "document_created_at_idx", columnList = StandardJpaFields.createdAt),
+    Index(name = "document_source_id_idx", columnList = StandardJpaFields.sourceId),
   ]
 )
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
