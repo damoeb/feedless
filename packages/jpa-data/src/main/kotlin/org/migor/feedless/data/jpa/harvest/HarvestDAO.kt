@@ -53,7 +53,7 @@ DELETE FROM t_harvest WHERE EXISTS(
 
   /**
    * SKIP LOCKED gives concurrent claimers disjoint sets. A real run is claimable only with no running or older queued real run
-   * of its source, so real runs never overlap (V90's unique index) and start in queue order.
+   * of its source, so real runs never overlap (V91's unique index) and start in queue order.
    */
   @Query(
     """
@@ -73,7 +73,7 @@ DELETE FROM t_harvest WHERE EXISTS(
   )
   fun findQueuedForUpdateSkipLocked(@Param("limit") limit: Int): List<HarvestEntity>
 
-  /** V90's partial unique index plus ON CONFLICT DO NOTHING: 0 rows when a real harvest already runs. */
+  /** V91's partial unique index plus ON CONFLICT DO NOTHING: 0 rows when a real harvest already runs. */
   @Modifying
   @Query(
     """
