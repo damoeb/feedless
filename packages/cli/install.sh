@@ -37,11 +37,14 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ "${FEEDCTL_BASE_URL}" = "__FEEDCTL_BASE_URL__" ]; then
-  echo "feedctl install: FEEDCTL_BASE_URL is not set. Run this script from" >&2
-  echo "an instance's /cli/install.sh, or set FEEDCTL_BASE_URL explicitly." >&2
-  exit 1
-fi
+# A prefix match: the server templates every full placeholder, a literal one here too.
+case "${FEEDCTL_BASE_URL}" in
+  __FEEDCTL_*)
+    echo "feedctl install: FEEDCTL_BASE_URL is not set. Run this script from" >&2
+    echo "an instance's /cli/install.sh, or set FEEDCTL_BASE_URL explicitly." >&2
+    exit 1
+    ;;
+esac
 
 os="$(uname -s)"
 case "${os}" in

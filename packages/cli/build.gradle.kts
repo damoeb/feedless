@@ -116,7 +116,7 @@ val testTask = tasks.register<Exec>("test") {
 
   inputs.dir("cmd")
   inputs.dir("internal")
-  inputs.files("go.mod", "go.sum")
+  inputs.files("go.mod", "go.sum", "install.sh")
   outputs.upToDateWhen { true }
 }
 
