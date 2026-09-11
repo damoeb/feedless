@@ -15,7 +15,8 @@ class StatelessAgentRegistry : AgentRegistry {
   private val registry = mutableListOf<Agent>()
 
   override suspend fun findAllByOwnerIdOrOpenInstanceIsTrue(userId: UserId?): List<Agent> {
-    return registry.filter { it.ownerId == userId && it.openInstance }
+    // Same semantics as the JPA query of the same name: the caller's own agents, plus every open one.
+    return registry.filter { it.ownerId == userId || it.openInstance }
   }
 
   override suspend fun findByConnectionIdAndSecretKeyId(connectionId: String, secretKeyId: UserSecretId): Agent? {
