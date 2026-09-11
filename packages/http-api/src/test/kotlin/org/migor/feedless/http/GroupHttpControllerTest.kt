@@ -4,6 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.ConflictException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.group.Group
@@ -143,6 +144,22 @@ class GroupHttpControllerTest {
   }
 
   @Test
+  fun `deleteGroup returns 409 CONFLICT when the delete would lock a member out`() = runTest {
+    val groupId = GroupId()
+    doThrow(ConflictException("The group still owns repositories. Delete them before deleting the group."))
+      .whenever(groupUseCase).delete(eq(groupId))
+
+    val mvcResult = mockMvc.delete("/api/v1/groups/${groupId.uuid}").andReturn()
+
+    dispatchIfAsync(
+      mvcResult,
+      status().isConflict,
+      jsonPath("$.code").value("CONFLICT"),
+      jsonPath("$.message").value("The group still owns repositories. Delete them before deleting the group."),
+    )
+  }
+
+  @Test
   fun `listGroupMembers returns members`() = runTest {
     val groupId = GroupId()
     val memberId = UserId()
@@ -249,6 +266,19 @@ class GroupHttpControllerTest {
     val mvcResult = mockMvc.delete("/api/v1/groups/${groupId.uuid}/members/${memberId.uuid}").andReturn()
 
     dispatchIfAsync(mvcResult, status().isForbidden, jsonPath("$.code").value("FORBIDDEN"))
+  }
+
+  @Test
+  fun `removeGroupMember returns 409 CONFLICT when removing the last owner`() = runTest {
+    val groupId = GroupId()
+    val memberId = UserId()
+    doThrow(ConflictException("This is the group's last owner. Add another owner before removing this one."))
+      .whenever(groupUseCase)
+      .removeUserFromGroup(eq(groupId), eq(memberId))
+
+    val mvcResult = mockMvc.delete("/api/v1/groups/${groupId.uuid}/members/${memberId.uuid}").andReturn()
+
+    dispatchIfAsync(mvcResult, status().isConflict, jsonPath("$.code").value("CONFLICT"))
   }
 
   private fun dispatchIfAsync(

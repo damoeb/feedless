@@ -24,9 +24,12 @@ import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import org.migor.feedless.repository.RepositoryRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.TransactionTemplate
 
 class GroupUseCaseTest {
 
@@ -71,6 +74,8 @@ class GroupUseCaseTest {
       userGroupAssignmentRepository,
       groupGuard,
       groupRepository,
+      mock(RepositoryRepository::class.java),
+      TransactionTemplate(mock(PlatformTransactionManager::class.java)),
     )
     `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }
@@ -204,9 +209,9 @@ class GroupUseCaseTest {
   @Test
   fun `admin can remove user from group`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-      // given
+      // given — removing a non-owner; the last-owner rules are covered by GroupUseCaseIntTest
       mockCurrentUserIsAdmin(true)
-      val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
+      val assignment = mockUserRoleForGroup(userId, RoleInGroup.editor)
 
       // when
       groupUseCase.removeUserFromGroup(groupId, user.id)
@@ -221,7 +226,7 @@ class GroupUseCaseTest {
       // given
       mockCurrentUserIsAdmin(false)
       mockUserRoleForGroup(currentUserId, RoleInGroup.owner)
-      val assignment = mockUserRoleForGroup(userId, RoleInGroup.owner)
+      val assignment = mockUserRoleForGroup(userId, RoleInGroup.editor)
 
       // when
       groupUseCase.removeUserFromGroup(groupId, user.id)
