@@ -524,21 +524,33 @@ func TestRecordDelete_ThreeIds_SecondFails_TwoDeletedOneErrorLine_Exit1(t *testi
 		t.Errorf("DELETE calls = %v, want all three ids in order", deleteCalls)
 	}
 
-	lines := strings.Split(strings.TrimRight(stdout.String(), "\n"), "\n")
-	if len(lines) != 3 {
-		t.Fatalf("stdout lines = %v, want 3", lines)
+	// stdout carries only the successful deletes, in order — no error text
+	// mixed in, so a script capturing stdout alone learns exactly what was
+	// deleted.
+	outLines := strings.Split(strings.TrimRight(stdout.String(), "\n"), "\n")
+	if len(outLines) != 2 {
+		t.Fatalf("stdout lines = %v, want 2 (the two successful deletes)", outLines)
 	}
-	if lines[0] != "deleted "+testRecordID {
-		t.Errorf("lines[0] = %q, want %q", lines[0], "deleted "+testRecordID)
+	if outLines[0] != "deleted "+testRecordID {
+		t.Errorf("stdout line 0 = %q, want %q", outLines[0], "deleted "+testRecordID)
 	}
-	if !strings.HasPrefix(lines[1], "error: "+testRecordID2+": ") {
-		t.Errorf("lines[1] = %q, want it to start with %q", lines[1], "error: "+testRecordID2+": ")
+	if outLines[1] != "deleted "+testRecordID3 {
+		t.Errorf("stdout line 1 = %q, want %q", outLines[1], "deleted "+testRecordID3)
 	}
-	if lines[2] != "deleted "+testRecordID3 {
-		t.Errorf("lines[2] = %q, want %q", lines[2], "deleted "+testRecordID3)
+	if strings.Contains(stdout.String(), "error:") {
+		t.Errorf("stdout = %q, want no error text on stdout", stdout.String())
 	}
-	if stderr.Len() != 0 {
-		t.Errorf("stderr = %q, want nothing (the batch's own per-id lines already went to stdout)", stderr.String())
+
+	// stderr carries only the failed id's error line.
+	errLines := strings.Split(strings.TrimRight(stderr.String(), "\n"), "\n")
+	if len(errLines) != 1 {
+		t.Fatalf("stderr lines = %v, want 1 (the one failed delete)", errLines)
+	}
+	if !strings.HasPrefix(errLines[0], "error: "+testRecordID2+": ") {
+		t.Errorf("stderr line = %q, want it to start with %q", errLines[0], "error: "+testRecordID2+": ")
+	}
+	if strings.Contains(stderr.String(), "deleted "+testRecordID) || strings.Contains(stderr.String(), "deleted "+testRecordID3) {
+		t.Errorf("stderr = %q, want no successful-delete lines on stderr", stderr.String())
 	}
 }
 

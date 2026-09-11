@@ -572,10 +572,12 @@ func runRecordDelete(cmd *cobra.Command, version string, idArgs []string, yes bo
 
 // deleteRecords confirms once for the whole batch (via confirmDelete — no
 // GET needed to name anything, unlike repo delete's single-resource
-// prompt), then DELETEs each id in order, printing one "deleted <id>" or
-// "error: <id>: <message>" line per id and continuing after a failure.
-// Returns a non-nil error (exit 1) if any id failed, nil (exit 0)
-// otherwise.
+// prompt), then DELETEs each id in order, printing one "deleted <id>" line
+// per successful id to stdout (cmd.OutOrStdout()) or one "error: <id>:
+// <message>" line per failed id to stderr (cmd.ErrOrStderr()) — stdout
+// stays data-only, so a script capturing it to learn what was deleted
+// never gets error text mixed in — and continuing after a failure. Returns
+// a non-nil error (exit 1) if any id failed, nil (exit 0) otherwise.
 //
 // Kept independent of cobra flag parsing and of
 // client.NewFromConfig/config.Load, taking isTTY as an explicit parameter,
@@ -594,7 +596,7 @@ func deleteRecords(cmd *cobra.Command, apiClient *client.Client, repoID api.Repo
 		if delErr != nil {
 			failed = true
 
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "error: %s: %s\n", id, delErr)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "error: %s: %s\n", id, delErr)
 
 			continue
 		}
@@ -602,7 +604,7 @@ func deleteRecords(cmd *cobra.Command, apiClient *client.Client, repoID api.Repo
 		if apiErr := NewAPIError(resp, fmt.Sprintf("record %s", id)); apiErr != nil {
 			failed = true
 
-			_, _ = fmt.Fprintf(cmd.OutOrStdout(), "error: %s: %s\n", id, apiErr)
+			_, _ = fmt.Fprintf(cmd.ErrOrStderr(), "error: %s: %s\n", id, apiErr)
 
 			continue
 		}
@@ -619,9 +621,10 @@ func deleteRecords(cmd *cobra.Command, apiClient *client.Client, repoID api.Repo
 
 // recordDeleteFailedError signals a batch delete's exit code (1) without
 // re-printing anything to stderr: deleteRecords already printed one
-// "deleted <id>" or "error: <id>: <message>" line per id to stdout as it
-// went, so main's default "error: <message>\n" rendering would be a
-// redundant, less specific summary line — RenderError is a deliberate no-op.
+// "deleted <id>" line (stdout) or "error: <id>: <message>" line (stderr)
+// per id as it went, so main's default "error: <message>\n" rendering
+// would be a redundant, less specific summary line — RenderError is a
+// deliberate no-op.
 type recordDeleteFailedError struct{}
 
 func (e *recordDeleteFailedError) Error() string { return "one or more records failed to delete" }
