@@ -25,7 +25,7 @@ class MailPropertiesTest {
     // spring.mail.test-connection=true makes MailSenderValidatorAutoConfiguration
     // connect in its constructor, so an unreachable mail server aborts the
     // context refresh and takes the whole API down.
-    listOf("application-mail.yaml", "application-prod.yaml").forEach { file ->
+    listOf("application-mail.yaml", "application-prod.yaml", "application-mailpit.yaml").forEach { file ->
       val value = at(load(file), "spring", "mail", "test-connection")
       assertThat(value)
         .describedAs("spring.mail.test-connection in %s must not default to true", file)
@@ -54,6 +54,14 @@ class MailPropertiesTest {
     assertThat(value)
       .describedAs("management.health.mail.enabled must stay off")
       .isEqualTo(false)
+  }
+
+  @Test
+  fun `mailpit profile targets the in-cluster catch-all without auth`() {
+    val mailpit = load("application-mailpit.yaml")
+    assertThat(at(mailpit, "spring", "mail", "host")).isEqualTo("mailpit.default.svc.cluster.local")
+    assertThat(at(mailpit, "spring", "mail", "port")).isEqualTo(1025)
+    assertThat(at(mailpit, "spring", "mail", "properties", "mail", "smtp", "auth")).isEqualTo(false)
   }
 
   @Test

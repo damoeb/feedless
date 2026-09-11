@@ -1,0 +1,16 @@
+# Routes every outgoing mail into the in-cluster mailpit catch-all (k8s/mailpit.yaml).
+# Append `mailpit` to APP_ACTIVE_PROFILES; it must come after `saas` so it wins over
+# application-mail.yaml. Drop it and set APP_MAIL_* to switch to a real provider.
+spring:
+  mail:
+    host: mailpit.default.svc.cluster.local
+    port: 1025
+    username: ""
+    password: ""
+    test-connection: false
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
