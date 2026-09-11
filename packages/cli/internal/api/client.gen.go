@@ -807,10 +807,22 @@ type ListRepositoriesParams struct {
 	Q          *string         `form:"q,omitempty" json:"q,omitempty"`
 }
 
+// UpdateRepositoryParams defines parameters for UpdateRepository.
+type UpdateRepositoryParams struct {
+	// IfMatch A strong ETag from a prior GET or PATCH of this resource (a source, repository, or record). Present and matching the resource's current ETag applies the update; present and different answers 412 without applying it; `*` matches any existing resource; absent behaves as an unconditional update (last write wins).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
+}
+
 // ListRecordsParams defines parameters for ListRecords.
 type ListRecordsParams struct {
 	Page     *Page     `form:"page,omitempty" json:"page,omitempty"`
 	PageSize *PageSize `form:"pageSize,omitempty" json:"pageSize,omitempty"`
+}
+
+// UpdateRecordParams defines parameters for UpdateRecord.
+type UpdateRecordParams struct {
+	// IfMatch A strong ETag from a prior GET or PATCH of this resource (a source, repository, or record). Present and matching the resource's current ETag applies the update; present and different answers 412 without applying it; `*` matches any existing resource; absent behaves as an unconditional update (last write wins).
+	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
 // ListSourcesParams defines parameters for ListSources.
@@ -824,7 +836,7 @@ type ListSourcesParams struct {
 
 // UpdateSourceParams defines parameters for UpdateSource.
 type UpdateSourceParams struct {
-	// IfMatch A strong ETag from a prior GET or PATCH of this source. Present and matching the source's current ETag applies the update; present and different answers 412 without applying it; `*` matches any existing source; absent behaves as an unconditional update (last write wins).
+	// IfMatch A strong ETag from a prior GET or PATCH of this resource (a source, repository, or record). Present and matching the resource's current ETag applies the update; present and different answers 412 without applying it; `*` matches any existing resource; absent behaves as an unconditional update (last write wins).
 	IfMatch *IfMatch `json:"If-Match,omitempty"`
 }
 
@@ -1009,11 +1021,11 @@ type ClientInterface interface {
 
 	// UpdateRepositoryWithBody performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request,
 	// with any type of body and a specified content type.
-	UpdateRepositoryWithBody(ctx context.Context, repositoryId RepositoryId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateRepositoryWithBody(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateRepository performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request.
 	// Takes a body of the `application/json` content type.
-	UpdateRepository(ctx context.Context, repositoryId RepositoryId, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateRepository(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListRecords performs a GET /repositories/{repositoryId}/records (the `ListRecords` operationId) request.
 	ListRecords(ctx context.Context, repositoryId RepositoryId, params *ListRecordsParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1034,11 +1046,11 @@ type ClientInterface interface {
 
 	// UpdateRecordWithBody performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request,
 	// with any type of body and a specified content type.
-	UpdateRecordWithBody(ctx context.Context, repositoryId RepositoryId, recordId RecordId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateRecordWithBody(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// UpdateRecord performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request.
 	// Takes a body of the `application/json` content type.
-	UpdateRecord(ctx context.Context, repositoryId RepositoryId, recordId RecordId, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+	UpdateRecord(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// ListSources performs a GET /repositories/{repositoryId}/sources (the `ListSources` operationId) request.
 	ListSources(ctx context.Context, repositoryId RepositoryId, params *ListSourcesParams, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1337,8 +1349,8 @@ func (c *Client) GetRepository(ctx context.Context, repositoryId RepositoryId, r
 
 // UpdateRepositoryWithBody performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request,
 // with any type of body and a specified content type.
-func (c *Client) UpdateRepositoryWithBody(ctx context.Context, repositoryId RepositoryId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRepositoryRequestWithBody(c.Server, repositoryId, contentType, body)
+func (c *Client) UpdateRepositoryWithBody(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRepositoryRequestWithBody(c.Server, repositoryId, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1351,8 +1363,8 @@ func (c *Client) UpdateRepositoryWithBody(ctx context.Context, repositoryId Repo
 
 // UpdateRepository performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request.
 // Takes a body of the `application/json` content type.
-func (c *Client) UpdateRepository(ctx context.Context, repositoryId RepositoryId, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRepositoryRequest(c.Server, repositoryId, body)
+func (c *Client) UpdateRepository(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRepositoryRequest(c.Server, repositoryId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1432,8 +1444,8 @@ func (c *Client) GetRecord(ctx context.Context, repositoryId RepositoryId, recor
 
 // UpdateRecordWithBody performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request,
 // with any type of body and a specified content type.
-func (c *Client) UpdateRecordWithBody(ctx context.Context, repositoryId RepositoryId, recordId RecordId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRecordRequestWithBody(c.Server, repositoryId, recordId, contentType, body)
+func (c *Client) UpdateRecordWithBody(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRecordRequestWithBody(c.Server, repositoryId, recordId, params, contentType, body)
 	if err != nil {
 		return nil, err
 	}
@@ -1446,8 +1458,8 @@ func (c *Client) UpdateRecordWithBody(ctx context.Context, repositoryId Reposito
 
 // UpdateRecord performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request.
 // Takes a body of the `application/json` content type.
-func (c *Client) UpdateRecord(ctx context.Context, repositoryId RepositoryId, recordId RecordId, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
-	req, err := NewUpdateRecordRequest(c.Server, repositoryId, recordId, body)
+func (c *Client) UpdateRecord(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewUpdateRecordRequest(c.Server, repositoryId, recordId, params, body)
 	if err != nil {
 		return nil, err
 	}
@@ -2240,18 +2252,18 @@ func NewGetRepositoryRequest(server string, repositoryId RepositoryId) (*http.Re
 }
 
 // NewUpdateRepositoryRequest calls the generic UpdateRepository builder with application/json body
-func NewUpdateRepositoryRequest(server string, repositoryId RepositoryId, body UpdateRepositoryJSONRequestBody) (*http.Request, error) {
+func NewUpdateRepositoryRequest(server string, repositoryId RepositoryId, params *UpdateRepositoryParams, body UpdateRepositoryJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateRepositoryRequestWithBody(server, repositoryId, "application/json", bodyReader)
+	return NewUpdateRepositoryRequestWithBody(server, repositoryId, params, "application/json", bodyReader)
 }
 
 // NewUpdateRepositoryRequestWithBody constructs an http.Request for the UpdateRepository method, with any body, and a specified content type
-func NewUpdateRepositoryRequestWithBody(server string, repositoryId RepositoryId, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateRepositoryRequestWithBody(server string, repositoryId RepositoryId, params *UpdateRepositoryParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2282,6 +2294,21 @@ func NewUpdateRepositoryRequestWithBody(server string, repositoryId RepositoryId
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IfMatch != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "If-Match", *params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("If-Match", headerParam0)
+		}
+
+	}
 
 	return req, nil
 }
@@ -2489,18 +2516,18 @@ func NewGetRecordRequest(server string, repositoryId RepositoryId, recordId Reco
 }
 
 // NewUpdateRecordRequest calls the generic UpdateRecord builder with application/json body
-func NewUpdateRecordRequest(server string, repositoryId RepositoryId, recordId RecordId, body UpdateRecordJSONRequestBody) (*http.Request, error) {
+func NewUpdateRecordRequest(server string, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, body UpdateRecordJSONRequestBody) (*http.Request, error) {
 	var bodyReader io.Reader
 	buf, err := json.Marshal(body)
 	if err != nil {
 		return nil, err
 	}
 	bodyReader = bytes.NewReader(buf)
-	return NewUpdateRecordRequestWithBody(server, repositoryId, recordId, "application/json", bodyReader)
+	return NewUpdateRecordRequestWithBody(server, repositoryId, recordId, params, "application/json", bodyReader)
 }
 
 // NewUpdateRecordRequestWithBody constructs an http.Request for the UpdateRecord method, with any body, and a specified content type
-func NewUpdateRecordRequestWithBody(server string, repositoryId RepositoryId, recordId RecordId, contentType string, body io.Reader) (*http.Request, error) {
+func NewUpdateRecordRequestWithBody(server string, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, contentType string, body io.Reader) (*http.Request, error) {
 	var err error
 
 	var pathParam0 string
@@ -2538,6 +2565,21 @@ func NewUpdateRecordRequestWithBody(server string, repositoryId RepositoryId, re
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	if params != nil {
+
+		if params.IfMatch != nil {
+			var headerParam0 string
+
+			headerParam0, err = runtime.StyleParamWithOptions("simple", false, "If-Match", *params.IfMatch, runtime.StyleParamOptions{ParamLocation: runtime.ParamLocationHeader, Type: "string", Format: ""})
+			if err != nil {
+				return nil, err
+			}
+
+			req.Header.Set("If-Match", headerParam0)
+		}
+
+	}
 
 	return req, nil
 }
@@ -3352,11 +3394,11 @@ type ClientWithResponsesInterface interface {
 	// with any type of body and a specified content type.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	UpdateRepositoryWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error)
+	UpdateRepositoryWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error)
 
 	// UpdateRepositoryWithResponse performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-	UpdateRepositoryWithResponse(ctx context.Context, repositoryId RepositoryId, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error)
+	UpdateRepositoryWithResponse(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error)
 
 	// ListRecordsWithResponse performs a GET /repositories/{repositoryId}/records (the `ListRecords` operationId) request.
 	//
@@ -3387,11 +3429,11 @@ type ClientWithResponsesInterface interface {
 	// with any type of body and a specified content type.
 	//
 	// Returns a wrapper object for the known response body format(s).
-	UpdateRecordWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error)
+	UpdateRecordWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error)
 
 	// UpdateRecordWithResponse performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request.
 	// Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-	UpdateRecordWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error)
+	UpdateRecordWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error)
 
 	// ListSourcesWithResponse performs a GET /repositories/{repositoryId}/sources (the `ListSources` operationId) request.
 	//
@@ -4357,6 +4399,7 @@ func (r DeleteRepositoryResponse) ContentType() string {
 
 // GetRepositoryResponse200Headers the declared response headers of an HTTP 200 response for GetRepository
 type GetRepositoryResponse200Headers struct {
+	ETag             *string
 	XFeedlessVersion *string
 }
 
@@ -4433,11 +4476,17 @@ func (r GetRepositoryResponse) ContentType() string {
 
 // UpdateRepositoryResponse200Headers the declared response headers of an HTTP 200 response for UpdateRepository
 type UpdateRepositoryResponse200Headers struct {
+	ETag             *string
 	XFeedlessVersion *string
 }
 
 // UpdateRepositoryResponse404Headers the declared response headers of an HTTP 404 response for UpdateRepository
 type UpdateRepositoryResponse404Headers struct {
+	XFeedlessVersion *string
+}
+
+// UpdateRepositoryResponse412Headers the declared response headers of an HTTP 412 response for UpdateRepository
+type UpdateRepositoryResponse412Headers struct {
 	XFeedlessVersion *string
 }
 
@@ -4459,6 +4508,8 @@ type UpdateRepositoryResponse struct {
 	JSON200 *Repository
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON412 the response for an HTTP 412 `application/json` response
+	JSON412 *PreconditionFailed
 	// JSON429 the response for an HTTP 429 `application/json` response
 	JSON429 *TooManyRequests
 	// JSONDefault the response for an HTTP default `application/json` response
@@ -4467,6 +4518,8 @@ type UpdateRepositoryResponse struct {
 	Headers200 *UpdateRepositoryResponse200Headers
 	// Headers404 the parsed response headers for an HTTP 404 response
 	Headers404 *UpdateRepositoryResponse404Headers
+	// Headers412 the parsed response headers for an HTTP 412 response
+	Headers412 *UpdateRepositoryResponse412Headers
 	// Headers429 the parsed response headers for an HTTP 429 response
 	Headers429 *UpdateRepositoryResponse429Headers
 	// HeadersDefault the parsed response headers for an HTTP default response
@@ -4481,6 +4534,11 @@ func (r UpdateRepositoryResponse) GetJSON200() *Repository {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r UpdateRepositoryResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON412 returns the response for an HTTP 412 `application/json` response
+func (r UpdateRepositoryResponse) GetJSON412() *PreconditionFailed {
+	return r.JSON412
 }
 
 // GetJSON429 returns the response for an HTTP 429 `application/json` response
@@ -4747,6 +4805,7 @@ func (r DeleteRecordResponse) ContentType() string {
 
 // GetRecordResponse200Headers the declared response headers of an HTTP 200 response for GetRecord
 type GetRecordResponse200Headers struct {
+	ETag             *string
 	XFeedlessVersion *string
 }
 
@@ -4823,11 +4882,17 @@ func (r GetRecordResponse) ContentType() string {
 
 // UpdateRecordResponse200Headers the declared response headers of an HTTP 200 response for UpdateRecord
 type UpdateRecordResponse200Headers struct {
+	ETag             *string
 	XFeedlessVersion *string
 }
 
 // UpdateRecordResponse404Headers the declared response headers of an HTTP 404 response for UpdateRecord
 type UpdateRecordResponse404Headers struct {
+	XFeedlessVersion *string
+}
+
+// UpdateRecordResponse412Headers the declared response headers of an HTTP 412 response for UpdateRecord
+type UpdateRecordResponse412Headers struct {
 	XFeedlessVersion *string
 }
 
@@ -4849,6 +4914,8 @@ type UpdateRecordResponse struct {
 	JSON200 *Record
 	// JSON404 the response for an HTTP 404 `application/json` response
 	JSON404 *NotFound
+	// JSON412 the response for an HTTP 412 `application/json` response
+	JSON412 *PreconditionFailed
 	// JSON429 the response for an HTTP 429 `application/json` response
 	JSON429 *TooManyRequests
 	// JSONDefault the response for an HTTP default `application/json` response
@@ -4857,6 +4924,8 @@ type UpdateRecordResponse struct {
 	Headers200 *UpdateRecordResponse200Headers
 	// Headers404 the parsed response headers for an HTTP 404 response
 	Headers404 *UpdateRecordResponse404Headers
+	// Headers412 the parsed response headers for an HTTP 412 response
+	Headers412 *UpdateRecordResponse412Headers
 	// Headers429 the parsed response headers for an HTTP 429 response
 	Headers429 *UpdateRecordResponse429Headers
 	// HeadersDefault the parsed response headers for an HTTP default response
@@ -4871,6 +4940,11 @@ func (r UpdateRecordResponse) GetJSON200() *Record {
 // GetJSON404 returns the response for an HTTP 404 `application/json` response
 func (r UpdateRecordResponse) GetJSON404() *NotFound {
 	return r.JSON404
+}
+
+// GetJSON412 returns the response for an HTTP 412 `application/json` response
+func (r UpdateRecordResponse) GetJSON412() *PreconditionFailed {
+	return r.JSON412
 }
 
 // GetJSON429 returns the response for an HTTP 429 `application/json` response
@@ -5981,8 +6055,8 @@ func (c *ClientWithResponses) GetRepositoryWithResponse(ctx context.Context, rep
 // with any type of body and a specified content type.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) UpdateRepositoryWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error) {
-	rsp, err := c.UpdateRepositoryWithBody(ctx, repositoryId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateRepositoryWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error) {
+	rsp, err := c.UpdateRepositoryWithBody(ctx, repositoryId, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -5991,8 +6065,8 @@ func (c *ClientWithResponses) UpdateRepositoryWithBodyWithResponse(ctx context.C
 
 // UpdateRepositoryWithResponse performs a PATCH /repositories/{repositoryId} (the `UpdateRepository` operationId) request.
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) UpdateRepositoryWithResponse(ctx context.Context, repositoryId RepositoryId, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error) {
-	rsp, err := c.UpdateRepository(ctx, repositoryId, body, reqEditors...)
+func (c *ClientWithResponses) UpdateRepositoryWithResponse(ctx context.Context, repositoryId RepositoryId, params *UpdateRepositoryParams, body UpdateRepositoryJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRepositoryResponse, error) {
+	rsp, err := c.UpdateRepository(ctx, repositoryId, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6058,8 +6132,8 @@ func (c *ClientWithResponses) GetRecordWithResponse(ctx context.Context, reposit
 // with any type of body and a specified content type.
 //
 // Returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) UpdateRecordWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error) {
-	rsp, err := c.UpdateRecordWithBody(ctx, repositoryId, recordId, contentType, body, reqEditors...)
+func (c *ClientWithResponses) UpdateRecordWithBodyWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error) {
+	rsp, err := c.UpdateRecordWithBody(ctx, repositoryId, recordId, params, contentType, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -6068,8 +6142,8 @@ func (c *ClientWithResponses) UpdateRecordWithBodyWithResponse(ctx context.Conte
 
 // UpdateRecordWithResponse performs a PATCH /repositories/{repositoryId}/records/{recordId} (the `UpdateRecord` operationId) request.
 // Takes a body of the `application/json` content type, and returns a wrapper object for the known response body format(s).
-func (c *ClientWithResponses) UpdateRecordWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error) {
-	rsp, err := c.UpdateRecord(ctx, repositoryId, recordId, body, reqEditors...)
+func (c *ClientWithResponses) UpdateRecordWithResponse(ctx context.Context, repositoryId RepositoryId, recordId RecordId, params *UpdateRecordParams, body UpdateRecordJSONRequestBody, reqEditors ...RequestEditorFn) (*UpdateRecordResponse, error) {
+	rsp, err := c.UpdateRecord(ctx, repositoryId, recordId, params, body, reqEditors...)
 	if err != nil {
 		return nil, err
 	}
@@ -7164,6 +7238,13 @@ func ParseGetRepositoryResponse(rsp *http.Response) (*GetRepositoryResponse, err
 	switch {
 	case rsp.StatusCode == 200:
 		var headers GetRepositoryResponse200Headers
+		if values := rsp.Header.Values("ETag"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "ETag", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.ETag = &value
+		}
 		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
 			var value string
 			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
@@ -7225,6 +7306,13 @@ func ParseUpdateRepositoryResponse(rsp *http.Response) (*UpdateRepositoryRespons
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest PreconditionFailed
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
 		var dest TooManyRequests
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -7244,6 +7332,13 @@ func ParseUpdateRepositoryResponse(rsp *http.Response) (*UpdateRepositoryRespons
 	switch {
 	case rsp.StatusCode == 200:
 		var headers UpdateRepositoryResponse200Headers
+		if values := rsp.Header.Values("ETag"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "ETag", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.ETag = &value
+		}
 		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
 			var value string
 			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
@@ -7262,6 +7357,16 @@ func ParseUpdateRepositoryResponse(rsp *http.Response) (*UpdateRepositoryRespons
 			headers.XFeedlessVersion = &value
 		}
 		response.Headers404 = &headers
+	case rsp.StatusCode == 412:
+		var headers UpdateRepositoryResponse412Headers
+		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XFeedlessVersion = &value
+		}
+		response.Headers412 = &headers
 	case rsp.StatusCode == 429:
 		var headers UpdateRepositoryResponse429Headers
 		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
@@ -7563,6 +7668,13 @@ func ParseGetRecordResponse(rsp *http.Response) (*GetRecordResponse, error) {
 	switch {
 	case rsp.StatusCode == 200:
 		var headers GetRecordResponse200Headers
+		if values := rsp.Header.Values("ETag"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "ETag", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.ETag = &value
+		}
 		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
 			var value string
 			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
@@ -7624,6 +7736,13 @@ func ParseUpdateRecordResponse(rsp *http.Response) (*UpdateRecordResponse, error
 		}
 		response.JSON404 = &dest
 
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 412:
+		var dest PreconditionFailed
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON412 = &dest
+
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 429:
 		var dest TooManyRequests
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
@@ -7643,6 +7762,13 @@ func ParseUpdateRecordResponse(rsp *http.Response) (*UpdateRecordResponse, error
 	switch {
 	case rsp.StatusCode == 200:
 		var headers UpdateRecordResponse200Headers
+		if values := rsp.Header.Values("ETag"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "ETag", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.ETag = &value
+		}
 		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
 			var value string
 			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
@@ -7661,6 +7787,16 @@ func ParseUpdateRecordResponse(rsp *http.Response) (*UpdateRecordResponse, error
 			headers.XFeedlessVersion = &value
 		}
 		response.Headers404 = &headers
+	case rsp.StatusCode == 412:
+		var headers UpdateRecordResponse412Headers
+		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XFeedlessVersion = &value
+		}
+		response.Headers412 = &headers
 	case rsp.StatusCode == 429:
 		var headers UpdateRecordResponse429Headers
 		if values := rsp.Header.Values("Retry-After"); len(values) > 0 {
