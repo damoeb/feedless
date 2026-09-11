@@ -117,6 +117,7 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl`, und die *Standard*-Reihenfolge ist eine andere (vorher pro Seite nach `lastRecordsRetrieved`, jetzt `createdAt desc`) — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
 - [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; optional signieren (cosign/minisign).
 - [ ] **`install.sh`-Fehlerfälle.** Scheitert `curl`, bricht das Skript ohne eigene Meldung ab; eine `http`-Basis-URL wird akzeptiert, obwohl `SHA256SUMS` vom selben Host kommt.
+- [ ] **Fehlende Dateien unter `/cli/**` antworten 400.** Auf einem echten Container beantwortet der Core eine fehlende statische Datei unter `/cli/**` mit HTTP 400 und einem Body, der `"status":404` meldet („No static resource …"); README und Testkommentare (`SecurityConfigIntTest`, `CliInstallScriptController`) sprechen von 404. Status korrigieren oder die Doku anpassen.
 - [ ] **`getHarvestLogs` legt `produces=text/plain` fest.**
 - [ ] **`/user/sources` joint `FetchActionEntity` direkt:** Sources mit zwei Fetch-Actions erscheinen doppelt, solche ohne fehlen — ein `EXISTS` nur für `like` verwenden.
 - [ ] **`GET /repositories/{id}`** liefert `retention` und `pushNotificationsMuted` nicht.
