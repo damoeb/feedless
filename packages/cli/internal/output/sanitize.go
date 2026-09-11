@@ -91,20 +91,31 @@ func isStrippedControl(r rune) bool {
 }
 
 // skipEscapeSequence returns the index just past the escape sequence that
-// starts at runes[i] (runes[i] == ESC), consuming the whole sequence so none
-// of it reaches the terminal. Recognizes:
-//   - CSI (ESC '[' …): parameter bytes 0x30–0x3F, intermediate bytes
-//     0x20–0x2F, then one final byte 0x40–0x7E.
+// starts at runes[i] (runes[i] == ESC), consuming only the bytes that are
+// actually part of a recognized sequence — never more — so a malformed or
+// unterminated sequence can never hide legitimate text that follows it (a
+// hostile page could otherwise use an unterminated sequence to make every
+// later line of a record's text, or a harvest log, disappear). Recognizes:
+//   - CSI (ESC '[' …): parameter bytes 0x30–0x3F and intermediate bytes
+//     0x20–0x2F, then one final byte 0x40–0x7E. The first byte outside the
+//     combined 0x20–0x7E parameter/intermediate/final range ends the
+//     sequence right there — that byte, and everything after it, is left
+//     for normal processing rather than being swallowed as if it were part
+//     of the sequence.
 //   - the "string" introducers OSC (']'), DCS ('P'), SOS ('X'), PM ('^'),
 //     APC ('_'): consumed up to and including a BEL (0x07) or ST (ESC '\\')
-//     terminator.
+//     terminator. An ESC that isn't the start of an ST aborts the sequence
+//     right there too (xterm's own behaviour), handing that ESC back to be
+//     reprocessed as a fresh, independent escape sequence. If neither BEL
+//     nor ST nor an aborting ESC ever appears (the sequence runs off the
+//     end of the input unterminated), only its two-rune introducer (ESC
+//     plus the type character) is dropped — the rest of the would-be
+//     payload is left for normal processing (and so still shown, sanitized
+//     like any other text) instead of being hidden in its entirety.
 //   - any other "nF"/"Fp"/"Fe"-style sequence: zero or more intermediate
 //     bytes (0x20–0x2F) followed by one final byte (0x30–0x7E).
 //
-// An unterminated CSI/string sequence, or an ESC not followed by anything
-// recognizable, consumes through the input it can — never less than the ESC
-// itself — so a malformed or truncated sequence can never leak a raw ESC
-// (or its still-dangerous prefix) into the output.
+// An ESC not followed by anything recognizable drops just the ESC itself.
 func skipEscapeSequence(runes []rune, i int) int {
 	n := len(runes)
 	if i+1 >= n {
@@ -116,14 +127,20 @@ func skipEscapeSequence(runes []rune, i int) int {
 		j := i + 2
 		for j < n {
 			c := runes[j]
-			if c >= 0x40 && c <= 0x7E {
+			if c >= 0x40 && c <= 0x7E { // final byte: properly terminated
 				return j + 1
 			}
+			if c < 0x20 || c > 0x7E { // outside parameter/intermediate/final: malformed
+				return j // don't consume the byte that broke the sequence
+			}
 
-			j++
+			j++ // 0x20-0x3F: parameter/intermediate byte, keep scanning
 		}
 
-		return n // unterminated: drop the rest
+		// Ran off the end while every byte seen was still a valid
+		// parameter/intermediate byte and no final byte ever appeared —
+		// there's nothing left after n to preserve either way.
+		return n
 	case ']', 'P', 'X', '^', '_': // OSC, DCS, SOS, PM, APC
 		j := i + 2
 		for j < n {
@@ -131,14 +148,21 @@ func skipEscapeSequence(runes []rune, i int) int {
 			if c == 0x07 { // BEL terminator
 				return j + 1
 			}
-			if c == 0x1B && j+1 < n && runes[j+1] == '\\' { // ST terminator
-				return j + 2
+			if c == 0x1B { // ESC: either an ST terminator, or aborts the sequence
+				if j+1 < n && runes[j+1] == '\\' {
+					return j + 2 // ST
+				}
+
+				return j // abort: reprocess this ESC fresh, consuming nothing of it
 			}
 
 			j++
 		}
 
-		return n // unterminated: drop the rest
+		// Unterminated: drop only the two-rune introducer, not the payload
+		// collected above — it's reprocessed as ordinary text/control
+		// characters instead of being hidden.
+		return i + 2
 	default:
 		j := i + 1
 		for j < n && runes[j] >= 0x20 && runes[j] <= 0x2F { // intermediates

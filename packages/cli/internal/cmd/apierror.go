@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/damoeb/feedless/packages/cli/internal/api"
+	"github.com/damoeb/feedless/packages/cli/internal/output"
 )
 
 // APIError wraps a non-2xx Feedless API response as an error carrying
@@ -64,14 +65,20 @@ func NewAPIError(resp apiResponse, what string) error {
 // Error renders the one-line message: "not found: <what>" for a 404
 // (ignoring the body — the brief's exact wording), the server's message
 // otherwise, falling back to the HTTP status text when the body carried
-// none.
+// none. The server's message is server-provided text like every other field
+// this task's sanitizer covers (it can echo scraped/user content back, e.g.
+// a validation message quoting the invalid input) — sanitized here, the one
+// place every rendering of it goes through: RenderError below calls
+// Error(), and every other caller that formats an *APIError with %s (main's
+// generic error path, record.go's per-id delete error lines) calls Error()
+// too, via the error interface.
 func (e *APIError) Error() string {
 	if e.Status == http.StatusNotFound {
 		return "not found: " + e.what()
 	}
 
 	if e.Body.Message != "" {
-		return e.Body.Message
+		return output.SafeText(e.Body.Message)
 	}
 
 	return http.StatusText(e.Status)
@@ -99,9 +106,11 @@ func (e *APIError) ExitCode() int {
 }
 
 // RenderError implements the errorRenderer interface main.go's run() looks
-// for: the message line from Error(), plus one indented "field: message"
-// line per field error (present on VALIDATION_ERROR responses; absent
-// otherwise).
+// for: the message line from Error() (already sanitized there), plus one
+// indented "field: message" line per field error (present on
+// VALIDATION_ERROR responses; absent otherwise) — both the field name and
+// its message are server-provided text too (a validation message commonly
+// echoes the offending input), so both go through output.SafeText here.
 func (e *APIError) RenderError(w io.Writer) {
 	_, _ = fmt.Fprintf(w, "error: %s\n", e.Error())
 
@@ -110,6 +119,6 @@ func (e *APIError) RenderError(w io.Writer) {
 	}
 
 	for _, fe := range *e.Body.Errors {
-		_, _ = fmt.Fprintf(w, "  %s: %s\n", fe.Field, fe.Message)
+		_, _ = fmt.Fprintf(w, "  %s: %s\n", output.SafeText(fe.Field), output.SafeText(fe.Message))
 	}
 }

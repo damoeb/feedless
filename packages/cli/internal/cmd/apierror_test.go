@@ -113,6 +113,56 @@ func TestAPIError_RenderError_NoFieldErrors_OnlyPrintsMessage(t *testing.T) {
 	}
 }
 
+// --- C9 fix round 1: server error text must not reach stderr unsanitized ---
+
+func TestAPIError_RenderError_SanitizesMessageAndFieldErrors(t *testing.T) {
+	esc, bel := string(rune(0x1b)), string(rune(0x07))
+
+	apiErr := &APIError{
+		Status: http.StatusBadRequest,
+		Body: api.ApiError{
+			Message: "invalid request " + esc + "]0;pwned" + bel + "here",
+			Errors: &[]api.FieldError{
+				{Field: "url", Message: `must not contain "` + esc + "[31mred" + esc + "[0m\""},
+			},
+		},
+	}
+
+	buf := &bytes.Buffer{}
+	apiErr.RenderError(buf)
+
+	got := buf.String()
+	if strings.ContainsRune(got, 0x1b) {
+		t.Errorf("RenderError() = %q, want no raw ESC (0x1b) reaching stderr", got)
+	}
+	if strings.ContainsRune(got, 0x07) {
+		t.Errorf("RenderError() = %q, want no raw BEL (0x07) reaching stderr", got)
+	}
+	if !strings.Contains(got, "invalid request") || !strings.Contains(got, "here") {
+		t.Errorf("RenderError() = %q, want the text around the stripped OSC sequence preserved", got)
+	}
+	if !strings.Contains(got, "url:") || !strings.Contains(got, "red") {
+		t.Errorf("RenderError() = %q, want the field error's text preserved (with the CSI colour stripped)", got)
+	}
+}
+
+func TestAPIError_Error_SanitizesMessage(t *testing.T) {
+	esc := string(rune(0x1b))
+
+	apiErr := &APIError{
+		Status: http.StatusBadRequest,
+		Body:   api.ApiError{Message: esc + "[2Jwiped " + esc + "[31mtext"},
+	}
+
+	got := apiErr.Error()
+	if strings.ContainsRune(got, 0x1b) {
+		t.Errorf("Error() = %q, want no raw ESC (0x1b)", got)
+	}
+	if !strings.Contains(got, "wiped") || !strings.Contains(got, "text") {
+		t.Errorf("Error() = %q, want the surrounding text preserved", got)
+	}
+}
+
 func TestNewAPIError_EmptyBody_FallsBackToStatusText(t *testing.T) {
 	resp := fakeResponse{status: http.StatusInternalServerError, body: nil}
 
