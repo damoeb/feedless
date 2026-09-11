@@ -17,8 +17,8 @@ import java.nio.charset.StandardCharsets
 
 /**
  * feedctl (packages/cli) is cross-compiled and baked into every self-hosted
- * instance's image (see packages/cli/build.gradle.kts crossCompile and
- * packages/server-core/Dockerfile), so a `curl .../cli/install.sh | sh`
+ * instance's image by the Go stage of packages/server-core/Dockerfile, so a
+ * `curl .../cli/install.sh | sh`
  * against any instance always installs the CLI build matching that
  * instance's API. The binaries and SHA256SUMS are plain static files served
  * from the CLI static location (`/cli/`, all paths); only install.sh needs
@@ -40,8 +40,8 @@ class CliInstallScriptController(
   fun installScript(): ResponseEntity<String> {
     val resource = resourceLoader.getResource(installScriptLocation)
     if (!resource.exists()) {
-      // No local run of `:packages:cli:crossCompile` has populated
-      // static/cli yet -- 404, rather than failing bootRun (see
+      // Only the image's Go stage populates static/cli, so a local bootRun
+      // has none -- 404, rather than failing bootRun (see
       // packages/cli/README.md).
       log.debug("$installScriptLocation not found, feedctl was not cross-compiled into static/cli")
       return ResponseEntity.notFound().build()

@@ -31,7 +31,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
 
 /**
  * feedctl builds are cross-compiled and baked into the image separately
- * (packages/cli/build.gradle.kts crossCompile); this test only covers what
+ * (the Go stage of packages/server-core/Dockerfile); this test only covers what
  * CliInstallScriptController is responsible for: templating install.sh with
  * this instance's own public URL. See SecurityConfigIntTest for the CLI
  * static location's public whitelisting.
@@ -84,8 +84,8 @@ class CliInstallScriptControllerIntTest {
     val restTemplate = TestRestTemplate()
     baseEndpoint = "http://localhost:$port"
 
-    // No `:packages:cli:crossCompile` output on disk for the default
-    // `app.cli.installScriptLocation` -- must not fail bootRun (see
+    // No feedctl build on disk for the default `app.cli.installScriptLocation`
+    // (only the image's Go stage produces one) -- must not fail bootRun (see
     // packages/cli/README.md), just 404.
     val response = restTemplate.getForEntity("$baseEndpoint/cli/install.sh", String::class.java)
 

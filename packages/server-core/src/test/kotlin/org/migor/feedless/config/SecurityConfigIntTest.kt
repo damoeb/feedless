@@ -139,10 +139,10 @@ class SecurityConfigIntTest {
   /**
    * feedctl builds are baked into every instance's image and must be
    * downloadable without a token (curl .../cli/install.sh | sh). A file
-   * that is not present in this test run (no `:packages:cli:crossCompile`
-   * output on disk) still 404s rather than 401/403, proving the CLI static
-   * location is public regardless of whether the CLI was cross-compiled
-   * locally.
+   * that is not present in this test run (the binaries only exist in the
+   * image, built by its Go stage) still 404s rather than 401/403, proving
+   * the CLI static location is public regardless of whether feedctl was
+   * built.
    */
   @ParameterizedTest
   @CsvSource(

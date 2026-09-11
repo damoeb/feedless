@@ -237,17 +237,13 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 
 val buildTask = tasks.findByPath("build")!!.dependsOn("test", "bootJar")
 
-// Each self-hosted instance serves the feedctl build that matches its own
-// API (see CliInstallScriptController), so the image bundles the CLI's
-// cross-compiled binaries rather than a single platform's build.
-val copyCliArtifacts = tasks.register<Copy>("copyCliArtifacts") {
-  dependsOn(":packages:cli:crossCompile")
-  from(project(":packages:cli").layout.buildDirectory.dir("dist"))
-  into(layout.buildDirectory.dir("cli"))
-}
+// The image builds feedctl itself, in a Go stage of the Dockerfile, from the
+// CLI sources passed as the BuildKit named context `cli` -- no local Go and
+// no Gradle dependency on packages/cli.
+val cliSourceDir = project(":packages:cli").projectDir.absolutePath
 
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
-  dependsOn(buildTask, copyCliArtifacts)
+  dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
   val gitHash = grgit.head().id.take(7)
@@ -263,6 +259,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
+    "--build-context", "cli=$cliSourceDir",
     "--platform=linux/amd64",
     "-t", "$baseTag:core-latest",
     "-t", "$baseTag:core-$gitHash",
