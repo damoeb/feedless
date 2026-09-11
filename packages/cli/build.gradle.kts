@@ -3,7 +3,86 @@
 // which shells out to yarn).
 val openapiSpec = "../http-api/src/main/resources/openapi/openapi.yaml"
 
+// A Go version as (major, minor, patch); a pre-release (go1.27rc1) sorts
+// before the release it precedes, so it gets patch -1.
+data class GoVersion(val major: Int, val minor: Int, val patch: Int) : Comparable<GoVersion> {
+  override fun compareTo(other: GoVersion): Int =
+    compareValuesBy(this, other, GoVersion::major, GoVersion::minor, GoVersion::patch)
+
+  override fun toString(): String = if (patch < 0) "$major.$minor (pre-release)" else "$major.$minor.$patch"
+
+  companion object {
+    private val pattern = Regex("""(\d+)\.(\d+)(?:\.(\d+))?([a-z]+\d*)?""")
+
+    // Accepts "1.27", "1.27.1", "go1.27.1", "go1.27rc1" and GOVERSION
+    // strings such as "go1.27.1 X:boringcrypto" or "devel go1.28-abc123".
+    fun parse(text: String): GoVersion? {
+      val match = pattern.find(text) ?: return null
+      val (major, minor, patch, preRelease) = match.destructured
+      return GoVersion(
+        major.toInt(),
+        minor.toInt(),
+        when {
+          preRelease.isNotEmpty() && patch.isEmpty() -> -1
+          patch.isEmpty() -> 0
+          else -> patch.toInt()
+        },
+      )
+    }
+  }
+}
+
+// The toolchain go.mod asks for: its `toolchain goX.Y.Z` line, else its
+// `go X.Y[.Z]` line.
+fun requiredGoVersion(goMod: String): GoVersion {
+  val lines = goMod.lines().map { it.trim() }
+  val line = lines.firstOrNull { it.startsWith("toolchain ") }
+    ?: lines.firstOrNull { it.startsWith("go ") }
+    ?: throw GradleException("go.mod has neither a `toolchain` nor a `go` line")
+  return GoVersion.parse(line.substringAfter(' '))
+    ?: throw GradleException("Cannot parse the Go version in go.mod: `$line`")
+}
+
+// Every Go task needs the toolchain go.mod pins. `go env GOVERSION` reports
+// the toolchain `go` actually selects in this module (after GOTOOLCHAIN=auto
+// switched to, and if needed downloaded, the pinned one), so a missing or too
+// old Go fails here with a clear message instead of as a compile error.
+val checkGoTask = tasks.register("checkGo") {
+  val moduleDir = projectDir
+  val goMod = file("go.mod")
+
+  doLast {
+    val required = requiredGoVersion(goMod.readText())
+    val process = try {
+      ProcessBuilder("go", "env", "GOVERSION")
+        .directory(moduleDir)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start()
+    } catch (e: java.io.IOException) {
+      throw GradleException(
+        "Go not found on PATH. Install Go ≥ 1.21 — it downloads go$required on its own (GOTOOLCHAIN=auto). " +
+          "Building the server-core image needs no local Go.",
+        e,
+      )
+    }
+    val output = process.inputStream.bufferedReader().readText().trim()
+    if (process.waitFor() != 0) {
+      throw GradleException("`go env GOVERSION` failed in $moduleDir (exit ${process.exitValue()}); see its output above.")
+    }
+    val selected = GoVersion.parse(output)
+      ?: throw GradleException("Cannot parse the Go version `go env GOVERSION` reported: `$output`")
+    if (selected < required) {
+      throw GradleException(
+        "go.mod requires Go $required, but `go` selected $output. " +
+          "Install a newer Go, or unset GOTOOLCHAIN (or set GOTOOLCHAIN=auto) so it downloads go$required itself.",
+      )
+    }
+    logger.info("Go $output satisfies go.mod's $required")
+  }
+}
+
 val goVetTask = tasks.register<Exec>("goVet") {
+  dependsOn(checkGoTask)
   commandLine("go", "vet", "./...")
 
   inputs.dir("cmd")
@@ -13,6 +92,7 @@ val goVetTask = tasks.register<Exec>("goVet") {
 }
 
 val golangciLintTask = tasks.register<Exec>("golangciLint") {
+  dependsOn(checkGoTask)
   commandLine("go", "tool", "golangci-lint", "run", "./...")
 
   inputs.dir("cmd")
@@ -26,6 +106,7 @@ val golangciLintTask = tasks.register<Exec>("golangciLint") {
 // internal/api/client.gen.go from openapiSpec; if that leaves a diff, the
 // checked-in client is stale.
 val generateDriftCheckTask = tasks.register<Exec>("generateDriftCheck") {
+  dependsOn(checkGoTask)
   commandLine("sh", "-c", "go generate ./... && git diff --exit-code -- internal/api")
 
   inputs.dir("internal/api")
@@ -38,6 +119,7 @@ val lintTask = tasks.register("lint") {
 }
 
 val testTask = tasks.register<Exec>("test") {
+  dependsOn(checkGoTask)
   commandLine("go", "test", "./...")
 
   inputs.dir("cmd")
@@ -52,12 +134,17 @@ val testTask = tasks.register<Exec>("test") {
 // FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_AGENT_IMAGE (defaults: the published
 // damoeb/feedless:core-latest / agent-latest). Skips when Docker is absent.
 tasks.register<Exec>("e2eTest") {
+  dependsOn(checkGoTask)
   commandLine("go", "test", "-tags", "e2e", "-count=1", "-timeout", "12m", "-v", "./e2e/...")
 
   outputs.upToDateWhen { false }
 }
 
+// The binaries each self-hosted instance serves under /cli/** are built by
+// the Go stage of packages/server-core/Dockerfile, not here; this is the
+// host-platform build for local use.
 val buildTask = tasks.register<Exec>("build") {
+  dependsOn(checkGoTask)
   val feedlessVersion = (findProperty("feedlessVersion") as String?) ?: "dev"
 
   commandLine(
