@@ -1138,7 +1138,7 @@ type ClientInterface interface {
 
 	// GetStatus Report the instance's version, build and number of connected agents
 	//
-	// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+	// The only public operation: it requires no token, and a Bearer token sent with it is ignored, valid or not. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
 	//
 	// Corresponds with GET /status (the `GetStatus` operationId).
 	GetStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
@@ -1683,7 +1683,7 @@ func (c *Client) GetHarvestLogs(ctx context.Context, repositoryId RepositoryId, 
 
 // GetStatus Report the instance's version, build and number of connected agents
 //
-// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+// The only public operation: it requires no token, and a Bearer token sent with it is ignored, valid or not. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
 //
 // Corresponds with GET /status (the `GetStatus` operationId).
 func (c *Client) GetStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -3586,7 +3586,7 @@ type ClientWithResponsesInterface interface {
 
 	// GetStatusWithResponse Report the instance's version, build and number of connected agents
 	//
-	// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+	// The only public operation: it requires no token, and a Bearer token sent with it is ignored, valid or not. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
 	//
 	// Returns a wrapper object for the known response body format(s).
 	//
@@ -6444,7 +6444,7 @@ func (c *ClientWithResponses) GetHarvestLogsWithResponse(ctx context.Context, re
 
 // GetStatusWithResponse Report the instance's version, build and number of connected agents
 //
-// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+// The only public operation: it requires no token, and a Bearer token sent with it is ignored, valid or not. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
 //
 // Returns a wrapper object for the known response body format(s).
 //

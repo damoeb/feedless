@@ -756,8 +756,8 @@ paths:
       operationId: getStatus
       summary: Report the instance's version, build and number of connected agents
       description: >
-        The only public operation: it requires no token, and any Authorization header sent with it
-        is ignored. It reveals nothing but the running version, the build commit and date, and how
+        The only public operation: it requires no token, and a Bearer token sent with it is ignored,
+        valid or not. It reveals nothing but the running version, the build commit and date, and how
         many prerender agents are connected — no agent names, owners, versions or ids.
       security: []
       responses:
