@@ -670,6 +670,30 @@ type Selectors struct {
 	PaginationXPath    string  `json:"paginationXPath"`
 }
 
+// ServerAgents defines model for ServerAgents.
+type ServerAgents struct {
+	// Connected Number of prerender agents currently connected to the instance (cluster-wide when agents are persisted)
+	Connected int32 `json:"connected"`
+}
+
+// ServerBuild defines model for ServerBuild.
+type ServerBuild struct {
+	// Commit Git commit the running image was built from
+	Commit string `json:"commit"`
+
+	// Date Build time in epoch milliseconds
+	Date int64 `json:"date"`
+}
+
+// ServerStatus defines model for ServerStatus.
+type ServerStatus struct {
+	Agents ServerAgents `json:"agents"`
+	Build  ServerBuild  `json:"build"`
+
+	// Version The instance's app.version, the same value as the X-Feedless-Version header
+	Version string `json:"version"`
+}
+
 // Source defines model for Source.
 type Source struct {
 	Disabled *bool `json:"disabled,omitempty"`
@@ -1111,6 +1135,13 @@ type ClientInterface interface {
 	//
 	// Corresponds with GET /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}/logs (the `GetHarvestLogs` operationId).
 	GetHarvestLogs(ctx context.Context, repositoryId RepositoryId, sourceId SourceId, harvestId HarvestId, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetStatus Report the instance's version, build and number of connected agents
+	//
+	// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+	//
+	// Corresponds with GET /status (the `GetStatus` operationId).
+	GetStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	// GetAuthenticatedUser Get the authenticated user (GitHub GET /user)
 	//
@@ -1640,6 +1671,23 @@ func (c *Client) GetHarvest(ctx context.Context, repositoryId RepositoryId, sour
 // Corresponds with GET /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}/logs (the `GetHarvestLogs` operationId).
 func (c *Client) GetHarvestLogs(ctx context.Context, repositoryId RepositoryId, sourceId SourceId, harvestId HarvestId, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewGetHarvestLogsRequest(c.Server, repositoryId, sourceId, harvestId)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+// GetStatus Report the instance's version, build and number of connected agents
+//
+// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+//
+// Corresponds with GET /status (the `GetStatus` operationId).
+func (c *Client) GetStatus(ctx context.Context, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetStatusRequest(c.Server)
 	if err != nil {
 		return nil, err
 	}
@@ -3133,6 +3181,33 @@ func NewGetHarvestLogsRequest(server string, repositoryId RepositoryId, sourceId
 	return req, nil
 }
 
+// NewGetStatusRequest constructs an http.Request for the GetStatus method
+func NewGetStatusRequest(server string) (*http.Request, error) {
+	var err error
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/status")
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 // NewGetAuthenticatedUserRequest constructs an http.Request for the GetAuthenticatedUser method
 func NewGetAuthenticatedUserRequest(server string) (*http.Request, error) {
 	var err error
@@ -3508,6 +3583,15 @@ type ClientWithResponsesInterface interface {
 	//
 	// Corresponds with GET /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}/logs (the `GetHarvestLogs` operationId).
 	GetHarvestLogsWithResponse(ctx context.Context, repositoryId RepositoryId, sourceId SourceId, harvestId HarvestId, reqEditors ...RequestEditorFn) (*GetHarvestLogsResponse, error)
+
+	// GetStatusWithResponse Report the instance's version, build and number of connected agents
+	//
+	// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+	//
+	// Returns a wrapper object for the known response body format(s).
+	//
+	// Corresponds with GET /status (the `GetStatus` operationId).
+	GetStatusWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStatusResponse, error)
 
 	// GetAuthenticatedUserWithResponse Get the authenticated user (GitHub GET /user)
 	//
@@ -5733,6 +5817,68 @@ func (r GetHarvestLogsResponse) ContentType() string {
 	return ""
 }
 
+// GetStatusResponse200Headers the declared response headers of an HTTP 200 response for GetStatus
+type GetStatusResponse200Headers struct {
+	XFeedlessVersion *string
+}
+
+// GetStatusResponseDefaultHeaders the declared response headers of an HTTP default response for GetStatus
+type GetStatusResponseDefaultHeaders struct {
+	XFeedlessVersion *string
+}
+
+type GetStatusResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	// JSON200 the response for an HTTP 200 `application/json` response
+	JSON200 *ServerStatus
+	// JSONDefault the response for an HTTP default `application/json` response
+	JSONDefault *Error
+	// Headers200 the parsed response headers for an HTTP 200 response
+	Headers200 *GetStatusResponse200Headers
+	// HeadersDefault the parsed response headers for an HTTP default response
+	HeadersDefault *GetStatusResponseDefaultHeaders
+}
+
+// GetJSON200 returns the response for an HTTP 200 `application/json` response
+func (r GetStatusResponse) GetJSON200() *ServerStatus {
+	return r.JSON200
+}
+
+// GetJSONDefault returns the response for an HTTP default `application/json` response
+func (r GetStatusResponse) GetJSONDefault() *Error {
+	return r.JSONDefault
+}
+
+// GetBody returns the raw response body bytes
+func (r GetStatusResponse) GetBody() []byte {
+	return r.Body
+}
+
+// Status returns HTTPResponse.Status
+func (r GetStatusResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetStatusResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
+// ContentType is a convenience method to retrieve the Content-Type value from the HTTP response headers
+func (r GetStatusResponse) ContentType() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Header.Get("Content-Type")
+	}
+	return ""
+}
+
 // GetAuthenticatedUserResponse200Headers the declared response headers of an HTTP 200 response for GetAuthenticatedUser
 type GetAuthenticatedUserResponse200Headers struct {
 	XFeedlessVersion *string
@@ -6294,6 +6440,21 @@ func (c *ClientWithResponses) GetHarvestLogsWithResponse(ctx context.Context, re
 		return nil, err
 	}
 	return ParseGetHarvestLogsResponse(rsp)
+}
+
+// GetStatusWithResponse Report the instance's version, build and number of connected agents
+//
+// The only public operation: it requires no token, and any Authorization header sent with it is ignored. It reveals nothing but the running version, the build commit and date, and how many prerender agents are connected — no agent names, owners, versions or ids.
+//
+// Returns a wrapper object for the known response body format(s).
+//
+// Corresponds with GET /status (the `GetStatus` operationId).
+func (c *ClientWithResponses) GetStatusWithResponse(ctx context.Context, reqEditors ...RequestEditorFn) (*GetStatusResponse, error) {
+	rsp, err := c.GetStatus(ctx, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetStatusResponse(rsp)
 }
 
 // GetAuthenticatedUserWithResponse Get the authenticated user (GitHub GET /user)
@@ -8596,6 +8757,62 @@ func ParseGetHarvestLogsResponse(rsp *http.Response) (*GetHarvestLogsResponse, e
 		response.Headers404 = &headers
 	case true:
 		var headers GetHarvestLogsResponseDefaultHeaders
+		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XFeedlessVersion = &value
+		}
+		response.HeadersDefault = &headers
+	}
+
+	return response, nil
+}
+
+// ParseGetStatusResponse parses an HTTP response from a GetStatusWithResponse call
+func ParseGetStatusResponse(rsp *http.Response) (*GetStatusResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetStatusResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest ServerStatus
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && true:
+		var dest Error
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSONDefault = &dest
+
+	}
+
+	switch {
+	case rsp.StatusCode == 200:
+		var headers GetStatusResponse200Headers
+		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
+			var value string
+			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {
+				return nil, err
+			}
+			headers.XFeedlessVersion = &value
+		}
+		response.Headers200 = &headers
+	case true:
+		var headers GetStatusResponseDefaultHeaders
 		if values := rsp.Header.Values("X-Feedless-Version"); len(values) > 0 {
 			var value string
 			if err := runtime.BindStyledParameterWithOptions("simple", "X-Feedless-Version", values[0], &value, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: false, Type: "string", Format: ""}); err != nil {

@@ -750,6 +750,28 @@ paths:
           $ref: '#/components/responses/TooManyRequests'
         default:
           $ref: '#/components/responses/Error'
+  /status:
+    get:
+      tags: [Status]
+      operationId: getStatus
+      summary: Report the instance's version, build and number of connected agents
+      description: >
+        The only public operation: it requires no token, and any Authorization header sent with it
+        is ignored. It reveals nothing but the running version, the build commit and date, and how
+        many prerender agents are connected — no agent names, owners, versions or ids.
+      security: []
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatus'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
     bearerAuth:
@@ -833,7 +855,7 @@ components:
         Any error. Every error response — 400 `BAD_REQUEST` / `VALIDATION_ERROR`,
         401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 409 `CONFLICT`,
         412 `PRECONDITION_FAILED`, 429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError`
-        body. Since every route requires authentication, every operation can return 401.
+        body. Every route except `GET /status` requires authentication, so every other operation can return 401.
       headers:
         X-Feedless-Version:
           $ref: '#/components/headers/X-Feedless-Version'
@@ -900,6 +922,37 @@ components:
           schema:
             $ref: '#/components/schemas/ApiError'
   schemas:
+    ServerStatus:
+      type: object
+      required: [version, build, agents]
+      properties:
+        version:
+          type: string
+          description: The instance's app.version, the same value as the X-Feedless-Version header
+        build:
+          $ref: '#/components/schemas/ServerBuild'
+        agents:
+          $ref: '#/components/schemas/ServerAgents'
+    ServerBuild:
+      type: object
+      required: [commit, date]
+      properties:
+        commit:
+          type: string
+          description: Git commit the running image was built from
+        date:
+          type: integer
+          format: int64
+          description: Build time in epoch milliseconds
+    ServerAgents:
+      type: object
+      required: [connected]
+      properties:
+        connected:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of prerender agents currently connected to the instance (cluster-wide when agents are persisted)
     ApiError:
       type: object
       required: [code, message]
