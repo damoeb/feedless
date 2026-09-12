@@ -1,6 +1,5 @@
 package org.migor.feedless.session
 
-import com.google.gson.JsonSyntaxException
 import jakarta.servlet.Filter
 import jakarta.servlet.FilterChain
 import jakarta.servlet.ServletRequest
@@ -77,18 +76,4 @@ fun jwtToOAuth2AuthenticationToken(
     authorities,
     authorizedClientRegistrationId
   )
-}
-
-fun Jwt.capabilities(): List<LazyGrantedAuthority> {
-  val capabilitiesMaybe = claims[JwtParameterNames.CAPABILITIES]
-  if (capabilitiesMaybe is Map<*, *>) {
-    try {
-      return capabilitiesMaybe.entries.map {
-        LazyGrantedAuthority(it.key as String, it.value as String)
-      }
-    } catch (_: IllegalArgumentException) {
-    } catch (_: JsonSyntaxException) {
-    }
-  }
-  return emptyList()
 }
