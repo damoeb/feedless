@@ -20,7 +20,7 @@ Six rules, each one a mistake this repo actively invites. Everything else is in 
 | `./gradlew lint test` | The CI gate and the Definition of Done. |
 | `./gradlew :packages:domain:test :packages:graphql-api:test :packages:http-api:test :packages:jpa-data:test :packages:server-core:test` | Backend tests (`jpa-data` and `server-core` need Docker — Testcontainers/PostGIS). |
 | `./gradlew :packages:server-core:bootRun` | Run the core with the `dev` profile. |
-| `./gradlew buildImages` | Build the `app-web`, `server-core`, and `agent` images. |
+| `./gradlew buildImages` | Build the `app-web`, `server-core`, and `agent` images (the `agent` module publishes `damoeb/feedless:browserautomation-*`, deployed as `feedless-browserautomation`). |
 | `docker compose up postgis` | Local database. Full stack in `docker-compose.yml`. |
 | `yarn start:feedless` (in `app-web`) | Serve one vertical — never bare `ng serve`. |
 | `npm run start:upcoming` (in `frontend`) | Serve one Nx app. |
