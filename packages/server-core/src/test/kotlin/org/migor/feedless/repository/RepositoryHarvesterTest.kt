@@ -26,26 +26,22 @@ import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.parser.json.JsonPoint
-import org.migor.feedless.generated.types.FeedlessPlugins
-import org.migor.feedless.generated.types.MimeData
-import org.migor.feedless.generated.types.ScrapeExtractFragment
-import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
-import org.migor.feedless.generated.types.TextData
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
-import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.scrape.ScrapeActionOutput
-import org.migor.feedless.scrape.ScrapeOutput
-import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.ScraperAdapter
-import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
+import org.migor.feedless.scrape.ScrapeMimeTypes.MIME_URL
+import org.migor.feedless.scrape.ScrapeResult
+import org.migor.feedless.scrape.ScrapedData
+import org.migor.feedless.scrape.ScrapedFragment
+import org.migor.feedless.scrape.ScrapedFragmentOutput
+import org.migor.feedless.scrape.ScrapedFragmentPart
+import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -69,7 +65,7 @@ class RepositoryHarvesterTest {
   private lateinit var sourceRepository: SourceRepository
   private lateinit var meterRegistry: MeterRegistry
   private lateinit var repositoryUseCase: RepositoryUseCase
-  private lateinit var scrapeService: ScrapeService
+  private lateinit var scraper: Scraper
   private lateinit var repositoryHarvester: RepositoryHarvester
   private lateinit var repositoryId: RepositoryId
 
@@ -88,7 +84,7 @@ class RepositoryHarvesterTest {
     sourceRepository = mock(SourceRepository::class.java)
     meterRegistry = mock(MeterRegistry::class.java)
     repositoryUseCase = mock(RepositoryUseCase::class.java)
-    scrapeService = mock(ScrapeService::class.java)
+    scraper = mock(Scraper::class.java)
     sourcePipelineJobRepository = mock(SourcePipelineJobRepository::class.java)
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
     documentRepository = mock(DocumentRepository::class.java)
@@ -101,7 +97,7 @@ class RepositoryHarvesterTest {
       documentPipelineJobRepository,
       sourcePipelineJobRepository,
       sourceRepository,
-      ScraperAdapter(scrapeService),
+      scraper,
       meterRegistry,
       repositoryUseCase,
       repositoryRepository,
@@ -158,7 +154,7 @@ class RepositoryHarvesterTest {
   @Test
   fun `given scrape fails will increment the error count`() = runTest {
     `when`(
-      scrapeService.scrape(
+      scraper.scrape(
         any2(),
         any2()
       )
@@ -169,7 +165,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.harvestRepository(repositoryId)
 
-    verify(scrapeService, times(1)).scrape(
+    verify(scraper, times(1)).scrape(
       any2(),
       any2()
     )
@@ -182,7 +178,7 @@ class RepositoryHarvesterTest {
   @Test
   fun `given scrape fails the harvest is recorded as errornous`() = runTest {
     `when`(
-      scrapeService.scrape(
+      scraper.scrape(
         any2(),
         any2()
       )
@@ -199,27 +195,21 @@ class RepositoryHarvesterTest {
   fun `given scrape succeeds the harvest records itemsAdded`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "https://example.org/1", title = "3"),
-                  newJsonItem(url = "https://example.org/3", title = "3"),
-                  newJsonItem(url = "https://example.org/4", title = "3"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "https://example.org/1", title = "3"),
+              newJsonItem(url = "https://example.org/3", title = "3"),
+              newJsonItem(url = "https://example.org/4", title = "3"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -233,12 +223,12 @@ class RepositoryHarvesterTest {
   fun `given scrape works, errorCount will be reset`() = runTest {
     `when`(source.errorsInSuccession).thenReturn(3)
     `when`(
-      scrapeService.scrape(
+      scraper.scrape(
         any(Source::class.java),
         any(LogCollector::class.java)
       )
     ).thenReturn(
-      ScrapeOutput(outputs = emptyList(), time = 0)
+      ScrapeResult(actionCount = 0, lastFragment = null)
     )
 
     repositoryHarvester.harvestRepository(repositoryId)
@@ -256,7 +246,7 @@ class RepositoryHarvesterTest {
   @Disabled("feature is disabled")
   fun `given scrape fails will disable source once error-count threshold is met`() = runTest {
     `when`(
-      scrapeService.scrape(
+      scraper.scrape(
         any(Source::class.java),
         any(LogCollector::class.java)
       )
@@ -267,7 +257,7 @@ class RepositoryHarvesterTest {
 
     repositoryHarvester.harvestRepository(repositoryId)
 
-    verify(scrapeService, times(1)).scrape(
+    verify(scraper, times(1)).scrape(
       any(Source::class.java),
       any(LogCollector::class.java)
     )
@@ -287,7 +277,7 @@ class RepositoryHarvesterTest {
     // given
     assertThat(source.errorsInSuccession).isEqualTo(0)
     `when`(
-      scrapeService.scrape(
+      scraper.scrape(
         any(Source::class.java),
         any(LogCollector::class.java)
       )
@@ -300,7 +290,7 @@ class RepositoryHarvesterTest {
 
     // then
     assertThat(source.errorsInSuccession).isEqualTo(0)
-    verify(scrapeService, times(1)).scrape(
+    verify(scraper, times(1)).scrape(
       any(Source::class.java),
       any(LogCollector::class.java)
     )
@@ -314,28 +304,22 @@ class RepositoryHarvesterTest {
   fun `given documents feature a url, then urls will be used to deduplicate`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "https://example.org/1", title = "3"),
-                  newJsonItem(url = "https://example.org/1", title = "3"),
-                  newJsonItem(url = "https://example.org/3", title = "3"),
-                  newJsonItem(url = "https://example.org/4", title = "3"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "https://example.org/1", title = "3"),
+              newJsonItem(url = "https://example.org/1", title = "3"),
+              newJsonItem(url = "https://example.org/3", title = "3"),
+              newJsonItem(url = "https://example.org/4", title = "3"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -356,30 +340,24 @@ class RepositoryHarvesterTest {
         )
       ).thenReturn(null)
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = listOf(
-                  ScrapeExtractFragment(
-                    data = MimeData(mimeType = "image/png", data = "aGFsbG8K"),
-                    html = TextData(data = "html"),
-                    text = TextData(data = "text"),
-                    uniqueBy = ScrapeExtractFragmentPart.html
-                  )
-                ),
-                items = emptyList(),
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = listOf(
+              ScrapedFragment(
+                data = ScrapedData(mimeType = "image/png", data = "aGFsbG8K"),
+                html = "html",
+                text = "text",
+                uniqueBy = ScrapedFragmentPart.html
               )
-            )
-          ),
-          time = 0
+            ),
+            items = emptyList(),
+          )
         )
       )
 
@@ -392,28 +370,22 @@ class RepositoryHarvesterTest {
   fun `given documents feature no url, then titles will be used to deduplicate`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "", title = "1"),
-                  newJsonItem(url = "", title = "1"),
-                  newJsonItem(url = "", title = "1"),
-                  newJsonItem(url = "", title = "4"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "", title = "1"),
+              newJsonItem(url = "", title = "1"),
+              newJsonItem(url = "", title = "1"),
+              newJsonItem(url = "", title = "4"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -438,25 +410,19 @@ class RepositoryHarvesterTest {
       )
 
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "", title = "updated.title"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "", title = "updated.title"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -468,7 +434,7 @@ class RepositoryHarvesterTest {
     }
 
   private fun createPlugin(): PluginExecution {
-    return PluginExecution(FeedlessPlugins.org_feedless_fulltext.name, PluginExecutionJson())
+    return PluginExecution("org_feedless_fulltext", PluginExecutionJson())
   }
 
   @Test
@@ -493,25 +459,19 @@ class RepositoryHarvesterTest {
       `when`(existing.createdAt).thenReturn(date.minusMinutes(1))
 
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "", title = "updated.title"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "", title = "updated.title"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -545,25 +505,19 @@ class RepositoryHarvesterTest {
 //      ).thenReturn(null)
 
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(url = "", title = "updated.title"),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "", title = "updated.title"),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -589,31 +543,25 @@ class RepositoryHarvesterTest {
 
       val updatedStartingAt = LocalDateTime.now().plusMinutes(5)
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = emptyList(),
-                items = listOf(
-                  newJsonItem(
-                    url = "",
-                    title = "updated.title",
-                    text = "updated.text",
-                    tags = listOf("up", "date", "ed"),
-                    startingAt = updatedStartingAt
-                  ),
-                )
-              )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(
+                url = "",
+                title = "updated.title",
+                text = "updated.text",
+                tags = listOf("up", "date", "ed"),
+                startingAt = updatedStartingAt
+              ),
             )
-          ),
-          time = 0
+          )
         )
       )
 
@@ -652,31 +600,25 @@ class RepositoryHarvesterTest {
       ).thenReturn(false)
 
       `when`(
-        scrapeService.scrape(
+        scraper.scrape(
           any(Source::class.java),
           any(LogCollector::class.java)
         )
       ).thenReturn(
-        ScrapeOutput(
-          outputs = listOf(
-            ScrapeActionOutput(
-              index = 0,
-              fragment = FragmentOutput(
-                fragmentName = "feed",
-                fragments = listOf(
-                  ScrapeExtractFragment(
-                    data = MimeData(
-                      mimeType = MIME_URL,
-                      data = "https://foo.bar/page/1"
-                    ),
-                    uniqueBy = ScrapeExtractFragmentPart.data
-                  )
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = listOf(
+              ScrapedFragment(
+                data = ScrapedData(
+                  mimeType = MIME_URL,
+                  data = "https://foo.bar/page/1"
                 ),
-                items = listOf(newJsonItem(url = "", title = "1"))
+                uniqueBy = ScrapedFragmentPart.data
               )
-            )
-          ),
-          time = 0
+            ),
+            items = listOf(newJsonItem(url = "", title = "1"))
+          )
         )
       )
 

@@ -30,8 +30,10 @@ import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
+import org.migor.feedless.scrape.ScrapeResult
 import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.ScraperAdapter
+import org.migor.feedless.scrape.ScrapedFragmentOutput
+import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -54,6 +56,7 @@ class QueuedHarvestExecutorTest {
   private lateinit var documentRepository: DocumentRepository
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var scrapeService: ScrapeService
+  private lateinit var scraper: Scraper
   private lateinit var executor: QueuedHarvestExecutor
 
   private val flowMapper = HttpScrapeFlowMapper()
@@ -73,6 +76,7 @@ class QueuedHarvestExecutorTest {
     documentRepository = mock(DocumentRepository::class.java)
     documentUseCase = mock(DocumentUseCase::class.java)
     scrapeService = mock(ScrapeService::class.java)
+    scraper = mock(Scraper::class.java)
     val meterRegistry = mock(MeterRegistry::class.java)
     `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
     `when`(meterRegistry.counter(any2())).thenReturn(mock(Counter::class.java))
@@ -84,7 +88,7 @@ class QueuedHarvestExecutorTest {
       mock(DocumentPipelineJobRepository::class.java),
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
-      ScraperAdapter(scrapeService),
+      scraper,
       meterRegistry,
       mock(RepositoryUseCase::class.java),
       repositoryRepository,
@@ -106,10 +110,10 @@ class QueuedHarvestExecutorTest {
   @Test
   fun `a real run imports records and updates the source, under the owner's context`() = runTest {
     var scrapeContext: CoroutineContext? = null
-    `when`(scrapeService.scrape(any2(), any2())).thenAnswer {
+    `when`(scraper.scrape(any2(), any2())).thenAnswer {
       // Mockito hides a suspend function's continuation from `arguments`; the raw ones keep it.
       scrapeContext = (it.rawArguments.last() as Continuation<*>).context
-      scrapeOutput(item("First", "https://example.org/1"), item("Second", "https://example.org/2"))
+      scrapeResult(item("First", "https://example.org/1"), item("Second", "https://example.org/2"))
     }
 
     val done = executor.execute(claimed(dryRun = false))
@@ -209,6 +213,7 @@ class QueuedHarvestExecutorTest {
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
     assertThat(done.errornous).isTrue()
     assertThat(done.logs).contains("sets no action")
+    verify(scraper, never()).scrape(any2(), any2())
     verify(scrapeService, never()).scrape(any2(), any2())
   }
 
@@ -221,6 +226,7 @@ class QueuedHarvestExecutorTest {
     assertThat(done.status).isEqualTo(HarvestStatus.COMPLETED)
     assertThat(done.errornous).isTrue()
     assertThat(done.logs).contains("source is disabled")
+    verify(scraper, never()).scrape(any2(), any2())
     verify(scrapeService, never()).scrape(any2(), any2())
   }
 
@@ -253,7 +259,10 @@ class QueuedHarvestExecutorTest {
     executor.executeQueuedHarvests()
 
     verify(harvestRepository, never()).save(any2())
-    runTest { verify(scrapeService, never()).scrape(any2(), any2()) }
+    runTest {
+      verify(scraper, never()).scrape(any2(), any2())
+      verify(scrapeService, never()).scrape(any2(), any2())
+    }
   }
 
   private fun verifySourceUntouched() {
@@ -281,6 +290,11 @@ class QueuedHarvestExecutorTest {
       )
     ),
     time = 0,
+  )
+
+  private fun scrapeResult(vararg items: JsonItem) = ScrapeResult(
+    actionCount = 1,
+    lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = items.toList()),
   )
 
   private fun item(title: String, url: String): JsonItem {

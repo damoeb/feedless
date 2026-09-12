@@ -29,7 +29,7 @@ import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.ScraperAdapter
+import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
@@ -106,6 +106,7 @@ class OneRealHarvestPerSourceIntTest {
   private lateinit var dataSource: DataSource
 
   private lateinit var scrapeService: ScrapeService
+  private lateinit var scraper: Scraper
   private lateinit var harvester: RepositoryHarvester
   private lateinit var executor: QueuedHarvestExecutor
   private lateinit var repository: Repository
@@ -127,12 +128,14 @@ class OneRealHarvestPerSourceIntTest {
     source = createSource("busy")
 
     scrapeService = mock(ScrapeService::class.java)
+    scraper = mock(Scraper::class.java)
     val meterRegistry = mock(MeterRegistry::class.java)
     `when`(meterRegistry.counter(any2(), anyList())).thenReturn(mock(Counter::class.java))
     `when`(meterRegistry.counter(any2())).thenReturn(mock(Counter::class.java))
     val repositoryUseCase = mock(RepositoryUseCase::class.java)
     runBlocking {
       `when`(scrapeService.scrape(any2(), any2())).thenThrow(IllegalArgumentException("broken selector"))
+      `when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException("broken selector"))
       `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(LocalDateTime.now().plusHours(1))
     }
 
@@ -142,7 +145,7 @@ class OneRealHarvestPerSourceIntTest {
       mock(DocumentPipelineJobRepository::class.java),
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
-      ScraperAdapter(scrapeService),
+      scraper,
       meterRegistry,
       repositoryUseCase,
       repositoryRepository,
@@ -181,8 +184,9 @@ class OneRealHarvestPerSourceIntTest {
 
     harvester.harvestRepository(repository.id)
 
-    verify(scrapeService, never()).scrape(argThat { it.id == source.id }, any2())
-    verify(scrapeService).scrape(argThat { it.id == idle.id }, any2())
+    verify(scraper, never()).scrape(argThat { it.id == source.id }, any2())
+    verify(scraper).scrape(argThat { it.id == idle.id }, any2())
+    verify(scrapeService, never()).scrape(any2(), any2())
     assertThat(realHarvestsOf(source)).containsExactly(running.id to HarvestStatus.RUNNING)
     assertThat(sourceRepository.findById(source.id)!!.errorsInSuccession).isEqualTo(0)
     assertThat(sourceRepository.findById(idle.id)!!.errorsInSuccession).isEqualTo(1)
