@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: feedless-agent
+  name: feedless-browserautomation
   labels:
-    app: feedless-agent
+    app: feedless-browserautomation
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: feedless-agent
+      app: feedless-browserautomation
   template:
     metadata:
       labels:
-        app: feedless-agent
+        app: feedless-browserautomation
     spec:
       #      securityContext:
       #        seccompProfile:
@@ -23,8 +23,8 @@ spec:
         nameservers:
           - 8.8.8.8
       containers:
-        - name: feedless-agent
-          image: localhost:5000/damoeb/feedless:agent-latest
+        - name: feedless-browserautomation
+          image: localhost:5000/damoeb/feedless:browserautomation-latest
           imagePullPolicy: Always
           env:
             - name: APP_EMAIL
@@ -55,10 +55,10 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: feedless-agent
+  name: feedless-browserautomation
 spec:
   selector:
-    app: feedless-agent
+    app: feedless-browserautomation
   ports:
     - protocol: TCP
       port: 3000
