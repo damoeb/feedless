@@ -31,6 +31,7 @@ import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.ScraperAdapter
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -83,7 +84,7 @@ class QueuedHarvestExecutorTest {
       mock(DocumentPipelineJobRepository::class.java),
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
-      scrapeService,
+      ScraperAdapter(scrapeService),
       meterRegistry,
       mock(RepositoryUseCase::class.java),
       repositoryRepository,

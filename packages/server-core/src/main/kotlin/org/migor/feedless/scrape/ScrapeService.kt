@@ -24,7 +24,6 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
-import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.ScrapeExtractResponse
@@ -39,22 +38,11 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.Source
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
-
-class LogCollector {
-  val logs = mutableListOf<LogStatement>()
-  fun log(message: String) {
-    logs.add(LogStatement(message = message, time = LocalDateTime.now().toMillis()))
-//    log?.debug("$message")
-  }
-}
-
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -289,7 +277,7 @@ class ScrapeService {
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
       context.logCollector.logs.addAll(response.logs.map {
-        LogStatement(
+        LogEntry(
           time = it.time,
           message = "[agent] ${it.message}"
         )

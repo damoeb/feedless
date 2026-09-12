@@ -20,7 +20,7 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.AppConfig
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
 import org.migor.feedless.document.DocumentCreate
@@ -28,6 +28,7 @@ import org.migor.feedless.document.DocumentUpdate
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.message.MessageService
+import org.migor.feedless.message.NotificationsAdapter
 import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.pipeline.plugins.CompositeFieldFilterParams
 import org.migor.feedless.pipeline.plugins.CompositeFilterParams
@@ -76,7 +77,7 @@ class DocumentUseCaseTest {
   private lateinit var userRepository: UserRepository
 
   private lateinit var documentUseCase: DocumentUseCase
-  private lateinit var propertyService: PropertyService
+  private lateinit var appConfig: AppConfig
 
   private lateinit var currentUser: User
   private lateinit var documentGuard: DocumentGuard
@@ -106,7 +107,7 @@ class DocumentUseCaseTest {
     planConstraintsService = mock(PlanConstraintsService::class.java)
     telegramBotService = mock(TelegramBotService::class.java)
     messageService = mock(MessageService::class.java)
-    propertyService = mock(PropertyService::class.java)
+    appConfig = mock(AppConfig::class.java)
 
     filterPlugin = spy(CompositeFilterPlugin())
     fulltextPlugin = mock(FulltextPlugin::class.java)
@@ -126,9 +127,8 @@ class DocumentUseCaseTest {
       planConstraintsService,
       documentPipelineJobRepository,
       pluginService,
-      Optional.of(telegramBotService),
-      messageService,
-      propertyService,
+      NotificationsAdapter(Optional.of(telegramBotService), messageService),
+      appConfig,
       documentGuard,
       repositoryGuard,
     )
@@ -146,9 +146,9 @@ class DocumentUseCaseTest {
       contentHash = ""
     )
 
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://foo.bar")
+    `when`(appConfig.apiGatewayUrl).thenReturn("http://foo.bar")
 
-    assertThat(document.toJsonItem(propertyService, EntityVisibility.isPublic)).isNotNull();
+    assertThat(document.toJsonItem(appConfig, EntityVisibility.isPublic)).isNotNull();
 
     repository = Repository(
       id = repositoryId,

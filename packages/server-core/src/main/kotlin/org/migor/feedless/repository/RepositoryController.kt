@@ -1,6 +1,5 @@
 package org.migor.feedless.repository
 
-import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
@@ -9,12 +8,10 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.document.DocumentQueryParser
 import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
-import org.migor.feedless.document.toDomain
 import org.migor.feedless.feed.exporter.FeedExporter
-import org.migor.feedless.generated.types.RecordOrderByInput
-import org.migor.feedless.generated.types.RecordsWhereInput
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -44,6 +41,9 @@ class RepositoryController {
 
   @Autowired
   private lateinit var feedExporter: FeedExporter
+
+  @Autowired
+  private lateinit var documentQueryParser: DocumentQueryParser
 
   @RequestMapping(
     method = [RequestMethod.GET],
@@ -84,13 +84,13 @@ class RepositoryController {
 
   private fun parseWhere(whereStr: String?): DocumentsFilter? {
     return whereStr?.let {
-      Gson().fromJson(it, RecordsWhereInput::class.java).toDomain()
+      documentQueryParser.parseFilter(it)
     }
   }
 
   private fun parseOrderBy(orderByStr: String?): RecordOrderBy? {
     return orderByStr?.let {
-      Gson().fromJson(it, RecordOrderByInput::class.java).toDomain()
+      documentQueryParser.parseOrderBy(it)
     }
   }
 

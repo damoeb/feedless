@@ -12,7 +12,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.AppConfig
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
@@ -53,7 +53,7 @@ class RepositoryUpdateTest {
         repositoryRepository,
         planConstraintsService,
         documentUseCase,
-        mock(PropertyService::class.java),
+        mock(AppConfig::class.java),
         sourceUseCase,
         repositoryGuard,
       )

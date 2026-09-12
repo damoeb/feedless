@@ -26,14 +26,6 @@ import java.time.Duration
 import javax.cache.Caching
 
 
-object CacheNames {
-  const val FEED_LONG_TTL = "feedResponseCache10min"
-  const val FEED_SHORT_TTL = "feedResponseCache2Min"
-  const val HTTP_RESPONSE = "httpResponseCache"
-  const val AGENT_RESPONSE = "agentResponseCache"
-  const val SERVER_SETTINGS = "graphqlResponseCache"
-}
-
 class AgentResponseCacheKeyGenerator : KeyGenerator {
   override fun generate(target: Any, method: Method, vararg params: Any?): Any {
     return CryptUtil.sha1(Gson().toJson(params[1]))

@@ -13,9 +13,9 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
-import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.source.StoredFlowParser
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.dao.DataIntegrityViolationException
@@ -37,7 +37,7 @@ class QueuedHarvestExecutor internal constructor(
   private val repositoryRepository: RepositoryRepository,
   private val repositoryHarvester: RepositoryHarvester,
   private val sourceDryRunner: SourceDryRunner,
-  private val scrapeFlowMapper: HttpScrapeFlowMapper,
+  private val storedFlowParser: StoredFlowParser,
 ) {
 
   private val log = LoggerFactory.getLogger(QueuedHarvestExecutor::class.simpleName)
@@ -100,7 +100,7 @@ class QueuedHarvestExecutor internal constructor(
 
   /** A dry run tests the harvest's override flow when it has one, else the saved flow. */
   private fun Source.withFlowOf(harvest: Harvest): Source =
-    harvest.flow?.let { copy(actions = scrapeFlowMapper.storedFlowToDomainActions(it)) } ?: this
+    harvest.flow?.let { copy(actions = storedFlowParser.storedFlowToDomainActions(it)) } ?: this
 
   private fun completeAsFailed(harvest: Harvest, message: String): Harvest {
     val now = LocalDateTime.now()

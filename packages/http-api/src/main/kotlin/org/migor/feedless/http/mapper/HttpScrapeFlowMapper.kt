@@ -35,10 +35,11 @@ import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.PuppeteerWaitUntil
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.StoredFlowParser
 import org.springframework.stereotype.Component
 
 @Component
-class HttpScrapeFlowMapper {
+class HttpScrapeFlowMapper : StoredFlowParser {
 
   private val gson = Gson()
 
@@ -67,7 +68,7 @@ class HttpScrapeFlowMapper {
     return storedFlowJson.writeValueAsString(flow)
   }
 
-  fun storedFlowToDomainActions(storedFlow: String): List<ScrapeAction> =
+  override fun storedFlowToDomainActions(storedFlow: String): List<ScrapeAction> =
     toDomainActions(storedFlowJson.readValue(storedFlow, ScrapeFlow::class.java))
 
   /** The schema can't express oneOf, and taking the first non-null kind would silently drop the rest. */

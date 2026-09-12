@@ -44,6 +44,7 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.ScraperAdapter
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
@@ -100,7 +101,7 @@ class RepositoryHarvesterTest {
       documentPipelineJobRepository,
       sourcePipelineJobRepository,
       sourceRepository,
-      scrapeService,
+      ScraperAdapter(scrapeService),
       meterRegistry,
       repositoryUseCase,
       repositoryRepository,

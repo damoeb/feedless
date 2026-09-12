@@ -17,17 +17,15 @@ import org.migor.feedless.NoItemsRetrievedException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.Attachment
-import org.migor.feedless.data.jpa.document.DocumentEntity.Companion.LEN_URL
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
+import org.migor.feedless.document.DocumentLimits.LEN_URL
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
-import org.migor.feedless.generated.types.ScrapeExtractFragment
-import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
@@ -39,9 +37,11 @@ import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.scrape.ScrapeOutput
-import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
+import org.migor.feedless.scrape.ScrapeMimeTypes.MIME_URL
+import org.migor.feedless.scrape.ScrapeResult
+import org.migor.feedless.scrape.ScrapedFragment
+import org.migor.feedless.scrape.ScrapedFragmentPart
+import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.util.CryptUtil
@@ -66,7 +66,7 @@ class RepositoryHarvester(
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
   private val sourcePipelineJobRepository: SourcePipelineJobRepository,
   private val sourceRepository: SourceRepository,
-  private val scrapeService: ScrapeService,
+  private val scraper: Scraper,
   private val meterRegistry: MeterRegistry,
   private val repositoryUseCase: RepositoryUseCase,
   private val repositoryRepository: RepositoryRepository,
@@ -225,34 +225,36 @@ class RepositoryHarvester(
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector): Int {
-    val output = scrapeService.scrape(source, logCollector)
+    val output = scraper.scrape(source, logCollector)
     return importElement(output, source.repositoryId!!, source, logCollector)
   }
 
   private suspend fun importElement(
-    output: ScrapeOutput,
+    output: ScrapeResult,
     repositoryId: RepositoryId,
     source: Source,
     logCollector: LogCollector
   ): Int {
     log.debug("importElement")
     val repository = repositoryRepository.findById(repositoryId)!!
-    return if (output.outputs.isEmpty()) {
+    return if (output.actionCount == 0) {
       throw NoItemsRetrievedException()
     } else {
-      val lastAction = output.outputs.last()
-      val documents = lastAction.fragment?.let { fragment ->
-        if (fragment.items?.isEmpty() == false) {
+      val documents = output.lastFragment?.let { fragment ->
+        // Locals, as properties of a class from another module can't be smart-cast.
+        val items = fragment.items
+        val fragments = fragment.fragments
+        if (items?.isEmpty() == false) {
           importItems(
             repository,
-            fragment.items,
-            fragment.fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data },
+            items,
+            fragments?.filter { it.data?.mimeType == MIME_URL }?.mapNotNull { it.data?.data },
             source,
             logCollector
           )
         } else {
-          if (fragment.fragments?.isEmpty() == false) {
-            fragment.fragments.flatMap { importFragment(repository, it, source, logCollector) }
+          if (fragments?.isEmpty() == false) {
+            fragments.flatMap { importFragment(repository, it, source, logCollector) }
           } else {
             emptyList()
           }
@@ -305,7 +307,7 @@ class RepositoryHarvester(
 
   private suspend fun importFragment(
     repository: Repository,
-    fragment: ScrapeExtractFragment,
+    fragment: ScrapedFragment,
     source: Source,
     logCollector: LogCollector
   ): List<Pair<Boolean, Document>> {
@@ -565,7 +567,7 @@ class RepositoryHarvester(
   }
 }
 
-private fun ScrapeExtractFragment.createDocument(repositoryId: RepositoryId, source: Source): Document {
+private fun ScrapedFragment.createDocument(repositoryId: RepositoryId, source: Source): Document {
   val now = LocalDateTime.now()
   val d = Document(
     id = DocumentId(),
@@ -575,14 +577,14 @@ private fun ScrapeExtractFragment.createDocument(repositoryId: RepositoryId, sou
     tags = source.tags,
     contentHash = CryptUtil.sha1(
       when (uniqueBy) {
-        ScrapeExtractFragmentPart.html -> html?.data
-        ScrapeExtractFragmentPart.text -> text?.data
-        ScrapeExtractFragmentPart.data -> data?.data
+        ScrapedFragmentPart.html -> html
+        ScrapedFragmentPart.text -> text
+        ScrapedFragmentPart.data -> data?.data
       }!!
     ),
-    html = html?.data,
+    html = html,
     imageUrl = "",
-    text = StringUtils.trimToEmpty(text?.data),
+    text = StringUtils.trimToEmpty(text),
     status = org.migor.feedless.document.ReleaseStatus.released,
     url = "https://does-not-exist",
     createdAt = now,

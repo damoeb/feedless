@@ -8,6 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.mapper.toSource
+import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -51,7 +52,7 @@ class ScrapeQueryResolver {
     val scrapeOutput = scrapeService.scrape(source, logCollector)
     ScrapeResponse(
       ok = true,
-      logs = logCollector.logs,
+      logs = logCollector.logs.map { LogStatement(message = it.message, time = it.time) },
       errorMessage = null,
       outputs = scrapeOutput.outputs.map { it.toDto() }
     )

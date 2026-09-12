@@ -238,11 +238,6 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
   }
 }
 
-fun JsoupDocument.images(): List<JsoupElement> {
-  return body().select("img[src]")
-    .filter { imageElement -> imageElement.attr("src").startsWith("http") }
-}
-
 private fun JsoupDocument.links(): List<JsoupElement> {
   return body().select("a[href]")
     .filter { imageElement -> imageElement.attr("href").startsWith("http") }

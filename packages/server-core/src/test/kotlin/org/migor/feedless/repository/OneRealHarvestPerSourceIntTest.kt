@@ -29,6 +29,7 @@ import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.ScraperAdapter
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
@@ -141,7 +142,7 @@ class OneRealHarvestPerSourceIntTest {
       mock(DocumentPipelineJobRepository::class.java),
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
-      scrapeService,
+      ScraperAdapter(scrapeService),
       meterRegistry,
       repositoryUseCase,
       repositoryRepository,

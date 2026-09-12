@@ -15,9 +15,8 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
+import org.migor.feedless.actions.placedAt
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.data.jpa.source.toDomain
-import org.migor.feedless.data.jpa.source.toEntity
 import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
@@ -187,10 +186,7 @@ class SourceUseCase(
           }
 
           val actions = source.actions.mapIndexed { index, scrapeAction ->
-            val actionEntity = scrapeAction.toEntity()
-            actionEntity.sourceId = source.id.uuid
-            actionEntity.pos = index
-            actionEntity.toDomain()
+            scrapeAction.placedAt(source.id, index)
           }
 
           createScrapeActions.addAll(actions)
@@ -260,10 +256,7 @@ class SourceUseCase(
           deleteScrapeActions.addAll(scrapeActionRepository.findAllBySourceId(source.id))
           sourceUpdate.actions?.let { actions ->
             val savedActions = actions.mapIndexed { index, scrapeAction ->
-              val actionEntity = scrapeAction.toEntity()
-              actionEntity.sourceId = source.id.uuid
-              actionEntity.pos = index
-              actionEntity.toDomain()
+              scrapeAction.placedAt(source.id, index)
             }
             saveScrapeActions.addAll(savedActions)
           }

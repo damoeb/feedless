@@ -18,12 +18,11 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
-import org.migor.feedless.message.MessageService
+import org.migor.feedless.common.AppConfig
+import org.migor.feedless.message.Notifications
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
-import org.migor.feedless.pipeline.Plugin
-import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.PipelinePlugins
 import org.migor.feedless.pipeline.ReportPlugin
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
@@ -37,7 +36,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.toLocalDateTime
@@ -48,7 +46,6 @@ import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 
 @Service
@@ -58,10 +55,9 @@ class DocumentUseCase(
   private val repositoryRepository: RepositoryRepository,
   private val planConstraintsService: PlanConstraintsService,
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
-  private val pluginService: PluginService,
-  private val telegramBotServiceMaybe: Optional<TelegramBotService>,
-  private val messageService: MessageService,
-  private val propertyService: PropertyService,
+  private val pipelinePlugins: PipelinePlugins,
+  private val notifications: Notifications,
+  private val appConfig: AppConfig,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
 ) : DocumentProvider, DocumentUseCasePort {
@@ -208,11 +204,11 @@ class DocumentUseCase(
 
           try {
             val updatedDocument =
-              when (val plugin = pluginService.resolveById<Plugin>(job.pluginId)) {
+              when (val plugin = pipelinePlugins.findById(job.pluginId)) {
                 is FilterEntityPlugin<*> -> {
                   if (!plugin.filterEntity(
                       state.currentDocument.toJsonItem(
-                        propertyService,
+                        appConfig,
                         EntityVisibility.isPublic
                       ),
                       job.executorParams.paramsJsonString,
@@ -241,7 +237,7 @@ class DocumentUseCase(
                   if (plugin == null) {
                     log.error(
                       "Invalid pluginId '${job.pluginId}'. Available: [${
-                        pluginService.findAll().joinToString(", ") { "'${it.id()}'" }
+                        pipelinePlugins.findAll().joinToString(", ") { "'${it.id()}'" }
                       }]")
                   } else {
                     log.warn("resolved unsupported plugin $plugin")
@@ -370,16 +366,7 @@ class DocumentUseCase(
   ) {
     log.info("triggerPostReleaseEffects documents=${documents.size} repositoryId=${repository.id}")
     if (repository.pushNotificationsEnabled) {
-      telegramBotServiceMaybe.getOrNull()?.let { telegramBot ->
-        telegramBot.findByUserIdAndAuthorizedIsTrue(repository.ownerId)?.let { telegramLink ->
-          documents.forEach {
-            messageService.publishMessage(
-              TelegramBotService.toTopic(telegramLink.chatId!!),
-              it.asJsonItem(repository)
-            )
-          }
-        }
-      }
+      notifications.pushToOwner(repository.ownerId, documents.map { it.asJsonItem(repository) })
     }
   }
 

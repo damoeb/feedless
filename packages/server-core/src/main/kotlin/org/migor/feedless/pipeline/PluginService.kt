@@ -16,7 +16,7 @@ class PluginService(
   private val entityPlugins: List<MapEntityPlugin<*>>,
   private val transformerPlugins: List<FragmentTransformerPlugin>,
   @Lazy val plugins: List<Plugin>
-) {
+) : PipelinePlugins {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
 
@@ -45,7 +45,7 @@ class PluginService(
     }
   }
 
-  suspend fun findAll(): List<Plugin> {
+  override suspend fun findAll(): List<Plugin> {
     return withContext(Dispatchers.IO) {
       entityPlugins.plus(transformerPlugins)
     }
@@ -56,6 +56,8 @@ class PluginService(
       .filterIsInstance<T>()
       .firstOrNull()
   }
+
+  override suspend fun findById(id: String): Plugin? = resolveById<Plugin>(id)
 
 //  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
 //    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
