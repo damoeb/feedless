@@ -1,0 +1,2 @@
+*.sql
+!migration/*.sql
