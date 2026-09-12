@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import org.apache.commons.text.similarity.LevenshteinDistance
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
@@ -41,32 +40,6 @@ suspend fun getLastReleasedDocumentByRepositoryId(
     status = ReleaseStatus.released,
     pageable = pageable
   ).firstOrNull()
-}
-
-data class DiffRecordsParams(
-  @SerializedName("nextItemMinIncrement")
-  val nextItemMinIncrement: Double,
-  @SerializedName("compareBy")
-  val compareBy: CompareBy,
-  @SerializedName("inlineDiffImage")
-  val inlineDiffImage: Boolean? = null,
-  @SerializedName("inlineLatestImage")
-  val inlineLatestImage: Boolean? = null,
-  @SerializedName("inlinePreviousImage")
-  val inlinePreviousImage: Boolean? = null,
-)
-
-data class CompareBy(
-  @SerializedName("fragmentNameRef")
-  val fragmentNameRef: String? = null,
-  @SerializedName("field")
-  val `field`: RecordField,
-)
-
-enum class RecordField {
-  pixel,
-  text,
-  markup,
 }
 
 @Service

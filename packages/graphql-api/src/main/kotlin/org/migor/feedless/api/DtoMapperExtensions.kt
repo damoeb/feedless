@@ -1,16 +1,12 @@
 package org.migor.feedless.api
 
 import org.migor.feedless.api.mapper.DocumentMapper
-import org.migor.feedless.api.mapper.FeatureMapper
 import org.migor.feedless.api.mapper.ScrapeResponseMapper
 import org.migor.feedless.api.mapper.UserSecretMapper
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.mapper.toSource
-import org.migor.feedless.common.PropertyService
-import org.migor.feedless.data.jpa.featureGroup.FeatureGroupEntity
-import org.migor.feedless.data.jpa.featureValue.FeatureValueEntity
+import org.migor.feedless.common.AppConfig
 import org.migor.feedless.document.Document
-import org.migor.feedless.document.DocumentId
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.GenericFeedSelectors
@@ -18,9 +14,6 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.userSecret.UserSecret
 import org.springframework.stereotype.Component
 import org.migor.feedless.api.mapper.fromDto as scrapeFlowFromDto
-import org.migor.feedless.generated.types.Feature as FeatureDto
-import org.migor.feedless.generated.types.FeatureGroup as FeatureGroupDto
-import org.migor.feedless.generated.types.FeatureValue as FeatureValueDto
 import org.migor.feedless.generated.types.MimeData as MimeDataDto
 import org.migor.feedless.generated.types.MimeDataInput as MimeDataInputDto
 import org.migor.feedless.generated.types.Record as RecordDto
@@ -47,7 +40,6 @@ class DtoMapperFacade(
 //    private val userMapper: UserMapper,
   private val documentMapper: DocumentMapper,
 //    private val productMapper: ProductMapper,
-  private val featureMapper: FeatureMapper,
   private val userSecretMapper: UserSecretMapper,
 //    private val repositoryMapper: RepositoryMapper,
   private val scrapeResponseMapper: ScrapeResponseMapper
@@ -97,17 +89,11 @@ class DtoMapperFacade(
   // Domain object mappings
 //    fun toDto(user: User): UserDto = userMapper.toDto(user)
 
-  fun toDto(document: Document, propertyService: PropertyService): RecordDto =
-    documentMapper.toDto(document, propertyService)
+  fun toDto(document: Document, appConfig: AppConfig): RecordDto =
+    documentMapper.toDto(document, appConfig)
 
 //    fun toDto(product: Product): ProductDto = productMapper.toDto(product)
 //    fun toDto(pricedProduct: PricedProduct): PricedProductDto = productMapper.toDto(pricedProduct)
-
-  fun toDto(entity: FeatureGroupEntity, features: List<FeatureDto>): FeatureGroupDto =
-    featureMapper.toDto(entity, features)
-
-  fun toDto(entity: FeatureValueEntity): FeatureValueDto =
-    featureMapper.toDto(entity)
 
   fun toDto(userSecret: UserSecret, mask: Boolean = true): UserSecretDto =
     userSecretMapper.toDto(userSecret, mask)
@@ -162,17 +148,11 @@ class DtoMapperFacade(
 
 //fun User.toDTO(): UserDto = DtoMapperFacade.getInstance().toDto(this)
 
-fun Document.toDto(propertyService: PropertyService): RecordDto =
-  DtoMapperFacade.getInstance().toDto(this, propertyService)
+fun Document.toDto(appConfig: AppConfig): RecordDto =
+  DtoMapperFacade.getInstance().toDto(this, appConfig)
 
 //fun Product.toDTO(): ProductDto = DtoMapperFacade.getInstance().toDto(this)
 //fun PricedProduct.toDto(): PricedProductDto = DtoMapperFacade.getInstance().toDto(this)
-
-fun FeatureGroupEntity.toDto(features: List<FeatureDto>): FeatureGroupDto =
-  DtoMapperFacade.getInstance().toDto(this, features)
-
-fun FeatureValueEntity.toDto(): FeatureValueDto =
-  DtoMapperFacade.getInstance().toDto(this)
 
 fun UserSecret.toDto(mask: Boolean = true): UserSecretDto =
   DtoMapperFacade.getInstance().toDto(this, mask)
@@ -185,9 +165,6 @@ fun TextDataInputDto.fromDto(): TextDataDto = DtoMapperFacade.getInstance().from
 fun RemoteNativeFeedRef.toDto(): RemoteNativeFeedDto = DtoMapperFacade.getInstance().toDto(this)
 fun GenericFeedRule.toDto(): TransientGenericFeedDto = DtoMapperFacade.getInstance().toDto(this)
 fun SelectorsDto.fromDto(): GenericFeedSelectors = DtoMapperFacade.getInstance().fromDto(this)
-
-fun createDocumentUrl(propertyService: PropertyService, id: DocumentId): String =
-  "${propertyService.apiGatewayUrl}/article/${id}"
 
 // Helper function for isHtml
 fun isHtml(rawMimeType: String?): Boolean = rawMimeType?.lowercase()?.startsWith("text/html") == true

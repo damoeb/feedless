@@ -16,12 +16,12 @@ import java.util.*
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 @ConfigurationProperties("app")
 @Deprecated("use dedicated properties")
-class PropertyService {
+class PropertyService : AppConfig {
 
   val anonymousEmail: String = "anonymous@localhost"
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
-  lateinit var apiGatewayUrl: String
+  override lateinit var apiGatewayUrl: String
   lateinit var appHost: String
   lateinit var dateFormat: String
   lateinit var timeFormat: String

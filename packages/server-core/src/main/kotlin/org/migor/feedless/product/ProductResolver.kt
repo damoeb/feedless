@@ -9,6 +9,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feature.FeatureService
@@ -36,7 +37,11 @@ class ProductResolver(
     @InputArgument(DgsConstants.QUERY.PRODUCTS_INPUT_ARGUMENT.Data) data: ProductsWhereInput
   ): List<Product> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("products $data")
-    productService.findAll(data).map { it.toDto() }
+    productService.findAll(
+      data.id?.eq?.let { ProductId(it) },
+      data.id?.`in`?.map { ProductId(it) },
+      data.vertical?.fromDto(),
+    ).map { it.toDto() }
   }
 
 //  @DgsData(parentType = DgsConstants.CLOUDSUBSCRIPTION.TYPE_NAME)

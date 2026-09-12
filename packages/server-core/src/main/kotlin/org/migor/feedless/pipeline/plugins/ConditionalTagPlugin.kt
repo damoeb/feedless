@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -20,20 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
-
-data class ConditionalTag(
-  @SerializedName("tag") val tag: String,
-  @SerializedName("filter") val filter: CompositeFieldFilterParams,
-)
-
-data class CompositeFieldFilterParams(
-  @SerializedName("index") val index: NumericalFilterParams? = null,
-  @SerializedName("title") val title: StringFilterParams? = null,
-  @SerializedName("content") val content: StringFilterParams? = null,
-  @SerializedName("link") val link: StringFilterParams? = null,
-)
-
-typealias ConditionalTagPluginParams = List<ConditionalTag>
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")

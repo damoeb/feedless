@@ -18,20 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
-data class EventsReportPluginParams(
-  val language: String,
-  val from: String,
-  val to: String,
-  val subject: String,
-)
-
-fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
-  return PluginExecutionJson(
-    paramsJsonString = Gson().toJson(this)
-  )
-}
-
-
 data class EventCalendarMailParams(
   val language: String,
   val events: List<Document>,

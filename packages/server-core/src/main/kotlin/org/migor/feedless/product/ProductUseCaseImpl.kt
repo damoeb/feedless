@@ -6,8 +6,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
-import org.migor.feedless.api.fromDto
-import org.migor.feedless.generated.types.ProductsWhereInput
 import org.migor.feedless.order.Order
 import org.migor.feedless.plan.Plan
 import org.migor.feedless.plan.PlanRepository
@@ -32,14 +30,14 @@ class ProductUseCaseImpl(
 
   private val log = LoggerFactory.getLogger(ProductUseCaseImpl::class.simpleName)
 
-  suspend fun findAll(data: ProductsWhereInput): List<Product> = withContext(Dispatchers.IO) {
+  suspend fun findAll(idEq: ProductId?, idIn: List<ProductId>?, vertical: Vertical?): List<Product> = withContext(Dispatchers.IO) {
     log.info("findAll")
-    val products = data.id?.eq?.let {
-      listOf(productRepository.findById(ProductId(it))!!)
-    } ?: data.id?.`in`?.let { ids ->
-      productRepository.findAllByIdIn(ids.map { ProductId(it) })
-    } ?: data.vertical?.let {
-      productRepository.findAllByPartOfOrPartOfIsNullAndAvailableTrue(data.vertical!!.fromDto())
+    val products = idEq?.let {
+      listOf(productRepository.findById(it)!!)
+    } ?: idIn?.let {
+      productRepository.findAllByIdIn(it)
+    } ?: vertical?.let {
+      productRepository.findAllByPartOfOrPartOfIsNullAndAvailableTrue(it)
     } ?: throw IllegalArgumentException("Insufficient filter params")
 
     products
