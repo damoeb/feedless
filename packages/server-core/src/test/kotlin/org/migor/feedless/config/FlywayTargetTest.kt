@@ -1,6 +1,7 @@
 package org.migor.feedless.config
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -22,14 +23,28 @@ class FlywayTargetTest {
     )
   }
 
-  private fun highestMigrationVersion(): Int {
-    val migrationDir = migrationDirectory()
-    val versions = migrationDir.listFiles()
-      .orEmpty()
-      .mapNotNull { migrationFilePattern.find(it.name)?.groupValues?.get(1)?.toInt() }
+  // Rebasing onto develop can leave two branches' V<n> side by side; Flyway would refuse to start.
+  @Test
+  fun `no two migrations share a version`() {
+    val duplicates = migrationsByVersion().filterValues { it.size > 1 }
 
-    check(versions.isNotEmpty()) { "found no V<n>__*.sql migrations under ${migrationDir.path}" }
-    return versions.max()
+    assertTrue(
+      duplicates.isEmpty(),
+      "duplicate migration versions — renumber the unreleased ones: " +
+        duplicates.entries.joinToString { (version, files) -> "V$version: ${files.sorted()}" }
+    )
+  }
+
+  private fun highestMigrationVersion(): Int = migrationsByVersion().keys.max()
+
+  private fun migrationsByVersion(): Map<Int, List<String>> {
+    val migrationDir = migrationDirectory()
+    val migrations = migrationDir.listFiles()
+      .orEmpty()
+      .mapNotNull { file -> migrationFilePattern.find(file.name)?.let { it.groupValues[1].toInt() to file.name } }
+
+    check(migrations.isNotEmpty()) { "found no V<n>__*.sql migrations under ${migrationDir.path}" }
+    return migrations.groupBy({ it.first }, { it.second })
   }
 
   private fun configuredFlywayTarget(): Int {
