@@ -7,6 +7,7 @@ abstract class FreemarkerTemplate<T>(val templateName: String) {
 data class ReportCreatedParams(
   val language: String,
   val deactivationLink: String,
+  val confirmationLink: String,
   val reportName: String,
   val cronExpression: String,
   val nextScheduledAt: String,
@@ -51,4 +52,12 @@ class MailTemplateChangeTrackerAuthorized(override val params: Unit = Unit) :
 
 interface TemplateService {
   fun <T> renderTemplate(template: FreemarkerTemplate<T>): String
+
+  /**
+   * Rendert [template] in einer Variante: gesucht wird zuerst
+   * `<vorlage>-<variante>`, bei Fehlen wird auf `<vorlage>` zurückgefallen.
+   * Bewusst eine eigene Überladung statt eines Vorgabewerts, damit
+   * bestehende Aufrufer und ihre Testdoubles unverändert bleiben.
+   */
+  fun <T> renderTemplate(template: FreemarkerTemplate<T>, variant: TemplateVariant?): String
 }
