@@ -35,8 +35,11 @@ dependencies {
   implementation(libs.kotlinx.coroutines.reactor)
   implementation(libs.commons.lang3)
   implementation(libs.xsoup)
-  // EmailValidatorDirective; same version server-core gets transitively via languagetool
-  implementation("commons-validator:commons-validator:1.9.0")
+  // EmailValidatorDirective; excludes match languagetool's, so no vulnerable commons-beanutils ships
+  implementation("commons-validator:commons-validator:1.9.0") {
+    exclude(group = "commons-beanutils")
+    exclude(group = "commons-collections")
+  }
   implementation("org.mapstruct:mapstruct:1.6.3")
   kapt("org.mapstruct:mapstruct-processor:1.6.3")
 
