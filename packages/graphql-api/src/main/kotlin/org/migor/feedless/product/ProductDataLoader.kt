@@ -5,8 +5,6 @@ import org.dataloader.MappedBatchLoader
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.mapper.toDto
-import org.migor.feedless.data.jpa.product.ProductDAO
-import org.migor.feedless.data.jpa.product.toDomain
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import java.util.concurrent.CompletableFuture
@@ -19,12 +17,12 @@ import org.migor.feedless.generated.types.Product as ProductDto
 class ProductDataLoader : MappedBatchLoader<ProductId, ProductDto> {
 
     @Autowired
-    lateinit var productDAO: ProductDAO
+    lateinit var productRepository: ProductRepository
 
     override fun load(ids: MutableSet<ProductId>): CompletionStage<MutableMap<ProductId, ProductDto>> {
         return CompletableFuture.supplyAsync {
-            productDAO.findAllById(ids.distinct().map { it.uuid })
-                .map { it.toDomain().toDto() }
+            productRepository.findAllByIdIn(ids.distinct())
+                .map { it.toDto() }
                 .fold(mutableMapOf()) { acc, item ->
                     acc[ProductId(item.id)] = item
                     acc

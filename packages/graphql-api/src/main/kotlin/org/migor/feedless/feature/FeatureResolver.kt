@@ -16,6 +16,7 @@ import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.migor.feedless.generated.types.FeatureGroup as FeatureGroupDto
+import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @DgsComponent
 @Profile("${AppProfiles.features} & ${AppLayer.api}")
@@ -36,7 +37,7 @@ class FeatureResolver(
     @InputArgument(DgsConstants.QUERY.FEATUREGROUPS_INPUT_ARGUMENT.Where) where: FeatureGroupWhereInput,
   ): List<FeatureGroupDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("featureGroups inherit=$inherit where=$where")
-    featureService.findAllGroups(inherit, where).map { it.toDto() }
+    featureService.findAllGroups(inherit, where.id?.let { FeatureGroupId(it.eq!!) }).map { it.toDto() }
   }
 
 //  @DgsData(parentType = DgsConstants.FEATUREGROUP.TYPE_NAME)
@@ -52,7 +53,7 @@ class FeatureResolver(
     @InputArgument(DgsConstants.MUTATION.UPDATEFEATUREVALUE_INPUT_ARGUMENT.Data) data: UpdateFeatureValueInput
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("updateFeature $data")
-    featureService.updateFeatureValue(FeatureValueId(data.id), data.value.numVal, data.value.boolVal)
+    featureService.updateFeatureValue(FeatureValueId(data.id), data.value.numVal?.value, data.value.boolVal?.value)
     true
   }
 }
@@ -66,3 +67,32 @@ private fun FeatureGroup.toDto(): FeatureGroupDto {
     features = emptyList() // todo resolve features
   )
 }
+
+val mapFeatureName2Dto = mapOf(
+  FeatureName.canJoinPlanWaitList to FeatureNameDto.canJoinPlanWaitList,
+  FeatureName.canActivatePlan to FeatureNameDto.canActivatePlan,
+
+  FeatureName.requestPerMinuteUpperLimitInt to FeatureNameDto.requestPerMinuteUpperLimitInt,
+  FeatureName.refreshRateInMinutesLowerLimitInt to FeatureNameDto.refreshRateInMinutesLowerLimit,
+  FeatureName.publicRepositoryBool to FeatureNameDto.publicRepository,
+
+  FeatureName.scrapeRequestTimeoutMsecInt to FeatureNameDto.scrapeRequestTimeoutMsec,
+  FeatureName.repositoryRetentionMaxDaysLowerLimitInt to FeatureNameDto.repositoryRetentionMaxDaysLowerLimitInt,
+  FeatureName.repositoryCapacityUpperLimitInt to FeatureNameDto.repositoryCapacityUpperLimitInt,
+  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.repositoriesMaxCountTotalInt,
+  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.sourceMaxCountPerRepositoryInt,
+
+  FeatureName.pluginsBool to FeatureNameDto.plugins,
+//  FeatureName.repositoriesMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
+//  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
+//  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
+)
+
+//private fun FeatureGroup.toDto(): FeatureGroupDto? {
+//  return try {
+////    val featureName = FeatureName.valueOf(name)
+////    mapFeatureName2Dto[featureName]
+//  } catch (e: Exception) {
+//    null
+//  }
+//}

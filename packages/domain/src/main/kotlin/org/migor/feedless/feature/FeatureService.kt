@@ -6,9 +6,6 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
-import org.migor.feedless.generated.types.FeatureBooleanValueInput
-import org.migor.feedless.generated.types.FeatureGroupWhereInput
-import org.migor.feedless.generated.types.FeatureIntValueInput
 import org.migor.feedless.plan.PlanRepository
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
@@ -20,7 +17,6 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Propagation
 import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
-import org.migor.feedless.generated.types.FeatureName as FeatureNameDto
 
 @Service
 @Profile("${AppProfiles.features} & ${AppLayer.service}")
@@ -68,8 +64,8 @@ class FeatureService(
 
   suspend fun updateFeatureValue(
     id: FeatureValueId,
-    intValue: FeatureIntValueInput?,
-    boolValue: FeatureBooleanValueInput?,
+    intValue: Long?,
+    boolValue: Boolean?,
     productId: ProductId? = null
   ) {
 
@@ -82,14 +78,14 @@ class FeatureService(
     if (feature.valueType == FeatureValueType.bool) {
       featureValueRepository.save(
         feature.copy(
-          valueBoolean = boolValue!!.value
+          valueBoolean = boolValue!!
         )
       )
     } else {
       if (feature.valueType == FeatureValueType.number) {
         featureValueRepository.save(
           feature.copy(
-            valueInt = intValue!!.value
+            valueInt = intValue!!
           )
         )
       } else {
@@ -149,12 +145,12 @@ class FeatureService(
     return featureRepository.save(feature)
   }
 
-  suspend fun findAllGroups(inherit: Boolean, where: FeatureGroupWhereInput): List<FeatureGroup> {
-    val groups = if (where.id == null) {
+  suspend fun findAllGroups(inherit: Boolean, id: FeatureGroupId?): List<FeatureGroup> {
+    val groups = if (id == null) {
       // todo inherit not used
       featureGroupRepository.findAll()
     } else {
-      listOf(featureGroupRepository.findById(FeatureGroupId(where.id!!.eq!!)).orElseThrow())
+      listOf(featureGroupRepository.findById(id).orElseThrow())
     }
 
     return groups
@@ -168,33 +164,3 @@ class FeatureService(
     }
   }
 }
-
-val mapFeatureName2Dto = mapOf(
-  FeatureName.canJoinPlanWaitList to FeatureNameDto.canJoinPlanWaitList,
-  FeatureName.canActivatePlan to FeatureNameDto.canActivatePlan,
-
-  FeatureName.requestPerMinuteUpperLimitInt to FeatureNameDto.requestPerMinuteUpperLimitInt,
-  FeatureName.refreshRateInMinutesLowerLimitInt to FeatureNameDto.refreshRateInMinutesLowerLimit,
-  FeatureName.publicRepositoryBool to FeatureNameDto.publicRepository,
-
-  FeatureName.scrapeRequestTimeoutMsecInt to FeatureNameDto.scrapeRequestTimeoutMsec,
-  FeatureName.repositoryRetentionMaxDaysLowerLimitInt to FeatureNameDto.repositoryRetentionMaxDaysLowerLimitInt,
-  FeatureName.repositoryCapacityUpperLimitInt to FeatureNameDto.repositoryCapacityUpperLimitInt,
-  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.repositoriesMaxCountTotalInt,
-  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.sourceMaxCountPerRepositoryInt,
-
-  FeatureName.pluginsBool to FeatureNameDto.plugins,
-//  FeatureName.repositoriesMaxCountActiveInt to FeatureNameDto.scrapeSourceMaxCountActive,
-//  FeatureName.repositoriesMaxCountTotalInt to FeatureNameDto.scrapeSourceMaxCountTotal,
-//  FeatureName.sourceMaxCountPerRepositoryInt to FeatureNameDto.scrapeRequestMaxCountPerSource,
-)
-
-//private fun FeatureGroup.toDto(): FeatureGroupDto? {
-//  return try {
-////    val featureName = FeatureName.valueOf(name)
-////    mapFeatureName2Dto[featureName]
-//  } catch (e: Exception) {
-//    null
-//  }
-//}
-

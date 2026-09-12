@@ -24,6 +24,7 @@ dependencies {
   api(libs.gson)
   api(libs.hibernate.spatial)
   api(libs.jsoup)
+  implementation(libs.commons.lang3)
   api("org.springframework:spring-context")
   api("org.springframework:spring-tx")
   api("org.springframework.security:spring-security-core")
