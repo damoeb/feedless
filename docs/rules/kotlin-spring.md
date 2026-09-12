@@ -57,7 +57,7 @@ This is AGENTS.md Critical Rule #2. On the backend:
 
 To change the API, edit the **contract** and rebuild. Both contract modules also hold hand-written adapters (resolvers, controllers, mappers) under `src/main/kotlin`; only `build/generated/**` is generator output.
 
-Note: `server-core/src/generated/java/` holds a checked-in copy of the JavaCC output that is **not** on the source path (`build/generated/javacc` is). Do not edit it and do not assume it is current.
+Note: there is no checked-in copy of the JavaCC output. `server-core`'s `compileJavacc` task writes it to `build/generated/javacc/org/migor/feedless/document/filter/generated`, which is on the source path; that is the only place to look for it.
 
 ## Package and naming conventions
 
@@ -67,7 +67,7 @@ Code is organised by **feature**, not by layer — `document/`, `repository/`, `
 |---|---|---|---|
 | `*Resolver` | DGS entry point — `@DgsQuery`/`@DgsMutation`/`@DgsData`, `@Throttled`, `@PreAuthorize` | `graphql-api` | `apiLayer` |
 | `*Controller` | REST entry point, implementing a generated `http-api` interface | `http-api` | `apiLayer` |
-| `*Guard` | Authorisation checks for one feature | `domain` | `serviceLayer` |
+| `*Guard` | Authorisation checks for one feature | `domain`, except `RepositoryAccessGuard` in `http-api` | `serviceLayer`, except `RepositoryAccessGuard` at `apiLayer` |
 | `*UseCase` | Orchestration — the unit most business logic belongs in | `domain` | `serviceLayer` |
 | `*Service` | A single capability, often an adapter to something external | `domain`, or `server-core` when it is infrastructure behind a port | `serviceLayer` |
 | `*Repository` | Repository interface; Spring Data implementation | interface in `domain`, implementation in `jpa-data` | `repositoryLayer` |
