@@ -24,9 +24,9 @@ import (
 // images built from the working tree; the defaults are the published ones.
 const (
 	EnvCoreImage      = "FEEDCTL_E2E_CORE_IMAGE"
-	EnvAgentImage     = "FEEDCTL_E2E_AGENT_IMAGE"
+	EnvAgentImage     = "FEEDCTL_E2E_BROWSERAUTOMATION_IMAGE"
 	defaultCoreImage  = "damoeb/feedless:core-latest"
-	defaultAgentImage = "damoeb/feedless:agent-latest"
+	defaultAgentImage = "damoeb/feedless:browserautomation-latest"
 
 	// Same as docker-compose.yml.
 	postgisImage = "postgis/postgis:17-3.5-alpine"

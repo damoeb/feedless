@@ -54,7 +54,7 @@ docker run -d --rm --name "$SERVER_CONTAINER_NAME" -p $SERVER_HOST_PORT:8080 dam
 
 echo "Starting Agent container..."
 
-docker run -d --rm --name "$AGENT_CONTAINER_NAME" --cap-add=SYS_ADMIN -p $AGENT_HOST_PORT:3000 -e APP_DISABLE_SOCKET_SUBSCRIPTION=true damoeb/feedless:agent-latest > /dev/null
+docker run -d --rm --name "$AGENT_CONTAINER_NAME" --cap-add=SYS_ADMIN -p $AGENT_HOST_PORT:3000 -e APP_DISABLE_SOCKET_SUBSCRIPTION=true damoeb/feedless:browserautomation-latest > /dev/null
 
 echo "Waiting for Agent to become ready..."
 start_time=$(date +%s)
