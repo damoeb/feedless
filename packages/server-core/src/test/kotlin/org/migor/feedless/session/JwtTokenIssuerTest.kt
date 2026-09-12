@@ -12,6 +12,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
@@ -225,6 +226,44 @@ class JwtTokenIssuerTest {
     // then
     assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
       .isCloseTo(Instant.now().plus(Duration.ofDays(1)), within(10, ChronoUnit.SECONDS));
+  }
+
+  @Test
+  fun `issueAnonymousToken returns the signed anonymous token createJwtForAnonymous issues`() = runTest {
+    val token = jwtTokenIssuer.issueAnonymousToken()
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.ANONYMOUS.value)
+    assertThat(Instant.ofEpochMilli((signedJWT.payload.toJSONObject()[JwtParameterNames.EXP] as Number).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofDays(1)), within(10, ChronoUnit.SECONDS))
+  }
+
+  @Test
+  fun `issueTokenForCapabilities returns the signed user token createJwtForCapabilities issues`() = runTest {
+    val userId = UserId()
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val token = jwtTokenIssuer.issueTokenForCapabilities(listOf(UserCapability(userId), GroupCapability(actingGroup)))
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.USER.value)
+    assertThat(Instant.ofEpochMilli((signedJWT.payload.toJSONObject()[JwtParameterNames.EXP] as Number).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS))
+    val jwt = jwtTokenIssuer.decodeJwt(token.token)
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  // Resolvers now build the cookie from the decoded token, so its expiry must match the issued one.
+  @Test
+  fun `decoded token keeps the expiry the cookie is built from`() = runTest {
+    val anonymous = jwtTokenIssuer.createJwtForAnonymous()
+    val user = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(UserId())))
+
+    assertThat(jwtTokenIssuer.decodeJwt(anonymous.tokenValue).expiresAt).isEqualTo(anonymous.expiresAt)
+    assertThat(jwtTokenIssuer.decodeJwt(user.tokenValue).expiresAt).isEqualTo(user.expiresAt)
   }
 
   @Test

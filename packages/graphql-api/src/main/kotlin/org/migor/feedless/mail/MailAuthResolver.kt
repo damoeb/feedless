@@ -16,7 +16,10 @@ import org.migor.feedless.generated.types.AuthViaMailInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
 import org.migor.feedless.generated.types.ConfirmCode
+import org.migor.feedless.otp.OneTimePasswordId
+import org.migor.feedless.session.SessionTokenPort
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
+import org.migor.feedless.session.toServletCookie
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.web.context.request.ServletWebRequest
@@ -25,6 +28,7 @@ import org.springframework.web.context.request.ServletWebRequest
 @Profile("${AppProfiles.mail} & ${AppLayer.api}")
 class MailAuthResolver(
   private val mailAuthenticationService: MailAuthenticationService,
+  private val sessionTokenPort: SessionTokenPort,
 ) {
 
   private val log = LoggerFactory.getLogger(MailAuthResolver::class.simpleName)
@@ -33,7 +37,8 @@ class MailAuthResolver(
   suspend fun authViaMail(@InputArgument(DgsConstants.MUTATION.AUTHENTICATEWITHCODEVIAMAIL_INPUT_ARGUMENT.Data) data: AuthViaMailInput): ConfirmCode =
     withContext(context = injectCapabilitiesFromSecurityContext()) {
       log.debug("authViaMail ${data.product}")
-      mailAuthenticationService.authenticateUsingMail(data)
+      mailAuthenticationService.authenticateUsingMail(data.email, data.allowCreate, data.osInfo)
+        .let { ConfirmCode(length = it.length, otpId = it.otpId.uuid.toString()) }
     }
 
   @Throttled
@@ -43,7 +48,14 @@ class MailAuthResolver(
     dfe: DataFetchingEnvironment,
   ): Authentication = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("confirmAuthCode")
-    mailAuthenticationService.confirmAuthCode(data, resolveHttpResponse(dfe))
+    // Resolved before the code is consumed, as when the service took the response.
+    val response = resolveHttpResponse(dfe)
+    val token = mailAuthenticationService.confirmAuthCode(OneTimePasswordId(data.otpId), data.code)
+    response.addCookie(toServletCookie(sessionTokenPort.toCookie(token)))
+    Authentication(
+      corrId = "",
+      token = token.token
+    )
   }
 
   private fun resolveHttpResponse(dfe: DataFetchingEnvironment): HttpServletResponse {

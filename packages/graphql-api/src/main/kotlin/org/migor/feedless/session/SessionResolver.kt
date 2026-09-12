@@ -99,15 +99,6 @@ class SessionResolver(
     true
   }
 
-  private fun toServletCookie(cookie: org.migor.feedless.session.HttpSetCookie): Cookie {
-    return Cookie(cookie.name, cookie.value).apply {
-      isHttpOnly = cookie.httpOnly
-      maxAge = cookie.maxAge
-      secure = cookie.secure
-      path = cookie.path
-    }
-  }
-
   private fun unsetSessionCookie(dfe: DataFetchingEnvironment) {
     val cookie = sessionTokenPort.createExpiredTokenCookie("JSESSION")
     addCookie(dfe, toServletCookie(cookie))

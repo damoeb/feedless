@@ -12,6 +12,7 @@ import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.any2
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
@@ -88,6 +89,8 @@ class ThrottleAspectIntTest {
       `when`(jwt.tokenValue).thenReturn("jwt")
       `when`(jwt.expiresAt).thenReturn(LocalDateTime.now().toInstant(ZoneOffset.UTC))
       `when`(jwtTokenIssuer.createJwtForAnonymous()).thenReturn(jwt)
+      `when`(jwtTokenIssuer.issueAnonymousToken()).thenReturn(AuthToken("jwt"))
+      `when`(jwtTokenIssuer.decodeJwt("jwt")).thenReturn(jwt)
       `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.hours)
       `when`(authService.isWhitelisted(any2())).thenReturn(false)
     }

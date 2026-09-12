@@ -14,20 +14,24 @@ import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableMailConfiguration
 import org.migor.feedless.any2
 import org.migor.feedless.api.graphql.ServerConfigResolver
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthViaMailInput
-import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.ConfirmAuthCodeInput
-import org.migor.feedless.generated.types.ConfirmCode
 import org.migor.feedless.generated.types.Vertical
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.oneTimePassword.OneTimePasswordRepository
+import org.migor.feedless.otp.OneTimePasswordId
 import org.migor.feedless.report.ReportUseCase
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.Mockito
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
@@ -80,6 +84,9 @@ class MailAuthResolverIntTest {
   @MockitoBean
   lateinit var mailAuthenticationService: MailAuthenticationService
 
+  @Autowired
+  lateinit var tokenIssuer: TokenIssuer
+
   @BeforeEach
   fun setUp() {
     val webClient = WebClient.create("http://localhost:$port/graphql")
@@ -88,11 +95,11 @@ class MailAuthResolverIntTest {
 
   @Test
   fun authenticateUsingMail() = runTest {
-    val confirmCode = ConfirmCode(
+    val confirmCode = OtpChallenge(
       length = 4,
-      otpId = UUID.randomUUID().toString(),
+      otpId = OneTimePasswordId(),
     )
-    Mockito.`when`(mailAuthenticationService.authenticateUsingMail(any2())).thenReturn(confirmCode)
+    Mockito.`when`(mailAuthenticationService.authenticateUsingMail(any2(), anyBoolean(), any2())).thenReturn(confirmCode)
     val graphQLMutation = DgsClient.buildMutation {
       authenticateWithCodeViaMail(
         data = AuthViaMailInput(
@@ -115,21 +122,19 @@ class MailAuthResolverIntTest {
     val auth = ObjectMapper().convertValue(response, Map::class.java)
 
     assertThat(auth[DgsConstants.CONFIRMCODE.Length] as Int).isEqualTo(confirmCode.length)
-    assertThat(auth[DgsConstants.CONFIRMCODE.OtpId] as String).isEqualTo(confirmCode.otpId)
+    assertThat(auth[DgsConstants.CONFIRMCODE.OtpId] as String).isEqualTo(confirmCode.otpId.uuid.toString())
   }
 
   @Test
   fun confirmAuthCode() = runTest {
-    val authentication = Authentication(
-      corrId = UUID.randomUUID().toString(),
-      token = UUID.randomUUID().toString()
-    )
+    // toCookie decodes the token, so it must be a real one
+    val authentication = tokenIssuer.issueTokenForCapabilities(listOf(UserCapability(UserId())))
     Mockito.`when`(mailAuthenticationService.confirmAuthCode(any2(), any2())).thenReturn(authentication)
     val graphQLMutation = DgsClient.buildMutation {
       authConfirmCode(
         data = ConfirmAuthCodeInput(
           code = "someone@localhost",
-          otpId = ""
+          otpId = UUID.randomUUID().toString()
         )
       ) {
         corrId
@@ -137,15 +142,18 @@ class MailAuthResolverIntTest {
       }
     }
 
-    val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
+    val graphQLResponse = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
       .await()
-      .extractValue<LinkedHashMap<String, Any>>("data.authConfirmCode")
+    val response = graphQLResponse.extractValue<LinkedHashMap<String, Any>>("data.authConfirmCode")
 
     val auth = ObjectMapper().convertValue(response, Map::class.java)
 
-    assertThat(auth[DgsConstants.AUTHENTICATION.CorrId] as String).isEqualTo(authentication.corrId)
+    assertThat(auth[DgsConstants.AUTHENTICATION.CorrId] as String).isEqualTo("")
     assertThat(auth[DgsConstants.AUTHENTICATION.Token] as String).isEqualTo(authentication.token)
-
+    val setCookies = graphQLResponse.headers.entries
+      .filter { it.key.equals("Set-Cookie", ignoreCase = true) }
+      .flatMap { it.value }
+    assertThat(setCookies).anyMatch { it.startsWith("TOKEN=${authentication.token}") && it.contains("HttpOnly") }
   }
 }

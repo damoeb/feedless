@@ -120,6 +120,11 @@ class JwtTokenIssuer(
 
   override fun issueApiToken(user: User, actingGroup: GroupAndRole) = AuthToken(createJwtForApi(user, actingGroup).tokenValue)
 
+  override fun issueAnonymousToken() = AuthToken(createJwtForAnonymous().tokenValue)
+
+  override fun issueTokenForCapabilities(capabilities: List<Capability<out Any>>) =
+    AuthToken(createJwtForCapabilities(capabilities).tokenValue)
+
   fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")

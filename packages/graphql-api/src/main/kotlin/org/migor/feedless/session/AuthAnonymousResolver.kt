@@ -25,10 +25,10 @@ class AuthAnonymousResolver {
   private val log = LoggerFactory.getLogger(AuthAnonymousResolver::class.simpleName)
 
   @Autowired
-  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+  private lateinit var tokenIssuer: TokenIssuer
 
   @Autowired
-  private lateinit var cookieProvider: CookieProvider
+  private lateinit var sessionTokenPort: SessionTokenPort
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.AuthAnonymous)
@@ -36,10 +36,10 @@ class AuthAnonymousResolver {
     dfe: DataFetchingEnvironment,
   ): AuthenticationDto = coroutineScope {
     log.debug("authAnonymous")
-    val jwt = jwtTokenIssuer.createJwtForAnonymous()
-    addCookie(dfe, cookieProvider.createTokenCookie(jwt))
+    val token = tokenIssuer.issueAnonymousToken()
+    addCookie(dfe, toServletCookie(sessionTokenPort.toCookie(token)))
     AuthenticationDto(
-      token = jwt.tokenValue,
+      token = token.token,
       corrId = CryptUtil.newCorrId()
     )
   }
