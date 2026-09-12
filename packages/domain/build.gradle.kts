@@ -45,6 +45,8 @@ dependencies {
 
   testImplementation(kotlin("test"))
   testImplementation(libs.kotlinx.coroutines.test)
+  // DocumentUseCase's exception check loads the class at runtime
+  testImplementation(libs.async.http.client)
   testImplementation(libs.spring.boot.test)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
