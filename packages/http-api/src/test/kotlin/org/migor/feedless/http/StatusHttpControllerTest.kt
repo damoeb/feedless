@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.status.ServerStatus
-import org.migor.feedless.status.ServerStatusPort
+import org.migor.feedless.status.ServerStatusService
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
@@ -29,7 +29,7 @@ class StatusHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var serverStatus: ServerStatusPort
+  private lateinit var serverStatus: ServerStatusService
 
   @Test
   fun `getStatus answers version, build and the connected agent count`() = runTest {

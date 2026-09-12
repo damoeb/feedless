@@ -66,6 +66,9 @@ class PluginService(
       .firstOrNull()
   }
 
+  override suspend fun describeAll(): List<PluginDescriptor> =
+    findAll().map { PluginDescriptor(it.id(), it.name(), it.listed(), it is FragmentTransformerPlugin) }
+
 //  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
 //    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)
 //      .firstOrNull() ?: Pair(defaultMailFormatterService, PluginExecutionParamsInput())

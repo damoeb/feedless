@@ -8,7 +8,3 @@ data class ServerStatus(
   val buildDate: Long,
   val connectedAgents: Int,
 )
-
-interface ServerStatusPort {
-  suspend fun status(): ServerStatus
-}

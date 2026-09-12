@@ -6,7 +6,7 @@ import org.migor.feedless.http.api.StatusApi
 import org.migor.feedless.http.api.model.ServerAgents
 import org.migor.feedless.http.api.model.ServerBuild
 import org.migor.feedless.http.api.model.ServerStatus
-import org.migor.feedless.status.ServerStatusPort
+import org.migor.feedless.status.ServerStatusService
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RequestMapping
@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/v1")
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class StatusHttpController(
-  private val serverStatus: ServerStatusPort,
+  private val serverStatus: ServerStatusService,
 ) : StatusApi {
 
   companion object {

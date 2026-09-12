@@ -91,7 +91,7 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt {
+  override fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for anonymous feed")
     return encodeJwt(

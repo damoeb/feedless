@@ -10,6 +10,7 @@ import org.migor.feedless.document.filter.generated.FilterByExpression
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.pipeline.ItemFilter
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
@@ -18,7 +19,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
+class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?>, ItemFilter {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
 

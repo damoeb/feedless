@@ -15,7 +15,7 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.SortableRequest
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.auth.AuthToken
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.AppConfig
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
@@ -23,7 +23,7 @@ import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
+import org.migor.feedless.pipeline.ItemFilter
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.pipeline.plugins.asJsonItem
 import org.migor.feedless.repository.Repository
@@ -34,22 +34,17 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.session.AuthService
-import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.scrape.Scraper
+import org.migor.feedless.scrape.WebToFeed
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
-import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
-import org.springframework.http.HttpHeaders
-import org.springframework.http.HttpStatus
-import org.springframework.http.ResponseEntity
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import java.net.URI
@@ -64,15 +59,14 @@ typealias ShipFeedItems = Boolean;
 @Service
 @Profile("${AppProfiles.feed} & ${AppLayer.service}")
 class FeedService(
-  private val propertyService: PropertyService,
-  private val webToFeedTransformer: WebToFeedTransformer,
-  private val feedParserService: FeedParserService,
-  private val scrapeService: ScrapeService,
-  private val authService: AuthService,
+  private val appConfig: AppConfig,
+  private val webToFeed: WebToFeed,
+  private val feedParser: FeedParser,
+  private val scraper: Scraper,
   private val documentUseCase: DocumentUseCase,
   private val documentRepository: DocumentRepository,
-  private val filterPlugin: CompositeFilterPlugin,
-  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val itemFilter: ItemFilter,
+  private val tokenIssuer: TokenIssuer,
   private val repositoryClaimRepository: RepositoryClaimRepository,
   private val repositoryRepository: RepositoryRepository,
   private val featureService: FeatureService,
@@ -202,20 +196,14 @@ class FeedService(
         )
       )
     )
-    val scrapeOutput = scrapeService.scrape(source, LogCollector())
+    val response = scraper.fetch(source, LogCollector())
 
-    val document = HtmlUtil.parseHtml(
-      scrapeOutput.outputs.find { o -> o.fetch != null }!!.fetch!!.response.responseBody.toString(
-        StandardCharsets.UTF_8
-      ), url
-    )
-    val feed = webToFeedTransformer.getFeedBySelectors(
+    val feed = webToFeed.webToFeed(
+      response.responseBody.toString(StandardCharsets.UTF_8),
+      url,
       selectors,
-      document,
-      URI(url),
       LogCollector()
     )
-    feed.title = StringUtils.trimToNull(document.title()) ?: "Feed"
     feed.feedUrl = feedUrl
     feed.websiteUrl = url
 
@@ -225,7 +213,7 @@ class FeedService(
   private suspend fun JsonFeed.applyFilter(filter: String?): JsonFeed {
     filter?.let {
       items = items.filterIndexed { index, jsonItem ->
-        filterPlugin.filterEntity(
+        itemFilter.filterEntity(
           jsonItem,
           convertFilterStringToPluginParams(it),
           index,
@@ -261,15 +249,9 @@ class FeedService(
     feedUrl: String
   ): JsonFeed {
 
-    val feedFromUrlLazy = suspend { feedParserService.parseFeedFromUrl(nativeFeedUrl) }
+    val feedFromUrlLazy = suspend { feedParser.parseFeedFromUrl(nativeFeedUrl) }
 
     return resolveFeed(feedFromUrlLazy, nativeFeedUrl, token, filter)
-  }
-
-  fun getRepository(repositoryId: String): ResponseEntity<String> {
-    val headers = HttpHeaders()
-    headers.add("Location", "/f/$repositoryId/atom")
-    return ResponseEntity(headers, HttpStatus.FOUND)
   }
 
   // --
@@ -287,7 +269,7 @@ class FeedService(
 
   suspend fun resolveClaim(token: String?): RepositoryClaim? {
     val jwt = try {
-      token?.let { jwtTokenIssuer.decodeJwt(token) }
+      token?.let { tokenIssuer.decodeJwt(token) }
     } catch (_: Throwable) {
       null
     }
@@ -333,7 +315,7 @@ class FeedService(
 
   private fun createEolArticle(feedUrl: String): JsonItem {
     val article = JsonItem()
-    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    val feedActivationLink = "${appConfig.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
     article.title = "ACTION REQUIRED – Reenable Your Feed"
     article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
@@ -349,7 +331,7 @@ class FeedService(
 
   private fun createFeedMessage(feedUrl: String): JsonItem {
     val article = JsonItem()
-    val feedActivationLink = "${propertyService.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
+    val feedActivationLink = "${appConfig.appHost}?url=${URLEncoder.encode(feedUrl, StandardCharsets.UTF_8)}"
     article.id = FeedUtil.toURI("end-of-life", feedActivationLink)
     article.title = "ACTION REQUIRED – Reenable Your Feed"
     article.html = """<p>Dear user, 2 month trial is over, and this feed is no longer being served (╥﹏╥).</p>
@@ -399,7 +381,7 @@ ${StringUtils.truncate(t.stackTraceToString(), 800)}
   suspend fun createAnonymousFeedUrl(baseUri: URI): AuthToken = withContext(Dispatchers.IO) {
     val repositoryClaim = RepositoryClaim()
     repositoryClaimRepository.save(repositoryClaim)
-    val jwt = jwtTokenIssuer.createJwtForAnonymousFeed(baseUri.host, repositoryClaim.id)
+    val jwt = tokenIssuer.createJwtForAnonymousFeed(baseUri.host, repositoryClaim.id)
     AuthToken(token = jwt.tokenValue)
   }
 

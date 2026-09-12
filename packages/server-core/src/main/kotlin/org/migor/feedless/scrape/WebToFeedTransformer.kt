@@ -86,13 +86,25 @@ class WebToFeedTransformer(
   private var propertyService: PropertyService,
   private var webToTextTransformer: WebToTextTransformer,
   private var webExtractService: WebExtractService
-) {
+) : WebToFeed {
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
 
   private val reLinebreaks = Regex("^[\n\t\r ]+|[\n\t\r ]+$")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
+
+  override suspend fun webToFeed(
+    html: String,
+    url: String,
+    selectors: GenericFeedSelectors,
+    logger: LogCollector
+  ): JsonFeed {
+    val document = parseHtml(html, url)
+    return getFeedBySelectors(selectors, document, URI(url), logger).also {
+      it.title = StringUtils.trimToNull(document.title()) ?: "Feed"
+    }
+  }
 
   suspend fun parseFeedRules(
     document: Document,

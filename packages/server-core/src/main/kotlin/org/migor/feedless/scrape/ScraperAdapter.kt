@@ -2,6 +2,7 @@ package org.migor.feedless.scrape
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.pipeline.FragmentOutput
@@ -21,6 +22,9 @@ class ScraperAdapter(private val scrapeService: ScrapeService) : Scraper {
       lastFragment = output.outputs.lastOrNull()?.fragment?.toScrapedFragmentOutput(),
     )
   }
+
+  override suspend fun fetch(source: Source, logCollector: LogCollector): HttpResponse =
+    scrapeService.scrape(source, logCollector).outputs.find { it.fetch != null }!!.fetch!!.response
 }
 
 private fun FragmentOutput.toScrapedFragmentOutput(): ScrapedFragmentOutput =

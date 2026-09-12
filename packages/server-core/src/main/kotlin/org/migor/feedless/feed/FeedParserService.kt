@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedParserService(
   private val httpService: HttpService,
-) {
+) : FeedParser {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)
 
@@ -55,7 +55,7 @@ class FeedParserService(
     }.getOrThrow()
   }
 
-  suspend fun parseFeedFromUrl(url: String): JsonFeed {
+  override suspend fun parseFeedFromUrl(url: String): JsonFeed {
     log.debug("parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,

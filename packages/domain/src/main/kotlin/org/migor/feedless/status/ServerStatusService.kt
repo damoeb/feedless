@@ -2,7 +2,7 @@ package org.migor.feedless.status
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentRegistry
+import org.migor.feedless.agent.AgentDirectory
 import org.migor.feedless.license.parseBuildTimestamp
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.ObjectProvider
@@ -17,8 +17,8 @@ class ServerStatusService(
   @Value("\${app.version}") private val version: String,
   @Value("\${APP_GIT_COMMIT:unknown}") private val commit: String,
   @Value("\${APP_BUILD_TIMESTAMP:}") buildTimestamp: String,
-  private val agentRegistry: ObjectProvider<AgentRegistry>,
-) : ServerStatusPort {
+  private val agentDirectory: ObjectProvider<AgentDirectory>,
+) {
 
   private val log = LoggerFactory.getLogger(ServerStatusService::class.simpleName)
 
@@ -30,12 +30,12 @@ class ServerStatusService(
     0
   }
 
-  override suspend fun status(): ServerStatus {
+  suspend fun status(): ServerStatus {
     return ServerStatus(
       version = version,
       commit = commit,
       buildDate = buildDate,
-      connectedAgents = agentRegistry.ifAvailable?.countConnected() ?: 0,
+      connectedAgents = agentDirectory.ifAvailable?.countConnected() ?: 0,
     )
   }
 }

@@ -10,8 +10,9 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
 import org.migor.feedless.any2
+import org.migor.feedless.anyList
+import org.migor.feedless.common.AppConfig
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -19,21 +20,17 @@ import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
-import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
-import org.migor.feedless.pipeline.plugins.CompositeFilterPluginParams
+import org.migor.feedless.pipeline.ItemFilter
+import org.migor.feedless.pipeline.plugins.ItemFilterParams
 import org.migor.feedless.repository.RepositoryClaim
 import org.migor.feedless.repository.RepositoryClaimRepository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedSelectors
-import org.migor.feedless.scrape.HttpFetchOutput
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.scrape.ScrapeActionOutput
-import org.migor.feedless.scrape.ScrapeOutput
-import org.migor.feedless.scrape.ScrapeService
-import org.migor.feedless.scrape.WebToFeedTransformer
-import org.migor.feedless.session.AuthService
-import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.scrape.Scraper
+import org.migor.feedless.scrape.WebToFeed
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -52,27 +49,27 @@ import java.util.*
 class FeedServiceTest {
 
   private lateinit var feedService: FeedService
-  private lateinit var feedParserService: FeedParserService
-  private lateinit var filterPlugin: CompositeFilterPlugin
-  private lateinit var webToFeedTransformer: WebToFeedTransformer
-  private lateinit var scrapeService: ScrapeService
+  private lateinit var feedParser: FeedParser
+  private lateinit var itemFilter: ItemFilter
+  private lateinit var webToFeed: WebToFeed
+  private lateinit var scraper: Scraper
   private lateinit var sourceUseCase: SourceUseCase
   private lateinit var documentRepository: DocumentRepository
   private lateinit var environment: Environment
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var sourceRepository: SourceRepository
-  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+  private lateinit var tokenIssuer: TokenIssuer
 
   @BeforeEach
   fun beforeEach() = runTest {
-    feedParserService = mock(FeedParserService::class.java)
-    filterPlugin = mock(CompositeFilterPlugin::class.java)
+    feedParser = mock(FeedParser::class.java)
+    itemFilter = mock(ItemFilter::class.java)
 
     val adminUser = mock(User::class.java)
     `when`(adminUser.id).thenReturn(randomUserId())
 
-    webToFeedTransformer = mock(WebToFeedTransformer::class.java)
-    scrapeService = mock(ScrapeService::class.java)
+    webToFeed = mock(WebToFeed::class.java)
+    scraper = mock(Scraper::class.java)
     sourceUseCase = mock(SourceUseCase::class.java)
     documentRepository = mock(DocumentRepository::class.java)
     documentUseCase = mock(DocumentUseCase::class.java)
@@ -83,7 +80,6 @@ class FeedServiceTest {
     val featureService = mock(FeatureService::class.java)
     `when`(featureService.isDisabled(FeatureName.legacyFeedApiBool)).thenReturn(false)
 
-    val authService = mock(AuthService::class.java)
     val jwt = mock(Jwt::class.java)
     `when`(jwt.getClaimAsString("id")).thenReturn(UUID.randomUUID().toString())
 
@@ -93,19 +89,18 @@ class FeedServiceTest {
     val repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
     `when`(repositoryClaimRepository.findById(any2())).thenReturn(claim)
 
-    jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
-    `when`(jwtTokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
+    tokenIssuer = mock(TokenIssuer::class.java)
+    `when`(tokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
 
     feedService = FeedService(
-      mock(PropertyService::class.java),
-      webToFeedTransformer,
-      feedParserService,
-      scrapeService,
-      authService,
+      mock(AppConfig::class.java),
+      webToFeed,
+      feedParser,
+      scraper,
       documentUseCase,
       documentRepository,
-      filterPlugin,
-      jwtTokenIssuer,
+      itemFilter,
+      tokenIssuer,
       repositoryClaimRepository,
       mock(RepositoryRepository::class.java),
       featureService,
@@ -130,17 +125,15 @@ class FeedServiceTest {
   fun `webToFeed will filter`() = runTest {
     // given
     `when`(
-      filterPlugin.filterEntity(
+      itemFilter.filterEntity(
         any(JsonItem::class.java),
-        any(CompositeFilterPluginParams::class.java),
+        anyList<ItemFilterParams>(),
         any(Int::class.java),
         any(LogCollector::class.java)
       )
     ).thenReturn(true)
     val feed = createJsonFeed()
-    `when`(webToFeedTransformer.getFeedBySelectors(any2(), any2(), any2(), any2())).thenReturn(feed)
-
-    val scrapeOutput = mock(ScrapeOutput::class.java)
+    `when`(webToFeed.webToFeed(any2(), any2(), any2(), any2())).thenReturn(feed)
 
     val httpResponse = HttpResponse(
       contentType = "text/html",
@@ -148,11 +141,7 @@ class FeedServiceTest {
       statusCode = 200,
       responseBody = "".toByteArray(),
     )
-    val httpFetch = mock(HttpFetchOutput::class.java)
-    `when`(httpFetch.response).thenReturn(httpResponse)
-    val scrapeAction = ScrapeActionOutput(index = 0, fetch = httpFetch)
-    `when`(scrapeOutput.outputs).thenReturn(listOf(scrapeAction))
-    `when`(scrapeService.scrape(any2(), any2())).thenReturn(scrapeOutput)
+    `when`(scraper.fetch(any2(), any2())).thenReturn(httpResponse)
 
     val selectors = GenericFeedSelectors(
       linkXPath = "linkXPath",
@@ -172,9 +161,9 @@ class FeedServiceTest {
     )
 
     // then
-    verify(filterPlugin, times(2)).filterEntity(
+    verify(itemFilter, times(2)).filterEntity(
       any2(),
-      any(CompositeFilterPluginParams::class.java),
+      anyList<ItemFilterParams>(),
       any(Int::class.java),
       any2()
     )
@@ -229,29 +218,23 @@ class FeedServiceTest {
   fun `transformFeed will filter`(filter: String) = runTest {
     // given
     val feed = createJsonFeed()
-    `when`(feedParserService.parseFeedFromUrl(any2())).thenReturn(feed)
+    `when`(feedParser.parseFeedFromUrl(any2())).thenReturn(feed)
     `when`(
-      filterPlugin.filterEntity(
+      itemFilter.filterEntity(
         any2(),
-        any(CompositeFilterPluginParams::class.java),
+        anyList<ItemFilterParams>(),
         any(Int::class.java),
         any2()
       )
     ).thenReturn(true)
 
-    `when`(
-      filterPlugin.fromJson(
-        any(String::class.java),
-      )
-    ).thenReturn(mock(CompositeFilterPluginParams::class.java))
-
     // when
     feedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl", token = "token")
 
     // then
-    verify(filterPlugin, times(2)).filterEntity(
+    verify(itemFilter, times(2)).filterEntity(
       any2(),
-      any(CompositeFilterPluginParams::class.java),
+      anyList<ItemFilterParams>(),
       any(Int::class.java),
       any2()
     )

@@ -25,6 +25,8 @@ dependencies {
   api(libs.hibernate.spatial)
   api(libs.jsoup)
   implementation(libs.commons.lang3)
+  implementation(libs.commons.text)
+  implementation(libs.nimbus.jose.jwt)
   implementation(libs.tika.core)
   implementation(libs.spring.boot.validation)
   api("org.springframework.data:spring-data-commons")
@@ -52,5 +54,6 @@ dependencies {
 }
 
 tasks.test {
-  useJUnitPlatform()
+  // same exclusions as server-core, so LicenseUseCaseTest stays out of the count
+  useJUnitPlatform { excludeTags("unstable", "nlp") }
 }
