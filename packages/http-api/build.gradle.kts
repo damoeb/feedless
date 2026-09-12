@@ -10,6 +10,7 @@ repositories {
 
 dependencies {
   implementation(project(":packages:domain"))
+  implementation(project(":packages:feed-parser"))
   implementation(libs.gson)
   implementation(libs.spring.boot.web)
   implementation(libs.spring.boot.validation)
