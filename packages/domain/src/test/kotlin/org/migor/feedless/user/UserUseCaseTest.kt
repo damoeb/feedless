@@ -23,29 +23,24 @@ import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.generated.types.BoolUpdateOperationsInput
-import org.migor.feedless.generated.types.NullableUpdateOperationsInput
-import org.migor.feedless.generated.types.StringUpdateOperationsInput
-import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.group.GroupUseCase
+import org.migor.feedless.message.Notifications
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.transport.TelegramBotService
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.core.env.Environment
-import java.util.*
 
 class UserUseCaseTest {
   private lateinit var userRepository: UserRepository
   private lateinit var connectedAppRepository: ConnectedAppRepository
-  private lateinit var telegramBotService: TelegramBotService
+  private lateinit var notifications: Notifications
   private lateinit var githubConnectionRepository: GithubConnectionRepository
   private lateinit var userUseCase: UserUseCase
   private lateinit var productRepository: ProductRepository
@@ -66,7 +61,7 @@ class UserUseCaseTest {
   fun setUp() = runTest {
     userRepository = mock(UserRepository::class.java)
     connectedAppRepository = mock(ConnectedAppRepository::class.java)
-    telegramBotService = mock(TelegramBotService::class.java)
+    notifications = mock(Notifications::class.java)
     githubConnectionRepository = mock(GithubConnectionRepository::class.java)
     userUseCase = mock(UserUseCase::class.java)
     productRepository = mock(ProductRepository::class.java)
@@ -89,7 +84,7 @@ class UserUseCaseTest {
       connectedAppRepository,
       groupRepository,
       mock(GroupUseCase::class.java),
-      Optional.of(telegramBotService)
+      notifications
     )
 
     `when`(githubConnectionRepository.save(any2())).thenAnswer { it.arguments[0] }
@@ -173,8 +168,8 @@ class UserUseCaseTest {
   @Test
   fun `updating email defaults validatedEmailAt and hasValidatedEmail`() = runTest {
     val email = "test@feedless.org"
-    val data = UpdateCurrentUserInput(
-      email = StringUpdateOperationsInput(email),
+    val data = UserUpdate(
+      email = email,
     )
 
     userUseCase.updateUser(userId, data)
@@ -188,8 +183,8 @@ class UserUseCaseTest {
 
   @Test
   fun `accepting terms alters acceptedTermsAt`() = runTest {
-    val data = UpdateCurrentUserInput(
-      acceptedTermsAndServices = BoolUpdateOperationsInput(true),
+    val data = UserUpdate(
+      acceptedTermsAndServices = true,
     )
     userUseCase.updateUser(userId, data)
 
@@ -201,8 +196,8 @@ class UserUseCaseTest {
 
   @Test
   fun `rejecting terms alters acceptedTermsAt`() = runTest {
-    val data = UpdateCurrentUserInput(
-      acceptedTermsAndServices = BoolUpdateOperationsInput(false),
+    val data = UserUpdate(
+      acceptedTermsAndServices = false,
     )
     userUseCase.updateUser(userId, data)
 
@@ -214,8 +209,8 @@ class UserUseCaseTest {
 
   @Test
   fun `unsetting purgeScheduledFor will unset purgeScheduledFor`() = runTest {
-    val data = UpdateCurrentUserInput(
-      purgeScheduledFor = NullableUpdateOperationsInput(true),
+    val data = UserUpdate(
+      schedulePurge = false,
     )
     userUseCase.updateUser(userId, data)
 
@@ -224,8 +219,8 @@ class UserUseCaseTest {
 
   @Test
   fun `setting purgeScheduledFor will set purgeScheduledFor`() = runTest {
-    val data = UpdateCurrentUserInput(
-      purgeScheduledFor = NullableUpdateOperationsInput(false),
+    val data = UserUpdate(
+      schedulePurge = true,
     )
     userUseCase.updateUser(userId, data)
 
@@ -237,10 +232,10 @@ class UserUseCaseTest {
     val firstName = "firstName"
     val lastName = "lastname"
     val country = "country"
-    val data = UpdateCurrentUserInput(
-      firstName = StringUpdateOperationsInput(firstName),
-      lastName = StringUpdateOperationsInput(lastName),
-      country = StringUpdateOperationsInput(country),
+    val data = UserUpdate(
+      firstName = firstName,
+      lastName = lastName,
+      country = country,
     )
     userUseCase.updateUser(userId, data)
 
@@ -304,7 +299,7 @@ class UserUseCaseTest {
     userUseCase.deleteConnectedApp(userId, connectedAppId)
 
     verify(connectedAppRepository).deleteById(eq(connectedApp.id))
-    verify(telegramBotService).sendMessage(eq(telegramChatId), any2())
+    verify(notifications).sendMessage(eq(telegramChatId), any2())
   }
 
   @Test

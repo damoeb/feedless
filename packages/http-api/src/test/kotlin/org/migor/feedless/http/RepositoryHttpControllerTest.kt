@@ -8,7 +8,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.Vertical
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.mapper.HttpRepositoryMapper
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.repository.Repository
@@ -55,7 +55,7 @@ class RepositoryHttpControllerTest {
   private lateinit var repositoryUseCase: RepositoryUseCasePort
 
   @MockitoBean
-  private lateinit var groupUseCase: GroupUseCasePort
+  private lateinit var groupUseCase: GroupUseCase
 
   @MockitoBean
   private lateinit var sourceRepository: SourceRepository

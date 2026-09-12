@@ -8,7 +8,7 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCasePort
@@ -29,7 +29,7 @@ class RepositoryAccessGuardTest {
 
   private val repositoryUseCase: RepositoryUseCasePort = mock()
   private val sourceRepository: SourceRepository = mock()
-  private val groupUseCase: GroupUseCasePort = mock()
+  private val groupUseCase: GroupUseCase = mock()
   private val guard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, groupUseCase)
 
   private val owner = UserId()

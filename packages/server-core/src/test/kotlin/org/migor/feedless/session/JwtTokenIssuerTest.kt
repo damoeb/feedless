@@ -117,6 +117,23 @@ class JwtTokenIssuerTest {
   }
 
   @Test
+  fun `issueApiToken returns the signed API token createJwtForApi issues`() = runTest {
+    val userId = UserId()
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(userId)
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val token = jwtTokenIssuer.issueApiToken(user, actingGroup)
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.API.value)
+    val jwt = jwtTokenIssuer.decodeJwt(token.token)
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  @Test
   fun `createJwtForApi creates a properly signed JWT`() = runTest {
     // given
     val user = mock(User::class.java)

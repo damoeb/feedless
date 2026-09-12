@@ -7,11 +7,12 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.any2
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.NoActingGroupException
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -25,14 +26,13 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
-import org.springframework.security.oauth2.jwt.Jwt
 import kotlin.time.Duration.Companion.seconds
 
 class UserSecretUseCaseTest {
 
   private lateinit var userSecretRepository: UserSecretRepository
   private lateinit var userRepository: UserRepository
-  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+  private lateinit var tokenIssuer: TokenIssuer
   private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
   private lateinit var userSecretUseCase: UserSecretUseCase
   private lateinit var currentUserId: UserId
@@ -50,11 +50,9 @@ class UserSecretUseCaseTest {
     userRepository = mock(UserRepository::class.java)
     `when`(userRepository.findById(currentUserId)).thenReturn(currentUser)
 
-    jwtTokenIssuer = mock(JwtTokenIssuer::class.java)
-    val jwt = mock(Jwt::class.java)
-    `when`(jwt.tokenValue).thenReturn("jwt")
-    `when`(jwtTokenIssuer.createJwtForApi(any2(), any2())).thenReturn(jwt)
-    `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.seconds)
+    tokenIssuer = mock(TokenIssuer::class.java)
+    `when`(tokenIssuer.issueApiToken(any2(), any2())).thenReturn(AuthToken("jwt"))
+    `when`(tokenIssuer.getExpiration(any2())).thenReturn(2.seconds)
 
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     `when`(userGroupAssignmentRepository.findAllByUserId(currentUserId)).thenReturn(
@@ -62,7 +60,7 @@ class UserSecretUseCaseTest {
     )
 
     userSecretUseCase =
-      UserSecretUseCase(userSecretRepository, userRepository, jwtTokenIssuer, userGroupAssignmentRepository)
+      UserSecretUseCase(userSecretRepository, userRepository, tokenIssuer, userGroupAssignmentRepository)
 
   }
 
@@ -86,7 +84,7 @@ class UserSecretUseCaseTest {
     runTest(context = RequestContext(userId = currentUserId)) {
       userSecretUseCase.createUserSecret()
 
-      verify(jwtTokenIssuer).createJwtForApi(currentUser, GroupAndRole(ownerGroupId, RoleInGroup.owner))
+      verify(tokenIssuer).issueApiToken(currentUser, GroupAndRole(ownerGroupId, RoleInGroup.owner))
     }
 
   @Test

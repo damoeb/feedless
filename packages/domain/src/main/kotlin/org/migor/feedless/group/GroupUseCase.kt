@@ -26,11 +26,11 @@ class GroupUseCase(
   private val groupRepository: GroupRepository,
   private val repositoryRepository: RepositoryRepository,
   private val transactionTemplate: TransactionTemplate,
-) : GroupUseCasePort {
+) {
 
   private val log = LoggerFactory.getLogger(GroupUseCase::class.simpleName)
 
-  override suspend fun create(name: String): Group = withContext(Dispatchers.IO) {
+  suspend fun create(name: String): Group = withContext(Dispatchers.IO) {
     val ownerId = coroutineContext.userId()
     log.info("create group name=$name ownerId=$ownerId")
     val group = groupRepository.save(Group(name = name, ownerId = ownerId))
@@ -40,7 +40,7 @@ class GroupUseCase(
     group
   }
 
-  override suspend fun findByIdForUser(groupId: GroupId): Group? = withContext(Dispatchers.IO) {
+  suspend fun findByIdForUser(groupId: GroupId): Group? = withContext(Dispatchers.IO) {
     log.info("findByIdForUser groupId=$groupId")
     val group = groupRepository.findById(groupId) ?: return@withContext null
     userGroupAssignmentRepository.findByUserIdAndGroupId(coroutineContext.userId(), groupId)
@@ -49,7 +49,7 @@ class GroupUseCase(
   }
 
   /** Refused, with nothing changed, if a member would lose their last owned group (no login or token then), or the group still owns repositories. */
-  override suspend fun delete(groupId: GroupId) = withContext(Dispatchers.IO) {
+  suspend fun delete(groupId: GroupId) = withContext(Dispatchers.IO) {
     log.info("delete groupId=$groupId")
     groupGuard.requireWrite(groupId)
     inTransaction {
@@ -68,7 +68,7 @@ class GroupUseCase(
     }
   }
 
-  override suspend fun listAssignments(): List<GroupAssignmentSummary> = withContext(Dispatchers.IO) {
+  suspend fun listAssignments(): List<GroupAssignmentSummary> = withContext(Dispatchers.IO) {
     log.info("listAssignments userId=${coroutineContext.userId()}")
     findAllByUserId(coroutineContext.userId()).map { assignment ->
       GroupAssignmentSummary(
@@ -80,7 +80,7 @@ class GroupUseCase(
   }
 
   // drop uses the true pageSize and take one extra for hasMore; the unique order keeps drop/take deterministic.
-  override suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment> =
+  suspend fun listMembers(groupId: GroupId, page: Int, pageSize: Int): List<UserGroupAssignment> =
     withContext(Dispatchers.IO) {
       log.info("listMembers groupId=$groupId page=$page pageSize=$pageSize")
       findByIdForUser(groupId) ?: throw NotFoundException("group not found")
@@ -91,7 +91,7 @@ class GroupUseCase(
         .take(fixedPageSize + 1)
     }
 
-  override suspend fun addUserToGroup(
+  suspend fun addUserToGroup(
     userId: UserId,
     groupId: GroupId,
     role: RoleInGroup,
@@ -109,7 +109,7 @@ class GroupUseCase(
   }
 
   /** Refused if the group would lose its last owner, or the user their last owned group (no login or token then). */
-  override suspend fun removeUserFromGroup(groupId: GroupId, userId: UserId) = withContext(Dispatchers.IO) {
+  suspend fun removeUserFromGroup(groupId: GroupId, userId: UserId) = withContext(Dispatchers.IO) {
     log.info("removeUserFromGroup userId=$userId groupId=$groupId")
     groupGuard.requireWrite(groupId)
 
@@ -132,7 +132,7 @@ class GroupUseCase(
     }
   }
 
-  override suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment> = withContext(Dispatchers.IO) {
+  suspend fun findAllByUserId(userId: UserId): List<UserGroupAssignment> = withContext(Dispatchers.IO) {
     log.info("findAllByUserId userId=$userId")
     userGroupAssignmentRepository.findAllByUserId(userId)
   }

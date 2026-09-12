@@ -11,7 +11,7 @@ import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.document.DocumentController
 import org.migor.feedless.feed.FeedService
 import org.migor.feedless.group.GroupRepository
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.secrets.OneTimePasswordService
 import org.migor.feedless.session.SessionResolver
 import org.migor.feedless.user.UserGuard
@@ -55,7 +55,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension
     FeedService::class,
     UserGroupAssignmentRepository::class,
     GroupRepository::class,
-    GroupUseCasePort::class,
+    GroupUseCase::class,
     AnalyticsService::class
   ]
 )

@@ -4,7 +4,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.auth.AuthUseCasePort
+import org.migor.feedless.auth.AuthUseCase
 import org.migor.feedless.auth.AuthenticatedUser
 import org.migor.feedless.group.GroupAssignmentSummary
 import org.migor.feedless.group.GroupId
@@ -37,13 +37,13 @@ class AuthHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var authUseCasePort: AuthUseCasePort
+  private lateinit var authUseCase: AuthUseCase
 
   @Test
   fun `getAuthenticatedUser returns 200 with id, email and groups`() = runTest {
     val userId = UserId()
     val groupId = GroupId()
-    whenever(authUseCasePort.currentUser()).thenReturn(
+    whenever(authUseCase.currentUser()).thenReturn(
       AuthenticatedUser(
         id = userId,
         email = "user@example.com",
@@ -68,7 +68,7 @@ class AuthHttpControllerTest {
 
   @Test
   fun `getAuthenticatedUser returns 401 when unauthenticated`() = runTest {
-    whenever(authUseCasePort.currentUser()).thenThrow(AuthCredentialsException("authentication required"))
+    whenever(authUseCase.currentUser()).thenThrow(AuthCredentialsException("authentication required"))
 
     val mvcResult = mockMvc.get("/api/v1/user").andReturn()
 

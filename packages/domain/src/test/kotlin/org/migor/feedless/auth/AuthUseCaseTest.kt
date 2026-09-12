@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupAssignmentSummary
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.session.AuthCredentialsException
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -23,7 +23,7 @@ class AuthUseCaseTest {
 
   private val currentUserId = UserId()
   private lateinit var userRepository: UserRepository
-  private lateinit var groupUseCasePort: GroupUseCasePort
+  private lateinit var groupUseCase: GroupUseCase
   private lateinit var authUseCase: AuthUseCase
   private lateinit var currentUser: User
 
@@ -34,9 +34,9 @@ class AuthUseCaseTest {
     `when`(currentUser.email).thenReturn("user@example.com")
 
     userRepository = mock(UserRepository::class.java)
-    groupUseCasePort = mock(GroupUseCasePort::class.java)
+    groupUseCase = mock(GroupUseCase::class.java)
 
-    authUseCase = AuthUseCase(userRepository, groupUseCasePort)
+    authUseCase = AuthUseCase(userRepository, groupUseCase)
   }
 
   @Test
@@ -44,7 +44,7 @@ class AuthUseCaseTest {
     runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
       whenever(userRepository.findById(currentUserId)).thenReturn(currentUser)
       val assignment = GroupAssignmentSummary(groupId = GroupId(), role = RoleInGroup.owner, name = "team")
-      whenever(groupUseCasePort.listAssignments()).thenReturn(listOf(assignment))
+      whenever(groupUseCase.listAssignments()).thenReturn(listOf(assignment))
 
       val result = authUseCase.currentUser()
 

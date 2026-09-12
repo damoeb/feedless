@@ -10,6 +10,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.GroupCapability
@@ -53,7 +54,7 @@ class JwtTokenIssuer(
   private val tokenAnonymousValidForDays: String,
   @Value("\${default.auth.token.anonymous.validForDays}")
   private val defaultTokenAnonymousValidForDays: String
-) {
+) : TokenIssuer {
   private val log = LoggerFactory.getLogger(JwtTokenIssuer::class.simpleName)
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
@@ -117,6 +118,8 @@ class JwtTokenIssuer(
     )
   }
 
+  override fun issueApiToken(user: User, actingGroup: GroupAndRole) = AuthToken(createJwtForApi(user, actingGroup).tokenValue)
+
   fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
@@ -133,7 +136,7 @@ class JwtTokenIssuer(
     )
   }
 
-  fun getExpiration(authority: AuthTokenType): Duration {
+  override fun getExpiration(authority: AuthTokenType): Duration {
     return when (authority) {
       AuthTokenType.ANONYMOUS -> 1.days
       AuthTokenType.USER -> 48.hours

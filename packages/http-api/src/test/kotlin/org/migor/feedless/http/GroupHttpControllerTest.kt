@@ -10,7 +10,7 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupAssignmentSummary
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.mapper.HttpGroupMapper
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userGroup.RoleInGroup
@@ -43,7 +43,7 @@ class GroupHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var groupUseCase: GroupUseCasePort
+  private lateinit var groupUseCase: GroupUseCase
 
   @Test
   fun `createGroup returns 201`() = runTest {

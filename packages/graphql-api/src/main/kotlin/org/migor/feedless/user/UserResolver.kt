@@ -22,6 +22,7 @@ import org.migor.feedless.connectedApp.GithubConnection
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.UpdateCurrentUserInput
+import org.migor.feedless.product.ProductId
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
@@ -52,9 +53,20 @@ class UserResolver(
     @InputArgument data: UpdateCurrentUserInput,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.info("updateCurrentUser ${userId()} $data")
-    userUseCase.updateUser(userId()!!, data)
+    userUseCase.updateUser(userId()!!, data.toDomain())
     true
   }
+
+  // dateFormat, timeFormat and notificationsLastViewedAt were never applied
+  private fun UpdateCurrentUserInput.toDomain() = UserUpdate(
+    email = email?.set,
+    firstName = firstName?.set,
+    lastName = lastName?.set,
+    country = country?.set,
+    plan = plan?.set?.let { ProductId(it) },
+    acceptedTermsAndServices = acceptedTermsAndServices?.set,
+    schedulePurge = purgeScheduledFor?.let { !it.assignNull },
+  )
 
   @Throttled
   @DgsMutation(field = DgsConstants.MUTATION.UpdateConnectedApp)

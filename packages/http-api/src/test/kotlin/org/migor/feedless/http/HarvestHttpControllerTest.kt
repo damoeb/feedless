@@ -6,7 +6,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.actions.FetchAction
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestStatus
@@ -62,7 +62,7 @@ class HarvestHttpControllerTest {
   private lateinit var repositoryUseCase: RepositoryUseCasePort
 
   @MockitoBean
-  private lateinit var groupUseCase: GroupUseCasePort
+  private lateinit var groupUseCase: GroupUseCase
 
   private val access by lazy { RepositoryAccessFixture(repositoryUseCase, groupUseCase) }
 

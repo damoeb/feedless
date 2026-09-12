@@ -4,7 +4,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.api.GroupsApi
 import org.migor.feedless.http.api.model.GroupAssignmentListResponse
 import org.migor.feedless.http.api.model.GroupCreate
@@ -26,7 +26,7 @@ import org.migor.feedless.http.api.model.GroupAssignment as HttpGroupAssignment
 @RequestMapping("/api/v1")
 @Profile("${AppProfiles.user} & ${AppLayer.api}")
 class GroupHttpController(
-  private val groupUseCase: GroupUseCasePort,
+  private val groupUseCase: GroupUseCase,
   private val mapper: HttpGroupMapper,
 ) : GroupsApi {
 

@@ -6,7 +6,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.session.AuthTokenType
-import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.userId
@@ -30,7 +30,7 @@ import kotlin.time.ExperimentalTime
 class UserSecretUseCase(
   private val userSecretRepository: UserSecretRepository,
   private val userRepository: UserRepository,
-  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val tokenIssuer: TokenIssuer,
   private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
 ) {
 
@@ -40,16 +40,16 @@ class UserSecretUseCase(
     log.info("createUserSecret")
     val userId = coroutineContext.userId()
     val user = userRepository.findById(userId)!!
-    val token = jwtTokenIssuer.createJwtForApi(user, userGroupAssignmentRepository.actingGroupOf(user.id))
+    val token = tokenIssuer.issueApiToken(user, userGroupAssignmentRepository.actingGroupOf(user.id))
 
     userSecretRepository.save(
       UserSecret(
         ownerId = userId,
-        value = token.tokenValue,
+        value = token.token,
         type = UserSecretType.SecretKey,
         validUntil = LocalDateTime.ofInstant(
           Instant.ofEpochMilli(
-            Clock.System.now().plus(jwtTokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
+            Clock.System.now().plus(tokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
           ),
           ZoneId.systemDefault()
         )

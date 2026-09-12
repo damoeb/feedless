@@ -8,7 +8,7 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.api.model.ScrapeAction
 import org.migor.feedless.http.api.model.ScrapeFlow
 import org.migor.feedless.http.api.model.SourceCreate
@@ -37,7 +37,7 @@ class SourceHttpControllerCreateTest {
   private val sourceRepository: SourceRepository = mock()
   private val repositoryUseCase: RepositoryUseCasePort = mock()
   private val mapper = HttpSourceMapper(HttpScrapeFlowMapper())
-  private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCasePort>())
+  private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCase>())
   private val controller =
     SourceHttpController(sourceUseCase, sourceRepository, accessGuard, mapper, ETagCalculator())
 

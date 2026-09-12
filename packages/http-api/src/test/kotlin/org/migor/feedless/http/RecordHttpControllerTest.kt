@@ -15,7 +15,7 @@ import org.migor.feedless.document.DocumentUpdate
 import org.migor.feedless.document.DocumentUseCasePort
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.StringFilter
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.mapper.HttpRecordMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
@@ -67,7 +67,7 @@ class RecordHttpControllerTest {
   private lateinit var repositoryUseCase: RepositoryUseCasePort
 
   @MockitoBean
-  private lateinit var groupUseCase: GroupUseCasePort
+  private lateinit var groupUseCase: GroupUseCase
 
   @MockitoBean
   private lateinit var sourceRepository: SourceRepository

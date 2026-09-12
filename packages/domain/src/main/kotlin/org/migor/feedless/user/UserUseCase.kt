@@ -23,18 +23,16 @@ import org.migor.feedless.connectedApp.GithubConnectionRepository
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.generated.types.UpdateCurrentUserInput
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.group.GroupUseCase
+import org.migor.feedless.message.Notifications
 import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
-import org.migor.feedless.product.ProductId
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
@@ -43,8 +41,6 @@ import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
-import java.util.*
-import kotlin.jvm.optionals.getOrNull
 
 @Service
 @Profile("${AppProfiles.user} & ${AppLayer.service} & ${AppLayer.repository}")
@@ -61,7 +57,7 @@ class UserUseCase(
   private val groupRepository: GroupRepository,
   private val groupUseCase: GroupUseCase,
   @Lazy
-  private val telegramBotServiceMaybe: Optional<TelegramBotService>
+  private val notifications: Notifications
 ) {
 
   private val log = LoggerFactory.getLogger(UserUseCase::class.simpleName)
@@ -179,18 +175,18 @@ class UserUseCase(
     savedRepository
   }
 
-  suspend fun updateUser(userId: UserId, data: UpdateCurrentUserInput) = withContext(Dispatchers.IO) {
+  suspend fun updateUser(userId: UserId, data: UserUpdate) = withContext(Dispatchers.IO) {
     log.info("updateUser userId=$userId")
     var user = userRepository.findById(userId) ?: throw NotFoundException("user not found")
 
     var changed = false
 
     user = data.email?.let {
-      log.info("changing email from ${user.email} to ${it.set}")
+      log.info("changing email from ${user.email} to $it")
       // todo ask to validate email
       changed = true
       user.copy(
-        email = it.set,
+        email = it,
         validatedEmailAt = null,
         hasValidatedEmail = false
       )
@@ -198,21 +194,21 @@ class UserUseCase(
 
     user = data.firstName?.let {
       changed = true
-      user.copy(firstName = it.set)
+      user.copy(firstName = it)
     } ?: user
 
     user = data.lastName?.let {
       changed = true
-      user.copy(lastName = it.set)
+      user.copy(lastName = it)
     } ?: user
 
     user = data.country?.let {
       changed = true
-      user.copy(country = it.set)
+      user.copy(country = it)
     } ?: user
 
     data.plan?.let {
-      val product = productRepository.findById(ProductId(it.set))!!
+      val product = productRepository.findById(it)!!
       productUseCase.enableSaasProduct(
         product,
         user
@@ -221,7 +217,7 @@ class UserUseCase(
 
     user = data.acceptedTermsAndServices?.let {
       changed = true
-      if (it.set) {
+      if (it) {
         log.debug("accepted terms")
         user.copy(
           hasAcceptedTerms = true,
@@ -236,9 +232,9 @@ class UserUseCase(
       }
     } ?: user
 
-    user = data.purgeScheduledFor?.let {
+    user = data.schedulePurge?.let {
       changed = true
-      if (it.assignNull) {
+      if (!it) {
         log.info("unset purgeScheduledFor")
         user.copy(purgeScheduledFor = null)
       } else {
@@ -312,10 +308,8 @@ class UserUseCase(
 
         connectedAppRepository.save(app)
 
-        telegramBotServiceMaybe.getOrNull()?.let {
-          if (app is TelegramConnection && app.chatId != null) {
-            it.showOptionsForKnownUser(app.chatId!!)
-          }
+        if (app is TelegramConnection && app.chatId != null) {
+          notifications.showOptionsForKnownUser(app.chatId!!)
         }
       }
     }
@@ -332,7 +326,7 @@ class UserUseCase(
 //      }
 
     if (app is TelegramConnection && app.chatId != null) {
-      telegramBotServiceMaybe.getOrNull()?.let { it.sendMessage(app.chatId!!, "Disconnected") }
+      notifications.sendMessage(app.chatId!!, "Disconnected")
     } else {
       throw IllegalArgumentException("github connection cannot be removed")
     }

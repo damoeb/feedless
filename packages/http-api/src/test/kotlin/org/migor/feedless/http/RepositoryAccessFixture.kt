@@ -3,7 +3,7 @@ package org.migor.feedless.http
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryUseCasePort
 import org.migor.feedless.user.UserId
@@ -15,7 +15,7 @@ import org.mockito.kotlin.whenever
 /** The owner, an editor of the owning group and a stranger, stubbed into the ports the real guard reads. */
 class RepositoryAccessFixture(
   private val repositoryUseCase: RepositoryUseCasePort,
-  private val groupUseCase: GroupUseCasePort,
+  private val groupUseCase: GroupUseCase,
 ) {
   val owner = UserId()
   val member = UserId()

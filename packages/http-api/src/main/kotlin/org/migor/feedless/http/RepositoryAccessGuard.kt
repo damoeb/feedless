@@ -7,7 +7,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.group.GroupUseCasePort
+import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCasePort
@@ -34,7 +34,7 @@ enum class RepositoryAccess {
 class RepositoryAccessGuard(
   private val repositoryUseCase: RepositoryUseCasePort,
   private val sourceRepository: SourceRepository,
-  private val groupUseCase: GroupUseCasePort,
+  private val groupUseCase: GroupUseCase,
 ) {
 
   suspend fun requireRepository(repositoryId: RepositoryId, access: RepositoryAccess): Repository {
