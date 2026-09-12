@@ -6,8 +6,10 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.DgsSubscription
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.throttle.Throttled
@@ -28,7 +30,8 @@ import org.migor.feedless.generated.types.Agent as AgentDto
 @DgsComponent
 @Profile("${AppProfiles.agent} & ${AppLayer.api}")
 class AgentResolver(
-  private val agentService: AgentService,
+  private val agentGateway: AgentGateway,
+  private val agentDirectory: AgentDirectory,
   private val capabilityService: CapabilityService
 ) {
 
@@ -39,7 +42,7 @@ class AgentResolver(
     log.info("registerAgent ${data.secretKey.email}")
     return runBlocking {
       coroutineScope {
-        data.secretKey.let { agentService.registerAgent(data) }
+        data.secretKey.let { agentGateway.registerAgent(data) }
       }
     }
   }
@@ -49,7 +52,7 @@ class AgentResolver(
   @PreAuthorize("@capabilityService.hasCapability('agent')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
     log.info("[${data.corrId}] submitAgentData")
-    agentService.handleScrapeResponse(data.callbackId, data.scrapeResponse)
+    agentGateway.handleScrapeResponse(data.callbackId, data.scrapeResponse)
     true
   }
 
@@ -59,7 +62,9 @@ class AgentResolver(
     dfe: DataFetchingEnvironment,
   ): List<AgentDto> = coroutineScope {
     log.info("agents")
-    agentService.findAllByUserId(userId()).map { it.toDto() }
+    withContext(Dispatchers.IO) {
+      agentDirectory.findAllByOwnerIdOrOpenInstanceIsTrue(userId())
+    }.map { it.toDto() }
   }
 
   private fun userId(): UserId? {

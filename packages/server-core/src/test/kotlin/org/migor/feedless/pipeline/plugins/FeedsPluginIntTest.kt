@@ -103,7 +103,7 @@ class FeedsPluginIntTest {
 
     // then
     assertThat(result.feeds!!.nativeFeeds!!.size).isEqualTo(1)
-    assertThat(result.feeds.genericFeeds.size).isEqualTo(0)
+    assertThat(result.feeds!!.genericFeeds.size).isEqualTo(0)
   }
 
   @ParameterizedTest

@@ -8,7 +8,7 @@ import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Vertical
-import org.migor.feedless.analytics.AnalyticsService
+import org.migor.feedless.analytics.Analytics
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthType
@@ -44,7 +44,7 @@ class ServerConfigResolver {
   private lateinit var licenseUseCase: LicenseUseCase
 
   @Autowired
-  private lateinit var analyticsService: AnalyticsService
+  private lateinit var analytics: Analytics
 
   @Autowired
   private lateinit var productsAuthProperties: ProductsAuthProperties
@@ -59,7 +59,7 @@ class ServerConfigResolver {
     @InputArgument(DgsConstants.QUERY.SERVERSETTINGS_INPUT_ARGUMENT.Data) data: ServerSettingsContextInput,
   ): ServerSettings = coroutineScope {
     log.debug("serverSettings $data")
-    analyticsService.track()
+    analytics.track()
     val product = data.product.fromDto()
 
     if (!licenseUseCase.isTrial() && !licenseUseCase.isLicenseNotNeeded() && !licenseUseCase.isLicensedForProduct(

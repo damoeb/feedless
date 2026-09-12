@@ -46,7 +46,7 @@ import java.nio.charset.StandardCharsets
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class ScrapeService {
+class ScrapeService : ScrapeRunner {
 
   private val log = LoggerFactory.getLogger(ScrapeService::class.simpleName)
 
@@ -62,7 +62,7 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
+  override suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
       try {
         val scrapeContext = ScrapeContext(logCollector)
@@ -156,16 +156,16 @@ class ScrapeService {
         is FilterEntityPlugin<*> -> run {
           val output = context.lastOutput()
 
-          if (output.fragment?.items == null) {
-            throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items")
-          }
+          // a local, because FragmentOutput now lives in graphql-api and cross-module properties don't smart-cast
+          val items = output.fragment?.items
+            ?: throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items")
 
           context.log("""filter params: ${action.executorParams}""")
           val result = ScrapeActionOutput(
             index = index,
             fragment = FragmentOutput(
               fragmentName = "filter",
-              items = output.fragment.items.filterIndexed { i, item ->
+              items = items.filterIndexed { i, item ->
                 plugin.filterEntity(
                   item,
                   action.executorParams!!.paramsJsonString,

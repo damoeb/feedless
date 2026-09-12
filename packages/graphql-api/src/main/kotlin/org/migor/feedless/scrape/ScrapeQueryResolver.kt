@@ -37,7 +37,7 @@ class ScrapeQueryResolver {
   private val log = LoggerFactory.getLogger(ScrapeQueryResolver::class.simpleName)
 
   @Autowired
-  private lateinit var scrapeService: ScrapeService
+  private lateinit var scrapeRunner: ScrapeRunner
 
   @Throttled
   @DgsQuery(field = DgsConstants.QUERY.Scrape)
@@ -49,7 +49,7 @@ class ScrapeQueryResolver {
     log.debug("scrape $data")
     val source = data.toSource()
     val logCollector = LogCollector()
-    val scrapeOutput = scrapeService.scrape(source, logCollector)
+    val scrapeOutput = scrapeRunner.scrape(source, logCollector)
     ScrapeResponse(
       ok = true,
       logs = logCollector.logs.map { LogStatement(message = it.message, time = it.time) },

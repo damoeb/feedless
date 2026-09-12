@@ -48,7 +48,7 @@ class AgentService(
   private val agentRegistry: AgentRegistry,
   private val meterRegistry: MeterRegistry,
   private val context: ApplicationContext
-) {
+) : AgentGateway {
   private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
   private val agentRefs: ArrayList<AgentRef> = ArrayList()
   private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
@@ -59,7 +59,7 @@ class AgentService(
     meterRegistry.gauge(AppMetrics.agentCounter, agentCounter)
   }
 
-  suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
+  override suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     return Flux.create { emitter ->
       CoroutineScope(RequestContext()).launch {
         authService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
@@ -122,7 +122,7 @@ class AgentService(
     }
   }
 
-  suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
+  override suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
     log.info("handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.ok) {
@@ -132,10 +132,6 @@ class AgentService(
       }
       pendingJobs.remove(harvestJobId)
     } ?: log.error("emitter for job ID not found (${pendingJobs.size} pending jobs)")
-  }
-
-  suspend fun findAllByUserId(userId: UserId?): List<Agent> = withContext(Dispatchers.IO) {
-    agentRegistry.findAllByOwnerIdOrOpenInstanceIsTrue(userId)
   }
 
   fun agentRefs(): ArrayList<AgentRef> {

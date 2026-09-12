@@ -20,7 +20,7 @@ class PluginResolver {
   private val log = LoggerFactory.getLogger(PluginResolver::class.simpleName)
 
   @Autowired
-  private lateinit var pluginsService: PluginService
+  private lateinit var pipelinePlugins: PipelinePlugins
 
   @Throttled
   @DgsQuery
@@ -28,18 +28,18 @@ class PluginResolver {
     dfe: DataFetchingEnvironment,
   ): List<Plugin> = coroutineScope {
     log.debug("plugins")
-    pluginsService.findAll().map { it.toDto() }
+    pipelinePlugins.describeAll().map { it.toDto() }
   }
 }
 
 
-internal fun org.migor.feedless.pipeline.Plugin.toDto(): Plugin {
+internal fun PluginDescriptor.toDto(): Plugin {
   return Plugin(
-    id = id(),
-    name = name(),
-    listed = listed(),
+    id = id,
+    name = name,
+    listed = listed,
     type =
-      if (this is FragmentTransformerPlugin) {
+      if (fragmentTransformer) {
         PluginType.fragment
       } else {
         PluginType.entity
