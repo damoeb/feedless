@@ -4,8 +4,8 @@ import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.AnalyticsService
-import org.migor.feedless.common.HttpService
+import org.migor.feedless.analytics.Analytics
+import org.migor.feedless.common.HttpFetcher
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RequestParam
 @Profile("${AppProfiles.attachment} & ${AppLayer.api}")
 class AttachmentController(
   private val attachmentUseCase: AttachmentUseCase,
-  private val httpService: HttpService,
-  private val analyticsService: AnalyticsService
+  private val httpFetcher: HttpFetcher,
+  private val analytics: Analytics
 ) {
 
   private val log = LoggerFactory.getLogger(AttachmentController::class.simpleName)
@@ -32,7 +32,7 @@ class AttachmentController(
     request: HttpServletRequest,
     @PathVariable("attachmentId") attachmentId: String,
   ): ResponseEntity<ByteArray> = coroutineScope {
-    analyticsService.track()
+    analytics.track()
     val (attachment, data) = attachmentUseCase.findByIdWithData(AttachmentId(attachmentId))
 
     if (attachment.isPresent && data != null) {
@@ -53,7 +53,7 @@ class AttachmentController(
     @RequestParam("url") url: String,
   ): ResponseEntity<ByteArray> = coroutineScope {
     log.debug("GET proxy attachment url=$url")
-    val attachment = httpService.httpGet(url, 200)
+    val attachment = httpFetcher.httpGet(url, 200)
     ResponseEntity.ok()
       .header(HttpHeaders.CONTENT_TYPE, attachment.contentType)
       .body(attachment.responseBody)

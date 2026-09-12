@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import kotlin.reflect.KClass
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -58,6 +59,12 @@ class PluginService(
   }
 
   override suspend fun findById(id: String): Plugin? = resolveById<Plugin>(id)
+
+  override suspend fun <T : Plugin> resolveById(id: String, type: KClass<T>): T? {
+    return plugins.filterTo(ArrayList()) { it: Plugin -> it.id() == id }
+      .filterIsInstance(type.java)
+      .firstOrNull()
+  }
 
 //  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
 //    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)

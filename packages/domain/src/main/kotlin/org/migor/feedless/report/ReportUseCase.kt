@@ -10,13 +10,11 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.document.Document
-import org.migor.feedless.generated.types.IntervalUnit
-import org.migor.feedless.generated.types.SegmentInput
-import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
-import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.pipeline.PipelinePlugins
 import org.migor.feedless.pipeline.ReportPlugin
+import org.migor.feedless.pipeline.resolveById
 import org.migor.feedless.pipeline.plugins.EventsReportPluginParams
 import org.migor.feedless.pipeline.plugins.toPluginExecutionJson
 import org.migor.feedless.pipelineJob.PluginExecution
@@ -30,7 +28,6 @@ import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.userId
-import org.migor.feedless.util.toLocalDateTime
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -50,30 +47,31 @@ class ReportUseCase(
   private val meterRegistry: MeterRegistry,
   private val repositoryGuard: RepositoryGuard,
   private val templateService: TemplateService,
-  private val pluginService: PluginService,
+  private val pipelinePlugins: PipelinePlugins,
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
 
-  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentInput): Report = withContext(Dispatchers.IO) {
+  suspend fun createReport(repositoryId: RepositoryId, segment: SegmentCreate): Report = withContext(Dispatchers.IO) {
     log.info("createReport repositoryId=$repositoryId")
 
     repositoryGuard.requireWrite(repositoryId)
 
-    val email = segment.recipient.email.email
+    val email = segment.recipientEmail
 
 //      val isOwner = repository.ownerId == user?.id || repository.ownerId == resolveUserId()?.uuid
     // todo enable this
 //    if (repository.visibility == EntityVisibility.isPrivate && !isOwner) {
 //      throw IllegalArgumentException() // obscured access denied
 //    }
-    val startingAt = segment.`when`.scheduled.startingAt.toLocalDateTime()
+    val startingAt = segment.startingAt
 
-    val interval = when (segment.`when`.scheduled.interval) {
-      IntervalUnit.MONTH -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
-      IntervalUnit.WEEK -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
+    val interval = when (segment.interval) {
+      ChronoUnit.MONTHS -> Pair(ChronoUnit.MONTHS, "0 8 L * *")
+      ChronoUnit.WEEKS -> Pair(ChronoUnit.WEEKS, "0 8 * * 0")
+      else -> throw IllegalArgumentException("interval ${segment.interval}")
     }
 
     var segmentation = Segmentation(
@@ -83,13 +81,11 @@ class ReportUseCase(
       timeInterval = interval.first
     )
 
-    segmentation = segment.what.latLng?.let {
-      it.near?.let {
-        segmentation.copy(
-          contentSegmentLatLon = LatLonPoint(it.point.lat, it.point.lng),
-          contentSegmentLatLonDistance = it.distanceKm
-        )
-      } ?: segmentation
+    segmentation = segment.near?.let {
+      segmentation.copy(
+        contentSegmentLatLon = it,
+        contentSegmentLatLonDistance = segment.nearDistanceKm
+      )
     } ?: segmentation
 
     segmentationRepository.save(segmentation)
@@ -107,15 +103,15 @@ class ReportUseCase(
 
     cronScheduleRepository.save(cronSchedule)
 
-    val reporterPlugin = segment.report.plugin
+    val reporterPluginId = segment.reporterPluginId
 
-    val plugin = pluginService.resolveById<ReportPlugin<*>>(reporterPlugin.pluginId)!!
+    val plugin = pipelinePlugins.resolveById<ReportPlugin<*>>(reporterPluginId)!!
 //      plugin.tryParseParams("{}") // validate
 //      plugin.tryParseParams(reporterPlugin.params.toParams().paramsJsonString!!) // validate
 
 
     val report = Report(
-      recipientName = segment.recipient.email.name,
+      recipientName = segment.recipientName,
       recipientEmail = email,
 
       // send authorization mail
@@ -123,7 +119,7 @@ class ReportUseCase(
       lastRequestedAuthorization = LocalDateTime.now(),
       segmentId = segmentation.id,
       reporterPlugin = PluginExecution(
-        id = reporterPlugin.pluginId,
+        id = reporterPluginId,
         params = PluginExecutionJson()
       ),
       cronScheduleId = cronSchedule.id,
@@ -135,7 +131,7 @@ class ReportUseCase(
     reportRepository.save(report)
   }
 
-  private suspend fun sendReportCreatedMail(segment: SegmentInput) {
+  private suspend fun sendReportCreatedMail(segment: SegmentCreate) {
     val params = ReportCreatedParams(
       language = "de",
       deactivationLink = "",
@@ -146,7 +142,7 @@ class ReportUseCase(
     val body = templateService.renderTemplate(MailTemplateReportCreated(params))
     val mail = OutgoingMail(
       from = "no-reply@feedless.org",
-      to = listOf(segment.recipient.email.email),
+      to = listOf(segment.recipientEmail),
       subject = "Reporter erstellt",
       htmlContent = body
     )
@@ -209,7 +205,7 @@ class ReportUseCase(
   }
 
   private suspend fun resolveReporterPlugin(plugin: PluginExecution): ReportPlugin<*> =
-    pluginService.resolveById<ReportPlugin<*>>(plugin.id)!!
+    pipelinePlugins.resolveById<ReportPlugin<*>>(plugin.id)!!
 
   private fun resolveSegment(segment: Segmentation): Pair<Repository, List<Document>> {
     val repository = repositoryRepository.findById(segment.repositoryId)!!

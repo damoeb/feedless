@@ -16,6 +16,7 @@ import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateAnnotationInput
 import org.migor.feedless.generated.types.DeleteAnnotationInput
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
@@ -43,7 +44,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
   ): AnnotationDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createAnnotation $data")
-    annotationUseCase.createAnnotation(data).toDto()
+    annotationUseCase.createAnnotation(data.toDomain()).toDto()
   }
 
   @Throttled
@@ -54,7 +55,7 @@ class AnnotationResolver(
     @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("deleteAnnotation $data")
-    annotationUseCase.deleteAnnotation(data)
+    annotationUseCase.deleteAnnotation(AnnotationId(data.where.id))
     true
   }
 
@@ -85,5 +86,17 @@ class AnnotationResolver(
       downVotes = voteRepository.countDownVoteByRepositoryId(repositoryId)
     )
   }
+}
+
+internal fun CreateAnnotationInput.toDomain(): AnnotationCreate {
+  val target = AnnotationTarget(
+    where.document?.id?.let { DocumentId(UUID.fromString(it)) },
+    where.repository?.id?.let { RepositoryId(UUID.fromString(it)) },
+  )
+  return annotation.flag?.let { BoolAnnotationCreate(target, flag = it.set) }
+    ?: annotation.text?.let { TextAnnotationCreate(target, it.fromChar, it.toChar) }
+    ?: annotation.upVote?.let { BoolAnnotationCreate(target, upVote = it.set) }
+    ?: annotation.downVote?.let { BoolAnnotationCreate(target, downVote = it.set) }
+    ?: throw IllegalArgumentException("Insufficient data for annotation")
 }
 

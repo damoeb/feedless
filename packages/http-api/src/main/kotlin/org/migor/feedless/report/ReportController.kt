@@ -5,7 +5,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.ApiUrls.reportDelete
-import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.session.injectCapabilitiesFromJwt
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam
 @Profile("${AppProfiles.report} & ${AppLayer.api}")
 class ReportController(
   private val reportUseCase: ReportUseCase,
-  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val tokenIssuer: TokenIssuer,
 ) {
 
   private val log = LoggerFactory.getLogger(ReportController::class.simpleName)
@@ -32,7 +32,7 @@ class ReportController(
     @PathVariable("reportId") reportId: String,
     @RequestParam("deleteReportJwt") deleteReportJwt: String,
   ): ResponseEntity<String> =
-    withContext(context = injectCapabilitiesFromJwt(jwtTokenIssuer.decodeJwt(deleteReportJwt))) {
+    withContext(context = injectCapabilitiesFromJwt(tokenIssuer.decodeJwt(deleteReportJwt))) {
       log.info("GET deleteReport id=$reportId")
       reportUseCase.deleteReport(ReportId(reportId))
 

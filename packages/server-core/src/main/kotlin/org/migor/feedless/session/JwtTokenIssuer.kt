@@ -174,7 +174,7 @@ class JwtTokenIssuer(
       .encode(params)
   }
 
-  suspend fun decodeJwt(token: String): Jwt {
+  override suspend fun decodeJwt(token: String): Jwt {
     return NimbusJwtDecoder
       .withSecretKey(getSecretKey())
       .build()

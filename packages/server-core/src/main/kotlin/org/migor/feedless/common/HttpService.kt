@@ -39,7 +39,7 @@ import java.util.concurrent.TimeoutException
 class HttpService(
   @Value("\${app.apiGatewayUrl}")
   private val apiGatewayUrl: String
-) {
+) : HttpFetcher {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
@@ -91,10 +91,10 @@ class HttpService(
     return this.httpGet(url, expectedHttpStatus, headers)
   }
 
-  suspend fun httpGet(
+  override suspend fun httpGet(
     url: String,
     expectedHttpStatus: Int,
-    headers: Map<String, String>? = null
+    headers: Map<String, String>?
   ): HttpResponse {
     protectFromOverloading(url)
     log.debug("GET $url")

@@ -6,18 +6,11 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentGuard
-import org.migor.feedless.document.DocumentId
-import org.migor.feedless.generated.types.AnnotationWhereInput
-import org.migor.feedless.generated.types.CreateAnnotationInput
-import org.migor.feedless.generated.types.DeleteAnnotationInput
-import org.migor.feedless.generated.types.TextAnnotationInput
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
-import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.user.userId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
-import java.util.*
 
 @Service
 @Profile("${AppProfiles.annotation} & ${AppLayer.service}")
@@ -32,30 +25,29 @@ class AnnotationUseCase(
 
   private val log = org.slf4j.LoggerFactory.getLogger(AnnotationUseCase::class.simpleName)
 
-  suspend fun createAnnotation(data: CreateAnnotationInput): Annotation {
+  suspend fun createAnnotation(data: AnnotationCreate): Annotation {
     log.info("createAnnotation")
 
-    return data.annotation.flag?.let { createBoolAnnotation(data.where, flag = it.set) }
-      ?: data.annotation.text?.let { createTextAnnotation(data.where, it) }
-      ?: data.annotation.upVote?.let { createBoolAnnotation(data.where, upvote = it.set) }
-      ?: data.annotation.downVote?.let { createBoolAnnotation(data.where, downvote = it.set) }
-      ?: throw IllegalArgumentException("Insufficient data for annotation")
+    return when (data) {
+      is BoolAnnotationCreate -> createBoolAnnotation(data.target, data.flag, data.upVote, data.downVote)
+      is TextAnnotationCreate -> createTextAnnotation(data.target, data.fromChar, data.toChar)
+    }
   }
 
-  suspend fun deleteAnnotation(data: DeleteAnnotationInput) = withContext(Dispatchers.IO) {
-    log.info("deleteAnnotation id=${data.where.id}")
-    val annotation = annotationGuard.requireWrite(AnnotationId(data.where.id))
+  suspend fun deleteAnnotation(id: AnnotationId) = withContext(Dispatchers.IO) {
+    log.info("deleteAnnotation id=${id.uuid}")
+    val annotation = annotationGuard.requireWrite(id)
 
     annotationRepository.deleteById(annotation.id)
   }
 
   private suspend fun createBoolAnnotation(
-    where: AnnotationWhereInput,
+    target: AnnotationTarget,
     flag: Boolean = false,
     upvote: Boolean = false,
     downvote: Boolean = false,
   ): Annotation = withContext(Dispatchers.IO) {
-    val (document, repository) = resolveReferences(where)
+    val (document, repository) = resolveReferences(target)
 
     if (voteRepository.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
         flag,
@@ -82,14 +74,15 @@ class AnnotationUseCase(
   }
 
   private suspend fun createTextAnnotation(
-    where: AnnotationWhereInput,
-    i: TextAnnotationInput,
+    target: AnnotationTarget,
+    fromChar: Int,
+    toChar: Int,
   ): Annotation = withContext(Dispatchers.IO) {
-    val (document, repository) = resolveReferences(where)
+    val (document, repository) = resolveReferences(target)
 
     if (textAnnotationRepository.existsByFromCharAndToCharAndOwnerIdAndRepositoryIdAndDocumentId(
-        i.fromChar,
-        i.toChar,
+        fromChar,
+        toChar,
         coroutineContext.userId(),
         document?.id,
         repository?.id
@@ -99,8 +92,8 @@ class AnnotationUseCase(
     }
 
     val textAnnotation = TextAnnotation(
-      fromChar = i.fromChar,
-      toChar = i.toChar,
+      fromChar = fromChar,
+      toChar = toChar,
       repositoryId = repository?.id,
       documentId = document?.id,
       ownerId = coroutineContext.userId()
@@ -110,10 +103,10 @@ class AnnotationUseCase(
   }
 
   private suspend fun resolveReferences(
-    where: AnnotationWhereInput,
+    target: AnnotationTarget,
   ): Pair<Document?, Repository?> {
     return Pair(
-      where.document?.id?.let { documentGuard.requireWrite(DocumentId(UUID.fromString(it))) },
-      where.repository?.id?.let { repositoryGuard.requireWrite(RepositoryId(UUID.fromString(it))) })
+      target.documentId?.let { documentGuard.requireWrite(it) },
+      target.repositoryId?.let { repositoryGuard.requireWrite(it) })
   }
 }

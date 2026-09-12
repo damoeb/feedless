@@ -15,14 +15,6 @@ import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentGuard
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.eq
-import org.migor.feedless.generated.types.AnnotationWhereInput
-import org.migor.feedless.generated.types.AnnotationWhereUniqueInput
-import org.migor.feedless.generated.types.BoolUpdateOperationsInput
-import org.migor.feedless.generated.types.CreateAnnotationInput
-import org.migor.feedless.generated.types.DeleteAnnotationInput
-import org.migor.feedless.generated.types.OneOfAnnotationInput
-import org.migor.feedless.generated.types.RecordUniqueWhereInput
-import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
@@ -90,13 +82,9 @@ class AnnotationUseCaseTest {
         mockAnnotationExists(true)
 
         annotationUseCase.createAnnotation(
-          CreateAnnotationInput(
-            where = AnnotationWhereInput(
-              document = RecordUniqueWhereInput(UUID.randomUUID().toString())
-            ),
-            annotation = OneOfAnnotationInput(
-              flag = BoolUpdateOperationsInput(set = true)
-            )
+          BoolAnnotationCreate(
+            target = AnnotationTarget(documentId = DocumentId(UUID.randomUUID()), repositoryId = null),
+            flag = true,
           )
         )
       }
@@ -107,14 +95,7 @@ class AnnotationUseCaseTest {
   fun `flag a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.uuid.toString())
-        ),
-        annotation = OneOfAnnotationInput(
-          flag = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = documentTarget(), flag = true)
     )
 
     verify(voteRepository).save(argThat { it.flag && it.documentId == documentId })
@@ -124,14 +105,7 @@ class AnnotationUseCaseTest {
   fun `upVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.uuid.toString()),
-        ),
-        annotation = OneOfAnnotationInput(
-          upVote = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = documentTarget(), upVote = true)
     )
 
     verify(voteRepository).save(argThat { it.upVote && it.documentId == documentId })
@@ -141,14 +115,7 @@ class AnnotationUseCaseTest {
   fun `downVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          document = RecordUniqueWhereInput(documentId.uuid.toString()),
-        ),
-        annotation = OneOfAnnotationInput(
-          downVote = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = documentTarget(), downVote = true)
     )
 
     verify(voteRepository).save(argThat { it.downVote && it.documentId == documentId })
@@ -158,14 +125,7 @@ class AnnotationUseCaseTest {
   fun `flag a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
-        ),
-        annotation = OneOfAnnotationInput(
-          flag = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = repositoryTarget(), flag = true)
     )
 
     verify(voteRepository).save(argThat { it.flag && it.repositoryId == repositoryId })
@@ -175,14 +135,7 @@ class AnnotationUseCaseTest {
   fun `upVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
-        ),
-        annotation = OneOfAnnotationInput(
-          upVote = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = repositoryTarget(), upVote = true)
     )
 
     verify(voteRepository).save(argThat { it.upVote && it.repositoryId == repositoryId })
@@ -192,14 +145,7 @@ class AnnotationUseCaseTest {
   fun `downVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
     mockAnnotationExists(false)
     annotationUseCase.createAnnotation(
-      CreateAnnotationInput(
-        where = AnnotationWhereInput(
-          repository = RepositoryUniqueWhereInput(repositoryId.uuid.toString()),
-        ),
-        annotation = OneOfAnnotationInput(
-          downVote = BoolUpdateOperationsInput(set = true)
-        )
-      )
+      BoolAnnotationCreate(target = repositoryTarget(), downVote = true)
     )
 
     verify(voteRepository).save(argThat { it.downVote && it.repositoryId == repositoryId })
@@ -217,14 +163,14 @@ class AnnotationUseCaseTest {
         `when`(annotationGuard.requireWrite(any(AnnotationId::class.java))).thenThrow(PermissionDeniedException(""))
         `when`(annotationRepository.findById(any(AnnotationId::class.java))).thenReturn(annotation)
 
-        annotationUseCase.deleteAnnotation(
-          DeleteAnnotationInput(
-            where = AnnotationWhereUniqueInput(annotationId.uuid.toString())
-          )
-        )
+        annotationUseCase.deleteAnnotation(annotationId)
       }
     }
   }
+
+  private fun documentTarget() = AnnotationTarget(documentId = documentId, repositoryId = null)
+
+  private fun repositoryTarget() = AnnotationTarget(documentId = null, repositoryId = repositoryId)
 
   private fun mockAnnotationExists(exists: Boolean = true) {
     `when`(
