@@ -22,6 +22,7 @@ import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.StatelessAuthService
 import org.mockito.Mockito.`when`
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -199,10 +200,12 @@ class FeedControllerIntTest {
     ]
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
+    // the redirect is built in the controller now, so it is asserted instead of stubbed
     val restTemplate = TestRestTemplate()
-    `when`(feedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
+      .withRequestFactorySettings { it.withRedirects(ClientHttpRequestFactorySettings.Redirects.DONT_FOLLOW) }
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
-    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
+    assertThat(response.headers.location.toString()).isEqualTo("/f/$feedId/atom")
   }
 }

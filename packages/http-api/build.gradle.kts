@@ -12,6 +12,7 @@ dependencies {
   implementation(project(":packages:domain"))
   implementation(project(":packages:feed-parser"))
   implementation(libs.gson)
+  implementation(libs.commons.lang3)
   implementation(libs.spring.boot.web)
   implementation(libs.spring.boot.validation)
   implementation(libs.spring.boot.security)

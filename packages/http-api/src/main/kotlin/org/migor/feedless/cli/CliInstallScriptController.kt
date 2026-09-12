@@ -2,7 +2,7 @@ package org.migor.feedless.cli
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.AppConfig
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -19,7 +19,7 @@ import java.nio.charset.StandardCharsets
 @Controller
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class CliInstallScriptController(
-  private val propertyService: PropertyService,
+  private val appConfig: AppConfig,
   private val resourceLoader: ResourceLoader,
 ) {
 
@@ -37,7 +37,7 @@ class CliInstallScriptController(
       return ResponseEntity.notFound().build()
     }
 
-    val baseUrl = propertyService.apiGatewayUrl
+    val baseUrl = appConfig.apiGatewayUrl
     if (!FeedctlBaseUrlValidator.isValid(baseUrl)) {
       // An unvalidated baseUrl would run arbitrary shell on every curl | sh. It's operator config, so logging it is fine; never echo it.
       log.error("app.apiGatewayUrl='$baseUrl' is not a valid feedctl base URL; refusing to serve /cli/install.sh")

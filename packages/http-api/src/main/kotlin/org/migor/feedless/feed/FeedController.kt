@@ -11,8 +11,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.analytics.AnalyticsService
-import org.migor.feedless.analytics.toFullUrlString
+import org.migor.feedless.analytics.Analytics
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
@@ -22,6 +21,7 @@ import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
@@ -45,7 +45,7 @@ class FeedController(
   val feedExporter: FeedExporter,
   val feedService: FeedService,
   val meterRegistry: MeterRegistry,
-  val analyticsService: AnalyticsService
+  val analytics: Analytics
 ) {
 
 
@@ -61,10 +61,16 @@ class FeedController(
     @PathVariable("repositoryId") repositoryId: String,
   ): ResponseEntity<String> {
     runBlocking {
-      analyticsService.track()
+      analytics.track()
     }
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "repositoryId"))).increment()
-    return feedService.getRepository(repositoryId)
+    return getRepository(repositoryId)
+  }
+
+  private fun getRepository(repositoryId: String): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/atom")
+    return ResponseEntity(headers, HttpStatus.FOUND)
   }
 
   @GetMapping(
@@ -79,7 +85,7 @@ class FeedController(
     @PathVariable("feedId") feedId: String,
     request: HttpServletRequest
   ): ResponseEntity<String> = withContext(injectCapabilitiesFromSecurityContext()) {
-    analyticsService.track()
+    analytics.track()
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
@@ -96,7 +102,7 @@ class FeedController(
   )
   suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> =
     withContext(injectCapabilitiesFromSecurityContext()) {
-      analyticsService.track()
+      analytics.track()
       meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
       val feedUrl = toFullUrlString(request)
 
@@ -126,7 +132,7 @@ class FeedController(
   @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
   suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> =
     withContext(injectCapabilitiesFromSecurityContext()) {
-      analyticsService.track()
+      analytics.track()
       val feedUrl = toFullUrlString(request)
       meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
 
@@ -163,7 +169,7 @@ class FeedController(
   )
   suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> =
     withContext(injectCapabilitiesFromSecurityContext()) {
-      analyticsService.track()
+      analytics.track()
       meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
       val feedUrl = toFullUrlString(request)
       val feed = resolveFeedCatching(feedUrl) {
@@ -203,6 +209,15 @@ class FeedController(
     return ResponseEntity.status(HttpStatus.GONE).build()
   }
 
+}
+
+// AnalyticsService in server-core keeps its own copy.
+private fun toFullUrlString(request: HttpServletRequest): String {
+  return if (StringUtils.isBlank(request.queryString)) {
+    request.requestURL.toString()
+  } else {
+    request.requestURL.toString() + "?" + request.queryString
+  }
 }
 
 private fun HttpServletRequest.firstParam(vararg names: String): String {
