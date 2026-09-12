@@ -184,6 +184,8 @@ dependencies {
   implementation(libs.xsoup)
 
   testImplementation(libs.spring.boot.test)
+  testImplementation(testFixtures(project(":packages:domain")))
+  testImplementation(testFixtures(project(":packages:jpa-data")))
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")

@@ -1,9 +1,13 @@
 package org.migor.feedless
 
+import org.migor.feedless.connectedApp.ConnectedAppId
+import org.migor.feedless.document.DocumentId
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.order.OrderId
 import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.otp.OneTimePasswordId
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import java.time.LocalDateTime
@@ -14,7 +18,31 @@ import java.util.UUID.randomUUID
 object Mother {
   private val random = Random();
 
+  fun randomUserId(): UserId = UserId()
+  fun randomGroupId(): GroupId = GroupId()
+  fun randomDocumentId(): DocumentId = DocumentId()
+  fun randomRepositoryId(): RepositoryId = RepositoryId()
+  fun randomSourceId(): SourceId = SourceId()
+  fun randomConnectedAppId(): ConnectedAppId = ConnectedAppId()
+
   fun randomUser(): User {
+    return User(
+      email = UUID.randomUUID().toString() + "@localhost",
+      lastLogin = LocalDateTime.now(),
+      hasAcceptedTerms = true,
+    )
+  }
+
+  fun randomOneTimePassword(user: User): OneTimePassword {
+    return OneTimePassword(
+      password = "1234",
+      validUntil = LocalDateTime.now(),
+      userId = user.id,
+      attemptsLeft = 1
+    )
+  }
+
+  fun randomUserWithRandomFields(): User {
     val user = User(
       id = UserId(randomUUID()),
       email = randomString(),

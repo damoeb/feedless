@@ -17,7 +17,7 @@ dependencies {
 
   implementation(kotlin("stdlib"))
   testImplementation(kotlin("test"))
-  testImplementation(project(":packages:domain", "testOutput"))
+  testImplementation(testFixtures(project(":packages:domain")))
   implementation("org.jetbrains.kotlin:kotlin-reflect")
 
   implementation(libs.kotlinx.coroutines.core)
