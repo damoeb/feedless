@@ -98,6 +98,9 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 - [ ] Sync-Trigger als eigene Entität
 - [ ] Coroutinen aus Capabilities (`capability/SecurityContextCapabilityService.kt` ist bisher die einzige Datei dort)
 - [ ] Agent-Subscriptions auf eine Message Queue umstellen
+- [ ] **Profil-Gating vereinheitlichen.** `PlanGuard` hängt an `AppLayer.repository`, `UserUseCase` und `UserSecretUseCase` an `service & repository`, `IpThrottleService` nutzt `&&`, `HttpService`, `PdfService`, `MessageService` und `PageInspectionService` haben gar kein Profil. Bewusst nicht Teil des hexagonalen Umbaus (Spec `docs/superpowers/specs/2026-09-12-hexagonal-modules-design.md`).
+- [ ] **`LinceseResolver` umbenennen** und `LicenseUseCase` in Provider und Use Case aufteilen (steht als `todo` im Code).
+- [ ] **`TestingEndpoint` aus `server-core` lösen** — reines Dev-Werkzeug, bleibt beim hexagonalen Umbau vorerst in `server-core`.
 - [ ] Klären, ob `nominatim-proxy` nach dem Wechsel auf admin.ch noch gebraucht wird
 
 ## feedctl und HTTP-API
