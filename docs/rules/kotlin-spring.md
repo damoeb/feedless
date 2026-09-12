@@ -79,7 +79,7 @@ Resolvers are `suspend` and use `coroutineScope`/`withContext` — do not block 
 
 ## Database
 
-- Migrations: `jpa-data/src/main/resources/db/migration/V<n>__<snake_case>.sql`, applied up to `spring.flyway.target` in `server-core`'s `application-database.yaml` (currently `V91`). **Additive only** (AGENTS.md #5) — Flyway checksums what it has applied.
+- Migrations: `jpa-data/src/main/resources/db/migration/V<n>__<snake_case>.sql`, applied up to `spring.flyway.target` in `server-core`'s `application-database.yaml` (currently `V92`). **Additive only** (AGENTS.md #5) — Flyway checksums what it has applied.
 - Entities and repositories live in `jpa-data`, interfaces in `domain`. PostGIS types are in use (`JtsUtil`), so a plain Postgres container is not enough. Persistence integration tests live in `jpa-data`.
 
 ## Tests

@@ -25,7 +25,7 @@ import java.util.*
 @Table(name = "t_user_secret")
 open class UserSecretEntity : EntityWithUUID() {
 
-  // Holds the API JWT itself, which carries the user and their acting group (V90).
+  // Holds the API JWT itself, which carries the user and their acting group (V91).
   @Column(name = "value", nullable = false, length = 2048)
   open lateinit var value: String
 
