@@ -9,13 +9,13 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
+import org.migor.feedless.data.jpa.JpaDataTestApplication
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.RoleInGroup
@@ -25,12 +25,11 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 
 /** The access predicate and ordering of the query behind GET /user/sources. */
-@SpringBootTest
+@SpringBootTest(classes = [JpaDataTestApplication::class])
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
 @ActiveProfiles(
@@ -40,11 +39,6 @@ import java.time.LocalDateTime
   AppProfiles.source,
   AppProfiles.user,
   AppLayer.repository,
-)
-@MockitoBean(
-  types = [
-    StatelessAuthService::class,
-  ]
 )
 @Testcontainers
 class SourceRepositoryIntTest {

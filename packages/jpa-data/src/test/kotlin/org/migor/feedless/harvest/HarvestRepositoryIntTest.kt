@@ -9,12 +9,12 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
+import org.migor.feedless.data.jpa.JpaDataTestApplication
 import org.migor.feedless.data.jpa.harvest.HarvestDAO
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.transaction.PlatformTransactionManager
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
@@ -35,7 +34,7 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 
-@SpringBootTest
+@SpringBootTest(classes = [JpaDataTestApplication::class])
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
 @ActiveProfiles(
@@ -45,11 +44,6 @@ import java.util.concurrent.TimeUnit
   AppProfiles.source,
   AppProfiles.user,
   AppLayer.repository,
-)
-@MockitoBean(
-  types = [
-    StatelessAuthService::class,
-  ]
 )
 @Testcontainers
 class HarvestRepositoryIntTest {
