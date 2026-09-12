@@ -22,7 +22,7 @@ class PropertyService : AppConfig {
 
   private val log = LoggerFactory.getLogger(PropertyService::class.simpleName)
   override lateinit var apiGatewayUrl: String
-  lateinit var appHost: String
+  override lateinit var appHost: String
   lateinit var dateFormat: String
   lateinit var timeFormat: String
   lateinit var webToFeedVersion: String
