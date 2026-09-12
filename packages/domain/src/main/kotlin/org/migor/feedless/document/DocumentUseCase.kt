@@ -60,21 +60,21 @@ class DocumentUseCase(
   private val appConfig: AppConfig,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
-) : DocumentProvider, DocumentUseCasePort {
+) : DocumentProvider {
 
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
 
-  override suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
+  suspend fun findById(id: DocumentId): Document? = withContext(Dispatchers.IO) {
     log.info("findById id=$id")
     documentRepository.findById(id)
   }
 
-  override suspend fun findAllByRepositoryId(
+  suspend fun findAllByRepositoryId(
     repositoryId: RepositoryId,
-    filter: DocumentsFilter?,
-    orderBy: RecordOrderBy?,
-    status: ReleaseStatus,
-    tags: List<String>,
+    filter: DocumentsFilter? = null,
+    orderBy: RecordOrderBy? = null,
+    status: ReleaseStatus = ReleaseStatus.released,
+    tags: List<String> = emptyList(),
     pageable: PageableRequest,
   ): List<Document> = withContext(Dispatchers.IO) {
     log.info("findAllByRepositoryId repositoryId=$repositoryId")
@@ -147,7 +147,7 @@ class DocumentUseCase(
       } ?: log.debug("no retention with maxAgeDays given")
   }
 
-  override suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
+  suspend fun deleteDocuments(repositoryId: RepositoryId, documentIds: StringFilter) = withContext(Dispatchers.IO) {
     log.info("deleteDocuments $documentIds")
 
     repositoryGuard.requireRead(repositoryId)
@@ -403,7 +403,7 @@ class DocumentUseCase(
     documentRepository.countByRepositoryId(repositoryId)
   }
 
-  override suspend fun createDocument(data: DocumentCreate): Document {
+  suspend fun createDocument(data: DocumentCreate): Document {
     log.info("createDocument repositoryId=${data.repositoryId}")
     val repositoryId = data.repositoryId
 
@@ -430,7 +430,7 @@ class DocumentUseCase(
     }
   }
 
-  override suspend fun updateDocument(data: DocumentUpdate, id: DocumentId): Document = withContext(Dispatchers.IO) {
+  suspend fun updateDocument(data: DocumentUpdate, id: DocumentId): Document = withContext(Dispatchers.IO) {
     log.info("updateDocument id=$id")
     var document = documentRepository.findById(id)!!
       .copy(

@@ -10,12 +10,12 @@ import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestStatus
-import org.migor.feedless.harvest.HarvestUseCasePort
+import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.http.mapper.HttpHarvestMapper
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -53,13 +53,13 @@ class HarvestHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var harvestUseCase: HarvestUseCasePort
+  private lateinit var harvestUseCase: HarvestService
 
   @MockitoBean
   private lateinit var sourceRepository: SourceRepository
 
   @MockitoBean
-  private lateinit var repositoryUseCase: RepositoryUseCasePort
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @MockitoBean
   private lateinit var groupUseCase: GroupUseCase

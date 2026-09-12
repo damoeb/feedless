@@ -6,7 +6,7 @@ import org.migor.feedless.ConflictException
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
-import org.migor.feedless.harvest.HarvestUseCasePort
+import org.migor.feedless.repository.HarvestService
 import org.migor.feedless.http.api.HarvestsApi
 import org.migor.feedless.http.api.model.HarvestListResponse
 import org.migor.feedless.http.api.model.HarvestRequest
@@ -28,7 +28,7 @@ import org.migor.feedless.http.api.model.Harvest as HttpHarvest
 // RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
 @Profile("${AppProfiles.source} & ${AppProfiles.repository} & ${AppProfiles.user} & ${AppLayer.api}")
 class HarvestHttpController(
-  private val harvestUseCase: HarvestUseCasePort,
+  private val harvestUseCase: HarvestService,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpHarvestMapper,
   private val scrapeFlowMapper: HttpScrapeFlowMapper,

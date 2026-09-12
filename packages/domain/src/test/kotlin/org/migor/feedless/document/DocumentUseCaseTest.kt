@@ -21,22 +21,19 @@ import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.AppConfig
-import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.eq
+import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.document.DocumentCreate
 import org.migor.feedless.document.DocumentUpdate
-import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.group.GroupId
-import org.migor.feedless.message.MessageService
-import org.migor.feedless.message.NotificationsAdapter
-import org.migor.feedless.pipeline.PluginService
+import org.migor.feedless.message.Notifications
+import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.pipeline.PipelinePlugins
 import org.migor.feedless.pipeline.plugins.CompositeFieldFilterParams
 import org.migor.feedless.pipeline.plugins.CompositeFilterParams
-import org.migor.feedless.pipeline.plugins.CompositeFilterPlugin
-import org.migor.feedless.pipeline.plugins.FulltextPlugin
 import org.migor.feedless.pipeline.plugins.FulltextPluginParams
 import org.migor.feedless.pipeline.plugins.ItemFilterParams
-import org.migor.feedless.pipeline.plugins.StringFilter
 import org.migor.feedless.pipeline.plugins.StringFilterOperator
 import org.migor.feedless.pipeline.plugins.StringFilterParams
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
@@ -50,7 +47,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
-import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -65,7 +61,7 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import java.time.Duration
 import java.time.LocalDateTime
-import java.util.*
+import java.util.Date
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -82,18 +78,19 @@ class DocumentUseCaseTest {
   private lateinit var currentUser: User
   private lateinit var documentGuard: DocumentGuard
   private lateinit var planConstraintsService: PlanConstraintsService
-  private lateinit var pluginService: PluginService
-  private lateinit var filterPlugin: CompositeFilterPlugin
-  private lateinit var fulltextPlugin: FulltextPlugin
+  private lateinit var pipelinePlugins: PipelinePlugins
+  private lateinit var filterPlugin: FilterEntityPlugin<List<ItemFilterParams>>
+  private lateinit var fulltextPlugin: MapEntityPlugin<FulltextPluginParams>
   private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
-  private lateinit var telegramBotService: TelegramBotService
-  private lateinit var messageService: MessageService
+  private lateinit var notifications: Notifications
   private lateinit var documentId: DocumentId
   private lateinit var repositoryId: RepositoryId
   private lateinit var document: Document
   private lateinit var repositoryGuard: RepositoryGuard
 
   private val currentUserId = randomUserId()
+  private val filterPluginId = "org_feedless_filter"
+  private val fulltextPluginId = "org_feedless_fulltext"
 
   @BeforeEach
   fun setUp() = runTest {
@@ -105,19 +102,19 @@ class DocumentUseCaseTest {
     documentRepository = mock(DocumentRepository::class.java)
     documentGuard = spy(DocumentGuard(documentRepository))
     planConstraintsService = mock(PlanConstraintsService::class.java)
-    telegramBotService = mock(TelegramBotService::class.java)
-    messageService = mock(MessageService::class.java)
+    notifications = mock(Notifications::class.java)
     appConfig = mock(AppConfig::class.java)
 
-    filterPlugin = spy(CompositeFilterPlugin())
-    fulltextPlugin = mock(FulltextPlugin::class.java)
-    `when`(fulltextPlugin.id()).thenReturn(FeedlessPlugins.org_feedless_fulltext.name)
-    pluginService = PluginService(
-      entityPlugins = emptyList(),
-      transformerPlugins = emptyList(),
-      plugins = listOf(filterPlugin, fulltextPlugin)
-    )
-//    `when`(pluginService.resolveById<FilterEntityPlugin>(eq(FeedlessPlugins.org_feedless_filter.name))).thenReturn(filterPlugin)
+    @Suppress("UNCHECKED_CAST")
+    filterPlugin = mock(FilterEntityPlugin::class.java) as FilterEntityPlugin<List<ItemFilterParams>>
+    `when`(filterPlugin.id()).thenReturn(filterPluginId)
+    @Suppress("UNCHECKED_CAST")
+    fulltextPlugin = mock(MapEntityPlugin::class.java) as MapEntityPlugin<FulltextPluginParams>
+    `when`(fulltextPlugin.id()).thenReturn(fulltextPluginId)
+    pipelinePlugins = mock(PipelinePlugins::class.java)
+    `when`(pipelinePlugins.findById(filterPluginId)).thenReturn(filterPlugin)
+    `when`(pipelinePlugins.findById(fulltextPluginId)).thenReturn(fulltextPlugin)
+    `when`(pipelinePlugins.findAll()).thenReturn(listOf(filterPlugin, fulltextPlugin))
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
 
     repositoryGuard = mock(RepositoryGuard::class.java)
@@ -126,8 +123,8 @@ class DocumentUseCaseTest {
       repositoryRepository,
       planConstraintsService,
       documentPipelineJobRepository,
-      pluginService,
-      NotificationsAdapter(Optional.of(telegramBotService), messageService),
+      pipelinePlugins,
+      notifications,
       appConfig,
       documentGuard,
       repositoryGuard,
@@ -172,7 +169,7 @@ class DocumentUseCaseTest {
   @Test
   fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJob(
-      pluginId = FeedlessPlugins.org_feedless_filter.name,
+      pluginId = filterPluginId,
       sequenceId = 1,
       documentId = DocumentId(),
       executorParams = PluginExecutionJson(
@@ -193,6 +190,12 @@ class DocumentUseCaseTest {
       )
     )
 
+    // title "foo" matches the exclude filter
+    `when`(
+      filterPlugin.filterEntity(
+        any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
+      )
+    ).thenReturn(false)
     mockDocumentFindById(documentId, document)
     mockRepositoryFindById(repositoryId, repository)
 
@@ -204,8 +207,8 @@ class DocumentUseCaseTest {
     )
 
     // then
-    verify(filterPlugin).matches(
-      any2(), any2(), any(Int::class.java)
+    verify(filterPlugin).filterEntity(
+      any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
     )
     verify(documentRepository).deleteById(eq(documentId))
   }
@@ -213,7 +216,7 @@ class DocumentUseCaseTest {
   @Test
   fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
     val filterJob = DocumentPipelineJob(
-      pluginId = FeedlessPlugins.org_feedless_filter.name,
+      pluginId = filterPluginId,
       sequenceId = 1,
       documentId = DocumentId(),
       executorParams = PluginExecutionJson(
@@ -234,6 +237,12 @@ class DocumentUseCaseTest {
       )
     )
 
+    // title "foo" does not match the exclude filter
+    `when`(
+      filterPlugin.filterEntity(
+        any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
+      )
+    ).thenReturn(true)
     mockDocumentFindById(documentId, document)
     mockRepositoryFindById(repositoryId, repository)
 
@@ -251,7 +260,7 @@ class DocumentUseCaseTest {
   @Test
   fun `processDocumentPlugins will map document`() = runTest {
     val mapJob = DocumentPipelineJob(
-      pluginId = FeedlessPlugins.org_feedless_fulltext.name,
+      pluginId = fulltextPluginId,
       sequenceId = 1,
       documentId = DocumentId(),
       executorParams = PluginExecutionJson(
@@ -297,10 +306,6 @@ class DocumentUseCaseTest {
     mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
     mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
 
-    val telegramConnection = mock(TelegramConnection::class.java)
-    `when`(telegramConnection.chatId).thenReturn(12345)
-    `when`(telegramBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
-
     // when
     documentUseCase.processDocumentPlugins(
       documentId, listOf()
@@ -309,17 +314,13 @@ class DocumentUseCaseTest {
     // then
     verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
     verify(documentRepository).save(argThat { it.id == documentId })
-    verify(messageService).publishMessage(any2(), any2())
+    verify(notifications).pushToOwner(eq(repository.ownerId), argThat<List<JsonItem>> { it.size == 1 })
   }
 
   @Test
   fun `released document won't be forwarded to telegram, if repository disabled notifications`() = runTest {
     mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
     mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = false))
-
-    val telegramConnection = mock(TelegramConnection::class.java)
-    `when`(telegramConnection.chatId).thenReturn(12345)
-    `when`(telegramBotService.findByUserIdAndAuthorizedIsTrue(any2())).thenReturn(telegramConnection)
 
     // when
     documentUseCase.processDocumentPlugins(
@@ -329,7 +330,7 @@ class DocumentUseCaseTest {
     // then
     verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
 
-    verify(messageService, times(0)).publishMessage(any2(), any2())
+    verify(notifications, times(0)).pushToOwner(any2(), any2())
   }
 
 
@@ -358,7 +359,7 @@ class DocumentUseCaseTest {
         id = jobId,
         sequenceId = 1,
         documentId = documentId,
-        pluginId = FeedlessPlugins.org_feedless_fulltext.name,
+        pluginId = fulltextPluginId,
         executorParams = PluginExecutionJson()
       )
       assertThat(job.coolDownUntil).isNull()

@@ -9,17 +9,17 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentCreate
-import org.migor.feedless.document.DocumentGuardPort
+import org.migor.feedless.document.DocumentGuard
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentUpdate
-import org.migor.feedless.document.DocumentUseCasePort
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.StringFilter
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.http.mapper.HttpRecordMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.SourceRepository
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
@@ -58,13 +58,13 @@ class RecordHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var documentUseCase: DocumentUseCasePort
+  private lateinit var documentUseCase: DocumentUseCase
 
   @MockitoBean
-  private lateinit var documentGuard: DocumentGuardPort
+  private lateinit var documentGuard: DocumentGuard
 
   @MockitoBean
-  private lateinit var repositoryUseCase: RepositoryUseCasePort
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @MockitoBean
   private lateinit var groupUseCase: GroupUseCase

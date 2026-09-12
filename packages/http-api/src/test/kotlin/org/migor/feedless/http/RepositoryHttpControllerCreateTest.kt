@@ -17,7 +17,7 @@ import org.migor.feedless.http.mapper.HttpRepositoryMapper
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.user.UserId
 import org.mockito.kotlin.any
 import org.mockito.kotlin.mock
@@ -31,7 +31,7 @@ import org.migor.feedless.http.api.model.Vertical as HttpVertical
 
 class RepositoryHttpControllerCreateTest {
 
-  private val repositoryUseCase: RepositoryUseCasePort = mock()
+  private val repositoryUseCase: RepositoryUseCase = mock()
   private val mapper = HttpRepositoryMapper(HttpScrapeFlowMapper())
   // createRepository is not repository-scoped, so it never consults the guard.
   private val controller =

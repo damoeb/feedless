@@ -14,27 +14,10 @@ import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.eq
-import org.migor.feedless.generated.types.BoolUpdateOperationsInput
-import org.migor.feedless.generated.types.DOMElementByXPathInput
-import org.migor.feedless.generated.types.DOMExtractInput
-import org.migor.feedless.generated.types.HttpFetchInput
-import org.migor.feedless.generated.types.HttpGetRequestInput
-import org.migor.feedless.generated.types.NullableUpdateFlowInput
-import org.migor.feedless.generated.types.ScrapeActionInput
-import org.migor.feedless.generated.types.ScrapeEmit
-import org.migor.feedless.generated.types.ScrapeExtractInput
-import org.migor.feedless.generated.types.ScrapeFlowInput
-import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.SourceUniqueWhereInput
-import org.migor.feedless.generated.types.SourceUpdateDataInput
-import org.migor.feedless.generated.types.SourceUpdateInput
-import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.api.mapper.fromDto
-import org.migor.feedless.api.mapper.toSource
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
@@ -82,23 +65,16 @@ class SourceUseCaseTest {
   @Test
   fun createSources() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
 
+    // what SourceInput.toSource() yields for a single fetch without url
     val inputs = listOf(
-      SourceInput(
+      Source(
         title = "wef",
-        flow = ScrapeFlowInput(
-          sequence = listOf(
-            ScrapeActionInput(
-              fetch = HttpFetchInput(
-                get = HttpGetRequestInput(
-                  url = StringLiteralOrVariableInput()
-                )
-              )
-            )
-          )
-        )
+        tags = emptyArray(),
+        actions = mutableListOf(FetchAction(sourceId = SourceId(), url = "")),
+        repositoryId = RepositoryId(),
       )
     )
-    sourceUseCase.createSources(inputs.map { it.toSource() }, repositoryId)
+    sourceUseCase.createSources(inputs, repositoryId)
 
     verify(sourceRepository).saveAll(argThat<List<Source>> { it.size == 1 })
     verify(scrapeActionRepository).saveAll(argThat<List<ScrapeAction>> { it.size == 1 })
@@ -107,39 +83,16 @@ class SourceUseCaseTest {
   @Test
   fun updateSources() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
     val sourceId = SourceId()
-    val update = SourceUpdateInput(
-      where = SourceUniqueWhereInput(id = sourceId.uuid.toString()),
-      data = SourceUpdateDataInput(
-        disabled = BoolUpdateOperationsInput(
-          set = false
-        ),
-        flow = NullableUpdateFlowInput(
-          set = ScrapeFlowInput(
-            sequence = listOf(
-              ScrapeActionInput(
-                fetch = HttpFetchInput(
-                  get = HttpGetRequestInput(
-                    url = StringLiteralOrVariableInput(
-                      literal = "https::foo.bar"
-                    )
-                  )
-                )
-              ),
-              ScrapeActionInput(
-                extract = ScrapeExtractInput(
-                  fragmentName = "foo",
-                  selectorBased = DOMExtractInput(
-                    fragmentName = "foo",
-                    emit = listOf(ScrapeEmit.text, ScrapeEmit.pixel),
-                    xpath = DOMElementByXPathInput("//bar"),
-                    uniqueBy = ScrapeEmit.text
-                  )
-                )
-              )
-            )
-          )
-        )
-      )
+    // what ScrapeFlowInput.fromDto() yields for a fetch plus a selector-based extract
+    val actions = mutableListOf<ScrapeAction>(
+      FetchAction(sourceId = SourceId(), url = "https::foo.bar"),
+      ExtractXpathAction(
+        sourceId = SourceId(),
+        fragmentName = "foo",
+        xpath = "//bar",
+        uniqueBy = ExtractEmit.text,
+        emit = arrayOf(ExtractEmit.text, ExtractEmit.pixel),
+      ),
     )
     val source = mock(Source::class.java)
     `when`(source.repositoryId).thenReturn(repositoryId)
@@ -152,7 +105,7 @@ class SourceUseCaseTest {
       RepositorySourceUpdate(
         sourceId = sourceId,
         disabled = false,
-        actions = update.data.flow?.set?.fromDto(),
+        actions = actions,
       )
     )
 

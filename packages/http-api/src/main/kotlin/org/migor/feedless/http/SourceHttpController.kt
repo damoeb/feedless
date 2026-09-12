@@ -14,7 +14,7 @@ import org.migor.feedless.http.mapper.HttpSourceMapper
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
-import org.migor.feedless.source.SourceUseCasePort
+import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.throttle.Throttled
 import org.springframework.context.annotation.Profile
@@ -30,7 +30,7 @@ import org.migor.feedless.http.api.model.Source as HttpSource
 // RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
 @Profile("${AppProfiles.source} & ${AppProfiles.repository} & ${AppProfiles.user} & ${AppLayer.api}")
 class SourceHttpController(
-  private val sourceUseCase: SourceUseCasePort,
+  private val sourceUseCase: SourceUseCase,
   private val sourceRepository: SourceRepository,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpSourceMapper,

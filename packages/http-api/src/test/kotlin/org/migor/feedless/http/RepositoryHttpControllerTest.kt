@@ -13,7 +13,7 @@ import org.migor.feedless.http.mapper.HttpRepositoryMapper
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
 import org.mockito.kotlin.any
@@ -52,7 +52,7 @@ class RepositoryHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var repositoryUseCase: RepositoryUseCasePort
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @MockitoBean
   private lateinit var groupUseCase: GroupUseCase

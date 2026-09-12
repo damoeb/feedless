@@ -6,9 +6,9 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.document.Document
-import org.migor.feedless.document.DocumentGuardPort
+import org.migor.feedless.document.DocumentGuard
 import org.migor.feedless.document.DocumentId
-import org.migor.feedless.document.DocumentUseCasePort
+import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.document.StringFilter
 import org.migor.feedless.http.api.RecordsApi
 import org.migor.feedless.http.api.model.RecordCreate
@@ -32,8 +32,8 @@ import org.migor.feedless.http.api.model.Record as HttpRecord
   "${AppProfiles.document} & ${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}",
 )
 class RecordHttpController(
-  private val documentUseCase: DocumentUseCasePort,
-  private val documentGuard: DocumentGuardPort,
+  private val documentUseCase: DocumentUseCase,
+  private val documentGuard: DocumentGuard,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRecordMapper,
   private val etagCalculator: ETagCalculator,

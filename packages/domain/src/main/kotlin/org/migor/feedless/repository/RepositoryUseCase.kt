@@ -69,11 +69,11 @@ class RepositoryUseCase(
   private val appConfig: AppConfig,
   private val sourceUseCase: SourceUseCase,
   private val repositoryGuard: RepositoryGuard,
-) : RepositoryUseCasePort {
+) : RepositoryProvider {
 
   private val log = LoggerFactory.getLogger(RepositoryUseCase::class.simpleName)
 
-  override suspend fun create(data: List<RepositoryCreate>): List<Repository> =
+  suspend fun create(data: List<RepositoryCreate>): List<Repository> =
     withContext(Dispatchers.IO) {
       log.info("create repository with ${data.size} sources")
 
@@ -145,7 +145,7 @@ class RepositoryUseCase(
     return jsonFeed
   }
 
-  override suspend fun findAllByUserId(
+  suspend fun findAllByUserId(
     pageable: PageableRequest,
     where: RepositoriesFilter?,
     userId: UserId?
@@ -154,12 +154,12 @@ class RepositoryUseCase(
     return repositoryRepository.findAll(pageable, where, userId)
   }
 
-  override suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
+  suspend fun findById(repositoryId: RepositoryId): Repository? = withContext(Dispatchers.IO) {
     log.debug("findById repositoryId=$repositoryId")
     repositoryRepository.findById(repositoryId)
   }
 
-  override suspend fun delete(repositoryId: RepositoryId) {
+  suspend fun delete(repositoryId: RepositoryId) {
     val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.ownerId != currentCoroutineContext().userId()) {
       throw PermissionDeniedException("not authorized")
@@ -181,7 +181,7 @@ class RepositoryUseCase(
     )
   }
 
-  override suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdate) {
+  suspend fun updateRepository(id: RepositoryId, data: RepositoryUpdate) {
     // Fetch entity for mutation
     val existingRepository = repositoryGuard.requireWrite(id)
 
@@ -280,14 +280,14 @@ class RepositoryUseCase(
     }
   }
 
-  override suspend fun countAll(userId: UserId?, product: Vertical): Int {
+  suspend fun countAll(userId: UserId?, product: Vertical): Int {
     log.debug("countAll userId=$userId product=$product")
     return userId
       ?.let { repositoryRepository.countAllByOwnerIdAndProduct(it, product) }
       ?: repositoryRepository.countAllByVisibility(EntityVisibility.isPublic)
   }
 
-  override suspend fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int {
+  suspend fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int {
     log.debug("countAllByUserId userId=$userId")
     return repositoryRepository.countAllByUserId(where, userId)
   }

@@ -12,11 +12,11 @@ import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.http.mapper.HttpSourceMapper
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
-import org.migor.feedless.source.SourceUseCasePort
+import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
@@ -54,10 +54,10 @@ class SourceHttpControllerTest {
   private lateinit var sourceRepository: SourceRepository
 
   @MockitoBean
-  private lateinit var sourceUseCase: SourceUseCasePort
+  private lateinit var sourceUseCase: SourceUseCase
 
   @MockitoBean
-  private lateinit var repositoryUseCase: RepositoryUseCasePort
+  private lateinit var repositoryUseCase: RepositoryUseCase
 
   @MockitoBean
   private lateinit var groupUseCase: GroupUseCase

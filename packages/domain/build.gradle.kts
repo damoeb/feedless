@@ -25,6 +25,13 @@ dependencies {
   api(libs.hibernate.spatial)
   api(libs.jsoup)
   implementation(libs.commons.lang3)
+  implementation(libs.tika.core)
+  implementation(libs.spring.boot.validation)
+  api("org.springframework.data:spring-data-commons")
+  implementation("org.springframework:spring-web")
+  implementation("jakarta.annotation:jakarta.annotation-api")
+  // TooManyConnectionsPerHostException check only; server-core ships the client
+  compileOnly(libs.async.http.client)
   api("org.springframework:spring-context")
   api("org.springframework:spring-tx")
   api("org.springframework.security:spring-security-core")

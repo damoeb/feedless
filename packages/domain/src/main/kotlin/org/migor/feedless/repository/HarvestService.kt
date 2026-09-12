@@ -9,7 +9,6 @@ import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
-import org.migor.feedless.harvest.HarvestUseCasePort
 import org.migor.feedless.source.SourceId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -21,7 +20,7 @@ import java.time.LocalDateTime
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class HarvestService(
   private val harvestRepository: HarvestRepository,
-) : HarvestUseCasePort {
+) {
 
   private val log = LoggerFactory.getLogger(HarvestService::class.simpleName)
 
@@ -34,7 +33,7 @@ class HarvestService(
   }
 
   // Asks for one extra row for hasMore without shifting the offset.
-  override suspend fun findAllBySourceId(sourceId: SourceId, dryRun: Boolean, page: Int, pageSize: Int): List<Harvest> =
+  suspend fun findAllBySourceId(sourceId: SourceId, dryRun: Boolean, page: Int, pageSize: Int): List<Harvest> =
     withContext(Dispatchers.IO) {
       harvestRepository.findAllBySourceId(
         sourceId,
@@ -43,11 +42,11 @@ class HarvestService(
       )
     }
 
-  override suspend fun findById(id: HarvestId): Harvest? = withContext(Dispatchers.IO) {
+  suspend fun findById(id: HarvestId): Harvest? = withContext(Dispatchers.IO) {
     harvestRepository.findById(id)
   }
 
-  override suspend fun enqueue(sourceId: SourceId, dryRun: Boolean, flow: String?): Harvest =
+  suspend fun enqueue(sourceId: SourceId, dryRun: Boolean, flow: String?): Harvest =
     withContext(Dispatchers.IO) {
       harvestRepository.save(
         Harvest(

@@ -48,7 +48,7 @@ class SourceUseCase(
   private val scrapeActionRepository: ScrapeActionRepository,
   private val repositoryRepository: RepositoryRepository,
   private val sourcePipelineService: SourcePipelineService
-) : SourceUseCasePort {
+) {
 
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
 
@@ -157,7 +157,7 @@ class SourceUseCase(
   }
 
 
-  override suspend fun createSources(sources: List<Source>, repositoryId: RepositoryId): List<Source> =
+  suspend fun createSources(sources: List<Source>, repositoryId: RepositoryId): List<Source> =
     withContext(Dispatchers.IO) {
       log.info("creating ${sources.size} sources")
 
@@ -202,7 +202,7 @@ class SourceUseCase(
       sourceRepository.findAllWithActionsByIdIn(createSources.map { it.id })
     }
 
-  override suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<RepositorySourceUpdate>) =
+  suspend fun updateSources(repositoryId: RepositoryId, updateInputs: List<RepositorySourceUpdate>) =
     withContext(Dispatchers.IO) {
       log.info("updating ${updateInputs.size} sources")
 
@@ -273,7 +273,7 @@ class SourceUseCase(
       Unit
     }
 
-  override suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
+  suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
     val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.groupId != coroutineContext.groupId()) {
       throw IllegalArgumentException("Cannot delete a source with a group id '${repository.groupId}'")

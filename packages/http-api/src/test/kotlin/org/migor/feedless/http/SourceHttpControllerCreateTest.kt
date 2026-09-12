@@ -15,11 +15,11 @@ import org.migor.feedless.http.api.model.SourceCreate
 import org.migor.feedless.http.mapper.HttpScrapeFlowMapper
 import org.migor.feedless.http.mapper.HttpSourceMapper
 import org.migor.feedless.repository.Repository
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
-import org.migor.feedless.source.SourceUseCasePort
+import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.mockito.kotlin.any
 import org.mockito.kotlin.eq
@@ -33,9 +33,9 @@ import org.springframework.web.context.request.ServletRequestAttributes
 
 class SourceHttpControllerCreateTest {
 
-  private val sourceUseCase: SourceUseCasePort = mock()
+  private val sourceUseCase: SourceUseCase = mock()
   private val sourceRepository: SourceRepository = mock()
-  private val repositoryUseCase: RepositoryUseCasePort = mock()
+  private val repositoryUseCase: RepositoryUseCase = mock()
   private val mapper = HttpSourceMapper(HttpScrapeFlowMapper())
   private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCase>())
   private val controller =

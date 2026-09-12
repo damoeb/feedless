@@ -74,7 +74,6 @@ class PropertyService : AppConfig {
   }
 
   companion object {
-    const val maxPageSize: Int = 30
     const val jwtSecretMinLength: Int = 10
     const val rootSecretKeyMinLength: Int = 7
   }

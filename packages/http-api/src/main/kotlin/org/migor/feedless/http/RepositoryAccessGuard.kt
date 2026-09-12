@@ -10,7 +10,7 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -32,7 +32,7 @@ enum class RepositoryAccess {
 @Component
 @Profile("${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}")
 class RepositoryAccessGuard(
-  private val repositoryUseCase: RepositoryUseCasePort,
+  private val repositoryUseCase: RepositoryUseCase,
   private val sourceRepository: SourceRepository,
   private val groupUseCase: GroupUseCase,
 ) {

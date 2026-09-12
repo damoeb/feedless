@@ -16,7 +16,7 @@ import org.migor.feedless.repository.FulltextQueryFilter
 import org.migor.feedless.repository.RepositoriesFilter
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.VerticalFilter
 import org.migor.feedless.repository.VisibilityFilter
 import org.migor.feedless.throttle.Throttled
@@ -36,7 +36,7 @@ import kotlin.coroutines.coroutineContext
 // RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
 @Profile("${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}")
 class RepositoryHttpController(
-  private val repositoryUseCase: RepositoryUseCasePort,
+  private val repositoryUseCase: RepositoryUseCase,
   private val accessGuard: RepositoryAccessGuard,
   private val mapper: HttpRepositoryMapper,
   private val etagCalculator: ETagCalculator,

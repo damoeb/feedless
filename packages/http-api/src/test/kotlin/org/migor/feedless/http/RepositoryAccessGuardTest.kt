@@ -11,7 +11,7 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCasePort
+import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
@@ -27,7 +27,7 @@ import org.mockito.kotlin.whenever
 
 class RepositoryAccessGuardTest {
 
-  private val repositoryUseCase: RepositoryUseCasePort = mock()
+  private val repositoryUseCase: RepositoryUseCase = mock()
   private val sourceRepository: SourceRepository = mock()
   private val groupUseCase: GroupUseCase = mock()
   private val guard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, groupUseCase)

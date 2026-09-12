@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.scheduler}")
-class SourcePipelineService internal constructor(
+class SourcePipelineService(
   val sourcePipelineJobRepository: SourcePipelineJobRepository,
 ) {
 
