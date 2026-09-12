@@ -7,7 +7,7 @@ import org.migor.feedless.http.api.PlansApi
 import org.migor.feedless.http.api.model.PlanListResponse
 import org.migor.feedless.http.mapper.HttpPlanMapper
 import org.migor.feedless.plan.PlanId
-import org.migor.feedless.plan.PlanUseCasePort
+import org.migor.feedless.plan.PlanUseCase
 import org.springframework.context.annotation.Profile
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -19,7 +19,7 @@ import org.migor.feedless.http.api.model.Plan as HttpPlan
 @RequestMapping("/api/v1")
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class PlanHttpController(
-  private val planUseCase: PlanUseCasePort,
+  private val planUseCase: PlanUseCase,
   private val mapper: HttpPlanMapper,
 ) : PlansApi {
 

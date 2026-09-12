@@ -34,7 +34,6 @@ import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.session.NoActingGroupException
 import org.migor.feedless.transport.TelegramBotService
 import org.migor.feedless.userGroup.RoleInGroup
 import org.slf4j.LoggerFactory
@@ -45,7 +44,6 @@ import org.springframework.core.env.Profiles
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
 import java.util.*
-import kotlin.coroutines.CoroutineContext
 import kotlin.jvm.optionals.getOrNull
 
 @Service
@@ -356,27 +354,5 @@ class UserUseCase(
     githubConnectionRepository.save(githubLink)
   }
 
-}
-
-// todo move this
-fun CoroutineContext.corrId(): String? {
-  return this[RequestContext]?.corrId
-}
-
-fun CoroutineContext.userId(): UserId {
-  return this[RequestContext]?.userId!!
-}
-
-fun CoroutineContext.userIdMaybe(): UserId? {
-  return this[RequestContext]?.userId
-}
-
-/** @throws NoActingGroupException if the token carries no group, or one the user no longer owns. */
-fun CoroutineContext.groupId(): GroupId {
-  return this[RequestContext]?.groupId ?: throw NoActingGroupException.forRequest()
-}
-
-fun CoroutineContext.isAdmin(): Boolean {
-  return this[RequestContext]?.isAdmin ?: false
 }
 

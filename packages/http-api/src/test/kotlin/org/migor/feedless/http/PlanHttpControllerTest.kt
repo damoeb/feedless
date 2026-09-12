@@ -9,7 +9,7 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.http.mapper.HttpPlanMapper
 import org.migor.feedless.plan.Plan
 import org.migor.feedless.plan.PlanId
-import org.migor.feedless.plan.PlanUseCasePort
+import org.migor.feedless.plan.PlanUseCase
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.user.UserId
 import org.mockito.kotlin.eq
@@ -37,7 +37,7 @@ class PlanHttpControllerTest {
   private lateinit var mockMvc: MockMvc
 
   @MockitoBean
-  private lateinit var planUseCase: PlanUseCasePort
+  private lateinit var planUseCase: PlanUseCase
 
   @Test
   fun `listPlans returns items with recurringYearly false`() = runTest {
