@@ -54,25 +54,31 @@ class FlywayTargetTest {
     return match.groupValues[1].toInt()
   }
 
-  private fun migrationDirectory() = resolveServerCoreFile("src/main/resources/db/migration")
+  private fun migrationDirectory() = resolveFile(
+    "../jpa-data/src/main/resources/db/migration",
+    "packages/jpa-data/src/main/resources/db/migration"
+  )
 
-  private fun applicationDatabaseYaml() = resolveServerCoreFile("src/main/resources/application-database.yaml")
+  private fun applicationDatabaseYaml() = resolveFile(
+    "src/main/resources/application-database.yaml",
+    "packages/server-core/src/main/resources/application-database.yaml"
+  )
 
   /** Works from the module or the repository root (IDE run configurations). */
-  private fun resolveServerCoreFile(relativePath: String): File {
-    val fromModuleRoot = File(relativePath)
+  private fun resolveFile(moduleRelative: String, repoRelative: String): File {
+    val fromModuleRoot = File(moduleRelative)
     if (fromModuleRoot.exists()) {
       return fromModuleRoot
     }
 
-    val fromRepoRoot = File("packages/server-core", relativePath)
+    val fromRepoRoot = File(repoRelative)
     if (fromRepoRoot.exists()) {
       return fromRepoRoot
     }
 
     error(
-      "could not locate $relativePath relative to module root (${File(".").canonicalPath}); " +
-        "tried both the module directory and packages/server-core/ under the current directory"
+      "could not locate $moduleRelative relative to module root (${File(".").canonicalPath}) " +
+        "nor $repoRelative relative to the repository root"
     )
   }
 }
