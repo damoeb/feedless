@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import kotlinx.coroutines.runBlocking
 import org.assertj.core.api.Assertions.assertThat
@@ -8,7 +8,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.data.jpa.agent.AgentDAO
+import org.migor.feedless.data.jpa.browserautomation.BrowserAutomationDAO
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -32,7 +32,7 @@ import java.util.UUID
 @ActiveProfiles(
   "test",
   "database",
-  AppProfiles.agent,
+  AppProfiles.browserAutomation,
   AppProfiles.user,
   AppProfiles.secrets,
   AppLayer.repository,
@@ -43,13 +43,13 @@ import java.util.UUID
   ]
 )
 @Testcontainers
-class StatefulAgentRegistryIntTest {
+class StatefulBrowserAutomationRegistryIntTest {
 
   @Autowired
-  private lateinit var agentRepository: AgentRepository
+  private lateinit var browserAutomationRepository: BrowserAutomationRepository
 
   @Autowired
-  private lateinit var agentDAO: AgentDAO
+  private lateinit var browserAutomationDAO: BrowserAutomationDAO
 
   @Autowired
   private lateinit var userRepository: UserRepository
@@ -57,22 +57,22 @@ class StatefulAgentRegistryIntTest {
   @Autowired
   private lateinit var userSecretRepository: UserSecretRepository
 
-  private lateinit var registry: StatefulAgentRegistry
+  private lateinit var registry: StatefulBrowserAutomationRegistry
 
   @BeforeEach
   fun setUp() {
     // t_agent is shared with every other test on this container: count from an empty table.
-    agentDAO.deleteAll()
-    registry = StatefulAgentRegistry(agentRepository)
+    browserAutomationDAO.deleteAll()
+    registry = StatefulBrowserAutomationRegistry(browserAutomationRepository)
   }
 
   @Test
   fun `countConnected counts every agent row, open or private, whoever owns it`() = runBlocking<Unit> {
     val alice = newUser()
     val bob = newUser()
-    registry.save(agent(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
-    registry.save(agent(owner = alice.id, secret = secretOf(alice.id), openInstance = false))
-    registry.save(agent(owner = bob.id, secret = secretOf(bob.id), openInstance = false))
+    registry.save(browserAutomation(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
+    registry.save(browserAutomation(owner = alice.id, secret = secretOf(alice.id), openInstance = false))
+    registry.save(browserAutomation(owner = bob.id, secret = secretOf(bob.id), openInstance = false))
 
     assertThat(registry.countConnected()).isEqualTo(3)
   }
@@ -80,8 +80,8 @@ class StatefulAgentRegistryIntTest {
   @Test
   fun `countConnected drops an agent once its row is deleted`() = runBlocking<Unit> {
     val alice = newUser()
-    val kept = registry.save(agent(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
-    val dropped = registry.save(agent(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
+    val kept = registry.save(browserAutomation(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
+    val dropped = registry.save(browserAutomation(owner = alice.id, secret = secretOf(alice.id), openInstance = true))
 
     registry.delete(dropped)
 
@@ -107,7 +107,7 @@ class StatefulAgentRegistryIntTest {
     ),
   ).id
 
-  private fun agent(owner: UserId, secret: UserSecretId, openInstance: Boolean) = Agent(
+  private fun browserAutomation(owner: UserId, secret: UserSecretId, openInstance: Boolean) = BrowserAutomation(
     connectionId = UUID.randomUUID().toString(),
     version = "0.3.0",
     openInstance = openInstance,

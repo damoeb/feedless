@@ -14,7 +14,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.agent.AgentEntity
+import org.migor.feedless.data.jpa.browserautomation.BrowserAutomationEntity
 import org.migor.feedless.data.jpa.user.UserEntity
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretType
@@ -55,7 +55,7 @@ open class UserSecretEntity : EntityWithUUID() {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "id", orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  open var agents: MutableList<AgentEntity> = mutableListOf()
+  open var agents: MutableList<BrowserAutomationEntity> = mutableListOf()
 
 }
 

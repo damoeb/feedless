@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.OsInfo
@@ -7,7 +7,7 @@ import org.migor.feedless.userSecret.UserSecretId
 import reactor.core.publisher.FluxSink
 import java.time.LocalDateTime
 
-data class AgentRef(
+data class BrowserAutomationRef(
   val secretKeyId: UserSecretId,
   val ownerId: UserId,
   val name: String,
@@ -18,6 +18,6 @@ data class AgentRef(
   val emitter: FluxSink<AgentEvent>
 ) {
   override fun toString(): String {
-    return "AgentRef(connectionId=$connectionId, secretKeyId=$secretKeyId, name=$name, version='$version', os=$os)"
+    return "BrowserAutomationRef(connectionId=$connectionId, secretKeyId=$secretKeyId, name=$name, version='$version', os=$os)"
   }
 }

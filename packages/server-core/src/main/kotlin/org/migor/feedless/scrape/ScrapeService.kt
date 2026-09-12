@@ -19,7 +19,7 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
@@ -54,7 +54,7 @@ class ScrapeService : ScrapeRunner {
   private lateinit var httpService: HttpService
 
   @Autowired
-  private lateinit var agentService: AgentService
+  private lateinit var browserAutomationService: BrowserAutomationService
 
   @Autowired
   private lateinit var pluginService: PluginService
@@ -271,7 +271,7 @@ class ScrapeService : ScrapeRunner {
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("send to agent")
-      val response = agentService.prerender(source).get()
+      val response = browserAutomationService.prerender(source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)

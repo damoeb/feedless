@@ -11,7 +11,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.ConflictException
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
@@ -70,7 +70,7 @@ import java.util.UUID
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     SourcePipelineService::class,
     PlanConstraintsService::class,
   ]

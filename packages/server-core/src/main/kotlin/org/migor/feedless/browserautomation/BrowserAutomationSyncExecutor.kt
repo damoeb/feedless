@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -9,18 +9,18 @@ import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 
 @Service
-@Profile("${AppProfiles.agent} & ${AppLayer.scheduler}")
-class AgentSyncExecutor(
-  private val agentService: AgentService,
-  private val agentRepository: AgentRepository
+@Profile("${AppProfiles.browserAutomation} & ${AppLayer.scheduler}")
+class BrowserAutomationSyncExecutor(
+  private val browserAutomationService: BrowserAutomationService,
+  private val browserAutomationRepository: BrowserAutomationRepository
 ) {
 
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeSync() {
-    agentRepository.saveAll(
-      agentService.agentRefs().mapNotNull {
-        agentRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
+    browserAutomationRepository.saveAll(
+      browserAutomationService.agentRefs().mapNotNull {
+        browserAutomationRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
       }.map {
         it.copy(lastSyncedAt = LocalDateTime.now())
       })
@@ -29,7 +29,7 @@ class AgentSyncExecutor(
   @Scheduled(fixedDelay = 3 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeCleanup() {
-    agentRepository.deleteAllByLastSyncedAtBefore(
+    browserAutomationRepository.deleteAllByLastSyncedAtBefore(
       LocalDateTime.now().minusMinutes(2)
     )
   }

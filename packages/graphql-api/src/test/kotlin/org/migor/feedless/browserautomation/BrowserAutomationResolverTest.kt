@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
@@ -8,7 +8,7 @@ import org.migor.feedless.userSecret.UserSecretId
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-class AgentResolverTest {
+class BrowserAutomationResolverTest {
 
     @Test
     fun testDto() {
@@ -16,7 +16,7 @@ class AgentResolverTest {
         val secretKeyId = UserSecretId()
         val ownerId = UserId()
 
-        val incoming = org.migor.feedless.agent.Agent(
+        val incoming = org.migor.feedless.browserautomation.BrowserAutomation(
             connectionId = "connectionId",
             version = "version",
             openInstance = false,

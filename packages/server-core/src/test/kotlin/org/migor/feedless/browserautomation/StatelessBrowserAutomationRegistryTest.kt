@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -8,22 +8,22 @@ import org.migor.feedless.userSecret.UserSecretId
 import java.time.LocalDateTime
 import java.util.UUID
 
-class StatelessAgentRegistryTest {
+class StatelessBrowserAutomationRegistryTest {
 
-  private val registry = StatelessAgentRegistry()
+  private val registry = StatelessBrowserAutomationRegistry()
 
   @Test
   fun `countConnected counts every registered agent, open or private, whoever owns it`() = runTest {
-    registry.save(agent(owner = UserId(), openInstance = true))
-    registry.save(agent(owner = UserId(), openInstance = false))
+    registry.save(browserAutomation(owner = UserId(), openInstance = true))
+    registry.save(browserAutomation(owner = UserId(), openInstance = false))
 
     assertThat(registry.countConnected()).isEqualTo(2)
   }
 
   @Test
   fun `countConnected drops a deleted agent`() = runTest {
-    val kept = registry.save(agent(owner = UserId(), openInstance = true))
-    val dropped = registry.save(agent(owner = UserId(), openInstance = true))
+    val kept = registry.save(browserAutomation(owner = UserId(), openInstance = true))
+    val dropped = registry.save(browserAutomation(owner = UserId(), openInstance = true))
 
     registry.delete(dropped)
 
@@ -40,10 +40,10 @@ class StatelessAgentRegistryTest {
   fun `findAllByOwnerIdOrOpenInstanceIsTrue lists the owner's agents and every open one`() = runTest {
     val alice = UserId()
     val bob = UserId()
-    val aliceOpen = registry.save(agent(owner = alice, openInstance = true))
-    val alicePrivate = registry.save(agent(owner = alice, openInstance = false))
-    val bobOpen = registry.save(agent(owner = bob, openInstance = true))
-    registry.save(agent(owner = bob, openInstance = false))
+    val aliceOpen = registry.save(browserAutomation(owner = alice, openInstance = true))
+    val alicePrivate = registry.save(browserAutomation(owner = alice, openInstance = false))
+    val bobOpen = registry.save(browserAutomation(owner = bob, openInstance = true))
+    registry.save(browserAutomation(owner = bob, openInstance = false))
 
     assertThat(registry.findAllByOwnerIdOrOpenInstanceIsTrue(alice))
       .containsExactlyInAnyOrder(aliceOpen, alicePrivate, bobOpen)
@@ -51,13 +51,13 @@ class StatelessAgentRegistryTest {
 
   @Test
   fun `findAllByOwnerIdOrOpenInstanceIsTrue lists only open agents without a user`() = runTest {
-    val aliceOpen = registry.save(agent(owner = UserId(), openInstance = true))
-    registry.save(agent(owner = UserId(), openInstance = false))
+    val aliceOpen = registry.save(browserAutomation(owner = UserId(), openInstance = true))
+    registry.save(browserAutomation(owner = UserId(), openInstance = false))
 
     assertThat(registry.findAllByOwnerIdOrOpenInstanceIsTrue(null)).containsExactly(aliceOpen)
   }
 
-  private fun agent(owner: UserId, openInstance: Boolean) = Agent(
+  private fun browserAutomation(owner: UserId, openInstance: Boolean) = BrowserAutomation(
     connectionId = UUID.randomUUID().toString(),
     version = "0.3.0",
     openInstance = openInstance,

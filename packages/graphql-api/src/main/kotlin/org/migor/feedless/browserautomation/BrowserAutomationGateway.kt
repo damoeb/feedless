@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
@@ -6,7 +6,7 @@ import org.migor.feedless.generated.types.ScrapeResponseInput
 import org.reactivestreams.Publisher
 
 // Lives here, not in domain: the agent protocol is made of generated GraphQL types.
-interface AgentGateway {
+interface BrowserAutomationGateway {
   suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent>
   suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput)
 }

@@ -16,7 +16,7 @@ import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
-import org.migor.feedless.data.jpa.agent.AgentEntity
+import org.migor.feedless.data.jpa.browserautomation.BrowserAutomationEntity
 import org.migor.feedless.data.jpa.oneTimePassword.OneTimePasswordEntity
 import org.migor.feedless.data.jpa.order.OrderEntity
 import org.migor.feedless.data.jpa.plan.PlanEntity
@@ -138,7 +138,7 @@ open class UserEntity : EntityWithUUID() {
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "ownerId", orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.NO_ACTION)
-  open var agents: MutableList<AgentEntity> = mutableListOf()
+  open var agents: MutableList<BrowserAutomationEntity> = mutableListOf()
 
   @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId", orphanRemoval = true)
   @OnDelete(action = OnDeleteAction.NO_ACTION)

@@ -1,12 +1,12 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecretId
 import java.time.LocalDateTime
 import java.util.*
 
-data class Agent(
-    val id: AgentId = AgentId(UUID.randomUUID()),
+data class BrowserAutomation(
+    val id: BrowserAutomationId = BrowserAutomationId(UUID.randomUUID()),
     val connectionId: String,
     val version: String,
     val openInstance: Boolean,

@@ -12,7 +12,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.api.graphql.ServerConfigResolver
@@ -81,7 +81,7 @@ import java.util.UUID
     DocumentUseCase::class,
     InboxService::class,
     OrderRepository::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     SourcePipelineService::class,
     PlanConstraintsService::class,
   ]

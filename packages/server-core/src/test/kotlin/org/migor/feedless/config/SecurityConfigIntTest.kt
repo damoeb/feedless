@@ -162,7 +162,7 @@ class SecurityConfigIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
-  /** No agent profile here, so the count must still answer, as 0. */
+  /** No browserautomation profile here, so the count must still answer, as 0. */
   @Test
   fun whenRequestingStatusWithoutAuth_ThenOkWithAllFields() {
     val response = TestRestTemplate().getForEntity("${baseEndpoint}/api/v1/status", String::class.java)

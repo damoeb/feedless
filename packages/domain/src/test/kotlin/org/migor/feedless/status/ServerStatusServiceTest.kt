@@ -9,7 +9,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.ValueSource
-import org.migor.feedless.agent.AgentDirectory
+import org.migor.feedless.browserautomation.BrowserAutomationDirectory
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -20,7 +20,7 @@ class ServerStatusServiceTest {
 
   @Test
   fun `reports version, commit, build date and the registry's connected agent count`() = runTest {
-    val registry = mock<AgentDirectory>()
+    val registry = mock<BrowserAutomationDirectory>()
     whenever(registry.countConnected()).thenReturn(2)
 
     val status = service(registry = registry).status()
@@ -31,7 +31,7 @@ class ServerStatusServiceTest {
   }
 
   @Test
-  fun `reports zero agents when the agent profile provides no registry`() = runTest {
+  fun `reports zero agents when the browserautomation profile provides no registry`() = runTest {
     val status = service(registry = null).status()
 
     assertThat(status.connectedAgents).isEqualTo(0)
@@ -62,10 +62,10 @@ class ServerStatusServiceTest {
     }
 
   private fun service(
-    registry: AgentDirectory? = null,
+    registry: BrowserAutomationDirectory? = null,
     buildTimestamp: String = "1757000000000",
   ): ServerStatusService {
-    val provider = mock<ObjectProvider<AgentDirectory>> { on { ifAvailable } doReturn registry }
+    val provider = mock<ObjectProvider<BrowserAutomationDirectory>> { on { ifAvailable } doReturn registry }
     return ServerStatusService("0.3.0", "abc123", buildTimestamp, provider)
   }
 }

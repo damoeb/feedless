@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.any
@@ -70,7 +70,7 @@ import org.migor.feedless.Vertical
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     SourcePipelineService::class,
   ]
 )

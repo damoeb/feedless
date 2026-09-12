@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import com.netflix.graphql.dgs.DgsComponent
 import com.netflix.graphql.dgs.DgsMutation
@@ -28,21 +28,21 @@ import org.springframework.security.access.prepost.PreAuthorize
 import org.migor.feedless.generated.types.Agent as AgentDto
 
 @DgsComponent
-@Profile("${AppProfiles.agent} & ${AppLayer.api}")
-class AgentResolver(
-  private val agentGateway: AgentGateway,
-  private val agentDirectory: AgentDirectory,
+@Profile("${AppProfiles.browserAutomation} & ${AppLayer.api}")
+class BrowserAutomationResolver(
+  private val browserAutomationGateway: BrowserAutomationGateway,
+  private val browserAutomationDirectory: BrowserAutomationDirectory,
   private val capabilityService: CapabilityService
 ) {
 
-  private val log = LoggerFactory.getLogger(AgentResolver::class.simpleName)
+  private val log = LoggerFactory.getLogger(BrowserAutomationResolver::class.simpleName)
 
   @DgsSubscription
   fun registerAgent(@InputArgument data: RegisterAgentInput): Publisher<AgentEvent> {
     log.info("registerAgent ${data.secretKey.email}")
     return runBlocking {
       coroutineScope {
-        data.secretKey.let { agentGateway.registerAgent(data) }
+        data.secretKey.let { browserAutomationGateway.registerAgent(data) }
       }
     }
   }
@@ -52,7 +52,7 @@ class AgentResolver(
   @PreAuthorize("@capabilityService.hasCapability('agent')")
   suspend fun submitAgentData(@InputArgument data: SubmitAgentDataInput): Boolean = coroutineScope {
     log.info("[${data.corrId}] submitAgentData")
-    agentGateway.handleScrapeResponse(data.callbackId, data.scrapeResponse)
+    browserAutomationGateway.handleScrapeResponse(data.callbackId, data.scrapeResponse)
     true
   }
 
@@ -63,7 +63,7 @@ class AgentResolver(
   ): List<AgentDto> = coroutineScope {
     log.info("agents")
     withContext(Dispatchers.IO) {
-      agentDirectory.findAllByOwnerIdOrOpenInstanceIsTrue(userId())
+      browserAutomationDirectory.findAllByOwnerIdOrOpenInstanceIsTrue(userId())
     }.map { it.toDto() }
   }
 
@@ -73,7 +73,7 @@ class AgentResolver(
 
 }
 
-internal fun Agent.toDto(): AgentDto {
+internal fun BrowserAutomation.toDto(): AgentDto {
   return AgentDto(
     ownerId = ownerId.toString(),
     name = name,

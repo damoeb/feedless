@@ -12,7 +12,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.PropertyService
@@ -64,7 +64,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     ProductUseCase::class,
     PropertyService::class,
     InboxService::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     AttachmentRepository::class,
     OrderRepository::class,
     StatelessAuthService::class,

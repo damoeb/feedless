@@ -10,7 +10,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.PropertiesConfiguration
 import org.migor.feedless.actions.ExecuteAction
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any2
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpResponse
@@ -41,7 +41,7 @@ import java.time.LocalDateTime
 @MockitoBean(
   types = [
     AttachmentRepository::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     FulltextPlugin::class,
     StatelessAuthService::class,
   ]

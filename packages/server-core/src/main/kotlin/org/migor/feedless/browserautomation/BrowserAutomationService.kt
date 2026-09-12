@@ -1,4 +1,4 @@
-package org.migor.feedless.agent
+package org.migor.feedless.browserautomation
 
 import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
@@ -41,17 +41,17 @@ import java.util.concurrent.atomic.AtomicInteger
 
 
 @Service
-@Profile("${AppProfiles.agent} & ${AppLayer.service}")
-class AgentService(
+@Profile("${AppProfiles.browserAutomation} & ${AppLayer.service}")
+class BrowserAutomationService(
   private val authService: AuthService,
   private val jwtTokenIssuer: JwtTokenIssuer,
-  private val agentRegistry: AgentRegistry,
+  private val browserAutomationRegistry: BrowserAutomationRegistry,
   private val meterRegistry: MeterRegistry,
   private val context: ApplicationContext
-) : AgentGateway {
-  private val log = LoggerFactory.getLogger(AgentService::class.simpleName)
-  private val agentRefs: ArrayList<AgentRef> = ArrayList()
-  private val pendingJobs: MutableMap<String, FluxSink<AgentResponse>> = mutableMapOf()
+) : BrowserAutomationGateway {
+  private val log = LoggerFactory.getLogger(BrowserAutomationService::class.simpleName)
+  private val agentRefs: ArrayList<BrowserAutomationRef> = ArrayList()
+  private val pendingJobs: MutableMap<String, FluxSink<BrowserAutomationResponse>> = mutableMapOf()
   private val agentCounter = AtomicInteger(0)
 
   @PostConstruct
@@ -71,7 +71,7 @@ class AgentService(
             } else {
               authService.updateLastUsed(securityKey.id, now)
               val agentRef =
-                AgentRef(
+                BrowserAutomationRef(
                   securityKey.id,
                   securityKey.ownerId,
                   data.name,
@@ -84,7 +84,7 @@ class AgentService(
 
               emitter.onDispose {
                 CoroutineScope(Dispatchers.Default).launch {
-                  context.getBean(AgentService::class.java).removeAgent(agentRef)
+                  context.getBean(BrowserAutomationService::class.java).removeAgent(agentRef)
                 }
               }
               emitter.next(
@@ -96,7 +96,7 @@ class AgentService(
                   )
                 )
               )
-              context.getBean(AgentService::class.java).addAgent(agentRef)
+              context.getBean(BrowserAutomationService::class.java).addAgent(agentRef)
             }
           }
           ?: run {
@@ -110,7 +110,7 @@ class AgentService(
   suspend fun hasAgents(): Boolean = agentRefs.isNotEmpty()
 
   //  @Cacheable(value = [CacheNames.AGENT_RESPONSE], keyGenerator = "agentResponseCacheKeyGenerator")
-  suspend fun prerender(source: Source): AgentResponse {
+  suspend fun prerender(source: Source): BrowserAutomationResponse {
     return if (hasAgents()) {
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(source, agentRef)
@@ -126,7 +126,7 @@ class AgentService(
     log.info("handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
       if (scrapeResponse.ok) {
-        it.next(AgentResponse(Gson().toJson(scrapeResponse.fromDto())))
+        it.next(BrowserAutomationResponse(Gson().toJson(scrapeResponse.fromDto())))
       } else {
         it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
       }
@@ -134,14 +134,14 @@ class AgentService(
     } ?: log.error("emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
 
-  fun agentRefs(): ArrayList<AgentRef> {
+  fun agentRefs(): ArrayList<BrowserAutomationRef> {
     return agentRefs
   }
 
   private suspend fun prerenderWithAgent(
     source: Source,
-    agentRef: AgentRef
-  ): Mono<AgentResponse> {
+    agentRef: BrowserAutomationRef
+  ): Mono<BrowserAutomationResponse> {
     log.debug("preparing")
     return Flux.create { emitter ->
       try {
@@ -164,19 +164,19 @@ class AgentService(
       .next()
   }
 
-  suspend fun addAgent(agentRef: AgentRef) = withContext(Dispatchers.IO) {
+  suspend fun addAgent(agentRef: BrowserAutomationRef) = withContext(Dispatchers.IO) {
     log.info("Adding Agent $agentRef")
 
     agentRefs.add(agentRef)
 
 
-    agentRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
-      agentRegistry.delete(it)
+    browserAutomationRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+      browserAutomationRegistry.delete(it)
     }
 
-    agentRegistry.save(
-      Agent(
-        id = AgentId(UUID.randomUUID()),
+    browserAutomationRegistry.save(
+      BrowserAutomation(
+        id = BrowserAutomationId(UUID.randomUUID()),
         secretKeyId = agentRef.secretKeyId,
         name = agentRef.name,
         version = agentRef.version,
@@ -191,11 +191,11 @@ class AgentService(
     agentCounter.incrementAndGet();
   }
 
-  suspend fun removeAgent(agentRef: AgentRef) = withContext(Dispatchers.IO) {
+  suspend fun removeAgent(agentRef: BrowserAutomationRef) = withContext(Dispatchers.IO) {
     agentRefs.remove(agentRef)
     log.info("Removing Agent by connectionId=${agentRef.connectionId} and secretKeyId=${agentRef.secretKeyId}")
-    agentRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
-      agentRegistry.delete(it)
+    browserAutomationRegistry.findByConnectionIdAndSecretKeyId(agentRef.connectionId, agentRef.secretKeyId)?.let {
+      browserAutomationRegistry.delete(it)
     }
 
     agentCounter.decrementAndGet();

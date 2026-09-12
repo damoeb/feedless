@@ -1,4 +1,4 @@
-package org.migor.feedless.data.jpa.agent
+package org.migor.feedless.data.jpa.browserautomation
 
 import jakarta.persistence.Column
 import jakarta.persistence.Entity
@@ -9,7 +9,7 @@ import jakarta.persistence.ManyToOne
 import jakarta.persistence.Table
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
-import org.migor.feedless.agent.Agent
+import org.migor.feedless.browserautomation.BrowserAutomation
 import org.migor.feedless.data.jpa.EntityWithUUID
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.user.UserEntity
@@ -19,7 +19,7 @@ import java.util.*
 
 @Entity
 @Table(name = "t_agent")
-open class AgentEntity : EntityWithUUID() {
+open class BrowserAutomationEntity : EntityWithUUID() {
 
   @Column(nullable = false, name = "connection_id")
   open lateinit var connectionId: String
@@ -65,10 +65,10 @@ open class AgentEntity : EntityWithUUID() {
   open var owner: UserEntity? = null
 }
 
-fun AgentEntity.toDomain(): Agent {
-  return AgentMapper.INSTANCE.toDomain(this)
+fun BrowserAutomationEntity.toDomain(): BrowserAutomation {
+  return BrowserAutomationMapper.INSTANCE.toDomain(this)
 }
 
-fun Agent.toEntity(): AgentEntity {
-  return AgentMapper.INSTANCE.toEntity(this)
+fun BrowserAutomation.toEntity(): BrowserAutomationEntity {
+  return BrowserAutomationMapper.INSTANCE.toEntity(this)
 }
