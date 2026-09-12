@@ -20,7 +20,7 @@ class ThrottleAspect {
   @Autowired
   private lateinit var ipThrottle: IpThrottleService
 
-  @Around("@annotation(org.migor.feedless.api.throttle.Throttled) || @annotation(org.migor.feedless.throttle.Throttled)")
+  @Around("@annotation(org.migor.feedless.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
     // Returning null would read as a 200 with an empty body, and the caller would never learn it was throttled.
     if (!ipThrottle.tryAquire(joinPoint)) {

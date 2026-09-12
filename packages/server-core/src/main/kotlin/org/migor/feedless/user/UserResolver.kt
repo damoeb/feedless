@@ -13,7 +13,7 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.api.mapper.toDto
-import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.connectedApp.ConnectedApp

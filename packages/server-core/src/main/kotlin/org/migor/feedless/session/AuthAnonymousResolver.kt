@@ -9,7 +9,7 @@ import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.coroutineScope
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory

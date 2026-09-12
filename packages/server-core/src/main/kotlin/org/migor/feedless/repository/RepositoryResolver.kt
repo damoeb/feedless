@@ -15,7 +15,7 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.api.mapper.toDto
-import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.CapabilityService
 import org.migor.feedless.common.PropertyService

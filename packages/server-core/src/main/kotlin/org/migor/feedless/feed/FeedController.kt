@@ -14,7 +14,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.analytics.toFullUrlString
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.api.throttle.Throttled
+import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.scrape.ExtendContext
