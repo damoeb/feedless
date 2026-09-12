@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
-import java.io.Serializable
 import java.net.ConnectException
 import java.net.MalformedURLException
 import java.net.URI
@@ -215,10 +214,3 @@ class HttpService(
 //  }
 
 }
-
-data class HttpResponse(
-  val contentType: String,
-  val url: String,
-  val statusCode: Int,
-  val responseBody: ByteArray,
-) : Serializable

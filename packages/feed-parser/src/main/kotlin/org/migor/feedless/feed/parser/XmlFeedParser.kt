@@ -282,7 +282,3 @@ class XmlFeedParser : FeedBodyParser {
 private fun SyndPerson.toJsonAuthor(): JsonAuthor {
   return JsonAuthor(name = name, url = uri?.toString(), email = email)
 }
-
-enum class FeedType {
-  ATOM, JSON, CALENDAR
-}

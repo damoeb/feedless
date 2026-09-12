@@ -25,3 +25,13 @@ open class ResumableHarvestException(message: String, val nextRetryAfter: Durati
 /** Rate limit exhausted — raised by the throttle layer, mapped to 429 at the HTTP edge. */
 class HostOverloadingException(message: String, waitForRefill: Duration) :
   ResumableHarvestException(message, waitForRefill)
+
+class BadRequestException(override val message: String) : FatalHarvestException(message)
+
+class UnavailableException(override val message: String) : ResumableHarvestException(message, Duration.ofMinutes(5))
+class SiteNotFoundException(url: String) : FatalHarvestException("$url not found")
+
+class NoItemsRetrievedException : RuntimeException("no items retireved")
+
+class TemporaryServerException(message: String, waitForRefill: Duration) :
+  ResumableHarvestException(message, waitForRefill)
