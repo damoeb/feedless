@@ -2,6 +2,7 @@ package org.migor.feedless.browserautomation
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.withMdcCorrId
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
@@ -18,19 +19,23 @@ class BrowserAutomationSyncExecutor(
   @Scheduled(fixedDelay = 2 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeSync() {
-    browserAutomationRepository.saveAll(
-      browserAutomationService.agentRefs().mapNotNull {
-        browserAutomationRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
-      }.map {
-        it.copy(lastSyncedAt = LocalDateTime.now())
-      })
+    withMdcCorrId {
+      browserAutomationRepository.saveAll(
+        browserAutomationService.agentRefs().mapNotNull {
+          browserAutomationRepository.findByConnectionIdAndSecretKeyId(it.connectionId, it.secretKeyId)
+        }.map {
+          it.copy(lastSyncedAt = LocalDateTime.now())
+        })
+    }
   }
 
   @Scheduled(fixedDelay = 3 * 60 * 1000, initialDelay = 5000)
   @Transactional
   fun executeCleanup() {
-    browserAutomationRepository.deleteAllByLastSyncedAtBefore(
-      LocalDateTime.now().minusMinutes(2)
-    )
+    withMdcCorrId {
+      browserAutomationRepository.deleteAllByLastSyncedAtBefore(
+        LocalDateTime.now().minusMinutes(2)
+      )
+    }
   }
 }

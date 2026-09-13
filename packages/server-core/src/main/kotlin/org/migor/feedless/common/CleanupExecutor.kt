@@ -1,6 +1,7 @@
 package org.migor.feedless.common
 
 import org.migor.feedless.AppLayer
+import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
@@ -29,14 +30,16 @@ class CleanupExecutor(
   @Scheduled(cron = "0 0 * * * *")
   @Transactional
   fun executeCleanup() {
-    val now = LocalDateTime.now()
-    oneTimePasswordService.ifPresent {
-      it.deleteAllByValidUntilBefore(now)
+    withMdcCorrId {
+      val now = LocalDateTime.now()
+      oneTimePasswordService.ifPresent {
+        it.deleteAllByValidUntilBefore(now)
+      }
+      documentUseCase.applyRetentionStrategyByCapacity()
+      documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+      sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
+      harvestRepository.deleteAllTailingBySourceId()
+      harvestRepository.deleteAllDryRunByCreatedAtBefore(now.minusDays(7))
     }
-    documentUseCase.applyRetentionStrategyByCapacity()
-    documentPipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
-    sourcePipelineJobRepository.deleteAllByCreatedAtBefore(now.minusDays(3))
-    harvestRepository.deleteAllTailingBySourceId()
-    harvestRepository.deleteAllDryRunByCreatedAtBefore(now.minusDays(7))
   }
 }

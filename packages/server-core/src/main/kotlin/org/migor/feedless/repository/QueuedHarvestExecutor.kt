@@ -10,6 +10,8 @@ import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.childRequestContext
+import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
@@ -44,23 +46,25 @@ class QueuedHarvestExecutor internal constructor(
 
   @Scheduled(fixedDelay = 2000, initialDelay = 5000)
   fun executeQueuedHarvests() {
-    try {
-      completeStaleRuns()
-      // Claim no more than can run at once: a claimed harvest waiting for a permit would sit in
-      // `running` without running.
-      val claimed = try {
-        harvestRepository.claimQueued(MAX_CONCURRENT_RUNS, LocalDateTime.now())
-      } catch (e: DataIntegrityViolationException) {
-        // A real run of that source started between lock and commit, so the database refused the claim; all stay queued.
-        log.info("a real harvest of a claimed source started meanwhile, claiming on the next tick")
-        emptyList()
+    withMdcCorrId { corrId ->
+      try {
+        completeStaleRuns()
+        // Claim no more than can run at once: a claimed harvest waiting for a permit would sit in
+        // `running` without running.
+        val claimed = try {
+          harvestRepository.claimQueued(MAX_CONCURRENT_RUNS, LocalDateTime.now())
+        } catch (e: DataIntegrityViolationException) {
+          // A real run of that source started between lock and commit, so the database refused the claim; all stay queued.
+          log.info("a real harvest of a claimed source started meanwhile, claiming on the next tick")
+          emptyList()
+        }
+        if (claimed.isNotEmpty()) {
+          log.info("running ${claimed.size} queued harvests")
+          runBlocking(RequestContext(corrId = corrId)) { executeAll(claimed) }
+        }
+      } catch (e: Exception) {
+        log.error("queued harvests failed: ${e.message}", e)
       }
-      if (claimed.isNotEmpty()) {
-        log.info("running ${claimed.size} queued harvests")
-        runBlocking { executeAll(claimed) }
-      }
-    } catch (e: Exception) {
-      log.error("queued harvests failed: ${e.message}", e)
     }
   }
 
@@ -78,7 +82,7 @@ class QueuedHarvestExecutor internal constructor(
         ?: throw IllegalStateException("source ${harvest.sourceId.uuid} no longer exists")
       val repository = source.repositoryId?.let { repositoryRepository.findById(it) }
         ?: throw IllegalStateException("repository of source ${source.id.uuid} not found")
-      withContext(RequestContext(userId = repository.ownerId, groupId = repository.groupId)) {
+      withContext(childRequestContext(repository.ownerId, repository.groupId)) {
         when {
           harvest.dryRun -> sourceDryRunner.dryRun(source.withFlowOf(harvest), harvest)
           // Checked when queued too (409); the source may have been disabled since.
