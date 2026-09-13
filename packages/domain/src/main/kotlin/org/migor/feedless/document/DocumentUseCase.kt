@@ -15,7 +15,7 @@ import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.capability.CapabilityId
-import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.AppConfig
@@ -301,7 +301,7 @@ class DocumentUseCase(
             groupedDocuments.map { groupedDocuments ->
               try {
                 val repository = getRepositoryForDocumentId(groupedDocuments.key)
-                async(RequestContext(userId = repository.ownerId, groupId = repository.groupId)) {
+                async(childRequestContext(repository.ownerId, repository.groupId)) {
                   semaphore.acquire()
                   delay(300)
                   try {

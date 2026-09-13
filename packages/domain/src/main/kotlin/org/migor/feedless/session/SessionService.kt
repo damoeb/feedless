@@ -4,6 +4,7 @@ import org.migor.feedless.BadRequestException
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.UserCapability
+import org.migor.feedless.capability.currentThreadCorrId
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -28,10 +29,11 @@ fun injectCapabilitiesFromJwt(jwt: Jwt): RequestContext {
   val groupId = capabilities.filter { it.authority == GroupCapability.ID.value }
     .map { GroupCapability.fromString(it.payload) }
 
-  return RequestContext(userId = userId, groupId = groupId.first().groupId)
+  return RequestContext(corrId = currentThreadCorrId() ?: newCorrId(), userId = userId, groupId = groupId.first().groupId)
 }
 
-fun injectCapabilitiesFromSecurityContext(): RequestContext {
+/** [corrId] defaults to the current request's id, so every resolver of one request logs under the same id. */
+fun injectCapabilitiesFromSecurityContext(corrId: String = currentThreadCorrId() ?: newCorrId()): RequestContext {
   return runCatching {
     val userId = if (SecurityContextHolder.getContext().authentication is OAuth2AuthenticationToken) {
       (SecurityContextHolder.getContext().authentication as OAuth2AuthenticationToken).getUserCapability()?.userId
@@ -46,9 +48,9 @@ fun injectCapabilitiesFromSecurityContext(): RequestContext {
       null
     }
 
-    RequestContext(userId = userId, groupId = groupId)
+    RequestContext(corrId = corrId, userId = userId, groupId = groupId)
 
   }.onFailure {
     println(it.message)
-  }.getOrDefault(RequestContext(corrId = newCorrId()))
+  }.getOrDefault(RequestContext(corrId = corrId))
 }

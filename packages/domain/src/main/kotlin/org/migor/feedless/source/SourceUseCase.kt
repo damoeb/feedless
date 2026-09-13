@@ -16,7 +16,7 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.actions.placedAt
-import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
@@ -117,7 +117,7 @@ class SourceUseCase(
               groupedSources.map { groupedSources ->
                 try {
                   val (userId, groupId) = getOwnerIdsForSourceId(groupedSources.key)
-                  async(RequestContext(userId = userId, groupId = groupId)) {
+                  async(childRequestContext(userId, groupId)) {
                     semaphore.acquire()
                     delay(300)
                     try {

@@ -14,7 +14,7 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
-import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.inheritRequestContext
 import org.migor.feedless.connectedApp.ConnectedApp
 import org.migor.feedless.connectedApp.ConnectedAppId
 import org.migor.feedless.connectedApp.ConnectedAppRepository
@@ -135,10 +135,7 @@ class UserUseCase(
       linkGithubAccount(user.id, githubId)
     }
 
-    val newCtx = currentCoroutineContext() + RequestContext(
-      groupId = group.id,
-      userId = userId
-    )
+    val newCtx = currentCoroutineContext() + inheritRequestContext(userId = userId, groupId = group.id)
 
     withContext(newCtx) {
       groupUseCase.addUserToGroup(user.id, group.id, RoleInGroup.owner)
