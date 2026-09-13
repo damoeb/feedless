@@ -1,7 +1,27 @@
 package org.migor.feedless.repository
 
+import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.capability.CapabilityService
+import org.migor.feedless.capability.UserCapability
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.generated.types.Cursor
+import org.migor.feedless.generated.types.RepositoriesInput
+import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
+import org.migor.feedless.generated.types.RepositoryWhereInput
+import org.migor.feedless.session.LazyGrantedAuthority
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.util.JsonSerializer
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.eq
+import org.mockito.kotlin.mock
+import org.mockito.kotlin.whenever
+import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
+import org.springframework.security.oauth2.core.user.DefaultOAuth2User
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.ClickPositionAction
@@ -56,6 +76,84 @@ import org.migor.feedless.generated.types.Source as SourceDto
 import org.migor.feedless.generated.types.Vertical as VerticalDto
 
 class RepositoryResolverTest {
+
+  private val ownerId = UserId()
+  private val repositoryUseCase = mock<RepositoryUseCase>()
+  private val repositoryRepository = mock<RepositoryRepository>()
+  private val resolver = RepositoryResolver(
+    repositoryUseCase,
+    repositoryRepository,
+    mock<SourceRepository>(),
+    mock<DocumentRepository>(),
+    mock<HarvestService>(),
+    mock<CapabilityService>(),
+  )
+  private val repository = Repository(
+    title = "private feed",
+    visibility = EntityVisibility.isPrivate,
+    shareKey = "owner-share-key",
+    ownerId = ownerId,
+    groupId = GroupId(),
+  )
+
+  @AfterEach
+  fun clearSecurityContext() {
+    SecurityContextHolder.clearContext()
+  }
+
+  @Test
+  fun `repository gives its owner the share key`() = runTest {
+    loginAs(ownerId)
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+
+    val actual = resolver.repository(mock(), whereId(repository))
+
+    assertThat(actual.currentUserIsOwner).isTrue()
+    assertThat(actual.shareKey).isEqualTo("owner-share-key")
+  }
+
+  @Test
+  fun `repository hides the share key from a non-owner`() = runTest {
+    loginAs(UserId())
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+
+    val actual = resolver.repository(mock(), whereId(repository))
+
+    assertThat(actual.currentUserIsOwner).isFalse()
+    assertThat(actual.shareKey).isEmpty()
+  }
+
+  @Test
+  fun `repositories gives the owner the share key and hides it from others`() = runTest {
+    val foreign = repository.copy(id = RepositoryId(), ownerId = UserId(), shareKey = "foreign-share-key")
+    loginAs(ownerId)
+    whenever(repositoryUseCase.findAllByUserId(any(), anyOrNull(), anyOrNull())).thenReturn(listOf(repository, foreign))
+
+    val actual = resolver.repositories(mock(), RepositoriesInput(cursor = Cursor(page = 0, pageSize = 10)))
+
+    assertThat(actual.map { it.shareKey }).containsExactly("owner-share-key", "")
+    assertThat(actual.map { it.currentUserIsOwner }).containsExactly(true, false)
+  }
+
+  @Test
+  fun `createRepositories gives the creator the share key`() = runTest {
+    loginAs(ownerId)
+    whenever(repositoryUseCase.create(any())).thenReturn(listOf(repository))
+
+    val actual = resolver.createRepositories(mock(), emptyList())
+
+    assertThat(actual.single().shareKey).isEqualTo("owner-share-key")
+  }
+
+  private fun whereId(repository: Repository) =
+    RepositoryWhereInput(where = RepositoryUniqueWhereInput(id = repository.id.uuid.toString()))
+
+  // the resolvers read the user from the security context, the way a session token puts it there
+  private fun loginAs(userId: UserId) {
+    val authorities = listOf(LazyGrantedAuthority(UserCapability.ID.value, JsonSerializer.toJson(userId)))
+    val principal = DefaultOAuth2User(authorities, mapOf("id" to "test"), "id")
+    SecurityContextHolder.getContext().authentication = OAuth2AuthenticationToken(principal, authorities, "test")
+  }
 
   @Test
   fun testRepositoryToDto() {

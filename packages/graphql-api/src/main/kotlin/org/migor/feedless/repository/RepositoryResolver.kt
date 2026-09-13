@@ -86,7 +86,7 @@ class RepositoryResolver(
       val whereFilter = data.where?.toDomain()
       if (data.capability == null) {
         repositoryUseCase.findAllByUserId(pageable, whereFilter, userId)
-          .map { it.toDto(it.ownerId == userId.uuid) }
+          .map { it.toDto(it.ownerId == userId) }
       } else {
         val capabilityId = CapabilityId(data.capability!!)
         if (!capabilityService.hasCapability(capabilityId)) {
@@ -94,7 +94,7 @@ class RepositoryResolver(
         }
         val capability = capabilityService.getCapability(capabilityId)!!
         repositoryUseCase.provideAll(capability, pageable, whereFilter)
-          .map { it.toDto(it.ownerId == userId.uuid) }
+          .map { it.toDto(it.ownerId == userId) }
       }
     }
   }
@@ -118,7 +118,7 @@ class RepositoryResolver(
     log.debug("repository $data")
     val repository = repositoryRepository.findById(RepositoryId(data.where.id))
       ?: throw IllegalArgumentException("Repository not found")
-    repository.toDto(repository.ownerId == coroutineContext.userId().uuid)
+    repository.toDto(repository.ownerId == coroutineContext.userId())
   }
 
   @Throttled
@@ -129,7 +129,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.MUTATION.CREATEREPOSITORIES_INPUT_ARGUMENT.Data) data: List<RepositoryCreateInput>,
   ): List<RepositoryDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("createRepositories $data")
-    repositoryUseCase.create(data.map { it.toDomain() }).map { it.toDto(it.ownerId == coroutineContext.userId().uuid) }
+    repositoryUseCase.create(data.map { it.toDomain() }).map { it.toDto(it.ownerId == coroutineContext.userId()) }
   }
 
   @Throttled
