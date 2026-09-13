@@ -50,8 +50,8 @@ dependencies {
   testImplementation(libs.testcontainers.core)
   testImplementation(libs.testcontainers.postgresql)
   testImplementation(libs.testcontainers.junit)
-  // match server-core, whose dependency-management plugin keeps the catalog's Flyway over the BOM's
-  testImplementation(libs.flyway.core) { version { strictly(libs.versions.flyway.get()) } }
+  testImplementation(libs.flyway.core)
+  testImplementation(libs.flyway.database.postgresql)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 

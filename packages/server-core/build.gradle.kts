@@ -111,13 +111,10 @@ dependencies {
   // graphql
 //  implementation("org.springframework.boot:spring-boot-starter-graphql")
   implementation(libs.spring.boot.websocket)
-  implementation("org.springframework.security:spring-security-messaging")
   implementation(platform(libs.dgs.platform))
   implementation(libs.dgs.starter)
 
   implementation(libs.dgs.scalars)
-  implementation(libs.dgs.subscriptions)
-  implementation(libs.dgs.subscriptions.autoconfigure)
   testImplementation(libs.dgs.starter)
   testImplementation(libs.dgs.codegen.test)
   testImplementation(libs.spring.graphql.test)
@@ -178,6 +175,7 @@ dependencies {
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
   implementation(libs.flyway.core)
+  implementation(libs.flyway.database.postgresql)
 
   implementation(libs.async.http.client)
   implementation(libs.jsoup)

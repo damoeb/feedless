@@ -24,6 +24,8 @@ dependencies {
   testImplementation(libs.spring.boot.test)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+  // Gradle can't derive a compatible junit-platform-launcher for this module's junit-bom version on its own
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val openApiPackage = "org.migor.feedless.http.api"

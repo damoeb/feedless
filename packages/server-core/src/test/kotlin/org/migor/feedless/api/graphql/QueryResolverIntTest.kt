@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
@@ -59,7 +58,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 )
 @Import(
   DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class,
 )
 class QueryResolverIntTest {
 

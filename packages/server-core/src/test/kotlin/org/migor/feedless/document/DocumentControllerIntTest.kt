@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.any2
@@ -72,7 +71,6 @@ import java.time.LocalDateTime
 )
 @Import(
   DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class
 )
 class DocumentControllerIntTest {
 

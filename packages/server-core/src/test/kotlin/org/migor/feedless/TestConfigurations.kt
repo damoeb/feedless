@@ -8,8 +8,6 @@ import org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfig
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.test.context.ActiveProfiles
-import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.springframework.web.socket.WebSocketHandler
 
 @TestConfiguration
 @EnableAutoConfiguration(
@@ -36,12 +34,6 @@ class DisableMailConfiguration
 )
 class PropertiesConfiguration
 
-
-@TestConfiguration
-@MockitoBean(
-  types = [WebSocketHandler::class],
-)
-class DisableWebSocketsConfiguration
 
 @TestConfiguration
 @EnableAutoConfiguration(

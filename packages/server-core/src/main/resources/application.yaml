@@ -1,6 +1,11 @@
 spring:
   jpa:
     open-in-view: false
+  graphql:
+    websocket:
+      path: /subscriptions
+      # DGS 9's default; Spring for GraphQL would wait 60s for connection_init
+      connection-init-timeout: 10s
   web:
     resources:
       static-locations: file:./static

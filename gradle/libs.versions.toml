@@ -1,8 +1,8 @@
 [versions]
 kotlin = "2.2.21"
-spring-boot = "3.4.11"
+spring-boot = "3.5.16"
 dgs-codegen = "8.1.1"
-dgs = "9.2.2"
+dgs = "10.6.0"
 test-logger = "4.0.0"
 javacc = "4.0.1"
 kotlinx-coroutines = "1.7.2"
@@ -14,7 +14,6 @@ pdf2dom = "2.0.3"
 bucket4j = "8.0.1"
 commons-text = "1.14.0"
 webp-imageio = "0.1.0"
-spring-graphql-test = "2.0.0-M3"
 mailgun-java = "1.1.6"
 logstash-logback = "8.1"
 nimbus-jose-jwt = "10.5"
@@ -24,16 +23,13 @@ ical4j = "4.2.0"
 commons-lang3 = "3.19.0"
 commons-io = "2.20.0"
 readability4j = "1.0.8"
-reactor = "3.5.0"
 postgresql = "42.7.8"
-hibernate-spatial = "6.4.10.Final"
 kotlin-jdsl = "3.5.1"
 lucene = "10.3.1"
 opennlp = "2.5.5"
 commons-math3 = "3.6.1"
 jenetics = "8.3.0"
 languagetool = "6.7"
-flyway = "9.22.3"
 async-http-client = "3.0.2"
 broken-xml = "1.0.21"
 rome = "2.1.0"
@@ -74,15 +70,14 @@ commons-text = { module = "org.apache.commons:commons-text", version.ref = "comm
 
 dgs-platform = { module = "com.netflix.graphql.dgs:graphql-dgs-platform-dependencies", version.ref = "dgs" }
 dgs-scalars = { module = "com.netflix.graphql.dgs:graphql-dgs-extended-scalars", version.ref = "dgs" }
-dgs-starter = { module = "com.netflix.graphql.dgs:graphql-dgs-spring-boot-starter", version.ref = "dgs" }
+dgs-starter = { module = "com.netflix.graphql.dgs:dgs-starter", version.ref = "dgs" }
 dgs-codegen-test = { module = "com.netflix.graphql.dgs.codegen:graphql-dgs-codegen-shared-core", version.ref = "dgs-codegen" }
-dgs-subscriptions = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets", version.ref = "dgs" }
-dgs-subscriptions-autoconfigure = { module = "com.netflix.graphql.dgs:graphql-dgs-subscriptions-websockets-autoconfigure", version.ref = "dgs" }
 
-flyway-core = { module = "org.flywaydb:flyway-core", version.ref = "flyway" }
+flyway-core = { module = "org.flywaydb:flyway-core" }
+flyway-database-postgresql = { module = "org.flywaydb:flyway-database-postgresql" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
-hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial", version.ref = "hibernate-spatial" }
+hibernate-spatial = { module = "org.hibernate.orm:hibernate-spatial" }
 ical4j = { module = "org.mnode.ical4j:ical4j", version.ref = "ical4j" }
 jenetics = { module = "io.jenetics:jenetics", version.ref = "jenetics" }
 json = { module = "org.json:json", version.ref = "json" }
@@ -111,8 +106,8 @@ pdf2dom = { module = "net.sf.cssbox:pdf2dom", version.ref = "pdf2dom" }
 pdfbox-tools = { module = "org.apache.pdfbox:pdfbox-tools", version.ref = "pdfbox" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 
-reactor-core = { module = "io.projectreactor:reactor-core", version.ref = "reactor" }
-reactor-test = { module = "io.projectreactor:reactor-test", version.ref = "reactor" }
+reactor-core = { module = "io.projectreactor:reactor-core" }
+reactor-test = { module = "io.projectreactor:reactor-test" }
 
 readability4j = { module = "net.dankito.readability4j:readability4j", version.ref = "readability4j" }
 
@@ -132,7 +127,7 @@ spring-boot-validation = { module = "org.springframework.boot:spring-boot-starte
 spring-boot-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
 spring-boot-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux", version.ref = "spring-boot" }
 spring-boot-websocket = { module = "org.springframework.boot:spring-boot-starter-websocket", version.ref = "spring-boot" }
-spring-graphql-test = { module = "org.springframework.graphql:spring-graphql-test", version.ref = "spring-graphql-test" }
+spring-graphql-test = { module = "org.springframework.graphql:spring-graphql-test" }
 
 testcontainers-core = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-junit = { module = "org.testcontainers:junit-jupiter", version.ref = "testcontainers" }

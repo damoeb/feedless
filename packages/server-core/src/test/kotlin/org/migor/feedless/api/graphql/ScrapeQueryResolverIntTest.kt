@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpResponse
@@ -65,7 +64,6 @@ import java.nio.file.Files
 )
 @Import(
   DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class
 )
 class ScrapeQueryResolverIntTest {
 
