@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component
 class SecurityContextCapabilityService : CapabilityService {
 
   override fun hasCapability(capabilityId: CapabilityId): Boolean {
-    val authorities = getAuthentication().authorities
+    val authorities = getAuthentication()?.authorities ?: return false
     return authorities.any { authority ->
       if (authority is LazyGrantedAuthority) {
         authority.authority == capabilityId.value
@@ -20,11 +20,11 @@ class SecurityContextCapabilityService : CapabilityService {
   }
 
   override fun hasToken(): Boolean {
-    return getAuthentication().isAuthenticated
+    return getAuthentication()?.isAuthenticated ?: false
   }
 
   override fun getCapability(capabilityId: CapabilityId): UnresolvedCapability? {
-    val authorities = getAuthentication().authorities
+    val authorities = getAuthentication()?.authorities ?: return null
     return authorities
       .filterIsInstance<LazyGrantedAuthority>()
       .filter { authority -> authority.authority == capabilityId.value }
@@ -32,7 +32,8 @@ class SecurityContextCapabilityService : CapabilityService {
       .firstOrNull()
   }
 
-  private fun getAuthentication(): Authentication {
+  // null for a request that carries no authentication at all, which counts as anonymous
+  private fun getAuthentication(): Authentication? {
     return SecurityContextHolder
       .getContext().authentication
   }
