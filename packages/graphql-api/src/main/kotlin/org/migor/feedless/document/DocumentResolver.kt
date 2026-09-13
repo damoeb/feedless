@@ -146,7 +146,7 @@ class DocumentResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Frequency)
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
-  ): List<RecordFrequency> = coroutineScope {
+  ): List<RecordFrequency> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: Repository = dfe.getSourceOrThrow()
     documentUseCase.getRecordFrequency(
       DocumentsFilter(

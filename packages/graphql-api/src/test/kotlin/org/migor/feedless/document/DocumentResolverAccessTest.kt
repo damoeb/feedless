@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
@@ -37,8 +38,10 @@ import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.util.JsonSerializer
+import org.migor.feedless.api.mapper.toDto
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
@@ -159,6 +162,33 @@ class DocumentResolverAccessTest {
       assertThat(denied).isInstanceOf(NotFoundException::class.java).hasMessage("Repository ${repository.id} not found")
       assertThat(missing).isInstanceOf(NotFoundException::class.java).hasMessage("Repository $missingId not found")
     }
+  }
+
+  @Test
+  fun `the owner reads the frequency of a private repository`() = runTest {
+    loginAs(owner)
+    assertThat(frequency()).isEmpty()
+  }
+
+  @Test
+  fun `a member of the owning group reads the frequency of a private repository`() = runTest {
+    loginAs(member)
+    assertThat(frequency()).isEmpty()
+  }
+
+  @Test
+  fun `a stranger cannot read the frequency of a private repository`() = runTest {
+    loginAs(UserId())
+    assertThat(runCatching { frequency() }.exceptionOrNull()).isInstanceOf(NotFoundException::class.java)
+  }
+
+  private suspend fun frequency(): List<org.migor.feedless.generated.types.RecordFrequency> {
+    whenever(documentRepository.getRecordFrequency(any(), any())).thenReturn(emptyList())
+    val dto = repository.toDto(false)
+    val dfe = mock<DgsDataFetchingEnvironment> {
+      on { getSourceOrThrow<org.migor.feedless.generated.types.Repository>() } doReturn dto
+    }
+    return resolver.frequency(dfe)
   }
 
   private suspend fun records(repositoryId: RepositoryId = repository.id, pageSize: Int = 10) = resolver.records(
