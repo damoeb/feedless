@@ -1,5 +1,10 @@
 package org.migor.feedless.http
 
+import org.junit.jupiter.api.BeforeEach
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserRepository
+import org.mockito.kotlin.doReturn
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Test
@@ -30,11 +35,41 @@ class RepositoryAccessGuardTest {
   private val repositoryUseCase: RepositoryUseCase = mock()
   private val sourceRepository: SourceRepository = mock()
   private val groupUseCase: GroupUseCase = mock()
-  private val guard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, groupUseCase)
+  private val userRepository: UserRepository = mock()
+  private val guard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, groupUseCase, UserGuard(userRepository))
 
   private val owner = UserId()
   private val stranger = UserId()
   private val groupId = GroupId()
+
+  @BeforeEach
+  fun activeUsers() = runTest {
+    whenever(userRepository.findById(any())).thenReturn(mock<User>())
+  }
+
+  @Test
+  fun `a banned member is denied a private repository`() = runTest {
+    val repo = givenRepository(EntityVisibility.isPrivate)
+    val member = givenMember(RoleInGroup.viewer)
+    val banned = bannedUser()
+    whenever(userRepository.findById(eq(member))).thenReturn(banned)
+
+    val thrown = runCatching { asUser(member) { guard.requireRepository(repo.id, RepositoryAccess.read) } }.exceptionOrNull()
+
+    assert(thrown is IllegalArgumentException && thrown.message == "denied") { "$thrown" }
+  }
+
+  @Test
+  fun `a banned stranger gets the answer of a missing repository`() = runTest {
+    val repo = givenRepository(EntityVisibility.isPrivate)
+    whenever(groupUseCase.findAllByUserId(eq(stranger))).thenReturn(emptyList())
+    val banned = bannedUser()
+    whenever(userRepository.findById(eq(stranger))).thenReturn(banned)
+
+    assertNotFound { asUser(stranger) { guard.requireRepository(repo.id, RepositoryAccess.read) } }
+  }
+
+  private fun bannedUser(): User = mock { on { banned } doReturn true }
 
   @Test
   fun `the owner may read and write a private repository`() = runTest {

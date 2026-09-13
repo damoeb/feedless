@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.user.UserGuard
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
@@ -51,6 +52,10 @@ class HarvestHttpControllerTest {
 
   @Autowired
   private lateinit var mockMvc: MockMvc
+
+  // RepositoryAccessGuard checks that the caller is an active user
+  @MockitoBean
+  private lateinit var userGuard: UserGuard
 
   @MockitoBean
   private lateinit var harvestUseCase: HarvestService

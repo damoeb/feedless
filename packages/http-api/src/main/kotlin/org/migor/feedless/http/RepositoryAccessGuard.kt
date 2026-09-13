@@ -15,6 +15,7 @@ import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userGroup.RoleInGroup
 import org.springframework.context.annotation.Profile
@@ -36,6 +37,7 @@ class RepositoryAccessGuard(
   private val repositoryUseCase: RepositoryUseCase,
   private val sourceRepository: SourceRepository,
   private val groupUseCase: GroupUseCase,
+  private val userGuard: UserGuard,
 ) {
 
   suspend fun requireRepository(repositoryId: RepositoryId, access: RepositoryAccess): Repository {
@@ -51,7 +53,7 @@ class RepositoryAccessGuard(
   suspend fun requireRepositoryConfiguration(repositoryId: RepositoryId): Repository {
     val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw repositoryNotFound(repositoryId)
     val repository = repositoryUseCase.findById(repositoryId) ?: throw repositoryNotFound(repositoryId)
-    if (!RepositoryAccessRule.isOwnerOrMember(repository, userId) { groupUseCase.findAllByUserId(userId) }) {
+    if (!RepositoryAccessRule.isActiveOwnerOrMember(repository, userId, userGuard) { groupUseCase.findAllByUserId(userId) }) {
       throw repositoryNotFound(repositoryId)
     }
     return repository
@@ -83,7 +85,7 @@ class RepositoryAccessGuard(
       return true
     }
     val allowedRoles = if (access == RepositoryAccess.read) RoleInGroup.entries else writerRoles
-    return RepositoryAccessRule.isOwnerOrMember(repository, userId, allowedRoles) {
+    return RepositoryAccessRule.isActiveOwnerOrMember(repository, userId, userGuard, allowedRoles) {
       groupUseCase.findAllByUserId(userId)
     }
   }

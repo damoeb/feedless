@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.user.UserGuard
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.AfterEach
@@ -37,7 +38,7 @@ class SourceHttpControllerCreateTest {
   private val sourceRepository: SourceRepository = mock()
   private val repositoryUseCase: RepositoryUseCase = mock()
   private val mapper = HttpSourceMapper(HttpScrapeFlowMapper())
-  private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCase>())
+  private val accessGuard = RepositoryAccessGuard(repositoryUseCase, sourceRepository, mock<GroupUseCase>(), mock<UserGuard>())
   private val controller =
     SourceHttpController(sourceUseCase, sourceRepository, accessGuard, mapper, ETagCalculator())
 
