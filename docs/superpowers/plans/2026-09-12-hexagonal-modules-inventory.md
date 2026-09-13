@@ -1628,7 +1628,7 @@ None new: `spring-security-oauth2-jose` in `http-api` comes from step 6.
 find packages/server-core/src/main -name '*Resolver.kt' -o -name '*UseCase*.kt' -o -name '*Guard.kt' -o -name '*DataLoader.kt' -o \( -name '*Controller.kt' -not -name 'TestingEndpoint.kt' \)
 # e2e smoke against a freshly built core image (spec: after steps 5 and 8); needs Docker and Go
 ./gradlew :packages:server-core:buildAmdDockerImage   # runs test + bootJar, tags damoeb/feedless:core-latest and core-<7-char hash>; linux/amd64, emulated on Apple silicon
-FEEDCTL_E2E_CORE_IMAGE=damoeb/feedless:core-$(git rev-parse --short=7 HEAD) ./gradlew :packages:cli:e2eTest   # packages/cli/e2e, go test -tags e2e; browser-automation image defaults to damoeb/feedless:browserautomation-latest (FEEDCTL_E2E_BROWSERAUTOMATION_IMAGE)
+FEEDCTL_E2E_CORE_IMAGE=damoeb/feedless:core-$(git rev-parse --short=7 HEAD) ./gradlew :packages:cli:e2eTest   # packages/cli/e2e, go test -tags e2e; browser-automation-app image defaults to damoeb/feedless:browser-automation-app-latest (FEEDCTL_E2E_BROWSER_AUTOMATION_APP_IMAGE)
 ```
 `dockerImageTag`/`feedlessVersion` come from `gradle.properties`. Finish with the executed-test count from step 6.
 
