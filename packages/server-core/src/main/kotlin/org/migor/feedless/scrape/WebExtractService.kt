@@ -44,8 +44,8 @@ class WebExtractService(private val dateClaimer: DateClaimer) :
   private val log = LoggerFactory.getLogger(WebExtractService::class.simpleName)
 
   companion object {
-    const val MIME_DATE = "text/x-date"
-    const val MIME_URL = "text/x-uri"
+    const val MIME_DATE = ScrapeMimeTypes.MIME_DATE
+    const val MIME_URL = ScrapeMimeTypes.MIME_URL
   }
 
   private fun fixXpath(xpath: DOMElementByXPath): String {

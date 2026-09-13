@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.Attachment
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.connectedApp.TelegramConnectionRepository
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
@@ -113,31 +115,33 @@ class TelegramBotService(
 
   @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
-    try {
-      val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"
-      val uri = URI.create(url)
+    withMdcCorrId { corrId ->
+      try {
+        val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"
+        val uri = URI.create(url)
 
-      val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
+        val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
 
-      response?.result?.let {
-        runBlocking {
-          coroutineScope {
-            response.result.filter { it.updateId > lastUpdateId }
-              .forEach { update ->
-                handleUpdate(update)
-              }
+        response?.result?.let {
+          runBlocking(RequestContext(corrId = corrId)) {
+            coroutineScope {
+              response.result.filter { it.updateId > lastUpdateId }
+                .forEach { update ->
+                  handleUpdate(update)
+                }
+            }
+          }
+
+          response.result.lastOrNull()?.let {
+            lastUpdateId = it.updateId
+            runBlocking(RequestContext(corrId = corrId)) {
+              lastUpdateSettings = systemSettingsRepository.save(lastUpdateSettings.copy(valueInt = it.updateId))
+            }
           }
         }
-
-        response.result.lastOrNull()?.let {
-          lastUpdateId = it.updateId
-          runBlocking {
-            lastUpdateSettings = systemSettingsRepository.save(lastUpdateSettings.copy(valueInt = it.updateId))
-          }
-        }
+      } catch (e: Exception) {
+        log.warn("telegram ${e.message}")
       }
-    } catch (e: Exception) {
-      log.warn("telegram ${e.message}")
     }
   }
 

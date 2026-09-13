@@ -31,6 +31,7 @@ import org.migor.feedless.data.jpa.pipelineJob.DocumentPipelineJobEntity
 import org.migor.feedless.data.jpa.repository.RepositoryEntity
 import org.migor.feedless.data.jpa.source.SourceEntity
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentLimits
 import org.migor.feedless.document.ReleaseStatus
 import java.sql.Types
 import java.time.LocalDateTime
@@ -58,7 +59,7 @@ open class DocumentEntity : EntityWithUUID() {
   companion object {
     const val LEN_50: Int = 50
     const val LEN_STR_DEFAULT: Int = 255
-    const val LEN_URL: Int = 1500
+    const val LEN_URL: Int = DocumentLimits.LEN_URL
   }
 
   @Size(message = "url", max = LEN_URL)

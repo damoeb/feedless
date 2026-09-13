@@ -1,4 +1,30 @@
-FROM amazoncorretto:24-alpine-jdk as build
+# Each instance serves the feedctl build matching its own API. Sources come from
+# `--build-context cli=../cli`; the tag must match packages/cli/go.mod's toolchain.
+FROM --platform=$BUILDPLATFORM golang:1.27.1-alpine AS feedctl
+# Fail on a tag/go.mod mismatch instead of downloading another toolchain.
+ENV GOTOOLCHAIN=local
+WORKDIR /src
+COPY --from=cli go.mod go.sum ./
+RUN go mod download
+COPY --from=cli cmd ./cmd
+COPY --from=cli internal ./internal
+ARG APP_VERSION
+RUN --mount=type=cache,target=/root/.cache/go-build \
+    set -eu; \
+    version="${APP_VERSION:-dev}"; \
+    mkdir -p /out; \
+    for target in darwin/amd64 darwin/arm64 linux/amd64 linux/arm64; do \
+      os="${target%/*}"; arch="${target#*/}"; \
+      CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -trimpath \
+        -ldflags "-s -w -X main.version=$version" \
+        -o "/out/feedctl-$os-$arch" ./cmd/feedctl; \
+    done; \
+    cd /out; \
+    sha256sum feedctl-darwin-amd64 feedctl-darwin-arm64 feedctl-linux-amd64 feedctl-linux-arm64 > SHA256SUMS
+COPY --from=cli install.sh /out/install.sh
+
+
+FROM amazoncorretto:24-alpine-jdk AS build
 WORKDIR /usr/feedless
 COPY docker-entrypoint.sh pre-boot.sh ./
 COPY build/libs/app.jar app.jar
@@ -33,6 +59,8 @@ RUN touch license.key && chown java:java license.key
 USER java
 COPY --from=build \
   --chown=java:java /usr/feedless/* ./
+# Not via the glob copy above: it flattens directories.
+COPY --from=feedctl --chown=java:java /out/ static/cli/
 
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/
 CMD ["sh", "./docker-entrypoint.sh"]

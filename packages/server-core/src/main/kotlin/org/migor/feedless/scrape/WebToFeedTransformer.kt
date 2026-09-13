@@ -1,6 +1,5 @@
 package org.migor.feedless.scrape
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
@@ -75,61 +74,6 @@ data class LinkPointer(
   val path: String
 )
 
-abstract class Selectors {
-  abstract val linkXPath: String
-  abstract val extendContext: ExtendContext
-  abstract val contextXPath: String
-  abstract val dateXPath: String?
-  abstract val paginationXPath: String?
-  abstract val dateIsStartOfEvent: Boolean
-}
-
-data class GenericFeedRule(
-  override val linkXPath: String,
-  override val extendContext: ExtendContext,
-  override val contextXPath: String,
-  override val dateXPath: String?,
-  override val paginationXPath: String?,
-  override val dateIsStartOfEvent: Boolean = false,
-  val count: Int = 0,
-  val score: Double,
-) : Selectors()
-
-@JsonIgnoreProperties
-data class GenericFeedParserOptions(
-  val minLinkGroupSize: Int = 2,
-  val minWordCountOfLink: Int = 1,
-)
-
-@JsonIgnoreProperties
-data class GenericFeedSelectors(
-  val count: Int? = null,
-  val score: Double? = null,
-  val contexts: List<ArticleContext>? = null,
-  override val linkXPath: String,
-  override val extendContext: ExtendContext,
-  override val contextXPath: String,
-  override val dateXPath: String? = null,
-  override val paginationXPath: String? = null,
-  override val dateIsStartOfEvent: Boolean = false
-) : Selectors()
-
-
-data class ArticleContext(
-  val linkElement: Element,
-  var dateElement: Element?,
-  val id: String,
-  // root of article
-  val contextElement: Element
-)
-
-enum class ExtendContext(val value: String) {
-  PREVIOUS("p"),
-  NEXT("n"),
-  PREVIOUS_AND_NEXT("pn"),
-  NONE(""),
-}
-
 /**
  * Issues:
  * - semantic tags are not valued as much as they should
@@ -142,13 +86,25 @@ class WebToFeedTransformer(
   private var propertyService: PropertyService,
   private var webToTextTransformer: WebToTextTransformer,
   private var webExtractService: WebExtractService
-) {
+) : WebToFeed {
 
   private val log = LoggerFactory.getLogger(WebToFeedTransformer::class.simpleName)
 
   private val reLinebreaks = Regex("^[\n\t\r ]+|[\n\t\r ]+$")
   private val reXpathId = Regex("(.*)\\[@id=(.*)\\]")
   private val reXpathIndexNode = Regex("([^\\[]+)\\[([0-9]+)\\]?")
+
+  override suspend fun webToFeed(
+    html: String,
+    url: String,
+    selectors: GenericFeedSelectors,
+    logger: LogCollector
+  ): JsonFeed {
+    val document = parseHtml(html, url)
+    return getFeedBySelectors(selectors, document, URI(url), logger).also {
+      it.title = StringUtils.trimToNull(document.title()) ?: "Feed"
+    }
+  }
 
   suspend fun parseFeedRules(
     document: Document,
@@ -640,7 +596,7 @@ class WebToFeedTransformer(
       { s -> selectors.linkXPath.lowercase(Locale.getDefault()).indexOf(s.lowercase(Locale.getDefault())) > -1 }
     val texts =
       selectors.contexts!!.map { context -> applyExtendElement(selectors.extendContext, context.contextElement).text() }
-    val linkElementsListPerContext = selectors.contexts.map { context ->
+    val linkElementsListPerContext = selectors.contexts!!.map { context ->
       context.contextElement.select("a[href]").toList()
     }
     val linksPerContext =
@@ -669,7 +625,7 @@ class WebToFeedTransformer(
     if (selectors.linkXPath === "./") score--
 
     // punish bad link texts
-    val linkElements = selectors.contexts.mapNotNull { context ->
+    val linkElements = selectors.contexts!!.mapNotNull { context ->
       if (selectors.linkXPath == "./") {
         context.contextElement
       } else {
@@ -682,12 +638,12 @@ class WebToFeedTransformer(
     val linkTexts = linkElements
       .map { element -> element.text() }
       .toSet()
-    score -= selectors.contexts.size - linkTexts.size
+    score -= selectors.contexts!!.size - linkTexts.size
 
     val linkUrls = linkElements
       .map { element -> element.attr("href") }
       .toSet()
-    score -= selectors.contexts.size - linkUrls.size
+    score -= selectors.contexts!!.size - linkUrls.size
 
     // punish multiple links elements
     score =
@@ -699,10 +655,10 @@ class WebToFeedTransformer(
     if (texts.map { text -> text.length }.average() > 450) score += 4
     if (texts.map { text -> text.length }.average() > 450) score += 1
     if (texts.stream().anyMatch { text -> text.length < 50 }) score--
-    if (selectors.contexts.size < 4) {
+    if (selectors.contexts!!.size < 4) {
       score -= 5
     } else {
-      score += ln(selectors.contexts.size.toDouble()) * 1.5 + 1
+      score += ln(selectors.contexts!!.size.toDouble()) * 1.5 + 1
     }
 
     log.debug("Score ${selectors.contextXPath} -> $score")

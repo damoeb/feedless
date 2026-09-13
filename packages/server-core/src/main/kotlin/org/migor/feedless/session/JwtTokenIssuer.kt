@@ -10,10 +10,13 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
@@ -51,7 +54,7 @@ class JwtTokenIssuer(
   private val tokenAnonymousValidForDays: String,
   @Value("\${default.auth.token.anonymous.validForDays}")
   private val defaultTokenAnonymousValidForDays: String
-) {
+) : TokenIssuer {
   private val log = LoggerFactory.getLogger(JwtTokenIssuer::class.simpleName)
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
@@ -88,7 +91,7 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt {
+  override fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for anonymous feed")
     return encodeJwt(
@@ -101,10 +104,11 @@ class JwtTokenIssuer(
     )
   }
 
-  fun createJwtForApi(user: User): Jwt {
+  /** The `createUserSecret` API token: acts as [user] in [actingGroup], which callers resolve with [actingGroupOf]. */
+  fun createJwtForApi(user: User, actingGroup: GroupAndRole): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for service")
-    val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id));
+    val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id), GroupCapability(actingGroup))
     return encodeJwt(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.API.value,
@@ -113,6 +117,13 @@ class JwtTokenIssuer(
       getExpiration(AuthTokenType.SERVICE)
     )
   }
+
+  override fun issueApiToken(user: User, actingGroup: GroupAndRole) = AuthToken(createJwtForApi(user, actingGroup).tokenValue)
+
+  override fun issueAnonymousToken() = AuthToken(createJwtForAnonymous().tokenValue)
+
+  override fun issueTokenForCapabilities(capabilities: List<Capability<out Any>>) =
+    AuthToken(createJwtForCapabilities(capabilities).tokenValue)
 
   fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
@@ -130,7 +141,7 @@ class JwtTokenIssuer(
     )
   }
 
-  fun getExpiration(authority: AuthTokenType): Duration {
+  override fun getExpiration(authority: AuthTokenType): Duration {
     return when (authority) {
       AuthTokenType.ANONYMOUS -> 1.days
       AuthTokenType.USER -> 48.hours
@@ -163,7 +174,7 @@ class JwtTokenIssuer(
       .encode(params)
   }
 
-  suspend fun decodeJwt(token: String): Jwt {
+  override suspend fun decodeJwt(token: String): Jwt {
     return NimbusJwtDecoder
       .withSecretKey(getSecretKey())
       .build()
@@ -172,13 +183,18 @@ class JwtTokenIssuer(
 
   @Throws(AccessDeniedException::class)
   suspend fun decodeJwt(request: HttpServletRequest): Jwt {
+    // Preference order: Authorization (GitHub PAT style) > Authentication (deprecated) > TOKEN cookie.
+    val authorizationHeader = request.getHeader("Authorization")
+    if (StringUtils.isNotBlank(authorizationHeader)) {
+      return decodeJwt(authorizationHeader.replaceFirst("Bearer ", ""))
+    }
+    val deprecatedAuthHeader = request.getHeader("Authentication")
+    if (StringUtils.isNotBlank(deprecatedAuthHeader)) {
+      return decodeJwt(deprecatedAuthHeader.replaceFirst("Bearer ", ""))
+    }
     val authCookie = request.cookies?.firstOrNull { it.name == "TOKEN" }
     if (StringUtils.isNotBlank(authCookie?.value)) {
       return decodeJwt(authCookie?.value!!)
-    }
-    val authHeader = request.getHeader("Authentication")
-    if (StringUtils.isNotBlank(authHeader)) {
-      return decodeJwt(authHeader.replaceFirst("Bearer ", ""))
     }
     throw AccessDeniedException("token not present")
   }

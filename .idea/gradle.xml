@@ -10,7 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/packages" />
-            <option value="$PROJECT_DIR$/packages/agent" />
+            <option value="$PROJECT_DIR$/packages/browser-automation-app" />
             <option value="$PROJECT_DIR$/packages/app-web" />
             <option value="$PROJECT_DIR$/packages/document-classifier" />
             <option value="$PROJECT_DIR$/packages/domain" />

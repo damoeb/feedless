@@ -8,8 +8,8 @@ spring:
     banner-mode: off
   profiles:
     group:
-      selfHosted: secrets,properties,license,security,session,features,document,attachment,user,repository,plan,source,legacy,agent,feed,seed,cache,throttle,scrape,telegram,schedulerLayer,securityLayer,apiLayer,serviceLayer
-      saas: secrets,report,properties,mail,stripe,license,security,session,features,document,annotation,attachment,user,metrics,repository,plan,source,legacy,analytics,sso,agent,feed,seed,cache,throttle,scrape,database,telegram,order,schedulerLayer,securityLayer,apiLayer,serviceLayer,repositoryLayer
+      selfHosted: secrets,properties,license,security,session,features,document,attachment,user,repository,plan,source,legacy,browserautomation,feed,seed,cache,throttle,scrape,telegram,schedulerLayer,securityLayer,apiLayer,serviceLayer
+      saas: secrets,report,properties,mail,stripe,license,security,session,features,document,annotation,attachment,user,metrics,repository,plan,source,legacy,analytics,sso,browserautomation,feed,seed,cache,throttle,scrape,database,telegram,order,schedulerLayer,securityLayer,apiLayer,serviceLayer,repositoryLayer
 
   task:
     scheduling:

@@ -13,7 +13,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
@@ -48,7 +48,7 @@ import java.util.*
 )
 @MockitoBean(
   types = [
-    AgentService::class,
+    BrowserAutomationService::class,
     AttachmentRepository::class,
     SourceUseCase::class,
     StatelessAuthService::class,

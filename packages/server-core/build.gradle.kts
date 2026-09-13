@@ -103,7 +103,7 @@ dependencies {
   implementation(project(":packages:jpa-data"))
   implementation(project(":packages:feed-parser"))
   api(project(":packages:graphql-api"))
-  api(project(":packages:http-api"))
+  implementation(project(":packages:http-api"))
 
   implementation("org.mapstruct:mapstruct:1.6.3")
   kapt("org.mapstruct:mapstruct-processor:1.6.3")
@@ -184,6 +184,8 @@ dependencies {
   implementation(libs.xsoup)
 
   testImplementation(libs.spring.boot.test)
+  testImplementation(testFixtures(project(":packages:domain")))
+  testImplementation(testFixtures(project(":packages:jpa-data")))
   testImplementation("org.junit.jupiter:junit-jupiter-api")
   testCompileOnly("org.junit.jupiter:junit-jupiter-params")
   implementation("org.junit.jupiter:junit-jupiter")
@@ -237,6 +239,9 @@ tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
 
 val buildTask = tasks.findByPath("build")!!.dependsOn("test", "bootJar")
 
+// The Dockerfile's Go stage builds feedctl from this context.
+val cliSourceDir = project(":packages:cli").projectDir.absolutePath
+
 val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
   dependsOn(buildTask)
   val semver = findProperty("feedlessVersion") as String
@@ -254,6 +259,7 @@ val dockerAmdBuild = tasks.register("buildAmdDockerImage", Exec::class) {
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
     "--build-arg", "APP_BUILD_TIMESTAMP=${Date().time}",
+    "--build-context", "cli=$cliSourceDir",
     "--platform=linux/amd64",
     "-t", "$baseTag:core-latest",
     "-t", "$baseTag:core-$gitHash",

@@ -8,8 +8,11 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
+import org.migor.feedless.PageableRequest
 import org.migor.feedless.PostgreSQLExtension
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
+import org.migor.feedless.actions.ExtractXpathAction
+import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
@@ -21,17 +24,6 @@ import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureName
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.generated.types.DOMElementByXPathInput
-import org.migor.feedless.generated.types.DOMExtractInput
-import org.migor.feedless.generated.types.HttpFetchInput
-import org.migor.feedless.generated.types.HttpGetRequestInput
-import org.migor.feedless.generated.types.RepositoryCreateInput
-import org.migor.feedless.generated.types.ScrapeActionInput
-import org.migor.feedless.generated.types.ScrapeEmit
-import org.migor.feedless.generated.types.ScrapeExtractInput
-import org.migor.feedless.generated.types.ScrapeFlowInput
-import org.migor.feedless.generated.types.SourceInput
-import org.migor.feedless.generated.types.StringLiteralOrVariableInput
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupRepository
@@ -40,8 +32,11 @@ import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
+import org.migor.feedless.repository.RepositoryCreate
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.ExtractEmit
+import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserUseCase
 import org.mockito.Mockito.`when`
@@ -50,7 +45,7 @@ import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
-import org.migor.feedless.generated.types.Vertical as VerticalDto
+import org.migor.feedless.Vertical
 
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -75,7 +70,7 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     SourcePipelineService::class,
   ]
 )
@@ -106,7 +101,8 @@ class RepositoryUseCaseIntTest {
   fun setup() = runTest {
     `when`(featureService.isDisabled(any(FeatureName::class.java), eq(null))).thenReturn(false)
 
-    user = userUseCase.createUser("foo@bar.com")
+    // Shared database, so each test needs its own user.
+    user = userUseCase.createUser("foo+${java.util.UUID.randomUUID()}@bar.com")
     group = groupRepository.findAllByOwner(user.id).single()
   }
 
@@ -117,43 +113,29 @@ class RepositoryUseCaseIntTest {
     `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
       .thenReturn(EntityVisibility.isPublic)
 
+    val sourceId = SourceId()
     repositoryUseCase.create(
       listOf(
-        RepositoryCreateInput(
-          product = VerticalDto.rssProxy,
+        RepositoryCreate(
+          product = Vertical.rssProxy,
           sources = listOf(
-            SourceInput(
+            Source(
               title = "wef",
-              flow = ScrapeFlowInput(
-                sequence = listOf(
-                  ScrapeActionInput(
-                    fetch = HttpFetchInput(
-                      get = HttpGetRequestInput(
-                        url = StringLiteralOrVariableInput(
-                          literal = ""
-                        )
-                      )
-                    )
-                  ),
-                  ScrapeActionInput(
-                    extract = ScrapeExtractInput(
-                      fragmentName = "foo",
-                      selectorBased = DOMExtractInput(
-                        fragmentName = "foo",
-                        emit = listOf(ScrapeEmit.text, ScrapeEmit.pixel),
-                        xpath = DOMElementByXPathInput("//bar"),
-                        uniqueBy = ScrapeEmit.text
-                      )
-                    )
-                  )
-                )
+              actions = listOf(
+                FetchAction(sourceId = sourceId, url = ""),
+                ExtractXpathAction(
+                  sourceId = sourceId,
+                  fragmentName = "foo",
+                  xpath = "//bar",
+                  emit = arrayOf(ExtractEmit.text, ExtractEmit.pixel),
+                  uniqueBy = ExtractEmit.text,
+                ),
               ),
             )
           ),
           title = "foo",
           description = "bar",
           refreshCron = "",
-          withShareKey = true
         )
       )
     )
@@ -164,5 +146,219 @@ class RepositoryUseCaseIntTest {
     val extractAction = actions.get(1) as ExtractXpathActionEntity
     assertThat(extractAction.emitRaw).isEqualTo(arrayOf(ExtractEmit.text.name, ExtractEmit.pixel.name))
   }
+
+  @Test
+  fun `countAllByUserId counts with the same filters as findAllByUserId`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      // Private, so this doesn't leak into other users' "public" counts in this shared-DB test class.
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      // createUser already created an inbox repository — count relative to that baseline.
+      val baseline = repositoryUseCase.countAllByUserId(null, user.id)
+
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(product = Vertical.rssProxy, title = "r1", description = "d", refreshCron = ""),
+          RepositoryCreate(product = Vertical.visualDiff, title = "r2", description = "d", refreshCron = ""),
+        )
+      )
+
+      val totalCount = repositoryUseCase.countAllByUserId(null, user.id)
+      assertThat(totalCount).isEqualTo(baseline + 2)
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(pageNumber = 0, pageSize = 10), null, user.id))
+        .hasSize(totalCount)
+
+      val filteredCount = repositoryUseCase.countAllByUserId(
+        RepositoriesFilter(product = VerticalFilter(eq = Vertical.rssProxy)),
+        user.id,
+      )
+      assertThat(filteredCount).isEqualTo(1)
+    }
+
+  @Test
+  fun `findAllByUserId pages without skipping or repeating rows, mirroring listRepositories' ask-for-one-extra pattern`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      repositoryUseCase.create(
+        (1..5).map {
+          RepositoryCreate(product = Vertical.rssProxy, title = "page-walk-$it", description = "d", refreshCron = "")
+        }
+      )
+
+      val totalCount = repositoryUseCase.countAllByUserId(null, user.id)
+      // The canonical, un-paginated order this walk must reproduce exactly.
+      val all = repositoryUseCase.findAllByUserId(PageableRequest(0, totalCount), null, user.id)
+
+      // Mirrors RepositoryHttpController.listRepositories: ask for one more than the page holds.
+      var page = 0
+      val returned = mutableListOf<RepositoryId>()
+      while (true) {
+        val fetched = repositoryUseCase.findAllByUserId(PageableRequest.withExtraForHasMore(page, 2), null, user.id)
+        val hasMore = fetched.size > 2
+        returned.addAll(fetched.take(2).map { it.id })
+        if (!hasMore) break
+        page++
+      }
+
+      assertThat(returned).containsExactlyElementsOf(all.map { it.id })
+    }
+
+  @Test
+  fun `q matches title or description, case-insensitively, and totalCount agrees with the list`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "Alpha-$marker-Title",
+            description = "unrelated",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "unrelated",
+            description = "Beta-$marker-Description",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "no match here",
+            description = "nor here",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      // Matches the title hit, case-insensitively.
+      val byTitle = RepositoriesFilter(text = FulltextQueryFilter(query = "alpha-$marker-title".uppercase()))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byTitle, user.id))
+        .extracting("title")
+        .containsExactly("Alpha-$marker-Title")
+      assertThat(repositoryUseCase.countAllByUserId(byTitle, user.id)).isEqualTo(1)
+
+      // Matches the description hit.
+      val byDescription = RepositoriesFilter(text = FulltextQueryFilter(query = "beta-$marker-description"))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byDescription, user.id))
+        .extracting("description")
+        .containsExactly("Beta-$marker-Description")
+      assertThat(repositoryUseCase.countAllByUserId(byDescription, user.id)).isEqualTo(1)
+
+      // A substring spanning both hits.
+      val byMarker = RepositoriesFilter(text = FulltextQueryFilter(query = marker))
+      val matchedByMarker = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), byMarker, user.id)
+      assertThat(matchedByMarker).hasSize(2)
+      assertThat(repositoryUseCase.countAllByUserId(byMarker, user.id)).isEqualTo(matchedByMarker.size)
+
+      // A query matching nothing.
+      val noMatch = RepositoriesFilter(text = FulltextQueryFilter(query = "definitely-$marker-nope"))
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), noMatch, user.id)).isEmpty()
+      assertThat(repositoryUseCase.countAllByUserId(noMatch, user.id)).isEqualTo(0)
+
+      // Blank q means no filter. Not compared with a null filter, which also surfaces other users' public repositories.
+      val noText = RepositoriesFilter(text = null)
+      val unfiltered = repositoryUseCase.countAllByUserId(noText, user.id)
+      val blankQ = RepositoriesFilter(text = FulltextQueryFilter(query = "   "))
+      assertThat(repositoryUseCase.countAllByUserId(blankQ, user.id)).isEqualTo(unfiltered)
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, unfiltered), blankQ, user.id))
+        .hasSize(unfiltered)
+    }
+
+  @Test
+  fun `q treats percent and underscore as literal characters, not LIKE wildcards`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "50%-$marker-off_sale",
+            description = "d",
+            refreshCron = "",
+          ),
+          // If '%'/'_' were treated as wildcards, this would spuriously match "50%-...-off_sale" too.
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "50X$marker-offZsale",
+            description = "d",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      val literal = RepositoriesFilter(text = FulltextQueryFilter(query = "%-$marker-off_"))
+      val matched = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), literal, user.id)
+      assertThat(matched).extracting("title").containsExactly("50%-$marker-off_sale")
+      assertThat(repositoryUseCase.countAllByUserId(literal, user.id)).isEqualTo(1)
+    }
+
+  @Test
+  fun `q combines with the product filter`() =
+    runTest(context = RequestContext(groupId = group.id, userId = user.id)) {
+      `when`(planConstraintsService.violatesRepositoriesMaxActiveCount(any(GroupId::class.java)))
+        .thenReturn(false)
+      `when`(planConstraintsService.coerceVisibility(any2(), eq(null)))
+        .thenReturn(EntityVisibility.isPrivate)
+
+      val marker = java.util.UUID.randomUUID().toString().take(8)
+      repositoryUseCase.create(
+        listOf(
+          RepositoryCreate(
+            product = Vertical.rssProxy,
+            title = "combo-$marker-rss",
+            description = "d",
+            refreshCron = "",
+          ),
+          RepositoryCreate(
+            product = Vertical.visualDiff,
+            title = "combo-$marker-visual",
+            description = "d",
+            refreshCron = "",
+          ),
+        )
+      )
+
+      val filter = RepositoriesFilter(
+        product = VerticalFilter(eq = Vertical.rssProxy),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      val matched = repositoryUseCase.findAllByUserId(PageableRequest(0, 10), filter, user.id)
+      assertThat(matched).extracting("title").containsExactly("combo-$marker-rss")
+      assertThat(repositoryUseCase.countAllByUserId(filter, user.id)).isEqualTo(1)
+
+      // Also combines with the visibility filter (both repos above were created isPrivate).
+      val withVisibility = RepositoriesFilter(
+        visibility = VisibilityFilter(`in` = listOf(EntityVisibility.isPrivate)),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), withVisibility, user.id))
+        .extracting("title")
+        .containsExactlyInAnyOrder("combo-$marker-rss", "combo-$marker-visual")
+      assertThat(repositoryUseCase.countAllByUserId(withVisibility, user.id)).isEqualTo(2)
+
+      val wrongVisibility = RepositoriesFilter(
+        visibility = VisibilityFilter(`in` = listOf(EntityVisibility.isPublic)),
+        text = FulltextQueryFilter(query = "combo-$marker"),
+      )
+      assertThat(repositoryUseCase.findAllByUserId(PageableRequest(0, 10), wrongVisibility, user.id)).isEmpty()
+      assertThat(repositoryUseCase.countAllByUserId(wrongVisibility, user.id)).isEqualTo(0)
+    }
 
 }

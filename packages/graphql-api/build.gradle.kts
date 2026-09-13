@@ -4,11 +4,14 @@ plugins {
 
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
+  alias(libs.plugins.kapt)
 }
 
 repositories {
   mavenCentral()
 }
+
+kotlin { jvmToolchain(21) }
 
 //sourceSets.getByName("main") {
 ////  java.srcDir("src/main/java")
@@ -21,7 +24,37 @@ kotlin.sourceSets["main"].kotlin.srcDir(layout.buildDirectory.dir("generated/sou
 
 
 dependencies {
+  implementation(platform(libs.spring.boot.bom))
+  implementation(platform(libs.dgs.platform))
+  implementation(project(":packages:domain"))
   implementation(libs.spring.boot.web)
+  implementation(libs.spring.boot.security)
+  implementation(libs.dgs.starter)
+  implementation(libs.kotlin.reflect)
+  implementation(libs.kotlinx.coroutines.core)
+  implementation(libs.kotlinx.coroutines.reactor)
+  implementation(libs.commons.lang3)
+  implementation(libs.xsoup)
+  // EmailValidatorDirective; excludes match languagetool's, so no vulnerable commons-beanutils ships
+  implementation("commons-validator:commons-validator:1.9.0") {
+    exclude(group = "commons-beanutils")
+    exclude(group = "commons-collections")
+  }
+  implementation("org.mapstruct:mapstruct:1.6.3")
+  kapt("org.mapstruct:mapstruct-processor:1.6.3")
+
+  testImplementation(testFixtures(project(":packages:domain")))
+  testImplementation(libs.spring.boot.test)
+  testImplementation(libs.kotlinx.coroutines.test)
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+  testImplementation(libs.dgs.codegen.test)
+}
+
+// kapt stubs must see the DGS-generated types
+tasks.withType<org.jetbrains.kotlin.gradle.internal.KaptGenerateStubsTask> { dependsOn("generateJava") }
+
+tasks.test {
+  useJUnitPlatform()
 }
 
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }

@@ -5,6 +5,7 @@ import org.aspectj.lang.annotation.Around
 import org.aspectj.lang.annotation.Aspect
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.TooManyRequestsException
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -19,13 +20,14 @@ class ThrottleAspect {
   @Autowired
   private lateinit var ipThrottle: IpThrottleService
 
-  @Around("@annotation(org.migor.feedless.api.throttle.Throttled)")
+  @Around("@annotation(org.migor.feedless.throttle.Throttled)")
   fun aquire(joinPoint: ProceedingJoinPoint): Any? {
-    return if (ipThrottle.tryAquire(joinPoint)) {
-      joinPoint.proceed()
-    } else {
-      null
+    // Returning null would read as a 200 with an empty body, and the caller would never learn it was throttled.
+    if (!ipThrottle.tryAquire(joinPoint)) {
+      log.debug("throttled ${joinPoint.signature.name}")
+      throw TooManyRequestsException("rate limit exceeded for ${joinPoint.signature.name}")
     }
+    return joinPoint.proceed()
   }
 
   //  @Before("execution(* com.gkatzioura.spring.aop.service.SampleService.createSample (java.lang.String)) && args(sampleName)")

@@ -2,20 +2,20 @@ package org.migor.feedless.util
 
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
-import org.springframework.web.context.request.RequestAttributes
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
+import org.migor.feedless.api.ApiParams
+import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
 
 object HttpUtil {
+  // Bounds what a client can put in every log line and worker call; '/' is reserved for our own parent/child ids.
+  private val corrIdPattern = Regex("^[A-Za-z0-9._:-]{1,64}$")
+
   fun getRemoteAddr(request: HttpServletRequest): String {
     return StringUtils.trimToNull(request.getHeader("X-Real-IP")) ?: request.remoteAddr
   }
 
-  fun createCorrId(request: HttpServletRequest): String {
-    val corrId = CryptUtil.newCorrId()
-    val attributes = ServletRequestAttributes(request)
-    attributes.setAttribute("corrId", corrId, RequestAttributes.SCOPE_REQUEST)
-    RequestContextHolder.setRequestAttributes(attributes)
-    return corrId
-  }
+  /** The request's correlation id — the client's x-corr-id if well-formed, else a new one — kept once chosen so every filter shares it. */
+  fun corrIdOf(request: HttpServletRequest): String =
+    request.getAttribute(CORR_ID_REQUEST_ATTR) as? String
+      ?: (StringUtils.trimToNull(request.getHeader(ApiParams.corrId))?.takeIf { corrIdPattern.matches(it) } ?: CryptUtil.newCorrId())
+        .also { request.setAttribute(CORR_ID_REQUEST_ATTR, it) }
 }

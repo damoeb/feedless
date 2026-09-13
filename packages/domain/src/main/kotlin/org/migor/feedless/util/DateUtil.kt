@@ -2,6 +2,7 @@ package org.migor.feedless.util
 
 import java.time.Instant
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.*
 
@@ -21,4 +22,13 @@ fun LocalDateTime.toMillis(): Long {
 
 fun Long.toLocalDateTime(): LocalDateTime {
   return LocalDateTime.ofInstant(Instant.ofEpochMilli(this), ZoneOffset.UTC)
+}
+
+/** Domain LocalDateTimes are UTC (see [toMillis]); these make that explicit on the wire. */
+fun LocalDateTime.toOffsetDateTime(): OffsetDateTime {
+  return this.atOffset(ZoneOffset.UTC)
+}
+
+fun OffsetDateTime.toLocalDateTimeUtc(): LocalDateTime {
+  return this.withOffsetSameInstant(ZoneOffset.UTC).toLocalDateTime()
 }

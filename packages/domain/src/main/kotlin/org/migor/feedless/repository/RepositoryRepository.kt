@@ -13,6 +13,9 @@ interface RepositoryRepository {
 
   fun findAll(pageable: PageableRequest, where: RepositoriesFilter?, userId: UserId?): List<Repository>
 
+  /** Same filters (and caller-visibility rules) as [findAll], without paging. */
+  fun countAllByUserId(where: RepositoriesFilter?, userId: UserId?): Int
+
   fun findAllWhereNextHarvestIsDue(now: LocalDateTime, pageable: PageableRequest): List<Repository>
 
   fun countByGroupId(id: GroupId): Int

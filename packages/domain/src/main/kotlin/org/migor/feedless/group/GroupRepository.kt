@@ -7,4 +7,5 @@ interface GroupRepository {
   fun findById(groupId: GroupId): Group?
   fun save(group: Group): Group
   fun findAllByOwner(id: UserId): List<Group>
+  fun delete(group: Group)
 }

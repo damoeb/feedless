@@ -32,6 +32,8 @@ class CookieProvider {
     val cookie = Cookie(name, "")
     cookie.isHttpOnly = true
     cookie.maxAge = 0
+    // Must match the path the cookie was set with, or the browser keeps the original.
+    cookie.path = "/"
     return cookie
   }
 }

@@ -20,7 +20,7 @@ object AppProfiles {
   const val source = "source"
   const val analytics = "analytics"
   const val oauth = "sso"
-  const val agent = "agent"
+  const val browserAutomation = "browserautomation"
   const val order = "order"
   const val feed = "feed"
   const val seed = "seed"

@@ -12,7 +12,6 @@ import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
-import org.migor.feedless.scrape.GenericFeedRule
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.WebExtractService.Companion.MIME_URL
 import org.migor.feedless.scrape.WebToFeedTransformer
@@ -25,10 +24,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.net.URI
 import java.nio.charset.StandardCharsets
-
-data class FeedPluginParams(
-  val generic: GenericFeedRule? = null,
-)
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")

@@ -1,20 +1,16 @@
 package org.migor.feedless.feed
 
 import kotlinx.coroutines.currentCoroutineContext
-import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.feed.parser.CalendarFeedParser
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
 import org.migor.feedless.feed.parser.NullFeedParser
 import org.migor.feedless.feed.parser.XmlFeedParser
 import org.migor.feedless.feed.parser.json.JsonFeed
-import org.migor.feedless.feed.parser.json.JsonPoint
-import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.user.corrId
 import org.migor.feedless.util.FeedUtil
 import org.slf4j.LoggerFactory
@@ -25,7 +21,7 @@ import org.springframework.stereotype.Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedParserService(
   private val httpService: HttpService,
-) {
+) : FeedParser {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)
 
@@ -59,7 +55,7 @@ class FeedParserService(
     }.getOrThrow()
   }
 
-  suspend fun parseFeedFromUrl(url: String): JsonFeed {
+  override suspend fun parseFeedFromUrl(url: String): JsonFeed {
     log.debug("parseFeedFromUrl $url")
 //    httpService.guardedHttpResource(
 //      corrId,
@@ -75,13 +71,4 @@ class FeedParserService(
     val response = httpService.executeRequest(request, 200)
     return parseFeed(response)
   }
-}
-
-fun JsonPoint.toPoint(): Point {
-  return JtsUtil.createPoint(x, y)
-}
-
-
-fun LatLonPoint.toPoint(): Point {
-  return JtsUtil.createPoint(latitude, longitude)
 }

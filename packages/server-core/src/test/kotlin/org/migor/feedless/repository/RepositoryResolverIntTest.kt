@@ -12,8 +12,8 @@
 //import org.junit.jupiter.params.ParameterizedTest
 //import org.junit.jupiter.params.provider.CsvSource
 //import org.migor.feedless.AppProfiles
-//import org.migor.feedless.agent.AgentService
-//import org.migor.feedless.agent.AgentSyncExecutor
+//import org.migor.feedless.browserautomation.BrowserAutomationService
+//import org.migor.feedless.browserautomation.BrowserAutomationSyncExecutor
 //import org.migor.feedless.document.DocumentService
 //import org.migor.feedless.generated.DgsClient
 //import org.migor.feedless.generated.types.Cursor
@@ -40,8 +40,8 @@
 //@SpringBootTest
 //@MockBeans(
 //  value = [
-////    MockBean(AgentService::class),
-////    MockBean(AgentSyncExecutor::class),
+////    MockBean(BrowserAutomationService::class),
+////    MockBean(BrowserAutomationSyncExecutor::class),
 ////    MockBean(UserService::class),
 ////    MockBean(DocumentService::class),
 ////    MockBean(SessionService::class),

@@ -11,12 +11,15 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
+import org.migor.feedless.Mother.randomUser
+import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.session.AuthService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
@@ -26,6 +29,7 @@ import org.migor.feedless.userSecret.UserSecretRepository
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.eq
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -65,8 +69,8 @@ const val rootSecretKey = "barBarBarKey"
   types = [
     ServerConfigResolver::class,
     UserGroupAssignmentRepository::class,
-    UserGuard::class,
     GroupRepository::class,
+    UserGuard::class,
   ]
 )
 @Import(DisableDatabaseConfiguration::class)
@@ -88,6 +92,9 @@ class AuthenticationIntTest {
 
   @Autowired
   lateinit var propertyService: PropertyService
+
+  @Autowired
+  lateinit var jwtTokenIssuer: JwtTokenIssuer
 
   @MockitoBean
   lateinit var userSecretRepository: UserSecretRepository
@@ -146,6 +153,37 @@ class AuthenticationIntTest {
     assertThat(jwt).isNotNull()
     assertThat(jwt.tokenValue).isEqualTo(actualToken)
     assertThat(jwt.issuer.toString()).isEqualTo(propertyService.apiGatewayUrl)
+  }
+
+  // Regression for C1: under authRoot (no oauth), a logged-in user must not read back as anonymous.
+  @Test
+  fun `session resolves a logged-in user from a Bearer token under root auth`() = runTest {
+    val user = randomUser()
+    `when`(userRepository.findById(eq(user.id))).thenReturn(user)
+    val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id)))
+    val authedClient = MonoGraphQLClient.createWithWebClient(
+      WebClient.builder()
+        .baseUrl("http://localhost:$port/graphql")
+        .defaultHeader("Authorization", "Bearer ${jwt.tokenValue}")
+        .build()
+    )
+
+    val graphQLQuery = DgsClient.buildQuery {
+      session {
+        isAnonymous
+        isLoggedIn
+        userId
+      }
+    }
+    val response = authedClient.reactiveExecuteQuery(graphQLQuery)
+      .toFuture()
+      .await()
+      .extractValue<LinkedHashMap<String, Any>>("data.session")
+
+    val session = ObjectMapper().convertValue(response, Map::class.java)
+    assertThat(session[DgsConstants.SESSION.IsLoggedIn] as Boolean).isTrue()
+    assertThat(session[DgsConstants.SESSION.IsAnonymous] as Boolean).isFalse()
+    assertThat(session[DgsConstants.SESSION.UserId] as String?).isEqualTo(user.id.uuid.toString())
   }
 }
 

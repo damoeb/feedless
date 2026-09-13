@@ -10,7 +10,7 @@ import org.ehcache.event.EventType
 import org.ehcache.jsr107.Eh107Configuration
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.agent.AgentResponse
+import org.migor.feedless.browserautomation.BrowserAutomationResponse
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.generated.types.ServerSettings
@@ -25,14 +25,6 @@ import java.lang.reflect.Method
 import java.time.Duration
 import javax.cache.Caching
 
-
-object CacheNames {
-  const val FEED_LONG_TTL = "feedResponseCache10min"
-  const val FEED_SHORT_TTL = "feedResponseCache2Min"
-  const val HTTP_RESPONSE = "httpResponseCache"
-  const val AGENT_RESPONSE = "agentResponseCache"
-  const val SERVER_SETTINGS = "graphqlResponseCache"
-}
 
 class AgentResponseCacheKeyGenerator : KeyGenerator {
   override fun generate(target: Any, method: Method, vararg params: Any?): Any {
@@ -89,7 +81,7 @@ class ProdCacheConfig {
       Eh107Configuration.fromEhcacheCacheConfiguration(
         CacheConfigurationBuilder.newCacheConfigurationBuilder(
           String::class.java,
-          AgentResponse::class.java,
+          BrowserAutomationResponse::class.java,
           ResourcePoolsBuilder.heap(100)
             .offheap(50, MemoryUnit.MB)
         )
@@ -191,7 +183,7 @@ class DevCacheConfig {
       Eh107Configuration.fromEhcacheCacheConfiguration(
         CacheConfigurationBuilder.newCacheConfigurationBuilder(
           String::class.java,
-          AgentResponse::class.java,
+          BrowserAutomationResponse::class.java,
           ResourcePoolsBuilder.heap(20)
             .offheap(40, MemoryUnit.MB)
         )

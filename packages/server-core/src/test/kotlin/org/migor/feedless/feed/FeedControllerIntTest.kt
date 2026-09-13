@@ -21,7 +21,15 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.StatelessAuthService
+import org.migor.feedless.repository.RepositoryReadGrant
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.SourceRepository
+import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.boot.http.client.ClientHttpRequestFactorySettings
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.boot.test.web.client.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
@@ -76,6 +84,12 @@ class FeedControllerIntTest {
   @MockitoBean
   lateinit var analyticsService: AnalyticsService
 
+  @MockitoBean
+  lateinit var sourceRepository: SourceRepository
+
+  @MockitoBean
+  lateinit var repositoryGuard: RepositoryGuard
+
   lateinit var mockFeed: JsonFeed
 
   @BeforeEach
@@ -94,6 +108,7 @@ class FeedControllerIntTest {
   fun `calling tf returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
+    `when`(feedService.requireLegacyTokenAccess(anyOrNull2())).thenReturn(mock(LegacyFeedAccess::class.java))
     `when`(
       feedService.transformFeed(
         any2(),
@@ -127,6 +142,7 @@ class FeedControllerIntTest {
   fun `calling w2f returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
+    `when`(feedService.requireLegacyTokenAccess(anyOrNull2())).thenReturn(mock(LegacyFeedAccess::class.java))
     `when`(
       feedService.webToFeed(
         any2(),
@@ -172,9 +188,16 @@ class FeedControllerIntTest {
   )
   fun `calling legacy feed by id returns a feed`(feedUrl: String) = runTest {
     val restTemplate = TestRestTemplate()
+    // the legacy route checks read access to the source's repository first
+    val repositoryId = RepositoryId()
+    `when`(sourceRepository.findById(any2())).thenReturn(
+      Source(id = SourceId(feedId), title = "source", repositoryId = repositoryId)
+    )
+    `when`(repositoryGuard.requireReadGrant(any2())).thenReturn(mock(RepositoryReadGrant::class.java))
 
     `when`(
       feedService.getFeed(
+        any2(),
         any2(),
         any2(),
       )
@@ -186,6 +209,8 @@ class FeedControllerIntTest {
 
     val response = restTemplate.exchange("${baseEndpoint}/${feedUrl}", HttpMethod.GET, entity, String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    // the stubbed feed, not the error feed a denied or missing source gets
+    assertThat(response.body).contains("foo")
     assertThat(response.headers.contentType?.type).isEqualTo("application")
     assertThat(response.headers.contentType?.subtype).isEqualTo("xml")
   }
@@ -199,10 +224,12 @@ class FeedControllerIntTest {
     ]
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
+    // the redirect is built in the controller now, so it is asserted instead of stubbed
     val restTemplate = TestRestTemplate()
-    `when`(feedService.getRepository(any2())).thenReturn(ResponseEntity.ok().build())
+      .withRequestFactorySettings { it.withRedirects(ClientHttpRequestFactorySettings.Redirects.DONT_FOLLOW) }
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
-    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
+    assertThat(response.headers.location.toString()).isEqualTo("/f/$feedId/atom")
   }
 }

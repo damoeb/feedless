@@ -2,7 +2,7 @@ rootProject.name = "feedless"
 
 include("packages:app-web")
 include("packages:server-core")
-include("packages:agent")
+include("packages:browser-automation-app")
 include("packages:nominatim-proxy")
 include("packages:mail-adapter")
 include("packages:freemarker-templates")
@@ -15,6 +15,7 @@ include("packages:jpa-data")
 include("packages:feed-parser")
 include("packages:frontend")
 include("packages:document-classifier")
+include("packages:cli")
 
 pluginManagement {
   plugins {
