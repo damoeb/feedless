@@ -11,6 +11,7 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.api.ApiParams
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
@@ -301,6 +302,8 @@ class SecurityConfig {
     config.allowedMethods = listOf("GET", "POST", "PATCH", "PUT", "DELETE")
     config.allowCredentials = true
     config.allowedHeaders = listOf(CorsConfiguration.ALL)
+    // So a cross-origin browser client can read the id it sent or was assigned.
+    config.exposedHeaders = listOf(ApiParams.corrId)
     config.allowedOrigins = StringUtils.trimToNull(allowedOrigins)?.split(",")?.map { it.trim() }
     log.info("cors allowedOrigins = [${config.allowedOrigins?.joinToString(",")}]")
     val source = UrlBasedCorsConfigurationSource()

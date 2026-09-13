@@ -284,6 +284,26 @@ class SecurityConfigIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
+  /** So a cross-origin app-web client can read the id it sent or was assigned, not just same-origin callers. */
+  @Test
+  fun whenSendingCorsPreflightToApiV1_ThenCorrIdHeaderExposed() {
+    val restTemplate = TestRestTemplate()
+    val headers = HttpHeaders()
+    headers.set(HttpHeaders.ORIGIN, "http://localhost:4200")
+    headers.set(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
+    val request = HttpEntity<Void>(headers)
+
+    val response = restTemplate.exchange(
+      "${baseEndpoint}/api/v1/user",
+      HttpMethod.OPTIONS,
+      request,
+      String::class.java,
+    )
+
+    assertThat(response.statusCode.is2xxSuccessful).isTrue()
+    assertThat(response.headers[HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS]).contains("x-corr-id")
+  }
+
 //  @ParameterizedTest
 //  @CsvSource(value = [
 ////    "bucket/$feedId",
