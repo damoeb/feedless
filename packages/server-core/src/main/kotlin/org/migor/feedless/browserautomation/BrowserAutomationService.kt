@@ -13,10 +13,10 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.ResumableHarvestException
-import org.migor.feedless.api.ApiParams.corrId
 import org.migor.feedless.api.fromDto
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.currentCorrId
 import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
@@ -60,8 +60,9 @@ class BrowserAutomationService(
   }
 
   override suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
+    val requestContext = RequestContext(corrId = currentCorrId() ?: newCorrId())
     return Flux.create { emitter ->
-      CoroutineScope(RequestContext()).launch {
+      CoroutineScope(requestContext).launch {
         authService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
           ?.let { securityKey ->
             val now = LocalDateTime.now()
@@ -89,7 +90,7 @@ class BrowserAutomationService(
               }
               emitter.next(
                 AgentEvent(
-                  corrId = "corrId",
+                  corrId = requestContext.corrId,
                   callbackId = "none",
                   authentication = AgentAuthentication(
                     token = jwtTokenIssuer.createJwtForService(securityKey).tokenValue
@@ -143,13 +144,15 @@ class BrowserAutomationService(
     agentRef: BrowserAutomationRef
   ): Mono<BrowserAutomationResponse> {
     log.debug("preparing")
+    // The worker logs under this id, so its lines trace back to the harvest that asked.
+    val corrId = currentCorrId() ?: newCorrId()
     return Flux.create { emitter ->
       try {
         val agentJobId = UUID.randomUUID().toString()
         agentRef.emitter.next(
           AgentEvent(
             callbackId = agentJobId,
-            corrId = newCorrId(),
+            corrId = corrId,
             scrape = source.toDto()
           )
         )
