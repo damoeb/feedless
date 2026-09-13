@@ -39,6 +39,7 @@ import org.migor.feedless.source.SourceOrderBy
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourcesFilter
 import org.migor.feedless.user.userId
+import org.migor.feedless.user.userIdMaybe
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -65,7 +66,8 @@ class RepositoryResolver(
   private val sourceRepository: SourceRepository,
   private val documentRepository: DocumentRepository,
   private val harvestService: HarvestService,
-  private val capabilityService: CapabilityService
+  private val capabilityService: CapabilityService,
+  private val repositoryGuard: RepositoryGuard,
 ) {
 
   private val log = LoggerFactory.getLogger(RepositoryResolver::class.simpleName)
@@ -78,7 +80,8 @@ class RepositoryResolver(
   ): List<RepositoryDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("repositories $data")
 
-    val userId = coroutineContext.userId()
+    // anonymous callers list public repositories only
+    val userId = coroutineContext.userIdMaybe()
     val pageable = data.cursor.toPageable().toPageableRequest()
     if (pageable.pageSize == 0) {
       emptyList()
@@ -106,7 +109,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.QUERY.COUNTREPOSITORIES_INPUT_ARGUMENT.Data) data: CountRepositoriesInput,
   ): Int = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("countRepositories")
-    repositoryUseCase.countAll(coroutineContext.userId(), data.product.fromDto())
+    repositoryUseCase.countAll(coroutineContext.userIdMaybe(), data.product.fromDto())
   }
 
   @Throttled
@@ -116,9 +119,8 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.QUERY.REPOSITORY_INPUT_ARGUMENT.Data) data: RepositoryWhereInput,
   ): RepositoryDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("repository $data")
-    val repository = repositoryRepository.findById(RepositoryId(data.where.id))
-      ?: throw IllegalArgumentException("Repository not found")
-    repository.toDto(repository.ownerId == coroutineContext.userId())
+    val repository = repositoryGuard.requireRead(RepositoryId(data.where.id))
+    repository.toDto(repository.ownerId == coroutineContext.userIdMaybe())
   }
 
   @Throttled
@@ -166,7 +168,10 @@ class RepositoryResolver(
   ): List<SourceDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     val pageable = cursor.toPageable(10)
-    if (pageable.pageSize == 0) {
+    // sources are configuration and their fetch URLs may carry share keys
+    val mayReadSources = repositoryRepository.findById(RepositoryId(repository.id))
+      ?.let { repositoryGuard.mayReadConfiguration(it) } ?: false
+    if (pageable.pageSize == 0 || !mayReadSources) {
       emptyList()
     } else {
       sourceRepository.findAllByRepositoryIdFiltered(

@@ -1,6 +1,18 @@
 package org.migor.feedless.repository
 
 import kotlinx.coroutines.test.runTest
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
+import org.junit.jupiter.api.BeforeEach
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.RoleInGroup
+import org.migor.feedless.userGroup.UserGroupAssignment
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import org.mockito.kotlin.doReturn
+import org.mockito.kotlin.isNull
+import org.mockito.kotlin.verify
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.Test
@@ -78,23 +90,38 @@ import org.migor.feedless.generated.types.Vertical as VerticalDto
 class RepositoryResolverTest {
 
   private val ownerId = UserId()
+  private val member = UserId()
+  private val groupId = GroupId()
   private val repositoryUseCase = mock<RepositoryUseCase>()
   private val repositoryRepository = mock<RepositoryRepository>()
+  private val sourceRepository = mock<SourceRepository>()
+  private val userRepository = mock<UserRepository>()
+  private val userGroupAssignmentRepository = mock<UserGroupAssignmentRepository>()
   private val resolver = RepositoryResolver(
     repositoryUseCase,
     repositoryRepository,
-    mock<SourceRepository>(),
+    sourceRepository,
     mock<DocumentRepository>(),
     mock<HarvestService>(),
     mock<CapabilityService>(),
+    RepositoryGuard(repositoryRepository, UserGuard(userRepository), userGroupAssignmentRepository),
   )
   private val repository = Repository(
     title = "private feed",
     visibility = EntityVisibility.isPrivate,
     shareKey = "owner-share-key",
     ownerId = ownerId,
-    groupId = GroupId(),
+    groupId = groupId,
   )
+
+  @BeforeEach
+  fun stubUsers() = runTest {
+    whenever(userRepository.findById(any())).thenReturn(mock<User>())
+    whenever(userGroupAssignmentRepository.findAllByUserId(any())).thenReturn(emptyList())
+    whenever(userGroupAssignmentRepository.findAllByUserId(eq(member))).thenReturn(
+      listOf(UserGroupAssignment(role = RoleInGroup.viewer, userId = member, groupId = groupId)),
+    )
+  }
 
   @AfterEach
   fun clearSecurityContext() {
@@ -113,11 +140,12 @@ class RepositoryResolverTest {
   }
 
   @Test
-  fun `repository hides the share key from a non-owner`() = runTest {
+  fun `repository hides the share key from a non-owner of a public repository`() = runTest {
+    val public = repository.copy(visibility = EntityVisibility.isPublic)
     loginAs(UserId())
-    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+    whenever(repositoryRepository.findById(eq(public.id))).thenReturn(public)
 
-    val actual = resolver.repository(mock(), whereId(repository))
+    val actual = resolver.repository(mock(), whereId(public))
 
     assertThat(actual.currentUserIsOwner).isFalse()
     assertThat(actual.shareKey).isEmpty()
@@ -143,6 +171,111 @@ class RepositoryResolverTest {
     val actual = resolver.createRepositories(mock(), emptyList())
 
     assertThat(actual.single().shareKey).isEqualTo("owner-share-key")
+  }
+
+  @Test
+  fun `repository answers an anonymous caller for a public repository`() = runTest {
+    val public = repository.copy(visibility = EntityVisibility.isPublic)
+    whenever(repositoryRepository.findById(eq(public.id))).thenReturn(public)
+
+    val actual = resolver.repository(mock(), whereId(public))
+
+    assertThat(actual.currentUserIsOwner).isFalse()
+    assertThat(actual.shareKey).isEmpty()
+  }
+
+  @Test
+  fun `repository denies a private repository to an anonymous caller like a missing one`() = runTest {
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+
+    val actual = runCatching { resolver.repository(mock(), whereId(repository)) }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java).hasMessage("Repository ${repository.id} not found")
+  }
+
+  @Test
+  fun `repository denies a private repository to a logged-in stranger like a missing one`() = runTest {
+    loginAs(UserId())
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+
+    val actual = runCatching { resolver.repository(mock(), whereId(repository)) }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java).hasMessage("Repository ${repository.id} not found")
+  }
+
+  @Test
+  fun `repository serves a private repository to a member of its group without the share key`() = runTest {
+    loginAs(member)
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+
+    val actual = resolver.repository(mock(), whereId(repository))
+
+    assertThat(actual.currentUserIsOwner).isFalse()
+    assertThat(actual.shareKey).isEmpty()
+  }
+
+  @Test
+  fun `repositories answers an anonymous caller`() = runTest {
+    val public = repository.copy(visibility = EntityVisibility.isPublic)
+    whenever(repositoryUseCase.findAllByUserId(any(), anyOrNull(), anyOrNull())).thenReturn(listOf(public))
+
+    val actual = resolver.repositories(mock(), RepositoriesInput(cursor = Cursor(page = 0, pageSize = 10)))
+
+    assertThat(actual.map { it.id }).containsExactly(public.id.uuid.toString())
+    verify(repositoryUseCase).findAllByUserId(any(), anyOrNull(), isNull())
+  }
+
+  @Test
+  fun `sources are hidden from a stranger and an anonymous caller even on a public repository`() = runTest {
+    val public = givenSources(repository.copy(visibility = EntityVisibility.isPublic))
+
+    assertThat(resolver.sources(Cursor(page = 0, pageSize = 10), null, null, dfeFor(public))).isEmpty()
+    loginAs(UserId())
+    assertThat(resolver.sources(Cursor(page = 0, pageSize = 10), null, null, dfeFor(public))).isEmpty()
+  }
+
+  @Test
+  fun `sources are shown to the owner and to members of the owning group`() = runTest {
+    val public = givenSources(repository.copy(visibility = EntityVisibility.isPublic))
+
+    loginAs(ownerId)
+    assertThat(resolver.sources(Cursor(page = 0, pageSize = 10), null, null, dfeFor(public))).hasSize(1)
+    loginAs(member)
+    assertThat(resolver.sources(Cursor(page = 0, pageSize = 10), null, null, dfeFor(public))).hasSize(1)
+  }
+
+  @Test
+  fun `the owner of a private repository gets its share key`() {
+    assertThat(repository.toDto(true).shareKey).isEqualTo("owner-share-key")
+  }
+
+  @Test
+  fun `the owner of a public repository gets no share key`() {
+    assertThat(repository.copy(visibility = EntityVisibility.isPublic).toDto(true).shareKey).isEmpty()
+  }
+
+  @Test
+  fun `a non-owner gets no share key`() {
+    assertThat(repository.toDto(false).shareKey).isEmpty()
+  }
+
+  private suspend fun givenSources(repository: Repository): Repository {
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+    val sourceId = SourceId()
+    val source = Source(
+      id = sourceId,
+      title = "source",
+      repositoryId = repository.id,
+      actions = listOf(FetchAction(sourceId = sourceId, url = "https://example.org/feed?skey=other-key")),
+    )
+    whenever(sourceRepository.findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull()))
+      .thenReturn(listOf(source))
+    return repository
+  }
+
+  private fun dfeFor(repository: Repository): DgsDataFetchingEnvironment {
+    val dto = repository.toDto(false)
+    return mock { on { getSourceOrThrow<RepositoryDto>() } doReturn dto }
   }
 
   private fun whereId(repository: Repository) =
@@ -216,7 +349,7 @@ class RepositoryResolverTest {
         maxCapacity = retentionMaxCapacity,
         maxAgeDays = retentionMaxAgeDays
       ),
-      shareKey = shareKey, // included because currentUserIsOwner = true
+      shareKey = "", // public: even the owner gets no key
       product = VerticalDto.feedless,
       createdAt = createdAt.toMillis(),
       lastUpdatedAt = lastUpdatedAt.toMillis(),

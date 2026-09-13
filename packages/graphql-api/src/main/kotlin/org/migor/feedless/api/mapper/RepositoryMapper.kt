@@ -1,6 +1,7 @@
 package org.migor.feedless.api.mapper
 
 import com.google.gson.Gson
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.api.toDto
 import org.migor.feedless.generated.types.FeedParams
 import org.migor.feedless.generated.types.FeedParamsInput
@@ -25,7 +26,8 @@ fun Repository.toDto(currentUserIsOwner: Boolean): RepositoryDto {
     disabledFrom = disabledFrom?.toMillis(),
     plugins = plugins.map { it.toDto() },
     retention = toRetention(),
-    shareKey = if (currentUserIsOwner) shareKey else "",
+    // a key handed out while public would keep working once the repository goes private
+    shareKey = if (currentUserIsOwner && visibility == EntityVisibility.isPrivate) shareKey else "",
     visibility = visibility.toDto(),
     createdAt = createdAt.toMillis(),
     lastUpdatedAt = lastUpdatedAt.toMillis(),
