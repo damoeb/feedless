@@ -222,7 +222,8 @@ class DocumentIntTest {
 
   @Test
   fun `given where is null, findAll filters repoId and status`() =
-    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+    // the owner reads; a stranger may no longer read a private repository
+    runTest(context = RequestContext(groupId = repository.groupId, userId = repository.ownerId)) {
       val documents = documentUseCase.findAllByRepositoryId(
         repositoryId = repository.id,
         status = ReleaseStatus.released,
@@ -233,7 +234,8 @@ class DocumentIntTest {
 
   @Test
   fun `findAllFiltered pages without skipping or repeating rows, mirroring listRecords' ask-for-one-extra pattern`() =
-    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+    // the owner reads; a stranger may no longer read a private repository
+    runTest(context = RequestContext(groupId = repository.groupId, userId = repository.ownerId)) {
       val pageWalkRepo = repositoryRepository.save(
         Repository(
           title = "page-walk",

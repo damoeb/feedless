@@ -175,6 +175,7 @@ class DocumentUseCase(
     groupBy: DocumentDateField,
   ): List<DocumentFrequency> = withContext(Dispatchers.IO) {
     log.info("getRecordFrequency groupBy=$groupBy")
+    repositoryGuard.requireRead(where.repository)
     documentRepository.getRecordFrequency(where, groupBy)
   }
 

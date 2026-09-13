@@ -21,7 +21,6 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryController
 import org.migor.feedless.repository.RepositoryGuard
-import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.SourceUseCase
@@ -29,6 +28,7 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.kotlin.any
 import org.mockito.kotlin.anyOrNull
 import org.mockito.kotlin.doSuspendableAnswer
@@ -96,6 +96,9 @@ class RepositoryFeedControllerTest {
 
   @MockitoBean
   private lateinit var userRepository: UserRepository
+
+  @MockitoBean
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
 
   @MockitoBean
   private lateinit var documentUseCase: DocumentUseCase
@@ -181,6 +184,13 @@ class RepositoryFeedControllerTest {
   }
 
   @Test
+  fun `a private feed answers 404 to a logged-in stranger`() {
+    val repository = givenRepository()
+
+    assertDenied(mockMvc.getAs(UserId(), feedUrl(repository)), repository)
+  }
+
+  @Test
   fun `a public feed ignores skey`() {
     val repository = givenRepository(EntityVisibility.isPublic)
 
@@ -228,7 +238,8 @@ class RepositoryFeedControllerTest {
   private fun assertDenied(result: MvcResult, repository: Repository) {
     assertStatus(result, 404)
     val message = messageOf(result)
-    assert(message == "Repository ${RepositoryId(repository.id.uuid)} is private, you are not logged in") { message }
+    // the answer of a missing repository, so a private id is never confirmed
+    assert(message == "Repository ${repository.id} not found") { message }
   }
 
   private fun messageOf(result: MvcResult): String =

@@ -1,6 +1,7 @@
 package org.migor.feedless.repository
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.currentCoroutineContext
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -8,11 +9,11 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.capability.ShareKeyAccess
 import org.migor.feedless.guard.ResourceGuard
-import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.userId
 import org.migor.feedless.user.userIdMaybe
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Service
@@ -22,39 +23,63 @@ import java.security.MessageDigest
 @Profile("${AppProfiles.repository} & ${AppLayer.service}")
 class RepositoryGuard(
   private val repositoryRepository: RepositoryRepository,
-  private val userGuard: UserGuard
+  private val userGuard: UserGuard,
+  private val userGroupAssignmentRepository: UserGroupAssignmentRepository,
 ) : ResourceGuard<RepositoryId, Repository> {
 
+  /** Public, a valid share key, or a logged-in owner or member of the owning group; everyone else sees a missing repository. */
   override suspend fun requireRead(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
-    val (_, repository) = requireRead(coroutineContext.userIdMaybe(), id, coroutineContext[ShareKeyAccess])
+    val repository = repositoryRepository.findById(id) ?: throw notFound(id)
+    if (repository.visibility === EntityVisibility.isPublic ||
+      opensWithShareKey(repository, coroutineContext[ShareKeyAccess])
+    ) {
+      return@withContext repository
+    }
+    // same answer as a missing repository, so a private id is never confirmed
+    val userId = coroutineContext.userIdMaybe() ?: throw notFound(id)
+    userGuard.requireRead(userId)
+    if (!isOwnerOrMember(repository, userId)) {
+      throw notFound(id)
+    }
     repository
   }
 
+  suspend fun requireReadGrant(id: RepositoryId): RepositoryReadGrant {
+    requireRead(id)
+    return RepositoryReadGrant(id)
+  }
+
+  /** Sources and other configuration: owner or group member only, even on a public repository; a share key does not count. */
+  suspend fun mayReadConfiguration(repository: Repository): Boolean {
+    val userId = currentCoroutineContext().userIdMaybe() ?: return false
+    return isOwnerOrMember(repository, userId)
+  }
+
   override suspend fun requireWrite(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
-    val (_, repository) = requireRead(coroutineContext.userId(), id)
+    val repository = requireLoggedInRead(coroutineContext.userId(), id)
     require(repository.ownerId == coroutineContext.userId(), { "must be owner" })
     repository
   }
 
   override suspend fun requireExecute(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
-    val (_, repository) = requireRead(coroutineContext.userId(), id)
-    repository
+    requireLoggedInRead(coroutineContext.userId(), id)
   }
 
-  private suspend fun requireRead(
-    userId: UserId?,
-    id: RepositoryId,
-    shareKeyAccess: ShareKeyAccess? = null,
-  ): Pair<User?, Repository> {
-    val repository = repositoryRepository.findById(id) ?: throw NotFoundException("Repository $id not found")
-    if (repository.visibility === EntityVisibility.isPublic || opensWithShareKey(repository, shareKeyAccess)) {
-      return Pair(null, repository)
-    } else {
-      val user =
-        userGuard.requireRead(userId ?: throw AccessDeniedException("Repository $id is private, you are not logged in"))
-      return Pair(user, repository)
+  // the write and execute rules predate the owner-or-member read rule and stay unchanged
+  private suspend fun requireLoggedInRead(userId: UserId?, id: RepositoryId): Repository {
+    val repository = repositoryRepository.findById(id) ?: throw notFound(id)
+    if (repository.visibility !== EntityVisibility.isPublic) {
+      userGuard.requireRead(userId ?: throw AccessDeniedException("Repository $id is private, you are not logged in"))
     }
+    return repository
   }
+
+  private suspend fun isOwnerOrMember(repository: Repository, userId: UserId): Boolean =
+    RepositoryAccessRule.isOwnerOrMember(repository, userId) {
+      withContext(Dispatchers.IO) { userGroupAssignmentRepository.findAllByUserId(userId) }
+    }
+
+  private fun notFound(id: RepositoryId) = NotFoundException("Repository $id not found")
 
   private fun opensWithShareKey(repository: Repository, access: ShareKeyAccess?): Boolean {
     if (access == null || access.repositoryId != repository.id) {

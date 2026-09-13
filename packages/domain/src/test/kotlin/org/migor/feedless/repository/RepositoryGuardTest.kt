@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.any
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.ShareKeyAccess
@@ -20,18 +21,22 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.RoleInGroup
+import org.migor.feedless.userGroup.UserGroupAssignment
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.springframework.security.access.AccessDeniedException
 import kotlin.coroutines.CoroutineContext
 import kotlin.coroutines.EmptyCoroutineContext
 
 class RepositoryGuardTest {
 
   private lateinit var repositoryGuard: RepositoryGuard
-  private lateinit var userGuard: UserGuard
   private lateinit var repositoryRepository: RepositoryRepository
   private val userId = randomUserId()
+  private val member = UserId()
+  private val stranger = UserId()
+  private val groupId = GroupId()
   private val repositoryId = randomRepositoryId()
 
   @BeforeEach
@@ -40,14 +45,20 @@ class RepositoryGuardTest {
     val user = mockUser(userId)
     `when`(userRepository.findById(any(UserId::class.java))).thenReturn(user)
 
-    userGuard = UserGuard(userRepository)
+    val userGuard = UserGuard(userRepository)
 
     repositoryRepository = mock(RepositoryRepository::class.java)
     val repository = mockRepository(repositoryId, userId)
     `when`(repositoryRepository.findById(any(RepositoryId::class.java)))
       .thenReturn(repository)
 
-    repositoryGuard = RepositoryGuard(repositoryRepository, userGuard)
+    val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
+    `when`(userGroupAssignmentRepository.findAllByUserId(any(UserId::class.java))).thenReturn(emptyList())
+    `when`(userGroupAssignmentRepository.findAllByUserId(eq(member))).thenReturn(
+      listOf(UserGroupAssignment(role = RoleInGroup.viewer, userId = member, groupId = groupId)),
+    )
+
+    repositoryGuard = RepositoryGuard(repositoryRepository, userGuard, userGroupAssignmentRepository)
   }
 
   @Test
@@ -66,6 +77,39 @@ class RepositoryGuardTest {
   }
 
   @Test
+  fun `requireRead of a private repository works for its owner`() =
+    runTest(context = asUser(userId)) {
+      val repository = givenRepository()
+      assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
+    }
+
+  @Test
+  fun `requireRead of a private repository works for a member of its group`() =
+    runTest(context = asUser(member)) {
+      val repository = givenRepository()
+      assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
+    }
+
+  @Test
+  fun `requireRead of a private repository fails for a logged-in stranger like a missing repository`() {
+    val repository = runBlocking { givenRepository() }
+    assertDeniedLikeMissing(repository.id, asUser(stranger))
+  }
+
+  @Test
+  fun `requireRead of a private repository fails without login like a missing repository`() {
+    val repository = runBlocking { givenRepository() }
+    assertDeniedLikeMissing(repository.id, EmptyCoroutineContext)
+  }
+
+  @Test
+  fun `requireRead of a missing repository fails with not found`() {
+    val missingId = RepositoryId()
+    runBlocking { `when`(repositoryRepository.findById(eq(missingId))).thenReturn(null) }
+    assertDeniedLikeMissing(missingId, asUser(userId))
+  }
+
+  @Test
   fun `requireRead of a private repository with its share key works without login`() = runTest {
     val repository = givenRepository()
     withContext(ShareKeyAccess(repository.id, SHARE_KEY)) {
@@ -74,67 +118,97 @@ class RepositoryGuardTest {
   }
 
   @Test
-  fun `requireRead of a private repository without a key fails`() {
-    val repository = runBlocking { givenRepository() }
-    assertDeniedLikeNoKey(repository.id, EmptyCoroutineContext)
-  }
-
-  @Test
   fun `requireRead of a private repository with a wrong key fails like no key`() {
     val repository = runBlocking { givenRepository() }
-    assertDeniedLikeNoKey(repository.id, ShareKeyAccess(repository.id, "wrong-key"))
+    assertDeniedLikeMissing(repository.id, ShareKeyAccess(repository.id, "wrong-key"))
   }
 
   @Test
   fun `requireRead of a private repository with a blank key fails`() {
     val repository = runBlocking { givenRepository() }
-    assertDeniedLikeNoKey(repository.id, ShareKeyAccess(repository.id, " "))
+    assertDeniedLikeMissing(repository.id, ShareKeyAccess(repository.id, " "))
   }
 
   @Test
   fun `requireRead of a private repository without a share key of its own fails`() {
     val repository = runBlocking { givenRepository(shareKey = "") }
-    assertDeniedLikeNoKey(repository.id, ShareKeyAccess(repository.id, ""))
+    assertDeniedLikeMissing(repository.id, ShareKeyAccess(repository.id, ""))
   }
 
   @Test
   fun `requireRead with the key of a repository presented for another repository fails`() {
     val repository = runBlocking { givenRepository() }
     val other = runBlocking { givenRepository() }
-    assertDeniedLikeNoKey(repository.id, ShareKeyAccess(other.id, SHARE_KEY))
+    assertDeniedLikeMissing(repository.id, ShareKeyAccess(other.id, SHARE_KEY))
   }
 
   @Test
-  fun `requireRead of a public repository ignores a wrong key`() = runTest {
+  fun `requireRead of a public repository works for anyone and ignores a wrong key`() = runTest {
     val repository = givenRepository(visibility = EntityVisibility.isPublic)
+    assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
+    withContext(asUser(stranger)) {
+      assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
+    }
     withContext(ShareKeyAccess(repository.id, "wrong-key")) {
       assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
     }
   }
 
   @Test
-  fun `requireRead of a private repository for the logged-in owner works without a key`() =
-    runTest(context = RequestContext(groupId = GroupId(), userId = userId)) {
-      val repository = givenRepository()
-      assertThat(repositoryGuard.requireRead(repository.id)).isEqualTo(repository)
-    }
+  fun `requireReadGrant names the repository it was granted for`() = runTest(context = asUser(member)) {
+    val repository = givenRepository()
+    assertThat(repositoryGuard.requireReadGrant(repository.id).repositoryId).isEqualTo(repository.id)
+  }
 
   @Test
-  fun `a share key does not grant write`() {
+  fun `requireReadGrant fails for a stranger`() {
     val repository = runBlocking { givenRepository() }
+    assertThatThrownBy {
+      runTest(context = asUser(stranger)) { repositoryGuard.requireReadGrant(repository.id) }
+    }.isInstanceOf(NotFoundException::class.java)
+  }
+
+  @Test
+  fun `configuration is readable by owner and members only, even on a public repository`() = runTest {
+    val repository = givenRepository(visibility = EntityVisibility.isPublic)
+    withContext(asUser(userId)) { assertThat(repositoryGuard.mayReadConfiguration(repository)).isTrue() }
+    withContext(asUser(member)) { assertThat(repositoryGuard.mayReadConfiguration(repository)).isTrue() }
+    withContext(asUser(stranger)) { assertThat(repositoryGuard.mayReadConfiguration(repository)).isFalse() }
+    assertThat(repositoryGuard.mayReadConfiguration(repository)).isFalse()
+    withContext(ShareKeyAccess(repository.id, SHARE_KEY)) {
+      assertThat(repositoryGuard.mayReadConfiguration(repository)).isFalse()
+    }
+  }
+
+  @Test
+  fun `a share key does not grant write to a logged-in non-owner`() {
+    val repository = runBlocking { givenRepository() }
+    assertThatThrownBy {
+      runTest(context = asUser(member) + ShareKeyAccess(repository.id, SHARE_KEY)) {
+        repositoryGuard.requireWrite(repository.id)
+      }
+    }.isInstanceOf(IllegalArgumentException::class.java).hasMessage("must be owner")
+  }
+
+  @Test
+  fun `a share key does not grant write without login`() {
+    val repository = runBlocking { givenRepository() }
+    // requireWrite needs a user id; without one it fails before looking at the repository
     assertThatThrownBy {
       runTest(context = ShareKeyAccess(repository.id, SHARE_KEY)) {
         repositoryGuard.requireWrite(repository.id)
       }
-    }.isNotNull()
+    }.isInstanceOf(NullPointerException::class.java)
   }
 
-  private fun assertDeniedLikeNoKey(repositoryId: RepositoryId, context: CoroutineContext) {
+  private fun asUser(userId: UserId) = RequestContext(groupId = GroupId(), userId = userId)
+
+  private fun assertDeniedLikeMissing(repositoryId: RepositoryId, context: CoroutineContext) {
     assertThatThrownBy {
       runTest(context = context) { repositoryGuard.requireRead(repositoryId) }
     }
-      .isInstanceOf(AccessDeniedException::class.java)
-      .hasMessage("Repository $repositoryId is private, you are not logged in")
+      .isInstanceOf(NotFoundException::class.java)
+      .hasMessage("Repository $repositoryId not found")
   }
 
   private suspend fun givenRepository(
@@ -146,7 +220,7 @@ class RepositoryGuardTest {
       visibility = visibility,
       shareKey = shareKey,
       ownerId = userId,
-      groupId = GroupId(),
+      groupId = groupId,
     )
     `when`(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
     return repository

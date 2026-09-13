@@ -80,12 +80,12 @@ class RepositoryController {
     val id = RepositoryId(repositoryId)
     withContext(shareKey?.let { ShareKeyAccess(id, it) } ?: EmptyCoroutineContext) {
       // checked outside the cached feed, a cache hit must not skip it
-      repositoryGuard.requireRead(id)
+      val grant = repositoryGuard.requireReadGrant(id)
       feedExporter.to(
         HttpStatus.OK,
         format,
         repositoryUseCase.getFeedByRepositoryId(
-          id,
+          grant,
           page,
           parseWhere(whereStr),
           parseOrderBy(orderByStr)

@@ -100,7 +100,8 @@ class DocumentUseCaseTest {
     userRepository = mock(UserRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
     documentRepository = mock(DocumentRepository::class.java)
-    documentGuard = spy(DocumentGuard(documentRepository))
+    repositoryGuard = mock(RepositoryGuard::class.java)
+    documentGuard = spy(DocumentGuard(documentRepository, repositoryGuard))
     planConstraintsService = mock(PlanConstraintsService::class.java)
     notifications = mock(Notifications::class.java)
     appConfig = mock(AppConfig::class.java)
@@ -117,7 +118,6 @@ class DocumentUseCaseTest {
     `when`(pipelinePlugins.findAll()).thenReturn(listOf(filterPlugin, fulltextPlugin))
     documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
 
-    repositoryGuard = mock(RepositoryGuard::class.java)
     documentUseCase = DocumentUseCase(
       documentRepository,
       repositoryRepository,
@@ -462,6 +462,20 @@ class DocumentUseCaseTest {
         )
       )
     }
+
+  @Test
+  fun `getRecordFrequency checks read access to the repository first`() = runTest {
+    `when`(repositoryGuard.requireRead(org.mockito.kotlin.any()))
+      .thenThrow(org.migor.feedless.NotFoundException("Repository $repositoryId not found"))
+
+    val result = runCatching {
+      documentUseCase.getRecordFrequency(DocumentsFilter(repository = repositoryId), DocumentDateField.createdAt)
+    }
+
+    assertThat(result.exceptionOrNull()).isInstanceOf(org.migor.feedless.NotFoundException::class.java)
+    org.mockito.kotlin.verify(documentRepository, org.mockito.kotlin.never())
+      .getRecordFrequency(org.mockito.kotlin.any(), org.mockito.kotlin.any())
+  }
 
   @Test
   fun `create document calls repository guard`() {

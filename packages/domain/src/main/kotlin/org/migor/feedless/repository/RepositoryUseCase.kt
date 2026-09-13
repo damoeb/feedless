@@ -90,17 +90,18 @@ class RepositoryUseCase(
       data.map { createRepository(it) }
     }
 
-  // callers check read access before, so the key holds nothing user- or key-specific
+  // the grant proves the read check ran, so the key holds nothing user- or key-specific
   @Cacheable(
     value = [CacheNames.FEED_SHORT_TTL],
-    key = "\"repo/\" + #repositoryId + \"/\" + #page + \"/\" + #filter + \"/\" + #order"
+    key = "\"repo/\" + #grant.repositoryId + \"/\" + #page + \"/\" + #filter + \"/\" + #order"
   )
   suspend fun getFeedByRepositoryId(
-    repositoryId: RepositoryId,
+    grant: RepositoryReadGrant,
     page: Int,
     filter: DocumentsFilter?,
     order: RecordOrderBy?,
   ): JsonFeed {
+    val repositoryId = grant.repositoryId
     log.debug("getFeedByRepositoryId repositoryId=$repositoryId page=$page")
     val repository = repositoryRepository.findById(repositoryId)
       ?: throw IllegalArgumentException("Repository not found")
