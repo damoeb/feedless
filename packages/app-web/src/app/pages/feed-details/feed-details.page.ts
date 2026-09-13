@@ -9,6 +9,7 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
+import { GqlVisibility } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -95,7 +96,14 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         null
       );
       this.appConfig.setPageTitle(this.repository.title);
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
+      if (
+        this.repository.visibility === GqlVisibility.IsPrivate &&
+        this.repository.shareKey?.length > 0
+      ) {
+        this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
+      } else {
+        this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
+      }
     } catch (e: any) {
       this.errorMessage = e?.message;
     }

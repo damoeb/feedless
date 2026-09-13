@@ -68,7 +68,11 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   }
 
   async handleRepository(repository: RepositoryWithFrequency) {
-    const url = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
+    // the share key is a secret for private feeds only, public feed URLs never carry it
+    const url =
+      repository.visibility === GqlVisibility.IsPrivate && repository.shareKey?.length > 0
+        ? `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`
+        : `${this.serverConfig.apiUrl}/f/${repository.id}/atom`;
     await this.handleSource(
       `Remix ${repository.title}`,
       '',
