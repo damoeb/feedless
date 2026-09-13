@@ -304,6 +304,25 @@ class SecurityConfigIntTest {
     assertThat(response.headers[HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS]).contains("x-corr-id")
   }
 
+  /** The preflight promises the header; only an actual response proves a cross-origin client really receives it. */
+  @Test
+  fun whenSendingCorsGet_ThenCorrIdHeaderExposed() {
+    val restTemplate = TestRestTemplate()
+    val headers = HttpHeaders()
+    headers.set(HttpHeaders.ORIGIN, "http://localhost:4200")
+    val request = HttpEntity<Void>(headers)
+
+    val response = restTemplate.exchange(
+      "${baseEndpoint}/api/v1/status",
+      HttpMethod.GET,
+      request,
+      String::class.java,
+    )
+
+    assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
+    assertThat(response.headers[HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS]).contains("x-corr-id")
+  }
+
 //  @ParameterizedTest
 //  @CsvSource(value = [
 ////    "bucket/$feedId",
