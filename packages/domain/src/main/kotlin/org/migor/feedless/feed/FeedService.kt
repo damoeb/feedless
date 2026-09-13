@@ -94,7 +94,7 @@ class FeedService(
     return feed
   }
 
-  // Keyed on the checked access too: a url-only key would let a caller with another token hit this entry.
+  // Defense in depth: feedUrl already carries any token query param, but this covers a caller that separates them.
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
   suspend fun webToFeed(
     url: String,
@@ -256,7 +256,7 @@ class FeedService(
     return arr.toList()
   }
 
-  // Keyed on the checked access too: a url-only key would let a caller with another token hit this entry.
+  // Defense in depth: feedUrl already carries any token query param, but this covers a caller that separates them.
   @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
   suspend fun transformFeed(
     nativeFeedUrl: String,

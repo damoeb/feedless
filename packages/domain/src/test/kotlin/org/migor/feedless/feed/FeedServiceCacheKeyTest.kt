@@ -4,12 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.cache.annotation.Cacheable
 
-/**
- * webToFeed and transformFeed are keyed by feedUrl alone, ignoring the LegacyFeedAccess.token the check ran
- * against. A caller passing null together with a feedUrl that carries another token would then hit that
- * token's cache entry. A real cache-hit test needs a Spring CacheManager, out of scope for this unit test;
- * this pins the SpEL key expression instead.
- */
+/** Pins the SpEL cache key of webToFeed/transformFeed to the access token too, not just feedUrl — a real cache-hit test needs a Spring CacheManager. */
 class FeedServiceCacheKeyTest {
 
   @Test
