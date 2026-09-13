@@ -30,6 +30,7 @@ import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.boot.web.servlet.FilterRegistrationBean
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
@@ -190,6 +191,14 @@ class SecurityConfig {
   @Bean
   fun requestContextListener(): RequestContextListener {
     return RequestContextListener()
+  }
+
+  /** JwtRequestFilter is a @Component, so Boot would also register it as a container filter; addFilterAfter above already runs it in the security chain under oauth, and running both would authenticate every request's JWT twice. */
+  @Bean
+  fun jwtRequestFilterRegistration(): FilterRegistrationBean<JwtRequestFilter> {
+    val registration = FilterRegistrationBean(jwtRequestFilter)
+    registration.isEnabled = false
+    return registration
   }
 
   private fun conditionalOauth(http: HttpSecurity): HttpSecurity {
