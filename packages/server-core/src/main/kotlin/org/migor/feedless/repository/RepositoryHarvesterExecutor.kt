@@ -30,7 +30,8 @@ class RepositoryHarvesterExecutor internal constructor(
   fun refreshSubscriptions() {
     withMdcCorrId { corrId ->
       try {
-        val reposDue = runBlocking {
+        // Explicit, so an IO dispatcher hop inside the lookup carries this run's id.
+        val reposDue = runBlocking(RequestContext(corrId = corrId)) {
           repositoryRepository.findAllWhereNextHarvestIsDue(
             LocalDateTime.now(),
             PageRequest.ofSize(50).toPageableRequest()
