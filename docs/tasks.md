@@ -133,7 +133,6 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **Group-Endpunkte** antworten Nicht-Mitgliedern mit 403 (`findByIdForUser`) und mit 500, wenn ein bestehendes Mitglied nochmals hinzugefügt wird.
 - [ ] **Letzter-Owner-Prüfung ohne Sperre.** Die Prüfungen beim Löschen einer Group und beim Entfernen eines Mitglieds sperren keine Zeilen: Zwei gleichzeitige Anfragen können beide durchgehen, etwa zwei Löschungen der einzigen zwei eigenen Groups eines Users — der ist danach ausgesperrt, bis Root es repariert. `SELECT … FOR UPDATE` auf die Zuordnungen der betroffenen User.
 - [ ] **`t_plan.group_id` ohne Fremdschlüssel.** Nach dem Löschen einer Group kann ihr Plan auf eine nicht mehr existierende Group zeigen; heute liest das niemand (Pläne werden pro User gesucht), beim Umbau auf Group-Pläne aber schon.
-- [ ] **500-Antworten von `/api/v1` ignorieren die Request-`corrId`.** `JwtRequestFilter` setzt sie (oder übernimmt `x-corr-id`), `HttpApiExceptionHandler` erzeugt trotzdem eine neue — das Request-Attribut lesen, neue ID nur als Rückfall. Der Zweig, der Springs eigene 500er vereinheitlicht, ist ungetestet.
 - [ ] **`@PreAuthorize`-Ablehnungen antworten 401 statt 403** — `feedctl` schlägt dann ein Login vor.
 - [ ] **`HttpExceptionHandler`** importiert `kotlin.io.AccessDeniedException` und bildet jede Exception auf 404 ab (bestehend).
 - [ ] **Authentifizierung bei Datenbankausfall:** Scheitert die Prüfung der Group-Ownership (DB weg), antwortet die Anfrage mit 401.

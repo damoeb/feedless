@@ -6,6 +6,11 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.PreconditionFailedException
 import org.migor.feedless.TooManyRequestsException
+import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
+import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.currentThreadCorrId
+import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.http.api.model.ApiError
 import org.migor.feedless.http.api.model.FieldError
 import org.migor.feedless.session.AuthCredentialsException
@@ -13,7 +18,6 @@ import org.migor.feedless.session.AuthUserNotFoundException
 import org.migor.feedless.session.NoActingGroupException
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
-import org.slf4j.MDC
 import org.springframework.core.Ordered
 import org.springframework.core.annotation.Order
 import org.springframework.http.HttpHeaders
@@ -25,6 +29,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.web.bind.MethodArgumentNotValidException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.ServletWebRequest
 import org.springframework.web.context.request.WebRequest
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler
@@ -113,9 +118,12 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
    */
   @ExceptionHandler(Exception::class)
   fun handleGeneric(ex: Exception, request: WebRequest): ResponseEntity<ApiError> {
-    val response = errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", UNEXPECTED_ERROR, request)
+    val corrId = corrIdOf(request)
+    val response =
+      errorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "INTERNAL_ERROR", UNEXPECTED_ERROR, request, corrId = corrId)
     val method = (request as? ServletWebRequest)?.httpMethod?.name() ?: "UNKNOWN"
-    log.error("unexpected error on $method ${response.body?.path} corrId=${response.body?.corrId}", ex)
+    // Suspend handlers fail on the async dispatch thread, whose MDC lacks the id.
+    withMdcCorrId(corrId) { log.error("unexpected error on $method ${response.body?.path} corrId=$corrId", ex) }
     return response
   }
 
@@ -177,9 +185,8 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
     path: String? = request.getDescription(false).removePrefix("uri="),
     errors: List<FieldError>? = null,
     headers: HttpHeaders = HttpHeaders(),
+    corrId: String = corrIdOf(request),
   ): ResponseEntity<ApiError> {
-    val corrId = CryptUtil.newCorrId()
-    MDC.put("corrId", corrId)
     return ResponseEntity.status(status)
       .headers(headers)
       .body(
@@ -192,4 +199,11 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
         ),
       )
   }
+
+  /** The id the request logs under; a fresh one only when the request never got one. */
+  private fun corrIdOf(request: WebRequest): String =
+    request.getAttribute(CORR_ID_REQUEST_ATTR, RequestAttributes.SCOPE_REQUEST) as? String
+      ?: (request.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR, RequestAttributes.SCOPE_REQUEST) as? RequestContext)?.corrId
+      ?: currentThreadCorrId()
+      ?: CryptUtil.newCorrId()
 }
