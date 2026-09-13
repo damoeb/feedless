@@ -9,7 +9,6 @@ import {
 import { Subscription } from 'rxjs';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { RepositoryFull } from '../../graphql/types';
-import { GqlVisibility } from '../../../generated/graphql';
 import { RepositoryService } from '../../services/repository.service';
 import { dateFormat } from '../../services/session.service';
 import { ServerConfigService } from '../../services/server-config.service';
@@ -27,7 +26,10 @@ import {
   IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { FeedDetailsComponent } from '../../components/feed-details/feed-details.component';
+import {
+  FeedDetailsComponent,
+  repositoryFeedUrl,
+} from '../../components/feed-details/feed-details.component';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -96,14 +98,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         null
       );
       this.appConfig.setPageTitle(this.repository.title);
-      if (
-        this.repository.visibility === GqlVisibility.IsPrivate &&
-        this.repository.shareKey?.length > 0
-      ) {
-        this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom?skey=${this.repository.shareKey}`;
-      } else {
-        this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
-      }
+      this.feedUrl = repositoryFeedUrl(this.serverConfig.apiUrl, this.repository, 'atom');
     } catch (e: any) {
       this.errorMessage = e?.message;
     }
