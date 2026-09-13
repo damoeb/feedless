@@ -94,7 +94,8 @@ class FeedService(
     return feed
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  // Keyed on the checked access too: a url-only key would let a caller with another token hit this entry.
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
   suspend fun webToFeed(
     url: String,
     selectors: GenericFeedSelectors,
@@ -255,7 +256,8 @@ class FeedService(
     return arr.toList()
   }
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
+  // Keyed on the checked access too: a url-only key would let a caller with another token hit this entry.
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
   suspend fun transformFeed(
     nativeFeedUrl: String,
     filter: String?,
