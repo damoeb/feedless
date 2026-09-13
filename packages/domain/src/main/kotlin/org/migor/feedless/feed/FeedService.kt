@@ -30,7 +30,9 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryClaim
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.repository.RepositoryClaimRepository
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryReadGrant
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.GenericFeedSelectors
 import org.migor.feedless.scrape.LogCollector
@@ -71,13 +73,19 @@ class FeedService(
   private val repositoryRepository: RepositoryRepository,
   private val featureService: FeatureService,
   private val sourceRepository: SourceRepository,
+  private val repositoryGuard: RepositoryGuard,
 ) {
 
   val log = LoggerFactory.getLogger(FeedService::class.simpleName)
 
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl")
-  suspend fun getFeed(sourceId: SourceId, feedUrl: String): JsonFeed {
-    val feed = sourceRepository.findById(sourceId)?.toJsonFeed(feedUrl) ?: throw NotFoundException("feedId not found")
+  // the grant proves the read check ran; its repository keeps a grant for one repository off another's entries
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #grant.repositoryId + \"/\" + #feedUrl")
+  suspend fun getFeed(grant: RepositoryReadGrant, sourceId: SourceId, feedUrl: String): JsonFeed {
+    // a source outside the granted repository answers like a missing one
+    val feed = sourceRepository.findById(sourceId)
+      ?.takeIf { it.repositoryId == grant.repositoryId }
+      ?.toJsonFeed(feedUrl)
+      ?: throw NotFoundException("feedId not found")
 
     val sortable = SortableRequest("publishedAt", false)
     val pageable = PageableRequest(pageNumber = 0, pageSize = 10, sortBy = listOf(sortable));
@@ -92,11 +100,17 @@ class FeedService(
     selectors: GenericFeedSelectors,
     prerender: Boolean,
     filter: String?,
-    token: String? = null,
+    access: LegacyFeedAccess,
     feedUrl: String
   ): JsonFeed {
     val fromUrl = suspend { fetchFeedFromUrl(url, prerender, selectors, feedUrl) }
-    return resolveFeed(fromUrl, feedUrl, token, filter)
+    return resolveFeed(fromUrl, feedUrl, access.token, filter)
+  }
+
+  /** Checks the repository a legacy token claims on every request, before the URL-keyed cache that would skip it. */
+  suspend fun requireLegacyTokenAccess(token: String?): LegacyFeedAccess {
+    resolveClaim(token)?.repositoryId?.let { repositoryGuard.requireRead(it) }
+    return LegacyFeedAccess(token)
   }
 
   private suspend fun resolveFeed(
@@ -245,13 +259,13 @@ class FeedService(
   suspend fun transformFeed(
     nativeFeedUrl: String,
     filter: String?,
-    token: String? = null,
+    access: LegacyFeedAccess,
     feedUrl: String
   ): JsonFeed {
 
     val feedFromUrlLazy = suspend { feedParser.parseFeedFromUrl(nativeFeedUrl) }
 
-    return resolveFeed(feedFromUrlLazy, nativeFeedUrl, token, filter)
+    return resolveFeed(feedFromUrlLazy, nativeFeedUrl, access.token, filter)
   }
 
   // --

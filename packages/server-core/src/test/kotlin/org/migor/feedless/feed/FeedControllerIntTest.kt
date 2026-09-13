@@ -21,7 +21,7 @@ import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.session.StatelessAuthService
-import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryReadGrant
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.source.Source
@@ -108,6 +108,7 @@ class FeedControllerIntTest {
   fun `calling tf returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
+    `when`(feedService.requireLegacyTokenAccess(anyOrNull2())).thenReturn(mock(LegacyFeedAccess::class.java))
     `when`(
       feedService.transformFeed(
         any2(),
@@ -141,6 +142,7 @@ class FeedControllerIntTest {
   fun `calling w2f returns a feed`() = runTest {
     val restTemplate = TestRestTemplate()
 
+    `when`(feedService.requireLegacyTokenAccess(anyOrNull2())).thenReturn(mock(LegacyFeedAccess::class.java))
     `when`(
       feedService.webToFeed(
         any2(),
@@ -191,10 +193,11 @@ class FeedControllerIntTest {
     `when`(sourceRepository.findById(any2())).thenReturn(
       Source(id = SourceId(feedId), title = "source", repositoryId = repositoryId)
     )
-    `when`(repositoryGuard.requireRead(any2())).thenReturn(mock(Repository::class.java))
+    `when`(repositoryGuard.requireReadGrant(any2())).thenReturn(mock(RepositoryReadGrant::class.java))
 
     `when`(
       feedService.getFeed(
+        any2(),
         any2(),
         any2(),
       )

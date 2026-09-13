@@ -1,5 +1,15 @@
 package org.migor.feedless.feed
 
+import org.migor.feedless.EntityVisibility
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -59,6 +69,9 @@ class FeedServiceTest {
   private lateinit var documentUseCase: DocumentUseCase
   private lateinit var sourceRepository: SourceRepository
   private lateinit var tokenIssuer: TokenIssuer
+  private lateinit var repositoryClaimRepository: RepositoryClaimRepository
+  private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var repositoryGuard: RepositoryGuard
 
   @BeforeEach
   fun beforeEach() = runTest {
@@ -86,11 +99,20 @@ class FeedServiceTest {
     val claim = mock(RepositoryClaim::class.java)
     `when`(claim.createdAt).thenReturn(LocalDateTime.now())
 
-    val repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
+    repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
     `when`(repositoryClaimRepository.findById(any2())).thenReturn(claim)
 
     tokenIssuer = mock(TokenIssuer::class.java)
     `when`(tokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
+
+    repositoryRepository = mock(RepositoryRepository::class.java)
+    val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
+    `when`(userGroupAssignmentRepository.findAllByUserId(any2())).thenReturn(emptyList())
+    repositoryGuard = RepositoryGuard(
+      repositoryRepository,
+      UserGuard(mock(UserRepository::class.java)),
+      userGroupAssignmentRepository,
+    )
 
     feedService = FeedService(
       mock(AppConfig::class.java),
@@ -102,9 +124,10 @@ class FeedServiceTest {
       itemFilter,
       tokenIssuer,
       repositoryClaimRepository,
-      mock(RepositoryRepository::class.java),
+      repositoryRepository,
       featureService,
       sourceRepository,
+      repositoryGuard,
     )
   }
 
@@ -117,8 +140,54 @@ class FeedServiceTest {
     `when`(sourceRepository.findById(any2())).thenReturn(source)
     `when`(documentRepository.findAllBySourceId(any2(), any2())).thenReturn(listOf())
 
-    val feed = feedService.getFeed(mock(SourceId::class.java), "feedUrl")
+    val repository = givenRepository(EntityVisibility.isPublic)
+    `when`(source.repositoryId).thenReturn(repository.id)
+
+    val feed = feedService.getFeed(repositoryGuard.requireReadGrant(repository.id), mock(SourceId::class.java), "feedUrl")
     assertThat(feed).isNotNull()
+  }
+
+  @Test
+  fun `getFeed refuses a source outside the granted repository`() = runTest {
+    val granted = givenRepository(EntityVisibility.isPublic)
+    val source = mock(Source::class.java)
+    `when`(source.title).thenReturn("title")
+    `when`(source.createdAt).thenReturn(LocalDateTime.now())
+    `when`(source.repositoryId).thenReturn(RepositoryId())
+    `when`(sourceRepository.findById(any2())).thenReturn(source)
+
+    val actual = runCatching {
+      feedService.getFeed(repositoryGuard.requireReadGrant(granted.id), mock(SourceId::class.java), "feedUrl")
+    }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java).hasMessage("feedId not found")
+  }
+
+  @Test
+  fun `a legacy token claiming a private repository is refused to a caller who may not read it`() = runTest {
+    val private = givenRepository(EntityVisibility.isPrivate)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim(repositoryId = private.id))
+
+    val actual = runCatching { feedService.requireLegacyTokenAccess("token") }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java)
+  }
+
+  @Test
+  fun `a legacy token claiming a public repository, or none, passes`() = runTest {
+    val public = givenRepository(EntityVisibility.isPublic)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim(repositoryId = public.id))
+    assertThat(feedService.requireLegacyTokenAccess("token").token).isEqualTo("token")
+
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim())
+    assertThat(feedService.requireLegacyTokenAccess("token").token).isEqualTo("token")
+    assertThat(feedService.requireLegacyTokenAccess(null).token).isNull()
+  }
+
+  private suspend fun givenRepository(visibility: EntityVisibility): Repository {
+    val repository = Repository(title = "feed", visibility = visibility, ownerId = UserId(), groupId = GroupId())
+    `when`(repositoryRepository.findById(org.mockito.kotlin.eq(repository.id))).thenReturn(repository)
+    return repository
   }
 
   @Test
@@ -157,7 +226,7 @@ class FeedServiceTest {
       prerender = false,
       filter = "filter",
       feedUrl = "feedUrl",
-      token = "token"
+      access = feedService.requireLegacyTokenAccess("token")
     )
 
     // then
@@ -229,7 +298,12 @@ class FeedServiceTest {
     ).thenReturn(true)
 
     // when
-    feedService.transformFeed("nativeFeedUrl", filter = filter, feedUrl = "feedUrl", token = "token")
+    feedService.transformFeed(
+      "nativeFeedUrl",
+      filter = filter,
+      feedUrl = "feedUrl",
+      access = feedService.requireLegacyTokenAccess("token")
+    )
 
     // then
     verify(itemFilter, times(2)).filterEntity(

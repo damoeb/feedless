@@ -16,6 +16,7 @@ import org.migor.feedless.analytics.Analytics
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.capability.ShareKeyAccess
 import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryReadGrant
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
@@ -96,8 +97,9 @@ class FeedController(
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
-      requireReadableSource(SourceId(feedId), request.getParameter("skey"))
+      val grant = requireReadableSource(SourceId(feedId), request.getParameter("skey"))
       feedService.getFeed(
+        grant,
         SourceId(feedId),
         feedUrl
       )
@@ -128,7 +130,7 @@ class FeedController(
           selectors,
           false,
           null,
-          null,
+          feedService.requireLegacyTokenAccess(null),
           feedUrl
         )
       }
@@ -157,12 +159,14 @@ class FeedController(
       )
 
       val feed = resolveFeedCatching(feedUrl) {
+        // checked on every request, the feed below is cached by URL
+        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
         feedService.webToFeed(
           request.param("url"),
           selectors,
           request.paramBool("pp"),
           request.paramOptional("q"),
-          request.paramOptional("token"),
+          access,
           feedUrl
         )
       }
@@ -181,10 +185,11 @@ class FeedController(
       meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
       val feedUrl = toFullUrlString(request)
       val feed = resolveFeedCatching(feedUrl) {
+        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
         feedService.transformFeed(
           request.param("url"),
           request.paramOptional("q"),
-          request.paramOptional("token"),
+          access,
           feedUrl
         )
       }
@@ -192,11 +197,11 @@ class FeedController(
     }
 
   // checked outside the cached feed; a denied source answers like a missing one ("feedId not found")
-  private suspend fun requireReadableSource(sourceId: SourceId, shareKey: String?) {
+  private suspend fun requireReadableSource(sourceId: SourceId, shareKey: String?): RepositoryReadGrant {
     val repositoryId = sourceRepository.findById(sourceId)?.repositoryId ?: throw NotFoundException("feedId not found")
-    try {
+    return try {
       withContext(shareKey?.let { ShareKeyAccess(repositoryId, it) } ?: EmptyCoroutineContext) {
-        repositoryGuard.requireRead(repositoryId)
+        repositoryGuard.requireReadGrant(repositoryId)
       }
     } catch (e: NotFoundException) {
       throw NotFoundException("feedId not found")

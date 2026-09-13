@@ -1,5 +1,8 @@
 package org.migor.feedless.http
 
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.never
+import org.mockito.kotlin.verifyBlocking
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.coroutines.runBlocking
@@ -152,7 +155,7 @@ class AnonymousExportAccessTest {
     whenever(feedService.createErrorFeed(any(), any())).thenAnswer {
       JsonFeed().apply { title = "error ${it.getArgument<Throwable>(1).message}" }
     }
-    whenever(feedService.getFeed(any(), any())).thenAnswer { JsonFeed().apply { title = "content" } }
+    whenever(feedService.getFeed(any(), any(), any())).thenAnswer { JsonFeed().apply { title = "content" } }
     Unit
   }
 
@@ -266,6 +269,21 @@ class AnonymousExportAccessTest {
     assertFeed(mockMvc.getAnonymous("/feed/${source.id.uuid}"), "feed error feedId not found")
   }
 
+  // /api/web-to-feed with a legacy claim token
+
+  @Test
+  fun `web-to-feed checks a legacy token's repository before the cached feed, on every request`() {
+    runBlocking {
+      whenever(feedService.requireLegacyTokenAccess(eq("private-claim")))
+        .thenThrow(NotFoundException("Repository private not found"))
+    }
+
+    val result = mockMvc.getAnonymous("/api/web-to-feed?url=https://example.org&link=./a&context=//div&token=private-claim")
+
+    assertFeed(result, "feed error Repository private not found")
+    verifyBlocking(feedService, never()) { webToFeed(any(), any(), any(), anyOrNull(), any(), any()) }
+  }
+
   private fun givenRepository(visibility: EntityVisibility = EntityVisibility.isPrivate): Repository {
     val repository = Repository(
       title = "feed",
@@ -313,7 +331,7 @@ class AnonymousExportAccessTest {
   private fun missingSource(): SourceId {
     val missing = SourceId()
     runBlocking {
-      whenever(feedService.getFeed(eq(missing), any())).thenThrow(NotFoundException("feedId not found"))
+      whenever(feedService.getFeed(any(), eq(missing), any())).thenThrow(NotFoundException("feedId not found"))
     }
     return missing
   }
