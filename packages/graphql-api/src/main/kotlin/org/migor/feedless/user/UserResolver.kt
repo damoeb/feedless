@@ -112,7 +112,7 @@ class UserResolver(
   suspend fun getUserForSession(dfe: DgsDataFetchingEnvironment): UserDto? =
     coroutineScope {
       val session: SessionDto = dfe.getSourceOrThrow()
-      session.userId?.let { withContext(Dispatchers.IO) { userRepository.findById(UserId(it))!!.toDto() } }
+      session.userId?.let { withContext(Dispatchers.IO) { userRepository.findById(UserId(it))?.toDto() } }
     }
 
 

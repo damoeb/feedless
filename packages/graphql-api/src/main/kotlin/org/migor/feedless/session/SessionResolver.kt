@@ -8,6 +8,7 @@ import com.netflix.graphql.dgs.context.DgsContext
 import com.netflix.graphql.dgs.internal.DgsWebMvcRequestData
 import graphql.schema.DataFetchingEnvironment
 import jakarta.servlet.http.Cookie
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -18,6 +19,7 @@ import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
 import org.migor.feedless.generated.types.Authentication
 import org.migor.feedless.generated.types.Session
+import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -29,6 +31,7 @@ import org.springframework.web.context.request.ServletWebRequest
 class SessionResolver(
   private val sessionTokenPort: SessionTokenPort,
   private val capabilityService: CapabilityService,
+  private val userRepository: UserRepository,
 ) {
 
   private val log = LoggerFactory.getLogger(SessionResolver::class.simpleName)
@@ -44,12 +47,18 @@ class SessionResolver(
 
       if (capabilityService.hasCapability(UserCapability.ID)) {
         runCatching {
-          val userCapability = UserCapability.resolve(capabilityService.getCapability(UserCapability.ID)!!)
-          Session(
-            isLoggedIn = true,
-            isAnonymous = false,
-            userId = userCapability.uuid.toString()
-          )
+          val userId = UserCapability.resolve(capabilityService.getCapability(UserCapability.ID)!!)
+          // A token outlives its user, e.g. after a database reset.
+          val userExists = withContext(Dispatchers.IO) { userRepository.findById(userId) } != null
+          if (userExists) {
+            Session(
+              isLoggedIn = true,
+              isAnonymous = false,
+              userId = userId.uuid.toString()
+            )
+          } else {
+            defaultSession
+          }
         }.getOrDefault(defaultSession)
       } else {
         defaultSession
