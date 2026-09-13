@@ -159,7 +159,7 @@ class BrowserAutomationService(
         log.info("submitted agent job $agentJobId")
         pendingJobs[agentJobId] = emitter
       } catch (e: Exception) {
-        log.error("$corrId] prerenderWithAgent failed: ${e.message}", e)
+        log.error("[$corrId] prerenderWithAgent failed: ${e.message}", e)
         emitter.error(e)
       }
     }
