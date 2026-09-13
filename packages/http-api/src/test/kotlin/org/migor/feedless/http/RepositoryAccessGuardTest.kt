@@ -233,13 +233,11 @@ class RepositoryAccessGuardTest {
   }
 
   @Test
-  fun `requireCallerScope refuses a banned caller`() = runTest {
+  fun `requireCallerScope answers a banned caller like a missing repository`() = runTest {
     val banned = bannedUser()
     whenever(userRepository.findById(eq(stranger))).thenReturn(banned)
 
-    val thrown = runCatching { asUser(stranger) { guard.requireCallerScope() } }.exceptionOrNull()
-
-    assert(thrown is IllegalArgumentException && thrown.message == "denied") { "$thrown" }
+    assertNotFound { asUser(stranger) { guard.requireCallerScope() } }
     verify(groupUseCase, never()).findAllByUserId(any())
   }
 
