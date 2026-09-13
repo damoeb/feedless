@@ -16,7 +16,9 @@ import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.actions.placedAt
+import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.childRequestContext
+import org.migor.feedless.capability.currentThreadCorrId
 import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
@@ -31,6 +33,7 @@ import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
@@ -111,7 +114,8 @@ class SourceUseCase(
 
       if (groupedSources.isNotEmpty()) {
         val semaphore = Semaphore(5)
-        runBlocking {
+        // Explicit, so an IO dispatcher hop below carries this run's id instead of relying on the calling thread's MDC.
+        runBlocking(RequestContext(corrId = currentThreadCorrId() ?: newCorrId())) {
           runCatching {
             coroutineScope {
               groupedSources.map { groupedSources ->

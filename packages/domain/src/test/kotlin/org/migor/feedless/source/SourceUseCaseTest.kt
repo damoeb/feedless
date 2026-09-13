@@ -12,10 +12,12 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.capability.MdcKeys
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.SourcePipelineService
+import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
@@ -27,6 +29,8 @@ import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.slf4j.MDC
+import java.util.Collections
 
 class SourceUseCaseTest {
 
@@ -188,6 +192,40 @@ class SourceUseCaseTest {
 
     assertThrows<IllegalArgumentException> {
       sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+    }
+  }
+
+  // processSourceJobs runs its own runBlocking, so it is exercised directly rather than through runTest.
+  @Test
+  fun `processSourceJobs looks up owners under the run's correlation id`() {
+    MDC.clear()
+    MDC.put(MdcKeys.CORR_ID, "outer")
+    try {
+      val sourceId = SourceId()
+      val job = SourcePipelineJob(sequenceId = 1, url = "https://example.com", sourceId = sourceId)
+      val jobRepository = mock(SourcePipelineJobRepository::class.java)
+      `when`(jobRepository.findAllPendingBatched(any2())).thenReturn(listOf(job))
+      val seen = Collections.synchronizedList(mutableListOf<String?>())
+      `when`(repositoryRepository.findBySourceId(eq(sourceId))).thenAnswer {
+        seen.add(MDC.get(MdcKeys.CORR_ID))
+        repository
+      }
+      val useCase = SourceUseCase(
+        jobRepository,
+        sourceRepository,
+        mock(RepositoryHarvester::class.java),
+        mock(PlanConstraintsService::class.java),
+        scrapeActionRepository,
+        repositoryRepository,
+        mock(SourcePipelineService::class.java)
+      )
+
+      useCase.processSourceJobs()
+
+      assertThat(seen).hasSize(1)
+      assertThat(seen[0]).isNotNull().startsWith("outer")
+    } finally {
+      MDC.clear()
     }
   }
 }
