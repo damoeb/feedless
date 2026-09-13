@@ -114,7 +114,7 @@ class ThrottleAspectIntTest {
     val lastResponse = responses.last()
     assertThat(responses.dropLast(1).none { it.hasErrors() }).isTrue()
     assertThat(lastResponse.errors.size).isEqualTo(1)
-    // Spring for GraphQL's default exception resolver no longer prefixes the message with the exception's class name
+    // DGS 10 hands GraphQLExceptionHandler the unwrapped exception, not DGS 9's CompletionException wrapper
     assertThat(lastResponse.errors.first().message).contains("You have exhausted your API Request Quota")
   }
 }
