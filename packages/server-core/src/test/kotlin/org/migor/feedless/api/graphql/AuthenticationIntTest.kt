@@ -155,8 +155,7 @@ class AuthenticationIntTest {
     assertThat(jwt.issuer.toString()).isEqualTo(propertyService.apiGatewayUrl)
   }
 
-  // Regression for C1: under authRoot (no oauth), JwtRequestFilter must still run outside /api/v1 or every
-  // logged-in user reads back as anonymous on GraphQL, /feed, /attachment and /article.
+  // Regression for C1: under authRoot (no oauth), a logged-in user must not read back as anonymous.
   @Test
   fun `session resolves a logged-in user from a Bearer token under root auth`() = runTest {
     val user = randomUser()

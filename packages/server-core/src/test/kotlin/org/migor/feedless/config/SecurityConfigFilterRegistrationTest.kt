@@ -8,12 +8,7 @@ import org.mockito.Mockito.mock
 import org.springframework.context.annotation.Profile
 import org.springframework.test.util.ReflectionTestUtils
 
-/**
- * JwtRequestFilter is a @Component, so Spring Boot auto-registers it as a container filter on top of the
- * copy SecurityConfig adds to the security chain under oauth; without this, every request authenticates
- * its JWT twice. conditionalOauth only adds the filter to the chain under oauth, so disabling the
- * container registration outside that profile would leave the filter running nowhere at all.
- */
+/** JwtRequestFilter's auto-registered container copy must be disabled only under oauth, where the chain also runs it — elsewhere disabling it would leave the filter running nowhere at all. */
 class SecurityConfigFilterRegistrationTest {
 
   @Test
