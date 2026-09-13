@@ -14,7 +14,7 @@ fi
 
 echo "Starting Docker container..."
 
-docker run -d --rm --name "$CONTAINER_NAME" --cap-add=SYS_ADMIN -p $HOST_PORT:3000 -e APP_DISABLE_SOCKET_SUBSCRIPTION=true damoeb/feedless:browserautomation-latest > /dev/null
+docker run -d --rm --name "$CONTAINER_NAME" --cap-add=SYS_ADMIN -p $HOST_PORT:3000 -e APP_DISABLE_SOCKET_SUBSCRIPTION=true damoeb/feedless:browser-automation-app-latest > /dev/null
 
 echo "Waiting for service to become ready..."
 start_time=$(date +%s)

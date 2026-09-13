@@ -115,7 +115,7 @@ val testTask = tasks.register<Exec>("test") {
   outputs.upToDateWhen { true }
 }
 
-// Not part of test: needs Docker and the images named by FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_BROWSERAUTOMATION_IMAGE.
+// Not part of test: needs Docker and the images named by FEEDCTL_E2E_CORE_IMAGE / FEEDCTL_E2E_BROWSER_AUTOMATION_APP_IMAGE.
 tasks.register<Exec>("e2eTest") {
   dependsOn(checkGoTask)
   commandLine("go", "test", "-tags", "e2e", "-count=1", "-timeout", "12m", "-v", "./e2e/...")

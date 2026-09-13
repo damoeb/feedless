@@ -20,13 +20,13 @@ import (
 	"github.com/testcontainers/testcontainers-go/wait"
 )
 
-// The core and agent images come from the environment, so a run can test
+// The core and browser-automation-app images come from the environment, so a run can test
 // images built from the working tree; the defaults are the published ones.
 const (
-	EnvCoreImage      = "FEEDCTL_E2E_CORE_IMAGE"
-	EnvAgentImage     = "FEEDCTL_E2E_BROWSERAUTOMATION_IMAGE"
-	defaultCoreImage  = "damoeb/feedless:core-latest"
-	defaultAgentImage = "damoeb/feedless:browserautomation-latest"
+	EnvCoreImage                     = "FEEDCTL_E2E_CORE_IMAGE"
+	EnvBrowserAutomationAppImage     = "FEEDCTL_E2E_BROWSER_AUTOMATION_APP_IMAGE"
+	defaultCoreImage                 = "damoeb/feedless:core-latest"
+	defaultBrowserAutomationAppImage = "damoeb/feedless:browser-automation-app-latest"
 
 	// Same as docker-compose.yml.
 	postgisImage = "postgis/postgis:17-3.5-alpine"
@@ -152,7 +152,7 @@ func StartStack(ctx context.Context, t *testing.T) *Stack {
 
 	networks, aliases = onNetwork("agent")
 	startContainer(ctx, t, "agent", testcontainers.ContainerRequest{
-		Image:          imageFromEnv(EnvAgentImage, defaultAgentImage),
+		Image:          imageFromEnv(EnvBrowserAutomationAppImage, defaultBrowserAutomationAppImage),
 		Networks:       networks,
 		NetworkAliases: aliases,
 		Env: map[string]string{

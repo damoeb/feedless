@@ -101,8 +101,8 @@ tasks.register("bundle", Exec::class) {
     "docker", "build",
     "--build-arg", "APP_VERSION=$semver",
     "--build-arg", "APP_GIT_COMMIT=$gitHash",
-    "-t", "$baseTag:browserautomation-latest",
-    "-t", "$baseTag:browserautomation-$gitHash",
+    "-t", "$baseTag:browser-automation-app-latest",
+    "-t", "$baseTag:browser-automation-app-$gitHash",
     "."
   )
 }

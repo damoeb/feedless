@@ -1,5 +1,5 @@
 ARG APP_GIT_COMMIT
-FROM damoeb/feedless:browserautomation-$APP_GIT_COMMIT as agent
+FROM damoeb/feedless:browser-automation-app-$APP_GIT_COMMIT as agent
 
 FROM damoeb/feedless:aio-$APP_GIT_COMMIT
 

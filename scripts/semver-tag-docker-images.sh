@@ -8,7 +8,7 @@ PATCH=$4
 echo "GIT_HASH: $GIT_HASH"
 echo "VERSION: $MAJOR.$MINOR.$PATCH"
 
-for imageName in core browserautomation app aio-with-web aio-chromium; do
+for imageName in core browser-automation-app app aio-with-web aio-chromium; do
   dockerImage="damoeb/feedless:$imageName"
   echo "$dockerImage-$GIT_HASH"
   echo "-> $dockerImage-$MAJOR.$MINOR.$PATCH"

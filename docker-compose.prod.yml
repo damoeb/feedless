@@ -42,8 +42,8 @@ services:
     networks:
       - postgis
 
-  feedless-browserautomation:
-    image: damoeb/feedless:browserautomation-latest
+  feedless-browser-automation-app:
+    image: damoeb/feedless:browser-automation-app-latest
     dns:
       - "8.8.8.8"
     security_opt:
