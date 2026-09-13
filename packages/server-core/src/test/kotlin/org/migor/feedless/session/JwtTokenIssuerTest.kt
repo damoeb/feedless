@@ -224,7 +224,7 @@ class JwtTokenIssuerTest {
     val jwt = jwtTokenIssuer.createJwtForAnonymous()
 
     // then
-    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
+    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP)!!.toLong()))
       .isCloseTo(Instant.now().plus(Duration.ofDays(1)), within(10, ChronoUnit.SECONDS));
   }
 
@@ -272,7 +272,7 @@ class JwtTokenIssuerTest {
     val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf())
 
     // then
-    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
+    assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP)!!.toLong()))
       .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS));
   }
 

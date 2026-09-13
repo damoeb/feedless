@@ -25,7 +25,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler
   fun handleApiException(
     ex: Exception?, request: WebRequest?
-  ): ResponseEntity<Any?>? {
+  ): ResponseEntity<Any>? {
     log.error("handleApiException: ${ex?.message}", ex)
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),
@@ -37,7 +37,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler(HostOverloadingException::class)
   fun handleThrottlingException(
     ex: HostOverloadingException, request: WebRequest?
-  ): ResponseEntity<Any?>? {
+  ): ResponseEntity<Any>? {
     return ResponseEntity
       .status(HttpStatus.TOO_MANY_REQUESTS.value())
       .header("X-Rate-Limit-Retry-After-Seconds", ex.nextRetryAfter.toString())
@@ -47,7 +47,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   @ExceptionHandler(AccessDeniedException::class)
   fun handleAccessDeniedException(
     ex: AccessDeniedException, request: WebRequest?
-  ): ResponseEntity<Any?>? {
+  ): ResponseEntity<Any>? {
     return ResponseEntity
       .status(HttpStatus.FORBIDDEN.value())
       .build()
@@ -57,7 +57,7 @@ class HttpExceptionHandler : ResponseEntityExceptionHandler() {
   @ResponseBody
   fun handleJWTDecodeException(
     ex: JwtValidationException?, request: WebRequest?
-  ): ResponseEntity<Any?>? {
+  ): ResponseEntity<Any>? {
     log.error("handleJWTDecodeException: ${ex?.message}")
     val payload = mapOf<String, Any>(
       "timestamp" to LocalDateTime.now(),

@@ -15,7 +15,7 @@ import java.lang.reflect.Method
 class HttpApiServletInvocableHandlerMethod(handlerMethod: HandlerMethod) :
   ServletInvocableHandlerMethod(handlerMethod) {
 
-  override fun invokeSuspendingFunction(method: Method, target: Any, args: Array<Any>): Any {
+  override fun invokeSuspendingFunction(method: Method, target: Any, args: Array<out Any?>): Any {
     val requestContext = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)
       ?.request
       ?.httpApiRequestContext()

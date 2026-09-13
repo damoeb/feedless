@@ -1,6 +1,6 @@
 package org.migor.feedless.api.graphql
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.AfterEach

@@ -184,6 +184,6 @@ class RepositoryFieldAuthIntTest {
         }
       }
     """.trimIndent()
-    return client.reactiveExecuteQuery(query).toFuture().await()
+    return client.reactiveExecuteQuery(query).toFuture().await()!!
   }
 }

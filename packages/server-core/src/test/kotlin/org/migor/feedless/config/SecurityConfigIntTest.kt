@@ -1,6 +1,6 @@
 package org.migor.feedless.config
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -26,7 +26,7 @@ import org.migor.feedless.user.UserUseCase
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecretRepository
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
@@ -175,11 +175,11 @@ class SecurityConfigIntTest {
     assertThat(response.statusCode).isEqualTo(HttpStatus.OK)
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
     val body = ObjectMapper().readTree(response.body)
-    assertThat(body.fieldNames().asSequence().toSet()).containsExactlyInAnyOrder("version", "build", "agents")
-    assertThat(body["version"].asText()).isEqualTo(response.headers.getFirst("X-Feedless-Version"))
+    assertThat(body.propertyNames().asSequence().toSet()).containsExactlyInAnyOrder("version", "build", "agents")
+    assertThat(body["version"].asString()).isEqualTo(response.headers.getFirst("X-Feedless-Version"))
     assertThat(body["build"]["commit"].isTextual).isTrue()
     assertThat(body["build"]["date"].isIntegralNumber).isTrue()
-    assertThat(body["agents"].fieldNames().asSequence().toList()).containsExactly("connected")
+    assertThat(body["agents"].propertyNames().asSequence().toList()).containsExactly("connected")
     assertThat(body["agents"]["connected"].asInt()).isEqualTo(0)
   }
 

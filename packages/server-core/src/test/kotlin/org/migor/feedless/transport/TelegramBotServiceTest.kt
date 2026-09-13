@@ -32,8 +32,6 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import org.springframework.core.env.Environment
 import org.springframework.web.client.RestTemplate
-import org.telegram.telegrambots.meta.api.objects.Message
-import org.telegram.telegrambots.meta.api.objects.Update
 import reactor.core.publisher.Flux
 import reactor.test.StepVerifier
 import reactor.test.scheduler.VirtualTimeScheduler
@@ -116,27 +114,19 @@ class TelegramBotServiceTest {
       argThat<URI> {
         it.toURL().toString() == "https://api.telegram.org/botMY_SECRET_TOKEN/getUpdates"
       },
-      eq(TelegramUpdatesResponse::class.java)
+      eq(String::class.java)
     )
   }
 
   @Test
   fun `pollUpdates will update lastUpdateId using the last message`() = runTest {
-    val message = mock(Update::class.java)
-    `when`(message.updateId).thenReturn(874112)
-    val response = TelegramUpdatesResponse(
-      ok = true,
-      result = listOf(
-        message
-      )
-    )
     `when`(
       restTemplate.getForObject(
         any(URI::class.java),
-        eq(TelegramUpdatesResponse::class.java)
+        eq(String::class.java)
       )
     )
-      .thenReturn(response)
+      .thenReturn("""{"ok":true,"result":[{"update_id":874112}]}""")
     telegramBotService.onInit()
     reset(systemSettingsRepository)
 
@@ -240,27 +230,16 @@ class TelegramBotServiceTest {
   @Test
   fun `valid updates from telegram will be appended to the inbox`() = runTest {
     val chatId: Long = 8273
-    val message = mock(Message::class.java)
-    `when`(message.chatId).thenReturn(chatId)
-    `when`(message.isCommand).thenReturn(false)
-
-    val update = mock(Update::class.java)
-    `when`(update.updateId).thenReturn(1)
-    `when`(update.message).thenReturn(message)
-    `when`(update.hasMessage()).thenReturn(true)
-    val response = TelegramUpdatesResponse(
-      ok = true,
-      result = listOf(
-        update
-      )
-    )
+    // a plain text message (no command entity), first as update 1, then as update 2
+    fun updates(updateId: Int) = """{"ok":true,"result":[{"update_id":$updateId,"message":{"message_id":1,
+      "date":1700000000,"chat":{"id":$chatId,"type":"private"},"text":"hello"}}]}"""
     `when`(
       restTemplate.getForObject(
         any(URI::class.java),
-        eq(TelegramUpdatesResponse::class.java)
+        eq(String::class.java)
       )
     )
-      .thenReturn(response)
+      .thenReturn(updates(1), updates(2))
 
     `when`(telegramConnectionRepository.findByChatId(eq(chatId)))
       .thenReturn(
@@ -268,7 +247,6 @@ class TelegramBotServiceTest {
       )
     telegramBotService.onInit()
     telegramBotService.pollUpdates()
-    `when`(update.updateId).thenReturn(2)
 
     // when
     telegramBotService.pollUpdates()

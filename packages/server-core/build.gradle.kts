@@ -18,6 +18,8 @@ plugins {
 }
 
 apply(plugin = "io.spring.dependency-management")
+// DGS 12 needs json-path 3 (Jackson3JsonProvider); Boot 4.1.1's BOM still pins 2.10.0
+extra["json-path.version"] = "3.0.0"
 
 group = "org.migor.feedless"
 version = "0.0.1-SNAPSHOT"
@@ -71,6 +73,8 @@ java {
 tasks.withType<Copy> { duplicatesStrategy = DuplicatesStrategy.EXCLUDE }
 
 dependencies {
+  implementation("tools.jackson.module:jackson-module-kotlin")
+  // Hibernate 7's JSON column mapper and the DGS test client still run on Jackson 2
   implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
   implementation(libs.kotlin.reflect)
   implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
@@ -174,7 +178,7 @@ dependencies {
   implementation(libs.language.de)
 
 //  https://dzone.com/articles/build-a-spring-boot-app-with-flyway-and-postgres
-  implementation(libs.flyway.core)
+  implementation(libs.spring.boot.flyway)
   implementation(libs.flyway.database.postgresql)
 
   implementation(libs.async.http.client)
@@ -182,6 +186,8 @@ dependencies {
   implementation(libs.xsoup)
 
   testImplementation(libs.spring.boot.test)
+  testImplementation(libs.spring.boot.resttestclient)
+  testImplementation(libs.spring.boot.restclient)
   testImplementation(testFixtures(project(":packages:domain")))
   testImplementation(testFixtures(project(":packages:jpa-data")))
   testImplementation("org.junit.jupiter:junit-jupiter-api")
@@ -193,7 +199,7 @@ dependencies {
 
   // Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
   testImplementation(libs.jqwik)
-  implementation(libs.telegrambots.spring.boot.starter)
+  implementation(libs.telegrambots.meta)
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {

@@ -70,7 +70,9 @@ fun jwtToOAuth2AuthenticationToken(
   val attributes = mapOf("dummy" to "wef")
 
   val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
-  val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
+  // same exception OAuth2AuthenticationToken threw for a missing id before Spring Security 7's nullability
+  val authorizedClientRegistrationId =
+    requireNotNull(jwtToken.getClaimAsString("id")) { "authorizedClientRegistrationId cannot be empty" }
   return OAuth2AuthenticationToken(
     principal,
     authorities,

@@ -1,6 +1,10 @@
 spring:
   jpa:
     open-in-view: false
+  jackson:
+    mapper:
+      # Jackson 3 sorts alphabetically by default; keep declaration order in responses
+      sort-properties-alphabetically: false
   graphql:
     websocket:
       path: /subscriptions

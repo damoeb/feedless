@@ -116,7 +116,7 @@ class BrowserAutomationService(
       val agentRef = agentRefs[(Math.random() * agentRefs.size).toInt()]
       prerenderWithAgent(source, agentRef)
         .toFuture()
-        .await()
+        .await()!!
     } else {
       log.warn("no agents present")
       throw ResumableHarvestException("No agents available", Duration.ofMinutes(10))

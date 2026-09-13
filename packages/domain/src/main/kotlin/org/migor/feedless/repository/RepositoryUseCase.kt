@@ -141,7 +141,7 @@ class RepositoryUseCase(
     jsonFeed.imageUrl = null
     jsonFeed.page = page
     jsonFeed.expired = false
-    val urlBuilder = UriComponentsBuilder.fromHttpUrl("${appConfig.apiGatewayUrl}/f/${repositoryId}/atom")
+    val urlBuilder = UriComponentsBuilder.fromUriString("${appConfig.apiGatewayUrl}/f/${repositoryId}/atom")
     jsonFeed.feedUrl = urlBuilder.build().toUri().toString()
     jsonFeed.isLast = items.size < pageSize
 

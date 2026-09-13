@@ -29,9 +29,9 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings
+import org.springframework.boot.http.client.HttpRedirects
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
@@ -223,8 +223,7 @@ class FeedControllerIntTest {
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
     // the redirect is built in the controller now, so it is asserted instead of stubbed
-    val restTemplate = TestRestTemplate()
-      .withRequestFactorySettings { it.withRedirects(ClientHttpRequestFactorySettings.Redirects.DONT_FOLLOW) }
+    val restTemplate = TestRestTemplate().withRedirects(HttpRedirects.DONT_FOLLOW)
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)

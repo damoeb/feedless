@@ -2,7 +2,7 @@ plugins {
   alias(libs.plugins.kotlin.jvm)
   // opens @Service/@Transactional/@Cacheable classes for CGLIB proxies
   alias(libs.plugins.kotlin.spring)
-  kotlin("plugin.serialization") version "1.9.0"
+  alias(libs.plugins.kotlin.serialization)
   `java-test-fixtures`
 }
 

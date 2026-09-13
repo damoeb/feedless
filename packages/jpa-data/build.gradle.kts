@@ -50,7 +50,7 @@ dependencies {
   testImplementation(libs.testcontainers.core)
   testImplementation(libs.testcontainers.postgresql)
   testImplementation(libs.testcontainers.junit)
-  testImplementation(libs.flyway.core)
+  testImplementation(libs.spring.boot.flyway)
   testImplementation(libs.flyway.database.postgresql)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }

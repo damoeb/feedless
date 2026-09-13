@@ -15,7 +15,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
+import org.junit.jupiter.params.provider.ValueSource
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
@@ -318,8 +318,9 @@ class FeedServiceTest {
 //  }
 
   @ParameterizedTest
-  @CsvSource(
-    value = [
+  // one whole filter per run; JUnit 6's CSV parser rejects these rows, JUnit 5 split them at their commas
+  @ValueSource(
+    strings = [
       "[{\"composite\":{\"exclude\":{\"title\":{\"value\":\"Der\",\"operator\":\"contains\"}}}}]",
       "contains(title, 'foo')",
     ]

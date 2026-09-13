@@ -53,8 +53,8 @@ import org.mockito.kotlin.eq
 import org.mockito.kotlin.mock
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Import
@@ -362,7 +362,7 @@ class AnonymousExportAccessTest {
 
   private fun assertRedirect(result: MvcResult, document: Document) {
     assertStatus(result, 302)
-    assert(result.response.getHeader("Location") == document.url) { result.response.getHeader("Location") }
+    assert(result.response.getHeader("Location") == document.url) { result.response.getHeader("Location").toString() }
   }
 
   private fun assertLikeMissingArticle(result: MvcResult) {

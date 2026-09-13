@@ -1,6 +1,6 @@
 package org.migor.feedless.api.graphql
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import kotlinx.coroutines.future.await
@@ -140,7 +140,7 @@ class AuthenticationIntTest {
 
     val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
-      .await()
+      .await()!!
       .extractValue<LinkedHashMap<String, Any>>("data.authUser")
 
     // then
@@ -177,7 +177,7 @@ class AuthenticationIntTest {
     }
     val response = authedClient.reactiveExecuteQuery(graphQLQuery)
       .toFuture()
-      .await()
+      .await()!!
       .extractValue<LinkedHashMap<String, Any>>("data.session")
 
     val session = ObjectMapper().convertValue(response, Map::class.java)
@@ -197,7 +197,7 @@ suspend fun WebClientGraphQLClient.requestAnonymousJwt(): String {
 
   val response = this.reactiveExecuteQuery(graphQLMutation)
     .toFuture()
-    .await()
+    .await()!!
     .extractValue<LinkedHashMap<String, Any>>("data.authAnonymous")
 
   val auth = ObjectMapper().convertValue(response, Map::class.java)
