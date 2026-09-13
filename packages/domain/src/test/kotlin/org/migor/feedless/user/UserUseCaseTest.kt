@@ -35,7 +35,14 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.doSuspendableAnswer
+import org.mockito.kotlin.stub
 import org.springframework.core.env.Environment
+import kotlinx.coroutines.currentCoroutineContext
+import org.assertj.core.api.Assertions.assertThat
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.group.GroupId
 
 class UserUseCaseTest {
   private lateinit var userRepository: UserRepository
@@ -163,6 +170,24 @@ class UserUseCaseTest {
     userUseCase.createUser(email, githubId)
 
     verify(productUseCase).enableDefaultSaasProduct(any2(), any2())
+  }
+
+  @Test
+  fun `createUser enables the default product in the new user's own group`() = runTest {
+    `when`(featureService.isDisabled(eq(FeatureName.canCreateUser), any2())).thenReturn(false)
+    `when`(userRepository.existsByEmail(eq(email))).thenReturn(false)
+    `when`(githubConnectionRepository.existsByGithubId(eq(githubId))).thenReturn(false)
+    var groupIdSeen: GroupId? = null
+    productUseCase.stub {
+      onBlocking { enableDefaultSaasProduct(any2(), any2()) } doSuspendableAnswer {
+        groupIdSeen = currentCoroutineContext()[RequestContext]?.groupId
+      }
+    }
+
+    userUseCase.createUser(email, githubId)
+
+    val ownGroup = argumentCaptor<Group>().apply { verify(groupRepository).save(capture()) }.firstValue
+    assertThat(groupIdSeen).isEqualTo(ownGroup.id)
   }
 
   @Test

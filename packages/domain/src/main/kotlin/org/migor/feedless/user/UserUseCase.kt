@@ -144,10 +144,10 @@ class UserUseCase(
       groupUseCase.addUserToGroup(user.id, group.id, RoleInGroup.owner)
 
       createInboxRepository(user.id)
-    }
 
-    // todo saas only?
-    productUseCase.enableDefaultSaasProduct(Vertical.feedless, user.id)
+      // todo saas only?
+      productUseCase.enableDefaultSaasProduct(Vertical.feedless, user.id)
+    }
 
     return user
   }
