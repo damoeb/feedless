@@ -144,6 +144,9 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] **`feedctl`-Kleinigkeiten:** Keyring „unavailable" behandelt jeden `net.OpError` als fehlenden Keyring (auf Dial-Fehler beschränken); `auth logout` meldet Erfolg, auch wenn das Löschen im Keyring scheiterte; Login-Fehler ausser 401 enden mit Exit 4; `hosts.yml` wird nicht atomar geschrieben; Tokens haben keine `String()`-Redaktion; `auth status` endet ohne Hosts mit Exit 0; `Paginate` schützt nicht vor `hasMore` bei null Einträgen; `launchSystemEditor` ist ungetestet.
 - [ ] **`JwtTokenIssuer` schreibt `exp`/`iat` in Millisekunden**, Spring/Nimbus lesen Sekunden — das Max-Age des Session-Cookies ist dadurch bedeutungslos. `JwtTokenIssuerTest` hält das heutige Verhalten fest (bestehend, beim hexagonalen Umbau gefunden).
 - [ ] **`FetchActionMapper.toDomain` setzt `isVariable`, `isMobile` und `isLandscape` fest auf `false`** (MapStruct ordnet die `is…`-Properties nicht zu, `unmappedTargetPolicy = IGNORE` verschweigt es), die Flags überleben die Persistenz also nie. `ScrapeActionPlacement.placedAt` und `ScrapeActionPlacementTest` bilden das nach — Mapper, `placedAt` und Test gemeinsam korrigieren (bestehend, beim hexagonalen Umbau gefunden).
+- [ ] **401-Antworten von `/api/v1` ohne `oauth` tragen keine `x-corr-id`.** `HttpApiJwtFilter` antwortet, bevor `JwtRequestFilter` die Kopfzeile setzt; die Id wird trotzdem gewählt und gespeichert, nur nicht an den Client zurückgegeben.
+- [ ] **Die Korrelations-Id erscheint nicht in der Auth-Mail**, obwohl sie an das Template übergeben wird (`mail-auth-code.ftl.html` referenziert sie nicht) — ein Support-Fall, der „die Id aus der Mail" nennt, findet dort keine.
+- [ ] **GraphQL-Resolver, die nicht auf dem Request-Thread starten, können bei ihrer Korrelations-Id auf eine neue zurückfallen**, statt die des Requests zu übernehmen — ein End-to-End-GraphQL-Test dafür fehlt noch.
 
 ## Monetarisierung
 
