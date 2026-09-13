@@ -95,7 +95,8 @@ class FeedService(
   }
 
   // Defense in depth: feedUrl already carries any token query param, but this covers a caller that separates them.
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
+  // Claim-resolved state is part of the key too, so a token that stops decoding can't hit an entry cached while it still did.
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token + \"/\" + (#access.claim != null)")
   suspend fun webToFeed(
     url: String,
     selectors: GenericFeedSelectors,
@@ -260,7 +261,8 @@ class FeedService(
   }
 
   // Defense in depth: feedUrl already carries any token query param, but this covers a caller that separates them.
-  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token")
+  // Claim-resolved state is part of the key too, so a token that stops decoding can't hit an entry cached while it still did.
+  @Cacheable(value = [CacheNames.FEED_LONG_TTL], key = "\"feed/\" + #feedUrl + \"/\" + #access.token + \"/\" + (#access.claim != null)")
   suspend fun transformFeed(
     nativeFeedUrl: String,
     filter: String?,

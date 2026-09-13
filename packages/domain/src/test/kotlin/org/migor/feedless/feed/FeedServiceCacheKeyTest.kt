@@ -11,13 +11,17 @@ class FeedServiceCacheKeyTest {
   fun `webToFeed keys its cache entry on the checked access, not the url alone`() {
     val method = FeedService::class.java.methods.first { it.name == "webToFeed" }
 
-    assertThat(method.getAnnotation(Cacheable::class.java).key).contains("access.token")
+    val key = method.getAnnotation(Cacheable::class.java).key
+    assertThat(key).contains("access.token")
+    assertThat(key).contains("access.claim")
   }
 
   @Test
   fun `transformFeed keys its cache entry on the checked access, not the url alone`() {
     val method = FeedService::class.java.methods.first { it.name == "transformFeed" }
 
-    assertThat(method.getAnnotation(Cacheable::class.java).key).contains("access.token")
+    val key = method.getAnnotation(Cacheable::class.java).key
+    assertThat(key).contains("access.token")
+    assertThat(key).contains("access.claim")
   }
 }
