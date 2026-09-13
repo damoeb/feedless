@@ -90,7 +90,11 @@ class RepositoryUseCase(
       data.map { createRepository(it) }
     }
 
-  @Cacheable(value = [CacheNames.FEED_SHORT_TTL], key = "\"repo/\" + #repositoryId + #tags")
+  // callers check read access before, so the key holds nothing user- or key-specific
+  @Cacheable(
+    value = [CacheNames.FEED_SHORT_TTL],
+    key = "\"repo/\" + #repositoryId + \"/\" + #page + \"/\" + #filter + \"/\" + #order"
+  )
   suspend fun getFeedByRepositoryId(
     repositoryId: RepositoryId,
     page: Int,
@@ -136,9 +140,6 @@ class RepositoryUseCase(
     jsonFeed.page = page
     jsonFeed.expired = false
     val urlBuilder = UriComponentsBuilder.fromHttpUrl("${appConfig.apiGatewayUrl}/f/${repositoryId}/atom")
-//    if (shareKey != null) {
-//      urlBuilder.queryParam("skey", shareKey)
-//    }
     jsonFeed.feedUrl = urlBuilder.build().toUri().toString()
     jsonFeed.isLast = items.size < pageSize
 
