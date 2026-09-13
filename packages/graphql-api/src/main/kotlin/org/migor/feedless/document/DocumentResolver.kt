@@ -8,7 +8,6 @@ import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -43,6 +42,7 @@ import org.migor.feedless.generated.types.RecordOrderByInput as RecordOrderByInp
 import org.migor.feedless.generated.types.RecordsWhereInput as RecordsWhereInputDto
 import org.migor.feedless.generated.types.RepositoryUniqueWhereInput as RepositoryUniqueWhereInputDto
 import org.migor.feedless.generated.types.StringFilterInput as StringFilterInputDto
+import org.migor.feedless.config.requestContext
 
 @DgsComponent
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
@@ -97,7 +97,7 @@ class DocumentResolver(
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.DocumentCount)
-  suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = coroutineScope {
+  suspend fun documentCount(dfe: DgsDataFetchingEnvironment): Long = withContext(dfe.requestContext()) {
     val repository: Repository = dfe.getSourceOrThrow()
     documentUseCase.countByRepositoryId(RepositoryId(repository.id))
   }
@@ -146,7 +146,7 @@ class DocumentResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Frequency)
   suspend fun frequency(
     dfe: DgsDataFetchingEnvironment,
-  ): List<RecordFrequency> = withContext(context = injectCapabilitiesFromSecurityContext()) {
+  ): List<RecordFrequency> = withContext(dfe.requestContext()) {
     val repository: Repository = dfe.getSourceOrThrow()
     documentUseCase.getRecordFrequency(
       DocumentsFilter(

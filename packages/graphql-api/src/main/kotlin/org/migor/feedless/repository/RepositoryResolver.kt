@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.DgsQuery
 import com.netflix.graphql.dgs.InputArgument
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -48,6 +47,7 @@ import org.springframework.data.domain.Sort
 import org.springframework.security.access.prepost.PreAuthorize
 import org.migor.feedless.generated.types.Repository as RepositoryDto
 import org.migor.feedless.generated.types.Source as SourceDto
+import org.migor.feedless.config.requestContext
 
 
 fun Cursor.toPageable(maxPageSize: Int? = null): Pageable {
@@ -165,7 +165,7 @@ class RepositoryResolver(
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Where) where: SourcesWhereInput?,
     @InputArgument(DgsConstants.REPOSITORY.SOURCES_INPUT_ARGUMENT.Order) order: List<SourceOrderByInput>?,
     dfe: DgsDataFetchingEnvironment,
-  ): List<SourceDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
+  ): List<SourceDto> = withContext(dfe.requestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     val pageable = cursor.toPageable(10)
     if (pageable.pageSize == 0 || !mayReadSources(repository)) {
@@ -185,7 +185,7 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCount)
   suspend fun sourcesCount(
     dfe: DgsDataFetchingEnvironment,
-  ): Long = withContext(context = injectCapabilitiesFromSecurityContext()) {
+  ): Long = withContext(dfe.requestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     if (mayReadSources(repository)) sourceRepository.countByRepositoryId(RepositoryId(repository.id)) else 0L
   }
@@ -193,7 +193,7 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.RecordCount)
   suspend fun recordCountForSources(
     dfe: DgsDataFetchingEnvironment,
-  ): Int = coroutineScope {
+  ): Int = withContext(dfe.requestContext()) {
     val source: SourceDto = dfe.getSourceOrThrow()
     documentRepository.countBySourceId(SourceId(source.id))
   }
@@ -201,7 +201,7 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.Harvests)
   suspend fun harvests(
     dfe: DgsDataFetchingEnvironment,
-  ): List<Harvest> = coroutineScope {
+  ): List<Harvest> = withContext(dfe.requestContext()) {
     val source: SourceDto = dfe.getSourceOrThrow()
     harvestService.lastHarvests(SourceId(source.id)).map { it.toDto() }
   }
@@ -209,14 +209,14 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCountWithProblems)
   suspend fun sourcesCountWithProblems(
     dfe: DgsDataFetchingEnvironment,
-  ): Int = withContext(context = injectCapabilitiesFromSecurityContext()) {
+  ): Int = withContext(dfe.requestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     if (mayReadSources(repository)) sourceRepository.countSourcesWithProblems(RepositoryId(repository.id)) else 0
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
   suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> =
-    withContext(context = injectCapabilitiesFromSecurityContext()) {
+    withContext(dfe.requestContext()) {
       val repository: RepositoryDto = dfe.getSourceOrThrow()
       if (!mayReadSources(repository)) {
         emptyList()

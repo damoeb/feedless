@@ -7,7 +7,6 @@ import com.netflix.graphql.dgs.DgsMutation
 import com.netflix.graphql.dgs.InputArgument
 import com.netflix.graphql.dgs.context.DgsContext
 import graphql.schema.DataFetchingEnvironment
-import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -26,6 +25,7 @@ import java.util.*
 import org.migor.feedless.generated.types.Annotation as AnnotationDto
 import org.migor.feedless.generated.types.Annotations as AnnotationsDto
 import org.migor.feedless.generated.types.Repository as RepositoryDto
+import org.migor.feedless.config.requestContext
 
 @DgsComponent
 @Profile("${AppProfiles.annotation} & ${AppLayer.api}")
@@ -62,7 +62,7 @@ class AnnotationResolver(
   @DgsData(parentType = DgsConstants.ANNOTATIONS.TYPE_NAME, field = DgsConstants.ANNOTATIONS.Votes)
   suspend fun votes(
     dfe: DgsDataFetchingEnvironment
-  ): List<AnnotationDto> = coroutineScope {
+  ): List<AnnotationDto> = withContext(dfe.requestContext()) {
     val context = DgsContext.getCustomContext<DgsCustomContext>(dfe)
     val userId = context.userId
     userId?.let {
@@ -76,7 +76,7 @@ class AnnotationResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
   suspend fun annotations(
     dfe: DgsDataFetchingEnvironment
-  ): AnnotationsDto = coroutineScope {
+  ): AnnotationsDto = withContext(dfe.requestContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
 
     val repositoryId = RepositoryId(UUID.fromString(repository.id))
