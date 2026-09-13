@@ -193,8 +193,9 @@ class SecurityConfig {
     return RequestContextListener()
   }
 
-  /** JwtRequestFilter is a @Component, so Boot would also register it as a container filter; addFilterAfter above already runs it in the security chain under oauth, and running both would authenticate every request's JWT twice. */
+  /** Under oauth the chain also runs this @Component filter, via conditionalOauth's addFilterAfter; disable only there, or root/mail auth would lose it entirely. */
   @Bean
+  @Profile(AppProfiles.oauth)
   fun jwtRequestFilterRegistration(): FilterRegistrationBean<JwtRequestFilter> {
     val registration = FilterRegistrationBean(jwtRequestFilter)
     registration.isEnabled = false
