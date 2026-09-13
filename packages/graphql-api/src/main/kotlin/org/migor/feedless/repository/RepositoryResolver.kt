@@ -168,10 +168,7 @@ class RepositoryResolver(
   ): List<SourceDto> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
     val pageable = cursor.toPageable(10)
-    // sources are configuration and their fetch URLs may carry share keys
-    val mayReadSources = repositoryRepository.findById(RepositoryId(repository.id))
-      ?.let { repositoryGuard.mayReadConfiguration(it) } ?: false
-    if (pageable.pageSize == 0 || !mayReadSources) {
+    if (pageable.pageSize == 0 || !mayReadSources(repository)) {
       emptyList()
     } else {
       sourceRepository.findAllByRepositoryIdFiltered(
@@ -188,9 +185,9 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCount)
   suspend fun sourcesCount(
     dfe: DgsDataFetchingEnvironment,
-  ): Long = coroutineScope {
+  ): Long = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceRepository.countByRepositoryId(RepositoryId(repository.id))
+    if (mayReadSources(repository)) sourceRepository.countByRepositoryId(RepositoryId(repository.id)) else 0L
   }
 
   @DgsData(parentType = DgsConstants.SOURCE.TYPE_NAME, field = DgsConstants.SOURCE.RecordCount)
@@ -212,19 +209,29 @@ class RepositoryResolver(
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.SourcesCountWithProblems)
   suspend fun sourcesCountWithProblems(
     dfe: DgsDataFetchingEnvironment,
-  ): Int = coroutineScope {
+  ): Int = withContext(context = injectCapabilitiesFromSecurityContext()) {
     val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceRepository.countSourcesWithProblems(RepositoryId(repository.id))
+    if (mayReadSources(repository)) sourceRepository.countSourcesWithProblems(RepositoryId(repository.id)) else 0
   }
 
   @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Tags)
-  suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> = coroutineScope {
-    val repository: RepositoryDto = dfe.getSourceOrThrow()
-    sourceRepository.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageableRequest(0, 10))
-      .mapNotNull { it.tags?.asList() }
-      .flatten()
-      .distinct()
-  }
+  suspend fun tags(dfe: DgsDataFetchingEnvironment): List<String> =
+    withContext(context = injectCapabilitiesFromSecurityContext()) {
+      val repository: RepositoryDto = dfe.getSourceOrThrow()
+      if (!mayReadSources(repository)) {
+        emptyList()
+      } else {
+        sourceRepository.findAllByRepositoryIdFiltered(RepositoryId(repository.id), PageableRequest(0, 10))
+          .mapNotNull { it.tags?.asList() }
+          .flatten()
+          .distinct()
+      }
+    }
+
+  // sources are configuration and their fetch URLs may carry share keys, so everything read from them is for owner and members
+  private suspend fun mayReadSources(repository: RepositoryDto): Boolean =
+    repositoryRepository.findById(RepositoryId(repository.id))
+      ?.let { repositoryGuard.mayReadConfiguration(it) } ?: false
 }
 
 fun SourceOrderByInput.toDomain(): SourceOrderBy {

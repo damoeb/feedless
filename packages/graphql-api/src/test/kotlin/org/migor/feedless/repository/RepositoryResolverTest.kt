@@ -245,6 +245,36 @@ class RepositoryResolverTest {
   }
 
   @Test
+  fun `source-derived fields are empty for a stranger even on a public repository`() = runTest {
+    val public = givenTaggedSources(repository.copy(visibility = EntityVisibility.isPublic))
+    loginAs(UserId())
+
+    assertThat(resolver.tags(dfeFor(public))).isEmpty()
+    assertThat(resolver.sourcesCount(dfeFor(public))).isEqualTo(0)
+    assertThat(resolver.sourcesCountWithProblems(dfeFor(public))).isEqualTo(0)
+  }
+
+  @Test
+  fun `source-derived fields are shown to the owner`() = runTest {
+    val public = givenTaggedSources(repository.copy(visibility = EntityVisibility.isPublic))
+    loginAs(ownerId)
+
+    assertThat(resolver.tags(dfeFor(public))).containsExactly("source-tag")
+    assertThat(resolver.sourcesCount(dfeFor(public))).isEqualTo(1)
+    assertThat(resolver.sourcesCountWithProblems(dfeFor(public))).isEqualTo(1)
+  }
+
+  private suspend fun givenTaggedSources(repository: Repository): Repository {
+    whenever(repositoryRepository.findById(eq(repository.id))).thenReturn(repository)
+    val source = Source(id = SourceId(), title = "source", repositoryId = repository.id, tags = arrayOf("source-tag"))
+    whenever(sourceRepository.findAllByRepositoryIdFiltered(any(), any(), anyOrNull(), anyOrNull()))
+      .thenReturn(listOf(source))
+    whenever(sourceRepository.countByRepositoryId(eq(repository.id))).thenReturn(1L)
+    whenever(sourceRepository.countSourcesWithProblems(eq(repository.id))).thenReturn(1)
+    return repository
+  }
+
+  @Test
   fun `the owner of a private repository gets its share key`() {
     assertThat(repository.toDto(true).shareKey).isEqualTo("owner-share-key")
   }

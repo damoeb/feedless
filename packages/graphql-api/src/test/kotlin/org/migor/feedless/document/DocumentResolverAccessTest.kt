@@ -25,6 +25,7 @@ import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.session.LazyGrantedAuthority
@@ -71,7 +72,7 @@ class DocumentResolverAccessTest {
     documentGuard,
     repositoryGuard,
   )
-  private val resolver = DocumentResolver(repositoryUseCase, appConfig, documentUseCase, documentGuard)
+  private val resolver = DocumentResolver(appConfig, documentUseCase, documentGuard, repositoryGuard)
   private val repository = Repository(
     title = "private feed",
     visibility = EntityVisibility.isPrivate,
@@ -136,11 +137,35 @@ class DocumentResolverAccessTest {
     assertThat(runCatching { records() }.exceptionOrNull()).isInstanceOf(NotFoundException::class.java)
   }
 
-  private suspend fun records() = resolver.records(
+  @Test
+  fun `a stranger's records query answers a private repository exactly like a missing one, whatever the page size`() =
+    runTest {
+      loginAs(UserId())
+      assertDeniedLikeMissing()
+    }
+
+  @Test
+  fun `an anonymous records query answers a private repository exactly like a missing one, whatever the page size`() =
+    runTest {
+      assertDeniedLikeMissing()
+    }
+
+  private suspend fun assertDeniedLikeMissing() {
+    val missingId = RepositoryId()
+    for (pageSize in listOf(0, 10)) {
+      val denied = runCatching { records(repository.id, pageSize) }.exceptionOrNull()
+      val missing = runCatching { records(missingId, pageSize) }.exceptionOrNull()
+
+      assertThat(denied).isInstanceOf(NotFoundException::class.java).hasMessage("Repository ${repository.id} not found")
+      assertThat(missing).isInstanceOf(NotFoundException::class.java).hasMessage("Repository $missingId not found")
+    }
+  }
+
+  private suspend fun records(repositoryId: RepositoryId = repository.id, pageSize: Int = 10) = resolver.records(
     mock(),
     RecordsInput(
-      cursor = Cursor(page = 0, pageSize = 10),
-      where = RecordsWhereInput(repository = RepositoryUniqueWhereInput(id = repository.id.uuid.toString())),
+      cursor = Cursor(page = 0, pageSize = pageSize),
+      where = RecordsWhereInput(repository = RepositoryUniqueWhereInput(id = repositoryId.uuid.toString())),
     ),
   )
 

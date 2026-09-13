@@ -12,7 +12,6 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.api.toDto
@@ -28,8 +27,8 @@ import org.migor.feedless.generated.types.RecordWhereInput
 import org.migor.feedless.generated.types.RecordsInput
 import org.migor.feedless.generated.types.Repository
 import org.migor.feedless.generated.types.UpdateRecordInput
+import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
-import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.toPageable
 import org.migor.feedless.repository.toPageableRequest
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
@@ -48,10 +47,10 @@ import org.migor.feedless.generated.types.StringFilterInput as StringFilterInput
 @DgsComponent
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentResolver(
-  private val repositoryUseCase: RepositoryUseCase,
   private val appConfig: AppConfig,
   private val documentUseCase: DocumentUseCase,
-  private val documentGuard: DocumentGuard
+  private val documentGuard: DocumentGuard,
+  private val repositoryGuard: RepositoryGuard,
 ) {
 
   private val log = LoggerFactory.getLogger(DocumentResolver::class.simpleName)
@@ -78,10 +77,8 @@ class DocumentResolver(
     @InputArgument(DgsConstants.QUERY.RECORDS_INPUT_ARGUMENT.Data) data: RecordsInput,
   ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
     log.debug("records $data")
-    val repositoryId = RepositoryId(data.where.repository.id)
-
-    val repository =
-      repositoryUseCase.findById(repositoryId) ?: throw NotFoundException("repository $repositoryId not found")
+    // before any result, so a denied repository answers exactly like a missing one, whatever the page size
+    val repository = repositoryGuard.requireRead(RepositoryId(data.where.repository.id))
     val pageable = data.cursor.toPageable()
     if (pageable.pageSize == 0) {
       emptyList()
