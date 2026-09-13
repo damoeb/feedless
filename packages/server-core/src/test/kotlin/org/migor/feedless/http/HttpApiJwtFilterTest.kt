@@ -5,6 +5,8 @@ import jakarta.servlet.FilterChain
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.api.ApiParams
+import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.PropertyService
@@ -243,5 +245,47 @@ class HttpApiJwtFilterTest {
     filter.doFilter(request, MockHttpServletResponse(), mock(FilterChain::class.java))
 
     assertThat(RequestAttributeSecurityContextRepository().containsContext(request)).isFalse()
+  }
+
+  @Test
+  fun `stores the request's x-corr-id in the RequestContext`() {
+    val request = authenticatedRequest().apply { addHeader(ApiParams.corrId, "abc") }
+
+    val requestContext = requestContextInChain(request)
+
+    assertThat(requestContext?.corrId).isEqualTo("abc")
+    assertThat(request.getAttribute(CORR_ID_REQUEST_ATTR)).isEqualTo("abc")
+  }
+
+  @Test
+  fun `stores the id an earlier filter chose for the same request`() {
+    val request = authenticatedRequest().apply { setAttribute(CORR_ID_REQUEST_ATTR, "first") }
+
+    assertThat(requestContextInChain(request)?.corrId).isEqualTo("first")
+  }
+
+  @Test
+  fun `generates an id and records it on the request when none is sent`() {
+    val request = authenticatedRequest()
+
+    val requestContext = requestContextInChain(request)
+
+    assertThat(requestContext?.corrId).isNotBlank()
+    assertThat(request.getAttribute(CORR_ID_REQUEST_ATTR)).isEqualTo(requestContext?.corrId)
+  }
+
+  private fun authenticatedRequest(): MockHttpServletRequest {
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(UserId())
+    val token = jwtTokenIssuer.createJwtForApi(user, actingGroup).tokenValue
+    return MockHttpServletRequest("GET", "/api/v1/user").apply { addHeader("Authorization", "Bearer $token") }
+  }
+
+  private fun requestContextInChain(request: MockHttpServletRequest): RequestContext? {
+    var requestContext: RequestContext? = null
+    filter.doFilter(request, MockHttpServletResponse()) { req, _ ->
+      requestContext = req.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR) as? RequestContext
+    }
+    return requestContext
   }
 }

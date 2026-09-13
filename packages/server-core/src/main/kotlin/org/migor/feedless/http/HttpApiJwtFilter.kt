@@ -12,6 +12,7 @@ import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.TokenAuthenticator
 import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
+import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpStatus
@@ -60,7 +61,7 @@ class HttpApiJwtFilter(
         context.authentication = tokenAuthenticator.authenticate(jwt, request)
         securityContextHolderStrategy.context = context
         securityContextRepository.saveContext(context, request, response)
-        request.setAttribute(HTTP_API_REQUEST_CONTEXT_ATTR, injectCapabilitiesFromSecurityContext())
+        request.setAttribute(HTTP_API_REQUEST_CONTEXT_ATTR, injectCapabilitiesFromSecurityContext(HttpUtil.corrIdOf(request)))
         true
       } catch (e: Exception) {
         log.debug("HTTP API auth failed: ${e.message}")
