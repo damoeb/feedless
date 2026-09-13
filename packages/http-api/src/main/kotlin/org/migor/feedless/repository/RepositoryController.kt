@@ -5,9 +5,11 @@ import io.micrometer.core.instrument.Tag
 import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.ShareKeyAccess
 import org.migor.feedless.document.DocumentQueryParser
 import org.migor.feedless.document.DocumentsFilter
 import org.migor.feedless.document.RecordOrderBy
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RequestMapping
 import org.springframework.web.bind.annotation.RequestMethod
 import org.springframework.web.bind.annotation.RequestParam
 import java.util.*
+import kotlin.coroutines.EmptyCoroutineContext
 
 @Controller
 @Profile("${AppProfiles.repository} & ${AppLayer.api}")
@@ -35,6 +38,9 @@ class RepositoryController {
 
   @Autowired
   private lateinit var repositoryUseCase: RepositoryUseCase
+
+  @Autowired
+  private lateinit var repositoryGuard: RepositoryGuard
 
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
@@ -61,6 +67,7 @@ class RepositoryController {
     @RequestParam(value = "tags", required = false) tags: List<String>,
     @RequestParam(value = "where", required = false) whereStr: String?,
     @RequestParam(value = "orderByStr", required = false) orderByStr: String?,
+    @RequestParam(value = "skey", required = false) shareKey: String?,
   ): ResponseEntity<String> = coroutineScope {
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -70,16 +77,21 @@ class RepositoryController {
     ).increment()
     log.debug("GET feed/$format} id=$repositoryId page=$page")
 
-    feedExporter.to(
-      HttpStatus.OK,
-      format,
-      repositoryUseCase.getFeedByRepositoryId(
-        RepositoryId(repositoryId),
-        page,
-        parseWhere(whereStr),
-        parseOrderBy(orderByStr)
+    val id = RepositoryId(repositoryId)
+    withContext(shareKey?.let { ShareKeyAccess(id, it) } ?: EmptyCoroutineContext) {
+      // checked outside the cached feed, a cache hit must not skip it
+      repositoryGuard.requireRead(id)
+      feedExporter.to(
+        HttpStatus.OK,
+        format,
+        repositoryUseCase.getFeedByRepositoryId(
+          id,
+          page,
+          parseWhere(whereStr),
+          parseOrderBy(orderByStr)
+        )
       )
-    )
+    }
   }
 
   private fun parseWhere(whereStr: String?): DocumentsFilter? {
