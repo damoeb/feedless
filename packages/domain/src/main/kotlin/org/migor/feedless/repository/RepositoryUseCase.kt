@@ -32,6 +32,7 @@ import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
 import org.migor.feedless.user.userId
+import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
@@ -318,7 +319,7 @@ class RepositoryUseCase(
 
     val groupId = currentCoroutineContext().groupId()
     var repo = Repository(
-      shareKey = newCorrId(9),
+      shareKey = CryptUtil.newShareKey(),
       title = repoInput.title,
       description = repoInput.description,
       visibility = planConstraintsService.coerceVisibility(groupId, repoInput.visibility),
