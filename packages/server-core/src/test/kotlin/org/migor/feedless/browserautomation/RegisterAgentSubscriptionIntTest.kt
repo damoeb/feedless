@@ -101,6 +101,24 @@ class RegisterAgentSubscriptionIntTest {
     wheneverBlocking { browserAutomationService.registerAgent(any()) }
       .thenReturn(Flux.just(AgentEvent(callbackId = "none", corrId = "c1", authentication = AgentAuthentication(token = "test-token"))))
 
+    assertThat(firstFrameAfterSubscribe())
+      .containsPattern(typeIs("next"))
+      .contains("test-token")
+
+    verifyBlocking(browserAutomationService) { registerAgent(argThat { secretKey.email == "agent@example.org" }) }
+  }
+
+  @Test
+  fun `a rejected agent receives the reason as a subscription error`() {
+    wheneverBlocking { browserAutomationService.registerAgent(any()) }
+      .thenReturn(Flux.error<AgentEvent>(IllegalAccessException("Key is expired")))
+
+    assertThat(firstFrameAfterSubscribe())
+      .containsPattern(typeIs("error"))
+      .contains("Key is expired")
+  }
+
+  private fun firstFrameAfterSubscribe(): String? {
     val received = LinkedBlockingQueue<String>()
     val handler = object : TextWebSocketHandler() {
       override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
@@ -118,14 +136,10 @@ class RegisterAgentSubscriptionIntTest {
 
       val subscribe = mapOf("id" to "1", "type" to "subscribe", "payload" to mapOf("query" to registerAgentQuery))
       session.sendMessage(TextMessage(Gson().toJson(subscribe)))
-      assertThat(received.poll(10, TimeUnit.SECONDS))
-        .containsPattern(typeIs("next"))
-        .contains("test-token")
+      return received.poll(10, TimeUnit.SECONDS)
     } finally {
       session.close()
     }
-
-    verifyBlocking(browserAutomationService) { registerAgent(argThat { secretKey.email == "agent@example.org" }) }
   }
 
   private fun typeIs(type: String) = "\"type\"\\s*:\\s*\"$type\""
