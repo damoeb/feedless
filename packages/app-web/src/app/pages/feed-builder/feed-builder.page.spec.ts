@@ -62,5 +62,21 @@ describe('FeedBuilderPage', () => {
         `${apiUrl}/f/repo-1/atom`
       );
     });
+
+    it('keeps the share key out of the remixed source title', async () => {
+      const handleSource = jest
+        .spyOn(component as any, 'handleSource')
+        .mockResolvedValue(undefined);
+      await component.handleRepository({
+        ...mocks.repository,
+        id: 'repo-1',
+        visibility: GqlVisibility.IsPrivate,
+        shareKey: 'key-1',
+      } as any);
+      const source = handleSource.mock.calls[0][2] as GqlSourceInput;
+      const apiUrl = TestBed.inject(ServerConfigService).apiUrl;
+      expect(source.title).toEqual(`From ${apiUrl}/f/repo-1/atom`);
+      expect(source.title).not.toContain('key-1');
+    });
   });
 });
