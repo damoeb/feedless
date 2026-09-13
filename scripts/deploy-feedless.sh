@@ -3,14 +3,14 @@ echo "Starting deployment"
 docker tag damoeb/feedless:app-latest localhost:5000/damoeb/feedless:app-latest
 docker tag damoeb/feedless:app-upcoming-latest localhost:5000/damoeb/feedless:app-upcoming-latest
 docker tag damoeb/feedless:core-latest localhost:5000/damoeb/feedless:core-latest
-docker tag damoeb/feedless:browserautomation-latest localhost:5000/damoeb/feedless:browserautomation-latest
+docker tag damoeb/feedless:browser-automation-app-latest localhost:5000/damoeb/feedless:browser-automation-app-latest
 docker push localhost:5000/damoeb/feedless:app-latest
 docker push localhost:5000/damoeb/feedless:app-upcoming-latest
 docker push localhost:5000/damoeb/feedless:core-latest
-docker push localhost:5000/damoeb/feedless:browserautomation-latest
+docker push localhost:5000/damoeb/feedless:browser-automation-app-latest
 
-kubectl apply -f k8s/feedless/feedless-browserautomation.yaml
-kubectl rollout restart deployment feedless-browserautomation
+kubectl apply -f k8s/feedless/feedless-browser-automation-app.yaml
+kubectl rollout restart deployment feedless-browser-automation-app
 
 kubectl apply -f k8s/feedless/feedless-web.yaml
 kubectl rollout restart deployment feedless-web
