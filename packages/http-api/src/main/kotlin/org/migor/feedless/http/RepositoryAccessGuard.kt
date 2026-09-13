@@ -9,6 +9,7 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryAccessRule
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.source.Source
@@ -46,6 +47,16 @@ class RepositoryAccessGuard(
     return repository
   }
 
+  /** Sources and other configuration: owner or group member, even on a public repository — fetch URLs may carry share keys. */
+  suspend fun requireRepositoryConfiguration(repositoryId: RepositoryId): Repository {
+    val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw repositoryNotFound(repositoryId)
+    val repository = repositoryUseCase.findById(repositoryId) ?: throw repositoryNotFound(repositoryId)
+    if (!RepositoryAccessRule.isOwnerOrMember(repository, userId) { groupUseCase.findAllByUserId(userId) }) {
+      throw repositoryNotFound(repositoryId)
+    }
+    return repository
+  }
+
   /** The [mayAccess] rule as query inputs, so cross-repository listings paginate correctly. */
   suspend fun requireCallerScope(): Pair<UserId, List<GroupId>> {
     val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw NotFoundException("user not found")
@@ -55,7 +66,10 @@ class RepositoryAccessGuard(
 
   /** [requireRepository], then the source — which must belong to that repository. */
   suspend fun requireSource(repositoryId: RepositoryId, sourceId: SourceId, access: RepositoryAccess): Source {
-    requireRepository(repositoryId, access)
+    when (access) {
+      RepositoryAccess.read -> requireRepositoryConfiguration(repositoryId)
+      RepositoryAccess.write -> requireRepository(repositoryId, access)
+    }
     val source = sourceRepository.findByIdWithActions(sourceId)
     // Same answer for a missing source and one of another repository.
     if (source == null || source.repositoryId != repositoryId) {
@@ -68,12 +82,10 @@ class RepositoryAccessGuard(
     if (access == RepositoryAccess.read && repository.visibility == EntityVisibility.isPublic) {
       return true
     }
-    if (repository.ownerId == userId) {
-      return true
-    }
     val allowedRoles = if (access == RepositoryAccess.read) RoleInGroup.entries else writerRoles
-    return groupUseCase.findAllByUserId(userId)
-      .any { it.groupId == repository.groupId && it.role in allowedRoles }
+    return RepositoryAccessRule.isOwnerOrMember(repository, userId, allowedRoles) {
+      groupUseCase.findAllByUserId(userId)
+    }
   }
 
   private fun repositoryNotFound(repositoryId: RepositoryId) =

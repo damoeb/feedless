@@ -14,6 +14,8 @@ import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.api.graphql.ServerConfigResolver
 import org.migor.feedless.document.DocumentController
 import org.migor.feedless.feed.FeedService
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.group.GroupUseCase
 import org.migor.feedless.secrets.OneTimePasswordService
@@ -56,6 +58,9 @@ const val actuatorPassword = "password"
     OneTimePasswordService::class,
     OAuth2AuthorizedClientService::class,
     FeedService::class,
+    // FeedController checks the legacy source routes through these
+    SourceRepository::class,
+    RepositoryGuard::class,
     UserGroupAssignmentRepository::class,
     GroupRepository::class,
     GroupUseCase::class,

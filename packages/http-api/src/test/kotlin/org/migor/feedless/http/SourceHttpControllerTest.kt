@@ -65,7 +65,7 @@ class SourceHttpControllerTest {
   private val access by lazy { RepositoryAccessFixture(repositoryUseCase, groupUseCase) }
 
   @Test
-  fun `listSources answers the owner, a group member, and a stranger on a public repository`() = runTest {
+  fun `listSources answers the owner and a group member, and a stranger even on a public repository like a missing one`() = runTest {
     val private = access.givenRepository()
     val public = access.givenRepository(EntityVisibility.isPublic)
     val source = givenSource(private.id)
@@ -78,7 +78,8 @@ class SourceHttpControllerTest {
     assert(result.response.contentAsString.contains("\"repositoryId\":\"${private.id.uuid}\"")) { result.response.contentAsString }
     assert(result.response.contentAsString.contains("\"errorsInSuccession\":${source.errorsInSuccession}")) { result.response.contentAsString }
     assertStatus(mockMvc.getAs(access.member, sourcesUrl(private)), 200)
-    assertStatus(mockMvc.getAs(access.stranger, sourcesUrl(public)), 200)
+    // sources are configuration, their fetch URLs may carry share keys
+    assertNotFound(mockMvc.getAs(access.stranger, sourcesUrl(public)), "repository ${public.id.uuid} not found")
   }
 
   @Test
@@ -143,12 +144,15 @@ class SourceHttpControllerTest {
   }
 
   @Test
-  fun `getSource answers a group member and a stranger on a public repository`() = runTest {
+  fun `getSource answers a group member, and a stranger even on a public repository like a missing one`() = runTest {
     val private = access.givenRepository()
     val public = access.givenRepository(EntityVisibility.isPublic)
 
     assertStatus(mockMvc.getAs(access.member, sourceUrl(private, givenSource(private.id))), 200)
-    assertStatus(mockMvc.getAs(access.stranger, sourceUrl(public, givenSource(public.id))), 200)
+    assertNotFound(
+      mockMvc.getAs(access.stranger, sourceUrl(public, givenSource(public.id))),
+      "repository ${public.id.uuid} not found",
+    )
   }
 
   @Test

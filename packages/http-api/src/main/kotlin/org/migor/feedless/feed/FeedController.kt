@@ -11,8 +11,12 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.analytics.Analytics
 import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.capability.ShareKeyAccess
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.feed.exporter.FeedExporter
 import org.migor.feedless.feed.parser.json.JsonFeed
@@ -27,6 +31,7 @@ import org.springframework.http.ResponseEntity
 import org.springframework.stereotype.Controller
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PathVariable
+import kotlin.coroutines.EmptyCoroutineContext
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -45,7 +50,9 @@ class FeedController(
   val feedExporter: FeedExporter,
   val feedService: FeedService,
   val meterRegistry: MeterRegistry,
-  val analytics: Analytics
+  val analytics: Analytics,
+  val sourceRepository: SourceRepository,
+  val repositoryGuard: RepositoryGuard,
 ) {
 
 
@@ -89,6 +96,7 @@ class FeedController(
     meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
     val feedUrl = toFullUrlString(request)
     val feed = resolveFeedCatching(feedUrl) {
+      requireReadableSource(SourceId(feedId), request.getParameter("skey"))
       feedService.getFeed(
         SourceId(feedId),
         feedUrl
@@ -182,6 +190,18 @@ class FeedController(
       }
       feed.export(request.param("out", "atom"))
     }
+
+  // checked outside the cached feed; a denied source answers like a missing one ("feedId not found")
+  private suspend fun requireReadableSource(sourceId: SourceId, shareKey: String?) {
+    val repositoryId = sourceRepository.findById(sourceId)?.repositoryId ?: throw NotFoundException("feedId not found")
+    try {
+      withContext(shareKey?.let { ShareKeyAccess(repositoryId, it) } ?: EmptyCoroutineContext) {
+        repositoryGuard.requireRead(repositoryId)
+      }
+    } catch (e: NotFoundException) {
+      throw NotFoundException("feedId not found")
+    }
+  }
 
   private suspend fun resolveFeedCatching(
     feedUrl: String,

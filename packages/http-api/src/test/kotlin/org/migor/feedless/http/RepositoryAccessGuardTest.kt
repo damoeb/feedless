@@ -124,6 +124,18 @@ class RepositoryAccessGuardTest {
   }
 
   @Test
+  fun `the configuration of a public repository is for the owner and group members only`() = runTest {
+    val repo = givenRepository(EntityVisibility.isPublic)
+    val viewer = givenMember(RoleInGroup.viewer)
+    whenever(groupUseCase.findAllByUserId(eq(stranger))).thenReturn(emptyList())
+
+    assert(asUser(owner) { guard.requireRepositoryConfiguration(repo.id) } == repo)
+    assert(asUser(viewer) { guard.requireRepositoryConfiguration(repo.id) } == repo)
+    assertNotFound { asUser(stranger) { guard.requireRepositoryConfiguration(repo.id) } }
+    assertNotFound { guard.requireRepositoryConfiguration(repo.id) }
+  }
+
+  @Test
   fun `requireSource returns a source of an accessible repository`() = runTest {
     val repo = givenRepository(EntityVisibility.isPrivate)
     val source = givenSource(repo.id)

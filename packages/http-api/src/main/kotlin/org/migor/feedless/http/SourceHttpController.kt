@@ -46,7 +46,7 @@ class SourceHttpController(
     like: String?,
     minErrorsInSuccession: Int?,
   ): ResponseEntity<SourceListResponse> {
-    val repository = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
+    val repository = accessGuard.requireRepositoryConfiguration(RepositoryId(repositoryId))
     // Ask for one more than the page holds: a full page is not evidence of a next one.
     val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
     val where = toFilter(disabled, like, minErrorsInSuccession)

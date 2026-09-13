@@ -25,8 +25,9 @@ class HttpRepositoryMapper(
       id = repo.id.uuid,
       title = repo.title,
       description = repo.description,
-      // shareKey is a capability secret: omit it for non-owners rather than send a blank one.
-      shareKey = repo.shareKey.takeIf { currentUserIsOwner },
+      // shareKey is a capability secret: only the owner of a private repository gets it; a key handed out
+      // while public would keep working once the repository goes private.
+      shareKey = repo.shareKey.takeIf { currentUserIsOwner && repo.visibility == EntityVisibility.isPrivate },
       ownerId = repo.ownerId.uuid,
       product = toHttpVertical(repo.product),
       visibility = toHttpVisibility(repo.visibility),

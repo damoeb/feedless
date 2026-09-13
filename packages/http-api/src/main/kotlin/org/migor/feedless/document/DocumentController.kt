@@ -3,11 +3,13 @@ package org.migor.feedless.document
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
 import jakarta.servlet.http.HttpServletRequest
-import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.analytics.Analytics
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
@@ -22,7 +24,7 @@ import java.nio.charset.StandardCharsets
 @RestController
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentController(
-  private val documentUseCase: DocumentUseCase,
+  private val documentGuard: DocumentGuard,
   private val meterRegistry: MeterRegistry,
   private val analytics: Analytics
 ) {
@@ -36,9 +38,15 @@ class DocumentController(
   suspend fun documentById(
     request: HttpServletRequest,
     @PathVariable("documentId") documentId: String,
-  ): ResponseEntity<String> = coroutineScope {
+  ): ResponseEntity<String> = withContext(injectCapabilitiesFromSecurityContext()) {
     analytics.track()
-    documentUseCase.findById(DocumentId(documentId))?.let { document ->
+    // a document the caller may not read answers like a missing one
+    val readable = try {
+      documentGuard.requireRead(DocumentId(documentId))
+    } catch (e: NotFoundException) {
+      null
+    }
+    readable?.let { document ->
       meterRegistry.counter(
         AppMetrics.fetchRepository, listOf(
           Tag.of("type", "document"),

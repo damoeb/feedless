@@ -126,13 +126,13 @@ class HarvestHttpControllerTest {
   }
 
   @Test
-  fun `listHarvests answers a group member and a stranger on a public repository`() = runTest {
+  fun `listHarvests answers a group member, and a stranger even on a public repository like a missing one`() = runTest {
     val private = access.givenRepository()
     val public = access.givenRepository(EntityVisibility.isPublic)
     whenever(harvestUseCase.findAllBySourceId(any(), any(), any(), any())).thenReturn(emptyList())
 
     assertStatus(mockMvc.getAs(access.member, harvestsUrl(private, givenSource(private.id))), 200)
-    assertStatus(mockMvc.getAs(access.stranger, harvestsUrl(public, givenSource(public.id))), 200)
+    assertNotFound(mockMvc.getAs(access.stranger, harvestsUrl(public, givenSource(public.id))), "repository ${public.id.uuid} not found")
   }
 
   @Test
