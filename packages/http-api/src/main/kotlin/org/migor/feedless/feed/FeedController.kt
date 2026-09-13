@@ -123,6 +123,8 @@ class FeedController(
         dateXPath = null,
       )
 
+      // Outside resolveFeedCatching: a lookup failure must reach the normal exception handler, not the cached error feed.
+      val access = feedService.requireLegacyTokenAccess(null)
       val feed = resolveFeedCatching(feedUrl)
       {
         feedService.webToFeed(
@@ -130,7 +132,7 @@ class FeedController(
           selectors,
           false,
           null,
-          feedService.requireLegacyTokenAccess(null),
+          access,
           feedUrl
         )
       }
@@ -158,9 +160,9 @@ class FeedController(
         dateXPath = request.paramOptional("date"),
       )
 
+      // Outside resolveFeedCatching: a lookup failure must reach the normal exception handler, not the cached error feed.
+      val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
       val feed = resolveFeedCatching(feedUrl) {
-        // checked on every request, the feed below is cached by URL
-        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
         feedService.webToFeed(
           request.param("url"),
           selectors,
@@ -184,8 +186,9 @@ class FeedController(
       analytics.track()
       meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
       val feedUrl = toFullUrlString(request)
+      // Outside resolveFeedCatching: a lookup failure must reach the normal exception handler, not the cached error feed.
+      val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
       val feed = resolveFeedCatching(feedUrl) {
-        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
         feedService.transformFeed(
           request.param("url"),
           request.paramOptional("q"),

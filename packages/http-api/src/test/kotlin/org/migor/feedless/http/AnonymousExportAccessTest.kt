@@ -280,7 +280,25 @@ class AnonymousExportAccessTest {
 
     val result = mockMvc.getAnonymous("/api/web-to-feed?url=https://example.org&link=./a&context=//div&token=private-claim")
 
-    assertFeed(result, "feed error Repository private not found")
+    // Outside resolveFeedCatching now, so the normal exception handler answers, not a 200 error feed.
+    assertStatus(result, 404)
+    verifyBlocking(feedService, never()) { createErrorFeed(any(), any()) }
+    verifyBlocking(feedService, never()) { webToFeed(any(), any(), any(), anyOrNull(), any(), any()) }
+  }
+
+  // HttpExceptionHandler's catch-all currently maps every exception to 404 (tracked separately in docs/tasks.md);
+  // what this asserts is that a lookup failure no longer reaches the leaking, cacheable 200 error-feed path.
+  @Test
+  fun `web-to-feed does not turn a claim lookup failure into a 200 error feed`() {
+    val lookupFailure = RuntimeException("db pool exhausted")
+    runBlocking {
+      whenever(feedService.requireLegacyTokenAccess(eq("some-token"))).thenThrow(lookupFailure)
+    }
+
+    val result = mockMvc.getAnonymous("/api/web-to-feed?url=https://example.org&link=./a&context=//div&token=some-token")
+
+    assert(result.response.status != 200) { result.response.status }
+    verifyBlocking(feedService, never()) { createErrorFeed(any(), any()) }
     verifyBlocking(feedService, never()) { webToFeed(any(), any(), any(), anyOrNull(), any(), any()) }
   }
 
