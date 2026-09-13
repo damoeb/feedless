@@ -1,6 +1,7 @@
 package org.migor.feedless.http
 
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
@@ -25,6 +26,7 @@ import org.springframework.test.web.servlet.get
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers.status
+import tools.jackson.databind.json.JsonMapper
 import java.time.LocalDateTime
 
 @WebMvcTest(controllers = [PlanHttpController::class])
@@ -38,6 +40,9 @@ class PlanHttpControllerTest {
 
   @MockitoBean
   private lateinit var planUseCase: PlanUseCase
+
+  @Autowired
+  private lateinit var jsonMapper: JsonMapper
 
   @Test
   fun `listPlans returns items with recurringYearly false`() = runTest {
@@ -93,6 +98,17 @@ class PlanHttpControllerTest {
     } else {
       assert(mvcResult.response.status == 403)
     }
+  }
+
+  @Test
+  fun `Boot's mapper keeps declaration order, not alphabetical`() {
+    assertThat(jsonMapper.writeValueAsString(DeclarationOrder())).isEqualTo("""{"zulu":1,"alpha":2}""")
+  }
+
+  // Body properties: Jackson 3 keeps constructor properties in declaration order but sorts these
+  class DeclarationOrder {
+    val zulu = 1
+    val alpha = 2
   }
 
   @Test
