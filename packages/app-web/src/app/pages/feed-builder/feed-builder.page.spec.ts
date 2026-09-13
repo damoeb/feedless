@@ -29,7 +29,9 @@ describe('FeedBuilderPage', () => {
 
   describe('handleRepository', () => {
     async function remixedFeedUrlOf(visibility: GqlVisibility, shareKey: string): Promise<string> {
-      const handleSource = jest.spyOn(component as any, 'handleSource').mockResolvedValue(undefined);
+      const handleSource = jest
+        .spyOn(component as any, 'handleSource')
+        .mockResolvedValue(undefined);
       await component.handleRepository({
         ...mocks.repository,
         id: 'repo-1',
