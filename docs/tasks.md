@@ -157,6 +157,8 @@ Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `fea
 - [ ] Element per Browser herunterladen
 - [ ] Trigger-Sync-Button reparieren — `POST /api/v1/repositories/{r}/sources/{s}/harvests` (auf `feature/feed-ctl`) startet einen Harvest sofort und liefert eine abfragbare Harvest-ID; der Button kann darauf aufbauen
 - [ ] Präzisieren, was an Feed und ical kaputt ist — beide Endpunkte antworten (`/f/{id}/atom`, `/f/{id}/cal`); vermutlich geht es um Auffindbarkeit oder um `ics` als Formatnamen
+- [ ] **Share-Key rotieren.** Ein Share-Key, der sichtbar war, solange ein Repository öffentlich war (oder in eine fremde Quelle kopiert wurde), gilt weiter, wenn das Repository privat wird; es gibt keinen Weg, den Schlüssel neu zu erzeugen (GraphQL, `/api/v1`, UI)
+- [ ] **Anhänge in privaten Feeds.** `/attachment/{id}` liefert Anhänge privater Repositories nur noch an Besitzer und Gruppenmitglieder, Feed-Reader erhalten 404; die Anhang-Links im privaten Feed brauchen einen eigenen Zugang (z. B. signierte URLs), ohne den Share-Key ins Feed-Dokument zu schreiben
 
 ## Qualität und Betrieb
 
