@@ -37,8 +37,7 @@ class RepositoryGuard(
     }
     // same answer as a missing repository, so a private id is never confirmed
     val userId = coroutineContext.userIdMaybe() ?: throw notFound(id)
-    userGuard.requireRead(userId)
-    if (!isOwnerOrMember(repository, userId)) {
+    if (!isActiveOwnerOrMember(repository, userId)) {
       throw notFound(id)
     }
     repository
@@ -52,7 +51,12 @@ class RepositoryGuard(
   /** Sources and other configuration: owner or group member only, even on a public repository; a share key does not count. */
   suspend fun mayReadConfiguration(repository: Repository): Boolean {
     val userId = currentCoroutineContext().userIdMaybe() ?: return false
-    return isOwnerOrMember(repository, userId)
+    return try {
+      isActiveOwnerOrMember(repository, userId)
+    } catch (e: IllegalArgumentException) {
+      // a banned owner or member sees no configuration
+      false
+    }
   }
 
   override suspend fun requireWrite(id: RepositoryId): Repository = withContext(Dispatchers.IO) {
@@ -74,8 +78,8 @@ class RepositoryGuard(
     return repository
   }
 
-  private suspend fun isOwnerOrMember(repository: Repository, userId: UserId): Boolean =
-    RepositoryAccessRule.isOwnerOrMember(repository, userId) {
+  private suspend fun isActiveOwnerOrMember(repository: Repository, userId: UserId): Boolean =
+    RepositoryAccessRule.isActiveOwnerOrMember(repository, userId, userGuard) {
       withContext(Dispatchers.IO) { userGroupAssignmentRepository.findAllByUserId(userId) }
     }
 

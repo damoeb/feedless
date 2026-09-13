@@ -38,12 +38,19 @@ class RepositoryGuardTest {
   private val stranger = UserId()
   private val groupId = GroupId()
   private val repositoryId = randomRepositoryId()
+  private val bannedStranger = UserId()
+  private val bannedMember = UserId()
+  private lateinit var userRepository: UserRepository
 
   @BeforeEach
   fun setUp() = runTest {
-    val userRepository = mock(UserRepository::class.java)
+    userRepository = mock(UserRepository::class.java)
     val user = mockUser(userId)
     `when`(userRepository.findById(any(UserId::class.java))).thenReturn(user)
+    val banned = mockUser(bannedStranger)
+    `when`(banned.banned).thenReturn(true)
+    `when`(userRepository.findById(eq(bannedStranger))).thenReturn(banned)
+    `when`(userRepository.findById(eq(bannedMember))).thenReturn(banned)
 
     val userGuard = UserGuard(userRepository)
 
@@ -56,6 +63,9 @@ class RepositoryGuardTest {
     `when`(userGroupAssignmentRepository.findAllByUserId(any(UserId::class.java))).thenReturn(emptyList())
     `when`(userGroupAssignmentRepository.findAllByUserId(eq(member))).thenReturn(
       listOf(UserGroupAssignment(role = RoleInGroup.viewer, userId = member, groupId = groupId)),
+    )
+    `when`(userGroupAssignmentRepository.findAllByUserId(eq(bannedMember))).thenReturn(
+      listOf(UserGroupAssignment(role = RoleInGroup.viewer, userId = bannedMember, groupId = groupId)),
     )
 
     repositoryGuard = RepositoryGuard(repositoryRepository, userGuard, userGroupAssignmentRepository)
@@ -94,6 +104,20 @@ class RepositoryGuardTest {
   fun `requireRead of a private repository fails for a logged-in stranger like a missing repository`() {
     val repository = runBlocking { givenRepository() }
     assertDeniedLikeMissing(repository.id, asUser(stranger))
+  }
+
+  @Test
+  fun `requireRead of a private repository fails for a banned stranger like a missing repository`() {
+    val repository = runBlocking { givenRepository() }
+    assertDeniedLikeMissing(repository.id, asUser(bannedStranger))
+  }
+
+  @Test
+  fun `requireRead of a private repository denies a banned member`() {
+    val repository = runBlocking { givenRepository() }
+    assertThatThrownBy {
+      runTest(context = asUser(bannedMember)) { repositoryGuard.requireRead(repository.id) }
+    }.isInstanceOf(IllegalArgumentException::class.java).hasMessage("denied")
   }
 
   @Test
