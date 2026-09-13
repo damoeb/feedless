@@ -184,6 +184,46 @@ class FeedServiceTest {
     assertThat(feedService.requireLegacyTokenAccess(null).token).isNull()
   }
 
+  // A token whose claim row is genuinely gone (not found) is a legitimate null, distinct from a lookup failure below.
+  @Test
+  fun `a legacy token whose claimed row is missing still passes with no claim`() = runTest {
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(null)
+
+    val access = feedService.requireLegacyTokenAccess("token")
+
+    assertThat(access.token).isEqualTo("token")
+    assertThat(access.claim).isNull()
+  }
+
+  @Test
+  fun `requireLegacyTokenAccess propagates a claim lookup failure instead of treating it as no claim`() = runTest {
+    val lookupFailure = RuntimeException("db pool exhausted")
+    `when`(repositoryClaimRepository.findById(any2())).thenThrow(lookupFailure)
+
+    val actual = runCatching { feedService.requireLegacyTokenAccess("token") }.exceptionOrNull()
+
+    assertThat(actual).isSameAs(lookupFailure)
+  }
+
+  // The exploit this closes: a flaky first lookup skipping the check, a lucky second one then serving a private repo.
+  @Test
+  fun `webToFeed reuses the claim requireLegacyTokenAccess already resolved instead of looking it up again`() = runTest {
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim())
+    val access = feedService.requireLegacyTokenAccess("token")
+    verify(repositoryClaimRepository, times(1)).findById(any2())
+
+    val feed = createJsonFeed()
+    `when`(webToFeed.webToFeed(any2(), any2(), any2(), any2())).thenReturn(feed)
+    `when`(scraper.fetch(any2(), any2())).thenReturn(
+      HttpResponse(contentType = "text/html", url = "", statusCode = 200, responseBody = "".toByteArray())
+    )
+    val selectors = GenericFeedSelectors(linkXPath = "l", extendContext = ExtendContext.NONE, contextXPath = "c", dateXPath = "d")
+
+    feedService.webToFeed("url", selectors, prerender = false, filter = null, access = access, feedUrl = "feedUrl")
+
+    verify(repositoryClaimRepository, times(1)).findById(any2())
+  }
+
   private suspend fun givenRepository(visibility: EntityVisibility): Repository {
     val repository = Repository(title = "feed", visibility = visibility, ownerId = UserId(), groupId = GroupId())
     `when`(repositoryRepository.findById(org.mockito.kotlin.eq(repository.id))).thenReturn(repository)

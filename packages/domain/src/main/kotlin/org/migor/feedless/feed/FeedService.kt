@@ -105,27 +105,30 @@ class FeedService(
     feedUrl: String
   ): JsonFeed {
     val fromUrl = suspend { fetchFeedFromUrl(url, prerender, selectors, feedUrl) }
-    return resolveFeed(fromUrl, feedUrl, access.token, filter)
+    return resolveFeed(fromUrl, feedUrl, access, filter)
   }
 
   /** Checks the repository a legacy token claims on every request, before the URL-keyed cache that would skip it. */
   suspend fun requireLegacyTokenAccess(token: String?): LegacyFeedAccess {
-    resolveClaim(token)?.repositoryId?.let { repositoryGuard.requireRead(it) }
-    return LegacyFeedAccess(token)
+    val claim = resolveClaim(token)
+    claim?.repositoryId?.let { repositoryGuard.requireRead(it) }
+    return LegacyFeedAccess(token, claim)
   }
 
   private suspend fun resolveFeed(
     fromUrlLazy: suspend () -> JsonFeed,
     publicFeedUrl: String,
-    token: String? = null,
+    access: LegacyFeedAccess? = null,
     filter: String? = null,
   ): JsonFeed {
 
     return try {
+      val token = access?.token
       val hasToken = token != null
       val requiresToken = featureService.isDisabled(FeatureName.legacyFeedApiBool)
 
-      val claim = resolveClaim(token)
+      // Reuse the claim requireLegacyTokenAccess already checked, so this never resolves it a second, independent time.
+      val claim = access?.claim
       val hasExpiredTrial = claim?.createdAt?.isBefore(LocalDateTime.now().minusDays(30)) ?: requiresToken
       val hasValidContract = claim?.repositoryId?.let { hasUserValidContract(claim.repositoryId!!) } ?: false
 
@@ -267,7 +270,7 @@ class FeedService(
 
     val feedFromUrlLazy = suspend { feedParser.parseFeedFromUrl(nativeFeedUrl) }
 
-    return resolveFeed(feedFromUrlLazy, nativeFeedUrl, access.token, filter)
+    return resolveFeed(feedFromUrlLazy, nativeFeedUrl, access, filter)
   }
 
   // --
@@ -284,19 +287,20 @@ class FeedService(
   }
 
   suspend fun resolveClaim(token: String?): RepositoryClaim? {
+    // An undecodable token is legitimately claim-less; a lookup failure below is not, so it must not look the same.
     val jwt = try {
       token?.let { tokenIssuer.decodeJwt(token) }
     } catch (_: Throwable) {
       null
     }
-    if (jwt != null) {
+    return jwt?.let {
       try {
-        return repositoryClaimRepository.findById(RepositoryClaimId(jwt.getClaimAsString("id")))
+        repositoryClaimRepository.findById(RepositoryClaimId(it.getClaimAsString("id")))
       } catch (e: Exception) {
-        log.error("Error resolving id claim from token: ${e.message}")
+        log.error("Error resolving id claim from token: ${e.message}", e)
+        throw e
       }
     }
-    return null
   }
 
 //    private suspend fun createEolFeed(feedUrl: String): JsonFeed {
