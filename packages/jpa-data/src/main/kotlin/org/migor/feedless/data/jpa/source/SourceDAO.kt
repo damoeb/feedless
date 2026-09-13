@@ -9,6 +9,7 @@ import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
+import java.time.LocalDateTime
 import java.util.*
 
 @Repository
@@ -37,6 +38,57 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
     @Param("erroneous") erroneous: Boolean,
     @Param("errorMessage") errorMessage: String? = null
   )
+
+  // Each outcome is one UPDATE computed in the database, so overlapping harvests can't lose each other's update.
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = 0,
+            s.lastErrorMessage = null,
+            s.lastRecordsRetrieved = :recordsRetrieved,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestSucceeded(
+    @Param("id") id: UUID,
+    @Param("recordsRetrieved") recordsRetrieved: Int,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
+
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = s.errorsInSuccession + 1,
+            s.lastErrorMessage = :errorMessage,
+            s.lastRecordsRetrieved = 0,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestFailed(
+    @Param("id") id: UUID,
+    @Param("errorMessage") errorMessage: String?,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
+
+  @Modifying
+  @Query(
+    """
+      update SourceEntity s
+        set s.errorsInSuccession = 0,
+            s.lastErrorMessage = :errorMessage,
+            s.lastRefreshedAt = :refreshedAt
+      where s.id = :id
+    """
+  )
+  fun updateHarvestInterrupted(
+    @Param("id") id: UUID,
+    @Param("errorMessage") errorMessage: String?,
+    @Param("refreshedAt") refreshedAt: LocalDateTime,
+  ): Int
 
   fun countByRepositoryIdAndLastRecordsRetrieved(repositoryId: UUID, count: Int): Int
 

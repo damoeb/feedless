@@ -40,7 +40,7 @@ fun toFullUrlString(request: HttpServletRequest): String {
 @Service
 @Profile("${AppProfiles.analytics} & ${AppLayer.service}")
 @ConfigurationProperties("app.analytics")
-class AnalyticsService {
+class AnalyticsService : Analytics {
 
   private val log = LoggerFactory.getLogger(AnalyticsService::class.simpleName)
 
@@ -99,7 +99,7 @@ class AnalyticsService {
     }
   }
 
-  suspend fun track() {
+  override suspend fun track() {
     try {
       if (canPush || disabledAt.isBefore(LocalDateTime.now().minusMinutes(5))) {
         if (!canPush) return

@@ -2,7 +2,7 @@ package org.migor.feedless.data.jpa
 
 import org.mapstruct.Mapper
 import org.migor.feedless.actions.ScrapeActionId
-import org.migor.feedless.agent.AgentId
+import org.migor.feedless.browserautomation.BrowserAutomationId
 import org.migor.feedless.annotation.AnnotationId
 import org.migor.feedless.attachment.AttachmentId
 import org.migor.feedless.connectedApp.ConnectedAppId
@@ -62,9 +62,9 @@ interface IdMappers {
   fun mapCronScheduleId(value: UUID?): CronScheduleId? = value?.let { CronScheduleId(it) }
   fun mapCronScheduleId(value: CronScheduleId?): UUID? = value?.uuid
 
-  // Agent IDs
-  fun mapAgentId(value: UUID?): AgentId? = value?.let { AgentId(it) }
-  fun mapAgentId(value: AgentId?): UUID? = value?.uuid
+  // BrowserAutomation IDs
+  fun mapBrowserAutomationId(value: UUID?): BrowserAutomationId? = value?.let { BrowserAutomationId(it) }
+  fun mapBrowserAutomationId(value: BrowserAutomationId?): UUID? = value?.uuid
 
   // Attachment IDs
   fun mapAttachmentId(value: UUID?): AttachmentId? = value?.let { AttachmentId(it) }

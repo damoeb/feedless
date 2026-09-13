@@ -45,7 +45,7 @@ jqwik = "1.9.3"
 telegrambots = "6.9.0"
 stripe = "29.1.0"
 gradle-node = "7.1.0"
-openapi-generator = "7.9.0"
+openapi-generator = "7.14.0"
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }

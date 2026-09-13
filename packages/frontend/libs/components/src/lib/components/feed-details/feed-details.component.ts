@@ -64,6 +64,7 @@ import { FetchPolicy } from '@apollo/client/core';
 import { addIcons } from 'ionicons';
 import {
   addOutline,
+  calendarOutline,
   closeOutline,
   cloudDownloadOutline,
   cloudUploadOutline,
@@ -111,6 +112,19 @@ type Pair<A, B> = {
   a: A;
   b: B;
 };
+
+// Feed and iCal share this, so both keep the private-only share-key rule
+export function repositoryFeedUrl(
+  apiUrl: string,
+  repository: { id: string; visibility: GqlVisibility; shareKey?: string },
+  format: 'atom' | 'cal',
+): string {
+  const url = `${apiUrl}/f/${repository.id}/${format}`;
+  return repository.visibility === GqlVisibility.IsPrivate &&
+    repository.shareKey?.length > 0
+    ? `${url}?skey=${repository.shareKey}`
+    : url;
+}
 
 @Component({
   selector: 'app-feed-details',
@@ -181,6 +195,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
 
   protected documents: RecordWithFornmControl[] = [];
   protected feedUrl: string;
+  protected icalUrl: string;
 
   protected readonly GqlVisibility = GqlVisibility;
   protected readonly dateFormat = dateFormat;
@@ -218,6 +233,7 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       addIcons({
         closeOutline,
         addOutline,
+        calendarOutline,
         listOutline,
         pulseOutline,
         gitBranchOutline,
@@ -282,14 +298,8 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
       (plugin) => plugin.pluginId === GqlFeedlessPlugins.OrgFeedlessDiffRecords,
     )?.params?.org_feedless_diff_records?.compareBy?.field;
 
-    if (
-      repository.visibility === GqlVisibility.IsPrivate &&
-      repository.shareKey?.length > 0
-    ) {
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
-    } else {
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${repository.id}/atom`;
-    }
+    this.feedUrl = repositoryFeedUrl(this.serverConfig.apiUrl, repository, 'atom');
+    this.icalUrl = repositoryFeedUrl(this.serverConfig.apiUrl, repository, 'cal');
     this.changeRef.detectChanges();
   }
 

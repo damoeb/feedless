@@ -50,43 +50,46 @@ This is AGENTS.md Critical Rule #2. On the backend:
 | Source | Generator | Output | Consumed as |
 |---|---|---|---|
 | `packages/graphql-api/src/main/resources/schema/schema.graphqls` | DGS codegen (Gradle) | `build/generated/sources/dgs-codegen` | `org.migor.feedless.generated.types.*`, `DgsConstants`, `DgsClient` |
-| `packages/http-api/src/main/resources/openapi/openapi.yaml` | openapi-generator, `kotlin-spring`, `interfaceOnly` | `build/generated/src/main/kotlin` | `org.migor.feedless.http.api` / `.model` — implement the interfaces in `server-core` |
+| `packages/http-api/src/main/resources/openapi/openapi.yaml` | openapi-generator, `kotlin-spring`, `interfaceOnly` | `build/generated/src/main/kotlin` | `org.migor.feedless.http.api` / `.model` — implemented by the controllers in `http-api` |
 | `server-core/.../document/filter/FilterByExpression.jj` | JavaCC | `build/generated/javacc` | the document filter parser |
 
 **Why:** all three regenerate on every build. A hand edit works locally until the next clean build, then disappears — leaving a CI failure with no diff that explains it.
 
-To change the API, edit the **contract** and rebuild. Both contract modules hold no hand-written Kotlin at all.
+To change the API, edit the **contract** and rebuild. Both contract modules also hold hand-written adapters (resolvers, controllers, mappers) under `src/main/kotlin`; only `build/generated/**` is generator output.
 
-Note: `server-core/src/generated/java/` holds a checked-in copy of the JavaCC output that is **not** on the source path (`build/generated/javacc` is). Do not edit it and do not assume it is current.
+Note: there is no checked-in copy of the JavaCC output. `server-core`'s `compileJavacc` task writes it to `build/generated/javacc/org/migor/feedless/document/filter/generated`, which is on the source path; that is the only place to look for it.
 
 ## Package and naming conventions
 
-`server-core` is organised by **feature**, not by layer — `document/`, `repository/`, `source/`, `plan/`, `session/`, `user/`, `scrape/`, `pipeline/`, … Each feature package holds its own vertical slice:
+Code is organised by **feature**, not by layer — `document/`, `repository/`, `source/`, `plan/`, `session/`, `user/`, `scrape/`, `pipeline/`, … — and the same package spans modules: use cases and guards in `domain`, resolvers in `graphql-api`, controllers in `http-api`, infrastructure in `server-core`. `graphql-api` and `http-api` never depend on `server-core`, and `domain` depends on no project module.
 
-| Suffix | Role | Layer |
-|---|---|---|
-| `*Resolver` | DGS entry point — `@DgsQuery`/`@DgsMutation`/`@DgsData`, `@Throttled`, `@PreAuthorize` | `apiLayer` |
-| `*Controller` | REST entry point, implementing a generated `http-api` interface | `apiLayer` |
-| `*Guard` | Authorisation checks for one feature | `apiLayer` |
-| `*UseCase` | Orchestration — the unit most business logic belongs in | `serviceLayer` |
-| `*Service` | A single capability, often an adapter to something external | `serviceLayer` |
-| `*Repository` | Spring Data interface | `repositoryLayer` |
+| Suffix | Role | Module | Layer |
+|---|---|---|---|
+| `*Resolver` | DGS entry point — `@DgsQuery`/`@DgsMutation`/`@DgsData`, `@Throttled`, `@PreAuthorize` | `graphql-api` | `apiLayer` |
+| `*Controller` | REST entry point, implementing a generated `http-api` interface | `http-api` | `apiLayer` |
+| `*Guard` | Authorisation checks for one feature | `domain`, except `RepositoryAccessGuard` in `http-api` | `serviceLayer`, except `RepositoryAccessGuard` at `apiLayer` |
+| `*UseCase` | Orchestration — the unit most business logic belongs in | `domain` | `serviceLayer` |
+| `*Service` | A single capability, often an adapter to something external | `domain`, or `server-core` when it is infrastructure behind a port | `serviceLayer` |
+| `*Repository` | Repository interface; Spring Data implementation | interface in `domain`, implementation in `jpa-data` | `repositoryLayer` |
+| outbound port | Interface named after the capability (`TokenIssuer`, `Scraper`, …) that a use case needs from infrastructure | interface in `domain`, implemented in `server-core` | — |
 
-Put a new file in the feature package, not in a layer package. DTO conversion goes through `toDto()` extensions; entity mapping through MapStruct in `jpa-data`.
+Use cases never import generated GraphQL types (`org.migor.feedless.generated`) or `data.jpa`; mapping to DTOs happens in the adapters. Put a new file in the feature package, not in a layer package. DTO conversion goes through `toDto()` extensions; entity mapping through MapStruct in `jpa-data`.
 
 Resolvers are `suspend` and use `coroutineScope`/`withContext` — do not block inside one.
 
 ## Database
 
-- Migrations: `server-core/src/main/resources/db/migration/V<n>__<snake_case>.sql`, currently through `V85`. **Additive only** (AGENTS.md #5) — Flyway checksums what it has applied.
-- Entities and repositories live in `jpa-data`, interfaces in `domain`. PostGIS types are in use (`JtsUtil`), so a plain Postgres container is not enough.
+- Migrations: `jpa-data/src/main/resources/db/migration/V<n>__<snake_case>.sql`, applied up to `spring.flyway.target` in `server-core`'s `application-database.yaml` (currently `V92`). **Additive only** (AGENTS.md #5) — Flyway checksums what it has applied.
+- Entities and repositories live in `jpa-data`, interfaces in `domain`. PostGIS types are in use (`JtsUtil`), so a plain Postgres container is not enough. Persistence integration tests live in `jpa-data`.
 
 ## Tests
 
-Run: `./gradlew :packages:server-core:test`. **Docker must be running** — `PostgreSQLExtension` starts a container. Without it the failure looks like a connection bug, not a missing prerequisite.
+Run: `./gradlew :packages:domain:test :packages:graphql-api:test :packages:http-api:test :packages:jpa-data:test :packages:server-core:test`. **Docker must be running** for `jpa-data` and `server-core` — `PostgreSQLExtension` (a `jpa-data` test fixture) starts a container. Without it the failure looks like a connection bug, not a missing prerequisite.
 
-- `*Test.kt` — unit; `*IntTest.kt` — Spring context (20 of them).
-- `@Tag("nlp")` (12 tests) and `@Tag("unstable")` (1) are **excluded from every run** by `build.gradle.kts`. A green `./gradlew test` did not execute them. Do not tag a failing test to make the build pass.
+- Tests live next to their code: use-case tests in `domain`, resolver tests in `graphql-api`, controller tests in `http-api`, persistence tests in `jpa-data`; tests that need the whole application stay in `server-core`.
+- `*Test.kt` — unit; `*IntTest.kt` — Spring context (30 `@SpringBootTest` classes).
+- `Mother` is a `domain` test fixture: `testImplementation(testFixtures(project(":packages:domain")))`.
+- `@Tag("nlp")` (12 tests) and `@Tag("unstable")` (1) are **excluded from every run** by the `domain` and `server-core` `build.gradle.kts`. A green `./gradlew test` did not execute them. Do not tag a failing test to make the build pass.
 - AssertJ (`assertThat`) for assertions, `mockito-kotlin` for mocks, `@MockitoBean` for context slices, `runTest` for coroutines.
 - Some test files are entirely commented out (e.g. `RepositoryResolverIntTest.kt`). They are dead, not disabled — a commented test is not coverage.
 

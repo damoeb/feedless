@@ -4,6 +4,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.RequestContext
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
@@ -19,7 +20,7 @@ class ReportJobExecutor internal constructor(
 
   @Scheduled(fixedDelay = 60000, initialDelay = 20000)
   fun sendScheduledReports() {
-    runBlocking {
+    runBlocking(RequestContext()) {
       coroutineScope {
         reportUseCase.processReportJobs()
       }

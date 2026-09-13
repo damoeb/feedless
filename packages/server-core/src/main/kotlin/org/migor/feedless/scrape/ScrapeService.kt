@@ -19,12 +19,11 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.generated.types.HttpFetchResponse
-import org.migor.feedless.generated.types.LogStatement
 import org.migor.feedless.generated.types.ScrapeExtractFragment
 import org.migor.feedless.generated.types.ScrapeExtractFragmentPart
 import org.migor.feedless.generated.types.ScrapeExtractResponse
@@ -39,26 +38,15 @@ import org.migor.feedless.pipeline.PluginService
 import org.migor.feedless.source.ExtractEmit
 import org.migor.feedless.source.Source
 import org.migor.feedless.util.HtmlUtil
-import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
-import java.time.LocalDateTime
-
-class LogCollector {
-  val logs = mutableListOf<LogStatement>()
-  fun log(message: String) {
-    logs.add(LogStatement(message = message, time = LocalDateTime.now().toMillis()))
-//    log?.debug("$message")
-  }
-}
-
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class ScrapeService {
+class ScrapeService : ScrapeRunner {
 
   private val log = LoggerFactory.getLogger(ScrapeService::class.simpleName)
 
@@ -66,7 +54,7 @@ class ScrapeService {
   private lateinit var httpService: HttpService
 
   @Autowired
-  private lateinit var agentService: AgentService
+  private lateinit var browserAutomationService: BrowserAutomationService
 
   @Autowired
   private lateinit var pluginService: PluginService
@@ -74,7 +62,7 @@ class ScrapeService {
   @Autowired
   private lateinit var meterRegistry: MeterRegistry
 
-  suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
+  override suspend fun scrape(source: Source, logCollector: LogCollector): ScrapeOutput {
     return withContext(Dispatchers.IO) {
       try {
         val scrapeContext = ScrapeContext(logCollector)
@@ -168,16 +156,16 @@ class ScrapeService {
         is FilterEntityPlugin<*> -> run {
           val output = context.lastOutput()
 
-          if (output.fragment?.items == null) {
-            throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items")
-          }
+          // a local, because FragmentOutput now lives in graphql-api and cross-module properties don't smart-cast
+          val items = output.fragment?.items
+            ?: throw IllegalArgumentException("plugin '${action.pluginId}' expects fragments items")
 
           context.log("""filter params: ${action.executorParams}""")
           val result = ScrapeActionOutput(
             index = index,
             fragment = FragmentOutput(
               fragmentName = "filter",
-              items = output.fragment.items.filterIndexed { i, item ->
+              items = items.filterIndexed { i, item ->
                 plugin.filterEntity(
                   item,
                   action.executorParams!!.paramsJsonString,
@@ -283,13 +271,13 @@ class ScrapeService {
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("send to agent")
-      val response = agentService.prerender(source).get()
+      val response = browserAutomationService.prerender(source).get()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
 //        log.info("outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
       context.logCollector.logs.addAll(response.logs.map {
-        LogStatement(
+        LogEntry(
           time = it.time,
           message = "[agent] ${it.message}"
         )

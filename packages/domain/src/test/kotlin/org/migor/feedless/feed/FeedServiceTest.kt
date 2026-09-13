@@ -1,0 +1,322 @@
+package org.migor.feedless.feed
+
+import org.migor.feedless.EntityVisibility
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.any
+import org.migor.feedless.any2
+import org.migor.feedless.anyList
+import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.document.DocumentRepository
+import org.migor.feedless.document.DocumentUseCase
+import org.migor.feedless.eq
+import org.migor.feedless.feature.FeatureName
+import org.migor.feedless.feature.FeatureService
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.pipeline.ItemFilter
+import org.migor.feedless.pipeline.plugins.ItemFilterParams
+import org.migor.feedless.repository.RepositoryClaim
+import org.migor.feedless.repository.RepositoryClaimRepository
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.Scraper
+import org.migor.feedless.scrape.WebToFeed
+import org.migor.feedless.session.TokenIssuer
+import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceId
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.source.SourceUseCase
+import org.migor.feedless.user.User
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.springframework.core.env.Environment
+import org.springframework.core.env.Profiles
+import org.springframework.security.oauth2.jwt.Jwt
+import java.time.LocalDateTime
+import java.util.*
+
+class FeedServiceTest {
+
+  private lateinit var feedService: FeedService
+  private lateinit var feedParser: FeedParser
+  private lateinit var itemFilter: ItemFilter
+  private lateinit var webToFeed: WebToFeed
+  private lateinit var scraper: Scraper
+  private lateinit var sourceUseCase: SourceUseCase
+  private lateinit var documentRepository: DocumentRepository
+  private lateinit var environment: Environment
+  private lateinit var documentUseCase: DocumentUseCase
+  private lateinit var sourceRepository: SourceRepository
+  private lateinit var tokenIssuer: TokenIssuer
+  private lateinit var repositoryClaimRepository: RepositoryClaimRepository
+  private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var repositoryGuard: RepositoryGuard
+
+  @BeforeEach
+  fun beforeEach() = runTest {
+    feedParser = mock(FeedParser::class.java)
+    itemFilter = mock(ItemFilter::class.java)
+
+    val adminUser = mock(User::class.java)
+    `when`(adminUser.id).thenReturn(randomUserId())
+
+    webToFeed = mock(WebToFeed::class.java)
+    scraper = mock(Scraper::class.java)
+    sourceUseCase = mock(SourceUseCase::class.java)
+    documentRepository = mock(DocumentRepository::class.java)
+    documentUseCase = mock(DocumentUseCase::class.java)
+    sourceRepository = mock(SourceRepository::class.java)
+    environment = mock(Environment::class.java)
+    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
+
+    val featureService = mock(FeatureService::class.java)
+    `when`(featureService.isDisabled(FeatureName.legacyFeedApiBool)).thenReturn(false)
+
+    val jwt = mock(Jwt::class.java)
+    `when`(jwt.getClaimAsString("id")).thenReturn(UUID.randomUUID().toString())
+
+    val claim = mock(RepositoryClaim::class.java)
+    `when`(claim.createdAt).thenReturn(LocalDateTime.now())
+
+    repositoryClaimRepository = mock(RepositoryClaimRepository::class.java)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(claim)
+
+    tokenIssuer = mock(TokenIssuer::class.java)
+    `when`(tokenIssuer.decodeJwt(any(String::class.java))).thenReturn(jwt)
+
+    repositoryRepository = mock(RepositoryRepository::class.java)
+    val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
+    `when`(userGroupAssignmentRepository.findAllByUserId(any2())).thenReturn(emptyList())
+    repositoryGuard = RepositoryGuard(
+      repositoryRepository,
+      UserGuard(mock(UserRepository::class.java)),
+      userGroupAssignmentRepository,
+    )
+
+    feedService = FeedService(
+      mock(AppConfig::class.java),
+      webToFeed,
+      feedParser,
+      scraper,
+      documentUseCase,
+      documentRepository,
+      itemFilter,
+      tokenIssuer,
+      repositoryClaimRepository,
+      repositoryRepository,
+      featureService,
+      sourceRepository,
+      repositoryGuard,
+    )
+  }
+
+  @Test
+  fun `getFeed returns documents`() = runTest {
+    val source = mock(Source::class.java)
+    `when`(source.title).thenReturn("title")
+    `when`(source.createdAt).thenReturn(LocalDateTime.now())
+
+    `when`(sourceRepository.findById(any2())).thenReturn(source)
+    `when`(documentRepository.findAllBySourceId(any2(), any2())).thenReturn(listOf())
+
+    val repository = givenRepository(EntityVisibility.isPublic)
+    `when`(source.repositoryId).thenReturn(repository.id)
+
+    val feed = feedService.getFeed(repositoryGuard.requireReadGrant(repository.id), mock(SourceId::class.java), "feedUrl")
+    assertThat(feed).isNotNull()
+  }
+
+  @Test
+  fun `getFeed refuses a source outside the granted repository`() = runTest {
+    val granted = givenRepository(EntityVisibility.isPublic)
+    val source = mock(Source::class.java)
+    `when`(source.title).thenReturn("title")
+    `when`(source.createdAt).thenReturn(LocalDateTime.now())
+    `when`(source.repositoryId).thenReturn(RepositoryId())
+    `when`(sourceRepository.findById(any2())).thenReturn(source)
+
+    val actual = runCatching {
+      feedService.getFeed(repositoryGuard.requireReadGrant(granted.id), mock(SourceId::class.java), "feedUrl")
+    }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java).hasMessage("feedId not found")
+  }
+
+  @Test
+  fun `a legacy token claiming a private repository is refused to a caller who may not read it`() = runTest {
+    val private = givenRepository(EntityVisibility.isPrivate)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim(repositoryId = private.id))
+
+    val actual = runCatching { feedService.requireLegacyTokenAccess("token") }.exceptionOrNull()
+
+    assertThat(actual).isInstanceOf(NotFoundException::class.java)
+  }
+
+  @Test
+  fun `a legacy token claiming a public repository, or none, passes`() = runTest {
+    val public = givenRepository(EntityVisibility.isPublic)
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim(repositoryId = public.id))
+    assertThat(feedService.requireLegacyTokenAccess("token").token).isEqualTo("token")
+
+    `when`(repositoryClaimRepository.findById(any2())).thenReturn(RepositoryClaim())
+    assertThat(feedService.requireLegacyTokenAccess("token").token).isEqualTo("token")
+    assertThat(feedService.requireLegacyTokenAccess(null).token).isNull()
+  }
+
+  private suspend fun givenRepository(visibility: EntityVisibility): Repository {
+    val repository = Repository(title = "feed", visibility = visibility, ownerId = UserId(), groupId = GroupId())
+    `when`(repositoryRepository.findById(org.mockito.kotlin.eq(repository.id))).thenReturn(repository)
+    return repository
+  }
+
+  @Test
+  fun `webToFeed will filter`() = runTest {
+    // given
+    `when`(
+      itemFilter.filterEntity(
+        any(JsonItem::class.java),
+        anyList<ItemFilterParams>(),
+        any(Int::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(true)
+    val feed = createJsonFeed()
+    `when`(webToFeed.webToFeed(any2(), any2(), any2(), any2())).thenReturn(feed)
+
+    val httpResponse = HttpResponse(
+      contentType = "text/html",
+      url = "",
+      statusCode = 200,
+      responseBody = "".toByteArray(),
+    )
+    `when`(scraper.fetch(any2(), any2())).thenReturn(httpResponse)
+
+    val selectors = GenericFeedSelectors(
+      linkXPath = "linkXPath",
+      extendContext = ExtendContext.NONE,
+      contextXPath = "contextXPath",
+      dateXPath = "dateXPath",
+    )
+
+    // when
+    feedService.webToFeed(
+      "url",
+      selectors,
+      prerender = false,
+      filter = "filter",
+      feedUrl = "feedUrl",
+      access = feedService.requireLegacyTokenAccess("token")
+    )
+
+    // then
+    verify(itemFilter, times(2)).filterEntity(
+      any2(),
+      anyList<ItemFilterParams>(),
+      any(Int::class.java),
+      any2()
+    )
+  }
+
+//  @Test
+//  fun `given self-hosted, standalone is supported`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(true)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(null)).isTrue()
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isTrue()
+//  }
+
+//  @Test
+//  fun `given saas, standalone is supported within 2 month`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now())).isTrue()
+//  }
+
+//  @Test
+//  @Disabled
+//  fun `given saas, standalone is not supported if ts is null`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(null)).isFalse()
+//  }
+
+//  @Test
+//  @Disabled
+//  fun `given saas, standalone is not supported if ts is older than 2 month`() = runTest {
+//    // given
+//    `when`(environment.acceptsProfiles(eq(Profiles.of(AppProfiles.selfHosted)))).thenReturn(false)
+//
+//    // when
+//    assertThat(feedService.standaloneSupport(LocalDateTime.now().minusMonths(3))).isFalse()
+//  }
+
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "[{\"composite\":{\"exclude\":{\"title\":{\"value\":\"Der\",\"operator\":\"contains\"}}}}]",
+      "contains(title, 'foo')",
+    ]
+  )
+  fun `transformFeed will filter`(filter: String) = runTest {
+    // given
+    val feed = createJsonFeed()
+    `when`(feedParser.parseFeedFromUrl(any2())).thenReturn(feed)
+    `when`(
+      itemFilter.filterEntity(
+        any2(),
+        anyList<ItemFilterParams>(),
+        any(Int::class.java),
+        any2()
+      )
+    ).thenReturn(true)
+
+    // when
+    feedService.transformFeed(
+      "nativeFeedUrl",
+      filter = filter,
+      feedUrl = "feedUrl",
+      access = feedService.requireLegacyTokenAccess("token")
+    )
+
+    // then
+    verify(itemFilter, times(2)).filterEntity(
+      any2(),
+      anyList<ItemFilterParams>(),
+      any(Int::class.java),
+      any2()
+    )
+  }
+
+  private fun createJsonFeed(): JsonFeed {
+    val feed = mock(JsonFeed::class.java)
+    `when`(feed.items).thenReturn(listOf(mock(JsonItem::class.java), mock(JsonItem::class.java)))
+    return feed
+  }
+}

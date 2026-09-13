@@ -45,7 +45,8 @@ Die Obergrenze von allem oben ist der Eventbestand. Heute: **3 094 Events in 90 
 - [ ] **Alle kath. Kirchen hinzufügen.**
 - [ ] **Alle Bibliotheken indexieren.**
 - [ ] **Externe Quellen hinzufügen** (allgemein).
-- [ ] **Monitoring auf Quellenausfälle.** Eine leere Ortsseite ist das Symptom eines kaputten Harvests. Bewusst *kein* `noindex` darauf — das würde genau das Warnsignal verstecken. Stattdessen: Alarm bei „Ort ohne Events seit X Tagen" und bei Quellen ohne Ertrag.
+- [ ] **Kaputte Quellen finden und reparieren.** In Arbeit auf `feature/feed-ctl` (Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md`): `feedctl source list --errored` findet Quellen mit wiederholten Fehlern über alle Repos (`GET /user/sources?minErrorsInSuccession=N`), `feedctl harvest view --log` zeigt den Grund, `feedctl source run --dry-run --flow fix.json` testet eine Korrektur, ohne sie zu speichern, und `feedctl source update --editor` speichert sie. Nebenbei behoben: Harvests meldeten bisher auch Fehlschläge als `ok`, und die Harvest-Liste war unsortiert.
+- [ ] **Monitoring auf Quellenausfälle.** Eine leere Ortsseite ist das Symptom eines kaputten Harvests. Bewusst *kein* `noindex` darauf — das würde genau das Warnsignal verstecken. Stattdessen: Alarm bei „Ort ohne Events seit X Tagen" und bei Quellen ohne Ertrag. Datenbasis ab `feature/feed-ctl`: `errorsInSuccession` pro Quelle und `GET /user/sources?minErrorsInSuccession=N`.
 - [ ] **LLM parst Daten.** Datumsextraktion ist der häufigste Grund, warum ein Event unbrauchbar ankommt.
 - [ ] **Orts-Cluster neu vermessen** (Block B). 312 der 487 befüllten Ortsseiten duplizieren heute exakt eine andere, weil der 10-km-Radius fix ist. Bewusst zurückgestellt, bis die Quellen überarbeitet sind — eine Anker-Regel auf heutigen Zahlen wäre auf Sand gebaut.
 
@@ -75,6 +76,7 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] Twint-Beitrag (5 CHF), um eine Community zu gründen — **Twint fehlt technisch vollständig**, während Stripe als Modul existiert
 - [ ] Community hat Organisator
+- [ ] **Veranstalter als eigene Community**, wie ein YouTube-Kanal. Hängt mit „Community hat Organisator" zusammen.
 - [ ] Karma-Profil
 - [ ] Visitenkarten
 
@@ -82,6 +84,8 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] **Events kategorisieren.** `packages/document-classifier` (fastText) und `categories.yaml` existieren, sind aber **nirgends in `server-core` referenziert**. Der grösste ungenutzte Baustein im Repo: Kategorien geben Filter-UI, eine zweite URL-Achse (`/events/in/CH/ZG/Zug/konzerte`) und deutlich bessere Mail-Abos auf einmal
 - [ ] Konzept für Event-Tagging
+- [ ] **Veranstaltungsorte als eigene Entities** statt Freitext im Event. Grundlage für „Strassenadressen für Veranstaltungsorte" und den Veranstaltungsort in den Custom Attributes.
+- [ ] **Redaktioneller Inhalt**, z. B. „Die besten Cafés in Wollishofen".
 - [ ] Klassifikations-Plugin in die Pipeline hängen
 - [ ] Summary-Plugin → GenAI-Plugin
 
@@ -94,7 +98,52 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 - [ ] Sync-Trigger als eigene Entität
 - [ ] Coroutinen aus Capabilities (`capability/SecurityContextCapabilityService.kt` ist bisher die einzige Datei dort)
 - [ ] Agent-Subscriptions auf eine Message Queue umstellen
+- [ ] **Profil-Gating vereinheitlichen.** `PlanGuard` hängt an `AppLayer.repository`, `UserUseCase` und `UserSecretUseCase` an `service & repository`, `IpThrottleService` nutzt `&&`, `HttpService`, `PdfService`, `MessageService` und `PageInspectionService` haben gar kein Profil; die `selfHosted`-Profilgruppe hat weder `analytics` noch `repositoryLayer`, obwohl mehrere Controller `Analytics` brauchen. Bewusst nicht Teil des hexagonalen Umbaus (Spec `docs/superpowers/specs/2026-09-12-hexagonal-modules-design.md`).
+- [ ] **`LinceseResolver` umbenennen** und `LicenseUseCase` in Provider und Use Case aufteilen (steht als `todo` im Code).
+- [ ] **`TestingEndpoint` aus `server-core` lösen** — reines Dev-Werkzeug, bleibt beim hexagonalen Umbau vorerst in `server-core`.
 - [ ] Klären, ob `nominatim-proxy` nach dem Wechsel auf admin.ch noch gebraucht wird
+- [ ] **Nacharbeiten zum hexagonalen Umbau: `.gitignore` anschärfen.** Die `data`-Regel im Root-`.gitignore` ignoriert neue Dateien unter jedem `data`-Pfadsegment (z. B. `org/migor/feedless/data/...`); die Regel verankern.
+- [ ] **Nacharbeiten zum hexagonalen Umbau: DGS-Scan eingrenzen.** `GraphqlApiAutoConfiguration` scannt ganz `org.migor.feedless` nach `@DgsComponent`/`@DgsDataLoader`/`@DgsDirective`, ohne den `TypeExcludeFilter` der Anwendung zu nutzen; auf `graphql-api` oder explizite Packages eingrenzen.
+- [ ] **Nacharbeiten zum hexagonalen Umbau: `domain`-Abhängigkeiten verschlanken.** `domain` reicht Spring Security, Micrometer, Validator und die Spring-Boot-BOM als `api` weiter — Adapter-Module bekommen dadurch je rund 22–26 zusätzliche Laufzeit-Jars, und `commons-lang3` in `jpa-data` wandert dabei von 3.18.0 auf 3.19.0; wo möglich auf `implementation` umstellen.
+- [ ] **Nacharbeiten zum hexagonalen Umbau: `AnnotationResolver`-Reihenfolge korrigieren.** Dokument- und Repository-UUIDs werden vor dem Dokument-Guard geparst; eine missgebildete Repository-Id liefert heute `IllegalArgumentException` statt `PermissionDeniedException`. Reihenfolge wiederherstellen oder die Exception abbilden.
+- [ ] **Nacharbeiten zum hexagonalen Umbau: fehlende Tests ergänzen.** `UserResolver` (assignNull → Purge-Flag, plan → `ProductId`); Resolver-Input-zu-Command-Mapping (Annotation-Priorität und „Insufficient data", `SegmentInput` MONTH/WEEK → `ChronoUnit`, `near`); `CompositeFilterPlugin` mit JSON-String-Parametern (Gson-Roundtrip); `MailAuthResolverIntTest`-Stubs, die konkrete E-Mail/osInfo/otpId/Code prüfen statt beliebige Argumente zu akzeptieren; Cookie-Assertions für `Path`/`Max-Age` und ein `Set-Cookie`-Check für `authAnonymous`; `issueApiToken`-Ablauf-Assertion (zusammen mit dem bestehenden Punkt zu `exp`/`iat` in Millisekunden weiter unten, nicht doppelt anlegen).
+- [ ] **Nacharbeiten zum hexagonalen Umbau: aufräumen.** Den unerreichbaren Stub in `ThrottleAspectIntTest.kt:91` entfernen; die `= null`-Defaults in den domain-`ScrapeResult`-Typen streichen; die doppelte Methode in `PluginService.resolveById` entfernen (die reified Variante soll delegieren) und die `KClass`-Variante mit einem eigenen Test abdecken.
+
+## feedctl und HTTP-API
+
+Plan: `docs/superpowers/plans/2026-09-10-feedctl-and-scoped-secrets.md` auf `feature/feed-ctl`. Teil 1 (Broken-Source-Loop) und Teil 2 (Repos, Records, Sources) werden dort umgesetzt und zusammen gemergt; die Punkte hier sind das, was danach offen bleibt.
+
+- [ ] **Teil 3: `plan`, `group`, `member` in `feedctl`**, dazu `PATCH /groups/{id}` und ETag/If-Match für Groups.
+- [ ] **Teil 4: Scoped Secrets.** Tokens mit Scope (eine Group oder ausgewählte Repos, Rechte pro Entity, Pflicht-Ablaufdatum, `fdl_`-Präfix, nur der Hash gespeichert), verwaltet nur in der Web-UI über GraphQL — `/api/v1` bekommt keine Endpunkte für Secrets, ein Token soll keine Tokens verwalten. Anlegen und Löschen verlangt eine erneute Bestätigung je nach Anmeldeart (Root-Key, Einmal-Code per Mail, frischer SSO-Login), gültig 10 Minuten pro Session — auch für die heutigen unscoped Secrets. Danach akzeptiert `/api/v1` keine Session- und alten `UserSecret`-JWTs mehr; Agents brauchen vorher einen eigenen Scope. Secrets sind unveränderlich: Scope oder Laufzeit ändern heisst löschen und neu anlegen, beides mit Bestätigung.
+- [ ] **Schreibrechte von Group-Editoren angleichen.** Der `RepositoryAccessGuard` auf `/api/v1` lässt Group-Mitglieder mit Rolle `editor` schreiben, `server-core` lehnt Update und Löschen von Repos aber ab, wenn der Aufrufer nicht Owner ist, und bei Sources, wenn seine Default-Group nicht die des Repos ist.
+- [ ] **`GET /repositories` liefert je nach Filter eine andere Menge.** Ohne Filter kommen die eigenen und alle fremden öffentlichen Repos, mit `product`/`visibility`/`q` nur die eigenen (der Owner-Filter sitzt im `where`, das ohne Filter `null` ist); Repos der eigenen Groups fehlen in beiden Fällen. Eine Regel festlegen, z. B. wie GitHubs `GET /user/repos`: eigene und Group-Repos.
+- [ ] **Account-Status in `feedctl status`.** Mit Login zusätzlich Angaben zum eigenen Account (z. B. Anzahl Repos, Plan) — offen, was genau.
+- [ ] **Source in ein anderes Repo verschieben.** Gibt es nicht; heute nur neu anlegen und alte löschen, dabei geht die Harvest-Historie verloren.
+- [ ] **`feedctl` in CI ohne `hosts.yml`.** `FEEDCTL_HOST` und `FEEDCTL_TOKEN` allein reichen nicht; CI muss `auth login` ausführen und schreibt das Token dann im Klartext in eine Datei.
+- [ ] **`feedctl --host` normalisieren** (Schema, Gross-/Kleinschreibung) — heute ergibt `--host https://…` „not logged in".
+- [ ] **`feedctl source run` bei vorübergehenden Netzwerkfehlern.** Das Polling bricht mit Exit 1 ab, ohne Hinweis, dass der Harvest auf dem Server weiterläuft — nicht von einem fehlgeschlagenen Lauf zu unterscheiden. Retry oder Hinweis entscheiden.
+- [ ] **Harvests über 30 Minuten** können auf einer anderen Instanz kurz als fehlgeschlagen erscheinen (Sweep hängender Läufe), bevor das echte Ergebnis eintrifft.
+- [ ] **GraphQL `RepositoryResolver.sources` beachtet `order` seit dem Pagination-Fix** auf `feature/feed-ctl`, und die *Standard*-Reihenfolge ist eine andere (vorher pro Seite nach `lastRecordsRetrieved`, jetzt `createdAt desc`) — prüfen, ob die Web-UI eine bestimmte Reihenfolge erwartet.
+- [ ] **`/cli/install.sh` absichern**: Test, dass der Controller vor der statischen Datei am selben Pfad gewinnt; optional signieren (cosign/minisign).
+- [ ] **`install.sh`-Fehlerfälle.** Scheitert `curl`, bricht das Skript ohne eigene Meldung ab; eine `http`-Basis-URL wird akzeptiert, obwohl `SHA256SUMS` vom selben Host kommt.
+- [ ] **Fehlende Dateien unter `/cli/**` antworten 400.** Auf einem echten Container beantwortet der Core eine fehlende statische Datei unter `/cli/**` mit HTTP 400 und einem Body, der `"status":404` meldet („No static resource …"); README und Testkommentare (`SecurityConfigIntTest`, `CliInstallScriptController`) sprechen von 404. Status korrigieren oder die Doku anpassen.
+- [ ] **`getHarvestLogs` legt `produces=text/plain` fest.**
+- [ ] **`/user/sources` joint `FetchActionEntity` direkt:** Sources mit zwei Fetch-Actions erscheinen doppelt, solche ohne fehlen — ein `EXISTS` nur für `like` verwenden.
+- [ ] **`GET /repositories/{id}`** liefert `retention` und `pushNotificationsMuted` nicht.
+- [ ] **Group-Endpunkte** antworten Nicht-Mitgliedern mit 403 (`findByIdForUser`) und mit 500, wenn ein bestehendes Mitglied nochmals hinzugefügt wird.
+- [ ] **Letzter-Owner-Prüfung ohne Sperre.** Die Prüfungen beim Löschen einer Group und beim Entfernen eines Mitglieds sperren keine Zeilen: Zwei gleichzeitige Anfragen können beide durchgehen, etwa zwei Löschungen der einzigen zwei eigenen Groups eines Users — der ist danach ausgesperrt, bis Root es repariert. `SELECT … FOR UPDATE` auf die Zuordnungen der betroffenen User.
+- [ ] **`t_plan.group_id` ohne Fremdschlüssel.** Nach dem Löschen einer Group kann ihr Plan auf eine nicht mehr existierende Group zeigen; heute liest das niemand (Pläne werden pro User gesucht), beim Umbau auf Group-Pläne aber schon.
+- [ ] **`@PreAuthorize`-Ablehnungen antworten 401 statt 403** — `feedctl` schlägt dann ein Login vor.
+- [ ] **`HttpExceptionHandler`** importiert `kotlin.io.AccessDeniedException` und bildet jede Exception auf 404 ab (bestehend).
+- [ ] **Authentifizierung bei Datenbankausfall:** Scheitert die Prüfung der Group-Ownership (DB weg), antwortet die Anfrage mit 401.
+- [ ] **`SessionService.injectCapabilitiesFromJwt`** (Löschlink im Report) baut einen Request-Kontext ohne die erneute Group-Prüfung; `groupId.first()` wirft bei Tokens ohne Group.
+- [ ] **GraphQL bildet `NoActingGroupException` auf `UNKNOWN` ab.**
+- [ ] **`enableSaasProduct` läuft beim Signup ohne Group-Kontext** (bestehend).
+- [ ] **Harvest-Executor:** erwartete Claim-Konkurrenz wird als ERROR geloggt; der `DataIntegrityViolationException`-Catch ist zu breit (auf den Indexnamen aus V92 prüfen); der Fehlerpfad kann ein bereits gespeichertes Scrape-Log verwerfen; eine Source, die während der Warteschlange gelöscht wird, loggt einen FK-Fehler; die Parallelität läuft auf einem einzigen `runBlocking`-Thread; echte On-Demand-Läufe erhöhen `lastUpdatedAt` nicht (danach wählt `DocumentUseCase` aus).
+- [ ] **`SourceUseCase.updateSources`** speichert noch eine geladene Kopie der Source (kann den Fehlerzustand des Harvests überschreiben).
+- [ ] **`feedctl`-Kleinigkeiten:** Keyring „unavailable" behandelt jeden `net.OpError` als fehlenden Keyring (auf Dial-Fehler beschränken); `auth logout` meldet Erfolg, auch wenn das Löschen im Keyring scheiterte; Login-Fehler ausser 401 enden mit Exit 4; `hosts.yml` wird nicht atomar geschrieben; Tokens haben keine `String()`-Redaktion; `auth status` endet ohne Hosts mit Exit 0; `Paginate` schützt nicht vor `hasMore` bei null Einträgen; `launchSystemEditor` ist ungetestet.
+- [ ] **`JwtTokenIssuer` schreibt `exp`/`iat` in Millisekunden**, Spring/Nimbus lesen Sekunden — das Max-Age des Session-Cookies ist dadurch bedeutungslos. `JwtTokenIssuerTest` hält das heutige Verhalten fest (bestehend, beim hexagonalen Umbau gefunden).
+- [ ] **`FetchActionMapper.toDomain` setzt `isVariable`, `isMobile` und `isLandscape` fest auf `false`** (MapStruct ordnet die `is…`-Properties nicht zu, `unmappedTargetPolicy = IGNORE` verschweigt es), die Flags überleben die Persistenz also nie. `ScrapeActionPlacement.placedAt` und `ScrapeActionPlacementTest` bilden das nach — Mapper, `placedAt` und Test gemeinsam korrigieren (bestehend, beim hexagonalen Umbau gefunden).
 
 ## Monetarisierung
 
@@ -105,15 +154,28 @@ Erst sinnvoll, wenn oben Bestand und Fläche stimmen — aber der günstigste He
 
 - [ ] Google-Calendar-Integration in der UI
 - [ ] Element per Browser herunterladen
-- [ ] Trigger-Sync-Button reparieren
+- [ ] Trigger-Sync-Button reparieren — `POST /api/v1/repositories/{r}/sources/{s}/harvests` (auf `feature/feed-ctl`) startet einen Harvest sofort und liefert eine abfragbare Harvest-ID; der Button kann darauf aufbauen
 - [ ] Präzisieren, was an Feed und ical kaputt ist — beide Endpunkte antworten (`/f/{id}/atom`, `/f/{id}/cal`); vermutlich geht es um Auffindbarkeit oder um `ics` als Formatnamen
+- [ ] **Share-Key rotieren.** Ein Share-Key, der sichtbar war, solange ein Repository öffentlich war (oder in eine fremde Quelle kopiert wurde), gilt weiter, wenn das Repository privat wird; es gibt keinen Weg, den Schlüssel neu zu erzeugen (GraphQL, `/api/v1`, UI)
+- [ ] **Anhänge in privaten Feeds.** `/attachment/{id}` liefert Anhänge privater Repositories nur noch an Besitzer und Gruppenmitglieder, Feed-Reader erhalten 404; die Anhang-Links im privaten Feed brauchen einen eigenen Zugang (z. B. signierte URLs), ohne den Share-Key ins Feed-Dokument zu schreiben
+- [ ] **Einstellungen in den Feed-Details sind nicht auf Besitzer beschränkt.** Das Popover (JSON-Export, Import, Bearbeiten, Löschen) sehen alle; ein Besucher exportiert ein öffentliches Repository jetzt still mit `sources: []`, und Gruppenmitglieder sehen Feed- und iCal-Buttons ohne Share-Key, die mit 404 antworten
+- [ ] **Antwortzeit verrät geleakte private UUIDs.** Für eingeloggte Fremde kostet eine private Repository-ID mehr Abfragen (Repository, Mitgliedschaften, Benutzer) als eine fehlende (nur Repository), und `/attachment/{id}` lädt die Bytes vor der Prüfung; mit bekannter UUID lässt sich die Existenz so bestätigen, eine Aufzählung ist es nicht
+- [ ] **`AnonymousExportAccessTest` umgeht den echten TOKEN-Cookie-Filter** (`addFilters = false`, Security-Kontext von Hand gesetzt); es fehlt ein server-core-Integrationstest mit echtem Cookie für `/article`, `/attachment` und `/feed/**`
+- [ ] **Offener Proxy unter `/attachment/proxy`.** `?url=` holt jede beliebige URL für jeden Aufrufer, ohne Login und ohne Einschränkung des Ziels (SSRF-Risiko, auch gegen interne Adressen); Zugriff einschränken oder den Endpunkt entfernen
+- [ ] **`requireExecute` bei privaten Repositories.** `RepositoryGuard.requireExecute` lässt jeden eingeloggten User auf ein privates Repository durch, nicht nur Besitzer und Gruppenmitglieder wie beim Lesen
 
 ## Qualität und Betrieb
 
 - [ ] Lighthouse CI — existiert bisher nicht
 - [ ] Express-Integrationstests. 301, 404 und Cache-Header sind heute nur als reine Funktionen getestet; die Verdrahtung wird von Hand geprüft, weil dem Projekt ein HTTP-Testharness fehlt
-- [ ] `app-web`-Testlauf reparieren: 115 Suites scheitern mit `TypeError: _lruCache is not a constructor` beim Jest-Bootstrap, **bevor ein einziger Test läuft**. Damit ist `./gradlew lint test` — die Definition of Done — dauerhaft rot
+- [ ] `app-web`-Testlauf reparieren: 115 Suites scheitern mit `TypeError: _lruCache is not a constructor` beim Jest-Bootstrap, **bevor ein einziger Test läuft**. Damit ist `./gradlew lint test` — die Definition of Done — dauerhaft rot. Hinweis: In einem frischen Worktree (Task 10, hexagonaler Umbau) lief die `app-web`-Jest-Suite durch (112 Suites grün) — möglicherweise ein veraltetes `node_modules`, kein Code-Fehler
 - [ ] Kanton im Seitentitel doppelt: `Events in Bern (BE), BE`. Kosmetisch, aber im Titel sichtbar
+- [ ] **`DateClaimerTest` schlägt sporadisch fehl.** In CI-Lauf 34713539900 (Versuch 1) wurde „12 Dezember 24" zu einem Datum im Jahr ~282 statt 2024-12-12; derselbe Commit war beim Neustart grün, lokal ist der Test auch mit `TZ=UTC` grün. Jeder Testfall baut einen eigenen `DateClaimer`, JUnit läuft nicht parallel — Ursache offen (Verdacht: Reihenfolge der Formate in `guessDateFormats` oder das JDK auf CI)
+- [ ] **Flyway-Migrationen in Tests.** Die `server-core`-Tests bauen das Schema mit `ddl-auto=create` und lassen Flyway aus; neue Migrationen werden nur von Hand gegen PostGIS geprüft. Das Test-`import.sql` dupliziert zudem den Index aus V92
+- [ ] **`feedctl`-End-to-End-Test in CI.** `:packages:cli:e2eTest` braucht gebaute Images und ist deshalb nicht Teil von `./gradlew test`; ausserdem bleibt der Start der Container unter Docker gelegentlich hängen
+- [ ] **`./gradlew lint` in `app-web`** ist `prettier --write .` und verändert Dateien
+- [ ] **Image-Tasks im Git-Worktree.** `buildAmdDockerImage` und `:packages:browser-automation-app:bundle` lesen `grgit.head()`, das in einem Worktree `null` ist — Images lassen sich dort nur direkt mit `docker build` bauen. Das `server-core`-Image braucht dabei `--build-context cli=../cli` (seine Go-Stage baut `feedctl` daraus) und startet nur, wenn `APP_VERSION`, `APP_BUILD_TIMESTAMP` und `APP_GIT_COMMIT` als Build-Argumente gesetzt sind; die Befehlszeile steht in `packages/cli/README.md`, Defaults im Dockerfile fehlen weiterhin
+- [ ] **Release-Build ohne Docker.** `scripts/build.sh` führt `./gradlew bundle` in `amazoncorretto:24` aus, ohne Docker-CLI und ohne Docker-Socket — `bundle` kann dort kein Image bauen. Klären, wie Releases tatsächlich gebaut werden
 
 ## Später oder unklar
 

@@ -1,0 +1,8 @@
+# Regenerate with `go generate ./...`; lint fails if client.gen.go drifts from the spec.
+package: api
+output: client.gen.go
+generate:
+  models: true
+  client: true
+output-options:
+  name-normalizer: ToCamelCase

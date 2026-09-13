@@ -1,0 +1,18 @@
+version: "2"
+
+run:
+  # Lint e2e/ too, so it can't rot between the Docker runs that need it.
+  build-tags:
+    - e2e
+
+linters:
+  default: standard
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+    - unused
+
+formatters:
+  enable:
+    - gofmt

@@ -1,0 +1,125 @@
+package org.migor.feedless.repository
+
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
+import jakarta.annotation.PostConstruct
+import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppMetrics
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.ShareKeyAccess
+import org.migor.feedless.document.DocumentQueryParser
+import org.migor.feedless.document.DocumentsFilter
+import org.migor.feedless.document.RecordOrderBy
+import org.migor.feedless.feed.exporter.FeedExporter
+import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.context.annotation.Profile
+import org.springframework.core.io.ClassPathResource
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RequestMethod
+import org.springframework.web.bind.annotation.RequestParam
+import java.util.*
+import kotlin.coroutines.EmptyCoroutineContext
+
+@Controller
+@Profile("${AppProfiles.repository} & ${AppLayer.api}")
+class RepositoryController {
+
+  private lateinit var feedXsl: String
+  private val log = LoggerFactory.getLogger(RepositoryController::class.simpleName)
+
+  @Autowired
+  private lateinit var repositoryUseCase: RepositoryUseCase
+
+  @Autowired
+  private lateinit var repositoryGuard: RepositoryGuard
+
+  @Autowired
+  private lateinit var meterRegistry: MeterRegistry
+
+  @Autowired
+  private lateinit var feedExporter: FeedExporter
+
+  @Autowired
+  private lateinit var documentQueryParser: DocumentQueryParser
+
+  @RequestMapping(
+    method = [RequestMethod.GET],
+    value = ["/f/{repositoryId}/{format}"],
+    produces = [
+      "application/atom+xml;charset=UTF-8",
+      "text/calendar;charset=UTF-8",
+      "application/json;charset=UTF-8"
+    ]
+  )
+  suspend fun feed(
+    @PathVariable(name = "repositoryId") repositoryId: String,
+    @PathVariable(name = "format") format: String,
+    @RequestParam(value = "page", required = false, defaultValue = "0") page: Int,
+    @RequestParam(value = "tags", required = false) tags: List<String>,
+    @RequestParam(value = "where", required = false) whereStr: String?,
+    @RequestParam(value = "orderByStr", required = false) orderByStr: String?,
+    @RequestParam(value = "skey", required = false) shareKey: String?,
+  ): ResponseEntity<String> = coroutineScope {
+    meterRegistry.counter(
+      AppMetrics.fetchRepository, listOf(
+        Tag.of("type", "repository"),
+        Tag.of("id", repositoryId),
+      )
+    ).increment()
+    log.debug("GET feed/$format} id=$repositoryId page=$page")
+
+    val id = RepositoryId(repositoryId)
+    withContext(shareKey?.let { ShareKeyAccess(id, it) } ?: EmptyCoroutineContext) {
+      // checked outside the cached feed, a cache hit must not skip it
+      val grant = repositoryGuard.requireReadGrant(id)
+      feedExporter.to(
+        HttpStatus.OK,
+        format,
+        repositoryUseCase.getFeedByRepositoryId(
+          grant,
+          page,
+          parseWhere(whereStr),
+          parseOrderBy(orderByStr)
+        )
+      )
+    }
+  }
+
+  private fun parseWhere(whereStr: String?): DocumentsFilter? {
+    return whereStr?.let {
+      documentQueryParser.parseFilter(it)
+    }
+  }
+
+  private fun parseOrderBy(orderByStr: String?): RecordOrderBy? {
+    return orderByStr?.let {
+      documentQueryParser.parseOrderBy(it)
+    }
+  }
+
+  @GetMapping(
+    "/feed/static/feed.xsl", produces = ["text/xsl"]
+  )
+  fun xsl(request: HttpServletRequest): ResponseEntity<String> {
+    return ResponseEntity.ok(feedXsl)
+  }
+
+  @PostConstruct
+  fun postConstruct() {
+    val scanner = Scanner(ClassPathResource("/feed.xsl", this.javaClass.classLoader).inputStream)
+    val data = StringBuilder()
+    while (scanner.hasNextLine()) {
+      data.appendLine(scanner.nextLine())
+    }
+    feedXsl = data.toString()
+  }
+}

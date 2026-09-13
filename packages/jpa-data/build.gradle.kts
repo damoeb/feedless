@@ -3,12 +3,15 @@ plugins {
   alias(libs.plugins.kotlin.jvm)
   alias(libs.plugins.kotlin.spring)
   alias(libs.plugins.kapt)
+  `java-test-fixtures`
 }
 
 repositories {
   mavenCentral()
 //  gradlePluginPortal()
 }
+
+kotlin { jvmToolchain(21) }
 
 dependencies {
   implementation(platform(libs.spring.boot.bom))
@@ -34,6 +37,22 @@ dependencies {
 
   implementation(libs.jsoup)
   implementation(libs.xsoup)
+
+  testFixturesImplementation(platform(libs.spring.boot.bom))
+  testFixturesApi("org.junit.jupiter:junit-jupiter-api")
+  testFixturesImplementation(libs.testcontainers.core)
+  testFixturesImplementation(libs.testcontainers.postgresql)
+  testFixturesImplementation(libs.testcontainers.junit)
+  testFixturesImplementation("org.slf4j:slf4j-api")
+
+  testImplementation(testFixtures(project(":packages:domain")))
+  testImplementation(libs.spring.boot.test)
+  testImplementation(libs.testcontainers.core)
+  testImplementation(libs.testcontainers.postgresql)
+  testImplementation(libs.testcontainers.junit)
+  // match server-core, whose dependency-management plugin keeps the catalog's Flyway over the BOM's
+  testImplementation(libs.flyway.core) { version { strictly(libs.versions.flyway.get()) } }
+  testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
 }
 
 tasks.test {

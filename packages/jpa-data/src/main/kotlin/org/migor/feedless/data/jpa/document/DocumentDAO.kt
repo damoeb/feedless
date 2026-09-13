@@ -5,7 +5,7 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.document.ReleaseStatus
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
@@ -48,7 +48,7 @@ interface DocumentDAO : JpaRepository<DocumentEntity, UUID>, KotlinJdslJpqlExecu
   fun findAllByRepositoryId(id: UUID): List<DocumentEntity>
 
   fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, ids: List<UUID>): List<DocumentEntity>
-  fun findAllBySourceId(sourceId: UUID, pageable: PageRequest): List<DocumentEntity>
+  fun findAllBySourceId(sourceId: UUID, pageable: Pageable): List<DocumentEntity>
 
 
   @Query(

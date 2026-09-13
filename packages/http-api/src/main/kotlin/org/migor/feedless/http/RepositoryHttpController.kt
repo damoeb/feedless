@@ -1,0 +1,157 @@
+package org.migor.feedless.http
+
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
+import org.migor.feedless.PageableRequest
+import org.migor.feedless.PreconditionFailedException
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.http.api.RepositoriesApi
+import org.migor.feedless.http.api.model.RepositoryCreate
+import org.migor.feedless.http.api.model.RepositoryListResponse
+import org.migor.feedless.http.api.model.RepositoryUpdate
+import org.migor.feedless.http.api.model.Visibility
+import org.migor.feedless.http.mapper.HttpRepositoryMapper
+import org.migor.feedless.repository.FulltextQueryFilter
+import org.migor.feedless.repository.RepositoriesFilter
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryUseCase
+import org.migor.feedless.repository.VerticalFilter
+import org.migor.feedless.repository.VisibilityFilter
+import org.migor.feedless.throttle.Throttled
+import org.migor.feedless.user.UserId
+import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.web.bind.annotation.RequestMapping
+import org.springframework.web.bind.annotation.RestController
+import org.migor.feedless.http.api.model.Repository as HttpRepository
+import org.migor.feedless.http.api.model.VerticalFilter as VerticalFilterDto
+import kotlin.coroutines.coroutineContext
+
+@RestController
+@RequestMapping("/api/v1")
+// RepositoryAccessGuard's profiles too: without the guard this controller cannot exist.
+@Profile("${AppProfiles.repository} & ${AppProfiles.source} & ${AppProfiles.user} & ${AppLayer.api}")
+class RepositoryHttpController(
+  private val repositoryUseCase: RepositoryUseCase,
+  private val accessGuard: RepositoryAccessGuard,
+  private val mapper: HttpRepositoryMapper,
+  private val etagCalculator: ETagCalculator,
+) : RepositoriesApi {
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  override suspend fun listRepositories(
+    page: Int,
+    pageSize: Int,
+    product: VerticalFilterDto?,
+    visibility: Visibility?,
+    q: String?,
+  ): ResponseEntity<RepositoryListResponse> {
+    // Ask for one more than the page holds: a full page is not evidence of a next one.
+    val pageable = PageableRequest.withExtraForHasMore(page, pageSize)
+    val where = toFilter(product, visibility, q)
+    val userId = currentUserId()
+    val fetched = repositoryUseCase.findAllByUserId(pageable, where, userId)
+    val items = fetched.take(pageSize)
+      .map { mapper.toHttp(it, userId != null && it.ownerId == userId) }
+    return ResponseEntity.ok(
+      RepositoryListResponse(
+        items = items,
+        hasMore = fetched.size > pageSize,
+        totalCount = repositoryUseCase.countAllByUserId(where, userId),
+      ),
+    )
+  }
+
+  @PreAuthorize("@capabilityService.hasToken()")
+  @Throttled
+  override suspend fun createRepository(
+    repositoryCreate: RepositoryCreate,
+  ): ResponseEntity<HttpRepository> {
+    val userId = currentUserId()
+    val created = repositoryUseCase.create(listOf(mapper.toDomainCreate(repositoryCreate)))
+      .firstOrNull() ?: throw IllegalStateException("repository was not created")
+    return ResponseEntity.status(HttpStatus.CREATED)
+      .body(mapper.toHttp(created, userId != null && created.ownerId == userId))
+  }
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  override suspend fun getRepository(repositoryId: java.util.UUID): ResponseEntity<HttpRepository> {
+    val repo = accessGuard.requireRepository(RepositoryId(repositoryId), RepositoryAccess.read)
+    val userId = currentUserId()
+    val httpRepo = mapper.toHttp(repo, userId != null && repo.ownerId == userId)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(repo))).body(httpRepo)
+  }
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  @Throttled
+  override suspend fun updateRepository(
+    repositoryId: java.util.UUID,
+    repositoryUpdate: RepositoryUpdate,
+    ifMatch: String?,
+  ): ResponseEntity<HttpRepository> {
+    val id = RepositoryId(repositoryId)
+    val userId = currentUserId()
+    // Guard first: a stale If-Match must not leak that a repository exists (404, never 412).
+    val current = accessGuard.requireRepository(id, RepositoryAccess.write)
+    if (ifMatch != null && ifMatch != "*" && ifMatch != etagCalculator.compute(editableFields(current))) {
+      throw PreconditionFailedException("repository ${id.uuid} was modified since the ETag in If-Match")
+    }
+    // The check-then-update race is accepted; no locking.
+    repositoryUseCase.updateRepository(id, mapper.toDomainUpdate(repositoryUpdate))
+    val updated = accessGuard.requireRepository(id, RepositoryAccess.write)
+    val httpUpdated = mapper.toHttp(updated, userId != null && updated.ownerId == userId)
+    return ResponseEntity.ok().eTag(etagCalculator.compute(editableFields(updated))).body(httpUpdated)
+  }
+
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  @Throttled
+  override suspend fun deleteRepository(repositoryId: java.util.UUID): ResponseEntity<Unit> {
+    val id = RepositoryId(repositoryId)
+    // Check first: the use case answers a foreign repository with 403, which confirms it exists.
+    accessGuard.requireRepository(id, RepositoryAccess.write)
+    repositoryUseCase.delete(id)
+    return ResponseEntity.noContent().build()
+  }
+
+  private suspend fun currentUserId(): UserId? = coroutineContext[RequestContext]?.userId
+
+  private fun toFilter(
+    product: VerticalFilterDto?,
+    visibility: Visibility?,
+    q: String?,
+  ): RepositoriesFilter? {
+    if (product == null && visibility == null && q == null) return null
+    return RepositoriesFilter(
+      product = product?.let { VerticalFilter(eq = mapper.toDomainVertical(it)) },
+      visibility = visibility?.let {
+        VisibilityFilter(`in` = listOf(mapper.toDomainVisibility(it)))
+      },
+      text = q?.let { FulltextQueryFilter(query = it) },
+    )
+  }
+
+  /** Excludes lastUpdatedAt/nextUpdateAt, which harvests rewrite (spurious 412s); built from the domain entity to include retention. */
+  private fun editableFields(repo: Repository) = RepositoryEditableFields(
+    title = repo.title,
+    description = repo.description,
+    refreshCron = repo.sourcesSyncCron,
+    visibility = repo.visibility,
+    pushNotificationsMuted = repo.pushNotificationsEnabled,
+    retentionMaxCapacity = repo.retentionMaxCapacity,
+    retentionMaxAgeDays = repo.retentionMaxAgeDays,
+  )
+
+  private data class RepositoryEditableFields(
+    val title: String,
+    val description: String,
+    val refreshCron: String,
+    val visibility: EntityVisibility,
+    val pushNotificationsMuted: Boolean,
+    val retentionMaxCapacity: Int?,
+    val retentionMaxAgeDays: Int?,
+  )
+}

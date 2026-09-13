@@ -160,16 +160,22 @@ class DocumentJpaRepository(private val documentDAO: DocumentDAO, private val en
         ).orderBy(
           orderBy?.let {
             path(DocumentEntity::startingAt).asc().nullsLast()
-          } ?: path(DocumentEntity::publishedAt).desc()
+          } ?: path(DocumentEntity::publishedAt).desc(),
+          // Neither key is unique; without a tiebreaker pagination repeats or drops rows.
+          path(DocumentEntity::id).asc(),
         )
     }
 
     val context = JpqlRenderContext()
 
     val q = entityManager.createQuery(query, context)
-    q.setMaxResults(pageable.pageSize)
-    q.setFirstResult(pageable.pageSize * pageable.pageNumber)
-    return documentDAO.findAllWithAttachmentsByIdIn(q.resultList.map { it }).map { it.toDomain() }
+    // offset uses the true pageSize, so fetching one extra never shifts it.
+    q.setMaxResults(pageable.limit)
+    q.setFirstResult(pageable.offset)
+    // The IN-fetch loses order; restore it so the caller's take(pageSize) drops the right row.
+    val orderedIds = q.resultList
+    val byId = documentDAO.findAllWithAttachmentsByIdIn(orderedIds).associateBy { it.id }
+    return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }
   }
 
   override fun getRecordFrequency(

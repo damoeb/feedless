@@ -6,7 +6,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.springframework.context.annotation.Profile
-import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -55,7 +54,7 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   fun findAllByVisibilityAndLastPullSyncBefore(
     public: EntityVisibility,
     now: LocalDateTime?,
-    pageable: PageRequest
+    pageable: Pageable
   ): List<RepositoryEntity>
 
   @Query(

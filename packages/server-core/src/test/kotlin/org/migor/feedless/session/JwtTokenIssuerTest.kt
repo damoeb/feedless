@@ -6,18 +6,25 @@ import com.nimbusds.jose.crypto.MACVerifier
 import com.nimbusds.jwt.SignedJWT
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
+import jakarta.servlet.http.Cookie
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.within
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
+import org.migor.feedless.group.GroupAndRole
+import org.migor.feedless.group.GroupId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
+import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecret
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
+import org.springframework.mock.web.MockHttpServletRequest
+import org.springframework.security.access.AccessDeniedException
 import java.time.Duration
 import java.time.Instant
 import java.time.temporal.ChronoUnit
@@ -98,13 +105,43 @@ class JwtTokenIssuerTest {
   }
 
   @Test
+  fun `createJwtForApi carries the user and the acting group`() = runTest {
+    val userId = UserId()
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(userId)
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val jwt = jwtTokenIssuer.createJwtForApi(user, actingGroup)
+
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  @Test
+  fun `issueApiToken returns the signed API token createJwtForApi issues`() = runTest {
+    val userId = UserId()
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(userId)
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val token = jwtTokenIssuer.issueApiToken(user, actingGroup)
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.API.value)
+    val jwt = jwtTokenIssuer.decodeJwt(token.token)
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  @Test
   fun `createJwtForApi creates a properly signed JWT`() = runTest {
     // given
     val user = mock(User::class.java)
     `when`(user.id).thenReturn(UserId())
 
     // when
-    val jwt = jwtTokenIssuer.createJwtForApi(user)
+    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner))
 
     // then
     assertThat(jwt.tokenValue).isNotNull()
@@ -192,6 +229,44 @@ class JwtTokenIssuerTest {
   }
 
   @Test
+  fun `issueAnonymousToken returns the signed anonymous token createJwtForAnonymous issues`() = runTest {
+    val token = jwtTokenIssuer.issueAnonymousToken()
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.ANONYMOUS.value)
+    assertThat(Instant.ofEpochMilli((signedJWT.payload.toJSONObject()[JwtParameterNames.EXP] as Number).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofDays(1)), within(10, ChronoUnit.SECONDS))
+  }
+
+  @Test
+  fun `issueTokenForCapabilities returns the signed user token createJwtForCapabilities issues`() = runTest {
+    val userId = UserId()
+    val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
+
+    val token = jwtTokenIssuer.issueTokenForCapabilities(listOf(UserCapability(userId), GroupCapability(actingGroup)))
+
+    val signedJWT = SignedJWT.parse(token.token)
+    assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
+    assertThat(signedJWT.jwtClaimsSet.getClaim(JwtParameterNames.TYPE)).isEqualTo(AuthTokenType.USER.value)
+    assertThat(Instant.ofEpochMilli((signedJWT.payload.toJSONObject()[JwtParameterNames.EXP] as Number).toLong()))
+      .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS))
+    val jwt = jwtTokenIssuer.decodeJwt(token.token)
+    assertThat(jwt.userClaim()).isEqualTo(userId)
+    assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  // Resolvers now build the cookie from the decoded token, so its expiry must match the issued one.
+  @Test
+  fun `decoded token keeps the expiry the cookie is built from`() = runTest {
+    val anonymous = jwtTokenIssuer.createJwtForAnonymous()
+    val user = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(UserId())))
+
+    assertThat(jwtTokenIssuer.decodeJwt(anonymous.tokenValue).expiresAt).isEqualTo(anonymous.expiresAt)
+    assertThat(jwtTokenIssuer.decodeJwt(user.tokenValue).expiresAt).isEqualTo(user.expiresAt)
+  }
+
+  @Test
   fun `capabilities JWT has proper expiration time`() = runTest {
     // when
     val jwt = jwtTokenIssuer.createJwtForCapabilities(listOf())
@@ -199,6 +274,53 @@ class JwtTokenIssuerTest {
     // then
     assertThat(Instant.ofEpochMilli(jwt.getClaimAsString(JwtParameterNames.EXP).toLong()))
       .isCloseTo(Instant.now().plus(Duration.ofHours(48)), within(10, ChronoUnit.SECONDS));
+  }
+
+  @Test
+  fun `decodeJwt prefers Authorization header over deprecated Authentication header and cookie`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val otherToken = jwtTokenIssuer.createJwtForCapabilities(listOf()).tokenValue
+    val request = MockHttpServletRequest()
+    request.addHeader("Authorization", "Bearer $token")
+    request.addHeader("Authentication", "Bearer $otherToken")
+    request.setCookies(Cookie("TOKEN", otherToken))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt falls back to deprecated Authentication header when Authorization is absent`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val cookieToken = jwtTokenIssuer.createJwtForCapabilities(listOf()).tokenValue
+    val request = MockHttpServletRequest()
+    request.addHeader("Authentication", "Bearer $token")
+    request.setCookies(Cookie("TOKEN", cookieToken))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt falls back to TOKEN cookie when no header is present`() = runTest {
+    val token = jwtTokenIssuer.createJwtForAnonymous().tokenValue
+    val request = MockHttpServletRequest()
+    request.setCookies(Cookie("TOKEN", token))
+
+    val jwt = jwtTokenIssuer.decodeJwt(request)
+
+    assertThat(jwt.tokenValue).isEqualTo(token)
+  }
+
+  @Test
+  fun `decodeJwt throws AccessDeniedException when no token is present`() {
+    val request = MockHttpServletRequest()
+
+    org.assertj.core.api.Assertions.assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
+      kotlinx.coroutines.runBlocking { jwtTokenIssuer.decodeJwt(request) }
+    }
   }
 }
 

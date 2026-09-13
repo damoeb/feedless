@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
+import kotlin.reflect.KClass
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -16,7 +17,7 @@ class PluginService(
   private val entityPlugins: List<MapEntityPlugin<*>>,
   private val transformerPlugins: List<FragmentTransformerPlugin>,
   @Lazy val plugins: List<Plugin>
-) {
+) : PipelinePlugins {
 
   private val log = LoggerFactory.getLogger(PluginService::class.simpleName)
 
@@ -45,7 +46,7 @@ class PluginService(
     }
   }
 
-  suspend fun findAll(): List<Plugin> {
+  override suspend fun findAll(): List<Plugin> {
     return withContext(Dispatchers.IO) {
       entityPlugins.plus(transformerPlugins)
     }
@@ -56,6 +57,17 @@ class PluginService(
       .filterIsInstance<T>()
       .firstOrNull()
   }
+
+  override suspend fun findById(id: String): Plugin? = resolveById<Plugin>(id)
+
+  override suspend fun <T : Plugin> resolveById(id: String, type: KClass<T>): T? {
+    return plugins.filterTo(ArrayList()) { it: Plugin -> it.id() == id }
+      .filterIsInstance(type.java)
+      .firstOrNull()
+  }
+
+  override suspend fun describeAll(): List<PluginDescriptor> =
+    findAll().map { PluginDescriptor(it.id(), it.name(), it.listed(), it is FragmentTransformerPlugin) }
 
 //  suspend fun resolveMailFormatter(sub: RepositoryEntity): Pair<MailProvider, PluginExecutionParamsInput> {
 //    return sub.plugins.mapToPluginInstance<MailProviderPlugin>(this)

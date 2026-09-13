@@ -1,0 +1,102 @@
+package org.migor.feedless.annotation
+
+import com.netflix.graphql.dgs.DgsComponent
+import com.netflix.graphql.dgs.DgsData
+import com.netflix.graphql.dgs.DgsDataFetchingEnvironment
+import com.netflix.graphql.dgs.DgsMutation
+import com.netflix.graphql.dgs.InputArgument
+import com.netflix.graphql.dgs.context.DgsContext
+import graphql.schema.DataFetchingEnvironment
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.withContext
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.throttle.Throttled
+import org.migor.feedless.config.DgsCustomContext
+import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.CreateAnnotationInput
+import org.migor.feedless.generated.types.DeleteAnnotationInput
+import org.migor.feedless.document.DocumentId
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
+import org.slf4j.LoggerFactory
+import org.springframework.context.annotation.Profile
+import org.springframework.security.access.prepost.PreAuthorize
+import java.util.*
+import org.migor.feedless.generated.types.Annotation as AnnotationDto
+import org.migor.feedless.generated.types.Annotations as AnnotationsDto
+import org.migor.feedless.generated.types.Repository as RepositoryDto
+
+@DgsComponent
+@Profile("${AppProfiles.annotation} & ${AppLayer.api}")
+class AnnotationResolver(
+  private val annotationUseCase: AnnotationUseCase,
+  private val voteRepository: VoteRepository,
+) {
+
+  private val log = LoggerFactory.getLogger(AnnotationResolver::class.simpleName)
+
+  @Throttled
+  @DgsMutation(field = DgsConstants.MUTATION.CreateAnnotation)
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  suspend fun createAnnotation(
+    dfe: DataFetchingEnvironment,
+    @InputArgument(DgsConstants.MUTATION.CREATEANNOTATION_INPUT_ARGUMENT.Data) data: CreateAnnotationInput
+  ): AnnotationDto = withContext(context = injectCapabilitiesFromSecurityContext()) {
+    log.debug("createAnnotation $data")
+    annotationUseCase.createAnnotation(data.toDomain()).toDto()
+  }
+
+  @Throttled
+  @DgsMutation(field = DgsConstants.MUTATION.DeleteAnnotation)
+  @PreAuthorize("@capabilityService.hasCapability('user')")
+  suspend fun deleteAnnotation(
+    dfe: DataFetchingEnvironment,
+    @InputArgument(DgsConstants.MUTATION.DELETEANNOTATION_INPUT_ARGUMENT.Data) data: DeleteAnnotationInput,
+  ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
+    log.debug("deleteAnnotation $data")
+    annotationUseCase.deleteAnnotation(AnnotationId(data.where.id))
+    true
+  }
+
+  @DgsData(parentType = DgsConstants.ANNOTATIONS.TYPE_NAME, field = DgsConstants.ANNOTATIONS.Votes)
+  suspend fun votes(
+    dfe: DgsDataFetchingEnvironment
+  ): List<AnnotationDto> = coroutineScope {
+    val context = DgsContext.getCustomContext<DgsCustomContext>(dfe)
+    val userId = context.userId
+    userId?.let {
+      context.repositoryId?.let { repositoryId ->
+        voteRepository.findAllByOwnerIdAndRepositoryId(userId, repositoryId).map { it.toDto() }
+      } ?: voteRepository.findAllByOwnerIdAndDocumentId(userId, context.documentId!!)
+        .map { it.toDto() }
+    } ?: emptyList()
+  }
+
+  @DgsData(parentType = DgsConstants.REPOSITORY.TYPE_NAME, field = DgsConstants.REPOSITORY.Annotations)
+  suspend fun annotations(
+    dfe: DgsDataFetchingEnvironment
+  ): AnnotationsDto = coroutineScope {
+    val repository: RepositoryDto = dfe.getSourceOrThrow()
+
+    val repositoryId = RepositoryId(UUID.fromString(repository.id))
+    DgsContext.getCustomContext<DgsCustomContext>(dfe).repositoryId = repositoryId
+    AnnotationsDto(
+      upVotes = voteRepository.countUpVotesByRepositoryId(repositoryId),
+      downVotes = voteRepository.countDownVoteByRepositoryId(repositoryId)
+    )
+  }
+}
+
+internal fun CreateAnnotationInput.toDomain(): AnnotationCreate {
+  val target = AnnotationTarget(
+    where.document?.id?.let { DocumentId(UUID.fromString(it)) },
+    where.repository?.id?.let { RepositoryId(UUID.fromString(it)) },
+  )
+  return annotation.flag?.let { BoolAnnotationCreate(target, flag = it.set) }
+    ?: annotation.text?.let { TextAnnotationCreate(target, it.fromChar, it.toChar) }
+    ?: annotation.upVote?.let { BoolAnnotationCreate(target, upVote = it.set) }
+    ?: annotation.downVote?.let { BoolAnnotationCreate(target, downVote = it.set) }
+    ?: throw IllegalArgumentException("Insufficient data for annotation")
+}
+

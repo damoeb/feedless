@@ -13,5 +13,8 @@ data class Harvest(
     val finishedAt: LocalDateTime?,
     val sourceId: SourceId,
     val createdAt: LocalDateTime = LocalDateTime.now(),
+    val status: HarvestStatus = HarvestStatus.COMPLETED,
+    val dryRun: Boolean = false,
+    val flow: String? = null,
 )
 

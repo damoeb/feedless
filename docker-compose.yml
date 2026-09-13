@@ -79,8 +79,8 @@ services:
     networks:
       - postgis
 
-  feedless-agent:
-    image: damoeb/feedless:agent-latest
+  feedless-browser-automation-app:
+    image: damoeb/feedless:browser-automation-app-latest
 #    deploy:
 #      replicas: 2
     security_opt:

@@ -28,4 +28,8 @@ class GroupJpaRepository(private val groupDAO: GroupDAO) : GroupRepository {
   override fun findAllByOwner(id: UserId): List<Group> {
     return groupDAO.findAllByOwnerId(id.uuid).map { it.toDomain() }
   }
+
+  override fun delete(group: Group) {
+    groupDAO.deleteById(group.id.uuid)
+  }
 }

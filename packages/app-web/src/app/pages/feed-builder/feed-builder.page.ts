@@ -27,6 +27,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { getFirstFetchUrlLiteral } from '../../components/interactive-website/source-builder';
 import { IonContent } from '@ionic/angular/standalone';
 import { DEFAULT_FETCH_CRON } from '../../defaults';
+import { repositoryFeedUrl } from '../../components/feed-details/feed-details.component';
 
 @Component({
   selector: 'app-feed-builder-page',
@@ -68,12 +69,18 @@ export class FeedBuilderPage implements OnInit, OnDestroy {
   }
 
   async handleRepository(repository: RepositoryWithFrequency) {
-    const url = `${this.serverConfig.apiUrl}/f/${repository.id}/atom?skey=${repository.shareKey}`;
+    // only the fetch of a private feed carries the share key; displayed text never shows it
+    const url = repositoryFeedUrl(this.serverConfig.apiUrl, repository, 'atom');
+    const feedUrl = repositoryFeedUrl(
+      this.serverConfig.apiUrl,
+      { ...repository, shareKey: '' },
+      'atom'
+    );
     await this.handleSource(
       `Remix ${repository.title}`,
       '',
       {
-        title: `From ${url}`,
+        title: `From ${feedUrl}`,
         flow: {
           sequence: [
             {

@@ -3,6 +3,7 @@ package org.migor.feedless.api.graphql
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
@@ -52,8 +53,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     UserSecretRepository::class,
     UserGuard::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class,
     GroupRepository::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @Import(
@@ -68,6 +69,12 @@ class QueryResolverIntTest {
   @BeforeEach
   fun setUp() {
     mockSecurityContext()
+  }
+
+  /** SecurityContextHolder is thread-local and Gradle reuses worker threads, so a leftover mock poisons later tests. */
+  @AfterEach
+  fun tearDown() {
+    SecurityContextHolder.clearContext()
   }
 
   @Test

@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.currentCoroutineContext
 import org.apache.commons.lang3.StringUtils
@@ -11,27 +10,16 @@ import org.migor.feedless.document.filter.generated.FilterByExpression
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.pipeline.ItemFilter
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.corrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 
-data class ItemFilterParams(
-  @SerializedName("composite") val composite: CompositeFilterParams? = null,
-  @SerializedName("expression") val expression: String? = null,
-)
-
-data class CompositeFilterParams(
-  @SerializedName("exclude") val exclude: CompositeFieldFilterParams? = null,
-  @SerializedName("include") val include: CompositeFieldFilterParams? = null,
-)
-
-typealias CompositeFilterPluginParams = List<ItemFilterParams>
-
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?> {
+class CompositeFilterPlugin : FilterEntityPlugin<CompositeFilterPluginParams?>, ItemFilter {
 
   private val log = LoggerFactory.getLogger(CompositeFilterPlugin::class.simpleName)
 

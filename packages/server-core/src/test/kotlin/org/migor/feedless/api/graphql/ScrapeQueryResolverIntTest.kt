@@ -3,13 +3,14 @@ package org.migor.feedless.api.graphql
 import com.netflix.graphql.dgs.DgsQueryExecutor
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableWebSocketsConfiguration
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -50,7 +51,7 @@ import java.nio.file.Files
 @MockitoBean(
   types = [
     ServerConfigResolver::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     AttachmentRepository::class,
     StatelessAuthService::class,
   ]
@@ -85,6 +86,12 @@ class ScrapeQueryResolverIntTest {
   @BeforeEach
   fun setUp() {
     mockSecurityContext()
+  }
+
+  /** SecurityContextHolder is thread-local and Gradle reuses worker threads, so a leftover mock poisons later tests. */
+  @AfterEach
+  fun tearDown() {
+    SecurityContextHolder.clearContext()
   }
 
   @Test

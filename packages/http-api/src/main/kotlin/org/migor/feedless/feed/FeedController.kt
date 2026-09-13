@@ -1,0 +1,275 @@
+package org.migor.feedless.feed
+
+import io.micrometer.core.annotation.Timed
+import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.Tag
+import jakarta.servlet.http.HttpServletRequest
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
+import org.apache.commons.lang3.BooleanUtils
+import org.apache.commons.lang3.StringUtils
+import org.migor.feedless.AppLayer
+import org.migor.feedless.AppMetrics
+import org.migor.feedless.AppProfiles
+import org.migor.feedless.NotFoundException
+import org.migor.feedless.analytics.Analytics
+import org.migor.feedless.api.ApiUrls
+import org.migor.feedless.capability.ShareKeyAccess
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryReadGrant
+import org.migor.feedless.source.SourceRepository
+import org.migor.feedless.throttle.Throttled
+import org.migor.feedless.feed.exporter.FeedExporter
+import org.migor.feedless.feed.parser.json.JsonFeed
+import org.migor.feedless.scrape.ExtendContext
+import org.migor.feedless.scrape.GenericFeedSelectors
+import org.migor.feedless.session.injectCapabilitiesFromSecurityContext
+import org.migor.feedless.source.SourceId
+import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.stereotype.Controller
+import org.springframework.web.bind.annotation.GetMapping
+import org.springframework.web.bind.annotation.PathVariable
+import kotlin.coroutines.EmptyCoroutineContext
+import kotlin.time.DurationUnit
+import kotlin.time.toDuration
+
+// https://rssproxy.migor.org/api/web-to-feed?version=0.1&url=https%3A%2F%2Fheise.de&linkXPath=.%2Fa%5B1%5D&extendContext=&contextXPath=%2F%2Fdiv%5B5%5D%2Fdiv%5B1%5D%2Fdiv%2Fsection%5B1%5D%2Fsection%5B1%5D%2Farticle
+// v2 https://rssproxy.migor.org/api/w2f?v=0.1&url=https%3A%2F%2Fheise.de&link=.%2Fa%5B1%5D&context=%2F%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&re=none&q=contains(%23any%2C%20%22EM%22)&out=atom
+// v2 https://rssproxy.migor.org/api/tf?url=https%3A%2F%2Fwww.telepolis.de%2Fnews-atom.xml&re=none&q=not(contains(%23any%2C%20%22Politik%22))&out=atom
+// v1 https://rssproxy.migor.org/api/feed?url=https%3A%2F%2Fwww.heise.de&pContext=%2F%2Fbody%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D
+// v1 https://rssproxy.migor.org/api/feed?url=http%3A%2F%2Fheise.de&pContext=%2F%2Fbody%2Fdiv%5B3%5D%2Fdiv%2Fdiv%5B1%5D%2Fsection%5B1%5D%2Farticle&pLink=.%2Fa%5B1%5D&x=s
+
+/**
+ * To support old versions of rss-proxy
+ */
+@Controller
+@Profile("${AppLayer.api} & ${AppProfiles.feed}")
+class FeedController(
+  val feedExporter: FeedExporter,
+  val feedService: FeedService,
+  val meterRegistry: MeterRegistry,
+  val analytics: Analytics,
+  val sourceRepository: SourceRepository,
+  val repositoryGuard: RepositoryGuard,
+) {
+
+
+  @GetMapping(
+    "/stream/bucket/{repositoryId}",
+    "/bucket/{repositoryId}",
+    "/bucket:{repositoryId}",
+    "/stream/bucket/{repositoryId}/atom",
+    "/bucket/{repositoryId}/atom",
+    "/bucket:{repositoryId}/atom",
+  )
+  fun bucketFeedWithFormat(
+    @PathVariable("repositoryId") repositoryId: String,
+  ): ResponseEntity<String> {
+    runBlocking {
+      analytics.track()
+    }
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "repositoryId"))).increment()
+    return getRepository(repositoryId)
+  }
+
+  private fun getRepository(repositoryId: String): ResponseEntity<String> {
+    val headers = HttpHeaders()
+    headers.add("Location", "/f/$repositoryId/atom")
+    return ResponseEntity(headers, HttpStatus.FOUND)
+  }
+
+  @GetMapping(
+    "/stream/feed/{feedId}/atom",
+    "/feed/{feedId}/atom",
+    "/feed:{feedId}/atom",
+    "/stream/feed/{feedId}",
+    "/feed/{feedId}",
+    "/feed:{feedId}",
+  )
+  suspend fun legacyEntities(
+    @PathVariable("feedId") feedId: String,
+    request: HttpServletRequest
+  ): ResponseEntity<String> = withContext(injectCapabilitiesFromSecurityContext()) {
+    analytics.track()
+    meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "feedId"))).increment()
+    val feedUrl = toFullUrlString(request)
+    val feed = resolveFeedCatching(feedUrl) {
+      val grant = requireReadableSource(SourceId(feedId), request.getParameter("skey"))
+      feedService.getFeed(
+        grant,
+        SourceId(feedId),
+        feedUrl
+      )
+    }
+    feed.export("atom")
+  }
+
+  @GetMapping(
+    "/api/feed",
+  )
+  suspend fun web2Feedv1(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analytics.track()
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v1"))).increment()
+      val feedUrl = toFullUrlString(request)
+
+      val selectors = GenericFeedSelectors(
+        linkXPath = request.param("pLink"),
+        extendContext = ExtendContext.NONE,
+        contextXPath = request.param("pContext").replace("//body/", "//"),
+        dateXPath = null,
+      )
+
+      val feed = resolveFeedCatching(feedUrl)
+      {
+        feedService.webToFeed(
+          request.param("url"),
+          selectors,
+          false,
+          null,
+          feedService.requireLegacyTokenAccess(null),
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
+    }
+
+  @Throttled
+  @Timed
+  @GetMapping("/api/web-to-feed", ApiUrls.webToFeed)
+  suspend fun web2Feedv2(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analytics.track()
+      val feedUrl = toFullUrlString(request)
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "v2"))).increment()
+
+      val selectors = GenericFeedSelectors(
+        linkXPath = request.firstParam("link", "linkXPath"),
+        extendContext = when (request.firstParamOptional("x", "extendContext") ?: "") {
+          "p" -> ExtendContext.PREVIOUS
+          "n" -> ExtendContext.NEXT
+          "pn" -> ExtendContext.PREVIOUS_AND_NEXT
+          else -> ExtendContext.NONE
+        },
+        contextXPath = request.firstParam("context", "contextXPath"),
+        dateXPath = request.paramOptional("date"),
+      )
+
+      val feed = resolveFeedCatching(feedUrl) {
+        // checked on every request, the feed below is cached by URL
+        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
+        feedService.webToFeed(
+          request.param("url"),
+          selectors,
+          request.paramBool("pp"),
+          request.paramOptional("q"),
+          access,
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
+    }
+
+  @Throttled
+  @Timed
+  @GetMapping(
+    "/api/feeds/transform",
+    ApiUrls.transformFeed
+  )
+  suspend fun transformFeed(request: HttpServletRequest): ResponseEntity<String> =
+    withContext(injectCapabilitiesFromSecurityContext()) {
+      analytics.track()
+      meterRegistry.counter(AppMetrics.standalonePull, listOf(Tag.of("type", "transform"))).increment()
+      val feedUrl = toFullUrlString(request)
+      val feed = resolveFeedCatching(feedUrl) {
+        val access = feedService.requireLegacyTokenAccess(request.paramOptional("token"))
+        feedService.transformFeed(
+          request.param("url"),
+          request.paramOptional("q"),
+          access,
+          feedUrl
+        )
+      }
+      feed.export(request.param("out", "atom"))
+    }
+
+  // checked outside the cached feed; a denied source answers like a missing one ("feedId not found")
+  private suspend fun requireReadableSource(sourceId: SourceId, shareKey: String?): RepositoryReadGrant {
+    val repositoryId = sourceRepository.findById(sourceId)?.repositoryId ?: throw NotFoundException("feedId not found")
+    return try {
+      withContext(shareKey?.let { ShareKeyAccess(repositoryId, it) } ?: EmptyCoroutineContext) {
+        repositoryGuard.requireReadGrant(repositoryId)
+      }
+    } catch (e: NotFoundException) {
+      throw NotFoundException("feedId not found")
+    }
+  }
+
+  private suspend fun resolveFeedCatching(
+    feedUrl: String,
+    feedProvider: suspend () -> JsonFeed
+  ): JsonFeed {
+    return try {
+      feedProvider()
+    } catch (t: Throwable) {
+      feedService.createErrorFeed(feedUrl, t)
+    }
+  }
+
+
+  private fun JsonFeed.export(responseType: String?): ResponseEntity<String> {
+    val (_, convert) = feedExporter.resolveResponseType(StringUtils.trimToNull(responseType) ?: "atom")
+    return convert(
+      this,
+      HttpStatus.OK,
+      1.toDuration(DurationUnit.DAYS)
+    )
+  }
+
+  @GetMapping("/api/legacy/auth", "/api/legacy/settings")
+  fun settings(): ResponseEntity<String> {
+    return ResponseEntity.status(HttpStatus.GONE).build()
+  }
+
+}
+
+// AnalyticsService in server-core keeps its own copy.
+private fun toFullUrlString(request: HttpServletRequest): String {
+  return if (StringUtils.isBlank(request.queryString)) {
+    request.requestURL.toString()
+  } else {
+    request.requestURL.toString() + "?" + request.queryString
+  }
+}
+
+private fun HttpServletRequest.firstParam(vararg names: String): String {
+  return firstParamOptional(*names)
+    ?: throw IllegalArgumentException("Expected one of these query parameters [${names.joinToString(",")}]")
+}
+
+private fun HttpServletRequest.firstParamOptional(vararg names: String): String? {
+  return names.firstNotNullOfOrNull { paramOptional(it) }
+}
+
+private fun HttpServletRequest.paramBool(name: String): Boolean {
+  return BooleanUtils.toBoolean(this.param(name, "false"))
+}
+
+private fun HttpServletRequest.paramOptional(name: String): String? {
+  return try {
+    getParameter(name)
+  } catch (e: Exception) {
+    null
+  }
+}
+
+private fun HttpServletRequest.param(name: String, fallback: String? = null): String {
+  return try {
+    getParameter(name)
+  } catch (e: Exception) {
+    fallback ?: throw IllegalArgumentException("Expected query parameter '$name' not found")
+  }
+}

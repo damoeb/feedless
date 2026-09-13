@@ -45,13 +45,13 @@ Verticals are declared in `app-web/src/app/all-verticals.ts` (`VerticalSpec`: id
 
 This is AGENTS.md Critical Rule #2, frontend half.
 
-`app-web`, `agent`, and `frontend/libs/graphql-api` each generate a TS client from `packages/graphql-api/src/main/resources/schema/schema.graphqls` via `codegen.yml` (`typescript`, `typescript-operations`, `typescript-document-nodes`; `app-web` prefixes types `Gql`).
+`app-web`, `browser-automation-app`, and `frontend/libs/graphql-api` each generate a TS client from `packages/graphql-api/src/main/resources/schema/schema.graphqls` via `codegen.yml` (`typescript`, `typescript-operations`, `typescript-document-nodes`; `app-web` prefixes types `Gql`).
 
 After a schema change, regenerate in **every** consumer:
 
 ```bash
 (cd packages/app-web && yarn codegen)
-(cd packages/agent   && yarn codegen)
+(cd packages/browser-automation-app && yarn codegen)
 (cd packages/frontend && npm run codegen)
 ```
 

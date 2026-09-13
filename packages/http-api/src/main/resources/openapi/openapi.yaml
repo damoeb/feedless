@@ -1,150 +1,52 @@
 openapi: 3.0.3
 info:
   title: Feedless HTTP API
-  description: REST API for managing feed repositories and sources.
+  description: REST API for Feedless entities (auth, repository, source, document, harvest, plan, group).
   version: 1.0.0
-
 servers:
-  - url: /api/v1
-    description: Feed management API v1
-
+  - url: '{scheme}://{host}/api/v1'
+    description: Feedless HTTP API v1. Feedless is self-hosted — point `host` at your instance.
+    variables:
+      scheme:
+        default: https
+        enum: [https, http]
+      host:
+        default: feedless.org
+        description: Host (and optional port) of the Feedless instance
 security:
-  - userSecretJwt: []
-
+  - bearerAuth: []
 paths:
-  /repositories:
+  /user:
     get:
-      tags: [Repositories]
-      operationId: listRepositories
-      summary: List repositories for the authenticated user
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/PageSize'
-        - name: product
-          in: query
-          schema:
-            $ref: '#/components/schemas/Vertical'
-        - name: visibility
-          in: query
-          schema:
-            $ref: '#/components/schemas/Visibility'
-        - name: q
-          in: query
-          description: Fulltext search query
-          schema:
-            type: string
+      tags: [Auth]
+      operationId: getAuthenticatedUser
+      summary: Get the authenticated user (GitHub GET /user)
+      description: >
+        Requires Authorization Bearer UserSecret.value (from GraphQL createUserSecret).
+        Returns id, email, and groups.
       responses:
         '200':
-          description: Repository list
+          description: Authenticated user
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RepositoryListResponse'
+                $ref: '#/components/schemas/AuthenticatedUser'
         '401':
           $ref: '#/components/responses/Unauthorized'
-    post:
-      tags: [Repositories]
-      operationId: createRepositories
-      summary: Create one or more repositories
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/RepositoryCreate'
-      responses:
-        '201':
-          description: Created repositories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Repository'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/count:
-    get:
-      tags: [Repositories]
-      operationId: countRepositories
-      summary: Count repositories for a product
-      parameters:
-        - name: product
-          in: query
-          required: true
-          schema:
-            $ref: '#/components/schemas/Vertical'
-      responses:
-        '200':
-          description: Repository count
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/CountResponse'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/{repositoryId}:
-    parameters:
-      - $ref: '#/components/parameters/RepositoryId'
-    get:
-      tags: [Repositories]
-      operationId: getRepository
-      summary: Get a repository by id
-      responses:
-        '200':
-          description: Repository
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Repository'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    patch:
-      tags: [Repositories]
-      operationId: updateRepository
-      summary: Update a repository
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RepositoryUpdate'
-      responses:
-        '204':
-          description: Updated
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    delete:
-      tags: [Repositories]
-      operationId: deleteRepository
-      summary: Delete a repository
-      responses:
-        '204':
-          description: Deleted
-        '404':
-          $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /repositories/{repositoryId}/sources:
-    parameters:
-      - $ref: '#/components/parameters/RepositoryId'
+        default:
+          $ref: '#/components/responses/Error'
+  /user/sources:
     get:
       tags: [Sources]
-      operationId: listSources
-      summary: List sources on a repository
+      operationId: listUserSources
+      summary: List sources across every repository the caller owns or belongs to via its owning group
+      description: >
+        Mirrors GitHub's GET /user/issues: repositories of other users are never included, even
+        public ones. Use minErrorsInSuccession to find broken sources without one request per
+        repository.
       parameters:
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/PageSize'
@@ -156,18 +58,204 @@ paths:
           in: query
           schema:
             type: string
+        - name: minErrorsInSuccession
+          in: query
+          schema:
+            type: integer
+            minimum: 1
       responses:
         '200':
-          description: Source list
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/SourceListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories:
+    get:
+      tags: [Repositories]
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: product
+          in: query
+          schema:
+            $ref: '#/components/schemas/VerticalFilter'
+        - name: visibility
+          in: query
+          schema:
+            $ref: '#/components/schemas/Visibility'
+        - name: q
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RepositoryListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Repositories]
+      operationId: createRepository
+      summary: Create a single repository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+    get:
+      tags: [Repositories]
+      operationId: getRepository
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
         '404':
           $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
+        default:
+          $ref: '#/components/responses/Error'
+    patch:
+      tags: [Repositories]
+      operationId: updateRepository
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RepositoryUpdate'
+      responses:
+        '200':
+          description: Updated
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Repositories]
+      operationId: deleteRepository
+      responses:
+        '204':
+          description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+    get:
+      tags: [Sources]
+      operationId: listSources
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: disabled
+          in: query
+          schema:
+            type: boolean
+        - name: like
+          in: query
+          schema:
+            type: string
+        - name: minErrorsInSuccession
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SourceListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Sources]
+      operationId: createSource
+      summary: Create a single source in a repository
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
   /repositories/{repositoryId}/sources/{sourceId}:
     parameters:
       - $ref: '#/components/parameters/RepositoryId'
@@ -175,39 +263,527 @@ paths:
     get:
       tags: [Sources]
       operationId: getSource
-      summary: Get a source by id
       responses:
         '200':
-          description: Source
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Source'
         '404':
           $ref: '#/components/responses/NotFound'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
+        default:
+          $ref: '#/components/responses/Error'
+    patch:
+      tags: [Sources]
+      operationId: updateSource
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SourceUpdate'
+      responses:
+        '200':
+          description: Updated
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Source'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Sources]
+      operationId: deleteSource
+      responses:
+        '204':
+          description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+    get:
+      tags: [Harvests]
+      operationId: listHarvests
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+        - name: dryRun
+          in: query
+          description: Return only harvests whose dryRun matches this value.
+          schema:
+            type: boolean
+            default: false
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HarvestListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Harvests]
+      operationId: runSource
+      summary: Run the source now, or dry-run it with an unsaved flow
+      description: >
+        Queues a harvest and answers at once; a scheduler runs it. Poll the harvest in `Location`
+        until its `status` is `completed`. A real run uses the saved flow and imports records like a
+        scheduled harvest. A dry run (`dryRun: true`) scrapes without importing records or touching the
+        source, and writes the extracted items into the harvest log; it may carry a `flow` to test
+        instead of the saved one. A dry run that extracts no items counts as failed (`ok: false`) — a
+        broken selector usually yields nothing rather than an error. Requires write access to the repository.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/HarvestRequest'
+      responses:
+        '202':
+          description: Queued
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            Location:
+              description: URL of the queued harvest
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvest'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+      - $ref: '#/components/parameters/HarvestId'
+    get:
+      tags: [Harvests]
+      operationId: getHarvest
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Harvest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/sources/{sourceId}/harvests/{harvestId}/logs:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/SourceId'
+      - $ref: '#/components/parameters/HarvestId'
+    get:
+      tags: [Harvests]
+      operationId: getHarvestLogs
+      summary: The harvest's log output as plain text
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            text/plain:
+              schema:
+                type: string
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/records:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+    get:
+      tags: [Records]
+      operationId: listRecords
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecordListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Records]
+      operationId: createRecord
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /repositories/{repositoryId}/records/{recordId}:
+    parameters:
+      - $ref: '#/components/parameters/RepositoryId'
+      - $ref: '#/components/parameters/RecordId'
+    get:
+      tags: [Records]
+      operationId: getRecord
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+    patch:
+      tags: [Records]
+      operationId: updateRecord
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecordUpdate'
+      responses:
+        '200':
+          description: Updated
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+            ETag:
+              $ref: '#/components/headers/ETag'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Record'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/PreconditionFailed'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Records]
+      operationId: deleteRecord
+      responses:
+        '204':
+          description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /plans:
+    get:
+      tags: [Plans]
+      operationId: listPlans
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlanListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+  /plans/{planId}:
+    get:
+      tags: [Plans]
+      operationId: getPlan
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Plan'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+  /groups:
+    get:
+      tags: [Groups]
+      operationId: listGroups
+      responses:
+        '200':
+          description: Groups the current user belongs to (as GroupAssignment)
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssignmentListResponse'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Groups]
+      operationId: createGroup
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupCreate'
+      responses:
+        '201':
+          description: Created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /groups/{groupId}:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Groups]
+      operationId: getGroup
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Group'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+    delete:
+      tags: [Groups]
+      operationId: deleteGroup
+      responses:
+        '204':
+          description: Deleted
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /groups/{groupId}/members:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      tags: [Groups]
+      operationId: listGroupMembers
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/PageSize'
+      responses:
+        '200':
+          description: Members of the group
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupMemberListResponse'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        default:
+          $ref: '#/components/responses/Error'
+    post:
+      tags: [Groups]
+      operationId: addGroupMember
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GroupMemberCreate'
+      responses:
+        '201':
+          description: Assignment created
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GroupAssignment'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /groups/{groupId}/members/{userId}:
+    parameters:
+      - name: groupId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+      - name: userId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    delete:
+      tags: [Groups]
+      operationId: removeGroupMember
+      responses:
+        '204':
+          description: Removed
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+        '429':
+          $ref: '#/components/responses/TooManyRequests'
+        default:
+          $ref: '#/components/responses/Error'
+  /status:
+    get:
+      tags: [Status]
+      operationId: getStatus
+      summary: Report the instance's version, build and number of connected agents
+      description: >
+        The only public operation: it requires no token, and a Bearer token sent with it is ignored,
+        valid or not. It reveals nothing but the running version, the build commit and date, and how
+        many prerender agents are connected — no agent names, owners, versions or ids.
+      security: []
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Feedless-Version:
+              $ref: '#/components/headers/X-Feedless-Version'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ServerStatus'
+        default:
+          $ref: '#/components/responses/Error'
 components:
   securitySchemes:
-    userSecretJwt:
-      type: apiKey
-      in: header
-      name: Authentication
+    bearerAuth:
+      type: http
+      scheme: bearer
       description: >
-        Bearer JWT from UserSecret.value (create via GraphQL createUserSecret).
-        Example header value: `Bearer eyJ...`
-
+        `Authorization: Bearer <UserSecret.value>` (GitHub PAT style).
+        Legacy `Authentication: Bearer <…>` accepted in v1 but **deprecated**.
+        TOKEN cookie still accepted for browser clients. Anonymous JWTs are rejected.
   parameters:
     RepositoryId:
       name: repositoryId
-      in: path
-      required: true
-      schema:
-        type: string
-        format: uuid
-    SourceId:
-      name: sourceId
       in: path
       required: true
       schema:
@@ -228,64 +804,316 @@ components:
         minimum: 0
         maximum: 100
         default: 20
-
+    SourceId:
+      name: sourceId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RecordId:
+      name: recordId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    HarvestId:
+      name: harvestId
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: >
+        A strong ETag from a prior GET or PATCH of this resource (a source, repository, or
+        record). Present and matching the resource's current ETag applies the update; present
+        and different answers 412 without applying it; `*` matches any existing resource;
+        absent behaves as an unconditional update (last write wins).
+      schema:
+        type: string
+  headers:
+    ETag:
+      description: >
+        Strong ETag of this resource's representation — a SHA-256 hash of its serialized JSON,
+        quoted.
+      schema:
+        type: string
+    X-Feedless-Version:
+      description: >
+        The instance's app.version. feedctl compares this against its own build version and
+        warns on mismatch.
+      schema:
+        type: string
   responses:
+    Error:
+      description: >
+        Any error. Every error response — 400 `BAD_REQUEST` / `VALIDATION_ERROR`,
+        401 `UNAUTHORIZED`, 403 `FORBIDDEN`, 404 `NOT_FOUND`, 409 `CONFLICT`,
+        412 `PRECONDITION_FAILED`, 429 `TOO_MANY_REQUESTS`, 500 `INTERNAL_ERROR` — carries an `ApiError`
+        body. Every route except `GET /status` requires authentication, so every other operation can return 401.
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
     Unauthorized:
       description: Missing or invalid authentication
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     BadRequest:
       description: Invalid request
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    TooManyRequests:
+      description: Rate limit exceeded — retry after the interval in `Retry-After`
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
+        Retry-After:
+          description: Seconds to wait before retrying
+          schema:
+            type: integer
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
     NotFound:
       description: Resource not found
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
       content:
         application/json:
           schema:
             $ref: '#/components/schemas/ApiError'
-
+    Conflict:
+      description: The resource's state does not allow the request, e.g. a real run of a disabled source
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+    PreconditionFailed:
+      description: If-Match did not match the resource's current ETag
+      headers:
+        X-Feedless-Version:
+          $ref: '#/components/headers/X-Feedless-Version'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
   schemas:
+    ServerStatus:
+      type: object
+      required: [version, build, agents]
+      properties:
+        version:
+          type: string
+          description: The instance's app.version, the same value as the X-Feedless-Version header
+        build:
+          $ref: '#/components/schemas/ServerBuild'
+        agents:
+          $ref: '#/components/schemas/ServerAgents'
+    ServerBuild:
+      type: object
+      required: [commit, date]
+      properties:
+        commit:
+          type: string
+          description: Git commit the running image was built from
+        date:
+          type: integer
+          format: int64
+          description: Build time in epoch milliseconds
+    ServerAgents:
+      type: object
+      required: [connected]
+      properties:
+        connected:
+          type: integer
+          format: int32
+          minimum: 0
+          description: Number of prerender agents currently connected to the instance (cluster-wide when agents are persisted)
     ApiError:
       type: object
       required: [code, message]
       properties:
         code:
           type: string
+          description: Stable machine-readable code, e.g. NOT_FOUND, VALIDATION_ERROR
         message:
           type: string
-
-    CountResponse:
+          description: Human-readable summary. Not stable — do not match on it.
+        corrId:
+          type: string
+          description: Correlation id for support/debug
+        path:
+          type: string
+          description: Request path the error occurred on
+        errors:
+          type: array
+          description: Per-field details, present on VALIDATION_ERROR. All failing fields, not just the first.
+          items:
+            $ref: '#/components/schemas/FieldError'
+    FieldError:
       type: object
-      required: [count]
+      required: [field, message]
       properties:
-        count:
-          type: integer
-
+        field:
+          type: string
+        message:
+          type: string
+    AuthenticatedUser:
+      type: object
+      required: [id, email, groups]
+      properties:
+        id: { type: string, format: uuid }
+        email: { type: string, format: email }
+        groups:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAssignment'
     RepositoryListResponse:
       type: object
-      required: [items]
+      required: [items, hasMore, totalCount]
       properties:
         items:
           type: array
           items:
             $ref: '#/components/schemas/Repository'
-
+        hasMore:
+          type: boolean
+        totalCount:
+          type: integer
+          description: >
+            Total repositories matching the same filters (product, visibility, q) for the
+            same caller, independent of page/pageSize.
     SourceListResponse:
       type: object
-      required: [items]
+      required: [items, hasMore]
       properties:
         items:
           type: array
           items:
             $ref: '#/components/schemas/Source'
-
+        hasMore:
+          type: boolean
+    Record:
+      type: object
+      required: [id, url, createdAt, publishedAt, updatedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        title:
+          type: string
+        text:
+          type: string
+        html:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        imageUrl:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        publishedAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        startingAt:
+          type: string
+          format: date-time
+        rawBase64:
+          type: string
+        rawMimeType:
+          type: string
+    RecordCreate:
+      type: object
+      required: [title, url, publishedAt]
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+        publishedAt:
+          type: string
+          format: date-time
+        text:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        rawBase64:
+          type: string
+        rawMimeType:
+          type: string
+    RecordUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        text:
+          type: string
+        url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+    RecordListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Record'
     Vertical:
       type: string
+      description: A concrete product. Never `all` — that is a filter value only, see VerticalFilter.
+      enum:
+        - rssProxy
+        - visualDiff
+        - reader
+        - feedless
+        - upcoming
+        - untoldNotes
+        - pageChangeTracker
+        - feedDump
+        - digest
+    VerticalFilter:
+      type: string
+      description: Product filter for queries. `all` matches every product.
       enum:
         - all
         - rssProxy
@@ -296,13 +1124,12 @@ components:
         - untoldNotes
         - pageChangeTracker
         - feedDump
-
+        - digest
     Visibility:
       type: string
       enum:
-        - isPrivate
-        - isPublic
-
+        - private
+        - public
     Retention:
       type: object
       properties:
@@ -310,14 +1137,15 @@ components:
           type: integer
         maxAgeDays:
           type: integer
-
     Repository:
       type: object
+      description: >
+        Only intrinsic, always-present fields are required. Computed counters and
+        caller-relative fields are optional and are omitted when not resolved.
       required:
         - id
         - title
         - description
-        - shareKey
         - ownerId
         - product
         - visibility
@@ -325,13 +1153,7 @@ components:
         - tags
         - createdAt
         - lastUpdatedAt
-        - documentCount
         - archived
-        - pullsPerMonth
-        - currentUserIsOwner
-        - pushNotificationsEnabled
-        - sourcesCount
-        - sourcesCountWithProblems
       properties:
         id:
           type: string
@@ -342,6 +1164,9 @@ components:
           type: string
         shareKey:
           type: string
+          description: >
+            Capability secret granting access to a private repository. Returned only to
+            the owner; omitted for everyone else. Treat as a credential.
         ownerId:
           type: string
           format: uuid
@@ -356,14 +1181,14 @@ components:
           items:
             type: string
         createdAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         lastUpdatedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         nextUpdateAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         documentCount:
           type: integer
           format: int64
@@ -373,16 +1198,18 @@ components:
           type: integer
         currentUserIsOwner:
           type: boolean
+          description: Relative to the calling user, not a property of the repository itself
         pushNotificationsEnabled:
           type: boolean
         sourcesCount:
           type: integer
+          description: Omitted when not computed for this response
         sourcesCountWithProblems:
           type: integer
+          description: Omitted when not computed for this response
         disabledFrom:
-          type: integer
-          format: int64
-
+          type: string
+          format: date-time
     RepositoryCreate:
       type: object
       required: [product, sources, title, description]
@@ -407,7 +1234,6 @@ components:
           type: boolean
         visibility:
           $ref: '#/components/schemas/Visibility'
-
     RepositoryUpdate:
       type: object
       properties:
@@ -423,29 +1249,9 @@ components:
           $ref: '#/components/schemas/Visibility'
         retention:
           $ref: '#/components/schemas/Retention'
-        sources:
-          $ref: '#/components/schemas/SourcesPatch'
-
-    SourcesPatch:
-      type: object
-      properties:
-        add:
-          type: array
-          items:
-            $ref: '#/components/schemas/SourceCreate'
-        update:
-          type: array
-          items:
-            $ref: '#/components/schemas/SourceUpdate'
-        remove:
-          type: array
-          items:
-            type: string
-            format: uuid
-
     Source:
       type: object
-      required: [id, title, flow]
+      required: [id, title, flow, repositoryId, errorsInSuccession]
       properties:
         id:
           type: string
@@ -454,13 +1260,22 @@ components:
           type: string
         flow:
           $ref: '#/components/schemas/ScrapeFlow'
+        repositoryId:
+          type: string
+          format: uuid
         disabled:
           type: boolean
         lastRefreshedAt:
-          type: integer
-          format: int64
+          type: string
+          format: date-time
         lastRecordsRetrieved:
           type: integer
+        errorsInSuccession:
+          type: integer
+          description: >
+            Consecutive real failures. The harvester resets this to 0 on a transient failure
+            (DNS, connection, resumable, no items) even while it still sets lastErrorMessage —
+            this counter, not the message, is the signal that a source is actually broken.
         latLng:
           $ref: '#/components/schemas/GeoPoint'
         tags:
@@ -469,9 +1284,9 @@ components:
             type: string
         recordCount:
           type: integer
+          description: Omitted when not computed for this response
         lastErrorMessage:
           type: string
-
     SourceCreate:
       type: object
       required: [title, flow]
@@ -493,14 +1308,9 @@ components:
             type: string
         lastErrorMessage:
           type: string
-
     SourceUpdate:
       type: object
-      required: [id]
       properties:
-        id:
-          type: string
-          format: uuid
         title:
           type: string
         tags:
@@ -513,18 +1323,20 @@ components:
           $ref: '#/components/schemas/GeoPoint'
         flow:
           $ref: '#/components/schemas/ScrapeFlow'
-
     GeoPoint:
       type: object
       required: [lat, lng]
       properties:
         lat:
           type: number
-          format: float
+          format: double
+          minimum: -90
+          maximum: 90
         lng:
           type: number
-          format: float
-
+          format: double
+          minimum: -180
+          maximum: 180
     ScrapeFlow:
       type: object
       required: [sequence]
@@ -533,21 +1345,38 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ScrapeAction'
-
     ScrapeAction:
       type: object
+      description: >
+        Exactly one of these properties must be set — an action is a fetch, or a click, or
+        an extract, never a combination. Enforced at runtime: an action with zero or more
+        than one property set is rejected with 400 VALIDATION_ERROR.
+      minProperties: 1
+      maxProperties: 1
       properties:
         fetch:
           $ref: '#/components/schemas/HttpFetch'
         extract:
           $ref: '#/components/schemas/ScrapeExtract'
-
+        execute:
+          $ref: '#/components/schemas/PluginExecution'
+        click:
+          $ref: '#/components/schemas/DomElement'
+        type:
+          $ref: '#/components/schemas/DomActionType'
+        waitFor:
+          $ref: '#/components/schemas/WaitForAction'
+        select:
+          $ref: '#/components/schemas/DomActionSelect'
+        header:
+          $ref: '#/components/schemas/RequestHeader'
+        purge:
+          $ref: '#/components/schemas/DomElementByXPath'
     HttpFetch:
       type: object
       properties:
         get:
           $ref: '#/components/schemas/HttpGetRequest'
-
     HttpGetRequest:
       type: object
       required: [url]
@@ -556,13 +1385,35 @@ components:
           $ref: '#/components/schemas/StringLiteralOrVariable'
         timeout:
           type: integer
+        viewport:
+          $ref: '#/components/schemas/ViewPort'
         forcePrerender:
           type: boolean
         language:
           type: string
+        waitUntil:
+          $ref: '#/components/schemas/PuppeteerWaitUntil'
         additionalWaitSec:
           type: integer
-
+    ViewPort:
+      type: object
+      required: [width, height, isMobile, isLandscape]
+      properties:
+        width:
+          type: integer
+        height:
+          type: integer
+        isMobile:
+          type: boolean
+        isLandscape:
+          type: boolean
+    PuppeteerWaitUntil:
+      type: string
+      enum:
+        - load
+        - domcontentloaded
+        - networkidle0
+        - networkidle2
     StringLiteralOrVariable:
       type: object
       properties:
@@ -570,35 +1421,60 @@ components:
           type: string
         variable:
           type: string
-
     ScrapeExtract:
       type: object
+      required: [fragmentName]
       properties:
         fragmentName:
           type: string
+        imageBased:
+          $ref: '#/components/schemas/ScrapeBoundingBox'
         selectorBased:
           $ref: '#/components/schemas/DomExtract'
-
+    ScrapeBoundingBox:
+      type: object
+      required: [boundingBox]
+      properties:
+        boundingBox:
+          $ref: '#/components/schemas/BoundingBox'
+    BoundingBox:
+      type: object
+      required: [x, y, w, h]
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+        w:
+          type: integer
+        h:
+          type: integer
     DomExtract:
       type: object
+      required: [fragmentName, xpath, emit, uniqueBy]
       properties:
         fragmentName:
           type: string
         xpath:
           $ref: '#/components/schemas/DomElementByXPath'
+        max:
+          type: integer
         emit:
           type: array
           items:
             $ref: '#/components/schemas/ScrapeEmit'
         uniqueBy:
           $ref: '#/components/schemas/ScrapeEmit'
-
+        extract:
+          type: array
+          items:
+            $ref: '#/components/schemas/DomExtract'
     DomElementByXPath:
       type: object
+      required: [value]
       properties:
-        xpath:
+        value:
           type: string
-
     ScrapeEmit:
       type: string
       enum:
@@ -606,3 +1482,296 @@ components:
         - html
         - pixel
         - date
+    DomElement:
+      type: object
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByNameOrXPath'
+        position:
+          $ref: '#/components/schemas/XyPosition'
+    DomElementByNameOrXPath:
+      type: object
+      properties:
+        name:
+          $ref: '#/components/schemas/DomElementByName'
+        xpath:
+          $ref: '#/components/schemas/DomElementByXPath'
+    DomElementByName:
+      type: object
+      required: [value]
+      properties:
+        value:
+          type: string
+    XyPosition:
+      type: object
+      required: [x, y]
+      properties:
+        x:
+          type: integer
+        y:
+          type: integer
+    WaitForAction:
+      type: object
+      required: [element]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByNameOrXPath'
+    DomActionType:
+      type: object
+      required: [element, typeValue]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByXPath'
+        typeValue:
+          type: string
+    DomActionSelect:
+      type: object
+      required: [element, selectValue]
+      properties:
+        element:
+          $ref: '#/components/schemas/DomElementByXPath'
+        selectValue:
+          type: string
+    RequestHeader:
+      type: object
+      required: [name, value]
+      properties:
+        name:
+          type: string
+        value:
+          type: string
+    PluginExecution:
+      type: object
+      required: [pluginId, params]
+      properties:
+        pluginId:
+          type: string
+        params:
+          $ref: '#/components/schemas/PluginExecutionParams'
+    PluginExecutionParams:
+      type: object
+      properties:
+        jsonData:
+          type: string
+        org_feedless_fulltext:
+          $ref: '#/components/schemas/FulltextPluginParams'
+        org_feedless_diff_records:
+          $ref: '#/components/schemas/DiffRecordsParams'
+        org_feedless_feed:
+          $ref: '#/components/schemas/FeedParams'
+    FulltextPluginParams:
+      type: object
+      required: [readability, summary, inheritParams]
+      properties:
+        readability:
+          type: boolean
+        summary:
+          type: boolean
+        inheritParams:
+          type: boolean
+        onErrorRemove:
+          type: boolean
+    DiffRecordsParams:
+      type: object
+      required: [nextItemMinIncrement, compareBy]
+      properties:
+        nextItemMinIncrement:
+          type: number
+          format: float
+        compareBy:
+          $ref: '#/components/schemas/CompareBy'
+        inlineDiffImage:
+          type: boolean
+        inlineLatestImage:
+          type: boolean
+        inlinePreviousImage:
+          type: boolean
+    CompareBy:
+      type: object
+      required: [field]
+      properties:
+        fragmentNameRef:
+          type: string
+        field:
+          type: string
+    FeedParams:
+      type: object
+      properties:
+        generic:
+          $ref: '#/components/schemas/Selectors'
+    Selectors:
+      type: object
+      required: [contextXPath, dateIsStartOfEvent, extendContext, paginationXPath, linkXPath]
+      properties:
+        contextXPath:
+          type: string
+        dateIsStartOfEvent:
+          type: boolean
+        dateXPath:
+          type: string
+        extendContext:
+          type: string
+        paginationXPath:
+          type: string
+        linkXPath:
+          type: string
+    HarvestStatus:
+      type: string
+      enum:
+        - queued
+        - running
+        - completed
+    HarvestRequest:
+      type: object
+      description: >
+        `flow` is the flow to dry-run instead of the saved one and is only allowed with `dryRun: true`
+        (a real run always uses the saved flow; save one with `PATCH`). It is validated like the flow of
+        `PATCH` — an invalid flow answers 400 `VALIDATION_ERROR` — and is never saved to the source.
+      properties:
+        dryRun:
+          type: boolean
+          default: false
+          description: Scrape without importing records or touching the source.
+        flow:
+          $ref: '#/components/schemas/ScrapeFlow'
+    Harvest:
+      type: object
+      required: [id, sourceId, status, dryRun, startedAt]
+      properties:
+        id:
+          type: string
+          format: uuid
+        sourceId:
+          type: string
+          format: uuid
+          description: Source this harvest ran against — preserves provenance in merged lists
+        status:
+          $ref: '#/components/schemas/HarvestStatus'
+        dryRun:
+          type: boolean
+        ok:
+          type: boolean
+          description: >
+            Whether the harvest succeeded. Only meaningful when status is completed; omitted otherwise.
+            A dry run that extracted no items is not ok.
+        itemsAdded:
+          type: integer
+          description: Only meaningful when status is completed; omitted otherwise.
+        itemsIgnored:
+          type: integer
+          description: Only meaningful when status is completed; omitted otherwise.
+        startedAt:
+          type: string
+          format: date-time
+        finishedAt:
+          type: string
+          format: date-time
+          description: Only meaningful when status is completed; omitted otherwise.
+    HarvestListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Harvest'
+    Plan:
+      type: object
+      required: [id, productId, recurringYearly]
+      properties:
+        id:
+          type: string
+          format: uuid
+        productId:
+          type: string
+          format: uuid
+        startedAt:
+          type: string
+          format: date-time
+        terminatedAt:
+          type: string
+          format: date-time
+        recurringYearly:
+          type: boolean
+    PlanListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Plan'
+    Group:
+      type: object
+      required: [id, name, ownerId]
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        ownerId:
+          type: string
+          format: uuid
+    GroupCreate:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+    GroupAssignment:
+      type: object
+      required: [id, role, name]
+      properties:
+        id:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]
+        name:
+          type: string
+    GroupAssignmentListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupAssignment'
+    GroupMember:
+      type: object
+      required: [userId, role]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]
+    GroupMemberListResponse:
+      type: object
+      required: [items, hasMore]
+      properties:
+        hasMore:
+          type: boolean
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/GroupMember'
+    GroupMemberCreate:
+      type: object
+      required: [userId, role]
+      properties:
+        userId:
+          type: string
+          format: uuid
+        role:
+          type: string
+          enum: [owner, viewer, editor]

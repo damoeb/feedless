@@ -1,7 +1,6 @@
 package org.migor.feedless.pipeline.plugins
 
 import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import org.apache.commons.lang3.BooleanUtils
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -34,13 +33,6 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
-
-data class FulltextPluginParams(
-  @SerializedName("readability") val readability: Boolean,
-  @SerializedName("summary") val summary: Boolean,
-  @SerializedName("inheritParams") val inheritParams: Boolean,
-  @SerializedName("onErrorRemove") val onErrorRemove: Boolean? = null,
-)
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")

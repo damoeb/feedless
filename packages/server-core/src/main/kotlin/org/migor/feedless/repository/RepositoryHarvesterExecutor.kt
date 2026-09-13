@@ -8,6 +8,8 @@ import kotlinx.coroutines.sync.Semaphore
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.childRequestContext
+import org.migor.feedless.capability.withMdcCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
@@ -26,39 +28,41 @@ class RepositoryHarvesterExecutor internal constructor(
 
   @Scheduled(fixedDelay = 1345, initialDelay = 5000)
   fun refreshSubscriptions() {
-    try {
-      val reposDue = runBlocking {
-        repositoryRepository.findAllWhereNextHarvestIsDue(
-          LocalDateTime.now(),
-          PageRequest.ofSize(50).toPageableRequest()
-        )
-      }
+    withMdcCorrId { corrId ->
+      try {
+        val reposDue = runBlocking {
+          repositoryRepository.findAllWhereNextHarvestIsDue(
+            LocalDateTime.now(),
+            PageRequest.ofSize(50).toPageableRequest()
+          )
+        }
 
-      log.debug("batch refresh with ${reposDue.size} repos")
-      if (reposDue.isNotEmpty()) {
-        val semaphore = Semaphore(10)
-        runBlocking {
-          runCatching {
-            coroutineScope {
-              reposDue.map {
-                async(RequestContext(userId = it.ownerId, groupId = it.groupId)) {
-                  semaphore.acquire()
-                  try {
-                    repositoryHarvester.harvestRepository(it.id)
-                  } finally {
-                    semaphore.release()
+        log.debug("batch refresh with ${reposDue.size} repos")
+        if (reposDue.isNotEmpty()) {
+          val semaphore = Semaphore(10)
+          runBlocking(RequestContext(corrId = corrId)) {
+            runCatching {
+              coroutineScope {
+                reposDue.map {
+                  async(childRequestContext(it.ownerId, it.groupId)) {
+                    semaphore.acquire()
+                    try {
+                      repositoryHarvester.harvestRepository(it.id)
+                    } finally {
+                      semaphore.release()
+                    }
                   }
-                }
-              }.awaitAll()
+                }.awaitAll()
+              }
+              log.info("done")
+            }.onFailure {
+              log.error("batch refresh done: ${it.message}", it)
             }
-            log.info("done")
-          }.onFailure {
-            log.error("batch refresh done: ${it.message}", it)
           }
         }
+      } catch (e: Exception) {
+        log.error("batch refresh failed: ${e.message}")
       }
-    } catch (e: Exception) {
-      log.error("batch refresh failed: ${e.message}")
     }
   }
 }

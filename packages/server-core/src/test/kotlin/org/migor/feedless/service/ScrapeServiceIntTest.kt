@@ -18,7 +18,7 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
-import org.migor.feedless.agent.AgentService
+import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
@@ -54,7 +54,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 @MockitoBean(
   types = [
     PropertyService::class,
-    AgentService::class,
+    BrowserAutomationService::class,
     AttachmentDAO::class,
     SourceRepository::class,
     SourceUseCase::class,

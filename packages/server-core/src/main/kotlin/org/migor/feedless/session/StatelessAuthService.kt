@@ -59,7 +59,7 @@ class StatelessAuthService : AuthService() {
   }
 
   override suspend fun findUserById(userId: UserId): User? {
-    return if (root.id == userId.uuid) {
+    return if (root.id == userId) {
       root
     } else {
       null

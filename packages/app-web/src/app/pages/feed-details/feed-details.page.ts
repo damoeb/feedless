@@ -26,7 +26,10 @@ import {
   IonText,
   IonToolbar,
 } from '@ionic/angular/standalone';
-import { FeedDetailsComponent } from '../../components/feed-details/feed-details.component';
+import {
+  FeedDetailsComponent,
+  repositoryFeedUrl,
+} from '../../components/feed-details/feed-details.component';
 
 @Component({
   selector: 'app-feed-details-page',
@@ -95,7 +98,7 @@ export class FeedDetailsPage implements OnInit, OnDestroy {
         null
       );
       this.appConfig.setPageTitle(this.repository.title);
-      this.feedUrl = `${this.serverConfig.apiUrl}/f/${this.repository.id}/atom`;
+      this.feedUrl = repositoryFeedUrl(this.serverConfig.apiUrl, this.repository, 'atom');
     } catch (e: any) {
       this.errorMessage = e?.message;
     }

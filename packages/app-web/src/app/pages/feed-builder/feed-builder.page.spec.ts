@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FeedBuilderPage } from './feed-builder.page';
-import { AppTestModule, mockRepositories } from '../../app-test.module';
+import { AppTestModule, mockRepositories, mocks } from '../../app-test.module';
+import { GqlSourceInput, GqlVisibility } from '../../../generated/graphql';
+import { ServerConfigService } from '../../services/server-config.service';
 
 describe('FeedBuilderPage', () => {
   let component: FeedBuilderPage;
@@ -23,5 +25,58 @@ describe('FeedBuilderPage', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  describe('handleRepository', () => {
+    async function remixedFeedUrlOf(visibility: GqlVisibility, shareKey: string): Promise<string> {
+      const handleSource = jest
+        .spyOn(component as any, 'handleSource')
+        .mockResolvedValue(undefined);
+      await component.handleRepository({
+        ...mocks.repository,
+        id: 'repo-1',
+        visibility,
+        shareKey,
+      } as any);
+      const source = handleSource.mock.calls[0][2] as GqlSourceInput;
+      return source.flow.sequence[0].fetch.get.url.literal;
+    }
+
+    it('adds the share key of a private repository', async () => {
+      const apiUrl = TestBed.inject(ServerConfigService).apiUrl;
+      expect(await remixedFeedUrlOf(GqlVisibility.IsPrivate, 'key-1')).toEqual(
+        `${apiUrl}/f/repo-1/atom?skey=key-1`
+      );
+    });
+
+    it('leaves the share key out for a public repository', async () => {
+      const apiUrl = TestBed.inject(ServerConfigService).apiUrl;
+      expect(await remixedFeedUrlOf(GqlVisibility.IsPublic, 'key-1')).toEqual(
+        `${apiUrl}/f/repo-1/atom`
+      );
+    });
+
+    it('leaves the share key out when the repository has none', async () => {
+      const apiUrl = TestBed.inject(ServerConfigService).apiUrl;
+      expect(await remixedFeedUrlOf(GqlVisibility.IsPrivate, '')).toEqual(
+        `${apiUrl}/f/repo-1/atom`
+      );
+    });
+
+    it('keeps the share key out of the remixed source title', async () => {
+      const handleSource = jest
+        .spyOn(component as any, 'handleSource')
+        .mockResolvedValue(undefined);
+      await component.handleRepository({
+        ...mocks.repository,
+        id: 'repo-1',
+        visibility: GqlVisibility.IsPrivate,
+        shareKey: 'key-1',
+      } as any);
+      const source = handleSource.mock.calls[0][2] as GqlSourceInput;
+      const apiUrl = TestBed.inject(ServerConfigService).apiUrl;
+      expect(source.title).toEqual(`From ${apiUrl}/f/repo-1/atom`);
+      expect(source.title).not.toContain('key-1');
+    });
   });
 });
