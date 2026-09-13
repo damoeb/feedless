@@ -1,4 +1,4 @@
-// Gradle shells out to go, the way packages/agent shells out to yarn.
+// Gradle shells out to go, the way packages/browser-automation-app shells out to yarn.
 val openapiSpec = "../http-api/src/main/resources/openapi/openapi.yaml"
 
 // A pre-release (go1.27rc1) gets patch -1, so it sorts before go1.27.0.

@@ -2,7 +2,7 @@ rootProject.name = "feedless"
 
 include("packages:app-web")
 include("packages:server-core")
-include("packages:agent")
+include("packages:browser-automation-app")
 include("packages:nominatim-proxy")
 include("packages:mail-adapter")
 include("packages:freemarker-templates")

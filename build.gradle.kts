@@ -14,7 +14,7 @@ plugins {
 }
 
 val buildDockerAioWeb = tasks.register("buildDockerAioWeb", Exec::class) {
-  dependsOn(appWebDockerImagePath(), serverCoreDockerImagePath(), agentDockerImagePath())
+  dependsOn(appWebDockerImagePath(), serverCoreDockerImagePath(), browserAutomationAppDockerImagePath())
 
   val semver = findProperty("feedlessVersion") as String
   val baseTag = findProperty("dockerImageTag")
@@ -49,7 +49,7 @@ val buildImages = tasks.register("buildImages") {
   dependsOn(
     appWebDockerImagePath(),
     serverCoreDockerImagePath(),
-    agentDockerImagePath(),
+    browserAutomationAppDockerImagePath(),
   )
 }
 
@@ -90,4 +90,4 @@ subprojects {
 
 fun appWebDockerImagePath() = "packages:app-web:bundle"
 fun serverCoreDockerImagePath() = "packages:server-core:bundle"
-fun agentDockerImagePath() = "packages:agent:bundle"
+fun browserAutomationAppDockerImagePath() = "packages:browser-automation-app:bundle"
