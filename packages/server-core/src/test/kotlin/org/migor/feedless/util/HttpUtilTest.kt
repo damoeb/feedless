@@ -9,9 +9,17 @@ class HttpUtilTest {
 
   @Test
   fun `keeps a valid client x-corr-id`() {
-    val request = MockHttpServletRequest().apply { addHeader(ApiParams.corrId, "req-1.trace:child/9_-") }
+    val request = MockHttpServletRequest().apply { addHeader(ApiParams.corrId, "req-1.trace:child9_-") }
 
-    assertThat(HttpUtil.corrIdOf(request)).isEqualTo("req-1.trace:child/9_-")
+    assertThat(HttpUtil.corrIdOf(request)).isEqualTo("req-1.trace:child9_-")
+  }
+
+  // '/' is reserved for our own parent/child ids (childRequestContext); a client-chosen one must not look like one.
+  @Test
+  fun `replaces a client x-corr-id with a slash`() {
+    val request = MockHttpServletRequest().apply { addHeader(ApiParams.corrId, "parent/child") }
+
+    assertThat(HttpUtil.corrIdOf(request)).isNotEqualTo("parent/child").isNotBlank()
   }
 
   @Test

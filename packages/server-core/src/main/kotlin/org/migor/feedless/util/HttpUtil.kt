@@ -6,8 +6,8 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
 
 object HttpUtil {
-  // Bounds what a client can put in every log line and worker call; a mismatch is dropped, not rejected.
-  private val corrIdPattern = Regex("^[A-Za-z0-9._:/-]{1,64}$")
+  // Bounds what a client can put in every log line and worker call; '/' is reserved for our own parent/child ids.
+  private val corrIdPattern = Regex("^[A-Za-z0-9._:-]{1,64}$")
 
   fun getRemoteAddr(request: HttpServletRequest): String {
     return StringUtils.trimToNull(request.getHeader("X-Real-IP")) ?: request.remoteAddr
