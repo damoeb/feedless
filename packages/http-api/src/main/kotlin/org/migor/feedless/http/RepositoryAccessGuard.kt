@@ -62,6 +62,7 @@ class RepositoryAccessGuard(
   /** The [mayAccess] rule as query inputs, so cross-repository listings paginate correctly. */
   suspend fun requireCallerScope(): Pair<UserId, List<GroupId>> {
     val userId = currentCoroutineContext()[RequestContext]?.userId ?: throw NotFoundException("user not found")
+    userGuard.requireRead(userId)
     val groupIds = groupUseCase.findAllByUserId(userId).map { it.groupId }
     return userId to groupIds
   }

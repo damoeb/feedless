@@ -232,6 +232,17 @@ class RepositoryAccessGuardTest {
     verify(groupUseCase, never()).findAllByUserId(any())
   }
 
+  @Test
+  fun `requireCallerScope refuses a banned caller`() = runTest {
+    val banned = bannedUser()
+    whenever(userRepository.findById(eq(stranger))).thenReturn(banned)
+
+    val thrown = runCatching { asUser(stranger) { guard.requireCallerScope() } }.exceptionOrNull()
+
+    assert(thrown is IllegalArgumentException && thrown.message == "denied") { "$thrown" }
+    verify(groupUseCase, never()).findAllByUserId(any())
+  }
+
   private suspend fun givenRepository(visibility: EntityVisibility): Repository {
     val repo = Repository(
       title = "feed",
