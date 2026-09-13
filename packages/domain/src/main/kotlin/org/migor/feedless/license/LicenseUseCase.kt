@@ -107,6 +107,9 @@ class LicenseUseCase { // todo split up into provider and usecase
       } catch (e: Exception) {
         log.error("initialize failed: ${e.message}", e)
       }
+    } else if (isDev() && !privateKeyFileExists()) {
+      // Local dev has no access to the production signing key.
+      log.warn("[boot] No private key at APP_PEM_FILE='$pemFile', licenses cannot be signed in dev")
     } else {
       loadPrivateKey()
     }
@@ -213,6 +216,10 @@ class LicenseUseCase { // todo split up into provider and usecase
   private fun getPrivateKeyFile(): File = File(pemFile!!)
 
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
+
+  private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))
+
+  private fun privateKeyFileExists() = StringUtils.isNotBlank(pemFile) && getPrivateKeyFile().exists()
 
   fun getLicensePayload(): LicensePayload? {
     log.debug("getLicensePayload")
@@ -341,7 +348,8 @@ class LicenseUseCase { // todo split up into provider and usecase
       email = order.invoiceRecipientEmail
     )
 
-    val singedAndEncoded = createLicense(payload, feedlessPrivateKey!!)
+    val privateKey = requireNotNull(feedlessPrivateKey) { "No private key loaded, set APP_PEM_FILE to sign licenses" }
+    val singedAndEncoded = createLicense(payload, privateKey)
 
     val license = License(
       payload = singedAndEncoded,
