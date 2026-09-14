@@ -322,5 +322,14 @@ class JwtTokenIssuerTest {
       kotlinx.coroutines.runBlocking { jwtTokenIssuer.decodeJwt(request) }
     }
   }
+
+  @Test
+  fun `createJwtForRecipient names the recipient and grants nothing`() = runTest {
+    val jwt = jwtTokenIssuer.createJwtForRecipient("recipient-1", 365)
+
+    val decoded = jwtTokenIssuer.decodeJwt(jwt.tokenValue)
+    assertThat(decoded.getClaimAsString(JwtParameterNames.RECIPIENT_ID)).isEqualTo("recipient-1")
+    assertThat(decoded.claims).doesNotContainKey(JwtParameterNames.CAPABILITIES)
+  }
 }
 

@@ -93,6 +93,18 @@ class JwtTokenIssuer(
     )
   }
 
+  /** For the abuse link in report mails: names one recipient address and grants nothing else. */
+  override fun createJwtForRecipient(recipientId: String, validForDays: Long): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report-recipient"))).increment()
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
+        JwtParameterNames.RECIPIENT_ID to recipientId,
+      ),
+      validForDays.days,
+    )
+  }
+
   fun createJwtForCapabilities(capabilities: List<Capability<out Any>>): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")

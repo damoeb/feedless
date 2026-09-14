@@ -20,6 +20,9 @@ object JwtParameterNames {
    * typischerweise nicht angemeldet.
    */
   const val REPORT_ID = "report_id"
+
+  /** Names the address in the abuse link of report mails; the link must outlive the report it came with. */
+  const val RECIPIENT_ID = "recipient_id"
 }
 
 enum class AuthTokenType(val value: String) {
