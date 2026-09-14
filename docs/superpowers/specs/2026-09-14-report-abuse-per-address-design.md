@@ -1,6 +1,6 @@
 # Report abuse per address — design
 
-Date: 2026-09-14 · Branch: `feature/weekly-report-e2e` (PR #83) · Status: awaiting review
+Date: 2026-09-14 · Branch: `feature/weekly-report-e2e` (PR #83) · Status: implemented
 
 ## Context
 
