@@ -161,6 +161,10 @@ class SecurityConfig {
       ApiUrls.webToFeed,
       ApiUrls.webToFeedVerbose,
       ApiUrls.mailForwardingAllow + "/**",
+      // links in report mails; recipients usually have no account
+      ApiUrls.reportDelete + "/**",
+      ApiUrls.reportConfirm + "/**",
+      ApiUrls.reportAbuse + "/**",
       "/stream/feed/**",
       "/api/feed**",
       "/feed/**",

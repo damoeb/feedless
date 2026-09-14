@@ -1,11 +1,14 @@
 package org.migor.feedless.report
 
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.template.PageTemplateReportAbuse
+import org.migor.feedless.template.TemplateService
 import org.mockito.kotlin.any
 import org.mockito.kotlin.doReturn
 import org.mockito.kotlin.doThrow
@@ -16,22 +19,19 @@ import org.mockito.kotlin.verifyBlocking
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 
-/**
- * Der Abmeldelink aus den Report-Mails. Ihre Empfänger haben meist kein
- * Konto; der Besitz des signierten Tokens ist der Nachweis. Diese Fälle ersetzen
- * die früheren leeren Rümpfe "report can be deleted by anonymous if created by
- * anonymous" und "report can be deleted without authorization".
- */
+/** The links in report mails; recipients usually have no account, so the signed token is the proof. */
 class ReportControllerTest {
 
   private val reportId = ReportId()
+  private val recipientId = ReportRecipientId()
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
+  private lateinit var templateService: TemplateService
   private lateinit var controller: ReportController
 
-  private fun tokenNaming(id: ReportId): Jwt = Jwt.withTokenValue("token")
+  private fun tokenWith(claim: String, value: String): Jwt = Jwt.withTokenValue("token")
     .header("alg", "HS256")
-    .claim(JwtParameterNames.REPORT_ID, id.uuid.toString())
+    .claim(claim, value)
     .build()
 
   private fun tokenDecodesTo(jwt: Jwt) {
@@ -42,31 +42,58 @@ class ReportControllerTest {
   fun setUp() {
     reportUseCase = mock()
     jwtTokenIssuer = mock()
-    controller = ReportController(reportUseCase, jwtTokenIssuer)
+    templateService = mock()
+    controller = ReportController(reportUseCase, jwtTokenIssuer, templateService)
   }
 
   @Test
-  fun `report can be deleted by anonymous through the link in its mail`() = runTest {
-    tokenDecodesTo(tokenNaming(reportId))
+  fun `cancels a report through the link in its mail`() = runTest {
+    tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, reportId.uuid.toString()))
 
     controller.deleteReport(reportId.uuid.toString(), "token")
 
     verifyBlocking(reportUseCase) { deleteReportFromToken(reportId) }
   }
 
-  /**
-   * Das Token ist gültig, nennt aber einen anderen Report. Ohne diesen
-   * Abgleich liesse sich mit dem Link aus der eigenen Mail jedes fremde Abo
-   * abbestellen.
-   */
+  @Test
+  fun `confirms a report through the link in its confirmation request`() = runTest {
+    tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, reportId.uuid.toString()))
+
+    controller.confirmReport(reportId.uuid.toString(), "token")
+
+    verifyBlocking(reportUseCase) { confirmReportFromToken(reportId) }
+  }
+
+  @Test
+  fun `reports abuse through the link and answers with a page`() = runTest {
+    tokenDecodesTo(tokenWith(JwtParameterNames.RECIPIENT_ID, recipientId.uuid.toString()))
+    templateService.stub { on { renderTemplate(any<PageTemplateReportAbuse>()) } doReturn "<p>danke</p>" }
+
+    val response = controller.reportAbuse(recipientId.uuid.toString(), "token")
+
+    verifyBlocking(reportUseCase) { reportAbuse(recipientId) }
+    assertThat(response.body).isEqualTo("<p>danke</p>")
+  }
+
+  /** Without this check the link from one's own mail could cancel anyone's report. */
   @Test
   fun `rejects a valid token that names another report`() {
-    tokenDecodesTo(tokenNaming(ReportId()))
+    tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, ReportId().uuid.toString()))
 
     assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
       runTest { controller.deleteReport(reportId.uuid.toString(), "token") }
     }
     verifyBlocking(reportUseCase, never()) { deleteReportFromToken(any()) }
+  }
+
+  @Test
+  fun `rejects a report token on the abuse link`() {
+    tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, recipientId.uuid.toString()))
+
+    assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
+      runTest { controller.reportAbuse(recipientId.uuid.toString(), "token") }
+    }
+    verifyBlocking(reportUseCase, never()) { reportAbuse(any()) }
   }
 
   @Test
@@ -76,8 +103,8 @@ class ReportControllerTest {
     }
 
     assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
-      runTest { controller.deleteReport(reportId.uuid.toString(), "forged") }
+      runTest { controller.confirmReport(reportId.uuid.toString(), "forged") }
     }
-    verifyBlocking(reportUseCase, never()) { deleteReportFromToken(any()) }
+    verifyBlocking(reportUseCase, never()) { confirmReportFromToken(any()) }
   }
 }

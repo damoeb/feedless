@@ -58,6 +58,9 @@ data class MailTemplateVisualDiffWelcome(override val params: VisualDiffWelcomeP
 class MailTemplateChangeTrackerAuthorized(override val params: Unit = Unit) :
   FreemarkerTemplate<Unit>("page-tracker-authorized")
 
+class PageTemplateReportAbuse(override val params: Unit = Unit) :
+  FreemarkerTemplate<Unit>("page-report-abuse")
+
 
 interface TemplateService {
   fun <T> renderTemplate(template: FreemarkerTemplate<T>): String

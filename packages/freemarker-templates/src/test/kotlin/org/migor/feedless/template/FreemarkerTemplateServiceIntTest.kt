@@ -280,6 +280,13 @@ Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this addre
     )
   }
 
+  @Test
+  fun testPageTemplateReportAbuse() {
+    assertThat(renderTemplate(PageTemplateReportAbuse()))
+      .contains("Danke für die Meldung")
+      .contains("Neue Abos starten erst, wenn du sie selbst bestätigst.")
+  }
+
   private fun <T> renderTemplate(template: FreemarkerTemplate<T>): String {
     return templateService.renderTemplate(template).trimAllIndents()
   }
