@@ -155,6 +155,17 @@ class RegisterAgentSubscriptionIntTest {
       .contains("\"isAnonymous\":true")
   }
 
+  /** The handler routes on the decoded path, so an encoded one must not sneak the cookie's user past the exemption. */
+  @Test
+  fun `a WebSocket operation runs anonymously when the handshake path is percent-encoded`() {
+    val cookie = "TOKEN=${sessionTokenOf(newUser())}"
+
+    assertThat(firstFrameAfterSubscribe(sessionQuery, cookie, path = "/%73ubscriptions"))
+      .containsPattern(typeIs("next"))
+      .contains("\"isLoggedIn\":false")
+      .contains("\"isAnonymous\":true")
+  }
+
   @Test
   fun `the same TOKEN cookie authenticates the session query over HTTP`() {
     val user = newUser()
@@ -183,7 +194,11 @@ class RegisterAgentSubscriptionIntTest {
       listOf(UserCapability(user.id), GroupCapability(userGroupAssignmentRepository.actingGroupOf(user.id))),
     ).tokenValue
 
-  private fun firstFrameAfterSubscribe(query: String = registerAgentQuery, cookie: String? = null): String? {
+  private fun firstFrameAfterSubscribe(
+    query: String = registerAgentQuery,
+    cookie: String? = null,
+    path: String = "/subscriptions",
+  ): String? {
     val received = LinkedBlockingQueue<String>()
     val handler = object : TextWebSocketHandler() {
       override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
@@ -195,7 +210,7 @@ class RegisterAgentSubscriptionIntTest {
       cookie?.let { add(HttpHeaders.COOKIE, it) }
     }
     val session = StandardWebSocketClient()
-      .execute(handler, headers, URI.create("ws://localhost:$port/subscriptions"))
+      .execute(handler, headers, URI("ws://localhost:$port$path"))
       .get(10, TimeUnit.SECONDS)
 
     try {

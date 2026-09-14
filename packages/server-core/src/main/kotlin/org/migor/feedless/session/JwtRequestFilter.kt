@@ -13,8 +13,8 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -32,7 +32,6 @@ import org.springframework.web.context.request.ServletRequestAttributes
 class JwtRequestFilter(
   private val jwtTokenIssuer: JwtTokenIssuer,
   private val tokenAuthenticator: TokenAuthenticator,
-  @Value("\${spring.graphql.websocket.path:}") private val webSocketPath: String = "",
 ) : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
@@ -47,8 +46,8 @@ class JwtRequestFilter(
     val previousAttributes = RequestContextHolder.getRequestAttributes()
     withMdcCorrId(corrId) {
       try {
-        // Every WebSocket operation inherits the handshake's context, and the cross-site TOKEN cookie must not make it a user (DGS 9 parity).
-        if (!isWebSocketHandshake(request)) {
+        // WebSocket operations inherit the handshake's context, so the cross-site TOKEN cookie must not authenticate it; the header, unlike the path, cannot be encoded around.
+        if (!isWebSocketUpgrade(request)) {
           runBlocking {
             runCatching {
               SecurityContextHolder.getContext().authentication =
@@ -64,8 +63,8 @@ class JwtRequestFilter(
     }
   }
 
-  private fun isWebSocketHandshake(request: HttpServletRequest): Boolean =
-    webSocketPath.isNotEmpty() && request.requestURI.removePrefix(request.contextPath) == webSocketPath
+  private fun isWebSocketUpgrade(request: HttpServletRequest): Boolean =
+    "websocket".equals(request.getHeader(HttpHeaders.UPGRADE), ignoreCase = true)
 }
 
 /** Requests authenticate through [TokenAuthenticator], which decides which of the token's capabilities count. */

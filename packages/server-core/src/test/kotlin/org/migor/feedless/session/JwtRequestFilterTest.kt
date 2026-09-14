@@ -1,6 +1,8 @@
 package org.migor.feedless.session
 
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
+import jakarta.servlet.http.Cookie
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.AfterEach
@@ -9,11 +11,19 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.api.ApiParams
 import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
 import org.migor.feedless.capability.MdcKeys
+import org.migor.feedless.capability.UserCapability
+import org.migor.feedless.common.PropertyService
+import org.migor.feedless.user.UserId
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.`when`
 import org.slf4j.MDC
+import org.springframework.http.HttpHeaders
 import org.springframework.mock.web.MockHttpServletRequest
 import org.springframework.mock.web.MockHttpServletResponse
+import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
+import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.web.context.request.RequestAttributes
 import org.springframework.web.context.request.RequestContextHolder
 
@@ -87,6 +97,40 @@ class JwtRequestFilterTest {
 
     assertThat(MDC.get(MdcKeys.CORR_ID)).isNull()
     assertThat(RequestContextHolder.getRequestAttributes()).isNull()
+  }
+
+  /** The path can be percent-encoded around any match, so the Upgrade header alone decides. */
+  @Test
+  fun `leaves a WebSocket upgrade unauthenticated despite a valid TOKEN cookie`() {
+    val request = cookieRequest().apply { addHeader(HttpHeaders.UPGRADE, "WebSocket") }
+
+    assertThat(authenticationInChain(request)).isNull()
+  }
+
+  @Test
+  fun `authenticates the same request from its TOKEN cookie without the Upgrade header`() {
+    assertThat(authenticationInChain(cookieRequest())).isInstanceOf(OAuth2AuthenticationToken::class.java)
+  }
+
+  private val jwtTokenIssuer = run {
+    val propertyService = mock(PropertyService::class.java)
+    `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
+    `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")
+    JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+  }
+
+  private fun cookieRequest(): MockHttpServletRequest {
+    val token = jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(UserId()))).tokenValue
+    return MockHttpServletRequest("GET", "/%73ubscriptions").apply { setCookies(Cookie("TOKEN", token)) }
+  }
+
+  private fun authenticationInChain(request: MockHttpServletRequest): Authentication? {
+    val authenticating = JwtRequestFilter(jwtTokenIssuer, TokenAuthenticator(mock(UserGroupAssignmentRepository::class.java)))
+    var seen: Authentication? = null
+    authenticating.doFilter(request, MockHttpServletResponse()) { _, _ ->
+      seen = SecurityContextHolder.getContext().authentication
+    }
+    return seen
   }
 
   private fun seenInChain(request: MockHttpServletRequest, response: MockHttpServletResponse): Seen {
