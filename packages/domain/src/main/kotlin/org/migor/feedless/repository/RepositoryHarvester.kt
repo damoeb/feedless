@@ -55,7 +55,6 @@ import java.time.Duration
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import java.time.temporal.ChronoUnit
 import java.util.*
 
 @Service
@@ -100,8 +99,7 @@ class RepositoryHarvester(
       val repository = repositoryRepository.findById(repositoryId)!!
 
       repository.triggerScheduledNextAt?.let {
-        val diffInMillis = Duration.ofMillis(ChronoUnit.MILLIS.between(LocalDateTime.now(), it))
-        harvestOffsetTimer.record(diffInMillis)
+        harvestOffsetTimer.record(Duration.between(it, LocalDateTime.now()))
       }
 
       scrapeSources(repositoryId)

@@ -2,6 +2,7 @@ package org.migor.feedless.repository
 
 import io.micrometer.core.instrument.Counter
 import io.micrometer.core.instrument.MeterRegistry
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -56,6 +57,7 @@ import org.mockito.junit.jupiter.MockitoSettings
 import org.mockito.quality.Strictness
 import java.time.Duration
 import java.time.LocalDateTime
+import java.util.concurrent.TimeUnit
 
 @ExtendWith(MockitoExtension::class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -149,6 +151,31 @@ class RepositoryHarvesterTest {
         )
       )
     ).thenReturn(LocalDateTime.now())
+  }
+
+  @Test
+  fun `given a late harvest, the offset timer records how late it ran`() = runTest {
+    val registry = SimpleMeterRegistry()
+    val harvester = RepositoryHarvester(
+      documentUseCase,
+      documentRepository,
+      documentPipelineJobRepository,
+      sourcePipelineJobRepository,
+      sourceRepository,
+      scraper,
+      registry,
+      repositoryUseCase,
+      repositoryRepository,
+      harvestRepository,
+    )
+    harvester.register()
+    `when`(repository.triggerScheduledNextAt).thenReturn(LocalDateTime.now().minusMinutes(10))
+
+    harvester.harvestRepository(repositoryId)
+
+    val timer = registry.get("harvest.offset").timer()
+    assertThat(timer.count()).isEqualTo(1)
+    assertThat(timer.totalTime(TimeUnit.MINUTES)).isGreaterThanOrEqualTo(10.0)
   }
 
   @Test
