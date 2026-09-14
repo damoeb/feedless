@@ -70,7 +70,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Der Durchstich gegen eine echte Datenbank: anlegen, verschicken, abbestellen.
+ * The tracer bullet against a real database: create, send, unsubscribe.
  */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -140,8 +140,8 @@ class ReportUseCaseIntTest {
   private lateinit var mailService: MailService
 
   /**
-   * JwtTokenIssuer hängt am session-Profil, das hier nicht aktiv ist. Der
-   * Report-Pfad braucht ihn nur, um die Links in den Mails zu signieren.
+   * JwtTokenIssuer depends on the session profile, which is inactive here.
+   * The report path needs it only to sign the links in the mails.
    */
   @MockitoBean
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
@@ -192,11 +192,11 @@ class ReportUseCaseIntTest {
       createdAt = past,
       latlon = JtsUtil.createPoint(1.0, 1.0)
     )
-    // Ein echtes Event: gestern geerntet, morgen statt. Die Dokumentabfrage
-    // filtert bewusst auf publishedAt < jetzt.
+    // A real event: harvested yesterday, happening tomorrow. The document
+    // query deliberately filters on publishedAt < now.
     createDocument(
       it,
-      // Mit Markup im Titel, wie es aus gescrapten Quellen kommen kann.
+      // With markup in the title, as it can come from scraped sources.
       title = "future-released <b>bold</b>",
       status = ReleaseStatus.released,
       publishedAt = past,
@@ -225,8 +225,8 @@ class ReportUseCaseIntTest {
   }
 
   /**
-   * Öffentlich, wie das Veranstaltungs-Repository von lokale.events: sonst
-   * liesse sich der anonyme Weg nicht prüfen.
+   * Public, like the events repository of lokale.events: otherwise the
+   * anonymous path couldn't be verified.
    */
   private suspend fun createRepository(suffix: String, user: User, groupId: GroupId): Repository {
     val repository = Repository(
@@ -284,8 +284,8 @@ class ReportUseCaseIntTest {
     }
 
   /**
-   * Der eigentliche Durchstich: ohne Bestätigungsschritt verschickt der geplante
-   * Lauf die Veranstaltungen der kommenden Woche - nur freigegebene, nur künftige.
+   * The actual tracer bullet: with no confirmation step, the scheduled run
+   * sends next week's events - only released ones, only future ones.
    */
   @Test
   fun `a new report is sent with the events of the coming week`() =
@@ -302,10 +302,10 @@ class ReportUseCaseIntTest {
         .contains("future-released")
         .doesNotContain("past-released")
         .doesNotContain("future-unreleased")
-        // Jede Report-Mail braucht einen funktionierenden Abmeldelink.
+        // Every report mail needs a working unsubscribe link.
         .contains("/reports/delete/")
         .contains("/reports/abuse/")
-        // Gescrapte Titel landen escaped in der Mail, nicht als HTML.
+        // Scraped titles land escaped in the mail, not as HTML.
         .contains("future-released &lt;b&gt;bold&lt;/b&gt;")
         .doesNotContain("<b>bold</b>")
         .doesNotContain("href=\"\"")
@@ -324,9 +324,9 @@ class ReportUseCaseIntTest {
     }
 
   /**
-   * Gegen die echte Datenbank, weil hier zwei Fehler zugleich sassen: der
-   * RepositoryGuard verlangte Eigentümerschaft, und die erfundene UserId des
-   * anonymen Tokens verletzte den Fremdschlüssel fk_report__to__user.
+   * Against the real database, because two bugs sat here together: the
+   * RepositoryGuard demanded ownership, and the anonymous token's invented
+   * UserId violated the foreign key fk_report__to__user.
    */
   @Test
   fun `an anonymous visitor can subscribe to a public repository`() =

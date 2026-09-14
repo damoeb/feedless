@@ -74,12 +74,12 @@ data class EventsReportPluginParams(
   val to: String,
   val subject: String,
   /**
-   * Name der Vorlagenvariante, üblicherweise das Produkt des Repositories.
-   * Der Versandpfad kennt kein Produkt - er reicht den Namen nur durch, und
-   * die Vorlagenauflösung entscheidet, ob es dafür eine eigene Vorlage gibt.
+   * Template variant name, usually the repository's product. The send path
+   * knows no product - it just passes the name through, and template
+   * resolution decides whether a dedicated template exists for it.
    */
   val templateVariant: String? = null,
-  /** Der Abmeldelink dieses Reports. Ohne ihn ging jede Mail mit href="" raus. */
+  /** This report's unsubscribe link. Without it every mail went out with href="". */
   val deactivationLink: String? = null,
   /** Reports abuse for the whole address, not just this report. */
   val abuseLink: String? = null,

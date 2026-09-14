@@ -4,14 +4,13 @@ import org.migor.feedless.repository.RepositoryId
 import java.time.LocalDateTime
 
 /**
- * Beschreibt, welche Dokumente ein Empfänger in einem Report bekommen soll.
+ * Describes which documents a recipient should get in a report.
  *
- * Heute wird sie aus der [Segmentation] abgeleitet, die der Nutzer beim
- * Anlegen mitgibt: Zeitfenster, Umkreis, Grösse. Sie ist bewusst eine eigene
- * Schicht und nicht die Segmentation selbst, weil hier später das
- * Empfehlungsprofil andockt - gelernte Vorlieben, Kategorien, Ausschlüsse.
- * Die Auswahl der Dokumente hängt dann an dieser Beschreibung, nicht an der
- * Persistenzform, aus der sie stammt.
+ * Today it's derived from the [Segmentation] the user supplies at creation:
+ * time window, radius, size. It's deliberately its own layer rather than the
+ * Segmentation itself, because a future recommendation profile - learned
+ * preferences, categories, exclusions - hooks in here. Document selection
+ * then depends on this description, not on the persisted form it came from.
  */
 data class SegmentSpec(
   val repositoryId: RepositoryId,
@@ -29,8 +28,8 @@ data class NearFilter(
 )
 
 /**
- * Das Fenster reicht von jetzt bis ein Intervall in die Zukunft: ein Report
- * kündigt an, was ansteht, statt zu berichten, was war.
+ * The window runs from now to one interval into the future: a report
+ * announces what's coming, rather than reporting what happened.
  */
 fun Segmentation.toSpec(now: LocalDateTime): SegmentSpec = SegmentSpec(
   repositoryId = repositoryId,

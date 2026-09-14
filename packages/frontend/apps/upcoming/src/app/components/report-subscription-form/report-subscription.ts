@@ -4,22 +4,22 @@ import {
   GqlSegmentInput,
 } from '@feedless/graphql-api';
 
-/** Was ein Besucher für ein Abo angibt. Mehr gibt es heute nicht zu wählen. */
+/** What a visitor provides for a subscription. There's nothing else to choose today. */
 export type ReportSubscriptionValue = {
   name: string;
   email: string;
 };
 
-/** Umkreis um den Ort der Seite, aus der das Abo angelegt wurde. */
+/** Radius around the location of the page the subscription was created from. */
 export const SUBSCRIPTION_DISTANCE_KM = 10;
 
 /**
- * Übersetzt ein Abo in die Eingabe von createReport.
+ * Translates a subscription into the input for createReport.
  *
- * Bewusst eine reine Funktion: Intervall, Umkreis und Plugin stehen an genau
- * einer Stelle, und das spätere Bearbeiten über updateReport kann dieselbe
- * Übersetzung verwenden. Das Intervall ist fest wöchentlich - das Backend
- * kennt weiterhin mehrere, die Oberfläche bietet keine Wahl mehr an.
+ * Deliberately a pure function: interval, radius and plugin live in exactly
+ * one place, so later editing via updateReport can reuse the same
+ * translation. The interval is fixed to weekly - the backend still knows
+ * several, but the UI offers no other choice.
  */
 export function toSegmentInput(
   value: ReportSubscriptionValue,

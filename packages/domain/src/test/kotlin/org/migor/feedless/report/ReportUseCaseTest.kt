@@ -54,12 +54,11 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Anlegen eines Abos.
+ * Creating a subscription.
  *
- * Die Repository- und Nutzer-Guards sind hier echt, nicht gemockt. Mit einem
- * gemockten RepositoryGuard lief der frühere Test "reports can be created by
- * anonymous" durch, obwohl er als Eigentümer lief und ein echter Guard einen
- * anonymen Besucher abgewiesen hätte.
+ * The repository and user guards are real here, not mocked: with a mocked
+ * RepositoryGuard, a test could pass while running as the owner, even though
+ * a real guard would reject an anonymous visitor.
  */
 class ReportUseCaseTest {
 
@@ -83,7 +82,7 @@ class ReportUseCaseTest {
   private val reportPluginId = "org_feedless_event_report"
   private lateinit var pipelinePlugins: PipelinePlugins
 
-  /** Ein Besucher ohne Konto: sein Token trägt eine UserId ohne Zeile in t_user. */
+  /** A visitor without an account: their token carries a UserId with no row in t_user. */
   private val anonymousId = randomUserId()
 
   @BeforeEach
@@ -117,7 +116,7 @@ class ReportUseCaseTest {
     `when`(repository.ownerId).thenReturn(repositoryOwnerId)
     `when`(repositoryRepository.findById(any(RepositoryId::class.java))).thenReturn(repository)
 
-    // Nur der Eigentümer hat ein Konto; der anonyme Besucher nicht.
+    // Only the owner has an account; the anonymous visitor doesn't.
     `when`(userRepository.findById(repositoryOwnerId)).thenReturn(user)
 
     reportRecipientRepository = mock(ReportRecipientRepository::class.java)
@@ -166,9 +165,9 @@ class ReportUseCaseTest {
     subscriptionMode,
   )
 
-  // mockito-kotlin statt ArgumentCaptor.forClass: dessen capture() liefert null
-  // an einen Nicht-null-Parameter, und die abgebrochene Verifikation vergiftet
-  // Mockitos Zustand für die folgenden Tests.
+  // mockito-kotlin instead of ArgumentCaptor.forClass: its capture() returns
+  // null for a non-null parameter, and the aborted verification poisons
+  // Mockito's state for the following tests.
   private fun savedReport(): Report {
     val captor = argumentCaptor<Report>()
     verify(reportRepository).save(captor.capture())
@@ -176,8 +175,8 @@ class ReportUseCaseTest {
   }
 
   /**
-   * Der Weg jedes Abos auf lokale.events: ein Besucher ohne Konto abonniert
-   * das öffentliche Veranstaltungs-Repository, dessen Eigentümer er nicht ist.
+   * The path every subscription on lokale.events takes: a visitor without an
+   * account subscribes to the public events repository, whose owner they are not.
    */
   @Test
   fun `reports can be created by anonymous if repository is public`() =
@@ -214,8 +213,8 @@ class ReportUseCaseTest {
     }
 
   /**
-   * Das anonyme Token trägt eine frisch erfundene UserId. Gespeichert verletzt
-   * sie den Fremdschlüssel fk_report__to__user.
+   * The anonymous token carries a freshly invented UserId. Stored as-is it
+   * would violate the foreign key fk_report__to__user.
    */
   @Test
   fun `an anonymous subscription has no owner`() =
@@ -265,9 +264,8 @@ class ReportUseCaseTest {
     }
 
   /**
-   * Springs CronExpression verlangt sechs Felder. Der früher gespeicherte
-   * Ausdruck "0 8 * * 0" hatte fünf, und nextCronDate warf bei jeder
-   * Fortschreibung des Termins.
+   * Spring's CronExpression requires six fields. The previously stored
+   * "0 8 * * 0" had five, and nextCronDate threw on every schedule advance.
    */
   @Test
   fun `stores a schedule the cron parser accepts`() =

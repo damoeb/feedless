@@ -78,9 +78,9 @@ class JwtTokenIssuer(
   }
 
   /**
-   * Für Links in Report-Mails. Das Token nennt genau einen Report und trägt
-   * bewusst keine Nutzer-Capability: der Empfänger ist meist anonym, und der
-   * Besitz des signierten Links ist der Nachweis.
+   * For links in report mails. The token names exactly one report and
+   * deliberately carries no user capability: the recipient is usually
+   * anonymous, and possession of the signed link is the proof.
    */
   override fun createJwtForReport(reportId: String, validForDays: Long): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report"))).increment()

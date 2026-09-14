@@ -81,9 +81,9 @@ describe('ReportSubscriptionFormComponent', () => {
   });
 
   /**
-   * Das Formular soll später auch ein bestehendes Abo bearbeiten - etwa unter
-   * /profile/subscriptions. Bearbeiten ist heute im Backend noch nicht
-   * möglich; diese Fälle halten fest, dass das Formular es bereits trägt.
+   * The form should later also edit an existing subscription - e.g. under
+   * /profile/subscriptions. Editing isn't possible in the backend yet; these
+   * cases pin down that the form already carries it.
    */
   describe('when editing', () => {
     const existing = { name: 'Hans Muster', email: 'hans@example.com' };

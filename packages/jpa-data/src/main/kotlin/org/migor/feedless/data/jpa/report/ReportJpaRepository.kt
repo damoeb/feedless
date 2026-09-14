@@ -24,10 +24,10 @@ class ReportJpaRepository(private val reportDAO: ReportDAO) : ReportRepository {
   }
 
   /**
-   * Das Mapping liest die lazy geladene segment-Relation und muss deshalb in
-   * der Transaktion laufen. Ohne sie scheiterte das Bestätigen und Abmelden
-   * über den Mail-Link: die suspend-Controller wechseln per withContext den
-   * Thread, und die an den Request-Thread gebundene Sitzung ist dort weg.
+   * The mapping reads the lazily loaded segment relation and must therefore
+   * run inside the transaction. Without it, confirming and unsubscribing via
+   * the mail link failed: the suspend controllers switch threads via
+   * withContext, and the session bound to the request thread is gone there.
    */
   @Transactional(readOnly = true)
   override fun findById(reportId: ReportId): Report? {

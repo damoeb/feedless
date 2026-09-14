@@ -55,17 +55,16 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 
-/** Ein Abmeldelink soll auch in einer alten Mail noch funktionieren. */
+/** An unsubscribe link must still work from an old mail. */
 private const val LINK_VALID_FOR_DAYS = 365L
 
 /**
- * Freitag 08:00. Sechs Felder, wie Springs CronExpression sie verlangt - der
- * früher gespeicherte Ausdruck "0 8 * * 0" hatte fünf, und jede Fortschreibung
- * des Termins warf.
+ * Friday 08:00, six fields as required by Spring's CronExpression - the
+ * previously stored "0 8 * * 0" had five, and every schedule advance threw.
  */
 const val WEEKLY_REPORT_CRON = "0 0 8 * * FRI"
 
-/** Letzter Tag des Monats, 08:00. */
+/** Last day of the month, 08:00. */
 const val MONTHLY_REPORT_CRON = "0 0 8 L * *"
 
 @Service
@@ -82,8 +81,8 @@ class ReportUseCase(
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
   private val documentRepository: DocumentRepository,
-  // Mit Vorgabewert: app.mail.sender steht nur in application-mail.yaml, und
-  // ohne das mail-Profil startete sonst kein Kontext, der Reports enthält.
+  // Defaulted because app.mail.sender only exists in application-mail.yaml;
+  // without it, a context with reports but without the mail profile wouldn't start.
   @Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
   private val appConfig: AppConfig,
   private val userRepository: UserRepository,
@@ -123,10 +122,10 @@ class ReportUseCase(
   suspend fun createReport(repositoryId: RepositoryId, segment: SegmentCreate): Report = withContext(Dispatchers.IO) {
     log.info("createReport repositoryId=$repositoryId")
 
-    // Lesen genügt: ein Abo auf ein öffentliches Repository ist der Normalfall,
-    // und sein Abonnent ist nicht dessen Eigentümer. requireWrite verlangte
-    // Eigentümerschaft und wies damit jeden anonymen Besucher ab. Private
-    // Repositories schützt requireRead weiterhin.
+    // Read access suffices: subscribing to a public repository is the normal
+    // case, and the subscriber isn't its owner. requireWrite demanded
+    // ownership and rejected every anonymous visitor. requireRead still
+    // protects private repositories.
     repositoryGuard.requireRead(repositoryId)
 
     val recipient = recipientFor(segment.recipientEmail)
@@ -158,9 +157,8 @@ class ReportUseCase(
 
     segmentationRepository.save(segmentation)
 
-    // Der erste Termin fällt auf den Takt des Ausdrucks. Vorher lag er auf dem
-    // nächsten Freitag zur Uhrzeit des Anlegens, während der gespeicherte
-    // Ausdruck Sonntag 08:00 meinte.
+    // The first run follows the cron expression's cadence rather than the
+    // creation time, since the stored expression means Sunday 08:00.
     val nextReportedAt = nextCronDate(interval.second, startingAt)
 
     val cronSchedule = CronSchedule(
@@ -189,9 +187,9 @@ class ReportUseCase(
         params = PluginExecutionJson()
       ),
       cronScheduleId = cronSchedule.id,
-      // Ein anonymes Token trägt eine frisch erfundene UserId, zu der keine
-      // Zeile in t_user gehört. Gespeichert verletzt sie fk_report__to__user,
-      // und genau das ist der Weg, den ein Abo ohne Konto nimmt.
+      // An anonymous token carries a freshly invented UserId with no row in
+      // t_user; stored as-is it would violate fk_report__to__user - and that
+      // is exactly the path an accountless subscription takes.
       userId = coroutineContext.userIdMaybe()?.takeIf { userRepository.findById(it) != null }
     )
 
@@ -304,11 +302,10 @@ class ReportUseCase(
       } catch (e: Exception) {
         log.error("Failed to process report job {}: {}", report.id, e.message, e)
       } finally {
-        // Auch nach einem erfolgreichen Versand fortschreiben. Vorher geschah
-        // das nur im Fehlerfall, wodurch ein zugestellter Report beim nächsten
-        // Lauf 60 Sekunden später erneut verschickt wurde. Scheitert die
-        // Fortschreibung, darf das die übrigen Reports des Laufs nicht
-        // mitreissen.
+        // Advance the schedule after a successful send too - previously that
+        // happened only on failure, so a delivered report was resent 60
+        // seconds later on the next run. If advancing fails, it must not take
+        // down the rest of this run's reports.
         try {
           withContext(Dispatchers.IO) {
             cronScheduleRepository.save(
@@ -339,9 +336,9 @@ class ReportUseCase(
           to = report.recipientEmail,
           subject = repository.title,
           language = "de",
-          // Das Backend kennt kein Produkt: es reicht den Variantennamen
-          // durch, und die Vorlagenauflösung entscheidet, ob es dafür eine
-          // eigene Vorlage gibt.
+          // The backend knows no product: it just passes the variant name
+          // through, and template resolution decides whether a dedicated
+          // template exists for it.
           templateVariant = repository.product.name,
           deactivationLink = deactivationLink(report),
           abuseLink = abuseLink(recipientFor(report.recipientEmail)),
@@ -350,19 +347,18 @@ class ReportUseCase(
   }
 
   /**
-   * Ein Abo auf ein Repository, das später privat wird, darf nicht weiter
-   * dessen Inhalte an eine fremde Adresse schicken. Aus einem privaten
-   * Repository bekommt nur sein Eigentümer Reports.
+   * A subscription to a repository that later turns private must not keep
+   * sending its content to a foreign address - only its owner receives
+   * reports from a private repository.
    */
   private fun mayReceive(report: Report, repository: Repository): Boolean =
     repository.visibility == EntityVisibility.isPublic || repository.ownerId == report.userId
 
   /**
-   * Der nächste Termin, immer ab jetzt gerechnet: ab einem weit
-   * zurückliegenden Termin gerechnet bliebe der Report fällig und ginge jede
-   * Minute erneut raus, bis er aufgeholt hätte. Bestandszeilen tragen noch den
-   * früher gespeicherten Leerstring - dann gilt der wöchentliche Standard,
-   * statt dass die Fortschreibung wirft.
+   * The next run, always computed from now: computed from a far-past run it
+   * would stay due and resend every minute until it caught up. Legacy rows
+   * still carry the previously stored empty string - that falls back to the
+   * weekly default instead of making the advance throw.
    */
   private fun nextRun(cronExpression: String, now: LocalDateTime): LocalDateTime =
     runCatching { nextCronDate(cronExpression, now) }
@@ -375,9 +371,9 @@ class ReportUseCase(
     pipelinePlugins.resolveById<ReportPlugin<*>>(plugin.id)!!
 
   /**
-   * Übersetzt die [SegmentSpec] in eine Dokumentabfrage. Die Spec ist die
-   * Stelle, an der später das Empfehlungsprofil andockt - hier wird nur noch
-   * ausgeführt, was sie beschreibt.
+   * Translates the [SegmentSpec] into a document query. The spec is where a
+   * future recommendation profile will hook in - this just executes what it
+   * describes.
    */
   private fun resolveSegment(segment: Segmentation): Pair<Repository, List<Document>> {
     val repository = repositoryRepository.findById(segment.repositoryId)!!

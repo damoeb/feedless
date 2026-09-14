@@ -30,13 +30,13 @@ import { IconComponent } from '@feedless/components';
 import { ReportSubscriptionValue } from './report-subscription';
 
 /**
- * Das Formular eines Abos - nur die Felder, ihre Regeln und der Wert, den es
- * beim Absenden herausgibt.
+ * A subscription's form - just the fields, their rules, and the value it
+ * emits on submit.
  *
- * Es ruft keinen Service auf und weiss nichts von dem Modal, in dem es heute
- * steckt. Damit lässt es sich später ebenso auf einer Seite im Account-Bereich
- * einhängen. Bekommt es einen Ausgangswert, bearbeitet es ein bestehendes Abo:
- * dann entfällt das AGB-Häkchen, weil es beim Anlegen bereits bestätigt wurde.
+ * It calls no service and knows nothing of the modal it currently sits in,
+ * so it can later be embedded on a page in the account area just the same.
+ * Given an initial value, it edits an existing subscription: then the terms
+ * checkbox is dropped, since it was already accepted at creation.
  */
 @Component({
   selector: 'app-report-subscription-form',
@@ -57,7 +57,7 @@ import { ReportSubscriptionValue } from './report-subscription';
 export class ReportSubscriptionFormComponent {
   private readonly platformId = inject(PLATFORM_ID);
 
-  /** Ein bestehendes Abo. Ohne Ausgangswert legt das Formular eines an. */
+  /** An existing subscription. Without an initial value the form creates one. */
   readonly initial = input<ReportSubscriptionValue | null>(null);
   readonly submitted = output<ReportSubscriptionValue>();
 

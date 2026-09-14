@@ -1,13 +1,12 @@
 package org.migor.feedless.template
 
 /**
- * Welche Vorlagenvariante ein Versand verwenden soll.
+ * Which template variant a send should use.
  *
- * Das Backend bleibt generisch: es kennt keine Produkte und verzweigt nirgends
- * auf eines. Es bekommt lediglich einen Variantennamen mitgeteilt und sucht
- * zuerst nach `<vorlage>-<variante>`, bevor es auf `<vorlage>` zurückfällt.
- * Ein Produkt wie upcoming legt damit eigene Vorlagen daneben, ohne dass eine
- * Zeile im Versandpfad davon weiss.
+ * The backend stays generic: it knows no products and never branches on one.
+ * It's simply told a variant name and looks up `<template>-<variant>` first,
+ * before falling back to `<template>`. A product like upcoming can thus drop
+ * its own templates alongside, with no line in the send path aware of it.
  */
 @JvmInline
 value class TemplateVariant(val value: String) {

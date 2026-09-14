@@ -9,9 +9,9 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Der Teil des Lebenszyklus, der ohne Datenbank prüfbar ist: wie aus der
- * gespeicherten Segmentation die Auswahlbeschreibung wird, an der später das
- * Empfehlungsprofil andockt.
+ * The part of the lifecycle verifiable without a database: how the stored
+ * Segmentation becomes the selection description a future recommendation
+ * profile will hook into.
  */
 class ReportLifecycleTest {
 
@@ -39,8 +39,8 @@ class ReportLifecycleTest {
   }
 
   /**
-   * Der Report kündigt an, was ansteht, statt zu berichten, was war - das
-   * Fenster beginnt deshalb jetzt und reicht nach vorn.
+   * The report announces what's coming, rather than reporting what happened
+   * - so the window starts now and reaches forward.
    */
   @Test
   fun `the window never reaches into the past`() = runTest {

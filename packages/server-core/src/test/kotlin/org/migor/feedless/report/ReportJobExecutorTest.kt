@@ -43,10 +43,10 @@ import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-/** Was der geplante Lauf mit fälligen Reports macht. */
+/** What the scheduled run does with due reports. */
 class ReportJobExecutorTest {
 
-  /** Ein sechsteiliger Ausdruck, wie Springs CronExpression ihn verlangt. */
+  /** A six-field expression, as Spring's CronExpression requires. */
   private val weeklyCron = "0 0 8 * * FRI"
   private val ownerId = UserId()
 
@@ -57,7 +57,7 @@ class ReportJobExecutorTest {
   private lateinit var plugin: RecordingReportPlugin
   private lateinit var reportUseCase: ReportUseCase
 
-  /** Zeichnet auf, an wen verschickt wurde, statt Mails zu senden. */
+  /** Records who a report was sent to, instead of actually sending mail. */
   class RecordingReportPlugin : ReportPlugin<Unit> {
     val recipients = mutableListOf<String>()
     var failWith: Exception? = null
@@ -190,8 +190,8 @@ class ReportJobExecutorTest {
   }
 
   /**
-   * Vorher wurde der Termin nur im Fehlerfall fortgeschrieben. Ein erfolgreich
-   * zugestellter Report blieb fällig und ging 60 Sekunden später erneut raus.
+   * Previously the schedule advanced only on failure. A successfully
+   * delivered report stayed due and went out again 60 seconds later.
    */
   @Test
   fun `advances the schedule after a successful send`() = runTest {
@@ -217,9 +217,9 @@ class ReportJobExecutorTest {
   }
 
   /**
-   * Bestandszeilen tragen noch den früher gespeicherten Leerstring als
-   * Cron-Ausdruck. Wirft dessen Fortschreibung, darf das die übrigen Reports
-   * des Laufs nicht mitreissen.
+   * Legacy rows still carry the previously stored empty string as their cron
+   * expression. If advancing it throws, it must not take down the rest of
+   * this run's reports.
    */
   @Test
   fun `keeps processing the batch when one report has a broken schedule`() = runTest {
@@ -235,9 +235,9 @@ class ReportJobExecutorTest {
   }
 
   /**
-   * Ein Abo auf ein Repository, das später privat wird, darf nicht weiter
-   * dessen Inhalte an eine fremde Adresse schicken. Nur der Eigentümer bekommt
-   * Reports aus einem privaten Repository.
+   * A subscription to a repository that later turns private must not keep
+   * sending its content to a foreign address. Only the owner receives
+   * reports from a private repository.
    */
   @Test
   fun `only processes reports that have permissions for the repository`() = runTest {

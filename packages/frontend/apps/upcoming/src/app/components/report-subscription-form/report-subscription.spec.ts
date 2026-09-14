@@ -19,10 +19,9 @@ describe('toSegmentInput', () => {
   });
 
   /**
-   * Das Backend kennt weiterhin mehrere Intervalle. Die Oberfläche bietet
-   * keine Wahl mehr an - das Abo ist wöchentlich. Die Monatlich-Option war
-   * ohnehin wirkungslos: das alte Formular erfasste sie, sendete aber immer
-   * Woche.
+   * The backend still knows several intervals. The UI offers no choice
+   * anymore - the subscription is weekly. The monthly option was pointless
+   * anyway: the old form captured it but always sent week.
    */
   it('always subscribes weekly', () => {
     expect(toSegmentInput(value, zug, startingAt).when.scheduled.interval).toBe(

@@ -65,10 +65,10 @@ interface TemplateService {
   fun <T> renderTemplate(template: FreemarkerTemplate<T>): String
 
   /**
-   * Rendert [template] in einer Variante: gesucht wird zuerst
-   * `<vorlage>-<variante>`, bei Fehlen wird auf `<vorlage>` zurückgefallen.
-   * Bewusst eine eigene Überladung statt eines Vorgabewerts, damit
-   * bestehende Aufrufer und ihre Testdoubles unverändert bleiben.
+   * Renders [template] in a variant: looks up `<template>-<variant>` first,
+   * falling back to `<template>` if missing. A separate overload rather than
+   * a default parameter, so existing callers and their test doubles stay
+   * unchanged.
    */
   fun <T> renderTemplate(template: FreemarkerTemplate<T>, variant: TemplateVariant?): String =
     renderTemplate(template)

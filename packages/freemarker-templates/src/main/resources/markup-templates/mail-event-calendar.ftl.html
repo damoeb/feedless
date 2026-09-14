@@ -17,7 +17,7 @@
         <#if event.date?has_content>
           <div style="color: #12775C; font-weight: 500;">${event.date}</div>
         </#if>
-        <#-- Titel und URL stammen aus gescrapten Quellen: escapen, .ftl.html escaped nicht automatisch -->
+        <#-- Title and URL come from scraped sources: escape them, .ftl.html doesn't escape automatically -->
         <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
       </li>
     </#list>
@@ -61,7 +61,7 @@
         <#if event.date?has_content>
           <div style="color: #12775C; font-weight: 500;">${event.date}</div>
         </#if>
-        <#-- Titel und URL stammen aus gescrapten Quellen: escapen, .ftl.html escaped nicht automatisch -->
+        <#-- Title and URL come from scraped sources: escape them, .ftl.html doesn't escape automatically -->
         <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
       </li>
     </#list>

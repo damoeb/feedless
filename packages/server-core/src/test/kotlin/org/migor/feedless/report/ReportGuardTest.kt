@@ -16,8 +16,8 @@ import org.mockito.Mockito.`when`
 import org.springframework.security.access.AccessDeniedException
 
 /**
- * Der angemeldete Zugriff auf einen Report. Die Links aus den Mails laufen
- * bewusst nicht hier durch, siehe ReportControllerTest.
+ * Authenticated access to a report. Links from mails deliberately bypass
+ * this, see ReportControllerTest.
  */
 class ReportGuardTest {
 
@@ -60,8 +60,8 @@ class ReportGuardTest {
   }
 
   /**
-   * Ein anonym angelegter Report hat keinen Eigentümer. Liesse der Guard ihn
-   * durch, könnte jeder Angemeldete fremde Abos abbestellen.
+   * An anonymously created report has no owner. If the guard let it through,
+   * any logged-in user could unsubscribe someone else's subscription.
    */
   @Test
   fun `an anonymous report cannot be changed through a logged in session`() {

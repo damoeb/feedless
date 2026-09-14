@@ -13,11 +13,11 @@ import java.time.temporal.ChronoUnit
 import org.migor.feedless.generated.types.Report as ReportDto
 
 /**
- * Die früheren Rümpfe "report can be created without authorization" und
- * "report can be deleted without authorization" sind jetzt dort abgedeckt, wo
- * das Verhalten sitzt: das anonyme Anlegen in ReportUseCaseTest, das Löschen
- * ohne Konto über den Mail-Link in ReportControllerTest, und dass ein anonymes
- * Abo über die angemeldete API nicht gelöscht werden kann, in ReportGuardTest.
+ * The former stubs "report can be created without authorization" and "report
+ * can be deleted without authorization" are now covered where the behavior
+ * lives: anonymous creation in ReportUseCaseTest, deletion without an account
+ * via the mail link in ReportControllerTest, and that an anonymous
+ * subscription can't be deleted through the authenticated API in ReportGuardTest.
  */
 class ReportResolverTest {
 

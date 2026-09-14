@@ -37,9 +37,8 @@ class FreemarkerTemplateService(
   }
 
   /**
-   * Bevorzugt die produktspezifische Vorlage, fällt auf die allgemeine zurück.
-   * So bleibt der Versandpfad generisch: er kennt nur einen Variantennamen und
-   * kein Produkt.
+   * Prefers the product-specific template, falls back to the generic one.
+   * This keeps the send path generic: it knows only a variant name, no product.
    */
   private fun resolveTemplateName(name: String, variant: TemplateVariant?): String {
     if (variant == null) {

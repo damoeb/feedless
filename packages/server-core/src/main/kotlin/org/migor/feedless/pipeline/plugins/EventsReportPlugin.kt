@@ -22,12 +22,12 @@ import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 /**
- * Was eine Report-Mail von einem Event zeigt, bereits formatiert.
+ * What a report mail shows for an event, already formatted.
  *
- * Vorformatiert, weil Freemarker ein LocalDateTime als Zeichenkette einpackt:
- * startingAt?string("...") scheiterte daran, das Plugin warf, und der Report
- * ging nie raus - sobald er auch nur ein Event enthielt. Nur das Datum, keine
- * Uhrzeit: im Bestand ist sie überwiegend ein Default der Pipeline.
+ * Pre-formatted because Freemarker wraps a LocalDateTime as a plain string:
+ * startingAt?string("...") failed on that, the plugin threw, and the report
+ * never went out as soon as it contained even one event. Date only, no time,
+ * since in existing data the time is mostly just a pipeline default.
  */
 data class ReportEventItem(
   val title: String,

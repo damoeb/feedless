@@ -27,12 +27,12 @@ export interface EmailAboModalComponentProps {
 }
 
 /**
- * Das Modal, in dem ein anonymer Besucher ein Abo anlegt.
+ * The modal in which an anonymous visitor creates a subscription.
  *
- * Nur noch ein Container: das Formular liegt in
- * ReportSubscriptionFormComponent, die Übersetzung in toSegmentInput. Hier
- * bleibt, was an das Modal gebunden ist - den Ort aus der Seite übergeben, den
- * Service aufrufen, schliessen und melden.
+ * Just a container now: the form lives in ReportSubscriptionFormComponent,
+ * the translation in toSegmentInput. What stays here is what's bound to the
+ * modal - passing in the page's location, calling the service, closing and
+ * reporting the outcome.
  */
 @Component({
   selector: 'app-email-abo-modal',
@@ -76,7 +76,7 @@ export class EmailAboModalComponent implements EmailAboModalComponentProps {
         toSegmentInput(value, this.location, Date.now()),
       );
     } catch (e) {
-      // Das Modal bleibt offen, damit die Eingabe nicht verloren geht.
+      // The modal stays open so the input isn't lost.
       console.error('createReport failed', e);
       await this.showAlert(
         'Das hat nicht geklappt',

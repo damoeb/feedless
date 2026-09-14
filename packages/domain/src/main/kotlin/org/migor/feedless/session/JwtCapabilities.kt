@@ -15,9 +15,9 @@ object JwtParameterNames {
   const val HOST = "host"
 
   /**
-   * Trägt die Report-Id in Bestätigungs- und Abmeldelinks. Der Besitz des
-   * signierten Tokens ist dort der Nachweis - die Empfänger sind
-   * typischerweise nicht angemeldet.
+   * Carries the report id in confirmation and unsubscribe links. Possession
+   * of the signed token is the proof there - recipients are typically not
+   * logged in.
    */
   const val REPORT_ID = "report_id"
 

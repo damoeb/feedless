@@ -12,14 +12,11 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.stereotype.Component
 
 /**
- * Schützt den angemeldeten Zugriff auf einen Report, also den GraphQL-Pfad.
+ * Guards the authenticated access path to a report, i.e. the GraphQL path.
  *
- * Die Links in Report-Mails laufen bewusst nicht hier durch: ihre Empfänger
- * sind in aller Regel nicht angemeldet, und dort ist der Besitz des signierten
- * Tokens der Nachweis. Siehe ReportController.
- *
- * Vorher warfen alle drei Methoden NotImplementedError, wodurch schon das
- * Löschen eines Reports zur Laufzeit scheiterte.
+ * Links in report mails deliberately bypass this: their recipients are
+ * usually not logged in, and possession of the signed token is the proof
+ * there. See ReportController.
  */
 @Component
 @Profile("${AppProfiles.report} & ${AppLayer.service}")
@@ -36,9 +33,9 @@ class ReportGuard(private val reportRepository: ReportRepository) : ResourceGuar
     val userId = coroutineContext.userIdMaybe()
       ?: throw AccessDeniedException("Report $id belongs to someone, you are not logged in")
 
-    // Ein anonym angelegter Report hat keinen Eigentümer. Er ist über den Link
-    // in seiner Mail erreichbar, nicht über eine angemeldete Sitzung - sonst
-    // könnte jeder Angemeldete fremde Reports abbestellen.
+    // An anonymously created report has no owner. It's reachable via the
+    // link in its mail, not via a logged-in session - otherwise any logged-in
+    // user could unsubscribe someone else's reports.
     val ownerId = report.userId
       ?: throw AccessDeniedException("Report $id has no owner, use the link from its mail")
 
