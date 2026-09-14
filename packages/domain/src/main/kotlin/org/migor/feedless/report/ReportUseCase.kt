@@ -198,7 +198,7 @@ class ReportUseCase(
     meterRegistry.counter(AppMetrics.createReport)
     val saved = reportRepository.save(report)
     if (needsConfirmation) {
-      sendConfirmationRequest(saved, recipient)
+      sendConfirmationRequest(saved)
     } else {
       sendConfirmationMail(saved, recipient, nextReportedAt)
     }
@@ -224,13 +224,12 @@ class ReportUseCase(
     mailService.send(mail)
   }
 
-  private suspend fun sendConfirmationRequest(report: Report, recipient: ReportRecipient) {
+  private suspend fun sendConfirmationRequest(report: Report) {
     val body = templateService.renderTemplate(
       MailTemplateReportConfirmRequest(
         ReportConfirmRequestParams(
           language = "de",
           confirmationLink = confirmationLink(report),
-          abuseLink = abuseLink(recipient),
         )
       )
     )

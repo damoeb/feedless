@@ -19,7 +19,6 @@ data class MailTemplateReportCreated(override val params: ReportCreatedParams) :
 data class ReportConfirmRequestParams(
   val language: String,
   val confirmationLink: String,
-  val abuseLink: String,
 )
 
 data class MailTemplateReportConfirmRequest(override val params: ReportConfirmRequestParams) :

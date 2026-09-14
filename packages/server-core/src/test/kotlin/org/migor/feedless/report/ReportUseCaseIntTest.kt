@@ -367,7 +367,7 @@ class ReportUseCaseIntTest {
       val captor = argumentCaptor<OutgoingMail>()
       verify(mailService).send(captor.capture())
       assertThat(captor.firstValue.subject).isEqualTo("Bitte bestätige dein Abo")
-      assertThat(captor.firstValue.htmlContent).contains("/reports/confirm/").contains("/reports/abuse/")
+      assertThat(captor.firstValue.htmlContent).contains("/reports/confirm/").doesNotContain("/reports/abuse/")
 
       reset(mailService)
       reportUseCase.processReportJobs()

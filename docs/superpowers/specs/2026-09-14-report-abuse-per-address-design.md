@@ -10,7 +10,7 @@ Weekly e-mail reports start active without an opt-in step (`c10255608`). Every r
 
 | Question | Decision |
 |----------|----------|
-| How is abuse reported? | A signed "Ich habe das nicht abonniert" link in every report mail |
+| How is abuse reported? | A signed "Ich habe das nicht abonniert" link in the "Dein Abo ist aktiv" mail and in every weekly report |
 | Scope | The e-mail address, across all its reports |
 | Subscription mode | A setting: `opt-out` (default) activates new subscriptions at once unless the address is flagged; `opt-in` requires confirmation for every new subscription |
 | Strategy | Set the address's `opt_in_required` flag and disable every report to it; the flag stays set |
@@ -62,7 +62,9 @@ Switching the setting affects only subscriptions created afterwards.
 
 **Confirm.** `GET /reports/confirm/{reportId}?token=…` returns. The token names the report; the endpoint activates that one report and is idempotent. Only confirmation-request mails contain this link.
 
-**Report abuse.** Every report mail carries `GET /reports/abuse/{recipientId}?token=…`: the "Dein Abo ist aktiv" mail, the confirmation request, and each weekly report. The token names the recipient, not a report, so the link keeps working after the owner cancels a report (cancel deletes the row), and no address appears in URLs or access logs. Tokens are valid for a year, like the cancel link.
+**Report abuse.** The "Dein Abo ist aktiv" mail and each weekly report carry `GET /reports/abuse/{recipientId}?token=…`. The token names the recipient, not a report, so the link keeps working after the owner cancels a report (cancel deletes the row), and no address appears in URLs or access logs. Tokens are valid for a year, like the cancel link.
+
+The confirmation request carries no abuse link: an unconfirmed subscription sends nothing, so ignoring the request is enough, and a mail scanner that opens every link in it must not flag the address.
 
 One click:
 
@@ -70,7 +72,7 @@ One click:
 2. disables every report to the address,
 3. renders a page confirming that no more reports will arrive and that new subscriptions need the owner's confirmation.
 
-Trade-off: mail security scanners (Outlook Safe Links, corporate gateways) open links automatically, so a scanner can report abuse for an address. The effect is limited to what the owner could undo by subscribing again with confirmation.
+Trade-off: mail security scanners (Outlook Safe Links, corporate gateways) open links automatically, so a scanner can report abuse for an address from a report mail. The flag then stays set, and later subscriptions to the address need a confirmation click — which such a scanner also performs, so the owner is not locked out. GET confirmation links are exposed to scanners in opt-in mode too; POST-backed pages are a follow-up.
 
 **Send.** Unchanged. The pending query already skips disabled and inactive reports.
 
@@ -80,7 +82,7 @@ Trade-off: mail security scanners (Outlook Safe Links, corporate gateways) open 
 - `ReportController` (http-api) serves confirm, abuse and the existing cancel endpoint; each checks that the token names the path's report or recipient.
 - `SecurityConfig.whitelistedUrls()` lists `reportDelete`, `reportConfirm` and `reportAbuse` explicitly. Today only `mailForwardingAllow` is listed and there is no catch-all rule, so whether the cancel link is reachable without login depends on Spring Security's default for unmatched paths.
 - `TokenIssuer` gains `createJwtForRecipient(recipientId, validForDays)`; `JwtParameterNames` gains `RECIPIENT_ID`.
-- Templates: `mail-report-created` and `mail-event-calendar` get the abuse link; a new `mail-report-confirm-request`; a new page template for the abuse result.
+- Templates: `mail-report-created` and `mail-event-calendar` get the abuse link; a new `mail-report-confirm-request` (confirm link only); a new page template for the abuse result.
 - No GraphQL schema change.
 - Frontend (`email-abo-modal`): one text for every outcome, "Wir haben dir eine E-Mail geschickt.", replacing "Dein Abo ist aktiv".
 
@@ -98,3 +100,5 @@ Trade-off: mail security scanners (Outlook Safe Links, corporate gateways) open 
 - Hardening the cancel link against scanner clicks (a page with a POST, or RFC 8058 one-click unsubscribe).
 - Acting on whoever created abusive reports (account or IP).
 - Reports created before this branch that were stored inactive and would no longer be sent.
+- POST-backed pages for the confirm and abuse links, against scanner clicks.
+- A cooldown on confirmation requests to an address that reported abuse.

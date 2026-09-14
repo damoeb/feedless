@@ -93,7 +93,6 @@ Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this addre
           ReportConfirmRequestParams(
             language = "en",
             confirmationLink = "confirmationLink",
-            abuseLink = "abuseLink",
           )
         )
       )
@@ -118,11 +117,7 @@ Confirm subscription
 </a>
 </p>
 
-<p>Without your confirmation we send nothing.</p>
-
-<p style="margin-top: 20px; font-size: 13px; color: #777;">
-Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this address will only get reports you confirm.
-</p>
+<p>Without your confirmation we send nothing. If this wasn't you, just ignore this mail.</p>
 
 </body>
 </html>

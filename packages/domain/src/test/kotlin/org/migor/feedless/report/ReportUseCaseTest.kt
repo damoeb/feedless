@@ -306,8 +306,7 @@ class ReportUseCaseTest {
 
       assertThat(savedReport().authorized).isFalse()
       verify(templateService).renderTemplate(argThat<MailTemplateReportConfirmRequest> {
-        it.params.confirmationLink.contains("/reports/confirm/") &&
-          it.params.abuseLink.contains("/reports/abuse/")
+        it.params.confirmationLink.contains("/reports/confirm/")
       })
       verify(templateService, never()).renderTemplate(any(MailTemplateReportCreated::class.java))
     }
