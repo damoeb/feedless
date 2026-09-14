@@ -11,5 +11,4 @@ object ApiUrls {
 //  const val legacyWebToFeed = "/api/legacy/w2f"
   const val mailForwardingAllow = "/mail/forwarding/allow"
   const val reportDelete = "/reports/delete"
-  const val reportConfirm = "/reports/confirm"
 }

@@ -10,7 +10,6 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.NotFoundException
-import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
@@ -25,7 +24,6 @@ import org.migor.feedless.mail.MailService
 import org.migor.feedless.mail.OutgoingMail
 import org.migor.feedless.pipeline.PipelinePlugins
 import org.migor.feedless.pipeline.ReportPlugin
-import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
@@ -52,7 +50,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Anlegen und Bestätigen eines Abos.
+ * Anlegen eines Abos.
  *
  * Die Repository- und Nutzer-Guards sind hier echt, nicht gemockt. Mit einem
  * gemockten RepositoryGuard lief der frühere Test "reports can be created by
@@ -224,22 +222,18 @@ class ReportUseCaseTest {
       assertThat(savedReport().userId).isEqualTo(repositoryOwnerId)
     }
 
-  /**
-   * Genau eine Anfrage, und sie trägt einen Bestätigungslink. Die früheren
-   * Rümpfe mit Erinnerungen nach einem Tag, einer Woche und einem Monat sind
-   * entfernt - entschieden ist eine einzige Anfrage ohne Erinnerungen.
-   */
   @Test
-  fun `asks once for authorization when a report is created`() =
+  fun `a new report is active at once and its confirmation mail can cancel it`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
       `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
 
       reportUseCase.createReport(repositoryId, segment)
 
+      assertThat(savedReport().authorized).isTrue()
       verify(mailService).send(any(OutgoingMail::class.java))
       verify(templateService).renderTemplate(argThat<MailTemplateReportCreated> {
-        it.params.confirmationLink.contains("/reports/confirm/") &&
-          it.params.confirmationLink.contains("token=")
+        it.params.deactivationLink.contains("/reports/delete/") &&
+          it.params.deactivationLink.contains("token=")
       })
     }
 
@@ -259,35 +253,6 @@ class ReportUseCaseTest {
       verify(cronScheduleRepository).save(captor.capture())
       assertThat(CronExpression.isValidExpression(captor.firstValue.cronExpression)).isTrue()
     }
-
-  private fun unconfirmedReport(authorized: Boolean = false): Report = Report(
-    recipientEmail = "hans@example.com",
-    recipientName = "Hans Muster",
-    reporterPlugin = PluginExecution(id = "", params = PluginExecutionJson()),
-    segmentId = SegmentationId(),
-    cronScheduleId = CronSchedule(cronExpression = "").id,
-    authorized = authorized,
-  ).also { `when`(reportRepository.findById(it.id)).thenReturn(it) }
-
-  @Test
-  fun `confirming through the mail link authorizes the report`() = runTest {
-    val report = unconfirmedReport()
-
-    reportUseCase.confirmReportFromToken(report.id)
-
-    val confirmed = savedReport()
-    assertThat(confirmed.authorized).isTrue()
-    assertThat(confirmed.authorizedAt).isNotNull()
-  }
-
-  @Test
-  fun `confirming twice changes nothing`() = runTest {
-    val report = unconfirmedReport(authorized = true)
-
-    reportUseCase.confirmReportFromToken(report.id)
-
-    verify(reportRepository, never()).save(any(Report::class.java))
-  }
 
   @Test
   fun `processReportJobs will load pending reports`() =

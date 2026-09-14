@@ -25,7 +25,6 @@ class FreemarkerTemplateServiceIntTest {
           ReportCreatedParams(
             language = "en",
             deactivationLink = "deactivationLink",
-            confirmationLink = "confirmationLink",
             reportName = "reportName",
             cronExpression = "cronExpression",
             nextScheduledAt = "nextScheduledAt",
@@ -44,17 +43,8 @@ class FreemarkerTemplateServiceIntTest {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Please confirm your subscription</h2>
-<p>You requested a weekly report. Confirm your address once so we can send it:</p>
-
-<p>
-<a href="confirmationLink"
-style="display: inline-block; padding: 10px 15px; background-color: #12775C; color: #fff; text-decoration: none; border-radius: 4px;">
-Confirm subscription
-</a>
-</p>
-
-<p>We send nothing until you confirm. If this wasn't you, just ignore this mail.</p>
+<h2 style="color: #2c3e50;">Your subscription is active</h2>
+<p>From now on we send you the report on schedule. Every mail contains a link to cancel it.</p>
 
 <p>The details:</p>
 
@@ -74,13 +64,13 @@ Confirm subscription
 </table>
 
 <p style="margin-top: 20px;">
-If you no longer wish to receive this report, you can deactivate it here:
+If this wasn't you, or you no longer wish to receive this report, you can cancel it here:
 </p>
 
 <p>
 <a href="deactivationLink"
 style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
-Deactivate Report
+Cancel Report
 </a>
 </p>
 

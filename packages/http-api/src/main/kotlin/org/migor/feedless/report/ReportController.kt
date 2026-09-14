@@ -2,7 +2,6 @@ package org.migor.feedless.report
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.api.ApiUrls.reportConfirm
 import org.migor.feedless.api.ApiUrls.reportDelete
 import org.migor.feedless.session.JwtParameterNames
 import org.migor.feedless.session.TokenIssuer
@@ -16,16 +15,9 @@ import org.springframework.web.bind.annotation.PathVariable
 import org.springframework.web.bind.annotation.RequestParam
 
 /**
- * Die beiden Links aus den Report-Mails.
- *
- * Beide laufen ohne Anmeldung: der Empfänger hat typischerweise kein Konto.
- * Der Nachweis ist das signierte Token, und es nennt genau einen Report. Die
- * Report-Id aus dem Pfad wird gegen die aus dem Token geprüft, damit ein
- * gültiges Token nicht auf einen fremden Report angewendet werden kann.
- *
- * Vorher lief das Löschen über injectCapabilitiesFromJwt und den ReportGuard,
- * dessen Methoden alle NotImplementedError warfen - der Endpunkt scheiterte
- * also zur Laufzeit.
+ * The cancel link in every report mail. It works without login, since recipients usually have no
+ * account: the signed token is the proof, and it must name the report in the path so a valid token
+ * cannot cancel someone else's report.
  */
 @Controller
 @Profile("${AppProfiles.report} & ${AppLayer.api}")
@@ -35,17 +27,6 @@ class ReportController(
 ) {
 
   private val log = LoggerFactory.getLogger(ReportController::class.simpleName)
-
-  @GetMapping("$reportConfirm/{reportId}")
-  suspend fun confirmReport(
-    @PathVariable("reportId") reportId: String,
-    @RequestParam("token") token: String,
-  ): ResponseEntity<String> {
-    log.info("GET confirmReport id=$reportId")
-    requireTokenNames(token, reportId)
-    reportUseCase.confirmReportFromToken(ReportId(reportId))
-    return ResponseEntity.ok().body("report confirmed")
-  }
 
   @GetMapping("$reportDelete/{reportId}")
   suspend fun deleteReport(

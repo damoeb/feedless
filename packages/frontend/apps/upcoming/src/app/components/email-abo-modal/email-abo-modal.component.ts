@@ -86,11 +86,9 @@ export class EmailAboModalComponent implements EmailAboModalComponentProps {
     }
 
     await this.modalCtrl.dismiss();
-    // Das Backend verschickt erst nach der Bestätigung. Ohne diesen Hinweis
-    // wartet der Besucher auf einen Bericht, der nie kommt.
     await this.showAlert(
-      'Fast geschafft!',
-      'Wir haben dir eine E-Mail geschickt. Erst nach dem Klick auf den Link darin startet dein wöchentliches Abo.',
+      'Dein Abo ist aktiv',
+      'Wir haben dir eine Bestätigung geschickt. Jede Mail enthält einen Link zum Abbestellen.',
     );
   }
 

@@ -43,14 +43,7 @@ import java.time.DayOfWeek
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
-/**
- * Was der geplante Lauf mit fälligen Reports macht.
- *
- * Die früheren Rümpfe mit drei Erinnerungen nach einem Tag, einer Woche und
- * einem Monat sind entfernt: entschieden ist genau eine Bestätigungsanfrage
- * ohne Erinnerungen. Diese Anfrage prüft ReportUseCaseTest, dass unbestätigte
- * Reports nicht verschickt werden, ReportUseCaseIntTest gegen die Datenbank.
- */
+/** Was der geplante Lauf mit fälligen Reports macht. */
 class ReportJobExecutorTest {
 
   /** Ein sechsteiliger Ausdruck, wie Springs CronExpression ihn verlangt. */

@@ -69,7 +69,7 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
 /**
- * Der Durchstich gegen eine echte Datenbank: anlegen, bestätigen, verschicken.
+ * Der Durchstich gegen eine echte Datenbank: anlegen, verschicken, abbestellen.
  */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
@@ -274,14 +274,13 @@ class ReportUseCaseIntTest {
     }
 
   /**
-   * Der eigentliche Durchstich: Bestätigen, dann verschickt der geplante Lauf
-   * die Veranstaltungen der kommenden Woche - nur freigegebene, nur künftige.
+   * Der eigentliche Durchstich: ohne Bestätigungsschritt verschickt der geplante
+   * Lauf die Veranstaltungen der kommenden Woche - nur freigegebene, nur künftige.
    */
   @Test
-  fun `a confirmed report is sent with the events of the coming week`() =
+  fun `a new report is sent with the events of the coming week`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
-      val report = createReport()
-      reportUseCase.confirmReportFromToken(report.id)
+      createReport()
       reset(mailService)
 
       reportUseCase.processReportJobs()
@@ -301,14 +300,11 @@ class ReportUseCaseIntTest {
         .doesNotContain("href=\"\"")
     }
 
-  /**
-   * Vorher ging der Report auch an Adressen, die das Abo nie bestätigt haben.
-   * Und es gibt keine Erinnerung: die Bestätigungsanfrage geht genau einmal.
-   */
   @Test
-  fun `an unconfirmed report is not sent and nobody is reminded`() =
+  fun `a cancelled report is not sent`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
-      createReport()
+      val report = createReport()
+      reportUseCase.deleteReportFromToken(report.id)
       reset(mailService)
 
       reportUseCase.processReportJobs()

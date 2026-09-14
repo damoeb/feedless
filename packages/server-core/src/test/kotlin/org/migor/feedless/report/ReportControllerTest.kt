@@ -17,7 +17,7 @@ import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
 
 /**
- * Die beiden Links aus den Report-Mails. Ihre Empfänger haben meist kein
+ * Der Abmeldelink aus den Report-Mails. Ihre Empfänger haben meist kein
  * Konto; der Besitz des signierten Tokens ist der Nachweis. Diese Fälle ersetzen
  * die früheren leeren Rümpfe "report can be deleted by anonymous if created by
  * anonymous" und "report can be deleted without authorization".
@@ -54,15 +54,6 @@ class ReportControllerTest {
     verifyBlocking(reportUseCase) { deleteReportFromToken(reportId) }
   }
 
-  @Test
-  fun `confirms a report through the link in its mail`() = runTest {
-    tokenDecodesTo(tokenNaming(reportId))
-
-    controller.confirmReport(reportId.uuid.toString(), "token")
-
-    verifyBlocking(reportUseCase) { confirmReportFromToken(reportId) }
-  }
-
   /**
    * Das Token ist gültig, nennt aber einen anderen Report. Ohne diesen
    * Abgleich liesse sich mit dem Link aus der eigenen Mail jedes fremde Abo
@@ -85,8 +76,8 @@ class ReportControllerTest {
     }
 
     assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
-      runTest { controller.confirmReport(reportId.uuid.toString(), "forged") }
+      runTest { controller.deleteReport(reportId.uuid.toString(), "forged") }
     }
-    verifyBlocking(reportUseCase, never()) { confirmReportFromToken(any()) }
+    verifyBlocking(reportUseCase, never()) { deleteReportFromToken(any()) }
   }
 }

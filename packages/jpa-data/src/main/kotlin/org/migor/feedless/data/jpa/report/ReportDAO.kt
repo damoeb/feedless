@@ -14,10 +14,7 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.report} & ${AppLayer.repository}")
 interface ReportDAO : JpaRepository<ReportEntity, UUID> {
-  /**
-   * Nur bestätigte Empfänger. Ohne den authorized-Filter gingen Reports auch
-   * an Adressen, die das Abo nie bestätigt haben.
-   */
+  /** Reports start authorized; false marks one switched off through updateReportById. */
   @Query(
     value = """
       select distinct r from ReportEntity r

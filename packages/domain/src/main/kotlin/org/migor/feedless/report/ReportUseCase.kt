@@ -6,7 +6,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.EntityVisibility
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.AppConfig
 import org.migor.feedless.session.TokenIssuer
@@ -88,20 +87,10 @@ class ReportUseCase(
   private val tokenIssuer: TokenIssuer,
 ) {
 
-  /**
-   * Beide Links tragen dasselbe Token: es nennt den Report, und sein Besitz
-   * ist der Nachweis. Ein Jahr Gültigkeit, damit ein Abmeldelink auch in einer
-   * alten Mail noch funktioniert.
-   */
-  private fun confirmationLink(report: Report): String =
-    reportLink(ApiUrls.reportConfirm, report)
-
-  private fun deactivationLink(report: Report): String =
-    reportLink(ApiUrls.reportDelete, report)
-
-  private fun reportLink(path: String, report: Report): String {
+  /** The token names the report; holding it is the proof, since recipients usually have no account. */
+  private fun deactivationLink(report: Report): String {
     val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
-    return "${appConfig.apiGatewayUrl}$path/${report.id.uuid}?token=${token.tokenValue}"
+    return "${appConfig.apiGatewayUrl}${ApiUrls.reportDelete}/${report.id.uuid}?token=${token.tokenValue}"
   }
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -164,9 +153,9 @@ class ReportUseCase(
       recipientName = segment.recipientName,
       recipientEmail = email,
 
-      // send authorization mail
-      authorizationAttempt = 1,
-      lastRequestedAuthorization = LocalDateTime.now(),
+      // no opt-in step: active at once, and every mail carries a cancel link
+      authorized = true,
+      authorizedAt = LocalDateTime.now(),
       segmentId = segmentation.id,
       reporterPlugin = PluginExecution(
         id = reporterPluginId,
@@ -181,19 +170,14 @@ class ReportUseCase(
 
     meterRegistry.counter(AppMetrics.createReport)
     val saved = reportRepository.save(report)
-    sendAuthorizationMail(saved, nextReportedAt)
+    sendConfirmationMail(saved, nextReportedAt)
     saved
   }
 
-  /**
-   * Genau eine Anfrage, keine Erinnerungen. Wer nicht bestätigt, bekommt
-   * nichts - der Report bleibt unbestätigt liegen.
-   */
-  private suspend fun sendAuthorizationMail(report: Report, nextReportedAt: LocalDateTime) {
+  private suspend fun sendConfirmationMail(report: Report, nextReportedAt: LocalDateTime) {
     val params = ReportCreatedParams(
       language = "de",
       deactivationLink = deactivationLink(report),
-      confirmationLink = confirmationLink(report),
       reportName = report.recipientName,
       cronExpression = report.cronSchedule?.cronExpression ?: "",
       nextScheduledAt = nextReportedAt.toString(),
@@ -202,31 +186,13 @@ class ReportUseCase(
     val mail = OutgoingMail(
       from = mailSender,
       to = listOf(report.recipientEmail),
-      subject = "Bitte bestätige dein Abo",
+      subject = "Dein Abo ist aktiv",
       htmlContent = body
     )
     mailService.send(mail)
   }
 
-  /**
-   * Für den Link aus der Mail. Der Besitz des signierten Tokens ist hier der
-   * Nachweis - der Empfänger ist typischerweise nicht angemeldet, deshalb
-   * läuft dieser Pfad bewusst nicht über den ReportGuard.
-   */
-  suspend fun confirmReportFromToken(reportId: ReportId) = withContext(Dispatchers.IO) {
-    log.info("confirmReportFromToken reportId=$reportId")
-    val report = reportRepository.findById(reportId) ?: throw NotFoundException("Report $reportId not found")
-    if (!report.authorized) {
-      reportRepository.save(
-        report.copy(
-          authorized = true,
-          authorizedAt = LocalDateTime.now(),
-        )
-      )
-    }
-  }
-
-  /** Wie [confirmReportFromToken]: der Link ist der Nachweis. */
+  /** For the cancel link in every mail: the signed token is the proof, so this bypasses ReportGuard. */
   suspend fun deleteReportFromToken(reportId: ReportId) = withContext(Dispatchers.IO) {
     log.info("deleteReportFromToken reportId=$reportId")
     reportRepository.deleteById(reportId)

@@ -63,15 +63,12 @@ describe('EmailAboModalComponent', () => {
     expect(segment.what.latLng.near.point).toEqual({ lat: zug.lat, lng: zug.lng });
   });
 
-  /**
-   * Das Backend verschickt erst nach der Bestätigung. Die Meldung muss das
-   * sagen, sonst wartet der Besucher auf eine Mail, die nie kommt.
-   */
-  it('closes and asks the visitor to confirm the link in the mail', async () => {
+  it('closes and tells the visitor the subscription is active and can be cancelled', async () => {
     await component.subscribe(subscription);
 
     expect(dismiss).toHaveBeenCalled();
-    expect(createAlert.mock.calls[0][0].message).toContain('Link');
+    expect(createAlert.mock.calls[0][0].header).toContain('aktiv');
+    expect(createAlert.mock.calls[0][0].message).toContain('Abbestellen');
   });
 
   it('does not claim success when the request fails', async () => {
