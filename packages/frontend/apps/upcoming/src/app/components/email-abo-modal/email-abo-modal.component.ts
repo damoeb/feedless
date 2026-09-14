@@ -86,10 +86,8 @@ export class EmailAboModalComponent implements EmailAboModalComponentProps {
     }
 
     await this.modalCtrl.dismiss();
-    await this.showAlert(
-      'Dein Abo ist aktiv',
-      'Wir haben dir eine Bestätigung geschickt. Jede Mail enthält einen Link zum Abbestellen.',
-    );
+    // One text for every outcome, so the answer never reveals whether this address must confirm first.
+    await this.showAlert('Danke!', 'Wir haben dir eine E-Mail geschickt.');
   }
 
   private async showAlert(header: string, message: string): Promise<void> {

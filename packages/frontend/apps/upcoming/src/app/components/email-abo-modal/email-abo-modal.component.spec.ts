@@ -63,12 +63,13 @@ describe('EmailAboModalComponent', () => {
     expect(segment.what.latLng.near.point).toEqual({ lat: zug.lat, lng: zug.lng });
   });
 
-  it('closes and tells the visitor the subscription is active and can be cancelled', async () => {
+  it('closes with one message that does not reveal whether the address must confirm', async () => {
     await component.subscribe(subscription);
 
     expect(dismiss).toHaveBeenCalled();
-    expect(createAlert.mock.calls[0][0].header).toContain('aktiv');
-    expect(createAlert.mock.calls[0][0].message).toContain('Abbestellen');
+    const { header, message } = createAlert.mock.calls[0][0];
+    expect(message).toBe('Wir haben dir eine E-Mail geschickt.');
+    expect(`${header} ${message}`).not.toMatch(/aktiv|bestätig/i);
   });
 
   it('does not claim success when the request fails', async () => {
