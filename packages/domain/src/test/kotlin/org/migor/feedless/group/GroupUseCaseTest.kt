@@ -29,6 +29,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.transaction.PlatformTransactionManager
+import org.springframework.transaction.support.SimpleTransactionStatus
 import org.springframework.transaction.support.TransactionTemplate
 
 class GroupUseCaseTest {
@@ -75,7 +76,10 @@ class GroupUseCaseTest {
       groupGuard,
       groupRepository,
       mock(RepositoryRepository::class.java),
-      TransactionTemplate(mock(PlatformTransactionManager::class.java)),
+      // Spring 7's callback takes a non-null TransactionStatus, which a bare mock manager would not return
+      TransactionTemplate(mock(PlatformTransactionManager::class.java).also {
+        `when`(it.getTransaction(any2())).thenReturn(SimpleTransactionStatus())
+      }),
     )
     `when`(userGroupAssignmentRepository.save(any2())).thenAnswer { it.arguments[0] }
   }

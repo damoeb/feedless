@@ -1,6 +1,14 @@
 spring:
   jpa:
     open-in-view: false
+  jackson:
+    # Jackson 3 sorts properties and rejects trailing tokens and null primitives; keep the Jackson 2 behaviour
+    use-jackson2-defaults: true
+  graphql:
+    websocket:
+      path: /subscriptions
+      # DGS 9's default; Spring for GraphQL would wait 60s for connection_init
+      connection-init-timeout: 10s
   web:
     resources:
       static-locations: file:./static

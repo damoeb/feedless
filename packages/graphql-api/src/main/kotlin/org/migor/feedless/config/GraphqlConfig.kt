@@ -2,6 +2,7 @@ package org.migor.feedless.config
 
 import com.netflix.graphql.dgs.DgsDirective
 import com.netflix.graphql.dgs.context.DgsCustomContextBuilder
+import com.netflix.graphql.dgs.scalars.UploadScalar
 import graphql.schema.DataFetcherFactories
 import graphql.schema.DataFetchingEnvironment
 import graphql.schema.GraphQLFieldDefinition
@@ -18,6 +19,7 @@ import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.context.annotation.Profile
+import org.springframework.graphql.execution.RuntimeWiringConfigurer
 import org.springframework.stereotype.Component
 import us.codecraft.xsoup.Xsoup
 import java.net.URI
@@ -37,6 +39,16 @@ class GraphqlConfig {
     override fun build(): DgsCustomContext {
       return DgsCustomContext()
     }
+  }
+}
+
+// unconditional: Spring for GraphQL's autoconfig builds the schema (and needs Upload) regardless of AppLayer.api,
+// same as DGS 9's now-dropped automatic Upload scalar registration
+@Configuration
+class UploadScalarConfig {
+  @Bean
+  fun uploadScalarWiringConfigurer(): RuntimeWiringConfigurer {
+    return RuntimeWiringConfigurer { builder -> UploadScalar().addScalar(builder) }
   }
 }
 

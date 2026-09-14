@@ -1,7 +1,7 @@
 package org.migor.feedless.http.mapper
 
 import com.fasterxml.jackson.annotation.JsonInclude
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import tools.jackson.module.kotlin.jacksonMapperBuilder
 import com.google.gson.Gson
 import org.migor.feedless.actions.ClickPositionAction
 import org.migor.feedless.actions.ClickXpathAction
@@ -44,7 +44,9 @@ class HttpScrapeFlowMapper : StoredFlowParser {
   private val gson = Gson()
 
   // Jackson, like the HTTP layer that parsed the flow; nulls omitted so a stored flow reads like the request.
-  private val storedFlowJson = jacksonObjectMapper().setSerializationInclusion(JsonInclude.Include.NON_NULL)
+  private val storedFlowJson = jacksonMapperBuilder()
+    .changeDefaultPropertyInclusion { JsonInclude.Value.construct(JsonInclude.Include.NON_NULL, JsonInclude.Include.NON_NULL) }
+    .build()
 
   fun toDomainSource(body: SourceCreate): Source =
     Source(

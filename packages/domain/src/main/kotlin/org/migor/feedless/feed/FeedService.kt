@@ -297,7 +297,7 @@ class FeedService(
     }
     return jwt?.let {
       try {
-        repositoryClaimRepository.findById(RepositoryClaimId(it.getClaimAsString("id")))
+        repositoryClaimRepository.findById(RepositoryClaimId(it.getClaimAsString("id")!!))
       } catch (e: Exception) {
         log.error("Error resolving id claim from token: ${e.message}", e)
         throw e

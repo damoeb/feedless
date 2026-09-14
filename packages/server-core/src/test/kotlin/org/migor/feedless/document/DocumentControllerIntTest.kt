@@ -9,7 +9,6 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.any2
@@ -29,7 +28,8 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -41,6 +41,7 @@ import java.time.LocalDateTime
 
 
 @ExtendWith(SpringExtension::class)
+@AutoConfigureTestRestTemplate
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
@@ -72,7 +73,6 @@ import java.time.LocalDateTime
 )
 @Import(
   DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class
 )
 class DocumentControllerIntTest {
 

@@ -48,6 +48,8 @@ dependencies {
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
   testImplementation(libs.dgs.codegen.test)
+  // Gradle can't derive a compatible junit-platform-launcher for this module's junit-bom version on its own
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // kapt stubs must see the DGS-generated types

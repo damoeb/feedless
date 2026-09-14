@@ -10,7 +10,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.any2
 import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.HttpService
@@ -67,7 +66,7 @@ import kotlin.time.Duration.Companion.seconds
     OneTimePasswordService::class,
   ]
 )
-@Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)
+@Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class)
 class ThrottleAspectIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
@@ -115,7 +114,8 @@ class ThrottleAspectIntTest {
     val lastResponse = responses.last()
     assertThat(responses.dropLast(1).none { it.hasErrors() }).isTrue()
     assertThat(lastResponse.errors.size).isEqualTo(1)
-    assertThat(lastResponse.errors.first().message).contains("HostOverloadingException")
+    // DGS 10 hands GraphQLExceptionHandler the unwrapped exception, not DGS 9's CompletionException wrapper
+    assertThat(lastResponse.errors.first().message).contains("You have exhausted your API Request Quota")
   }
 }
 

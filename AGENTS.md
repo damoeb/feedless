@@ -27,7 +27,7 @@ Six rules, each one a mistake this repo actively invites. Everything else is in 
 | `yarn codegen` (in `app-web`, `browser-automation-app`) | Regenerate the GraphQL TS client after a schema change. |
 | `./gradlew :packages:cli:test` | Test the `feedctl` CLI. |
 
-Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via `./gradlew`, Go 1.27 (`packages/cli`).
+Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 via `./gradlew`, Go 1.27 (`packages/cli`).
 
 ## Modules
 
@@ -78,7 +78,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.9 via 
 
 `CONTRIBUTING.md` and `docs/development.md` are placeholders — do not rely on them.
 
-**Stack:** Kotlin / JDK 21 / Spring Boot / Netflix DGS / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 20–21, Ionic 8, Nx 22, NestJS, Node 24 · Go 1.27 · Gradle 8.9 · Docker
+**Stack:** Kotlin 2.3 / JDK 21 / Spring Boot 4.1 / Netflix DGS 12 (Spring for GraphQL) / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 20–21, Ionic 8, Nx 22, NestJS, Node 24 · Go 1.27 · Gradle 8.14.5 · Docker
 
 ## Plot Config
 

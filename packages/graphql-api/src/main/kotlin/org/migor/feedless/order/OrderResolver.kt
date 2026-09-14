@@ -75,14 +75,14 @@ class OrderResolver(
 
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Product)
   suspend fun product(dfe: DgsDataFetchingEnvironment): ProductDto = coroutineScope {
-    val order: OrderDto = dfe.getRoot()
+    val order: OrderDto = dfe.getRoot<OrderDto>()!!
     val dataLoader: DataLoader<ProductId, ProductDto> = dfe.getDataLoader<ProductId, ProductDto>("product")!!
     dataLoader.load(ProductId(order.productId)).await()
   }
 
   @DgsData(parentType = DgsConstants.ORDER.TYPE_NAME, field = DgsConstants.ORDER.Licenses)
   suspend fun licenses(dfe: DgsDataFetchingEnvironment): List<License> = coroutineScope {
-    val order: OrderDto = dfe.getRoot()
+    val order: OrderDto = dfe.getRoot<OrderDto>()!!
     licenseRepository.findAllByOrderId(OrderId(order.id)).map { toDto() }
   }
 

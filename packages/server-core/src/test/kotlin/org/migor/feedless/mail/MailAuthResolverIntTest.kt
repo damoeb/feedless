@@ -1,6 +1,6 @@
 package org.migor.feedless.mail
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import kotlinx.coroutines.future.await
@@ -116,7 +116,7 @@ class MailAuthResolverIntTest {
 
     val response = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
-      .await()
+      .await()!!
       .extractValue<LinkedHashMap<String, Any>>("data.authenticateWithCodeViaMail")
 
     val auth = ObjectMapper().convertValue(response, Map::class.java)
@@ -144,7 +144,7 @@ class MailAuthResolverIntTest {
 
     val graphQLResponse = monoGraphQLClient.reactiveExecuteQuery(graphQLMutation)
       .toFuture()
-      .await()
+      .await()!!
     val response = graphQLResponse.extractValue<LinkedHashMap<String, Any>>("data.authConfirmCode")
 
     val auth = ObjectMapper().convertValue(response, Map::class.java)

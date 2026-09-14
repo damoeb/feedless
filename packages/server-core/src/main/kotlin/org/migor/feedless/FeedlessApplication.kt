@@ -1,26 +1,16 @@
 package org.migor.feedless
 
-import com.netflix.graphql.dgs.subscriptions.websockets.DgsWebSocketAutoConfig
-import org.springframework.boot.actuate.autoconfigure.data.elasticsearch.ElasticsearchReactiveHealthContributorAutoConfiguration
-import org.springframework.boot.actuate.autoconfigure.elasticsearch.ElasticsearchRestHealthContributorAutoConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
-import org.springframework.boot.autoconfigure.cache.CacheAutoConfiguration
-import org.springframework.boot.autoconfigure.data.elasticsearch.ElasticsearchRepositoriesAutoConfiguration
-import org.springframework.boot.autoconfigure.data.elasticsearch.ReactiveElasticsearchRepositoriesAutoConfiguration
-import org.springframework.boot.autoconfigure.data.jpa.JpaRepositoriesAutoConfiguration
+import org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration
+import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
 
 @Configuration
 @SpringBootApplication(
   exclude = [
-    ReactiveElasticsearchRepositoriesAutoConfiguration::class,
-    ElasticsearchRepositoriesAutoConfiguration::class,
-    JpaRepositoriesAutoConfiguration::class,
+    DataJpaRepositoriesAutoConfiguration::class,
     CacheAutoConfiguration::class,
-    ElasticsearchRestHealthContributorAutoConfiguration::class,
-    ElasticsearchReactiveHealthContributorAutoConfiguration::class,
-    DgsWebSocketAutoConfig::class,
   ]
 )
 class FeedlessApplication

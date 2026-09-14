@@ -81,7 +81,7 @@ class IpThrottleService(
   }
 
   fun resolveRateLimitFromApiKey(token: Jwt): Bandwidth {
-    return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE).uppercase())) {
+    return when (AuthTokenType.valueOf(token.getClaim<String>(JwtParameterNames.TYPE)!!.uppercase())) {
       AuthTokenType.SERVICE -> Bandwidth.classic(1000, Refill.intervally(1000, Duration.ofMinutes(1)))
       AuthTokenType.USER -> Bandwidth.classic(300, Refill.intervally(300, Duration.ofMinutes(1)))
       AuthTokenType.API -> Bandwidth.classic(200, Refill.intervally(200, Duration.ofMinutes(1)))

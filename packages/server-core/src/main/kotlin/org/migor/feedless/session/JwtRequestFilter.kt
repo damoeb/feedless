@@ -14,6 +14,7 @@ import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpHeaders
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
@@ -45,11 +46,14 @@ class JwtRequestFilter(
     val previousAttributes = RequestContextHolder.getRequestAttributes()
     withMdcCorrId(corrId) {
       try {
-        runBlocking {
-          runCatching {
-            SecurityContextHolder.getContext().authentication =
-              tokenAuthenticator.authenticate(jwtTokenIssuer.decodeJwt(request), request)
-          }.onFailure { log.debug(it.message) }
+        // WebSocket operations inherit the handshake's context, so the cross-site TOKEN cookie must not authenticate it; the header, unlike the path, cannot be encoded around.
+        if (!isWebSocketUpgrade(request)) {
+          runBlocking {
+            runCatching {
+              SecurityContextHolder.getContext().authentication =
+                tokenAuthenticator.authenticate(jwtTokenIssuer.decodeJwt(request), request)
+            }.onFailure { log.debug(it.message) }
+          }
         }
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
         chain.doFilter(request, response)
@@ -59,7 +63,8 @@ class JwtRequestFilter(
     }
   }
 
-
+  private fun isWebSocketUpgrade(request: HttpServletRequest): Boolean =
+    "websocket".equals(request.getHeader(HttpHeaders.UPGRADE), ignoreCase = true)
 }
 
 /** Requests authenticate through [TokenAuthenticator], which decides which of the token's capabilities count. */
@@ -70,7 +75,9 @@ fun jwtToOAuth2AuthenticationToken(
   val attributes = mapOf("dummy" to "wef")
 
   val principal: OAuth2User = DefaultOAuth2User(authorities, attributes, "dummy")
-  val authorizedClientRegistrationId = jwtToken.getClaimAsString("id")
+  // same exception OAuth2AuthenticationToken threw for a missing id before Spring Security 7's nullability
+  val authorizedClientRegistrationId =
+    requireNotNull(jwtToken.getClaimAsString("id")) { "authorizedClientRegistrationId cannot be empty" }
   return OAuth2AuthenticationToken(
     principal,
     authorities,

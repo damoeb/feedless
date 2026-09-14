@@ -3,7 +3,7 @@ package org.migor.feedless.http
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.user.UserId
-import org.springframework.boot.autoconfigure.web.servlet.WebMvcRegistrations
+import org.springframework.boot.webmvc.autoconfigure.WebMvcRegistrations
 import org.springframework.boot.test.context.TestConfiguration
 import org.springframework.context.annotation.Bean
 import org.springframework.core.CoroutinesUtils
@@ -33,7 +33,7 @@ class RequestContextBridge {
         object : RequestMappingHandlerAdapter() {
           override fun createInvocableHandlerMethod(handlerMethod: HandlerMethod): ServletInvocableHandlerMethod =
             object : ServletInvocableHandlerMethod(handlerMethod) {
-              override fun invokeSuspendingFunction(method: Method, target: Any, args: Array<Any>): Any {
+              override fun invokeSuspendingFunction(method: Method, target: Any, args: Array<out Any?>): Any {
                 val requestContext = (RequestContextHolder.getRequestAttributes() as? ServletRequestAttributes)
                   ?.request
                   ?.getAttribute(HTTP_API_REQUEST_CONTEXT_ATTR) as? RequestContext

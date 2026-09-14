@@ -233,10 +233,10 @@ class SecurityConfig {
         val user = resolveUser(oauthToken)
 
         log.info("jwt from user ${user.id}")
-        val client: OAuth2AuthorizedClient = authorizedClientService.loadAuthorizedClient(
+        val client: OAuth2AuthorizedClient = authorizedClientService.loadAuthorizedClient<OAuth2AuthorizedClient>(
           oauthToken.getAuthorizedClientRegistrationId(),
           oauthToken.getName()
-        )
+        )!!
 
         val accessToken: String = client.getAccessToken().getTokenValue()
         val githubCapability = createGithubCapability(accessToken)

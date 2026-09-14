@@ -233,7 +233,7 @@ class HttpApiJwtFilterTest {
 
     val saved = RequestAttributeSecurityContextRepository().loadDeferredContext(request).get()
     assertThat(saved.authentication).isInstanceOf(OAuth2AuthenticationToken::class.java)
-    assertThat(saved.authentication.isAuthenticated).isTrue()
+    assertThat(saved.authentication!!.isAuthenticated).isTrue()
   }
 
   @Test

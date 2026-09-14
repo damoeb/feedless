@@ -29,9 +29,9 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
-import org.springframework.boot.http.client.ClientHttpRequestFactorySettings
+import org.springframework.boot.http.client.HttpRedirects
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
 import org.springframework.boot.test.web.server.LocalServerPort
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpEntity
@@ -43,7 +43,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.springframework.test.context.junit.jupiter.SpringExtension
-import org.springframework.web.socket.WebSocketHandler
 import java.time.LocalDateTime
 
 const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
@@ -55,7 +54,6 @@ const val feedId = "d6b2f9df-3a15-4dbd-9789-fb62a6d58d0f"
 @MockitoBean(
   types = [
     ServerConfigResolver::class,
-    WebSocketHandler::class,
     FeedParserService::class,
     StatelessAuthService::class,
   ]
@@ -225,8 +223,7 @@ class FeedControllerIntTest {
   )
   fun `requesting legacy bucket will return redirect`(path: String) {
     // the redirect is built in the controller now, so it is asserted instead of stubbed
-    val restTemplate = TestRestTemplate()
-      .withRequestFactorySettings { it.withRedirects(ClientHttpRequestFactorySettings.Redirects.DONT_FOLLOW) }
+    val restTemplate = TestRestTemplate().withRedirects(HttpRedirects.DONT_FOLLOW)
 
     val response = restTemplate.getForEntity("${baseEndpoint}/$path", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)

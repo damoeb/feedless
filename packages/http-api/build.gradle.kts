@@ -16,14 +16,17 @@ dependencies {
   implementation(libs.spring.boot.web)
   implementation(libs.spring.boot.validation)
   implementation(libs.spring.boot.security)
-  implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+  implementation("tools.jackson.module:jackson-module-kotlin")
   implementation(libs.kotlin.reflect)
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.reactor)
   compileOnly("io.swagger.core.v3:swagger-annotations:2.2.30")
   testImplementation(libs.spring.boot.test)
+  testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.kotlinx.coroutines.test)
   testImplementation("org.mockito.kotlin:mockito-kotlin:5.4.0")
+  // Gradle can't derive a compatible junit-platform-launcher for this module's junit-bom version on its own
+  testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val openApiPackage = "org.migor.feedless.http.api"

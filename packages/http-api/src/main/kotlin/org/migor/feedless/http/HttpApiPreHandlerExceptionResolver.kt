@@ -1,6 +1,6 @@
 package org.migor.feedless.http
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import tools.jackson.databind.ObjectMapper
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.migor.feedless.AppLayer
@@ -44,7 +44,7 @@ class HttpApiPreHandlerExceptionResolver(
     } ?: return null
 
     response.status = entity.statusCode.value()
-    entity.headers.forEach { (name, values) -> values.forEach { response.addHeader(name, it) } }
+    entity.headers.forEach { name, values -> values.forEach { response.addHeader(name, it) } }
     response.contentType = MediaType.APPLICATION_JSON_VALUE
     objectMapper.writeValue(response.outputStream, entity.body)
     return ModelAndView()
