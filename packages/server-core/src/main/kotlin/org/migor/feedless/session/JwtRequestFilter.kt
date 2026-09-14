@@ -13,6 +13,7 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.util.HttpUtil
 import org.slf4j.LoggerFactory
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.context.SecurityContextHolder
@@ -31,6 +32,7 @@ import org.springframework.web.context.request.ServletRequestAttributes
 class JwtRequestFilter(
   private val jwtTokenIssuer: JwtTokenIssuer,
   private val tokenAuthenticator: TokenAuthenticator,
+  @Value("\${spring.graphql.websocket.path:}") private val webSocketPath: String = "",
 ) : Filter {
   private val log = LoggerFactory.getLogger(JwtRequestFilter::class.simpleName)
 
@@ -45,11 +47,14 @@ class JwtRequestFilter(
     val previousAttributes = RequestContextHolder.getRequestAttributes()
     withMdcCorrId(corrId) {
       try {
-        runBlocking {
-          runCatching {
-            SecurityContextHolder.getContext().authentication =
-              tokenAuthenticator.authenticate(jwtTokenIssuer.decodeJwt(request), request)
-          }.onFailure { log.debug(it.message) }
+        // Every WebSocket operation inherits the handshake's context, and the cross-site TOKEN cookie must not make it a user (DGS 9 parity).
+        if (!isWebSocketHandshake(request)) {
+          runBlocking {
+            runCatching {
+              SecurityContextHolder.getContext().authentication =
+                tokenAuthenticator.authenticate(jwtTokenIssuer.decodeJwt(request), request)
+            }.onFailure { log.debug(it.message) }
+          }
         }
         RequestContextHolder.setRequestAttributes(ServletRequestAttributes(request))
         chain.doFilter(request, response)
@@ -59,7 +64,8 @@ class JwtRequestFilter(
     }
   }
 
-
+  private fun isWebSocketHandshake(request: HttpServletRequest): Boolean =
+    webSocketPath.isNotEmpty() && request.requestURI.removePrefix(request.contextPath) == webSocketPath
 }
 
 /** Requests authenticate through [TokenAuthenticator], which decides which of the token's capabilities count. */
