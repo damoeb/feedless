@@ -81,6 +81,8 @@ data class EventsReportPluginParams(
   val templateVariant: String? = null,
   /** Der Abmeldelink dieses Reports. Ohne ihn ging jede Mail mit href="" raus. */
   val deactivationLink: String? = null,
+  /** Reports abuse for the whole address, not just this report. */
+  val abuseLink: String? = null,
 )
 
 fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {

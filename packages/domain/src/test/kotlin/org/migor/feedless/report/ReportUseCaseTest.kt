@@ -75,6 +75,7 @@ class ReportUseCaseTest {
   private lateinit var userRepository: UserRepository
   private lateinit var templateService: TemplateService
   private lateinit var mailService: MailService
+  private lateinit var reportRecipientRepository: ReportRecipientRepository
   private val reportPluginId = "org_feedless_event_report"
   private lateinit var pipelinePlugins: PipelinePlugins
 
@@ -115,6 +116,12 @@ class ReportUseCaseTest {
     // Nur der Eigentümer hat ein Konto; der anonyme Besucher nicht.
     `when`(userRepository.findById(repositoryOwnerId)).thenReturn(user)
 
+    reportRecipientRepository = mock(ReportRecipientRepository::class.java)
+    `when`(reportRecipientRepository.save(any(ReportRecipient::class.java))).thenAnswer { it.arguments[0] }
+    `when`(tokenIssuer.createJwtForRecipient(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("r").header("alg", "HS256").claim("recipient_id", "x").build()
+    )
+
     reportUseCase = ReportUseCase(
       reportRepository,
       cronScheduleRepository,
@@ -135,6 +142,7 @@ class ReportUseCaseTest {
       appConfig,
       userRepository,
       tokenIssuer,
+      reportRecipientRepository,
     )
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
@@ -233,8 +241,20 @@ class ReportUseCaseTest {
       verify(mailService).send(any(OutgoingMail::class.java))
       verify(templateService).renderTemplate(argThat<MailTemplateReportCreated> {
         it.params.deactivationLink.contains("/reports/delete/") &&
-          it.params.deactivationLink.contains("token=")
+          it.params.deactivationLink.contains("token=") &&
+          it.params.abuseLink.contains("/reports/abuse/")
       })
+    }
+
+  @Test
+  fun `stores the address normalized and resolves its recipient by it`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
+
+      reportUseCase.createReport(repositoryId, segment.copy(recipientEmail = "  Hans@Example.COM "))
+
+      assertThat(savedReport().recipientEmail).isEqualTo("hans@example.com")
+      verify(reportRecipientRepository).findByEmail("hans@example.com")
     }
 
   /**

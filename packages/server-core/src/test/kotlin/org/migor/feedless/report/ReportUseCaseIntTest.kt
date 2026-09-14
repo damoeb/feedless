@@ -152,6 +152,9 @@ class ReportUseCaseIntTest {
     whenever(jwtTokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
       Jwt.withTokenValue("token").header("alg", "HS256").claim("report_id", "x").build()
     )
+    whenever(jwtTokenIssuer.createJwtForRecipient(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("token").header("alg", "HS256").claim("recipient_id", "x").build()
+    )
 
     user = User(
       email = "test@test.com",
@@ -294,6 +297,7 @@ class ReportUseCaseIntTest {
         .doesNotContain("future-unreleased")
         // Jede Report-Mail braucht einen funktionierenden Abmeldelink.
         .contains("/reports/delete/")
+        .contains("/reports/abuse/")
         // Gescrapte Titel landen escaped in der Mail, nicht als HTML.
         .contains("future-released &lt;b&gt;bold&lt;/b&gt;")
         .doesNotContain("<b>bold</b>")

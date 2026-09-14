@@ -45,6 +45,7 @@ data class EventCalendarMailParams(
   val language: String,
   val events: List<ReportEventItem>,
   val deactivationLink: String,
+  val abuseLink: String,
 )
 
 data class MailTemplateEventCalendar(override val params: EventCalendarMailParams) :
@@ -79,6 +80,7 @@ class EventsReportPlugin() : ReportPlugin<EventsReportPluginParams> {
       language = params.language,
       events = documents.map { it.toReportEventItem(Locale.forLanguageTag(params.language)) },
       deactivationLink = params.deactivationLink ?: "",
+      abuseLink = params.abuseLink ?: "",
     )
     val eventCalendarMail = templateService.renderTemplate(
       MailTemplateEventCalendar(templateParams),

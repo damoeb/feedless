@@ -25,6 +25,7 @@ class FreemarkerTemplateServiceIntTest {
           ReportCreatedParams(
             language = "en",
             deactivationLink = "deactivationLink",
+            abuseLink = "abuseLink",
             reportName = "reportName",
             cronExpression = "cronExpression",
             nextScheduledAt = "nextScheduledAt",
@@ -64,7 +65,7 @@ class FreemarkerTemplateServiceIntTest {
 </table>
 
 <p style="margin-top: 20px;">
-If this wasn't you, or you no longer wish to receive this report, you can cancel it here:
+If you no longer wish to receive this report, you can cancel it here:
 </p>
 
 <p>
@@ -72,6 +73,10 @@ If this wasn't you, or you no longer wish to receive this report, you can cancel
 style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
 Cancel Report
 </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this address will only get reports you confirm.
 </p>
 
 </body>

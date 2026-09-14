@@ -103,6 +103,11 @@ class ReportJobExecutorTest {
     `when`(jwtTokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
       Jwt.withTokenValue("token").header("alg", "HS256").claim("report_id", "x").build()
     )
+    val reportRecipientRepository = mock(ReportRecipientRepository::class.java)
+    `when`(reportRecipientRepository.save(any(ReportRecipient::class.java))).thenAnswer { it.arguments[0] }
+    `when`(jwtTokenIssuer.createJwtForRecipient(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("token").header("alg", "HS256").claim("recipient_id", "x").build()
+    )
     reportUseCase = ReportUseCase(
       reportRepository,
       cronScheduleRepository,
@@ -119,6 +124,7 @@ class ReportJobExecutorTest {
       mock(PropertyService::class.java),
       userRepository,
       jwtTokenIssuer,
+      reportRecipientRepository,
     )
   }
 

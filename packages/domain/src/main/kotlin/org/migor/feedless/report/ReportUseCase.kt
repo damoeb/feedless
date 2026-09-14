@@ -85,12 +85,26 @@ class ReportUseCase(
   private val appConfig: AppConfig,
   private val userRepository: UserRepository,
   private val tokenIssuer: TokenIssuer,
+  private val reportRecipientRepository: ReportRecipientRepository,
 ) {
 
   /** The token names the report; holding it is the proof, since recipients usually have no account. */
   private fun deactivationLink(report: Report): String {
     val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
     return "${appConfig.apiGatewayUrl}${ApiUrls.reportDelete}/${report.id.uuid}?token=${token.tokenValue}"
+  }
+
+  private fun abuseLink(recipient: ReportRecipient): String {
+    val token = tokenIssuer.createJwtForRecipient(recipient.id.uuid.toString(), LINK_VALID_FOR_DAYS)
+    return "${appConfig.apiGatewayUrl}${ApiUrls.reportAbuse}/${recipient.id.uuid}?token=${token.tokenValue}"
+  }
+
+  /** A concurrent first subscription of the same address loses the insert and reads the winner. */
+  private fun recipientFor(email: String): ReportRecipient {
+    val normalized = normalizeEmail(email)
+    return reportRecipientRepository.findByEmail(normalized)
+      ?: runCatching { reportRecipientRepository.save(ReportRecipient(email = normalized)) }
+        .getOrElse { reportRecipientRepository.findByEmail(normalized) ?: throw it }
   }
 
   private val log = LoggerFactory.getLogger(ReportUseCase::class.simpleName)
@@ -104,7 +118,7 @@ class ReportUseCase(
     // Repositories schützt requireRead weiterhin.
     repositoryGuard.requireRead(repositoryId)
 
-    val email = segment.recipientEmail
+    val recipient = recipientFor(segment.recipientEmail)
 
     val startingAt = segment.startingAt
 
@@ -151,7 +165,7 @@ class ReportUseCase(
 
     val report = Report(
       recipientName = segment.recipientName,
-      recipientEmail = email,
+      recipientEmail = recipient.email,
 
       // no opt-in step: active at once, and every mail carries a cancel link
       authorized = true,
@@ -170,14 +184,15 @@ class ReportUseCase(
 
     meterRegistry.counter(AppMetrics.createReport)
     val saved = reportRepository.save(report)
-    sendConfirmationMail(saved, nextReportedAt)
+    sendConfirmationMail(saved, recipient, nextReportedAt)
     saved
   }
 
-  private suspend fun sendConfirmationMail(report: Report, nextReportedAt: LocalDateTime) {
+  private suspend fun sendConfirmationMail(report: Report, recipient: ReportRecipient, nextReportedAt: LocalDateTime) {
     val params = ReportCreatedParams(
       language = "de",
       deactivationLink = deactivationLink(report),
+      abuseLink = abuseLink(recipient),
       reportName = report.recipientName,
       cronExpression = report.cronSchedule?.cronExpression ?: "",
       nextScheduledAt = nextReportedAt.toString(),
@@ -268,6 +283,7 @@ class ReportUseCase(
           // eigene Vorlage gibt.
           templateVariant = repository.product.name,
           deactivationLink = deactivationLink(report),
+          abuseLink = abuseLink(recipientFor(report.recipientEmail)),
         ).toPluginExecutionJson(), LogCollector()
       )
   }
