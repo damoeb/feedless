@@ -5,6 +5,7 @@ import org.migor.feedless.AppProfiles
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.PageRequest
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -27,5 +28,15 @@ interface ReportDAO : JpaRepository<ReportEntity, UUID> {
     """
   )
   fun findAllEnabledPendingBatched(@Param("now") now: LocalDateTime, pageable: PageRequest): List<ReportEntity>
+
+  @Modifying
+  @Query(
+    value = """
+      update ReportEntity r set r.disabled = true, r.disabledAt = :now
+      where lower(trim(r.recipientEmail)) = :email
+      and r.disabled = false
+    """
+  )
+  fun disableAllByRecipientEmail(@Param("email") email: String, @Param("now") now: LocalDateTime): Int
 
 }

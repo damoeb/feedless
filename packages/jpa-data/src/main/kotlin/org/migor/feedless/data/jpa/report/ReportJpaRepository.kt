@@ -38,4 +38,8 @@ class ReportJpaRepository(private val reportDAO: ReportDAO) : ReportRepository {
     val pageable = PageRequest.of(0, 100)
     return reportDAO.findAllEnabledPendingBatched(now, pageable).map { it.toDomain() }
   }
+
+  @Transactional
+  override fun disableAllByRecipientEmail(email: String, now: LocalDateTime): Int =
+    reportDAO.disableAllByRecipientEmail(email, now)
 }

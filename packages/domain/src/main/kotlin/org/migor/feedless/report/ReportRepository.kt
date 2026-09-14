@@ -7,4 +7,5 @@ interface ReportRepository {
   fun deleteById(reportId: ReportId)
   fun findById(reportId: ReportId): Report?
   fun findAllPendingBatched(now: LocalDateTime): List<Report>
+  fun disableAllByRecipientEmail(email: String, now: LocalDateTime): Int
 }

@@ -22,6 +22,7 @@ import org.migor.feedless.plan.PlanId
 import org.migor.feedless.product.PricedProductId
 import org.migor.feedless.product.ProductId
 import org.migor.feedless.report.ReportId
+import org.migor.feedless.report.ReportRecipientId
 import org.migor.feedless.report.SegmentationId
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.repository.RepositoryId
@@ -61,6 +62,9 @@ interface IdMappers {
   // CronSchedule IDs
   fun mapCronScheduleId(value: UUID?): CronScheduleId? = value?.let { CronScheduleId(it) }
   fun mapCronScheduleId(value: CronScheduleId?): UUID? = value?.uuid
+
+  fun mapReportRecipientId(value: UUID?): ReportRecipientId? = value?.let { ReportRecipientId(it) }
+  fun mapReportRecipientId(value: ReportRecipientId?): UUID? = value?.uuid
 
   // BrowserAutomation IDs
   fun mapBrowserAutomationId(value: UUID?): BrowserAutomationId? = value?.let { BrowserAutomationId(it) }
