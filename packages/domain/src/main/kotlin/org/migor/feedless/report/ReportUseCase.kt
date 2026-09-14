@@ -6,6 +6,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.EntityVisibility
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.api.ApiUrls
 import org.migor.feedless.common.AppConfig
 import org.migor.feedless.session.TokenIssuer
@@ -40,7 +41,9 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.nextCronDate
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.template.MailTemplateReportConfirmRequest
 import org.migor.feedless.template.MailTemplateReportCreated
+import org.migor.feedless.template.ReportConfirmRequestParams
 import org.migor.feedless.template.ReportCreatedParams
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.UserRepository
@@ -86,12 +89,20 @@ class ReportUseCase(
   private val userRepository: UserRepository,
   private val tokenIssuer: TokenIssuer,
   private val reportRecipientRepository: ReportRecipientRepository,
+  @Value("\${app.report.subscription-mode:opt-out}") subscriptionModeSetting: String,
 ) {
+
+  private val subscriptionMode = ReportSubscriptionMode.parse(subscriptionModeSetting)
 
   /** The token names the report; holding it is the proof, since recipients usually have no account. */
   private fun deactivationLink(report: Report): String {
     val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
     return "${appConfig.apiGatewayUrl}${ApiUrls.reportDelete}/${report.id.uuid}?token=${token.tokenValue}"
+  }
+
+  private fun confirmationLink(report: Report): String {
+    val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
+    return "${appConfig.apiGatewayUrl}${ApiUrls.reportConfirm}/${report.id.uuid}?token=${token.tokenValue}"
   }
 
   private fun abuseLink(recipient: ReportRecipient): String {
@@ -119,6 +130,9 @@ class ReportUseCase(
     repositoryGuard.requireRead(repositoryId)
 
     val recipient = recipientFor(segment.recipientEmail)
+
+    // opt-out assumes no abuse; opt-in mode or an address whose owner reported abuse needs the owner's click
+    val needsConfirmation = subscriptionMode == ReportSubscriptionMode.OPT_IN || recipient.optInRequired
 
     val startingAt = segment.startingAt
 
@@ -167,9 +181,8 @@ class ReportUseCase(
       recipientName = segment.recipientName,
       recipientEmail = recipient.email,
 
-      // no opt-in step: active at once, and every mail carries a cancel link
-      authorized = true,
-      authorizedAt = LocalDateTime.now(),
+      authorized = !needsConfirmation,
+      authorizedAt = if (needsConfirmation) null else LocalDateTime.now(),
       segmentId = segmentation.id,
       reporterPlugin = PluginExecution(
         id = reporterPluginId,
@@ -184,7 +197,11 @@ class ReportUseCase(
 
     meterRegistry.counter(AppMetrics.createReport)
     val saved = reportRepository.save(report)
-    sendConfirmationMail(saved, recipient, nextReportedAt)
+    if (needsConfirmation) {
+      sendConfirmationRequest(saved, recipient)
+    } else {
+      sendConfirmationMail(saved, recipient, nextReportedAt)
+    }
     saved
   }
 
@@ -205,6 +222,51 @@ class ReportUseCase(
       htmlContent = body
     )
     mailService.send(mail)
+  }
+
+  private suspend fun sendConfirmationRequest(report: Report, recipient: ReportRecipient) {
+    val body = templateService.renderTemplate(
+      MailTemplateReportConfirmRequest(
+        ReportConfirmRequestParams(
+          language = "de",
+          confirmationLink = confirmationLink(report),
+          abuseLink = abuseLink(recipient),
+        )
+      )
+    )
+    mailService.send(
+      OutgoingMail(
+        from = mailSender,
+        to = listOf(report.recipientEmail),
+        subject = "Bitte bestätige dein Abo",
+        htmlContent = body
+      )
+    )
+  }
+
+  /** From the confirmation link: the signed token is the proof, so this bypasses ReportGuard. */
+  suspend fun confirmReportFromToken(reportId: ReportId) {
+    withContext(Dispatchers.IO) {
+      log.info("confirmReportFromToken reportId=$reportId")
+      val report = reportRepository.findById(reportId) ?: throw NotFoundException("Report $reportId not found")
+      // a report stopped by an abuse report stays stopped
+      if (!report.authorized && !report.disabled) {
+        reportRepository.save(report.copy(authorized = true, authorizedAt = LocalDateTime.now()))
+      }
+    }
+  }
+
+  /** From the abuse link: the address switches to opt-in and every report to it stops. */
+  suspend fun reportAbuse(recipientId: ReportRecipientId) {
+    withContext(Dispatchers.IO) {
+      log.info("reportAbuse recipientId=$recipientId")
+      val recipient = reportRecipientRepository.findById(recipientId)
+        ?: throw NotFoundException("Recipient $recipientId not found")
+      if (!recipient.optInRequired) {
+        reportRecipientRepository.save(recipient.copy(optInRequired = true))
+      }
+      reportRepository.disableAllByRecipientEmail(recipient.email, LocalDateTime.now())
+    }
   }
 
   /** For the cancel link in every mail: the signed token is the proof, so this bypasses ReportGuard. */

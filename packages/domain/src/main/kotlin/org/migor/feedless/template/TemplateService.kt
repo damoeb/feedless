@@ -16,6 +16,15 @@ data class ReportCreatedParams(
 data class MailTemplateReportCreated(override val params: ReportCreatedParams) :
   FreemarkerTemplate<ReportCreatedParams>("mail-report-created")
 
+data class ReportConfirmRequestParams(
+  val language: String,
+  val confirmationLink: String,
+  val abuseLink: String,
+)
+
+data class MailTemplateReportConfirmRequest(override val params: ReportConfirmRequestParams) :
+  FreemarkerTemplate<ReportConfirmRequestParams>("mail-report-confirm-request")
+
 data class AuthCodeMailParams(
   val codeValidUntil: String,
   val code: String,

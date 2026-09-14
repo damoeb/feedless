@@ -44,6 +44,9 @@ app:
   git:
     commit:
 
+  report:
+    # opt-out starts new subscriptions at once unless their address asked for opt-in; opt-in confirms every one
+    subscription-mode: ${APP_REPORT_SUBSCRIPTION_MODE:opt-out}
   dateFormat: dd-MM-yyyy
   timeFormat: HH:mm
   timezone: UTC

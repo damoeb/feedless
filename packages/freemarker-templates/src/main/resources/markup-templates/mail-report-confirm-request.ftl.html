@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+
+<#if language == "de">
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Geplanter Bericht</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Bitte bestätige dein Abo</h2>
+<p>Für diese Adresse wurde ein Bericht bestellt. Er startet erst, wenn du ihn bestätigst:</p>
+
+<p>
+  <a href="${confirmationLink}"
+     style="display: inline-block; padding: 10px 15px; background-color: #12775C; color: #fff; text-decoration: none; border-radius: 4px;">
+    Abo bestätigen
+  </a>
+</p>
+
+<p>Ohne deine Bestätigung schicken wir nichts.</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Du hast das nicht selbst abonniert? <a href="${abuseLink}">Melde es hier</a>, dann bekommt diese Adresse nur noch Berichte, die du selbst bestätigst.
+</p>
+
+</body>
+</html>
+<#else>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Scheduled Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Please confirm your subscription</h2>
+<p>A report was ordered for this address. It starts only once you confirm it:</p>
+
+<p>
+  <a href="${confirmationLink}"
+     style="display: inline-block; padding: 10px 15px; background-color: #12775C; color: #fff; text-decoration: none; border-radius: 4px;">
+    Confirm subscription
+  </a>
+</p>
+
+<p>Without your confirmation we send nothing.</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Didn't subscribe yourself? <a href="${abuseLink}">Report it here</a> and this address will only get reports you confirm.
+</p>
+
+</body>
+</html>
+</#if>

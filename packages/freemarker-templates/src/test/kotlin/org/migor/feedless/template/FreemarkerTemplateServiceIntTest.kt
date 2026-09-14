@@ -86,6 +86,51 @@ Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this addre
   }
 
   @Test
+  fun testMailTemplateReportConfirmRequest() {
+    assertThat(
+      renderTemplate(
+        MailTemplateReportConfirmRequest(
+          ReportConfirmRequestParams(
+            language = "en",
+            confirmationLink = "confirmationLink",
+            abuseLink = "abuseLink",
+          )
+        )
+      )
+    ).isEqualTo(
+      """
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scheduled Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Please confirm your subscription</h2>
+<p>A report was ordered for this address. It starts only once you confirm it:</p>
+
+<p>
+<a href="confirmationLink"
+style="display: inline-block; padding: 10px 15px; background-color: #12775C; color: #fff; text-decoration: none; border-radius: 4px;">
+Confirm subscription
+</a>
+</p>
+
+<p>Without your confirmation we send nothing.</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this address will only get reports you confirm.
+</p>
+
+</body>
+</html>
+""".trimAllIndents()
+    )
+  }
+
+  @Test
   fun testTemplateVisualDiffChangeDetectedMail() {
     val params = VisualDiffChangeDetectedParams(
       trackerTitle = "trackerTitle",

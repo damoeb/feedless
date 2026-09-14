@@ -4,6 +4,7 @@ import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.EntityVisibility
@@ -13,6 +14,8 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
+import org.migor.feedless.actions.PluginExecutionJson
+import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.AppConfig
 import org.migor.feedless.cronSchedule.CronSchedule
@@ -29,6 +32,7 @@ import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.session.TokenIssuer
+import org.migor.feedless.template.MailTemplateReportConfirmRequest
 import org.migor.feedless.template.MailTemplateReportCreated
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
@@ -122,28 +126,7 @@ class ReportUseCaseTest {
       Jwt.withTokenValue("r").header("alg", "HS256").claim("recipient_id", "x").build()
     )
 
-    reportUseCase = ReportUseCase(
-      reportRepository,
-      cronScheduleRepository,
-      repositoryRepository,
-      segmentationRepository,
-      mock(MeterRegistry::class.java),
-      RepositoryGuard(
-        repositoryRepository,
-        UserGuard(userRepository),
-        mock(UserGroupAssignmentRepository::class.java),
-      ),
-      templateService,
-      pipelinePlugins,
-      mailService,
-      mock(ReportGuard::class.java),
-      documentRepository,
-      "no-reply@test.local",
-      appConfig,
-      userRepository,
-      tokenIssuer,
-      reportRecipientRepository,
-    )
+    reportUseCase = newUseCase("opt-out")
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
     `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
@@ -158,6 +141,30 @@ class ReportUseCaseTest {
 
     `when`(templateService.renderTemplate(any2<MailTemplateReportCreated>())).thenReturn("")
   }
+
+  private fun newUseCase(subscriptionMode: String) = ReportUseCase(
+    reportRepository,
+    cronScheduleRepository,
+    repositoryRepository,
+    segmentationRepository,
+    mock(MeterRegistry::class.java),
+    RepositoryGuard(
+      repositoryRepository,
+      UserGuard(userRepository),
+      mock(UserGroupAssignmentRepository::class.java),
+    ),
+    templateService,
+    pipelinePlugins,
+    mailService,
+    mock(ReportGuard::class.java),
+    documentRepository,
+    "no-reply@test.local",
+    appConfig,
+    userRepository,
+    tokenIssuer,
+    reportRecipientRepository,
+    subscriptionMode,
+  )
 
   // mockito-kotlin statt ArgumentCaptor.forClass: dessen capture() liefert null
   // an einen Nicht-null-Parameter, und die abgebrochene Verifikation vergiftet
@@ -283,4 +290,91 @@ class ReportUseCaseTest {
 
       verify(reportRepository).findAllPendingBatched(any(LocalDateTime::class.java))
     }
+
+  private fun flagged(email: String = "hans@example.com") {
+    `when`(reportRecipientRepository.findByEmail(email))
+      .thenReturn(ReportRecipient(email = email, optInRequired = true))
+  }
+
+  @Test
+  fun `a flagged address gets an inactive report and a confirmation request`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
+      flagged()
+
+      reportUseCase.createReport(repositoryId, segment)
+
+      assertThat(savedReport().authorized).isFalse()
+      verify(templateService).renderTemplate(argThat<MailTemplateReportConfirmRequest> {
+        it.params.confirmationLink.contains("/reports/confirm/") &&
+          it.params.abuseLink.contains("/reports/abuse/")
+      })
+      verify(templateService, never()).renderTemplate(any(MailTemplateReportCreated::class.java))
+    }
+
+  @Test
+  fun `in opt-in mode every new report waits for confirmation`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
+      `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
+      reportUseCase = newUseCase("opt-in")
+
+      reportUseCase.createReport(repositoryId, segment)
+
+      assertThat(savedReport().authorized).isFalse()
+    }
+
+  @Test
+  fun `rejects an unknown subscription mode`() {
+    assertThatThrownBy { newUseCase("sometimes") }.isInstanceOf(IllegalArgumentException::class.java)
+  }
+
+  @Test
+  fun `reporting abuse flags the address and stops its reports`() = runTest {
+    val recipient = ReportRecipient(email = "hans@example.com")
+    `when`(reportRecipientRepository.findById(recipient.id)).thenReturn(recipient)
+
+    reportUseCase.reportAbuse(recipient.id)
+
+    verify(reportRecipientRepository).save(argThat<ReportRecipient> { it.id == recipient.id && it.optInRequired })
+    verify(reportRepository).disableAllByRecipientEmail(eq("hans@example.com"), any(LocalDateTime::class.java))
+  }
+
+  @Test
+  fun `reporting abuse again keeps the flag and still stops reports`() = runTest {
+    val recipient = ReportRecipient(email = "hans@example.com", optInRequired = true)
+    `when`(reportRecipientRepository.findById(recipient.id)).thenReturn(recipient)
+
+    reportUseCase.reportAbuse(recipient.id)
+
+    verify(reportRecipientRepository, never()).save(any(ReportRecipient::class.java))
+    verify(reportRepository).disableAllByRecipientEmail(eq("hans@example.com"), any(LocalDateTime::class.java))
+  }
+
+  private fun storedReport(authorized: Boolean, disabled: Boolean = false): Report = Report(
+    recipientEmail = "hans@example.com",
+    recipientName = "Hans Muster",
+    reporterPlugin = PluginExecution(id = reportPluginId, params = PluginExecutionJson()),
+    segmentId = SegmentationId(),
+    cronScheduleId = CronSchedule(cronExpression = WEEKLY_REPORT_CRON).id,
+    authorized = authorized,
+    disabled = disabled,
+  ).also { `when`(reportRepository.findById(it.id)).thenReturn(it) }
+
+  @Test
+  fun `confirming activates a pending report`() = runTest {
+    val report = storedReport(authorized = false)
+
+    reportUseCase.confirmReportFromToken(report.id)
+
+    assertThat(savedReport().authorized).isTrue()
+  }
+
+  @Test
+  fun `confirming does not revive a report stopped by an abuse report`() = runTest {
+    val report = storedReport(authorized = false, disabled = true)
+
+    reportUseCase.confirmReportFromToken(report.id)
+
+    verify(reportRepository, never()).save(any(Report::class.java))
+  }
 }

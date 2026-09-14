@@ -125,6 +125,7 @@ class ReportJobExecutorTest {
       userRepository,
       jwtTokenIssuer,
       reportRecipientRepository,
+      "opt-out",
     )
   }
 
