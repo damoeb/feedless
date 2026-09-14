@@ -19,14 +19,23 @@
         Tokens you created for API or calendar access. Create a new one or revoke existing.
       </p>
 
+      @if (createdSecret) {
+        <ion-item lines="none" class="ion-margin-top">
+          <ion-label class="ion-text-wrap">
+            <p>Copy your new token now. It won't be shown again.</p>
+            <code class="secret-value">{{ createdSecret.value }}</code>
+          </ion-label>
+        </ion-item>
+      }
+
       @if (user?.secrets?.length) {
         <ion-list lines="full" class="ion-margin-top">
           @for (secret of user.secrets; track secret.id) {
             <ion-item>
               <ion-label>
-                <span [title]="secret.id">{{ secret.valueMasked ?? secret.type ?? secret.id }}</span>
+                <span [title]="secret.id">{{ secret.value }}</span>
                 @if (secret.lastUsed) {
-                  <ion-note>Last used: {{ secret.lastUsed }}</ion-note>
+                  <ion-note>Last used: {{ secret.lastUsed | date: 'medium' }}</ion-note>
                 }
               </ion-label>
               <ion-button
