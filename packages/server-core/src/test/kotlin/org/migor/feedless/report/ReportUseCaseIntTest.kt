@@ -129,6 +129,9 @@ class ReportUseCaseIntTest {
   @Autowired
   private lateinit var groupRepository: GroupRepository
 
+  @Autowired
+  private lateinit var reportRecipientRepository: ReportRecipientRepository
+
   @MockitoBean
   private lateinit var mailService: MailService
 
@@ -328,6 +331,47 @@ class ReportUseCaseIntTest {
 
       assertThat(reportRepository.findById(report.id)).isNotNull
       assertThat(reportRepository.findById(report.id)!!.userId).isNull()
+    }
+
+  @Test
+  fun `reporting abuse stops every report to the address, whatever its case`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      val report = createReport()
+      // a row stored before addresses were normalized
+      reportRepository.save(report.copy(recipientEmail = "EMAIL@Somewhere"))
+      val recipient = reportRecipientRepository.findByEmail("email@somewhere")!!
+
+      reportUseCase.reportAbuse(recipient.id)
+      reset(mailService)
+      reportUseCase.processReportJobs()
+
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
+      assertThat(reportRepository.findById(report.id)!!.disabled).isTrue()
+      assertThat(reportRecipientRepository.findById(recipient.id)!!.optInRequired).isTrue()
+    }
+
+  @Test
+  fun `after an abuse report a new subscription waits for its confirmation`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      createReport()
+      reportUseCase.reportAbuse(reportRecipientRepository.findByEmail("email@somewhere")!!.id)
+      reset(mailService)
+
+      val pending = createReport()
+
+      assertThat(reportRepository.findById(pending.id)!!.authorized).isFalse()
+      val captor = argumentCaptor<OutgoingMail>()
+      verify(mailService).send(captor.capture())
+      assertThat(captor.firstValue.subject).isEqualTo("Bitte bestätige dein Abo")
+      assertThat(captor.firstValue.htmlContent).contains("/reports/confirm/").contains("/reports/abuse/")
+
+      reset(mailService)
+      reportUseCase.processReportJobs()
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
+
+      reportUseCase.confirmReportFromToken(pending.id)
+      reportUseCase.processReportJobs()
+      verify(mailService).send(any(OutgoingMail::class.java))
     }
 
   private suspend fun createReport(): Report =
