@@ -38,5 +38,4 @@ interface ReportDAO : JpaRepository<ReportEntity, UUID> {
     """
   )
   fun disableAllByRecipientEmail(@Param("email") email: String, @Param("now") now: LocalDateTime): Int
-
 }

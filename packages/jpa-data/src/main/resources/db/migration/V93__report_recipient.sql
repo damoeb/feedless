@@ -9,4 +9,4 @@ CREATE TABLE t_report_recipient
 );
 
 -- Serves disabling every report to one address, which matches on the normalized address.
-CREATE INDEX report_recipient_email_normalized_idx ON t_report (lower(trim(recipient_email)));
+CREATE INDEX report_normalized_recipient_email_idx ON t_report (lower(trim(recipient_email)));

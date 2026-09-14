@@ -112,4 +112,10 @@ class ReportLinksSecurityIntTest {
 
     assertThat(get("${ApiUrls.reportAbuse}/$id?token=$token").statusCode).isEqualTo(HttpStatus.OK)
   }
+
+  /** Guards against a filter chain that turned permissive everywhere. */
+  @Test
+  fun `a protected path still needs login`() {
+    assertThat(get("/api/v1/user").statusCode).isEqualTo(HttpStatus.UNAUTHORIZED)
+  }
 }

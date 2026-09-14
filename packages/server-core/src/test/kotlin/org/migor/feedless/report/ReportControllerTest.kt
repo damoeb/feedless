@@ -87,6 +87,26 @@ class ReportControllerTest {
   }
 
   @Test
+  fun `rejects an abuse token that names another recipient`() {
+    tokenDecodesTo(tokenWith(JwtParameterNames.RECIPIENT_ID, ReportRecipientId().uuid.toString()))
+
+    assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
+      runTest { controller.reportAbuse(recipientId.uuid.toString(), "token") }
+    }
+    verifyBlocking(reportUseCase, never()) { reportAbuse(any()) }
+  }
+
+  @Test
+  fun `rejects a confirm token that names another report`() {
+    tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, ReportId().uuid.toString()))
+
+    assertThatExceptionOfType(AccessDeniedException::class.java).isThrownBy {
+      runTest { controller.confirmReport(reportId.uuid.toString(), "token") }
+    }
+    verifyBlocking(reportUseCase, never()) { confirmReportFromToken(any()) }
+  }
+
+  @Test
   fun `rejects a report token on the abuse link`() {
     tokenDecodesTo(tokenWith(JwtParameterNames.REPORT_ID, recipientId.uuid.toString()))
 

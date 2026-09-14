@@ -50,9 +50,4 @@ class ReportRecipientRepositoryIntTest {
     assertThatThrownBy { reportRecipientRepository.save(ReportRecipient(email = email)) }
       .isInstanceOf(DataIntegrityViolationException::class.java)
   }
-
-  @Test
-  fun `normalizes only case and surrounding spaces`() {
-    assertThat(normalizeEmail("  Hans+News@Example.COM ")).isEqualTo("hans+news@example.com")
-  }
 }

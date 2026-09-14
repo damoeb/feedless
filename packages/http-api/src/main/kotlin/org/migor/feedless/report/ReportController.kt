@@ -38,8 +38,8 @@ class ReportController(
     @PathVariable("reportId") reportId: String,
     @RequestParam("token") token: String,
   ): ResponseEntity<String> {
-    log.info("GET deleteReport id=$reportId")
     requireClaim(token, JwtParameterNames.REPORT_ID, reportId)
+    log.info("GET deleteReport id=$reportId")
     reportUseCase.deleteReportFromToken(ReportId(reportId))
     return ResponseEntity.ok().body("report deleted")
   }
@@ -49,8 +49,8 @@ class ReportController(
     @PathVariable("reportId") reportId: String,
     @RequestParam("token") token: String,
   ): ResponseEntity<String> {
-    log.info("GET confirmReport id=$reportId")
     requireClaim(token, JwtParameterNames.REPORT_ID, reportId)
+    log.info("GET confirmReport id=$reportId")
     reportUseCase.confirmReportFromToken(ReportId(reportId))
     return ResponseEntity.ok().body("report confirmed")
   }
@@ -60,8 +60,8 @@ class ReportController(
     @PathVariable("recipientId") recipientId: String,
     @RequestParam("token") token: String,
   ): ResponseEntity<String> {
-    log.info("GET reportAbuse recipientId=$recipientId")
     requireClaim(token, JwtParameterNames.RECIPIENT_ID, recipientId)
+    log.info("GET reportAbuse recipientId=$recipientId")
     reportUseCase.reportAbuse(ReportRecipientId(recipientId))
     return ResponseEntity.ok()
       .contentType(MediaType.TEXT_HTML)
