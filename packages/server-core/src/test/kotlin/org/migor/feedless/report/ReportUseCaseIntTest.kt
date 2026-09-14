@@ -60,6 +60,7 @@ import org.mockito.kotlin.verify
 import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
@@ -131,6 +132,9 @@ class ReportUseCaseIntTest {
 
   @Autowired
   private lateinit var reportRecipientRepository: ReportRecipientRepository
+
+  @Autowired
+  private lateinit var jdbcTemplate: JdbcTemplate
 
   @MockitoBean
   private lateinit var mailService: MailService
@@ -338,7 +342,7 @@ class ReportUseCaseIntTest {
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
       val report = createReport()
       // a row stored before addresses were normalized
-      reportRepository.save(report.copy(recipientEmail = "EMAIL@Somewhere"))
+      jdbcTemplate.update("UPDATE t_report SET recipient_email = ? WHERE id = ?", " EMAIL@Somewhere ", report.id.uuid)
       val recipient = reportRecipientRepository.findByEmail("email@somewhere")!!
 
       reportUseCase.reportAbuse(recipient.id)
