@@ -146,6 +146,8 @@ export class CodeEditorComponent
 
   readonly lineNumbers = input<boolean>(true);
 
+  readonly headline = input<boolean>(false);
+
   readonly extensions = input<Extension[]>([]);
 
   // @Input()
@@ -198,7 +200,6 @@ export class CodeEditorComponent
       highlightSpecialChars(),
       foldGutter(),
       lineHighlightField,
-      decorateFirstLine,
       decorateBlockquote,
       decorateEmptyActiveLine,
       drawSelection(),
@@ -326,6 +327,9 @@ export class CodeEditorComponent
       // }, 300)),
     ];
 
+    if (this.headline()) {
+      extensions.push(decorateFirstLine);
+    }
     if (this.lineNumbers()) {
       extensions.push(lineNumbers());
     }
