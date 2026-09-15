@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import type { MockedObject } from 'vitest';
-import { EventCalendarPage } from './event-calendar.page';
+import { EventCalendarPage, getPreviousLocations } from './event-calendar.page';
 import {
   AppTestModule,
   mockEvents,
@@ -13,6 +13,44 @@ import { EventService } from '../../event.service';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { AppConfigService } from '@feedless/components';
 import { of } from 'rxjs';
+
+describe('getPreviousLocations', () => {
+  const aarau = {
+    lat: 47.39,
+    lng: 8.04,
+    place: 'Aarau',
+    area: 'AG',
+    countryCode: 'CH',
+    displayName: 'Aarau',
+  };
+
+  afterEach(() => localStorage.clear());
+
+  it('returns the saved locations', () => {
+    localStorage.setItem('savedLocations', JSON.stringify([aarau]));
+    expect(getPreviousLocations(true)).toEqual([aarau]);
+  });
+
+  it('drops null and incomplete entries left by older versions', () => {
+    localStorage.setItem(
+      'savedLocations',
+      JSON.stringify([null, { lat: 47.1, lon: 8.5, place: 'Zug' }, aarau]),
+    );
+    expect(getPreviousLocations(true)).toEqual([aarau]);
+  });
+
+  it('returns nothing for unparseable or non-array values', () => {
+    localStorage.setItem('savedLocations', '{broken');
+    expect(getPreviousLocations(true)).toEqual([]);
+    localStorage.setItem('savedLocations', JSON.stringify({ lat: 1 }));
+    expect(getPreviousLocations(true)).toEqual([]);
+  });
+
+  it('returns nothing outside the browser', () => {
+    localStorage.setItem('savedLocations', JSON.stringify([aarau]));
+    expect(getPreviousLocations(false)).toEqual([]);
+  });
+});
 
 describe('EventCalendarPage', () => {
   let component: EventCalendarPage;

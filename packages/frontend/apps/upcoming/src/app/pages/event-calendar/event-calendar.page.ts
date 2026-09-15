@@ -808,11 +808,28 @@ export class EventCalendarPage implements OnInit, OnDestroy {
 }
 
 export function getPreviousLocations(isBrowser: boolean): NamedLatLon[] {
-  if (isBrowser) {
-    return JSON.parse(localStorage.getItem('savedLocations') || '[]');
-  } else {
+  if (!isBrowser) {
     return [];
   }
+  let stored: unknown;
+  try {
+    stored = JSON.parse(localStorage.getItem('savedLocations') || '[]');
+  } catch {
+    return [];
+  }
+  return Array.isArray(stored) ? stored.filter(isSavedLocation) : [];
+}
+
+// Storage outlives app versions, so older shapes (null, lon instead of lng) still turn up.
+function isSavedLocation(value: unknown): value is NamedLatLon {
+  const location = value as Partial<NamedLatLon> | null;
+  return (
+    typeof location?.lat === 'number' &&
+    typeof location.lng === 'number' &&
+    (['place', 'area', 'countryCode', 'displayName'] as const).every(
+      (key) => typeof location[key] === 'string',
+    )
+  );
 }
 
 export function getWeekday(date: Dayjs): string {
