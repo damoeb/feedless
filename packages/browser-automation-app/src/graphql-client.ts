@@ -13,6 +13,7 @@ import { arch, platform } from 'os';
 import {
   AgentEvent,
   RegisterAgent,
+  RegisterAgentInput,
   RegisterAgentSubscription,
   RegisterAgentSubscriptionVariables,
   SubmitAgentDataInput,
@@ -21,6 +22,35 @@ import {
   SubmitAgentJobDataMutationVariables,
 } from './generated/graphql';
 import { Logger } from '@nestjs/common';
+
+export type AgentRegistration = {
+  name: string;
+  version: string;
+  connectionId: string;
+  email: string;
+  secretKey?: string;
+};
+
+// An agent on a host the core trusts may connect without a secret key.
+export function registerAgentInput({
+  name,
+  version,
+  connectionId,
+  email,
+  secretKey,
+}: AgentRegistration): Omit<RegisterAgentInput, 'secretKey'> &
+  Partial<Pick<RegisterAgentInput, 'secretKey'>> {
+  return {
+    name,
+    version,
+    connectionId,
+    os: {
+      arch: arch(),
+      platform: platform(),
+    },
+    ...(secretKey?.trim() ? { secretKey: { email, secretKey } } : {}),
+  };
+}
 
 // should be a builder
 export class GraphqlClient {
@@ -35,7 +65,7 @@ export class GraphqlClient {
 
   authenticateAgent(
     email: string,
-    secretKey: string,
+    secretKey: string | undefined,
     version: string,
   ): Observable<AgentEvent> {
     // console.log(`host: ${this.host}`);
@@ -72,7 +102,7 @@ export class GraphqlClient {
   private subscribeAgent(
     agentName: string,
     email: string,
-    secretKey: string,
+    secretKey: string | undefined,
     version: string,
     connectionId: string,
   ): Observable<AgentEvent> {
@@ -81,19 +111,14 @@ export class GraphqlClient {
         {
           query: RegisterAgent,
           variables: {
-            data: {
+            // The schema still requires secretKey; drop the cast once it is optional.
+            data: registerAgentInput({
               name: agentName,
               version,
               connectionId,
-              os: {
-                arch: arch(),
-                platform: platform(),
-              },
-              secretKey: {
-                email,
-                secretKey,
-              },
-            },
+              email,
+              secretKey,
+            }) as RegisterAgentInput,
           },
         },
       )
