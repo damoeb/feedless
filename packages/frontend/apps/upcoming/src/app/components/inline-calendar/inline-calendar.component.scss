@@ -58,3 +58,32 @@
     //background: var(--ion-color-light);
   }
 }
+
+// All seven days share one phone-width row, so each day gets ~40px.
+@media (max-width: 576px) {
+  .calendar-row,
+  .calendar-days {
+    column-gap: 0.125rem;
+  }
+
+  .calendar-days > * {
+    min-width: 0;
+  }
+
+  .calendar-day {
+    padding: 0.5rem 0;
+    font-size: 0.75rem;
+
+    .day-of-month {
+      font-size: 1.25rem;
+    }
+
+    .nowrap {
+      white-space: normal;
+    }
+  }
+
+  .forward-in-calendar {
+    font-size: 1.5rem;
+  }
+}
