@@ -22,6 +22,9 @@ kotlin { jvmToolchain(21) }
 //}
 kotlin.sourceSets["main"].kotlin.srcDir(layout.buildDirectory.dir("generated/sources/dgs-codegen"))
 
+// DGS-generated types annotate constructor properties with @JsonProperty
+kotlin { compilerOptions { freeCompilerArgs.add("-Xannotation-default-target=param-property") } }
+
 
 dependencies {
   implementation(platform(libs.spring.boot.bom))

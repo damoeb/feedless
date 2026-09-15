@@ -23,7 +23,7 @@ class SessionTokenPortAdapter(
       val jwt = authService.authenticateUser(email, secretKey)
       return AuthToken(jwt.tokenValue)
     } catch (e: NotFoundException) {
-      throw AuthUserNotFoundException(e.message ?: "user not found")
+      throw AuthUserNotFoundException(e.message)
     } catch (e: IllegalArgumentException) {
       throw AuthCredentialsException(e.message ?: "invalid credentials")
     }

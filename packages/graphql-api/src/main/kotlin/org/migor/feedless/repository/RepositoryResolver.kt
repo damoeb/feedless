@@ -91,7 +91,7 @@ class RepositoryResolver(
         repositoryUseCase.findAllByUserId(pageable, whereFilter, userId)
           .map { it.toDto(it.ownerId == userId) }
       } else {
-        val capabilityId = CapabilityId(data.capability!!)
+        val capabilityId = CapabilityId(data.capability)
         if (!capabilityService.hasCapability(capabilityId)) {
           throw IllegalArgumentException("Capability ${data.capability} is not present")
         }

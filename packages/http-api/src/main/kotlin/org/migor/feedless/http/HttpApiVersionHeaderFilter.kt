@@ -17,7 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class HttpApiVersionHeaderFilter(
-  @Value("\${app.version}") private val appVersion: String,
+  @param:Value("\${app.version}") private val appVersion: String,
 ) : OncePerRequestFilter() {
 
   companion object {

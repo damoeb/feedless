@@ -161,8 +161,8 @@ class DocumentUseCase(
       .findAllByRepositoryIdAndIdIn(
         repositoryId,
         when {
-          documentIds.`in` != null -> documentIds.`in`!!.map { DocumentId(it) }
-          documentIds.eq != null -> listOf(DocumentId(documentIds.eq!!))
+          documentIds.`in` != null -> documentIds.`in`.map { DocumentId(it) }
+          documentIds.eq != null -> listOf(DocumentId(documentIds.eq))
           else -> throw IllegalArgumentException("operation not supported")
         },
       )

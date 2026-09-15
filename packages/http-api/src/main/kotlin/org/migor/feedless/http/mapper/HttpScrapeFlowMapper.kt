@@ -53,7 +53,7 @@ class HttpScrapeFlowMapper : StoredFlowParser {
       id = body.id?.let { SourceId(it) } ?: SourceId(),
       title = body.title,
       tags = body.tags?.toTypedArray(),
-      latLon = body.latLng?.let { LatLonPoint(it.lat.toDouble(), it.lng.toDouble()) },
+      latLon = body.latLng?.let { LatLonPoint(it.lat, it.lng) },
       actions = toDomainActions(body.flow),
       lastErrorMessage = body.lastErrorMessage,
     )

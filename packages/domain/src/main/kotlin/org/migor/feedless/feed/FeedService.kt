@@ -131,7 +131,7 @@ class FeedService(
       // Reuse the claim requireLegacyTokenAccess already checked, so this never resolves it a second, independent time.
       val claim = access?.claim
       val hasExpiredTrial = claim?.createdAt?.isBefore(LocalDateTime.now().minusDays(30)) ?: requiresToken
-      val hasValidContract = claim?.repositoryId?.let { hasUserValidContract(claim.repositoryId!!) } ?: false
+      val hasValidContract = claim?.repositoryId?.let { hasUserValidContract(it) } ?: false
 
       val fromRepository = suspend { fetchFeedFromRepository(claim!!.repositoryId!!, publicFeedUrl) }
       val fromUrl = suspend { fromUrlLazy().applyFilter(filter) }

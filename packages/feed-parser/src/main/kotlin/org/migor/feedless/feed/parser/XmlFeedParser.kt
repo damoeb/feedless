@@ -280,5 +280,5 @@ class XmlFeedParser : FeedBodyParser {
 }
 
 private fun SyndPerson.toJsonAuthor(): JsonAuthor {
-  return JsonAuthor(name = name, url = uri?.toString(), email = email)
+  return JsonAuthor(name = name, url = uri, email = email)
 }

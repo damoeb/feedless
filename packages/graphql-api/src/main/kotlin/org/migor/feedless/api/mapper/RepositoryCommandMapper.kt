@@ -74,9 +74,9 @@ fun SourcesUpdateInput.toDomain(): RepositorySourcesUpdate {
         tags = sourceUpdate.data.tags?.set,
         disabled = sourceUpdate.data.disabled?.set,
         latLng = sourceUpdate.data.latLng?.set?.let { LatLonPoint(it.lat, it.lng) },
-        clearLatLng = sourceUpdate.data.latLng != null && sourceUpdate.data.latLng?.set == null,
+        clearLatLng = sourceUpdate.data.latLng != null && sourceUpdate.data.latLng.set == null,
         actions = sourceUpdate.data.flow?.set?.scrapeFlowFromDto(),
-        clearActions = sourceUpdate.data.flow != null && sourceUpdate.data.flow?.set == null,
+        clearActions = sourceUpdate.data.flow != null && sourceUpdate.data.flow.set == null,
       )
     },
     remove = remove?.map { SourceId(it) },
