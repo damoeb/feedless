@@ -9,6 +9,7 @@
 - **Review:** in-session
 - **Impl:** same branch
 - **Approved:** 2026-09-15, damoeb, in-session
+- **Started:** 2026-09-15, damoeb, `feature/user-secret-name-last-used`
 
 ## Approval
 
