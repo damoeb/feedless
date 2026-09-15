@@ -68,7 +68,7 @@
     <ion-row style="opacity: 0.5">
       <ion-col size="1" class="ion-text-center">Status</ion-col>
       <ion-col size="6" class="ion-padding-start">Description</ion-col>
-      <ion-col size="3">Refreshed Last</ion-col>
+      <ion-col size="3">Last Harvest</ion-col>
     </ion-row>
     @if (loadingSources) {
       <ion-progress-bar color="medium" type="indeterminate"></ion-progress-bar>
@@ -106,11 +106,15 @@
         </ion-col>
         <ion-col size="3" style="align-content: center" class="nowrap">
           @if (source.lastRefreshedAt) {
+            @let itemsAdded = lastItemsAdded(source);
             <ion-text
-              title="last retrieval"
+              title="Items found by the last harvest, and how many of them were new"
               [color]="source.lastRecordsRetrieved === 0 ? 'danger' : undefined"
             >
-              {{ source.lastRecordsRetrieved }} items
+              {{ source.lastRecordsRetrieved }} found
+              @if (itemsAdded !== undefined) {
+                · {{ itemsAdded }} new
+              }
               <ion-text color="medium"> ({{ fromNow(source.lastRefreshedAt) }})</ion-text>
             </ion-text>
 

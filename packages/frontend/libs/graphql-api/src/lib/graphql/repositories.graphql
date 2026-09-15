@@ -82,6 +82,10 @@ query sourcesByRepository(
   repository(data: $repository) {
     sources(cursor: $cursor, where: $where, order: $order) {
       ...SourceFragment
+      harvests {
+        itemsAdded
+        finishedAt
+      }
     }
   }
 }
