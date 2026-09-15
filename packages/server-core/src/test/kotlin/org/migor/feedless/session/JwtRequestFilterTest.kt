@@ -125,7 +125,7 @@ class JwtRequestFilterTest {
   }
 
   private fun authenticationInChain(request: MockHttpServletRequest): Authentication? {
-    val authenticating = JwtRequestFilter(jwtTokenIssuer, TokenAuthenticator(mock(UserGroupAssignmentRepository::class.java)))
+    val authenticating = JwtRequestFilter(jwtTokenIssuer, TokenAuthenticator(mock(UserGroupAssignmentRepository::class.java), mock(AuthService::class.java)))
     var seen: Authentication? = null
     authenticating.doFilter(request, MockHttpServletResponse()) { _, _ ->
       seen = SecurityContextHolder.getContext().authentication

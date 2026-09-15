@@ -52,6 +52,7 @@ mutation logout {
 
 fragment SecretFragment on UserSecret {
   id
+  name
   validUntil
   type
   lastUsed
@@ -59,8 +60,8 @@ fragment SecretFragment on UserSecret {
   valueMasked
 }
 
-mutation createUserSecret {
-  createUserSecret {
+mutation createUserSecret($data: CreateUserSecretInput!) {
+  createUserSecret(data: $data) {
     ...SecretFragment
   }
 }

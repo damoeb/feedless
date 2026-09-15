@@ -16,4 +16,7 @@ abstract class AuthService {
   abstract suspend fun findUserById(userId: UserId): User?
   abstract suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret?
   abstract suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime)
+
+  /** True while secret [id] exists and belongs to [ownerId]; then also records it as used at [now]. */
+  abstract fun useApiSecret(id: UserSecretId, ownerId: UserId, now: LocalDateTime): Boolean
 }

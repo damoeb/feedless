@@ -23,6 +23,9 @@ object JwtParameterNames {
 
   /** Names the address in the abuse link of report mails; the link must outlive the report it came with. */
   const val RECIPIENT_ID = "recipient_id"
+
+  /** Names the user secret an API token belongs to, so deleting the secret revokes the token. */
+  const val SECRET_ID = "secret_id"
 }
 
 enum class AuthTokenType(val value: String) {

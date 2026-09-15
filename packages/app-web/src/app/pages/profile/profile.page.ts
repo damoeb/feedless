@@ -173,7 +173,7 @@ export class ProfilePage implements OnInit, OnDestroy {
     await promptName.present();
     const data = await promptName.onDidDismiss();
     if (data.role === 'persist' && data.data.values.name) {
-      const apiToken = await this.sessionService.createUserSecret();
+      const apiToken = await this.sessionService.createUserSecret(data.data.values.name);
       this.secrets.push(apiToken);
     }
   }

@@ -30,6 +30,10 @@ class UserSecretJpaRepository(private val userSecretDAO: UserSecretDAO) : UserSe
     userSecretDAO.updateLastUsed(id.uuid, date)
   }
 
+  override fun updateLastUsedIfStale(id: UserSecretId, date: LocalDateTime, staleBefore: LocalDateTime) {
+    userSecretDAO.updateLastUsedIfStale(id.uuid, date, staleBefore)
+  }
+
   override fun findAllByOwnerId(id: UserId): List<UserSecret> {
     return userSecretDAO.findAllByOwnerId(id.uuid).map { it.toDomain() }
   }

@@ -14,6 +14,8 @@ interface UserSecretRepository {
 
   fun updateLastUsed(id: UserSecretId, date: LocalDateTime)
 
+  fun updateLastUsedIfStale(id: UserSecretId, date: LocalDateTime, staleBefore: LocalDateTime)
+
   fun findAllByOwnerId(id: UserId): List<UserSecret>
   fun save(userSecret: UserSecret): UserSecret
   fun findById(userSecretId: UserSecretId): UserSecret?

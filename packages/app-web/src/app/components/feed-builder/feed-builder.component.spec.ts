@@ -13,7 +13,9 @@ import { IonAccordionGroup } from '@ionic/angular/standalone';
 
 @Component({
   selector: 'app-transform-website-to-feed',
-  template: `<ion-accordion-group [multiple]="true"><ng-content select="[beforeFeedsSlot]"></ng-content></ion-accordion-group>`,
+  template: `<ion-accordion-group [multiple]="true"
+    ><ng-content select="[beforeFeedsSlot]"></ng-content
+  ></ion-accordion-group>`,
   standalone: true,
   imports: [IonAccordionGroup],
 })

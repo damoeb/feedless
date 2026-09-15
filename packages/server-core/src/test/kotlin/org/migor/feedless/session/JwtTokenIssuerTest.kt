@@ -21,6 +21,7 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretId
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.mock.web.MockHttpServletRequest
@@ -111,10 +112,33 @@ class JwtTokenIssuerTest {
     `when`(user.id).thenReturn(userId)
     val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
 
-    val jwt = jwtTokenIssuer.createJwtForApi(user, actingGroup)
+    val jwt = jwtTokenIssuer.createJwtForApi(user, actingGroup, UserSecretId())
 
     assertThat(jwt.userClaim()).isEqualTo(userId)
     assertThat(jwt.actingGroupClaim()).isEqualTo(actingGroup)
+  }
+
+  @Test
+  fun `createJwtForApi names the secret the token belongs to`() = runTest {
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(UserId())
+    val secretId = UserSecretId()
+
+    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner), secretId)
+
+    assertThat(jwt.getClaimAsString(JwtParameterNames.SECRET_ID)).isEqualTo(secretId.uuid.toString())
+  }
+
+  @Test
+  fun `an API token lives as long as the API expiration says`() = runTest {
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(UserId())
+
+    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner), UserSecretId())
+
+    val lifetimeMillis = (jwt.claims[JwtParameterNames.EXP] as Number).toLong() - (jwt.claims[JwtParameterNames.IAT] as Number).toLong()
+    assertThat(lifetimeMillis).isCloseTo(jwtTokenIssuer.getExpiration(AuthTokenType.API).inWholeMilliseconds, within(1000L))
+    assertThat(jwtTokenIssuer.getExpiration(AuthTokenType.API).inWholeDays).isEqualTo(356)
   }
 
   @Test
@@ -124,7 +148,7 @@ class JwtTokenIssuerTest {
     `when`(user.id).thenReturn(userId)
     val actingGroup = GroupAndRole(GroupId(), RoleInGroup.owner)
 
-    val token = jwtTokenIssuer.issueApiToken(user, actingGroup)
+    val token = jwtTokenIssuer.issueApiToken(user, actingGroup, UserSecretId())
 
     val signedJWT = SignedJWT.parse(token.token)
     assertThat(signedJWT.verify(MACVerifier(testJwtSecret.toByteArray()))).isTrue()
@@ -141,7 +165,7 @@ class JwtTokenIssuerTest {
     `when`(user.id).thenReturn(UserId())
 
     // when
-    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner))
+    val jwt = jwtTokenIssuer.createJwtForApi(user, GroupAndRole(GroupId(), RoleInGroup.owner), UserSecretId())
 
     // then
     assertThat(jwt.tokenValue).isNotNull()

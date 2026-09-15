@@ -15,11 +15,18 @@ import org.migor.feedless.user.UserRepository
 import org.migor.feedless.userGroup.RoleInGroup
 import org.migor.feedless.userGroup.UserGroupAssignment
 import org.migor.feedless.userGroup.UserGroupAssignmentRepository
+import org.migor.feedless.any2
+import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
+import org.migor.feedless.userSecret.UserSecretType
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
+import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.test.util.ReflectionTestUtils
+import java.time.LocalDateTime
 
 /** The `authUser` session token is the root login, and it acts in the root user's owner group. */
 class StatefulAuthServiceTest {
@@ -28,6 +35,7 @@ class StatefulAuthServiceTest {
   private val nonRootUser = randomUser()
   private val secretKey = "secret-key"
   private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
+  private lateinit var userSecretRepository: UserSecretRepository
   private lateinit var authService: StatefulAuthService
 
   @BeforeEach
@@ -35,7 +43,7 @@ class StatefulAuthServiceTest {
     val userRepository = mock(UserRepository::class.java)
     `when`(userRepository.findByEmail(user.email)).thenReturn(user)
     `when`(userRepository.findByEmail(nonRootUser.email)).thenReturn(nonRootUser)
-    val userSecretRepository = mock(UserSecretRepository::class.java)
+    userSecretRepository = mock(UserSecretRepository::class.java)
     `when`(userSecretRepository.findBySecretKeyValue(secretKey, user.email)).thenReturn(mock(UserSecret::class.java))
     `when`(userSecretRepository.findBySecretKeyValue(secretKey, nonRootUser.email))
       .thenReturn(mock(UserSecret::class.java))
@@ -84,5 +92,44 @@ class StatefulAuthServiceTest {
     assertThatExceptionOfType(PermissionDeniedException::class.java)
       .isThrownBy { runTest { authService.authenticateUser(nonRootUser.email, secretKey) } }
       .withMessage("account is not root")
+  }
+
+  @Test
+  fun `useApiSecret accepts the owner's secret and marks it used, at most once a minute`() {
+    val secret = apiSecretOf(user.id)
+    val now = LocalDateTime.now()
+
+    assertThat(authService.useApiSecret(secret.id, user.id, now)).isTrue()
+
+    verify(userSecretRepository).updateLastUsedIfStale(secret.id, now, now.minusMinutes(1))
+  }
+
+  @Test
+  fun `useApiSecret refuses a deleted secret`() {
+    val secretId = UserSecretId()
+    `when`(userSecretRepository.findById(secretId)).thenReturn(null)
+
+    assertThat(authService.useApiSecret(secretId, user.id, LocalDateTime.now())).isFalse()
+  }
+
+  @Test
+  fun `useApiSecret refuses another user's secret and leaves it untouched`() {
+    val secret = apiSecretOf(nonRootUser.id)
+
+    assertThat(authService.useApiSecret(secret.id, user.id, LocalDateTime.now())).isFalse()
+
+    verify(userSecretRepository, never()).updateLastUsedIfStale(any2(), any2(), any2())
+  }
+
+  private fun apiSecretOf(owner: UserId): UserSecret {
+    val secret = UserSecret(
+      name = "laptop",
+      value = "jwt",
+      validUntil = LocalDateTime.now().plusDays(1),
+      type = UserSecretType.SecretKey,
+      ownerId = owner,
+    )
+    `when`(userSecretRepository.findById(secret.id)).thenReturn(secret)
+    return secret
   }
 }

@@ -36,20 +36,25 @@ class UserSecretUseCase(
 
   private val log = LoggerFactory.getLogger(UserSecretUseCase::class.simpleName)
 
-  suspend fun createUserSecret(): UserSecret = withContext(Dispatchers.IO) {
+  suspend fun createUserSecret(name: String): UserSecret = withContext(Dispatchers.IO) {
     log.info("createUserSecret")
+    val trimmedName = name.trim()
+    require(trimmedName.length in 1..MAX_NAME_LENGTH) { "name must have 1 to $MAX_NAME_LENGTH characters" }
     val userId = coroutineContext.userId()
     val user = userRepository.findById(userId)!!
-    val token = tokenIssuer.issueApiToken(user, userGroupAssignmentRepository.actingGroupOf(user.id))
+    val secretId = UserSecretId()
+    val token = tokenIssuer.issueApiToken(user, userGroupAssignmentRepository.actingGroupOf(user.id), secretId)
 
     userSecretRepository.save(
       UserSecret(
+        id = secretId,
+        name = trimmedName,
         ownerId = userId,
         value = token.token,
         type = UserSecretType.SecretKey,
         validUntil = LocalDateTime.ofInstant(
           Instant.ofEpochMilli(
-            Clock.System.now().plus(tokenIssuer.getExpiration(AuthTokenType.USER)).toEpochMilliseconds()
+            Clock.System.now().plus(tokenIssuer.getExpiration(AuthTokenType.API)).toEpochMilliseconds()
           ),
           ZoneId.systemDefault()
         )
@@ -65,5 +70,9 @@ class UserSecretUseCase(
     } else {
       throw PermissionDeniedException("User does not have an owner")
     }
+  }
+
+  companion object {
+    const val MAX_NAME_LENGTH = 100
   }
 }

@@ -41,6 +41,7 @@ class StatelessAuthService : AuthService() {
       hasAcceptedTerms = true,
     )
     key = UserSecret(
+      name = "Root secret key",
       value = rootSecretKey,
       validUntil = LocalDateTime.now().plusDays(1),
       type = UserSecretType.SecretKey,
@@ -77,4 +78,7 @@ class StatelessAuthService : AuthService() {
   override suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {
     // ignore
   }
+
+  // Stateless mode stores no secrets, so no API token can be in use.
+  override fun useApiSecret(id: UserSecretId, ownerId: UserId, now: LocalDateTime): Boolean = false
 }

@@ -243,7 +243,9 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     this.nativeFeeds = feeds.nativeFeeds as GqlRemoteNativeFeed[];
     const scores = feeds.genericFeeds.map((gf) => gf.score);
     if (scores.length > 0) {
-      this.scaleScore = scaleLinear().domain([min(scores), max(scores)]).range([0, 100]);
+      this.scaleScore = scaleLinear()
+        .domain([min(scores), max(scores)])
+        .range([0, 100]);
     }
 
     if (previousSelection?.genericFeed) {

@@ -100,6 +100,7 @@ class StatefulBrowserAutomationRegistryIntTest {
 
   private fun secretOf(owner: UserId): UserSecretId = userSecretRepository.save(
     UserSecret(
+      name = "agent",
       value = UUID.randomUUID().toString(),
       validUntil = LocalDateTime.now().plusDays(1),
       type = UserSecretType.SecretKey,
