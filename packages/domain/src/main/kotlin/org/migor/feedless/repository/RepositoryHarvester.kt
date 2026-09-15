@@ -57,6 +57,9 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+/** [retrieved] counts what the source delivered, existing items included; [added] only the new ones. */
+data class HarvestCount(val retrieved: Int, val added: Int)
+
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service} & ${AppLayer.scheduler}")
 class RepositoryHarvester(
@@ -180,9 +183,9 @@ class RepositoryHarvester(
     val logCollector = LogCollector()
     var outcome = harvest
     try {
-      val retrieved = scrapeSource(source, logCollector)
-      outcome = outcome.copy(itemsAdded = retrieved)
-      sourceRepository.recordHarvestSucceeded(source.id, retrieved, LocalDateTime.now())
+      val count = scrapeSource(source, logCollector)
+      outcome = outcome.copy(itemsAdded = count.added)
+      sourceRepository.recordHarvestSucceeded(source.id, count.retrieved, LocalDateTime.now())
     } catch (e: Throwable) {
       outcome = outcome.copy(errornous = true)
       handleScrapeException(e, source, logCollector)
@@ -222,7 +225,7 @@ class RepositoryHarvester(
     }
   }
 
-  suspend fun scrapeSource(source: Source, logCollector: LogCollector): Int {
+  suspend fun scrapeSource(source: Source, logCollector: LogCollector): HarvestCount {
     val output = scraper.scrape(source, logCollector)
     return importElement(output, source.repositoryId!!, source, logCollector)
   }
@@ -232,13 +235,13 @@ class RepositoryHarvester(
     repositoryId: RepositoryId,
     source: Source,
     logCollector: LogCollector
-  ): Int {
+  ): HarvestCount {
     log.debug("importElement")
     val repository = repositoryRepository.findById(repositoryId)!!
     return if (output.actionCount == 0) {
       throw NoItemsRetrievedException()
     } else {
-      val documents = output.lastFragment?.let { fragment ->
+      val (retrieved, documents) = output.lastFragment?.let { fragment ->
         // Locals, as properties of a class from another module can't be smart-cast.
         val items = fragment.items
         val fragments = fragment.fragments
@@ -252,16 +255,16 @@ class RepositoryHarvester(
           )
         } else {
           if (fragments?.isEmpty() == false) {
-            fragments.flatMap { importFragment(repository, it, source, logCollector) }
+            Pair(fragments.size, fragments.flatMap { importFragment(repository, it, source, logCollector) })
           } else {
-            emptyList()
+            Pair(0, emptyList())
           }
         }
-      } ?: emptyList()
+      } ?: Pair(0, emptyList())
 
       triggerPostReleaseEffects(repository, documents)
       triggerPlugins(repository, documents)
-      documents.size
+      HarvestCount(retrieved = retrieved, added = documents.count { (isNew, _) -> isNew })
     }
 //    lastAction.extract.image?.let {
 //      importImageElement(corrId, it, repositoryId, source)
@@ -324,7 +327,7 @@ class RepositoryHarvester(
       filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository, logCollector)!!))
     documentRepository.saveAll(validNewOrUpdatedDocuments)
 
-    return listOf(Pair(existing != null, updated))
+    return listOf(Pair(existing == null, updated))
   }
 
 
@@ -376,7 +379,7 @@ class RepositoryHarvester(
     next: List<String>?,
     source: Source,
     logCollector: LogCollector
-  ): List<Pair<Boolean, Document>> {
+  ): Pair<Int, List<Pair<Boolean, Document>>> {
     if (items.isEmpty()) {
       throw NoItemsRetrievedException()
     }
@@ -389,10 +392,11 @@ class RepositoryHarvester(
     }
 
     val start = Instant.now()
-    val newOrUpdatedDocuments = items
+    val retrievedDocuments = items
       .map { it.createDocument(repository.id, ReleaseStatus.released, source) }
       .distinctBy { it.contentHash }
       .filterIndexed { index, _ -> index < 300 }
+    val newOrUpdatedDocuments = retrievedDocuments
       .mapNotNull { updated ->
         try {
           val existing =
@@ -442,7 +446,7 @@ class RepositoryHarvester(
         log.debug("wont follow page urls")
       }
     }
-    return newOrUpdatedDocuments
+    return Pair(retrievedDocuments.size, newOrUpdatedDocuments)
   }
 
   private suspend fun filterInvalidDocuments(

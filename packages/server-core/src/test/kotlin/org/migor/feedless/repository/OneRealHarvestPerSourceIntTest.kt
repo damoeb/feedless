@@ -303,6 +303,7 @@ class OneRealHarvestPerSourceIntTest {
     sourceRepository.findById(source.id)!!.let {
       assertThat(it.errorsInSuccession).isEqualTo(0)
       assertThat(it.lastErrorMessage).isEqualTo("rate limited")
+      assertThat(it.lastRecordsRetrieved).isEqualTo(0)
       assertThat(it.title).isEqualTo("busy")
     }
   }
