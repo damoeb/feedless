@@ -22,6 +22,17 @@
 @import '@ionic/angular/css/text-transformation.css';
 @import '@ionic/angular/css/flex-utils.css';
 
+// core.css sizes ion-content via .ion-page, which Angular's router-outlet (unlike ion-router-outlet) never adds.
+ion-app > router-outlet ~ * {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  contain: layout size style;
+  z-index: 0;
+}
+
 /* Ionic breakpoints: https://ionicframework.com/docs/layout/css-utilities#ionic-breakpoints */
 @media only screen and (min-width: 992px) {
   ion-modal {
