@@ -65,7 +65,7 @@ ion-content::part(scroll) {
 @media (max-width: 768px) {
   .calendar-days {
     flex-direction: column;
-    padding: 15px;
+    padding-block: 15px;
   }
   .calendar-day {
     margin-bottom: 5vh;

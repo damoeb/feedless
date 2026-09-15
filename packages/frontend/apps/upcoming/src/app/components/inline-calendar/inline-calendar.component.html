@@ -26,7 +26,6 @@
           [queryParams]="getDateLink(d.date).queryParams"
           [attr.rel]="getSeoLinkAttributes(d.date)"
           [attr.title]="'Events am ' + getWeekday(d.date) + ', ' + formatDate(d.date, 'D') + '. ' + formatDate(d.date, 'MMM YY')"
-          [ngClass]="{ 'ion-hide-md-down': i > dateWindow.length - 4 }"
         >
           <div
             class="calendar-day"
