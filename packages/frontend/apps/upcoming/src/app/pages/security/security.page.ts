@@ -9,6 +9,7 @@ import {
 import {
   IonButton,
   IonContent,
+  IonInput,
   IonItem,
   IonLabel,
   IonList,
@@ -16,6 +17,7 @@ import {
 } from '@ionic/angular/standalone';
 import { RouterLink } from '@angular/router';
 import { DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 // eslint-disable-next-line @nx/enforce-module-boundaries
 import { SessionService } from '@feedless/components';
 import type { User, UserSecret } from '@feedless/graphql-api';
@@ -29,12 +31,14 @@ import { Subject, takeUntil } from 'rxjs';
   imports: [
     IonContent,
     IonButton,
+    IonInput,
     IonItem,
     IonLabel,
     IonList,
     IonNote,
     RouterLink,
     DatePipe,
+    FormsModule,
   ],
   standalone: true,
 })
@@ -47,6 +51,8 @@ export class SecurityPage implements OnInit, OnDestroy {
   protected busy = false;
   // The mutation is the only response carrying the unmasked value.
   protected createdSecret: UserSecret | null = null;
+  protected secretName = '';
+  protected readonly maxNameLength = 100;
 
   ngOnInit(): void {
     this.sessionService
@@ -64,10 +70,15 @@ export class SecurityPage implements OnInit, OnDestroy {
   }
 
   protected async createSecret(): Promise<void> {
+    const name = this.secretName.trim();
+    if (!name || this.busy) {
+      return;
+    }
     this.busy = true;
     this.cdr.markForCheck();
     try {
-      this.createdSecret = await this.sessionService.createUserSecret();
+      this.createdSecret = await this.sessionService.createUserSecret(name);
+      this.secretName = '';
       await this.sessionService.fetchSession('network-only');
     } finally {
       this.busy = false;

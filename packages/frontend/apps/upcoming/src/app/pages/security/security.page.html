@@ -22,7 +22,7 @@
       @if (createdSecret) {
         <ion-item lines="none" class="ion-margin-top">
           <ion-label class="ion-text-wrap">
-            <p>Copy your new token now. It won't be shown again.</p>
+            <p>Copy your new token <strong>{{ createdSecret.name }}</strong> now. It won't be shown again.</p>
             <code class="secret-value">{{ createdSecret.value }}</code>
           </ion-label>
         </ion-item>
@@ -32,11 +32,20 @@
         <ion-list lines="full" class="ion-margin-top">
           @for (secret of user.secrets; track secret.id) {
             <ion-item>
-              <ion-label>
-                <span [title]="secret.id">{{ secret.value }}</span>
-                @if (secret.lastUsed) {
-                  <ion-note>Last used: {{ secret.lastUsed | date: 'medium' }}</ion-note>
-                }
+              <ion-label class="ion-text-wrap">
+                <h3 class="secret-name">{{ secret.name }}</h3>
+                <p><code class="secret-masked" [title]="secret.id">{{ secret.value }}</code></p>
+                <p>
+                  <ion-note class="secret-last-used"
+                    >Last used:
+                    {{ secret.lastUsed ? (secret.lastUsed | date: 'medium') : 'never' }}</ion-note
+                  >
+                  @if (secret.validUntil) {
+                    <ion-note class="secret-valid-until">
+                      · Valid until: {{ secret.validUntil | date: 'mediumDate' }}</ion-note
+                    >
+                  }
+                </p>
               </ion-label>
               <ion-button
                 slot="end"
@@ -54,13 +63,23 @@
         <p class="ion-margin-top">No tokens yet.</p>
       }
 
-      <ion-button
-        class="ion-margin-top"
-        (click)="createSecret()"
-        [disabled]="busy"
-      >
-        {{ busy ? 'Creating…' : 'Create new token' }}
-      </ion-button>
+      <form class="ion-margin-top create-secret" (ngSubmit)="createSecret()">
+        <ion-input
+          name="secretName"
+          label="Token name"
+          labelPlacement="stacked"
+          placeholder="e.g. laptop or calendar sync"
+          [maxlength]="maxNameLength"
+          [(ngModel)]="secretName"
+        ></ion-input>
+        <ion-button
+          class="ion-margin-top"
+          type="submit"
+          [disabled]="busy || !secretName.trim()"
+        >
+          {{ busy ? 'Creating…' : 'Create new token' }}
+        </ion-button>
+      </form>
     </section>
   </article>
 </ion-content>
