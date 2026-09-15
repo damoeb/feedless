@@ -51,9 +51,12 @@ import { zenToRx } from './agent.service';
 import { Observable, of, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import dayjs from 'dayjs';
-import { ArrayElement } from '@feedless/core';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { ArrayElement, Nullable } from '@feedless/core';
 import { ToastController } from '@ionic/angular/standalone';
 import { isPlatformBrowser } from '@angular/common';
+
+dayjs.extend(relativeTime);
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
 export type Harvest = ArrayElement<
@@ -388,7 +391,8 @@ export class RepositoryService {
     return sourceInput;
   }
 
-  async forceSourceSync(id: string) {
+  /** Resolves to the rescheduled harvest time, which the server clamps to the plan's minimum refresh rate. */
+  async forceSourceSync(id: string): Promise<Nullable<number>> {
     await this.updateRepository({
       where: {
         id,
@@ -399,14 +403,27 @@ export class RepositoryService {
         },
       },
     });
+    const { nextUpdateAt } = await this.getRepositoryById(
+      id,
+      { page: 0 },
+      null,
+      'network-only',
+    );
     const toast = await this.toastCtrl.create({
-      message: 'Source sync scheduled',
+      message: describeNextHarvest(nextUpdateAt),
       duration: 3000,
       color: 'success',
     });
 
     await toast.present();
+    return nextUpdateAt;
   }
+}
+
+export function describeNextHarvest(nextUpdateAt: Nullable<number>): string {
+  return nextUpdateAt && nextUpdateAt > Date.now()
+    ? `Next harvest ${dayjs(nextUpdateAt).fromNow()}`
+    : 'Next harvest is due now';
 }
 
 type AnyObject = {

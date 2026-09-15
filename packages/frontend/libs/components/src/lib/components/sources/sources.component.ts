@@ -5,6 +5,7 @@ import {
   effect,
   inject,
   input,
+  linkedSignal,
   OnInit,
   output,
   PLATFORM_ID,
@@ -40,7 +41,11 @@ import {
   FeedOrRepository,
   tagsToString,
 } from '../feed-builder/feed-builder.component';
-import { RepositoryService, Source } from '../../services';
+import {
+  describeNextHarvest,
+  RepositoryService,
+  Source,
+} from '../../services';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
 import { addOutline, cloudUploadOutline, refreshOutline } from 'ionicons/icons';
@@ -98,6 +103,10 @@ export class SourcesComponent implements OnInit {
   currentSourcesPage = 0;
   sources: Source[] = [];
   protected readonly fromNow = relativeTimeOrElse;
+  protected readonly describeNextHarvest = describeNextHarvest;
+  protected readonly nextUpdateAt = linkedSignal(
+    () => this.repository().nextUpdateAt,
+  );
   protected pageSize = 10;
   protected queryFc = new FormControl<string>('');
   private readonly platformId = inject(PLATFORM_ID);
@@ -462,6 +471,8 @@ ${harvest.logs}`,
   }
 
   async forceSync() {
-    await this.repositoryService.forceSourceSync(this.repository().id);
+    this.nextUpdateAt.set(
+      await this.repositoryService.forceSourceSync(this.repository().id),
+    );
   }
 }
