@@ -101,6 +101,8 @@ Every API token is checked in `TokenAuthenticator`: a primary-key lookup per req
 
 ## Branches
 
+### Named API secrets with last-used tracking and revocation
+
 - `feature/user-secret-name-last-used` — plan + full implementation in one PR <!-- builds: AuthService.useApiSecret, the secret_id JWT claim, V94__user_secret_name.sql, CreateUserSecretInput -->
 
 ## Notes
