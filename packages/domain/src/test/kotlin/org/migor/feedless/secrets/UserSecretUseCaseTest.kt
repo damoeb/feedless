@@ -1,6 +1,7 @@
 package org.migor.feedless.secrets
 
 import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
@@ -11,6 +12,7 @@ import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.session.AuthTokenType
 import org.migor.feedless.session.NoActingGroupException
 import org.migor.feedless.session.TokenIssuer
 import org.migor.feedless.user.User
@@ -26,6 +28,8 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import java.time.LocalDateTime
+import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.seconds
 
 class UserSecretUseCaseTest {
@@ -38,6 +42,7 @@ class UserSecretUseCaseTest {
   private lateinit var currentUserId: UserId
   private lateinit var currentUser: User
   private val ownerGroupId = GroupId()
+  private var issuedWith: List<Any?> = emptyList()
 
   @BeforeEach
   fun setUp() = runTest {
@@ -51,8 +56,12 @@ class UserSecretUseCaseTest {
     `when`(userRepository.findById(currentUserId)).thenReturn(currentUser)
 
     tokenIssuer = mock(TokenIssuer::class.java)
-    `when`(tokenIssuer.issueApiToken(any2(), any2())).thenReturn(AuthToken("jwt"))
+    `when`(tokenIssuer.issueApiToken(any2(), any2(), any2())).thenAnswer {
+      issuedWith = it.arguments.toList()
+      AuthToken("jwt")
+    }
     `when`(tokenIssuer.getExpiration(any2())).thenReturn(2.seconds)
+    `when`(tokenIssuer.getExpiration(AuthTokenType.API)).thenReturn(356.days)
 
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     `when`(userGroupAssignmentRepository.findAllByUserId(currentUserId)).thenReturn(
@@ -65,27 +74,61 @@ class UserSecretUseCaseTest {
   }
 
   @Test
-  fun `can create encrypted secret`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-    userSecretUseCase.createUserSecret()
+  fun `can create a secret`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    userSecretUseCase.createUserSecret("laptop")
 
     verify(userSecretRepository).save(any2())
   }
 
   @Test
-  fun `can create unencrypted secret`() =
-    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
-      userSecretUseCase.createUserSecret()
+  fun `the secret's API token acts in the user's owner group`() =
+    runTest(context = RequestContext(userId = currentUserId)) {
+      userSecretUseCase.createUserSecret("laptop")
 
-      verify(userSecretRepository).save(any2())
+      assertThat(issuedWith.take(2)).containsExactly(currentUser, GroupAndRole(ownerGroupId, RoleInGroup.owner))
     }
 
   @Test
-  fun `the secret's API token acts in the user's owner group`() =
+  fun `the secret is saved under the id its token names`() =
     runTest(context = RequestContext(userId = currentUserId)) {
-      userSecretUseCase.createUserSecret()
+      val secret = userSecretUseCase.createUserSecret("laptop")
 
-      verify(tokenIssuer).issueApiToken(currentUser, GroupAndRole(ownerGroupId, RoleInGroup.owner))
+      assertThat(secret.id).isEqualTo(issuedWith[2])
     }
+
+  @Test
+  fun `the name is trimmed`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val secret = userSecretUseCase.createUserSecret("  laptop  ")
+
+    assertThat(secret.name).isEqualTo("laptop")
+  }
+
+  @Test
+  fun `a blank name gets no secret`() {
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runTest(context = RequestContext(userId = currentUserId)) {
+        userSecretUseCase.createUserSecret("   ")
+      }
+    }
+    verify(userSecretRepository, never()).save(any2())
+  }
+
+  @Test
+  fun `a name longer than 100 characters gets no secret`() {
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runTest(context = RequestContext(userId = currentUserId)) {
+        userSecretUseCase.createUserSecret("a".repeat(101))
+      }
+    }
+    verify(userSecretRepository, never()).save(any2())
+  }
+
+  @Test
+  fun `the secret is valid as long as its API token`() = runTest(context = RequestContext(userId = currentUserId)) {
+    val secret = userSecretUseCase.createUserSecret("laptop")
+
+    assertThat(secret.validUntil).isAfter(LocalDateTime.now().plusDays(355))
+  }
 
   @Test
   fun `a user who owns no group gets no secret`() {
@@ -93,7 +136,7 @@ class UserSecretUseCaseTest {
 
     assertThatExceptionOfType(NoActingGroupException::class.java).isThrownBy {
       runTest(context = RequestContext(userId = currentUserId)) {
-        userSecretUseCase.createUserSecret()
+        userSecretUseCase.createUserSecret("laptop")
       }
     }
     verify(userSecretRepository, never()).save(any2())

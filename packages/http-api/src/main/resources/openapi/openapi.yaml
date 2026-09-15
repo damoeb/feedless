@@ -779,6 +779,8 @@ components:
       scheme: bearer
       description: >
         `Authorization: Bearer <UserSecret.value>` (GitHub PAT style).
+        A token stops working once its user secret is deleted; tokens created before secrets were
+        named carry no secret id and are rejected, so recreate them via GraphQL createUserSecret.
         Legacy `Authentication: Bearer <…>` accepted in v1 but **deprecated**.
         TOKEN cookie still accepted for browser clients. Anonymous JWTs are rejected.
   parameters:

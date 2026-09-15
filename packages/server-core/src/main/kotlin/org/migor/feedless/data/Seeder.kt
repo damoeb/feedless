@@ -119,6 +119,7 @@ class Seeder(
       log.info("created secretKey for root")
       userSecretRepository.save(
         UserSecret(
+          name = "Root secret key",
           ownerId = root.id,
           value = propertyService.rootSecretKey,
           type = UserSecretType.SecretKey,

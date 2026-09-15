@@ -5,6 +5,7 @@ import java.time.LocalDateTime
 
 data class UserSecret(
     val id: UserSecretId = UserSecretId(),
+    val name: String,
     val value: String,
     val validUntil: LocalDateTime,
     val type: UserSecretType,

@@ -14,6 +14,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.api.toDto
 import org.migor.feedless.generated.DgsConstants
+import org.migor.feedless.generated.types.CreateUserSecretInput
 import org.migor.feedless.generated.types.DeleteUserSecretInput
 import org.migor.feedless.generated.types.User
 import org.migor.feedless.generated.types.UserSecret
@@ -46,8 +47,9 @@ class SecretsResolver(
   @PreAuthorize("@capabilityService.hasCapability('user')")
   suspend fun createUserSecret(
     dfe: DataFetchingEnvironment,
+    @InputArgument(DgsConstants.MUTATION.CREATEUSERSECRET_INPUT_ARGUMENT.Data) data: CreateUserSecretInput,
   ): UserSecret = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    userSecretUseCase.createUserSecret().toDto(false)
+    userSecretUseCase.createUserSecret(data.name).toDto(false)
   }
 
 

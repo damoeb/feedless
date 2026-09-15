@@ -25,6 +25,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.stereotype.Service
 import java.net.InetAddress
+import java.time.Duration
 import java.time.LocalDateTime
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
@@ -65,6 +66,9 @@ class StatefulAuthService : AuthService() {
 
   private var tokenAnonymousValidFor: Long by Delegates.notNull()
 
+  // Bounds last-used writes to one per secret per interval, however busy the token is.
+  private val lastUsedResolution = Duration.ofMinutes(1)
+
   @PostConstruct
   fun postConstruct() {
     tokenAnonymousValidFor = parseDuration(tokenAnonymousValidForDays, defaultTokenAnonymousValidForDays)
@@ -104,6 +108,18 @@ class StatefulAuthService : AuthService() {
     } catch (e: Exception) {
       log.warn("Exception while updating secret key", e)
     }
+  }
+
+  override fun useApiSecret(id: UserSecretId, ownerId: UserId, now: LocalDateTime): Boolean {
+    if (userSecretRepository.findById(id)?.ownerId != ownerId) {
+      return false
+    }
+    try {
+      userSecretRepository.updateLastUsedIfStale(id, now, now.minus(lastUsedResolution))
+    } catch (e: Exception) {
+      log.warn("Exception while updating secret key", e)
+    }
+    return true
   }
 
 //  override suspend fun assertToken(request: HttpServletRequest) {

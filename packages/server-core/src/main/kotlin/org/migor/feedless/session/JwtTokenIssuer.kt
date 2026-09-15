@@ -21,6 +21,7 @@ import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
+import org.migor.feedless.userSecret.UserSecretId
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -132,8 +133,8 @@ class JwtTokenIssuer(
     )
   }
 
-  /** The `createUserSecret` API token: acts as [user] in [actingGroup], which callers resolve with [actingGroupOf]. */
-  fun createJwtForApi(user: User, actingGroup: GroupAndRole): Jwt {
+  /** The `createUserSecret` API token: acts as [user] in [actingGroup], which callers resolve with [actingGroupOf], while secret [secretId] exists. */
+  fun createJwtForApi(user: User, actingGroup: GroupAndRole, secretId: UserSecretId): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "api"))).increment()
     log.debug("signedToken for service")
     val capabilities: List<Capability<out Any>> = listOf(UserCapability(user.id), GroupCapability(actingGroup))
@@ -141,12 +142,14 @@ class JwtTokenIssuer(
       mapOf(
         JwtParameterNames.TYPE to AuthTokenType.API.value,
         JwtParameterNames.CAPABILITIES to toAuthorities(capabilities),
+        JwtParameterNames.SECRET_ID to secretId.uuid.toString(),
       ),
-      getExpiration(AuthTokenType.SERVICE)
+      getExpiration(AuthTokenType.API)
     )
   }
 
-  override fun issueApiToken(user: User, actingGroup: GroupAndRole) = AuthToken(createJwtForApi(user, actingGroup).tokenValue)
+  override fun issueApiToken(user: User, actingGroup: GroupAndRole, secretId: UserSecretId) =
+    AuthToken(createJwtForApi(user, actingGroup, secretId).tokenValue)
 
   override fun issueAnonymousToken() = AuthToken(createJwtForAnonymous().tokenValue)
 
@@ -174,7 +177,7 @@ class JwtTokenIssuer(
       AuthTokenType.ANONYMOUS -> 1.days
       AuthTokenType.USER -> 48.hours
       AuthTokenType.SERVICE -> 356.days
-      AuthTokenType.API -> 48.hours
+      AuthTokenType.API -> 356.days
     }
   }
 

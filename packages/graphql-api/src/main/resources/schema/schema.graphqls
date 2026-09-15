@@ -170,7 +170,7 @@ type Mutation {
   deleteConnectedApp(id: String!): Boolean
 
   authUser(data: AuthUserInput!): Authentication!
-  createUserSecret: UserSecret!
+  createUserSecret(data: CreateUserSecretInput!): UserSecret!
   deleteUserSecret(data: DeleteUserSecretInput!): Boolean!
 
   createRepositories(data: [RepositoryCreateInput!]!): [Repository!]!
@@ -1066,6 +1066,7 @@ type Plan {
 
 type UserSecret {
   id: ID!
+  name: String!
   lastUsed: Long
   type: UserSecretType!
   validUntil: Long
@@ -1490,8 +1491,8 @@ input UpdateCurrentUserInput {
   notificationsLastViewedAt: LongUpdateOperationsInput
 }
 
-input UserSecretCreateInput {
-  type: UserSecretType!
+input CreateUserSecretInput {
+  name: String!
 }
 
 input UserSecretWhereInput {

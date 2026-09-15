@@ -39,6 +39,21 @@ interface UserSecretDAO : JpaRepository<UserSecretEntity, UUID> {
   @Transactional
   fun updateLastUsed(@Param("id") id: UUID, @Param("date") date: LocalDateTime)
 
+  // The WHERE clause throttles: every API request calls this, but a fresh timestamp is left alone.
+  @Modifying
+  @Query(
+    """
+    update UserSecretEntity K SET K.lastUsedAt = :date
+    where K.id = :id and (K.lastUsedAt is null or K.lastUsedAt < :staleBefore)
+  """
+  )
+  @Transactional
+  fun updateLastUsedIfStale(
+    @Param("id") id: UUID,
+    @Param("date") date: LocalDateTime,
+    @Param("staleBefore") staleBefore: LocalDateTime
+  )
+
   fun findAllByOwnerId(id: UUID): List<UserSecretEntity>
 
 }

@@ -19,12 +19,18 @@ abstract class UserSecretMapper {
   @Mapping(target = "lastUsed", expression = "java(MapperUtil.toMillis(userSecret.getLastUsedAt()))")
   abstract fun toDto(userSecret: org.migor.feedless.userSecret.UserSecret, mask: Boolean = true): UserSecretDto
 
+  // A JWT's prefix is the same for every token; only its signature end tells tokens apart.
   protected fun maskValue(value: String, mask: Boolean): String {
-    return if (mask && value.length > 5) {
-      value.substring(0..4) + "****"
-    } else {
-      value
+    return when {
+      !mask -> value
+      value.length > 2 * VISIBLE_SUFFIX_LENGTH -> MASK + value.takeLast(VISIBLE_SUFFIX_LENGTH)
+      else -> MASK
     }
+  }
+
+  companion object {
+    private const val MASK = "••••"
+    private const val VISIBLE_SUFFIX_LENGTH = 6
   }
 }
 

@@ -209,7 +209,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
   @Test
   fun `POST repositories answers 201 in the caller's owner group for an API token from createUserSecret`() {
     val token = runBlocking {
-      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret("laptop").value }
     }
 
     assertCreatesRepositoryInOwnerGroup(token)
@@ -220,7 +220,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
   fun `POST repositories answers 201 in the caller's owner group for a session token from authUser`() {
     userRepository.save(caller.copy(admin = true))
     val secretKey = runBlocking {
-      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret("laptop").value }
     }
     val token = runBlocking { sessionTokenPort.authenticateUser(caller.email, secretKey).token }
 
@@ -231,7 +231,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
   @Test
   fun `authUser refuses a non-root account even with a valid secret key`() {
     val secretKey = runBlocking {
-      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret("laptop").value }
     }
 
     assertThatExceptionOfType(PermissionDeniedException::class.java)
@@ -259,7 +259,7 @@ class HttpApiAsyncDispatchSecurityIntTest {
   @Test
   fun `POST repositories answers 403 NO_ACTING_GROUP once the caller no longer owns the token's group`() {
     val token = runBlocking {
-      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret().value }
+      withContext(RequestContext(userId = caller.id)) { userSecretUseCase.createUserSecret("laptop").value }
     }
     val ownerGroup = groupRepository.findAllByOwner(caller.id).single()
     userGroupAssignmentRepository.delete(userGroupAssignmentRepository.findByUserIdAndGroupId(caller.id, ownerGroup.id)!!)
@@ -364,8 +364,10 @@ class HttpApiAsyncDispatchSecurityIntTest {
     assertThat(response.headers.getFirst("X-Feedless-Version")).isNotBlank()
   }
 
-  private fun apiToken(user: User): String =
-    jwtTokenIssuer.createJwtForApi(user, userGroupAssignmentRepository.actingGroupOf(user.id)).tokenValue
+  // A real secret row, because API tokens are rejected once their secret is gone.
+  private fun apiToken(user: User): String = runBlocking {
+    withContext(RequestContext(userId = user.id)) { userSecretUseCase.createUserSecret("laptop").value }
+  }
 
   private fun get(path: String, token: String?): ResponseEntity<String> {
     val headers = HttpHeaders()
