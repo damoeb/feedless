@@ -2,11 +2,13 @@ package org.migor.feedless.mail
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.currentCorrId
 import org.migor.feedless.otp.OneTimePassword
 import org.migor.feedless.template.AuthCodeMailParams
 import org.migor.feedless.template.MailTemplateAuthCode
 import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.User
+import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
@@ -21,7 +23,7 @@ class MailServiceImpl(
   private val log = LoggerFactory.getLogger(MailService::class.simpleName)
 
   override suspend fun sendAuthCode(user: User, otp: OneTimePassword, description: String) {
-    val corrId = "corrId"
+    val corrId = currentCorrId() ?: newCorrId()
     if (StringUtils.isBlank(user.email)) {
       throw IllegalArgumentException("Email is not defined")
     }

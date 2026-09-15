@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.Attachment
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.capability.withMdcCorrId
 import org.migor.feedless.connectedApp.TelegramConnection
 import org.migor.feedless.connectedApp.TelegramConnectionRepository
 import org.migor.feedless.data.jpa.connectedApp.TelegramConnectionDAO
@@ -54,6 +56,10 @@ class TelegramBotService(
 ) {
 
   private val log = LoggerFactory.getLogger(TelegramBotService::class.simpleName)
+
+  // telegrambots-meta types are built for Jackson 2; Spring's default converter is Jackson 3.
+  private val telegramJson = com.fasterxml.jackson.databind.ObjectMapper()
+    .configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
 
   private val settingName = "telegram_last_update_id"
   private lateinit var lastUpdateSettings: SystemSettings
@@ -113,31 +119,31 @@ class TelegramBotService(
 
   @Scheduled(fixedDelay = 4000)
   fun pollUpdates() {
-    try {
-      val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"
-      val uri = URI.create(url)
+    withMdcCorrId { corrId ->
+      try {
+        val url = "https://api.telegram.org/bot${telegramProperties.token}/getUpdates"
+        val uri = URI.create(url)
 
-      val response = restTemplate.getForObject(uri, TelegramUpdatesResponse::class.java)
+        val updates = parseTelegramUpdates(telegramJson, restTemplate.getForObject(uri, String::class.java) ?: return@withMdcCorrId)
 
-      response?.result?.let {
-        runBlocking {
+        runBlocking(RequestContext(corrId = corrId)) {
           coroutineScope {
-            response.result.filter { it.updateId > lastUpdateId }
+            updates.filter { it.updateId > lastUpdateId }
               .forEach { update ->
                 handleUpdate(update)
               }
           }
         }
 
-        response.result.lastOrNull()?.let {
+        updates.lastOrNull()?.let {
           lastUpdateId = it.updateId
-          runBlocking {
+          runBlocking(RequestContext(corrId = corrId)) {
             lastUpdateSettings = systemSettingsRepository.save(lastUpdateSettings.copy(valueInt = it.updateId))
           }
         }
+      } catch (e: Exception) {
+        log.warn("telegram ${e.message}")
       }
-    } catch (e: Exception) {
-      log.warn("telegram ${e.message}")
     }
   }
 
@@ -261,10 +267,10 @@ class TelegramBotService(
 
   private suspend fun getTelegramFile(fileId: String, mimeType: String): Attachment? {
     val getFileUrl = "https://api.telegram.org/bot${telegramProperties.token}/getFile?file_id=${fileId}"
-    val getFile = restTemplate.getForObject<TelegramGetFileResponse>(URI.create(getFileUrl))
+    val getFile = restTemplate.getForObject<TelegramGetFileResponse>(URI.create(getFileUrl))!!
     return if (getFile.ok) {
       val response =
-        restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot${telegramProperties.token}/${getFile.result.file_path}"))
+        restTemplate.getForObject<ByteArray>(URI.create("https://api.telegram.org/file/bot${telegramProperties.token}/${getFile.result.file_path}"))!!
       Attachment(
         size = getFile.result.file_size,
         documentId = DocumentId(),
@@ -296,6 +302,9 @@ via $repositoryName https://feedless.org/article/${id}""".trimIndent()
 via $repositoryName $url""".trimIndent()
   }
 }
+
+internal fun parseTelegramUpdates(json: com.fasterxml.jackson.databind.ObjectMapper, body: String): List<Update> =
+  json.readTree(body).path("result").map { json.treeToValue(it, Update::class.java) }
 
 data class TelegramUpdatesResponse(
   val ok: Boolean,

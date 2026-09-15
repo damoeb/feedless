@@ -23,7 +23,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
-import java.io.Serializable
 import java.net.ConnectException
 import java.net.MalformedURLException
 import java.net.URI
@@ -40,7 +39,7 @@ import java.util.concurrent.TimeoutException
 class HttpService(
   @Value("\${app.apiGatewayUrl}")
   private val apiGatewayUrl: String
-) {
+) : HttpFetcher {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
 
@@ -92,10 +91,10 @@ class HttpService(
     return this.httpGet(url, expectedHttpStatus, headers)
   }
 
-  suspend fun httpGet(
+  override suspend fun httpGet(
     url: String,
     expectedHttpStatus: Int,
-    headers: Map<String, String>? = null
+    headers: Map<String, String>?
   ): HttpResponse {
     protectFromOverloading(url)
     log.debug("GET $url")
@@ -215,10 +214,3 @@ class HttpService(
 //  }
 
 }
-
-data class HttpResponse(
-  val contentType: String,
-  val url: String,
-  val statusCode: Int,
-  val responseBody: ByteArray,
-) : Serializable

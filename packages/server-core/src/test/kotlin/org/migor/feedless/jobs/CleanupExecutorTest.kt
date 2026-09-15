@@ -85,4 +85,10 @@ class CleanupExecutorTest {
     verify(harvestRepository).deleteAllTailingBySourceId()
   }
 
+  @Test
+  fun `executeCleanup removes stale dry-run harvests`() {
+    cleanupExecutor.executeCleanup()
+    verify(harvestRepository).deleteAllDryRunByCreatedAtBefore(any2())
+  }
+
 }

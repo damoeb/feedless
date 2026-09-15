@@ -24,16 +24,6 @@ import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.feature.FeatureService
-import org.migor.feedless.generated.types.IntervalUnit
-import org.migor.feedless.generated.types.PluginExecutionInput
-import org.migor.feedless.generated.types.PluginExecutionParamsInput
-import org.migor.feedless.generated.types.ReportEmailRecipientInput
-import org.migor.feedless.generated.types.ReportRecipientInput
-import org.migor.feedless.generated.types.ScheduledSegmentInput
-import org.migor.feedless.generated.types.SegmentInput
-import org.migor.feedless.generated.types.SegmentRecordsWhereInput
-import org.migor.feedless.generated.types.SegmentReportInput
-import org.migor.feedless.generated.types.TimeSegmentInput
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.group.GroupRepository
@@ -60,6 +50,7 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
+import org.migor.feedless.util.toLocalDateTime
 import org.mockito.ArgumentMatchers.anyLong
 import org.mockito.ArgumentMatchers.anyString
 import org.mockito.kotlin.argumentCaptor
@@ -75,6 +66,7 @@ import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
+import java.time.temporal.ChronoUnit
 
 /**
  * Der Durchstich gegen eine echte Datenbank: anlegen, bestätigen, verschicken.
@@ -341,26 +333,12 @@ class ReportUseCaseIntTest {
   private suspend fun createReport(): Report =
     reportUseCase.createReport(
       repository.id,
-      SegmentInput(
-        `when` = TimeSegmentInput(
-          scheduled = ScheduledSegmentInput(
-            interval = IntervalUnit.WEEK,
-            startingAt = 0
-          ),
-        ),
-        what = SegmentRecordsWhereInput(),
-        report = SegmentReportInput(
-          plugin = PluginExecutionInput(
-            pluginId = EventsReportPlugin().id(),
-            params = PluginExecutionParamsInput(),
-          )
-        ),
-        recipient = ReportRecipientInput(
-          email = ReportEmailRecipientInput(
-            email = "email@somewhere",
-            name = "RecipientName"
-          )
-        ),
+      SegmentCreate(
+        recipientEmail = "email@somewhere",
+        recipientName = "RecipientName",
+        startingAt = 0L.toLocalDateTime(),
+        interval = ChronoUnit.WEEKS,
+        reporterPluginId = EventsReportPlugin().id(),
       )
     )
 }

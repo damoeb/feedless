@@ -1,0 +1,686 @@
+package org.migor.feedless.document
+
+import com.google.gson.Gson
+import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.EntityVisibility
+import org.migor.feedless.Mother.randomDocumentId
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.Vertical
+import org.migor.feedless.actions.PluginExecutionJson
+import org.migor.feedless.any
+import org.migor.feedless.any2
+import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.common.AppConfig
+import org.migor.feedless.eq
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.document.DocumentCreate
+import org.migor.feedless.document.DocumentUpdate
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.message.Notifications
+import org.migor.feedless.pipeline.FilterEntityPlugin
+import org.migor.feedless.pipeline.MapEntityPlugin
+import org.migor.feedless.pipeline.PipelinePlugins
+import org.migor.feedless.pipeline.plugins.CompositeFieldFilterParams
+import org.migor.feedless.pipeline.plugins.CompositeFilterParams
+import org.migor.feedless.pipeline.plugins.FulltextPluginParams
+import org.migor.feedless.pipeline.plugins.ItemFilterParams
+import org.migor.feedless.pipeline.plugins.StringFilterOperator
+import org.migor.feedless.pipeline.plugins.StringFilterParams
+import org.migor.feedless.pipelineJob.DocumentPipelineJob
+import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
+import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
+import org.migor.feedless.pipelineJob.PipelineJobId
+import org.migor.feedless.plan.PlanConstraintsService
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.toJsonItem
+import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserId
+import org.migor.feedless.user.UserRepository
+import org.migor.feedless.util.toLegacyDate
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.spy
+import org.mockito.Mockito.times
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import org.mockito.junit.jupiter.MockitoExtension
+import org.mockito.junit.jupiter.MockitoSettings
+import org.mockito.quality.Strictness
+import java.time.Duration
+import java.time.LocalDateTime
+import java.util.Date
+
+@ExtendWith(MockitoExtension::class)
+@MockitoSettings(strictness = Strictness.LENIENT)
+class DocumentUseCaseTest {
+
+  private lateinit var repository: Repository
+  private lateinit var documentRepository: DocumentRepository
+  private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var userRepository: UserRepository
+
+  private lateinit var documentUseCase: DocumentUseCase
+  private lateinit var appConfig: AppConfig
+
+  private lateinit var currentUser: User
+  private lateinit var documentGuard: DocumentGuard
+  private lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var pipelinePlugins: PipelinePlugins
+  private lateinit var filterPlugin: FilterEntityPlugin<List<ItemFilterParams>>
+  private lateinit var fulltextPlugin: MapEntityPlugin<FulltextPluginParams>
+  private lateinit var documentPipelineJobRepository: DocumentPipelineJobRepository
+  private lateinit var notifications: Notifications
+  private lateinit var documentId: DocumentId
+  private lateinit var repositoryId: RepositoryId
+  private lateinit var document: Document
+  private lateinit var repositoryGuard: RepositoryGuard
+
+  private val currentUserId = randomUserId()
+  private val filterPluginId = "org_feedless_filter"
+  private val fulltextPluginId = "org_feedless_fulltext"
+
+  @BeforeEach
+  fun setUp() = runTest {
+    currentUser = mock(User::class.java)
+    `when`(currentUser.id).thenReturn(randomUserId())
+
+    userRepository = mock(UserRepository::class.java)
+    repositoryRepository = mock(RepositoryRepository::class.java)
+    documentRepository = mock(DocumentRepository::class.java)
+    repositoryGuard = mock(RepositoryGuard::class.java)
+    documentGuard = spy(DocumentGuard(documentRepository, repositoryGuard))
+    planConstraintsService = mock(PlanConstraintsService::class.java)
+    notifications = mock(Notifications::class.java)
+    appConfig = mock(AppConfig::class.java)
+
+    @Suppress("UNCHECKED_CAST")
+    filterPlugin = mock(FilterEntityPlugin::class.java) as FilterEntityPlugin<List<ItemFilterParams>>
+    `when`(filterPlugin.id()).thenReturn(filterPluginId)
+    @Suppress("UNCHECKED_CAST")
+    fulltextPlugin = mock(MapEntityPlugin::class.java) as MapEntityPlugin<FulltextPluginParams>
+    `when`(fulltextPlugin.id()).thenReturn(fulltextPluginId)
+    pipelinePlugins = mock(PipelinePlugins::class.java)
+    `when`(pipelinePlugins.findById(filterPluginId)).thenReturn(filterPlugin)
+    `when`(pipelinePlugins.findById(fulltextPluginId)).thenReturn(fulltextPlugin)
+    `when`(pipelinePlugins.findAll()).thenReturn(listOf(filterPlugin, fulltextPlugin))
+    documentPipelineJobRepository = mock(DocumentPipelineJobRepository::class.java)
+
+    documentUseCase = DocumentUseCase(
+      documentRepository,
+      repositoryRepository,
+      planConstraintsService,
+      documentPipelineJobRepository,
+      pipelinePlugins,
+      notifications,
+      appConfig,
+      documentGuard,
+      repositoryGuard,
+    )
+
+    documentId = randomDocumentId()
+    repositoryId = RepositoryId()
+    document = Document(
+      id = documentId,
+      url = "http://localhost",
+      title = "foo",
+      text = "foo bar",
+      status = ReleaseStatus.unreleased,
+      publishedAt = LocalDateTime.now(),
+      repositoryId = repositoryId,
+      contentHash = ""
+    )
+
+    `when`(appConfig.apiGatewayUrl).thenReturn("http://foo.bar")
+
+    assertThat(document.toJsonItem(appConfig, EntityVisibility.isPublic)).isNotNull();
+
+    repository = Repository(
+      id = repositoryId,
+      title = "",
+      ownerId = UserId(),
+      groupId = GroupId(),
+      visibility = EntityVisibility.isPublic,
+      lastUpdatedAt = LocalDateTime.now(),
+      retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.publishedAt,
+    )
+  }
+
+  private suspend fun mockDocumentFindById(id: DocumentId, document: Document) {
+    `when`(documentRepository.findByIdWithSource(eq(id))).thenReturn(document)
+  }
+
+  private suspend fun mockRepositoryFindById(id: RepositoryId, repository: Repository) {
+    `when`(repositoryRepository.findById(eq(id))).thenReturn(repository)
+  }
+
+  @Test
+  fun `processDocumentPlugins will remove documents when dropped by filter`() = runTest {
+    val filterJob = DocumentPipelineJob(
+      pluginId = filterPluginId,
+      sequenceId = 1,
+      documentId = DocumentId(),
+      executorParams = PluginExecutionJson(
+        paramsJsonString = Gson().toJson(
+          listOf(
+            ItemFilterParams(
+              composite = CompositeFilterParams(
+                exclude = CompositeFieldFilterParams(
+                  title = StringFilterParams(
+                    operator = StringFilterOperator.contains,
+                    value = "foo"
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+
+    // title "foo" matches the exclude filter
+    `when`(
+      filterPlugin.filterEntity(
+        any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
+      )
+    ).thenReturn(false)
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf(
+        filterJob
+      )
+    )
+
+    // then
+    verify(filterPlugin).filterEntity(
+      any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
+    )
+    verify(documentRepository).deleteById(eq(documentId))
+  }
+
+  @Test
+  fun `processDocumentPlugins will save document when not dropped by filter`() = runTest {
+    val filterJob = DocumentPipelineJob(
+      pluginId = filterPluginId,
+      sequenceId = 1,
+      documentId = DocumentId(),
+      executorParams = PluginExecutionJson(
+        paramsJsonString = Gson().toJson(
+          listOf(
+            ItemFilterParams(
+              composite = CompositeFilterParams(
+                exclude = CompositeFieldFilterParams(
+                  title = StringFilterParams(
+                    operator = StringFilterOperator.contains,
+                    value = "foo2"
+                  )
+                )
+              )
+            )
+          )
+        )
+      )
+    )
+
+    // title "foo" does not match the exclude filter
+    `when`(
+      filterPlugin.filterEntity(
+        any(JsonItem::class.java), eq(filterJob.executorParams.paramsJsonString), eq(0), any(LogCollector::class.java)
+      )
+    ).thenReturn(true)
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf(
+        filterJob
+      )
+    )
+
+    // then
+    verify(documentRepository).save(argThat { it.id == documentId })
+  }
+
+  @Test
+  fun `processDocumentPlugins will map document`() = runTest {
+    val mapJob = DocumentPipelineJob(
+      pluginId = fulltextPluginId,
+      sequenceId = 1,
+      documentId = DocumentId(),
+      executorParams = PluginExecutionJson(
+        paramsJsonString = Gson().toJson(
+          FulltextPluginParams(
+            summary = true,
+            readability = true,
+            inheritParams = false
+          )
+        )
+      )
+    )
+
+    `when`(
+      fulltextPlugin.mapEntity(
+        any(Document::class.java),
+        any(Repository::class.java),
+        any(String::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenAnswer {
+      val d = it.arguments[0] as Document
+      d.copy(title = "mapped to a different title")
+    }
+
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf(
+        mapJob
+      )
+    )
+
+    // then
+    verify(documentRepository).save(argThat { it.id == document.id })
+    verify(documentRepository).save(argThat { it.title == "mapped to a different title" })
+  }
+
+  @Test
+  fun `released document will be forwarded to telegram, if repository allow notifications`() = runTest {
+    mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+    mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf()
+    )
+
+    // then
+    verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+    verify(documentRepository).save(argThat { it.id == documentId })
+    verify(notifications).pushToOwner(eq(repository.ownerId), argThat<List<JsonItem>> { it.size == 1 })
+  }
+
+  @Test
+  fun `released document won't be forwarded to telegram, if repository disabled notifications`() = runTest {
+    mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+    mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = false))
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf()
+    )
+
+    // then
+    verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+
+    verify(notifications, times(0)).pushToOwner(any2(), any2())
+  }
+
+
+  @Test
+  fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
+    // given
+    mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+    mockRepositoryFindById(repositoryId, repository)
+
+    // when
+    documentUseCase.processDocumentPlugins(
+      documentId, listOf()
+    )
+
+    // then
+    verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
+    verify(documentRepository).save(argThat { it.id == documentId })
+  }
+
+  @Test
+  @Disabled
+  fun `processDocumentPlugins will save document when execution gets delayed`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val jobId = PipelineJobId()
+      val job = DocumentPipelineJob(
+        id = jobId,
+        sequenceId = 1,
+        documentId = documentId,
+        pluginId = fulltextPluginId,
+        executorParams = PluginExecutionJson()
+      )
+      assertThat(job.coolDownUntil).isNull()
+
+      `when`(
+        fulltextPlugin.mapEntity(
+          any(Document::class.java),
+          any(Repository::class.java),
+          any(String::class.java),
+          any(LogCollector::class.java),
+        )
+      ).thenThrow(ResumableHarvestException("foo", Duration.ofMinutes(2)))
+
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
+
+      var savedDocument: Document? = null
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer {
+        savedDocument = it.arguments[0] as Document
+        savedDocument
+      }
+
+      var savedJob: DocumentPipelineJob? = null
+      `when`(documentPipelineJobRepository.save(any(DocumentPipelineJob::class.java))).thenAnswer {
+        savedJob = it.arguments[0] as DocumentPipelineJob
+        savedJob
+      }
+
+      // when
+      documentUseCase.processDocumentPlugins(
+        documentId, listOf(job)
+      )
+
+      // then
+      assertThat(savedJob).isNotNull
+      assertThat(savedJob!!.id).isEqualTo(jobId)
+      assertThat(savedJob!!.coolDownUntil).isNotNull()
+      assertThat(savedDocument).isNotNull
+      assertThat(savedDocument!!.id).isEqualTo(documentId)
+    }
+
+  @Test
+  fun `applyRetentionStrategy by startingAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.startingAt)
+
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
+
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
+
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndStartingAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
+      )
+    }
+
+  @Test
+  fun `applyRetentionStrategy by createdAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.createdAt)
+
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
+
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
+
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndCreatedAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
+      )
+    }
+
+  @Test
+  fun `applyRetentionStrategy by publishedAt`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val repository =
+        mockRepository(repositoryId, currentUserId, maxAgeDaysDateField = MaxAgeDaysDateField.publishedAt)
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
+
+      // when
+      documentUseCase.applyRetentionStrategy(repositoryId)
+
+      // then
+      verify(documentRepository).deleteAllByRepositoryIdAndPublishedAtBeforeAndStatus(
+        eq(repositoryId), any(LocalDateTime::class.java), any(
+          ReleaseStatus::class.java
+        )
+      )
+    }
+
+  @Test
+  fun `getRecordFrequency checks read access to the repository first`() = runTest {
+    `when`(repositoryGuard.requireRead(org.mockito.kotlin.any()))
+      .thenThrow(org.migor.feedless.NotFoundException("Repository $repositoryId not found"))
+
+    val result = runCatching {
+      documentUseCase.getRecordFrequency(DocumentsFilter(repository = repositoryId), DocumentDateField.createdAt)
+    }
+
+    assertThat(result.exceptionOrNull()).isInstanceOf(org.migor.feedless.NotFoundException::class.java)
+    org.mockito.kotlin.verify(documentRepository, org.mockito.kotlin.never())
+      .getRecordFrequency(org.mockito.kotlin.any(), org.mockito.kotlin.any())
+  }
+
+  @Test
+  fun `create document calls repository guard`() {
+    val documentId = randomDocumentId()
+    val repositoryId = randomRepositoryId()
+
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockUser(currentUserId)
+      mockDocument(documentId = documentId, repositoryId = repositoryId)
+      `when`(documentGuard.requireWrite(documentId)).thenReturn(document)
+      mockRepository(repositoryId, ownerId = randomUserId())
+
+      mockDocumentFindById(documentId, document.copy(status = ReleaseStatus.unreleased))
+      mockRepositoryFindById(repositoryId, repository.copy(pushNotificationsEnabled = true))
+
+      val data = DocumentCreate(
+        title = "foo",
+        publishedAt = Date().time,
+        url = "",
+        text = "",
+        repositoryId = repositoryId,
+      )
+      documentUseCase.createDocument(data)
+
+      verify(repositoryGuard).requireWrite(repositoryId)
+//        verify(documentGuard).requireWrite(documentId)
+    }
+  }
+
+  @Test
+  fun `create document of owner works`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+
+      mockUser(currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+      mockRepository(repositoryId, ownerId = currentUserId)
+
+      val data = DocumentCreate(
+        title = "foo",
+        publishedAt = Date().time,
+        url = "",
+        text = "",
+        repositoryId = repositoryId,
+      )
+      documentUseCase.createDocument(data)
+
+      verify(documentRepository).save(any(Document::class.java))
+    }
+
+  @Test
+  fun `create document honors publishedAt tags rawMimeType and optional text`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      val repositoryId = randomRepositoryId()
+      val publishedAt = Date().time
+
+      mockUser(currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+      mockRepository(repositoryId, ownerId = currentUserId)
+
+      val data = DocumentCreate(
+        title = "foo",
+        publishedAt = publishedAt,
+        url = "https://example.com",
+        text = null,
+        tags = listOf("news", "tech"),
+        rawMimeType = "text/plain",
+        repositoryId = repositoryId,
+      )
+      val saved = documentUseCase.createDocument(data)
+
+      assertThat(saved.text).isEmpty()
+      assertThat(saved.tags?.toList()).containsExactly("news", "tech")
+      assertThat(saved.rawMimeType).isEqualTo("text/plain")
+      assertThat(saved.publishedAt.toLegacyDate().time).isEqualTo(publishedAt)
+    }
+
+  @Test
+  fun `update document calls repository guard`() = runTest {
+    val documentId = randomDocumentId()
+    val repositoryId = randomRepositoryId()
+
+    mockUser(currentUserId)
+    mockDocument(documentId = documentId, repositoryId = repositoryId)
+
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      mockRepository(repositoryId, ownerId = randomUserId())
+
+      val data = DocumentUpdate()
+      val where = DocumentId(documentId.uuid)
+      documentUseCase.updateDocument(data, where)
+
+      verify(repositoryGuard).requireWrite(repositoryId)
+    }
+  }
+
+  @Test
+  fun `update document of owner works`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+      // given
+      val documentId = randomDocumentId()
+      val repositoryId = randomRepositoryId()
+
+      mockUser(currentUserId)
+      val document = mockDocument(documentId = documentId, repositoryId = repositoryId)
+      val repository = mockRepository(repositoryId, ownerId = currentUserId)
+      `when`(documentRepository.save(any(Document::class.java))).thenAnswer { it.arguments[0] }
+
+      mockDocumentFindById(documentId, document)
+      mockRepositoryFindById(repositoryId, repository)
+
+
+      val data = DocumentUpdate()
+      val where = DocumentId(documentId.uuid)
+
+      // when
+      documentUseCase.updateDocument(data, where)
+
+      // then
+
+//        val captor = ArgumentCaptor.forClass(Document::class.java)
+      verify(documentRepository).save(any2())
+//        val savedDocument = captor.value
+//        assertThat(savedDocument.id).isEqualTo(documentId)
+//        assertThat(savedDocument.description).isEqualTo("new-description")
+//        assertThat(savedDocument.sourcesSyncCron).isEqualTo("* * * * * *")
+    }
+
+
+  @Test
+  fun `given deleteDocuments is executed not by the owner, it fails`() {
+    val repository = mock(Repository::class.java)
+    val repositoryId = randomRepositoryId()
+    val ownerId = UserId()
+    val differentUserId = randomUserId()
+
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.ownerId).thenReturn(ownerId)
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runTest(context = RequestContext(groupId = GroupId(), userId = differentUserId)) {
+        `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+        documentUseCase.deleteDocuments(repositoryId, org.migor.feedless.document.StringFilter())
+      }
+    }
+  }
+
+  private suspend fun mockUser(userId: UserId): User {
+    val user = mock(User::class.java)
+    `when`(user.id).thenReturn(userId)
+    `when`(userRepository.findById(eq(userId))).thenReturn(user)
+    return user
+  }
+
+  private suspend fun mockDocument(documentId: DocumentId, repositoryId: RepositoryId): Document {
+    val document = Document(
+      id = documentId,
+      url = "http://localhost",
+      title = "foo",
+      text = "foo bar",
+      status = ReleaseStatus.unreleased,
+      publishedAt = LocalDateTime.now(),
+      repositoryId = repositoryId,
+      contentHash = ""
+    )
+
+    `when`(documentRepository.findById(eq(documentId))).thenReturn(document)
+
+    return document
+  }
+
+  private suspend fun mockRepository(
+    repositoryId: RepositoryId,
+    ownerId: UserId,
+    maxAgeDaysDateField: MaxAgeDaysDateField? = null,
+    retentionMaxCapacity: Int? = null
+  ): Repository {
+    val repository = mock(Repository::class.java)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.ownerId).thenReturn(ownerId)
+    maxAgeDaysDateField?.let {
+      `when`(repository.retentionMaxAgeDaysReferenceField).thenReturn(it)
+    }
+    retentionMaxCapacity?.let {
+      `when`(repository.retentionMaxCapacity).thenReturn(it)
+    }
+    `when`(repository.retentionMaxAgeDays).thenReturn(20)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repository.product).thenReturn(Vertical.feedless)
+    `when`(repositoryRepository.findById(eq(repositoryId))).thenReturn(repository)
+
+    `when`(
+      planConstraintsService.coerceRetentionMaxAgeDays(
+        repository.retentionMaxAgeDays,
+        repository.groupId,
+      )
+    ).thenReturn(20)
+
+    `when`(
+      planConstraintsService.coerceRetentionMaxCapacity(
+        repository.retentionMaxCapacity,
+        repository.groupId,
+      )
+    ).thenReturn(retentionMaxCapacity)
+
+    return repository
+  }
+}

@@ -21,28 +21,6 @@ import org.springframework.stereotype.Service
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
-data class EventsReportPluginParams(
-  val language: String,
-  val from: String,
-  val to: String,
-  val subject: String,
-  /**
-   * Name der Vorlagenvariante, üblicherweise das Produkt des Repositories.
-   * Der Versandpfad kennt kein Produkt - er reicht den Namen nur durch, und
-   * die Vorlagenauflösung entscheidet, ob es dafür eine eigene Vorlage gibt.
-   */
-  val templateVariant: String? = null,
-  /** Der Abmeldelink dieses Reports. Ohne ihn ging jede Mail mit href="" raus. */
-  val deactivationLink: String? = null,
-)
-
-fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {
-  return PluginExecutionJson(
-    paramsJsonString = Gson().toJson(this)
-  )
-}
-
-
 /**
  * Was eine Report-Mail von einem Event zeigt, bereits formatiert.
  *

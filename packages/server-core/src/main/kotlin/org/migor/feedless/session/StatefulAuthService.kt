@@ -8,11 +8,13 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretRepository
@@ -46,6 +48,9 @@ class StatefulAuthService : AuthService() {
   @Autowired
   private lateinit var userSecretRepository: UserSecretRepository
 
+  @Autowired
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
+
   @Value("\${auth.token.anonymous.validForDays}")
   lateinit var tokenAnonymousValidForDays: String
 
@@ -68,16 +73,18 @@ class StatefulAuthService : AuthService() {
     resolveWhitelistedHosts()
   }
 
+  /** Root login only; everyone else uses SSO or magic mail, since a user-secret value is not a password. */
   override suspend fun authenticateUser(email: String, secretKey: String): Jwt = withContext(Dispatchers.IO) {
     log.debug("authRoot")
-    val root = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
-    if (!root.admin) {
+    val user = userRepository.findByEmail(email) ?: throw NotFoundException("user not found")
+    if (!user.admin) {
       throw PermissionDeniedException("account is not root")
     }
     userSecretRepository.findBySecretKeyValue(secretKey, email)
       ?: throw IllegalArgumentException("secretKey does not match")
 
-    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(root.id)))
+    val actingGroup = userGroupAssignmentRepository.actingGroupOf(user.id)
+    jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(user.id), GroupCapability(actingGroup)))
   }
 
   override suspend fun findUserById(userId: UserId): User? = withContext(Dispatchers.IO) {

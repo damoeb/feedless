@@ -6,10 +6,13 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withContext
 import org.junit.jupiter.api.Tag
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.session.CookieProvider
 import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.actingGroupOf
 import org.migor.feedless.user.UserRepository
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Profile
@@ -35,6 +38,9 @@ class TestingEndpoint {
   private lateinit var userRepository: UserRepository
 
   @Autowired
+  private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
+
+  @Autowired
   private lateinit var cookieProvider: CookieProvider
 
 
@@ -53,7 +59,7 @@ class TestingEndpoint {
     response.addCookie(
       cookieProvider.createTokenCookie(
         jwtTokenIssuer.createJwtForCapabilities(
-          listOf(UserCapability(user.id))
+          listOf(UserCapability(user.id), GroupCapability(userGroupAssignmentRepository.actingGroupOf(user.id)))
         )
       )
     )

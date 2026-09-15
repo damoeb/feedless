@@ -10,8 +10,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.DisableSecurityConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.any2
+import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
@@ -25,6 +25,7 @@ import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.UserUseCase
+import org.migor.feedless.userGroup.UserGroupAssignmentRepository
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.`when`
 import org.springframework.boot.test.context.SpringBootTest
@@ -60,11 +61,12 @@ import kotlin.time.Duration.Companion.seconds
     UserGuard::class,
     UserSecretUseCase::class,
     UserRepository::class,
-    OneTimePasswordService::class,
     GroupRepository::class,
+    UserGroupAssignmentRepository::class,
+    OneTimePasswordService::class,
   ]
 )
-@Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class, DisableWebSocketsConfiguration::class)
+@Import(DisableDatabaseConfiguration::class, DisableSecurityConfiguration::class)
 class ThrottleAspectIntTest {
 
   private lateinit var monoGraphQLClient: WebClientGraphQLClient
@@ -86,6 +88,8 @@ class ThrottleAspectIntTest {
       `when`(jwt.tokenValue).thenReturn("jwt")
       `when`(jwt.expiresAt).thenReturn(LocalDateTime.now().toInstant(ZoneOffset.UTC))
       `when`(jwtTokenIssuer.createJwtForAnonymous()).thenReturn(jwt)
+      `when`(jwtTokenIssuer.issueAnonymousToken()).thenReturn(AuthToken("jwt"))
+      `when`(jwtTokenIssuer.decodeJwt("jwt")).thenReturn(jwt)
       `when`(jwtTokenIssuer.getExpiration(any2())).thenReturn(2.hours)
       `when`(authService.isWhitelisted(any2())).thenReturn(false)
     }
@@ -110,7 +114,8 @@ class ThrottleAspectIntTest {
     val lastResponse = responses.last()
     assertThat(responses.dropLast(1).none { it.hasErrors() }).isTrue()
     assertThat(lastResponse.errors.size).isEqualTo(1)
-    assertThat(lastResponse.errors.first().message).contains("HostOverloadingException")
+    // DGS 10 hands GraphQLExceptionHandler the unwrapped exception, not DGS 9's CompletionException wrapper
+    assertThat(lastResponse.errors.first().message).contains("You have exhausted your API Request Quota")
   }
 }
 

@@ -32,6 +32,7 @@ import java.util.*
   name = "t_source",
   indexes = [
     Index(name = "source_created_at_idx", columnList = StandardJpaFields.createdAt),
+    Index(name = "source_repository_id_idx", columnList = StandardJpaFields.repositoryId),
   ]
 )
 open class SourceEntity : EntityWithUUID() {

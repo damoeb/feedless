@@ -1,0 +1,90 @@
+{
+  "name": "browser-automation-app",
+  "version": "0.0.1",
+  "description": "",
+  "author": "",
+  "private": true,
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "codegen": "graphql-codegen --config codegen.yml",
+    "prebuild": "yarn clean && yarn codegen",
+    "prestart": "yarn clean && yarn codegen",
+    "build": "nest build",
+    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "start": "dotenv -e ../../.env -- nest start",
+    "start:debug": "APP_VERSION=dev APP_PRERENDER_TIMEOUT_MILLIS=60000 DEBUG=true nest start --debug",
+    "start:prod": "APP_VERSION=prod node dist/main",
+    "lint": "prettier --write --log-level=warn .",
+    "clean": "rimraf dist",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
+    "test:e2e": "jest --config ./test/jest-e2e.json"
+  },
+  "dependencies": {
+    "@apollo/client": "3.13.8",
+    "@nestjs/common": "11.1.6",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "11.1.6",
+    "@nestjs/platform-express": "11.1.6",
+    "graphql": "16.11.0",
+    "graphql-ws": "6.0.5",
+    "lodash": "4.17.23",
+    "nest-winston": "^1.10.2",
+    "node-fetch-commonjs": "3.3.2",
+    "puppeteer": "24.37.3",
+    "reflect-metadata": "0.2.2",
+    "rimraf": "6.0.1",
+    "rxjs": "7.8.2",
+    "uuid": "^11.1.0",
+    "winston": "^3.19.0",
+    "ws": "8.18.2"
+  },
+  "devDependencies": {
+    "@graphql-codegen/add": "^5.0.3",
+    "@graphql-codegen/cli": "5.0.7",
+    "@graphql-codegen/typescript": "4.1.6",
+    "@graphql-codegen/typescript-document-nodes": "4.0.16",
+    "@graphql-codegen/typescript-operations": "4.6.1",
+    "@nestjs/cli": "11.0.10",
+    "@nestjs/schematics": "11.0.7",
+    "@nestjs/testing": "11.1.6",
+    "@types/express": "5.0.3",
+    "@types/jest": "30.0.0",
+    "@types/lodash": "4.17.20",
+    "@types/node": "20.8.10",
+    "@types/node-fetch": "^2.6.3",
+    "@types/supertest": "2.0.16",
+    "@types/winston": "^2.4.4",
+    "@types/ws": "^8.18.1",
+    "jest": "30.0.5",
+    "prettier": "3.6.2",
+    "source-map-support": "0.5.21",
+    "supertest": "7.1.4",
+    "ts-jest": "29.4.1",
+    "ts-loader": "9.5.2",
+    "ts-node": "10.9.2",
+    "tsconfig-paths": "4.2.0",
+    "typescript": "5.9.2"
+  },
+  "jest": {
+    "moduleFileExtensions": [
+      "js",
+      "json",
+      "ts"
+    ],
+    "rootDir": "src",
+    "testRegex": ".*\\.spec\\.ts$",
+    "transform": {
+      "^.+\\.(t|j)s$": "ts-jest"
+    },
+    "collectCoverageFrom": [
+      "**/*.(t|j)s"
+    ],
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node"
+  }
+}

@@ -33,6 +33,7 @@
         ],
         "styles": [
           "node_modules/leaflet/dist/leaflet.css",
+          "node_modules/@ionic/angular/css/core.css",
           "apps/upcoming/src/theme/variables.scss",
           "apps/upcoming/src/global.scss",
           "apps/upcoming/src/styles.scss"

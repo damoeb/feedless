@@ -9,8 +9,8 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
-import org.migor.feedless.DisableWebSocketsConfiguration
 import org.migor.feedless.analytics.AnalyticsService
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
@@ -28,7 +28,8 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.boot.test.web.client.TestRestTemplate
+import org.springframework.boot.resttestclient.TestRestTemplate
+import org.springframework.boot.resttestclient.autoconfigure.AutoConfigureTestRestTemplate
 import org.springframework.context.annotation.Import
 import org.springframework.http.HttpHeaders
 import org.springframework.http.HttpStatus
@@ -40,12 +41,14 @@ import java.time.LocalDateTime
 
 
 @ExtendWith(SpringExtension::class)
+@AutoConfigureTestRestTemplate
 @SpringBootTest(
   webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
 )
 @MockitoBean(
   types = [
     DocumentResolver::class,
+    DocumentUseCase::class,
     HttpService::class,
     AuthService::class,
     UserUseCase::class,
@@ -53,12 +56,11 @@ import java.time.LocalDateTime
     JwtTokenIssuer::class,
     CookieProvider::class,
     UserGuard::class,
-    DocumentGuard::class,
     DocumentRepository::class,
     UserRepository::class,
     UserGroupAssignmentRepository::class,
-    OAuth2AuthorizedClientService::class,
     GroupRepository::class,
+    OAuth2AuthorizedClientService::class
   ]
 )
 @ActiveProfiles(
@@ -71,7 +73,6 @@ import java.time.LocalDateTime
 )
 @Import(
   DisableDatabaseConfiguration::class,
-  DisableWebSocketsConfiguration::class
 )
 class DocumentControllerIntTest {
 
@@ -79,7 +80,7 @@ class DocumentControllerIntTest {
   private var actualDocumentUrl: String = "https://some-document-url.test"
 
   @MockitoBean
-  lateinit var documentUseCase: DocumentUseCase
+  lateinit var documentGuard: DocumentGuard
 
   @MockitoBean
   lateinit var analyticsService: AnalyticsService
@@ -101,15 +102,16 @@ class DocumentControllerIntTest {
 
   @Test
   fun `returns 404 if document does not exist`() = runTest {
+    `when`(documentGuard.requireRead(any2())).thenThrow(NotFoundException("Document ${document.id} not found"))
     val response = template.getForEntity("/article/${document.id.uuid}", String::class.java)
-    verify(documentUseCase).findById(eq(document.id))
+    verify(documentGuard).requireRead(eq(document.id))
     assertThat(response.statusCode).isEqualTo(HttpStatus.NOT_FOUND)
   }
 
   @Test
   @Disabled
   fun `redirect with source param`() = runTest {
-    `when`(documentUseCase.findById(any2())).thenReturn(document)
+    `when`(documentGuard.requireRead(any2())).thenReturn(document)
 
     val params = mapOf(
       "source" to "https://heise.de/some-feed.xml",
@@ -122,7 +124,7 @@ class DocumentControllerIntTest {
   @Test
   @Disabled
   fun `redirect without source param`() = runTest {
-    `when`(documentUseCase.findById(any2())).thenReturn(document)
+    `when`(documentGuard.requireRead(any2())).thenReturn(document)
     val response = template.getForEntity("/article/${document.id}", String::class.java)
     assertThat(response.statusCode).isEqualTo(HttpStatus.FOUND)
     assertThat(response.headers.getFirst(HttpHeaders.LOCATION)).isEqualTo(actualDocumentUrl)

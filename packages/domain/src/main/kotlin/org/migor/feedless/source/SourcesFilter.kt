@@ -8,4 +8,6 @@ data class SourcesFilter(
   val latLng: GeoPointWhereInput? = null,
   val like: String? = null,
   val disabled: Boolean? = null,
+  /** Only sources with `errorsInSuccession >= minErrorsInSuccession`. */
+  val minErrorsInSuccession: Int? = null,
 )

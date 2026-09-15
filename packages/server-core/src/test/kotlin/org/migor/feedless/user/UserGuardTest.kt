@@ -31,7 +31,11 @@ class UserGuardTest {
     userRepository = mock(UserRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
     userGuard = UserGuard(userRepository)
-    repositoryGuard = RepositoryGuard(repositoryRepository, userGuard)
+    repositoryGuard = RepositoryGuard(
+      repositoryRepository,
+      userGuard,
+      mock(org.migor.feedless.userGroup.UserGroupAssignmentRepository::class.java),
+    )
 
     mockUser(currentUserId)
   }

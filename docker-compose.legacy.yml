@@ -19,7 +19,7 @@ services:
     networks:
       - postgres
 
-  feedless-agent:
+  feedless-browser-automation-app:
     image: damoeb/feedless:agent-0.1
     security_opt:
       - seccomp=./chrome.json

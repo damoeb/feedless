@@ -1,0 +1,199 @@
+package org.migor.feedless.annotation
+
+import kotlinx.coroutines.test.runTest
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
+import org.migor.feedless.Mother.randomDocumentId
+import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.Mother.randomUserId
+import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.any
+import org.migor.feedless.argThat
+import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentGuard
+import org.migor.feedless.document.DocumentId
+import org.migor.feedless.eq
+import org.migor.feedless.group.GroupId
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryGuard
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.user.User
+import org.migor.feedless.user.UserId
+import org.mockito.Mockito.mock
+import org.mockito.Mockito.verify
+import org.mockito.Mockito.`when`
+import java.util.*
+
+class AnnotationUseCaseTest {
+
+  private lateinit var voteRepository: VoteRepository
+  private lateinit var textAnnotationRepository: TextAnnotationRepository
+  private lateinit var annotationRepository: AnnotationRepository
+  private lateinit var annotationUseCase: AnnotationUseCase
+  private lateinit var currentUser: User
+  private lateinit var annotationGuard: AnnotationGuard
+  private lateinit var documentGuard: DocumentGuard
+  private lateinit var repositoryGuard: RepositoryGuard
+  private val currentUserId = randomUserId()
+  private val documentId = randomDocumentId()
+  private val repositoryId = randomRepositoryId()
+
+  @BeforeEach
+  fun setUp() = runTest {
+    voteRepository = mock(VoteRepository::class.java)
+    `when`(voteRepository.save(any(Vote::class.java))).thenAnswer { it.arguments[0] }
+    textAnnotationRepository = mock(TextAnnotationRepository::class.java)
+    annotationRepository = mock(AnnotationRepository::class.java)
+    repositoryGuard = mock(RepositoryGuard::class.java)
+    val repository = mock(Repository::class.java)
+    `when`(repository.id).thenReturn(repositoryId)
+    `when`(repositoryGuard.requireWrite(any(RepositoryId::class.java)))
+      .thenReturn(repository)
+
+    annotationGuard = mock(AnnotationGuard::class.java)
+    `when`(annotationGuard.requireWrite(any(AnnotationId::class.java)))
+      .thenReturn(mock(Vote::class.java))
+    documentGuard = mock(DocumentGuard::class.java)
+    val document = mock(Document::class.java)
+    `when`(document.id).thenReturn(documentId)
+    `when`(documentGuard.requireWrite(any(DocumentId::class.java)))
+      .thenReturn(document)
+
+    annotationUseCase = AnnotationUseCase(
+      annotationRepository,
+      voteRepository,
+      textAnnotationRepository,
+      annotationGuard,
+      documentGuard,
+      repositoryGuard,
+    )
+
+    currentUser = mock(User::class.java)
+    `when`(currentUser.id).thenReturn(currentUserId)
+  }
+
+  @Test
+  fun `given identical annotation exists, creating the same will be rejected`() {
+
+    assertThatExceptionOfType(IllegalArgumentException::class.java).isThrownBy {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+        mockAnnotationExists(true)
+
+        annotationUseCase.createAnnotation(
+          BoolAnnotationCreate(
+            target = AnnotationTarget(documentId = DocumentId(UUID.randomUUID()), repositoryId = null),
+            flag = true,
+          )
+        )
+      }
+    }
+  }
+
+  @Test
+  fun `flag a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = documentTarget(), flag = true)
+    )
+
+    verify(voteRepository).save(argThat { it.flag && it.documentId == documentId })
+  }
+
+  @Test
+  fun `upVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = documentTarget(), upVote = true)
+    )
+
+    verify(voteRepository).save(argThat { it.upVote && it.documentId == documentId })
+  }
+
+  @Test
+  fun `downVote a document`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = documentTarget(), downVote = true)
+    )
+
+    verify(voteRepository).save(argThat { it.downVote && it.documentId == documentId })
+  }
+
+  @Test
+  fun `flag a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = repositoryTarget(), flag = true)
+    )
+
+    verify(voteRepository).save(argThat { it.flag && it.repositoryId == repositoryId })
+  }
+
+  @Test
+  fun `upVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = repositoryTarget(), upVote = true)
+    )
+
+    verify(voteRepository).save(argThat { it.upVote && it.repositoryId == repositoryId })
+  }
+
+  @Test
+  fun `downVote a repository`() = runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+    mockAnnotationExists(false)
+    annotationUseCase.createAnnotation(
+      BoolAnnotationCreate(target = repositoryTarget(), downVote = true)
+    )
+
+    verify(voteRepository).save(argThat { it.downVote && it.repositoryId == repositoryId })
+  }
+
+  @Test
+  fun `others cannot delete his annotation`() {
+    val annotationId = AnnotationId()
+    val annotation = mock(TextAnnotation::class.java)
+    `when`(annotation.id).thenReturn(annotationId)
+    `when`(annotation.ownerId).thenReturn(UserId())
+
+    assertThatExceptionOfType(PermissionDeniedException::class.java).isThrownBy {
+      runTest(context = RequestContext(groupId = GroupId(), userId = currentUserId)) {
+        `when`(annotationGuard.requireWrite(any(AnnotationId::class.java))).thenThrow(PermissionDeniedException(""))
+        `when`(annotationRepository.findById(any(AnnotationId::class.java))).thenReturn(annotation)
+
+        annotationUseCase.deleteAnnotation(annotationId)
+      }
+    }
+  }
+
+  private fun documentTarget() = AnnotationTarget(documentId = documentId, repositoryId = null)
+
+  private fun repositoryTarget() = AnnotationTarget(documentId = null, repositoryId = repositoryId)
+
+  private fun mockAnnotationExists(exists: Boolean = true) {
+    `when`(
+      voteRepository.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
+        any(Boolean::class.java),
+        any(Boolean::class.java),
+        any(Boolean::class.java),
+        any(UserId::class.java),
+        any(DocumentId::class.java),
+        eq(null),
+      )
+    ).thenReturn(exists)
+
+    `when`(
+      voteRepository.existsByFlagAndUpVoteAndDownVoteAndOwnerIdAndRepositoryIdAndDocumentId(
+        any(Boolean::class.java),
+        any(Boolean::class.java),
+        any(Boolean::class.java),
+        any(UserId::class.java),
+        eq(null),
+        any(RepositoryId::class.java),
+      )
+    ).thenReturn(exists)
+  }
+
+}

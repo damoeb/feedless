@@ -59,5 +59,6 @@ interface TemplateService {
    * Bewusst eine eigene Überladung statt eines Vorgabewerts, damit
    * bestehende Aufrufer und ihre Testdoubles unverändert bleiben.
    */
-  fun <T> renderTemplate(template: FreemarkerTemplate<T>, variant: TemplateVariant?): String
+  fun <T> renderTemplate(template: FreemarkerTemplate<T>, variant: TemplateVariant?): String =
+    renderTemplate(template)
 }

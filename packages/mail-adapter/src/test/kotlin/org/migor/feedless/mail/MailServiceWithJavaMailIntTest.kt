@@ -16,8 +16,7 @@ import org.mockito.Mockito.`when`
 import org.mockito.kotlin.any
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-import org.springframework.boot.autoconfigure.mail.MailSenderValidatorAutoConfiguration
+import org.springframework.boot.mail.autoconfigure.MailSenderValidatorAutoConfiguration
 import org.springframework.boot.test.context.SpringBootTest
 import org.springframework.context.annotation.Import
 import org.springframework.mail.javamail.JavaMailSender
@@ -35,7 +34,6 @@ import java.util.*
 @Import(MailGatewayConfig::class)
 @EnableAutoConfiguration(
   exclude = [
-    DataSourceAutoConfiguration::class,
     MailSenderValidatorAutoConfiguration::class,
   ]
 )

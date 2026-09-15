@@ -9,4 +9,5 @@ interface UserGroupAssignmentRepository {
   fun findByUserIdAndGroupId(userId: UserId, groupId: GroupId): UserGroupAssignment?
   fun save(assignment: UserGroupAssignment): UserGroupAssignment
   fun delete(assignment: UserGroupAssignment)
+  fun findAllByGroupId(groupId: GroupId): List<UserGroupAssignment>
 }
