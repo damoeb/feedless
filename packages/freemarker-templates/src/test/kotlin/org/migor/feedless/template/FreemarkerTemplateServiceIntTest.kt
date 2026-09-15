@@ -25,6 +25,7 @@ class FreemarkerTemplateServiceIntTest {
           ReportCreatedParams(
             language = "en",
             deactivationLink = "deactivationLink",
+            abuseLink = "abuseLink",
             reportName = "reportName",
             cronExpression = "cronExpression",
             nextScheduledAt = "nextScheduledAt",
@@ -43,8 +44,10 @@ class FreemarkerTemplateServiceIntTest {
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Scheduled Reporter Created</h2>
-<p>Your report has been successfully scheduled. Below are the details:</p>
+<h2 style="color: #2c3e50;">Your subscription is active</h2>
+<p>From now on we send you the report on schedule. Every mail contains a link to cancel it.</p>
+
+<p>The details:</p>
 
 <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
 <tr>
@@ -62,20 +65,64 @@ class FreemarkerTemplateServiceIntTest {
 </table>
 
 <p style="margin-top: 20px;">
-If you no longer wish to receive this report, you can deactivate it here:
+If you no longer wish to receive this report, you can cancel it here:
 </p>
 
 <p>
 <a href="deactivationLink"
 style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
-Deactivate Report
+Cancel Report
 </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+Didn't subscribe yourself? <a href="abuseLink">Report it here</a> and this address will only get reports you confirm.
 </p>
 
 </body>
 </html>
 """.trimAllIndents()
       )
+  }
+
+  @Test
+  fun testMailTemplateReportConfirmRequest() {
+    assertThat(
+      renderTemplate(
+        MailTemplateReportConfirmRequest(
+          ReportConfirmRequestParams(
+            language = "en",
+            confirmationLink = "confirmationLink",
+          )
+        )
+      )
+    ).isEqualTo(
+      """
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Scheduled Report</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
+
+<h2 style="color: #2c3e50;">Please confirm your subscription</h2>
+<p>A report was ordered for this address. It starts only once you confirm it:</p>
+
+<p>
+<a href="confirmationLink"
+style="display: inline-block; padding: 10px 15px; background-color: #12775C; color: #fff; text-decoration: none; border-radius: 4px;">
+Confirm subscription
+</a>
+</p>
+
+<p>Without your confirmation we send nothing. If this wasn't you, just ignore this mail.</p>
+
+</body>
+</html>
+""".trimAllIndents()
+    )
   }
 
   @Test
@@ -226,6 +273,13 @@ Deactivate Report
   </html>
     """.trimAllIndents()
     )
+  }
+
+  @Test
+  fun testPageTemplateReportAbuse() {
+    assertThat(renderTemplate(PageTemplateReportAbuse()))
+      .contains("Danke für die Meldung")
+      .contains("Neue Abos starten erst, wenn du sie selbst bestätigst.")
   }
 
   private fun <T> renderTemplate(template: FreemarkerTemplate<T>): String {

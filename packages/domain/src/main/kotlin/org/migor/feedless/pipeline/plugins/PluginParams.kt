@@ -73,6 +73,16 @@ data class EventsReportPluginParams(
   val from: String,
   val to: String,
   val subject: String,
+  /**
+   * Template variant name, usually the repository's product. The send path
+   * knows no product - it just passes the name through, and template
+   * resolution decides whether a dedicated template exists for it.
+   */
+  val templateVariant: String? = null,
+  /** This report's unsubscribe link. Without it every mail went out with href="". */
+  val deactivationLink: String? = null,
+  /** Reports abuse for the whole address, not just this report. */
+  val abuseLink: String? = null,
 )
 
 fun EventsReportPluginParams.toPluginExecutionJson(): PluginExecutionJson {

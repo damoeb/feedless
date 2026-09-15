@@ -1,0 +1,48 @@
+<form class="subscription-form" [formGroup]="form" (ngSubmit)="submit()">
+  <ion-list lines="none">
+    <ion-item>
+      <ion-input
+        formControlName="name"
+        label="Dein Name"
+        labelPlacement="stacked"
+        autocomplete="name"
+        errorText="Wie sollen wir dich ansprechen?"
+        placeholder="Hans Muster"
+      ></ion-input>
+    </ion-item>
+    <ion-item>
+      <ion-input
+        formControlName="email"
+        type="email"
+        label="Deine E-Mail"
+        labelPlacement="stacked"
+        autocomplete="email"
+        errorText="Wohin sollen wir die E-Mail senden?"
+        placeholder="mail@example.com"
+      ></ion-input>
+    </ion-item>
+    @if (!isEdit()) {
+      <ion-item
+        [color]="
+          form.controls.acceptedTerms.invalid && form.controls.acceptedTerms.touched
+            ? 'danger'
+            : undefined
+        "
+      >
+        <ion-checkbox formControlName="acceptedTerms" labelPlacement="end">
+          <ion-label class="ion-text-wrap">
+            Ich stimme den
+            <a href="/agb" target="_blank" (click)="$event.stopPropagation()"
+              >Datenschutzrichtlinien und den AGB</a
+            >
+            zu
+          </ion-label>
+        </ion-checkbox>
+      </ion-item>
+    }
+  </ion-list>
+  <ion-button type="submit" expand="block">
+    {{ isEdit() ? 'Speichern' : 'Abonnieren' }}
+    <app-icon name="send-outline" slot="end"></app-icon>
+  </ion-button>
+</form>

@@ -16,4 +16,6 @@ interface TokenIssuer {
   fun issueTokenForCapabilities(capabilities: List<Capability<out Any>>): AuthToken
   suspend fun decodeJwt(token: String): Jwt
   fun createJwtForAnonymousFeed(host: String, id: RepositoryClaimId): Jwt
+  fun createJwtForReport(reportId: String, validForDays: Long): Jwt
+  fun createJwtForRecipient(recipientId: String, validForDays: Long): Jwt
 }

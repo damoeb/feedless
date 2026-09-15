@@ -77,6 +77,34 @@ class JwtTokenIssuer(
     )
   }
 
+  /**
+   * For links in report mails. The token names exactly one report and
+   * deliberately carries no user capability: the recipient is usually
+   * anonymous, and possession of the signed link is the proof.
+   */
+  override fun createJwtForReport(reportId: String, validForDays: Long): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report"))).increment()
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
+        JwtParameterNames.REPORT_ID to reportId,
+      ),
+      validForDays.days,
+    )
+  }
+
+  /** For the abuse link in report mails: names one recipient address and grants nothing else. */
+  override fun createJwtForRecipient(recipientId: String, validForDays: Long): Jwt {
+    meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "report-recipient"))).increment()
+    return encodeJwt(
+      mapOf(
+        JwtParameterNames.TYPE to AuthTokenType.ANONYMOUS.value,
+        JwtParameterNames.RECIPIENT_ID to recipientId,
+      ),
+      validForDays.days,
+    )
+  }
+
   fun createJwtForCapabilities(capabilities: List<Capability<out Any>>): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "user"))).increment()
     log.debug("signedToken for user")

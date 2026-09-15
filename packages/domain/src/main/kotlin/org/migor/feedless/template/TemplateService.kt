@@ -7,6 +7,7 @@ abstract class FreemarkerTemplate<T>(val templateName: String) {
 data class ReportCreatedParams(
   val language: String,
   val deactivationLink: String,
+  val abuseLink: String,
   val reportName: String,
   val cronExpression: String,
   val nextScheduledAt: String,
@@ -14,6 +15,14 @@ data class ReportCreatedParams(
 
 data class MailTemplateReportCreated(override val params: ReportCreatedParams) :
   FreemarkerTemplate<ReportCreatedParams>("mail-report-created")
+
+data class ReportConfirmRequestParams(
+  val language: String,
+  val confirmationLink: String,
+)
+
+data class MailTemplateReportConfirmRequest(override val params: ReportConfirmRequestParams) :
+  FreemarkerTemplate<ReportConfirmRequestParams>("mail-report-confirm-request")
 
 data class AuthCodeMailParams(
   val codeValidUntil: String,
@@ -48,7 +57,19 @@ data class MailTemplateVisualDiffWelcome(override val params: VisualDiffWelcomeP
 class MailTemplateChangeTrackerAuthorized(override val params: Unit = Unit) :
   FreemarkerTemplate<Unit>("page-tracker-authorized")
 
+class PageTemplateReportAbuse(override val params: Unit = Unit) :
+  FreemarkerTemplate<Unit>("page-report-abuse")
+
 
 interface TemplateService {
   fun <T> renderTemplate(template: FreemarkerTemplate<T>): String
+
+  /**
+   * Renders [template] in a variant: looks up `<template>-<variant>` first,
+   * falling back to `<template>` if missing. A separate overload rather than
+   * a default parameter, so existing callers and their test doubles stay
+   * unchanged.
+   */
+  fun <T> renderTemplate(template: FreemarkerTemplate<T>, variant: TemplateVariant?): String =
+    renderTemplate(template)
 }

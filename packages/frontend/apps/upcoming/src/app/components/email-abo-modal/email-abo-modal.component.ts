@@ -1,35 +1,54 @@
 import { Component, inject, PLATFORM_ID } from '@angular/core';
-import { AlertController, ModalController } from '@ionic/angular/standalone';
-import { addIcons } from 'ionicons';
-import {
-  bodyOutline,
-  closeOutline,
-  mailOutline,
-  sendOutline,
-  trashOutline,
-} from 'ionicons/icons';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { createEmailFormControl, NamedLatLon, Nullable } from '@feedless/core';
-import { GqlFeedlessPlugins, GqlIntervalUnit } from '@feedless/graphql-api';
-import dayjs from 'dayjs';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { ReportService } from '@feedless/components';
 import { isPlatformBrowser } from '@angular/common';
+import {
+  AlertController,
+  IonButton,
+  IonButtons,
+  IonContent,
+  IonHeader,
+  IonTitle,
+  IonToolbar,
+  ModalController,
+} from '@ionic/angular/standalone';
+import { addIcons } from 'ionicons';
+import { closeOutline } from 'ionicons/icons';
+import { NamedLatLon, Nullable } from '@feedless/core';
+// eslint-disable-next-line @nx/enforce-module-boundaries
+import { IconComponent, ReportService } from '@feedless/components';
+import { ReportSubscriptionFormComponent } from '../report-subscription-form/report-subscription-form.component';
+import {
+  ReportSubscriptionValue,
+  toSegmentInput,
+} from '../report-subscription-form/report-subscription';
 
 export interface EmailAboModalComponentProps {
   repositoryId: string;
   location: Nullable<NamedLatLon>;
 }
 
-type ReportFrequency = 'week' | 'month';
-type Sex = 'm' | 'f' | undefined;
-
+/**
+ * The modal in which an anonymous visitor creates a subscription.
+ *
+ * Just a container now: the form lives in ReportSubscriptionFormComponent,
+ * the translation in toSegmentInput. What stays here is what's bound to the
+ * modal - passing in the page's location, calling the service, closing and
+ * reporting the outcome.
+ */
 @Component({
   selector: 'app-email-abo-modal',
   templateUrl: './email-abo-modal.component.html',
   styleUrls: ['./email-abo-modal.component.scss'],
-  // eslint-disable-next-line @angular-eslint/prefer-standalone
-  standalone: false,
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonTitle,
+    IonButtons,
+    IonButton,
+    IonContent,
+    IconComponent,
+    ReportSubscriptionFormComponent,
+  ],
+  standalone: true,
 })
 export class EmailAboModalComponent implements EmailAboModalComponentProps {
   private readonly modalCtrl = inject(ModalController);
@@ -39,30 +58,10 @@ export class EmailAboModalComponent implements EmailAboModalComponentProps {
 
   repositoryId: string;
   location: NamedLatLon;
-  reportFrequencyWeek: ReportFrequency = 'week';
-  reportFrequencyMonth: ReportFrequency = 'month';
-
-  protected formGroup = new FormGroup({
-    sex: new FormControl<Sex>(undefined),
-    age: new FormControl<number>(undefined),
-    frequency: new FormControl<ReportFrequency>('week'),
-    acceptedTerms: new FormControl<boolean>(false, Validators.requiredTrue),
-    email: createEmailFormControl(''),
-    name: new FormControl<string>('', [
-      Validators.minLength(3),
-      Validators.required,
-    ]),
-  });
 
   constructor() {
     if (isPlatformBrowser(this.platformId)) {
-      addIcons({
-        closeOutline,
-        trashOutline,
-        mailOutline,
-        bodyOutline,
-        sendOutline,
-      });
+      addIcons({ closeOutline });
     }
   }
 
@@ -70,56 +69,34 @@ export class EmailAboModalComponent implements EmailAboModalComponentProps {
     return this.modalCtrl.dismiss();
   }
 
-  async createMailSubscription() {
-    Object.values<FormControl>(this.formGroup.controls).forEach((fc) =>
-      fc.markAllAsTouched(),
-    );
-    if (this.formGroup.valid) {
-      await this.reportService.createReport(this.repositoryId, {
-        what: {
-          tags: {},
-          latLng: {
-            near: {
-              point: {
-                lat: this.location.lat,
-                lng: this.location.lng,
-              },
-              distanceKm: 10,
-            },
-          },
-        },
-        when: {
-          scheduled: {
-            interval: GqlIntervalUnit.Week,
-            startingAt: dayjs().day(0).toDate().getTime(),
-          },
-        },
-        report: {
-          plugin: {
-            pluginId: GqlFeedlessPlugins.OrgFeedlessEventReport,
-            params: {},
-          },
-        },
-        recipient: {
-          email: {
-            email: this.formGroup.value.email,
-            name: this.formGroup.value.name,
-          },
-        },
-      });
-      await this.modalCtrl.dismiss();
-      const alert = await this.alertCtrl.create({
-        header: 'Gratis Email-Abo erstellt!',
-        backdropDismiss: true,
-        message: `Wir senden dir bald eine Bestätigungmail.`,
-        buttons: [
-          {
-            text: 'OK',
-            role: 'confirm',
-          },
-        ],
-      });
-      await alert.present();
+  async subscribe(value: ReportSubscriptionValue): Promise<void> {
+    try {
+      await this.reportService.createReport(
+        this.repositoryId,
+        toSegmentInput(value, this.location, Date.now()),
+      );
+    } catch (e) {
+      // The modal stays open so the input isn't lost.
+      console.error('createReport failed', e);
+      await this.showAlert(
+        'Das hat nicht geklappt',
+        'Dein Abo konnte gerade nicht angelegt werden. Versuche es bitte später noch einmal.',
+      );
+      return;
     }
+
+    await this.modalCtrl.dismiss();
+    // One text for every outcome, so the answer never reveals whether this address must confirm first.
+    await this.showAlert('Danke!', 'Wir haben dir eine E-Mail geschickt.');
+  }
+
+  private async showAlert(header: string, message: string): Promise<void> {
+    const alert = await this.alertCtrl.create({
+      header,
+      message,
+      backdropDismiss: true,
+      buttons: [{ text: 'OK', role: 'confirm' }],
+    });
+    await alert.present();
   }
 }

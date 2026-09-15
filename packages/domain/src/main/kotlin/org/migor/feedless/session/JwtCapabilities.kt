@@ -13,6 +13,16 @@ object JwtParameterNames {
   const val CAPABILITIES = "capabilities"
   const val TYPE = "token_type"
   const val HOST = "host"
+
+  /**
+   * Carries the report id in confirmation and unsubscribe links. Possession
+   * of the signed token is the proof there - recipients are typically not
+   * logged in.
+   */
+  const val REPORT_ID = "report_id"
+
+  /** Names the address in the abuse link of report mails; the link must outlive the report it came with. */
+  const val RECIPIENT_ID = "recipient_id"
 }
 
 enum class AuthTokenType(val value: String) {

@@ -13,7 +13,6 @@ import {
   EmailAboModalComponent,
   EmailAboModalComponentProps,
 } from '../email-abo-modal/email-abo-modal.component';
-import { EmailAboModalModule } from '../email-abo-modal/email-abo-modal.module';
 import {
   GqlRecordOrderByInput,
   GqlRecordsWhereInput,
@@ -27,7 +26,7 @@ type SubscriptionType = 'cal' | 'atom';
   selector: 'app-search-abo-button',
   templateUrl: './search-abo-button.component.html',
   styleUrls: ['./search-abo-button.component.scss'],
-  imports: [IonButton, IconComponent, EmailAboModalModule, IonButton],
+  imports: [IonButton, IconComponent],
   standalone: true,
 })
 export class SearchAboButtonComponent {

@@ -1,7 +1,6 @@
 package org.migor.feedless.report
 
 import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.cronSchedule.CronSchedule
@@ -13,6 +12,13 @@ import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import org.migor.feedless.generated.types.Report as ReportDto
 
+/**
+ * The former stubs "report can be created without authorization" and "report
+ * can be deleted without authorization" are now covered where the behavior
+ * lives: anonymous creation in ReportUseCaseTest, deletion without an account
+ * via the mail link in ReportControllerTest, and that an anonymous
+ * subscription can't be deleted through the authenticated API in ReportGuardTest.
+ */
 class ReportResolverTest {
 
   @Test
@@ -58,18 +64,5 @@ class ReportResolverTest {
         createdAt = createdAt.toMillis(),
       )
     )
-  }
-
-
-  @Test
-  @Disabled
-  fun `report can be created without authorization`() {
-    // todo test
-  }
-
-  @Test
-  @Disabled
-  fun `report can be deleted without authorization`() {
-    // todo test
   }
 }

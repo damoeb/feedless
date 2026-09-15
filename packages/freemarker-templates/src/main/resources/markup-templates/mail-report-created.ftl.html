@@ -8,13 +8,15 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Bericht erstellt</h2>
-<p>Ihr Bericht wurde erfolgreich geplant. Hier sind die Details:</p>
+<h2 style="color: #2c3e50;">Dein Abo ist aktiv</h2>
+<p>Ab jetzt schicken wir dir den Bericht nach Zeitplan. Jede Mail enthält einen Link zum Abbestellen.</p>
+
+<p>Die Details:</p>
 
 <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
   <tr>
     <td style="padding: 8px; font-weight: bold;">Berichtsname:</td>
-    <td style="padding: 8px;">${reportName}</td>
+    <td style="padding: 8px;">${reportName?html}</td>
   </tr>
   <tr>
     <td style="padding: 8px; font-weight: bold;">Zeitplan (Cron):</td>
@@ -27,14 +29,18 @@
 </table>
 
 <p style="margin-top: 20px;">
-  Falls Sie diesen Bericht nicht mehr erhalten möchten, können Sie ihn hier deaktivieren:
+  Falls du den Bericht nicht mehr erhalten möchtest, kannst du ihn hier abbestellen:
 </p>
 
 <p>
   <a href="${deactivationLink}"
      style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
-    Bericht deaktivieren
+    Bericht abbestellen
   </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Du hast das nicht selbst abonniert? <a href="${abuseLink}">Melde es hier</a>, dann bekommt diese Adresse nur noch Berichte, die du selbst bestätigst.
 </p>
 
 </body>
@@ -47,13 +53,15 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Scheduled Reporter Created</h2>
-<p>Your report has been successfully scheduled. Below are the details:</p>
+<h2 style="color: #2c3e50;">Your subscription is active</h2>
+<p>From now on we send you the report on schedule. Every mail contains a link to cancel it.</p>
+
+<p>The details:</p>
 
 <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
   <tr>
     <td style="padding: 8px; font-weight: bold;">Report Name:</td>
-    <td style="padding: 8px;">${reportName}</td>
+    <td style="padding: 8px;">${reportName?html}</td>
   </tr>
   <tr>
     <td style="padding: 8px; font-weight: bold;">Schedule (Cron):</td>
@@ -66,14 +74,18 @@
 </table>
 
 <p style="margin-top: 20px;">
-  If you no longer wish to receive this report, you can deactivate it here:
+  If you no longer wish to receive this report, you can cancel it here:
 </p>
 
 <p>
   <a href="${deactivationLink}"
      style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
-    Deactivate Report
+    Cancel Report
   </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Didn't subscribe yourself? <a href="${abuseLink}">Report it here</a> and this address will only get reports you confirm.
 </p>
 
 </body>

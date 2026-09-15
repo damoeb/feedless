@@ -9,6 +9,7 @@ import org.junit.jupiter.api.extension.ExtendWith
 import org.locationtech.jts.geom.Point
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
+import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.Vertical
 import org.migor.feedless.any
@@ -41,17 +42,26 @@ import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
+import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.CryptUtil
 import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toLocalDateTime
+import org.mockito.ArgumentMatchers.anyLong
+import org.mockito.ArgumentMatchers.anyString
+import org.mockito.kotlin.argumentCaptor
+import org.mockito.kotlin.never
 import org.mockito.kotlin.reset
 import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
+import org.springframework.security.oauth2.jwt.Jwt
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.springframework.test.context.bean.override.mockito.MockitoBean
@@ -59,6 +69,9 @@ import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 
+/**
+ * The tracer bullet against a real database: create, send, unsubscribe.
+ */
 @SpringBootTest
 @ExtendWith(PostgreSQLExtension::class)
 @DirtiesContext
@@ -103,6 +116,9 @@ class ReportUseCaseIntTest {
   private lateinit var reportUseCase: ReportUseCase
 
   @Autowired
+  private lateinit var reportRepository: ReportRepository
+
+  @Autowired
   private lateinit var repositoryRepository: RepositoryRepository
 
   @Autowired
@@ -114,8 +130,22 @@ class ReportUseCaseIntTest {
   @Autowired
   private lateinit var groupRepository: GroupRepository
 
+  @Autowired
+  private lateinit var reportRecipientRepository: ReportRecipientRepository
+
+  @Autowired
+  private lateinit var jdbcTemplate: JdbcTemplate
+
   @MockitoBean
   private lateinit var mailService: MailService
+
+  /**
+   * JwtTokenIssuer depends on the session profile, which is inactive here.
+   * The report path needs it only to sign the links in the mails.
+   */
+  @MockitoBean
+  private lateinit var jwtTokenIssuer: JwtTokenIssuer
+
   private lateinit var user: User
   private lateinit var group: Group
 
@@ -124,8 +154,14 @@ class ReportUseCaseIntTest {
 
   @BeforeEach
   fun setUp() = runTest {
-    // Clean up before each test
     userRepository.deleteAll()
+
+    whenever(jwtTokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("token").header("alg", "HS256").claim("report_id", "x").build()
+    )
+    whenever(jwtTokenIssuer.createJwtForRecipient(anyString(), anyLong())).thenReturn(
+      Jwt.withTokenValue("token").header("alg", "HS256").claim("recipient_id", "x").build()
+    )
 
     user = User(
       email = "test@test.com",
@@ -133,7 +169,6 @@ class ReportUseCaseIntTest {
     )
     userRepository.save(user)
 
-    // Create a group for the user
     group = groupRepository.save(
       Group(
         name = "test-group",
@@ -157,18 +192,21 @@ class ReportUseCaseIntTest {
       createdAt = past,
       latlon = JtsUtil.createPoint(1.0, 1.0)
     )
+    // A real event: harvested yesterday, happening tomorrow. The document
+    // query deliberately filters on publishedAt < now.
     createDocument(
       it,
-      title = "future-released",
+      // With markup in the title, as it can come from scraped sources.
+      title = "future-released <b>bold</b>",
       status = ReleaseStatus.released,
-      publishedAt = future,
+      publishedAt = past,
       startingAt = future,
       createdAt = future,
       latlon = JtsUtil.createPoint(1.0, 1.0)
     )
     createDocument(
       it,
-      title = "3",
+      title = "past-unreleased",
       status = ReleaseStatus.unreleased,
       publishedAt = past,
       startingAt = past,
@@ -177,7 +215,7 @@ class ReportUseCaseIntTest {
     )
     createDocument(
       it,
-      title = "4",
+      title = "future-unreleased",
       status = ReleaseStatus.unreleased,
       publishedAt = future,
       startingAt = future,
@@ -186,6 +224,10 @@ class ReportUseCaseIntTest {
     )
   }
 
+  /**
+   * Public, like the events repository of lokale.events: otherwise the
+   * anonymous path couldn't be verified.
+   */
   private suspend fun createRepository(suffix: String, user: User, groupId: GroupId): Repository {
     val repository = Repository(
       title = "title $suffix",
@@ -195,6 +237,7 @@ class ReportUseCaseIntTest {
       product = Vertical.rssProxy,
       ownerId = user.id,
       groupId = groupId,
+      visibility = EntityVisibility.isPublic,
       lastUpdatedAt = LocalDateTime.now().minusDays(2),
       retentionMaxAgeDaysReferenceField = MaxAgeDaysDateField.createdAt,
     )
@@ -240,18 +283,102 @@ class ReportUseCaseIntTest {
       verify(mailService).send(any(OutgoingMail::class.java))
     }
 
+  /**
+   * The actual tracer bullet: with no confirmation step, the scheduled run
+   * sends next week's events - only released ones, only future ones.
+   */
   @Test
-  fun `given a report exists, processReportJobs will send a report`() =
+  fun `a new report is sent with the events of the coming week`() =
     runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
       createReport()
       reset(mailService)
 
       reportUseCase.processReportJobs()
 
+      val captor = argumentCaptor<OutgoingMail>()
+      verify(mailService).send(captor.capture())
+      assertThat(captor.firstValue.to).containsExactly("email@somewhere")
+      assertThat(captor.firstValue.htmlContent)
+        .contains("future-released")
+        .doesNotContain("past-released")
+        .doesNotContain("future-unreleased")
+        // Every report mail needs a working unsubscribe link.
+        .contains("/reports/delete/")
+        .contains("/reports/abuse/")
+        // Scraped titles land escaped in the mail, not as HTML.
+        .contains("future-released &lt;b&gt;bold&lt;/b&gt;")
+        .doesNotContain("<b>bold</b>")
+        .doesNotContain("href=\"\"")
+    }
+
+  @Test
+  fun `a cancelled report is not sent`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      val report = createReport()
+      reportUseCase.deleteReportFromToken(report.id)
+      reset(mailService)
+
+      reportUseCase.processReportJobs()
+
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
+    }
+
+  /**
+   * Against the real database, because two bugs sat here together: the
+   * RepositoryGuard demanded ownership, and the anonymous token's invented
+   * UserId violated the foreign key fk_report__to__user.
+   */
+  @Test
+  fun `an anonymous visitor can subscribe to a public repository`() =
+    runTest(context = RequestContext(userId = UserId())) {
+      val report = createReport()
+
+      assertThat(reportRepository.findById(report.id)).isNotNull
+      assertThat(reportRepository.findById(report.id)!!.userId).isNull()
+    }
+
+  @Test
+  fun `reporting abuse stops every report to the address, whatever its case`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      val report = createReport()
+      // a row stored before addresses were normalized
+      jdbcTemplate.update("UPDATE t_report SET recipient_email = ? WHERE id = ?", " EMAIL@Somewhere ", report.id.uuid)
+      val recipient = reportRecipientRepository.findByEmail("email@somewhere")!!
+
+      reportUseCase.reportAbuse(recipient.id)
+      reset(mailService)
+      reportUseCase.processReportJobs()
+
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
+      assertThat(reportRepository.findById(report.id)!!.disabled).isTrue()
+      assertThat(reportRecipientRepository.findById(recipient.id)!!.optInRequired).isTrue()
+    }
+
+  @Test
+  fun `after an abuse report a new subscription waits for its confirmation`() =
+    runTest(context = RequestContext(userId = user.id, groupId = group.id)) {
+      createReport()
+      reportUseCase.reportAbuse(reportRecipientRepository.findByEmail("email@somewhere")!!.id)
+      reset(mailService)
+
+      val pending = createReport()
+
+      assertThat(reportRepository.findById(pending.id)!!.authorized).isFalse()
+      val captor = argumentCaptor<OutgoingMail>()
+      verify(mailService).send(captor.capture())
+      assertThat(captor.firstValue.subject).isEqualTo("Bitte bestätige dein Abo")
+      assertThat(captor.firstValue.htmlContent).contains("/reports/confirm/").doesNotContain("/reports/abuse/")
+
+      reset(mailService)
+      reportUseCase.processReportJobs()
+      verify(mailService, never()).send(any(OutgoingMail::class.java))
+
+      reportUseCase.confirmReportFromToken(pending.id)
+      reportUseCase.processReportJobs()
       verify(mailService).send(any(OutgoingMail::class.java))
     }
 
-  private suspend fun createReport() {
+  private suspend fun createReport(): Report =
     reportUseCase.createReport(
       repository.id,
       SegmentCreate(
@@ -262,6 +389,4 @@ class ReportUseCaseIntTest {
         reporterPluginId = EventsReportPlugin().id(),
       )
     )
-  }
-
 }

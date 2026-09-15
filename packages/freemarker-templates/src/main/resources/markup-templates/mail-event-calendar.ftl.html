@@ -8,12 +8,27 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Event Kalender</h2>
-<p>Ihr Bericht wurde erfolgreich geplant. Hier sind die Details:</p>
+<h2 style="color: #2c3e50;">Veranstaltungen der kommenden Woche</h2>
+
+<#if events?? && (events?size > 0)>
+  <ul style="list-style: none; padding: 0;">
+    <#list events as event>
+      <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+        <#if event.date?has_content>
+          <div style="color: #12775C; font-weight: 500;">${event.date}</div>
+        </#if>
+        <#-- Title and URL come from scraped sources: escape them, .ftl.html doesn't escape automatically -->
+        <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
+      </li>
+    </#list>
+  </ul>
+<#else>
+  <p>Diese Woche haben wir nichts gefunden.</p>
+</#if>
 
 
 <p style="margin-top: 20px;">
-  Falls Sie diesen Bericht nicht mehr erhalten möchten, können Sie ihn hier deaktivieren:
+  Falls du diesen Bericht nicht mehr erhalten möchtest, kannst du ihn hier abbestellen:
 </p>
 
 <p>
@@ -21,6 +36,10 @@
      style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
     Bericht deaktivieren
   </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Du hast das nicht selbst abonniert? <a href="${abuseLink}">Melde es hier</a>, dann bekommt diese Adresse nur noch Berichte, die du selbst bestätigst.
 </p>
 
 </body>
@@ -33,8 +52,23 @@
 </head>
 <body style="font-family: Arial, sans-serif; line-height: 1.5; color: #333;">
 
-<h2 style="color: #2c3e50;">Event Calendar</h2>
-<p>Your report has been successfully scheduled. Below are the details:</p>
+<h2 style="color: #2c3e50;">Events in the week ahead</h2>
+
+<#if events?? && (events?size > 0)>
+  <ul style="list-style: none; padding: 0;">
+    <#list events as event>
+      <li style="padding: 10px 0; border-bottom: 1px solid #eee;">
+        <#if event.date?has_content>
+          <div style="color: #12775C; font-weight: 500;">${event.date}</div>
+        </#if>
+        <#-- Title and URL come from scraped sources: escape them, .ftl.html doesn't escape automatically -->
+        <div style="font-weight: 600;"><#if event.url?has_content><a href="${event.url?html}" style="color: #333; text-decoration: none;">${event.title?html}</a><#else>${event.title?html}</#if></div>
+      </li>
+    </#list>
+  </ul>
+<#else>
+  <p>We found nothing for this week.</p>
+</#if>
 
 <p style="margin-top: 20px;">
   If you no longer wish to receive this report, you can deactivate it here:
@@ -45,6 +79,10 @@
      style="display: inline-block; padding: 10px 15px; background-color: #e74c3c; color: #fff; text-decoration: none; border-radius: 4px;">
     Deactivate Report
   </a>
+</p>
+
+<p style="margin-top: 20px; font-size: 13px; color: #777;">
+  Didn't subscribe yourself? <a href="${abuseLink}">Report it here</a> and this address will only get reports you confirm.
 </p>
 
 </body>
