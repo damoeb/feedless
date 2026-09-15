@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 class ServerStatusService(
-  @Value("\${app.version}") private val version: String,
-  @Value("\${APP_GIT_COMMIT:unknown}") private val commit: String,
+  @param:Value("\${app.version}") private val version: String,
+  @param:Value("\${APP_GIT_COMMIT:unknown}") private val commit: String,
   @Value("\${APP_BUILD_TIMESTAMP:}") buildTimestamp: String,
   private val browserAutomationDirectory: ObjectProvider<BrowserAutomationDirectory>,
 ) {

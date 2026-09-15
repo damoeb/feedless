@@ -30,8 +30,8 @@ import java.util.*
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class StripeUseCase(
-  @Value("\${stripe.api-key}") private val apiKey: String,
-  @Value("\${stripe.webhook-secret}") private val webhookSecret: String
+  @param:Value("\${stripe.api-key}") private val apiKey: String,
+  @param:Value("\${stripe.webhook-secret}") private val webhookSecret: String
 ) : PaymentUseCase {
 
   private val log = LoggerFactory.getLogger(StripeUseCase::class.simpleName)

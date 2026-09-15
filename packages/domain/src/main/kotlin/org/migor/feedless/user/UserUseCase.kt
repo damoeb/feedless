@@ -56,7 +56,7 @@ class UserUseCase(
   private val connectedAppRepository: ConnectedAppRepository,
   private val groupRepository: GroupRepository,
   private val groupUseCase: GroupUseCase,
-  @Lazy
+  @param:Lazy
   private val notifications: Notifications
 ) {
 
@@ -306,7 +306,7 @@ class UserUseCase(
         connectedAppRepository.save(app)
 
         if (app is TelegramConnection && app.chatId != null) {
-          notifications.showOptionsForKnownUser(app.chatId!!)
+          notifications.showOptionsForKnownUser(app.chatId)
         }
       }
     }
@@ -323,7 +323,7 @@ class UserUseCase(
 //      }
 
     if (app is TelegramConnection && app.chatId != null) {
-      notifications.sendMessage(app.chatId!!, "Disconnected")
+      notifications.sendMessage(app.chatId, "Disconnected")
     } else {
       throw IllegalArgumentException("github connection cannot be removed")
     }

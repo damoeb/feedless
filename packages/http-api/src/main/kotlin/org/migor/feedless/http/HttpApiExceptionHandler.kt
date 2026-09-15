@@ -56,7 +56,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
 
   @ExceptionHandler(PermissionDeniedException::class)
   fun handlePermissionDenied(ex: PermissionDeniedException, request: WebRequest): ResponseEntity<ApiError> =
-    errorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.message ?: "permission denied", request)
+    errorResponse(HttpStatus.FORBIDDEN, "FORBIDDEN", ex.message, request)
 
   /** The token acts in no group the user still owns: a new token fixes it, so say so. */
   @ExceptionHandler(NoActingGroupException::class)
@@ -65,7 +65,7 @@ class HttpApiExceptionHandler : ResponseEntityExceptionHandler() {
 
   @ExceptionHandler(NotFoundException::class)
   fun handleNotFound(ex: NotFoundException, request: WebRequest): ResponseEntity<ApiError> =
-    errorResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.message ?: "not found", request)
+    errorResponse(HttpStatus.NOT_FOUND, "NOT_FOUND", ex.message, request)
 
   @ExceptionHandler(IllegalArgumentException::class)
   fun handleBadRequest(ex: IllegalArgumentException, request: WebRequest): ResponseEntity<ApiError> =

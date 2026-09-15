@@ -365,7 +365,7 @@ private fun ScrapeExtractInput.toAction(): ScrapeAction? {
       fragmentName = this.fragmentName,
       xpath = it.xpath.value,
       uniqueBy = it.uniqueBy.fromDto(),
-      emit = this.selectorBased!!.emit.map { it.fromDto() }.toTypedArray()
+      emit = this.selectorBased.emit.map { it.fromDto() }.toTypedArray()
     )
   } ?: this.imageBased?.let {
     ExtractBoundingBoxAction(
