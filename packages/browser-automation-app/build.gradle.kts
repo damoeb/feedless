@@ -37,14 +37,21 @@ val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   outputs.dir("node_modules")
 }
 
+// Gradle reruns a task without outputs every time; a stamp lets check-only tasks be up to date.
+fun Task.stampOutput() {
+  val stamp = layout.buildDirectory.file("stamps/$name")
+  outputs.file(stamp)
+  doLast { stamp.get().asFile.run { parentFile.mkdirs(); writeText("") } }
+}
+
 val lintTask = tasks.register<YarnTask>("lint") {
-  dependsOn(yarnInstallTask)
+  dependsOn(codegenTask)
   args.set(listOf("lint"))
 
   inputs.file(".nvmrc")
   inputs.dir("src")
   inputs.files("yarn.lock")
-  outputs.upToDateWhen { true }
+  stampOutput()
 }
 
 val codegenTask = tasks.register<YarnTask>("codegen") {
@@ -52,9 +59,9 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   dependsOn(yarnInstallTask)
 
   inputs.file(".nvmrc")
-  inputs.dir("src")
+  inputs.files(fileTree("src") { include("**/*.graphql") })
   inputs.files("codegen.yml", "yarn.lock", "../graphql-api/src/main/resources/schema/schema.graphqls")
-  outputs.upToDateWhen { true }
+  outputs.file("src/generated/graphql.ts")
 }
 
 val prepareTask = tasks.register("prepare") {
@@ -65,8 +72,9 @@ val testTask = tasks.register<YarnTask>("test") {
   args.set(listOf("test"))
   dependsOn(prepareTask)
   inputs.dir("src")
-  inputs.files("yarn.lock")
-  outputs.upToDateWhen { true }
+  // jest's config lives in package.json
+  inputs.files("package.json", "yarn.lock", "tsconfig.json")
+  stampOutput()
 }
 
 val buildTask = tasks.register<YarnTask>("build") {

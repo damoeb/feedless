@@ -13,11 +13,7 @@ RUN yarn install --prod --frozen-lockfile --non-interactive --ignore-scripts --s
 
 FROM zenika/alpine-chrome:124-with-node
 WORKDIR /usr/node/agent
-ARG APP_VERSION
-ARG APP_GIT_COMMIT
-ENV APP_VERSION=$APP_VERSION \
-    APP_GIT_COMMIT=$APP_GIT_COMMIT \
-    NODE_ENV=prod \
+ENV NODE_ENV=prod \
     APP_MAX_WORKERS=5 \
     APP_MIN_REQ_TIMEOUT_MILLIS=10000 \
     APP_MAX_REQ_TIMEOUT_MILLIS=15000
@@ -29,5 +25,11 @@ COPY --from=build \
 COPY --chown=chrome:chrome \
     ["dist", "docker-entrypoint.sh", "./"]
 USER chrome
+
+# Per-build values go last: a changed ARG invalidates every layer after it.
+ARG APP_VERSION
+ARG APP_GIT_COMMIT
+ENV APP_VERSION=$APP_VERSION \
+    APP_GIT_COMMIT=$APP_GIT_COMMIT
 
 CMD ["sh", "./docker-entrypoint.sh"]
