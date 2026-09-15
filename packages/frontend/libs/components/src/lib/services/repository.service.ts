@@ -59,6 +59,9 @@ import { isPlatformBrowser } from '@angular/common';
 dayjs.extend(relativeTime);
 
 export type Source = ArrayElement<RepositoryFull['sources']>;
+export type SourceWithLastHarvest = ArrayElement<
+  GqlSourcesByRepositoryQuery['repository']['sources']
+>;
 export type Harvest = ArrayElement<
   ArrayElement<
     GqlLastHarvestsFromSourcesByRepositoryQuery['repository']['sources']
@@ -249,7 +252,7 @@ export class RepositoryService {
     where: GqlSourcesWhereInput,
     order: GqlSourceOrderByInput[],
     fetchPolicy: FetchPolicy = 'cache-first',
-  ): Promise<Source[]> {
+  ): Promise<SourceWithLastHarvest[]> {
     return this.apollo
       .query<GqlSourcesByRepositoryQuery, GqlSourcesByRepositoryQueryVariables>(
         {

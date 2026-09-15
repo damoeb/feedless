@@ -62,6 +62,43 @@ describe('SourcesComponent', () => {
     });
   });
 
+  describe('last harvest', () => {
+    async function renderSource(source: object) {
+      const repositoryService = TestBed.inject(RepositoryService);
+      vi.spyOn(repositoryService, 'getSourcesByRepository').mockResolvedValue([
+        { id: 's1', title: 'Source', lastRefreshedAt: Date.now(), ...source },
+      ] as any);
+
+      await component.fetchSources(0);
+      fixture.detectChanges();
+      return fixture.nativeElement.textContent as string;
+    }
+
+    it('names the column after the harvest', () => {
+      expect(fixture.nativeElement.textContent).toContain('Last Harvest');
+    });
+
+    it('shows found and new items', async () => {
+      const actual = await renderSource({
+        lastRecordsRetrieved: 12,
+        harvests: [{ itemsAdded: 3, finishedAt: Date.now() }],
+      });
+
+      expect(actual).toContain('12 found');
+      expect(actual).toContain('3 new');
+    });
+
+    it('omits new items while the harvest is still running', async () => {
+      const actual = await renderSource({
+        lastRecordsRetrieved: 12,
+        harvests: [{ itemsAdded: 0, finishedAt: null }],
+      });
+
+      expect(actual).toContain('12 found');
+      expect(actual).not.toContain('new');
+    });
+  });
+
   describe('feed-builder-modal is openened', () => {
     let openFeedBuilderSpy: MockInstance;
 

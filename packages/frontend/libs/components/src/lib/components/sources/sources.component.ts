@@ -45,6 +45,7 @@ import {
   describeNextHarvest,
   RepositoryService,
   Source,
+  SourceWithLastHarvest,
 } from '../../services';
 import { PaginationComponent } from '../pagination/pagination.component';
 import { addIcons } from 'ionicons';
@@ -101,7 +102,7 @@ export class SourcesComponent implements OnInit {
 
   protected loadingSources = false;
   currentSourcesPage = 0;
-  sources: Source[] = [];
+  sources: SourceWithLastHarvest[] = [];
   protected readonly fromNow = relativeTimeOrElse;
   protected readonly describeNextHarvest = describeNextHarvest;
   protected readonly nextUpdateAt = linkedSignal(
@@ -214,6 +215,12 @@ export class SourcesComponent implements OnInit {
     } else {
       return 'green';
     }
+  }
+
+  // a queued or running harvest has not counted its new items yet
+  protected lastItemsAdded(source: SourceWithLastHarvest): number | undefined {
+    const harvest = source.harvests?.[0];
+    return harvest?.finishedAt ? harvest.itemsAdded : undefined;
   }
 
   async editLatLon(source: ArrayElement<RepositoryFull['sources']>) {
