@@ -33,15 +33,9 @@ COPY build/libs/app.jar app.jar
 FROM amazoncorretto:24-alpine-jdk
 ARG workdir=/usr/feedless
 WORKDIR $workdir
-ARG APP_VERSION
-ARG APP_BUILD_TIMESTAMP
-ARG APP_GIT_COMMIT
 
 ENV APP_ACTIVE_PROFILES="prod" \
-    APP_LOG_LEVEL="error" \
-    APP_BUILD_TIMESTAMP=$APP_BUILD_TIMESTAMP \
-    APP_VERSION=$APP_VERSION \
-    APP_GIT_COMMIT=$APP_GIT_COMMIT
+    APP_LOG_LEVEL="error"
 
 EXPOSE 8080
 RUN apk add --no-cache curl && \
@@ -61,6 +55,14 @@ COPY --from=build \
   --chown=java:java /usr/feedless/* ./
 # Not via the glob copy above: it flattens directories.
 COPY --from=feedctl --chown=java:java /out/ static/cli/
+
+# Per-build values go last: a changed ARG invalidates every layer after it.
+ARG APP_VERSION
+ARG APP_BUILD_TIMESTAMP
+ARG APP_GIT_COMMIT
+ENV APP_BUILD_TIMESTAMP=$APP_BUILD_TIMESTAMP \
+    APP_VERSION=$APP_VERSION \
+    APP_GIT_COMMIT=$APP_GIT_COMMIT
 
 # use supervisord https://gdevillele.github.io/engine/admin/using_supervisord/
 CMD ["sh", "./docker-entrypoint.sh"]
