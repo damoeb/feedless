@@ -106,4 +106,5 @@ Every API token is checked in `TokenAuthenticator`: a primary-key lookup per req
 ## Notes
 
 - 2026-09-15: Design reviewed in-session. Decisions: revoke deleted secrets (yes); reject legacy API tokens without `secret_id` rather than fall back to value lookup; name required; both UIs; backfill dated legacy names.
+- Implementation deviations (2026-09-15): `validUntil` and the token's `exp` both use `AuthTokenType.API`, now 356 days, instead of borrowing `SERVICE`; the old 48-hour `API` value was never read. `AuthService.useApiSecret` blocks rather than suspends, matching `TokenAuthenticator`'s existing blocking group lookup inside each filter's `runBlocking`. V94 was verified on Postgres 17 with two pre-existing rows (jpa-data tests run with Flyway off).
 - Deliverable search: nothing named `useApiSecret`, `CreateUserSecretInput` or `V94__` exists. `secret_id` exists only as the `t_browser_automation` FK column to `t_user_secret`, not as a JWT claim.
