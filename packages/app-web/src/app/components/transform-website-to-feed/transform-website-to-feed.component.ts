@@ -365,12 +365,13 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
       xpath,
       callback: async (elements: HTMLElement[]) => {
         if (elements.length > 0) {
+          const markup = elements[0].innerHTML;
           const componentProps: CodeEditorModalComponentProps = {
             title: 'HTML Editor',
-            text: await format(elements[0].innerHTML, {
+            text: await format(markup, {
               parser: 'html',
               plugins: [htmlPlugin],
-            }),
+            }).catch(() => markup),
             contentType: 'html',
             readOnly: true,
           };

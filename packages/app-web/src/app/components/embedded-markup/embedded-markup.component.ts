@@ -101,23 +101,6 @@ export class EmbeddedMarkupComponent implements OnInit, AfterViewInit, OnDestroy
         this.currentXpath = xpath;
         this.changeRef.detectChanges();
       }),
-      this.sourceBuilder().events.extractElements.subscribe((params) => {
-        const document = new DOMParser().parseFromString(this.embed().data, 'text/html');
-        const xpathResult = document.evaluate(
-          params.xpath,
-          document,
-          null,
-          XPathResult.ANY_TYPE,
-          null
-        );
-        let element = xpathResult.iterateNext();
-        const elements: HTMLElement[] = [];
-        while (element) {
-          elements.push(element as HTMLElement);
-          element = xpathResult.iterateNext();
-        }
-        params.callback(elements);
-      }),
       this.sourceBuilder().events.pickElement.subscribe((callback) => {
         console.log('pickElement');
         this.pickElement = true;
