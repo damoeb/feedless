@@ -257,6 +257,9 @@ class SourceUseCase(
         } ?: source
 
         if (sourceUpdate.clearActions || sourceUpdate.actions != null) {
+          // The last harvest's error was about the old flow.
+          changed = true
+          source = source.copy(lastErrorMessage = null, errorsInSuccession = 0)
           deleteScrapeActions.addAll(scrapeActionRepository.findAllBySourceId(source.id))
           sourceUpdate.actions?.let { actions ->
             val savedActions = actions.mapIndexed { index, scrapeAction ->
