@@ -56,11 +56,11 @@ class PropertyService : AppConfig {
       "jwtSecret too short (min length $rootSecretKeyMinLength)"
     )
     Assert.isTrue(
-      !StringUtils.startsWith(rootSecretKey, "\${"),
+      !rootSecretKey.startsWith("\${"),
       "rootSecretKey seems invalid. Provide env var APP_ROOT_SECRET_KEY"
     )
     Assert.isTrue(
-      !StringUtils.startsWith(rootEmail, "\${"),
+      !rootEmail.startsWith("\${"),
       "rootEmail '${rootEmail}' seems invalid. Provide env var APP_ROOT_EMAIL"
     )
   }

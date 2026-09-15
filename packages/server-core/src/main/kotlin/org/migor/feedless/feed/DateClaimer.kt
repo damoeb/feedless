@@ -195,7 +195,7 @@ class DateClaimer {
           val doesMatch = matches?.groups?.isEmpty() == false
           if (doesMatch) {
 //            logger.log("satisfies $dateFormat")
-            matches?.groups?.get(0)?.range?.let {
+            matches.groups[0]?.range?.let {
               Triple(dateFormat, dateString.substring(it), hasTime)
             }
           } else {

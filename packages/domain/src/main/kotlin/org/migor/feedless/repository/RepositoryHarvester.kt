@@ -598,8 +598,8 @@ private fun ScrapedFragment.createDocument(repositoryId: RepositoryId, source: S
     d
   } else {
     d.copy(
-      raw = Base64.getDecoder().decode(data!!.data),
-      rawMimeType = data!!.mimeType
+      raw = Base64.getDecoder().decode(data.data),
+      rawMimeType = data.mimeType
     )
   }
 }

@@ -83,7 +83,7 @@ class ReportUseCase(
   private val documentRepository: DocumentRepository,
   // Defaulted because app.mail.sender only exists in application-mail.yaml;
   // without it, a context with reports but without the mail profile wouldn't start.
-  @Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
+  @param:Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
   private val appConfig: AppConfig,
   private val userRepository: UserRepository,
   private val tokenIssuer: TokenIssuer,

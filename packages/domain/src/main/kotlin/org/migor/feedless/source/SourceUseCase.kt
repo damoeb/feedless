@@ -46,7 +46,7 @@ import java.time.LocalDateTime
 class SourceUseCase(
   private val sourcePipelineJobRepository: SourcePipelineJobRepository,
   private val sourceRepository: SourceRepository,
-  @Lazy private val repositoryHarvester: RepositoryHarvester,
+  @param:Lazy private val repositoryHarvester: RepositoryHarvester,
   private val planConstraintsService: PlanConstraintsService,
   private val scrapeActionRepository: ScrapeActionRepository,
   private val repositoryRepository: RepositoryRepository,

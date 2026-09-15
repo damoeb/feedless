@@ -110,10 +110,10 @@ class OrderResolver(
 
   private fun UserCreateOrConnectInput.resolveUserId(): UserId {
     return if (connect != null) {
-      UserId(connect!!.id)
+      UserId(connect.id)
     } else {
       if (create != null) {
-        runBlocking { userUseCase.createUser(create!!.toDomain()).id }
+        runBlocking { userUseCase.createUser(create.toDomain()).id }
       } else {
         throw IllegalArgumentException("neither connect not create for user provided")
       }
