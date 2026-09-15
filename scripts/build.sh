@@ -29,11 +29,14 @@ else
     --workdir /opt/feedless \
     -v "${PWD}:/opt/feedless" \
     -v "${PWD}/build-cache:/opt/feedless/build-cache" \
-    -it amazoncorretto:24 cd /opt/feedless && ./gradlew --no-daemon bundle && \
+    -it amazoncorretto:24 cd /opt/feedless && ./gradlew --no-daemon bundle
 
   BUILD_EXIT_CODE=$?
   echo "BUILD exited with ${BUILD_EXIT_CODE}"
-  echo "$LATEST_COMMIT" > "$PWD"/LAST_BUILD_COMMIT
+  # Record only successful builds, so a failed commit is retried on the next run.
+  if [ "$BUILD_EXIT_CODE" -eq 0 ]; then
+    echo "$LATEST_COMMIT" > "$PWD"/LAST_BUILD_COMMIT
+  fi
 fi
 
 rm ${LOCK_FILE}

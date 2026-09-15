@@ -46,6 +46,13 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   outputs.dir("build/generated")
 }
 
+// Gradle reruns a task without outputs every time; a stamp lets check-only tasks be up to date.
+fun Task.stampOutput() {
+  val stamp = layout.buildDirectory.file("stamps/$name")
+  outputs.file(stamp)
+  doLast { stamp.get().asFile.run { parentFile.mkdirs(); writeText("") } }
+}
+
 val lintTask = tasks.register<YarnTask>("lint") {
   dependsOn(prepareTask)
 
@@ -63,7 +70,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
     "tsconfig.spec.json",
     "tslint.json"
   )
-  outputs.upToDateWhen { true }
+  stampOutput()
 }
 
 val testTask = tasks.register<YarnTask>("test") {
@@ -72,12 +79,11 @@ val testTask = tasks.register<YarnTask>("test") {
 
   inputs.file(".nvmrc")
   inputs.dir("src")
-  inputs.dir("node_modules")
   inputs.files(
-    "angular.json", ".browserslistrc", "tsconfig.json", "tsconfig.app.json", "tsconfig.spec.json",
-    "tslint.json"
+    "angular.json", ".browserslistrc", "jest.config.js", "yarn.lock", "tsconfig.json", "tsconfig.app.json",
+    "tsconfig.spec.json", "tslint.json"
   )
-  outputs.upToDateWhen { true }
+  stampOutput()
 }
 
 val buildTask = tasks.register<YarnTask>("build") {
@@ -86,7 +92,6 @@ val buildTask = tasks.register<YarnTask>("build") {
 
   inputs.file(".nvmrc")
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
-  inputs.dir("node_modules")
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
   outputs.dir("www")
 }
