@@ -240,7 +240,8 @@
       <ion-list>
         @if (secrets?.length > 0) {
         <ion-row>
-          <ion-col size="6"></ion-col>
+          <ion-col class="ion-padding-start" size="3">Name</ion-col>
+          <ion-col size="3">Token</ion-col>
           <ion-col size="2">Last Used</ion-col>
           <ion-col size="2">Valid Until</ion-col>
         </ion-row>
@@ -252,8 +253,11 @@
         </ion-row>
         } @for (secret of secrets; track secret) { @if (secret.valueMasked) {
         <ion-row>
-          <ion-col class="ion-padding-start" size="6">{{ secret.value }} </ion-col>
-          <ion-col size="2">{{ secret.lastUsed || 'never' }}</ion-col>
+          <ion-col class="ion-padding-start" size="3">{{ secret.name }}</ion-col>
+          <ion-col size="3"><code>{{ secret.value }}</code></ion-col>
+          <ion-col size="2"
+            >{{ secret.lastUsed ? (secret.lastUsed | date: dateTimeFormat) : 'never' }}</ion-col
+          >
           <ion-col size="2">{{ secret.validUntil | date: dateTimeFormat }} </ion-col>
           <ion-col class="ion-text-right" size="2">
             <ion-button (click)="deleteSecret(secret)" color="danger" fill="clear" size="small"
@@ -263,7 +267,8 @@
         </ion-row>
         } @if (!secret.valueMasked) {
         <ion-row>
-          <ion-col class="ion-padding-start" size="8">
+          <ion-col class="ion-padding-start" size="2">{{ secret.name }}</ion-col>
+          <ion-col size="6">
             <ion-input [readonly]="true" [value]="secret.value"></ion-input>
           </ion-col>
           <ion-col size="2">{{ secret.validUntil | date: dateTimeFormat }} </ion-col>

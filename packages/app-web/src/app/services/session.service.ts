@@ -129,10 +129,11 @@ export class SessionService {
       .then(() => this.fetchSession('network-only'));
   }
 
-  async createUserSecret(): Promise<UserSecret> {
+  async createUserSecret(name: string): Promise<UserSecret> {
     return this.apollo
       .mutate<GqlCreateUserSecretMutation, GqlCreateUserSecretMutationVariables>({
         mutation: CreateUserSecret,
+        variables: { data: { name } },
       })
       .then((response) => response.data!.createUserSecret);
   }
