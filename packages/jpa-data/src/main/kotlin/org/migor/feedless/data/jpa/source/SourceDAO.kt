@@ -80,6 +80,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
       update SourceEntity s
         set s.errorsInSuccession = 0,
             s.lastErrorMessage = :errorMessage,
+            s.lastRecordsRetrieved = 0,
             s.lastRefreshedAt = :refreshedAt
       where s.id = :id
     """

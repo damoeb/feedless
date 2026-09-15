@@ -98,9 +98,7 @@ class SourceUseCaseTest {
         emit = arrayOf(ExtractEmit.text, ExtractEmit.pixel),
       ),
     )
-    val source = mock(Source::class.java)
-    `when`(source.repositoryId).thenReturn(repositoryId)
-    `when`(source.id).thenReturn(sourceId)
+    val source = Source(id = sourceId, title = "events", repositoryId = repositoryId)
     `when`(sourceRepository.findById(eq(sourceId))).thenReturn(source)
 
     `when`(scrapeActionRepository.findAllBySourceId(eq(sourceId))).thenReturn(listOf(mock(FetchAction::class.java)))
@@ -128,6 +126,34 @@ class SourceUseCaseTest {
     })
     verify(sourceRepository).saveAll(argThat { it.size == 1 })
   }
+
+  @Test
+  fun `updateSources clears the last harvest error when the flow changes`() =
+    runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+      val sourceId = SourceId()
+      val source = Source(
+        id = sourceId,
+        title = "events",
+        repositoryId = repositoryId,
+        lastErrorMessage = "no items retrieved",
+        errorsInSuccession = 2,
+      )
+      `when`(sourceRepository.findById(eq(sourceId))).thenReturn(source)
+
+      sourceUseCase.updateSources(
+        repositoryId,
+        listOf(
+          RepositorySourceUpdate(
+            sourceId = sourceId,
+            actions = listOf(FetchAction(sourceId = sourceId, url = "https://foo.bar")),
+          )
+        ),
+      )
+
+      verify(sourceRepository).saveAll(argThat {
+        it.single().lastErrorMessage == null && it.single().errorsInSuccession == 0
+      })
+    }
 
   @Test
   fun deleteAllById() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {

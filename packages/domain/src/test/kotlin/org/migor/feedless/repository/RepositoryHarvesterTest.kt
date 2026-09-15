@@ -47,6 +47,7 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
+import org.mockito.ArgumentMatchers.anyInt
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
@@ -610,11 +611,56 @@ class RepositoryHarvesterTest {
     }
 
   @Test
-  @Disabled
-  fun `scrape will update the retrieval count`() =
+  fun `scrape will update the retrieval count, existing items included`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
-      TODO("implement")
+      `when`(repository.plugins).thenReturn(listOf(createPlugin()))
+      `when`(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
+          any(String::class.java),
+          any(String::class.java),
+          any(RepositoryId::class.java)
+        )
+      ).thenReturn(mock(Document::class.java))
+      `when`(
+        scraper.scrape(
+          any(Source::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "https://example.org/1", title = "1"),
+              newJsonItem(url = "https://example.org/2", title = "2"),
+            )
+          )
+        )
+      )
+
+      repositoryHarvester.harvestRepository(repositoryId)
+
+      verify(sourceRepository).recordHarvestSucceeded(eq(source.id), eq(2), any2())
+      verify(harvestRepository).save(argThat { it.itemsAdded == 0 })
     }
+
+  @Test
+  fun `given the scrape yields nothing, the harvest is recorded as interrupted`() = runTest {
+    `when`(
+      scraper.scrape(
+        any(Source::class.java),
+        any(LogCollector::class.java)
+      )
+    ).thenReturn(
+      ScrapeResult(actionCount = 0, lastFragment = null)
+    )
+
+    repositoryHarvester.harvestRepository(repositoryId)
+
+    verify(sourceRepository).recordHarvestInterrupted(eq(source.id), any2(), any2())
+    verify(sourceRepository, never()).recordHarvestSucceeded(any2(), anyInt(), any2())
+  }
 
   @Test
   fun `will follow pagination links`() =

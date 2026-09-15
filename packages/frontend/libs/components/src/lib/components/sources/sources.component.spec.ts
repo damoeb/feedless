@@ -34,6 +34,34 @@ describe('SourcesComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  describe('next harvest', () => {
+    it('shows when it is scheduled', () => {
+      fixture.componentRef.setInput('repository', {
+        sources: [],
+        nextUpdateAt: Date.now() + 5 * 60_000,
+      });
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'Next harvest in 5 minutes',
+      );
+    });
+
+    it('shows the rescheduled time after a sync', async () => {
+      const repositoryService = TestBed.inject(RepositoryService);
+      vi.spyOn(repositoryService, 'forceSourceSync').mockResolvedValue(
+        Date.now() + 10 * 60_000,
+      );
+
+      await component.forceSync();
+      fixture.detectChanges();
+
+      expect(fixture.nativeElement.textContent).toContain(
+        'Next harvest in 10 minutes',
+      );
+    });
+  });
+
   describe('feed-builder-modal is openened', () => {
     let openFeedBuilderSpy: MockInstance;
 

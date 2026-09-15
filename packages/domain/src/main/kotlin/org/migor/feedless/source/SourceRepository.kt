@@ -22,7 +22,7 @@ interface SourceRepository {
   /** The harvest failed: increments the error count in the database, records [errorMessage]. */
   fun recordHarvestFailed(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime)
 
-  /** A passing failure (rate limit, unreachable host, no items): resets the error count but records [errorMessage]. */
+  /** A passing failure (rate limit, unreachable host, no items): resets the error count, records no items retrieved and [errorMessage]. */
   fun recordHarvestInterrupted(id: SourceId, errorMessage: String?, refreshedAt: LocalDateTime)
 
   fun countSourcesWithProblems(repositoryId: RepositoryId): Int
