@@ -201,9 +201,10 @@ class RepositoryUseCase(
     repository = data.description?.let { repository.copy(description = it) } ?: repository
 
     val groupId = currentCoroutineContext().groupId()
-    var scheduleSourcesAt: LocalDateTime? = null
+    var scheduleSources = false
+    var requestedHarvestAt: LocalDateTime? = null
     repository = data.refreshCron?.let {
-      scheduleSourcesAt = calculateScheduledNextAt(it, groupId, repository.lastUpdatedAt)
+      scheduleSources = true
       repository.copy(sourcesSyncCron = planConstraintsService.auditCronExpression(it))
     } ?: repository
 
@@ -231,9 +232,9 @@ class RepositoryUseCase(
     } ?: repository
 
     if (data.nextUpdateAt != null || data.scheduleNextUpdateNow) {
-      val next = data.nextUpdateAt ?: LocalDateTime.now()
-      scheduleSourcesAt = planConstraintsService.coerceMinScheduledNextAt(repository.lastUpdatedAt, next, groupId)
-      log.info("nextUpdateAt $scheduleSourcesAt")
+      scheduleSources = true
+      requestedHarvestAt = data.nextUpdateAt ?: LocalDateTime.now()
+      log.info("nextUpdateAt $requestedHarvestAt")
     }
 
     var retentionTouched = false
@@ -268,7 +269,9 @@ class RepositoryUseCase(
       sources.update?.let { sourceUseCase.updateSources(repository.id, it) }
       sources.remove?.let { sourceUseCase.deleteAllById(repository.id, it) }
     }
-    scheduleSourcesAt?.let { sourceUseCase.scheduleNextHarvestOfRepository(repository.id, it) }
+    if (scheduleSources) {
+      sourceUseCase.scheduleNextHarvestOfRepository(repository.id, requestedHarvestAt, repository.sourcesSyncCron, groupId)
+    }
     withContext(Dispatchers.IO) {
       repositoryRepository.save(repository)
     }

@@ -16,6 +16,8 @@ import org.migor.feedless.capability.MdcKeys
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.hostCooldown.HostCooldown
+import org.migor.feedless.hostCooldown.HostCooldownState
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
@@ -30,6 +32,7 @@ import org.mockito.Mockito.mock
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.slf4j.MDC
+import java.time.LocalDateTime
 import java.util.Collections
 
 class SourceUseCaseTest {
@@ -40,6 +43,8 @@ class SourceUseCaseTest {
   private lateinit var repository: Repository
   private lateinit var repositoryId: RepositoryId
   private lateinit var repositoryRepository: RepositoryRepository
+  private lateinit var planConstraintsService: PlanConstraintsService
+  private lateinit var hostCooldown: HostCooldown
   private lateinit var groupId: GroupId
 
   @BeforeEach
@@ -47,14 +52,17 @@ class SourceUseCaseTest {
     sourceRepository = mock(SourceRepository::class.java)
     scrapeActionRepository = mock(ScrapeActionRepository::class.java)
     repositoryRepository = mock(RepositoryRepository::class.java)
+    planConstraintsService = mock(PlanConstraintsService::class.java)
+    hostCooldown = mock(HostCooldown::class.java)
     sourceUseCase = SourceUseCase(
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
       mock(RepositoryHarvester::class.java),
-      mock(PlanConstraintsService::class.java),
+      planConstraintsService,
       scrapeActionRepository,
       repositoryRepository,
-      mock(SourcePipelineService::class.java)
+      mock(SourcePipelineService::class.java),
+      hostCooldown,
     )
 
     repository = mock(Repository::class.java)
@@ -221,6 +229,51 @@ class SourceUseCaseTest {
     }
   }
 
+  @Test
+  fun `scheduleNextHarvestOfRepository coerces each source individually`() =
+    runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+      val coolingHost = "cooling.example"
+      val okHost = "ok.example"
+      val sourceAId = SourceId()
+      val sourceBId = SourceId()
+      val sourceALastRefreshedAt = LocalDateTime.of(2024, 1, 1, 0, 0)
+      val sourceBLastRefreshedAt = LocalDateTime.of(2024, 6, 1, 0, 0)
+      // Both floors sit far in the future, so real "now" never wins the max() inside HarvestTimeLimits.
+      val sourceAPlanFloor = LocalDateTime.of(2030, 1, 1, 0, 0)
+      val sourceBPlanFloor = LocalDateTime.of(2029, 1, 1, 0, 0)
+      val hostBlockedUntil = LocalDateTime.of(2031, 1, 1, 0, 0)
+
+      val sourceA = Source(
+        id = sourceAId,
+        title = "a",
+        repositoryId = repositoryId,
+        lastRefreshedAt = sourceALastRefreshedAt,
+        actions = listOf(FetchAction(sourceId = sourceAId, url = "https://$okHost/feed")),
+      )
+      val sourceB = Source(
+        id = sourceBId,
+        title = "b",
+        repositoryId = repositoryId,
+        lastRefreshedAt = sourceBLastRefreshedAt,
+        actions = listOf(FetchAction(sourceId = sourceBId, url = "https://$coolingHost/feed")),
+      )
+      `when`(sourceRepository.findAllWithActionsByRepositoryId(repositoryId)).thenReturn(listOf(sourceA, sourceB))
+      `when`(planConstraintsService.coerceMinScheduledNextAt(eq(sourceALastRefreshedAt), eq(sourceALastRefreshedAt), eq(groupId)))
+        .thenReturn(sourceAPlanFloor)
+      `when`(planConstraintsService.coerceMinScheduledNextAt(eq(sourceBLastRefreshedAt), eq(sourceBLastRefreshedAt), eq(groupId)))
+        .thenReturn(sourceBPlanFloor)
+      `when`(hostCooldown.find(okHost)).thenReturn(null)
+      `when`(hostCooldown.find(coolingHost)).thenReturn(
+        HostCooldownState(host = coolingHost, blockedUntil = hostBlockedUntil, strikes = 1, lastStatus = 429)
+      )
+
+      // blank cron: no cap, so each source's coerced time comes only from its own floor
+      sourceUseCase.scheduleNextHarvestOfRepository(repositoryId, null, "", groupId)
+
+      verify(sourceRepository).scheduleNextHarvest(sourceAId, sourceAPlanFloor)
+      verify(sourceRepository).scheduleNextHarvest(sourceBId, hostBlockedUntil)
+    }
+
   // processSourceJobs runs its own runBlocking, so it is exercised directly rather than through runTest.
   @Test
   fun `processSourceJobs looks up owners under the run's correlation id`() {
@@ -243,7 +296,8 @@ class SourceUseCaseTest {
         mock(PlanConstraintsService::class.java),
         scrapeActionRepository,
         repositoryRepository,
-        mock(SourcePipelineService::class.java)
+        mock(SourcePipelineService::class.java),
+        hostCooldown,
       )
 
       useCase.processSourceJobs()

@@ -114,6 +114,13 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
   )
   fun findAllWithActionsByIdIn(@Param("ids") ids: List<UUID>): List<SourceEntity>
 
+  @Query(
+    """SELECT DISTINCT s FROM SourceEntity s
+    LEFT JOIN FETCH s.actions
+    WHERE s.repositoryId = :repositoryId"""
+  )
+  fun findAllWithActionsByRepositoryId(@Param("repositoryId") repositoryId: UUID): List<SourceEntity>
+
   fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, sourceIds: List<UUID>): List<SourceEntity>
 
   @Query(

@@ -79,6 +79,10 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     return sourceDAO.findAllWithActionsByIdIn(ids.map { it.uuid }).map { it.toDomain() }
   }
 
+  override fun findAllWithActionsByRepositoryId(repositoryId: RepositoryId): List<Source> {
+    return sourceDAO.findAllWithActionsByRepositoryId(repositoryId.uuid).map { it.toDomain() }
+  }
+
   override fun findAllByRepositoryIdAndIdIn(
     repositoryId: RepositoryId,
     sourceIds: List<SourceId>

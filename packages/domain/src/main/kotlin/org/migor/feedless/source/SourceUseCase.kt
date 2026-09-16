@@ -19,9 +19,11 @@ import org.migor.feedless.actions.placedAt
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.currentThreadCorrId
+import org.migor.feedless.common.hostOf
 import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
+import org.migor.feedless.hostCooldown.HostCooldown
 import org.migor.feedless.pipeline.SourcePipelineService
 import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.pipelineJob.SourcePipelineJob
@@ -30,6 +32,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.nextCronDate
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
@@ -50,7 +53,8 @@ class SourceUseCase(
   private val planConstraintsService: PlanConstraintsService,
   private val scrapeActionRepository: ScrapeActionRepository,
   private val repositoryRepository: RepositoryRepository,
-  private val sourcePipelineService: SourcePipelineService
+  private val sourcePipelineService: SourcePipelineService,
+  private val hostCooldown: HostCooldown? = null,
 ) {
 
   private val log = LoggerFactory.getLogger(SourceUseCase::class.simpleName)
@@ -280,8 +284,28 @@ class SourceUseCase(
       Unit
     }
 
-  suspend fun scheduleNextHarvestOfRepository(repositoryId: RepositoryId, at: LocalDateTime) = withContext(Dispatchers.IO) {
-    sourceRepository.scheduleNextHarvestOfRepository(repositoryId, at)
+  /** [cron] is passed in rather than read off the repository, since on a cron change the repository is not saved yet. */
+  suspend fun scheduleNextHarvestOfRepository(
+    repositoryId: RepositoryId,
+    requestedAt: LocalDateTime?,
+    cron: String,
+    groupId: GroupId,
+  ) = withContext(Dispatchers.IO) {
+    val now = LocalDateTime.now()
+    val cronCap = cron.takeIf { it.isNotBlank() }?.let {
+      planConstraintsService.coerceMinScheduledNextAt(now, nextCronDate(it, now), groupId)
+    }
+    sourceRepository.findAllWithActionsByRepositoryId(repositoryId).forEach { source ->
+      val planFloor = source.lastRefreshedAt?.let { planConstraintsService.coerceMinScheduledNextAt(it, it, groupId) }
+      val hostBlockedUntil = source.actions.filterIsInstance<FetchAction>().firstOrNull()?.url
+        ?.let { hostOf(it) }
+        ?.let { hostCooldown?.find(it)?.blockedUntil }
+      val requested = requestedAt ?: cronCap ?: now
+      sourceRepository.scheduleNextHarvest(
+        source.id,
+        HarvestTimeLimits.coerce(requested, now, planFloor, hostBlockedUntil, cronCap)
+      )
+    }
   }
 
   suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {

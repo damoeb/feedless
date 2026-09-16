@@ -74,8 +74,7 @@ nextHarvest = max(cronNext, retryAt, host.blocked_until)
 `RepositoryUseCase`:
 
 - `nextHarvestAt` is a read-only Hibernate `@Formula` = `min(next_harvest_at)` over the repository's enabled sources; mappers produce `nextUpdateAt` from it.
-- Writing `nextUpdateAt` or `scheduleNextUpdateNow` sets that time on all the repository's sources.
-- Changing `sourcesSyncCron` recomputes `next_harvest_at` for all its sources.
+- Writing `nextUpdateAt`/`scheduleNextUpdateNow`, or changing `sourcesSyncCron`, calls `SourceUseCase.scheduleNextHarvestOfRepository(repositoryId, requestedAt, cron, groupId)`, which reseeds every source of the repository individually rather than writing one shared time. Per source, `HarvestTimeLimits.coerce` takes the plan's minimum interval since that source's `lastRefreshedAt` and its host's cooldown as hard floors; the cron's next date (plan-coerced) caps the result only when no explicit `requestedAt` was given — a floor later than the cap still wins. A cron change alone passes `requestedAt = null`, so each source's own cron-derived cap becomes its new time; an explicit `nextUpdateAt`/`scheduleNextUpdateNow` passes that time as `requestedAt` and the (possibly just-changed) cron as the cap.
 
 Removed: `RepositoryHarvester.harvestRepository`, `RepositoryDAO.findAllWhereNextHarvestIsDue`. The harvest-lateness metric moves to the executor, measured against `next_harvest_at`.
 

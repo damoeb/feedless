@@ -20,11 +20,13 @@ import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
+import org.mockito.Mockito
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.argumentCaptor
 import java.time.LocalDateTime
 
 
@@ -222,45 +224,34 @@ class RepositoryUpdateTest {
     }
 
   @Test
-  fun `schedule next update now coerces current time`() =
+  fun `schedule next update now requests the current time on the existing cron`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-      val coercedNextAt = LocalDateTime.of(2026, 7, 18, 12, 0)
-      `when`(
-        planConstraintsService.coerceMinScheduledNextAt(
-          any2(),
-          any2(),
-          any2(),
-        )
-      ).thenReturn(coercedNextAt)
-      var savedRepo: Repository? = null
-      `when`(repositoryRepository.save(any2())).thenAnswer {
-        savedRepo = it.arguments[0] as Repository
-        savedRepo
-      }
+      mockRepositorySave()
 
+      val before = LocalDateTime.now()
       repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(scheduleNextUpdateNow = true))
+      val after = LocalDateTime.now()
 
-      verify(planConstraintsService).coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2(),
+      val requestedAtCaptor = argumentCaptor<LocalDateTime>()
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(
+        eq(repositoryId), requestedAtCaptor.capture(), eq(repository.sourcesSyncCron), any2()
       )
-      verify(sourceUseCase).scheduleNextHarvestOfRepository(eq(repositoryId), eq(coercedNextAt))
+      assertThat(requestedAtCaptor.firstValue).isBetween(before, after)
     }
 
   @Test
-  fun `changing the cron re-seeds every source of the repository`() =
+  fun `changing the cron re-seeds every source of the repository with no explicit time`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
       `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
-      val coerced = LocalDateTime.of(2026, 9, 16, 17, 0)
-      `when`(planConstraintsService.coerceMinScheduledNextAt(any2(), any2(), any2())).thenReturn(coerced)
-      `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
+      mockRepositorySave()
 
       repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(refreshCron = "0 0 * * * *"))
 
-      verify(sourceUseCase).scheduleNextHarvestOfRepository(eq(repositoryId), eq(coerced))
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(
+        eq(repositoryId), Mockito.isNull(), eq("0 0 * * * *"), any2()
+      )
     }
 
   @Test
@@ -289,7 +280,7 @@ class RepositoryUpdateTest {
 
       repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(title = "just-a-title"))
 
-      verify(sourceUseCase, never()).scheduleNextHarvestOfRepository(any2(), any2())
+      verify(sourceUseCase, never()).scheduleNextHarvestOfRepository(any2(), any2(), any2(), any2())
     }
 
   private fun mockRepositorySave() {
