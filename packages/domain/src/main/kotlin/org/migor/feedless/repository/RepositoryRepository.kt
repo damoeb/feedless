@@ -39,4 +39,7 @@ interface RepositoryRepository {
   fun save(repository: Repository): Repository
   fun delete(repository: Repository)
 
+  /** A single targeted UPDATE, so a harvest never overwrites a concurrently saved repository copy. */
+  fun touchLastUpdatedAt(id: RepositoryId, at: LocalDateTime)
+
 }

@@ -89,7 +89,7 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
-  /** One scheduled run of [source]; skipped when a harvest elsewhere holds its run slot. */
+  /** One scheduled run of [source]; skipped when a harvest elsewhere holds its run slot, or when a rescheduled run beat this one to it. */
   suspend fun harvestScheduled(source: Source) {
     meterRegistry.counter(
       AppMetrics.fetchRepository, listOf(
@@ -99,10 +99,18 @@ class RepositoryHarvester(
     ).count()
     source.nextHarvestAt?.let { harvestOffsetTimer.record(Duration.between(it, LocalDateTime.now())) }
 
-    val harvest = harvestRepository.startRun(source.id, LocalDateTime.now())
+    val now = LocalDateTime.now()
+    val currentNextHarvestAt = sourceRepository.findNextHarvestAt(source.id)
+    if (currentNextHarvestAt != null && currentNextHarvestAt.isAfter(now)) {
+      log.info("skipping source ${source.id}: rescheduled to $currentNextHarvestAt since it was claimed as due")
+      return
+    }
+
+    val harvest = harvestRepository.startRun(source.id, now)
     if (harvest == null) {
       log.info("skipping source ${source.id}: a real harvest of it is running already")
     } else {
+      log.info("harvesting source ${source.id}")
       harvestSource(source, harvest)
     }
   }
@@ -124,6 +132,7 @@ class RepositoryHarvester(
       outcome = outcome.copy(errornous = retryAfter == null)
     } finally {
       scheduleNextHarvest(source, retryAfter, logCollector)
+      touchRepository(source)
       outcome = outcome.copy(
         status = HarvestStatus.COMPLETED,
         finishedAt = LocalDateTime.now(),
@@ -167,13 +176,27 @@ class RepositoryHarvester(
       val repository = source.repositoryId?.let { repositoryRepository.findById(it) } ?: return@runCatching
       if (repository.sourcesSyncCron.isBlank()) return@runCatching
       val now = LocalDateTime.now()
-      val cronNext = repositoryUseCase.calculateScheduledNextAt(repository.sourcesSyncCron, repository.groupId, now)
+      // An unparseable cron must not hot-loop the source: fall back to a plain retry instead of leaving nextHarvestAt in the past.
+      val cronNext = runCatching {
+        repositoryUseCase.calculateScheduledNextAt(repository.sourcesSyncCron, repository.groupId, now)
+      }.getOrElse {
+        log.error("computing next harvest for source ${source.id} failed: ${it.message}", it)
+        now.plusHours(1)
+      }
       val next = maxOf(cronNext, now.plus(retryAfter ?: Duration.ZERO))
       if (retryAfter != null && retryAfter > Duration.ZERO) {
         logCollector.log("delayed until ${next.format(iso8601DateFormat)}")
       }
       sourceRepository.scheduleNextHarvest(source.id, next)
     }.onFailure { log.error("scheduling source ${source.id} failed: ${it.message}", it) }
+  }
+
+  // Swallows its own failure like scheduling: a lost touch only means lastUpdatedAt lags until the next harvest.
+  private suspend fun touchRepository(source: Source) {
+    runCatching {
+      val repositoryId = source.repositoryId ?: return@runCatching
+      repositoryRepository.touchLastUpdatedAt(repositoryId, LocalDateTime.now())
+    }.onFailure { log.error("touching repository of source ${source.id} failed: ${it.message}", it) }
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector, harvestId: HarvestId? = null): HarvestCount {

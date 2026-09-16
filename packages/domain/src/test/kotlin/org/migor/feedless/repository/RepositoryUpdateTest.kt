@@ -21,6 +21,7 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -278,6 +279,17 @@ class RepositoryUpdateTest {
       )
 
       assertThat(savedRepo?.retentionMaxAgeDaysReferenceField).isEqualTo(MaxAgeDaysDateField.publishedAt)
+    }
+
+  @Test
+  fun `a title-only update does not reschedule sources`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      mockRepositorySave()
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(title = "just-a-title"))
+
+      verify(sourceUseCase, never()).scheduleNextHarvestOfRepository(any2(), any2())
     }
 
   private fun mockRepositorySave() {

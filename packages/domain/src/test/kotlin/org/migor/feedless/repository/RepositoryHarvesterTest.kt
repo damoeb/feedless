@@ -149,6 +149,9 @@ class RepositoryHarvesterTest {
         )
       )
     ).thenReturn(LocalDateTime.now())
+
+    // No fresher reschedule since the source was claimed as due, unless a test overrides it.
+    `when`(sourceRepository.findNextHarvestAt(any2())).thenReturn(null)
   }
 
   @Test
@@ -836,6 +839,50 @@ class RepositoryHarvesterTest {
     repositoryHarvester.harvestScheduled(source)
 
     verify(scraper, never()).scrape(any2(), any2())
+  }
+
+  @Test
+  fun `a source rescheduled since it was claimed as due is skipped, without starting or scraping`() = runTest {
+    `when`(sourceRepository.findNextHarvestAt(eq(source.id))).thenReturn(LocalDateTime.now().plusMinutes(5))
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(harvestRepository, never()).startRun(any2(), any2())
+    verify(scraper, never()).scrape(any2(), any2())
+  }
+
+  @Test
+  fun `a repository whose lastUpdatedAt is touched on a successful harvest`() = runTest {
+    `when`(scraper.scrape(any2(), any2())).thenReturn(
+      ScrapeResult(actionCount = 1, lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = emptyList()))
+    )
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(repositoryRepository).touchLastUpdatedAt(eq(repositoryId), any2())
+  }
+
+  @Test
+  fun `a repository whose lastUpdatedAt is touched on a failed harvest too`() = runTest {
+    `when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException("this is off"))
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(repositoryRepository).touchLastUpdatedAt(eq(repositoryId), any2())
+  }
+
+  @Test
+  fun `scheduling falls back to now plus one hour when computing the next harvest fails`() = runTest {
+    `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenThrow(IllegalArgumentException("bad cron"))
+    `when`(scraper.scrape(any2(), any2())).thenReturn(
+      ScrapeResult(actionCount = 1, lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = emptyList()))
+    )
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository).scheduleNextHarvest(eq(source.id), argThat {
+      it.isAfter(LocalDateTime.now().plusMinutes(59)) && it.isBefore(LocalDateTime.now().plusMinutes(61))
+    })
   }
 
   private fun newJsonItem(
