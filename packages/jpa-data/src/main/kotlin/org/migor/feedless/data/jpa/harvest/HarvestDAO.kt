@@ -104,4 +104,19 @@ DELETE FROM t_harvest WHERE EXISTS(
     @Param("now") now: LocalDateTime,
     @Param("message") message: String,
   ): Int
+
+  // Keeps the tail: the newest lines are the ones a reader of a long log came for.
+  @Modifying
+  @Query(
+    """
+    UPDATE t_harvest
+    SET logs = right(concat_ws(E'\n', nullif(logs, ''), :lines), :maxLength)
+    WHERE id = :id
+  """, nativeQuery = true
+  )
+  fun appendLog(
+    @Param("id") id: UUID,
+    @Param("lines") lines: String,
+    @Param("maxLength") maxLength: Int,
+  ): Int
 }

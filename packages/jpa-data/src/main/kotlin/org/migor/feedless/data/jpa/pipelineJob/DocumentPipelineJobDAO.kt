@@ -14,6 +14,7 @@ import java.util.*
 @Repository
 @Profile("${AppProfiles.scrape} & ${AppLayer.repository}")
 interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID> {
+  // A job waits for its harvest to complete: the harvest's final save would overwrite the plugin log lines.
   @Query(
     nativeQuery = true,
     value = """
@@ -30,6 +31,10 @@ interface DocumentPipelineJobDAO : JpaRepository<DocumentPipelineJobEntity, UUID
         ) g
       where g.cool_down_until is null
          or g.cool_down_until < :now)
+      and not exists (
+        select 1 from t_harvest h
+        where h.id = p.harvest_id and h.status = 'running'
+      )
       order by document_id, sequence_id
       limit 100
     """

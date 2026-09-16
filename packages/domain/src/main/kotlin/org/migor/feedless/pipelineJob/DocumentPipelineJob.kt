@@ -2,6 +2,7 @@ package org.migor.feedless.pipelineJob
 
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.document.DocumentId
+import org.migor.feedless.harvest.HarvestId
 import java.time.LocalDateTime
 
 data class DocumentPipelineJob(
@@ -16,6 +17,8 @@ data class DocumentPipelineJob(
     val pluginId: String,
     val executorParams: PluginExecutionJson,
     val documentId: DocumentId,
+    // The harvest whose log records this job's outcome; null for jobs not queued by a harvest.
+    val harvestId: HarvestId? = null,
 ) : PipelineJob(id, sequenceId, attempt, terminatedAt, terminated, coolDownUntil, status, logs) {
     fun updateStatus(status: PipelineJobStatus): DocumentPipelineJob {
         return if (status == PipelineJobStatus.PENDING) {

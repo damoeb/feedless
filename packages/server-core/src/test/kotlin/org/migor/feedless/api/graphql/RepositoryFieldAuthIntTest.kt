@@ -23,6 +23,7 @@ import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.message.Notifications
 import org.migor.feedless.payment.PaymentUseCase
 import org.migor.feedless.pipeline.PipelinePlugins
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.HarvestService
@@ -87,6 +88,7 @@ import java.util.concurrent.CopyOnWriteArrayList
     InboxService::class,
     PlanConstraintsService::class,
     DocumentPipelineJobRepository::class,
+    HarvestRepository::class,
     PipelinePlugins::class,
     Notifications::class,
     PaymentUseCase::class,

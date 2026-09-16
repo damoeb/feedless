@@ -8,6 +8,7 @@ import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
+import org.migor.feedless.repository.HARVEST_LOG_MAX_LENGTH
 import org.migor.feedless.source.SourceId
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
@@ -71,6 +72,11 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
   @Transactional
   override fun completeStaleRunning(startedBefore: LocalDateTime, now: LocalDateTime, message: String): Int {
     return harvestDAO.completeAllRunningStartedBefore(startedBefore, now, message)
+  }
+
+  @Transactional
+  override fun appendLog(id: HarvestId, lines: String) {
+    harvestDAO.appendLog(id.uuid, lines, HARVEST_LOG_MAX_LENGTH)
   }
 
   private companion object {

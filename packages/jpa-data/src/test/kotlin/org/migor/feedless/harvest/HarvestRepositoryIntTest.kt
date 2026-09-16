@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.JpaDataTestApplication
 import org.migor.feedless.data.jpa.harvest.HarvestDAO
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.repository.HARVEST_LOG_MAX_LENGTH
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.source.Source
@@ -232,6 +233,30 @@ class HarvestRepositoryIntTest {
       HarvestStatus.RUNNING, HarvestStatus.QUEUED, HarvestStatus.COMPLETED,
     )
     assertThat(harvestRepository.findById(oldCompleted.id)!!.errornous).isFalse()
+  }
+
+  @Test
+  fun `appendLog adds lines after the existing log`() {
+    val saved = harvestRepository.save(
+      Harvest(sourceId = sourceA.id, logs = "import took 21ms", startedAt = LocalDateTime.now(), finishedAt = null)
+    )
+
+    harvestRepository.appendLog(saved.id, "org_feedless_fulltext ok https://example.org/1")
+
+    assertThat(harvestRepository.findById(saved.id)!!.logs)
+      .isEqualTo("import took 21ms\norg_feedless_fulltext ok https://example.org/1")
+  }
+
+  @Test
+  fun `appendLog keeps the newest lines when the log is full`() {
+    val saved = harvestRepository.save(
+      Harvest(sourceId = sourceA.id, logs = "x".repeat(HARVEST_LOG_MAX_LENGTH), startedAt = LocalDateTime.now(), finishedAt = null)
+    )
+
+    harvestRepository.appendLog(saved.id, "newest")
+
+    val logs = harvestRepository.findById(saved.id)!!.logs
+    assertThat(logs).hasSize(HARVEST_LOG_MAX_LENGTH).endsWith("\nnewest")
   }
 
   private fun statusOf(vararg harvests: Harvest): List<HarvestStatus> =

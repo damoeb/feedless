@@ -15,6 +15,7 @@ import org.jetbrains.annotations.NotNull
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.data.jpa.StandardJpaFields
 import org.migor.feedless.data.jpa.document.DocumentEntity
+import org.migor.feedless.data.jpa.harvest.HarvestEntity
 import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import java.util.*
 
@@ -45,6 +46,20 @@ open class DocumentPipelineJobEntity : PipelineJobEntity() {
         foreignKey = ForeignKey(name = "fk_pipeline_job__to__document")
     )
     open var document: DocumentEntity? = null
+
+    @Column(name = "harvest_id")
+    open var harvestId: UUID? = null
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.SET_NULL)
+    @JoinColumn(
+        name = "harvest_id",
+        referencedColumnName = "id",
+        insertable = false,
+        updatable = false,
+        foreignKey = ForeignKey(name = "fk_pipeline_job__to__harvest")
+    )
+    open var harvest: HarvestEntity? = null
 }
 
 fun DocumentPipelineJobEntity.toDomain(): DocumentPipelineJob {

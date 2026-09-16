@@ -13,6 +13,7 @@ interface DocumentPipelineJobMapper {
   fun toDomain(entity: DocumentPipelineJobEntity): DocumentPipelineJob
 
   @Mapping(target = "document", ignore = true)
+  @Mapping(target = "harvest", ignore = true)
   fun toEntity(domain: DocumentPipelineJob): DocumentPipelineJobEntity
 
   companion object {

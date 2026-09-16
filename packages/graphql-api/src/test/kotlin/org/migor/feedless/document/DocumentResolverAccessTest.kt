@@ -22,6 +22,7 @@ import org.migor.feedless.generated.types.RepositoryUniqueWhereInput
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.message.Notifications
 import org.migor.feedless.pipeline.PipelinePlugins
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
@@ -74,6 +75,7 @@ class DocumentResolverAccessTest {
     appConfig,
     documentGuard,
     repositoryGuard,
+    mock<HarvestRepository>(),
   )
   private val resolver = DocumentResolver(appConfig, documentUseCase, documentGuard, repositoryGuard)
   private val repository = Repository(

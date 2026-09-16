@@ -22,4 +22,7 @@ interface HarvestRepository {
 
   /** Fails running harvests started before [startedBefore]: their process died. */
   fun completeStaleRunning(startedBefore: LocalDateTime, now: LocalDateTime, message: String): Int
+
+  /** Appends in one statement, so it never overwrites lines written concurrently; a deleted harvest is ignored. */
+  fun appendLog(id: HarvestId, lines: String)
 }

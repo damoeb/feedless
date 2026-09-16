@@ -27,6 +27,7 @@ import org.migor.feedless.feed.parser.json.JsonAttachment
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.feed.toPoint
 import org.migor.feedless.harvest.Harvest
+import org.migor.feedless.harvest.HarvestId
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.pipeline.plugins.images
@@ -183,7 +184,7 @@ class RepositoryHarvester(
     val logCollector = LogCollector()
     var outcome = harvest
     try {
-      val count = scrapeSource(source, logCollector)
+      val count = scrapeSource(source, logCollector, harvest.id)
       outcome = outcome.copy(itemsAdded = count.added)
       sourceRepository.recordHarvestSucceeded(source.id, count.retrieved, LocalDateTime.now())
     } catch (e: Throwable) {
@@ -225,16 +226,17 @@ class RepositoryHarvester(
     }
   }
 
-  suspend fun scrapeSource(source: Source, logCollector: LogCollector): HarvestCount {
+  suspend fun scrapeSource(source: Source, logCollector: LogCollector, harvestId: HarvestId? = null): HarvestCount {
     val output = scraper.scrape(source, logCollector)
-    return importElement(output, source.repositoryId!!, source, logCollector)
+    return importElement(output, source.repositoryId!!, source, logCollector, harvestId)
   }
 
   private suspend fun importElement(
     output: ScrapeResult,
     repositoryId: RepositoryId,
     source: Source,
-    logCollector: LogCollector
+    logCollector: LogCollector,
+    harvestId: HarvestId?
   ): HarvestCount {
     log.debug("importElement")
     val repository = repositoryRepository.findById(repositoryId)!!
@@ -263,7 +265,7 @@ class RepositoryHarvester(
       } ?: Pair(0, emptyList())
 
       triggerPostReleaseEffects(repository, documents)
-      triggerPlugins(repository, documents)
+      triggerPlugins(repository, documents, logCollector, harvestId)
       HarvestCount(retrieved = retrieved, added = documents.count { (isNew, _) -> isNew })
     }
 //    lastAction.extract.image?.let {
@@ -283,9 +285,18 @@ class RepositoryHarvester(
 
   private suspend fun triggerPlugins(
     repository: Repository,
-    documents: List<Pair<Boolean, Document>>
+    documents: List<Pair<Boolean, Document>>,
+    logCollector: LogCollector,
+    harvestId: HarvestId?
   ) {
     if (repository.plugins.isNotEmpty()) {
+      val pluginIds = repository.plugins.joinToString(", ") { it.id }
+      // Plugins run later in DocumentPipelineJobExecutor, which appends their outcome to this harvest's log.
+      if (documents.isEmpty()) {
+        logCollector.log("no new items, not running plugins [$pluginIds]")
+      } else {
+        logCollector.log("queued ${documents.size} new items for [$pluginIds]")
+      }
       try {
         log.debug("delete all document job by documents")
         documentPipelineJobRepository.deleteAllByDocumentIdIn(
@@ -300,7 +311,7 @@ class RepositoryHarvester(
         .map { (_, document) -> document }
         .flatMap {
           repository.plugins
-            .mapIndexed { index, pluginRef -> toDocumentPipelineJob(pluginRef, it, index) }
+            .mapIndexed { index, pluginRef -> toDocumentPipelineJob(pluginRef, it, index, harvestId) }
             .toMutableList()
         }
     )
@@ -385,11 +396,7 @@ class RepositoryHarvester(
     }
 
     log.info("importItems size=${items.size}")
-    if (repository.plugins.isEmpty()) {
-      logCollector.log("importItems size=${items.size}")
-    } else {
-      logCollector.log("importItems size=${items.size} with [${repository.plugins.joinToString(", ") { it.id }}]")
-    }
+    logCollector.log("importItems size=${items.size}")
 
     val start = Instant.now()
     val retrievedDocuments = items
@@ -426,7 +433,7 @@ class RepositoryHarvester(
     }
 
     log.debug("import took ${Duration.between(start, Instant.now()).toMillis()}")
-    logCollector.log("import took ${Duration.between(start, Instant.now()).toMillis()}")
+    logCollector.log("import took ${Duration.between(start, Instant.now()).toMillis()}ms")
     val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
@@ -533,6 +540,7 @@ class RepositoryHarvester(
             )
           )
         } else {
+          logCollector.log("skipped existing ${document.url}")
 //          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
 //            existing.status = ReleaseStatus.unreleased
 //            Pair(false, existing)
@@ -557,14 +565,16 @@ class RepositoryHarvester(
   private fun toDocumentPipelineJob(
     plugin: PluginExecution,
     document: Document,
-    index: Int
+    index: Int,
+    harvestId: HarvestId?
   ): DocumentPipelineJob {
     return DocumentPipelineJob(
       id = PipelineJobId(),
       sequenceId = index,
       documentId = document.id,
       pluginId = plugin.id,
-      executorParams = plugin.params
+      executorParams = plugin.params,
+      harvestId = harvestId
     )
   }
 }

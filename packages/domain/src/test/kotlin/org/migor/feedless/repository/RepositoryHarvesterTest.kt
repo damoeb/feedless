@@ -31,6 +31,7 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
+import org.migor.feedless.pipelineJob.DocumentPipelineJob
 import org.migor.feedless.pipelineJob.DocumentPipelineJobRepository
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.pipelineJob.SourcePipelineJob
@@ -643,6 +644,60 @@ class RepositoryHarvesterTest {
 
       verify(sourceRepository).recordHarvestSucceeded(eq(source.id), eq(2), any2())
       verify(harvestRepository).save(argThat { it.itemsAdded == 0 })
+    }
+
+  @Test
+  fun `given existing items and plugins, the harvest log names the skipped items and queues no plugins`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
+      `when`(repository.plugins).thenReturn(listOf(createPlugin()))
+      `when`(
+        documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
+          any(String::class.java),
+          any(String::class.java),
+          any(RepositoryId::class.java)
+        )
+      ).thenReturn(mock(Document::class.java))
+      `when`(scraper.scrape(any(Source::class.java), any(LogCollector::class.java))).thenReturn(
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(newJsonItem(url = "https://example.org/1", title = "1"))
+          )
+        )
+      )
+
+      repositoryHarvester.harvestRepository(repositoryId)
+
+      verify(harvestRepository).save(argThat {
+        it.logs.contains("skipped existing https://example.org/1") &&
+          it.logs.contains("no new items, not running plugins [org_feedless_fulltext]") &&
+          !it.logs.contains("with [org_feedless_fulltext]")
+      })
+    }
+
+  @Test
+  fun `given new items and plugins, the harvest log says which plugins were queued`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = randomUserId())) {
+      `when`(repository.plugins).thenReturn(listOf(createPlugin()))
+      `when`(scraper.scrape(any(Source::class.java), any(LogCollector::class.java))).thenReturn(
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(newJsonItem(url = "https://example.org/1", title = "1"))
+          )
+        )
+      )
+
+      repositoryHarvester.harvestRepository(repositoryId)
+
+      verify(harvestRepository).save(argThat {
+        it.logs.contains("queued 1 new items for [org_feedless_fulltext]")
+      })
+      verify(documentPipelineJobRepository).saveAll(argThat<List<DocumentPipelineJob>> { jobs ->
+        jobs.size == 1 && jobs.all { it.harvestId != null }
+      })
     }
 
   @Test
