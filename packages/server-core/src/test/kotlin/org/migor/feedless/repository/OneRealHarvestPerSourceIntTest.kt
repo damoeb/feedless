@@ -120,7 +120,13 @@ class OneRealHarvestPerSourceIntTest {
     harvestDAO.deleteAllInBatch()
     userRepository.deleteAll()
 
-    val user = userRepository.save(User(email = "one-harvest-${System.currentTimeMillis()}@test.com", lastLogin = LocalDateTime.now()))
+    val user = userRepository.save(
+      User(
+        email = "one-harvest-${System.currentTimeMillis()}@test.com",
+        lastLogin = LocalDateTime.now(),
+        hasAcceptedTerms = true,
+      )
+    )
     val group = groupRepository.save(Group(name = "one-harvest-group", ownerId = user.id))
     repository = repositoryRepository.save(
       Repository(title = "one-harvest-repo", ownerId = user.id, groupId = group.id, sourcesSyncCron = "0 0 * * * *")
@@ -178,11 +184,11 @@ class OneRealHarvestPerSourceIntTest {
   }
 
   @Test
-  fun `the scheduled loop skips a source whose real harvest is running and moves on to the next`() = runBlocking<Unit> {
+  fun `a scheduled tick skips a source whose real harvest is running and harvests the next`() = runBlocking<Unit> {
     val running = harvestRepository.save(harvest(HarvestStatus.RUNNING))
     val idle = createSource("idle")
 
-    harvester.harvestRepository(repository.id)
+    SourceHarvesterExecutor(harvester, sourceRepository, repositoryRepository).refreshSubscriptions()
 
     verify(scraper, never()).scrape(argThat { it.id == source.id }, any2())
     verify(scraper).scrape(argThat { it.id == idle.id }, any2())
@@ -192,6 +198,17 @@ class OneRealHarvestPerSourceIntTest {
     assertThat(sourceRepository.findById(idle.id)!!.errorsInSuccession).isEqualTo(1)
     // The scheduled run recorded its harvest as running first, then completed it.
     assertThat(realHarvestsOf(idle).map { it.second }).containsExactly(HarvestStatus.COMPLETED)
+  }
+
+  @Test
+  fun `harvestScheduled skips a source whose run slot is claimed elsewhere, without scraping`() = runBlocking<Unit> {
+    // Covers the race where findAllDueForHarvest returns a source just before another run claims its slot.
+    harvestRepository.save(harvest(HarvestStatus.RUNNING))
+
+    harvester.harvestScheduled(sourceRepository.findByIdWithActions(source.id)!!)
+
+    verify(scraper, never()).scrape(argThat { it.id == source.id }, any2())
+    assertThat(sourceRepository.findById(source.id)!!.errorsInSuccession).isEqualTo(0)
   }
 
   @Test
