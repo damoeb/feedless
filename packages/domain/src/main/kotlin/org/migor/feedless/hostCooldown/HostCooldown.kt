@@ -20,7 +20,8 @@ interface HostCooldown {
   /** Adds a strike and extends the cooldown by [HostBlockLadder]. */
   fun recordBlocked(host: String, status: Int, now: LocalDateTime): HostCooldownState
 
-  fun recordSuccess(host: String)
+  /** Deletes the cooldown only if it has already expired; returns whether a row was deleted. */
+  fun recordSuccess(host: String, now: LocalDateTime): Boolean
 }
 
 object HostBlockLadder {

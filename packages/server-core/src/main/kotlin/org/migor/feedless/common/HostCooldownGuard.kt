@@ -53,8 +53,12 @@ class HostCooldownGuard(private val hostCooldown: HostCooldown?) {
 
   fun onSuccess(url: String) {
     val host = hostOf(url) ?: return
-    if (hostCooldown != null && hostsWithRow.remove(host)) {
-      hostCooldown.recordSuccess(host)
+    if (hostCooldown != null && hostsWithRow.contains(host)) {
+      val deleted = hostCooldown.recordSuccess(host, LocalDateTime.now())
+      // A row survives an in-flight success while its cooldown is still active; only drop set membership once it's actually gone.
+      if (deleted || hostCooldown.find(host) == null) {
+        hostsWithRow.remove(host)
+      }
     }
   }
 }

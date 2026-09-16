@@ -28,9 +28,15 @@ class FakeHostCooldown : HostCooldown {
     return HostCooldownState(host, now.plus(HostBlockLadder.delayFor(strikes)), strikes, status).also { rows[host] = it }
   }
 
-  override fun recordSuccess(host: String) {
+  override fun recordSuccess(host: String, now: LocalDateTime): Boolean {
     successCalls++
-    rows.remove(host)
+    val existing = rows[host] ?: return false
+    return if (!existing.blockedUntil.isAfter(now)) {
+      rows.remove(host)
+      true
+    } else {
+      false
+    }
   }
 }
 
@@ -74,11 +80,12 @@ class HostCooldownGuardTest {
     guard.onSuccess("https://quiet.example/a")
     assertThat(fake.successCalls).isZero()
 
+    // The fresh block's cooldown is still active, so the success below cannot clear it yet.
     runCatching { guard.onBlocked("https://www.bueron.ch/a", 403) }
     guard.onSuccess("https://www.bueron.ch/b")
 
     assertThat(fake.successCalls).isEqualTo(1)
-    assertThat(fake.rows).isEmpty()
+    assertThat(fake.rows).containsKey("www.bueron.ch")
   }
 
   @Test
@@ -89,6 +96,16 @@ class HostCooldownGuardTest {
     guard.onSuccess("https://www.bueron.ch/a")
 
     assertThat(fake.rows).isEmpty()
+  }
+
+  @Test
+  fun `a success while the cooldown is still active leaves the row`() {
+    fake.rows["www.bueron.ch"] = HostCooldownState("www.bueron.ch", LocalDateTime.now().plusMinutes(10), 1, 429)
+
+    assertThatThrownBy { guard.requireOpen("https://www.bueron.ch/a") }.isInstanceOf(HostOverloadingException::class.java)
+    guard.onSuccess("https://www.bueron.ch/a")
+
+    assertThat(fake.rows).containsKey("www.bueron.ch")
   }
 
   @Test

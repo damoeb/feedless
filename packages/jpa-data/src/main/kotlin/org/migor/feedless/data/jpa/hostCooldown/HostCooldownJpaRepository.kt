@@ -35,7 +35,7 @@ class HostCooldownJpaRepository(private val hostCooldownDAO: HostCooldownDAO) : 
   }
 
   @Transactional
-  override fun recordSuccess(host: String) {
-    hostCooldownDAO.deleteById(host)
+  override fun recordSuccess(host: String, now: LocalDateTime): Boolean {
+    return hostCooldownDAO.deleteExpired(host, now) > 0
   }
 }

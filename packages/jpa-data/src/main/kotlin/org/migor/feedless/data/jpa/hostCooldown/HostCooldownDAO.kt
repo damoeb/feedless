@@ -57,4 +57,13 @@ interface HostCooldownDAO : JpaRepository<HostCooldownEntity, String> {
   """, nativeQuery = true
   )
   fun extendBlockedUntil(@Param("host") host: String, @Param("until") until: LocalDateTime): Int
+
+  // Deletes only an expired row, so a success that raced an active cooldown never wipes it.
+  @Modifying(clearAutomatically = true)
+  @Query(
+    """
+    DELETE FROM t_host_cooldown WHERE host = :host AND blocked_until <= :now
+  """, nativeQuery = true
+  )
+  fun deleteExpired(@Param("host") host: String, @Param("now") now: LocalDateTime): Int
 }

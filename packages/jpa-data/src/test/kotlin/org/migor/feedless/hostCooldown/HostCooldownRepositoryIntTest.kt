@@ -78,18 +78,25 @@ class HostCooldownRepositoryIntTest {
   }
 
   @Test
-  fun `success deletes the cooldown`() {
+  fun `success during an active cooldown keeps the row, success after expiry deletes it`() {
     hostCooldown.recordBlocked(host, 403, now)
 
-    hostCooldown.recordSuccess(host)
+    val duringCooldown = hostCooldown.recordSuccess(host, now)
 
+    assertThat(duringCooldown).isFalse()
+    assertThat(hostCooldown.find(host)).isNotNull()
+
+    val afterExpiry = hostCooldown.recordSuccess(host, now.plusHours(3))
+
+    assertThat(afterExpiry).isTrue()
     assertThat(hostCooldown.find(host)).isNull()
   }
 
   @Test
   fun `success on an unknown host is a no-op`() {
-    hostCooldown.recordSuccess("unknown.example")
+    val deleted = hostCooldown.recordSuccess("unknown.example", now)
 
+    assertThat(deleted).isFalse()
     assertThat(hostCooldownDAO.count()).isZero()
   }
 }
