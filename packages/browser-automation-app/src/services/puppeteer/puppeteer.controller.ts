@@ -44,6 +44,6 @@ export class PuppeteerController {
         ],
       },
     };
-    return this.puppeteer.submit(job);
+    return this.puppeteer.submit(job, corrId);
   }
 }
