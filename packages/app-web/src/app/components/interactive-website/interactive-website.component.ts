@@ -187,6 +187,10 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
         this.shouldScrape = true;
         this.changeRef.detectChanges();
       }),
+      // handled here, not in app-embedded-markup, which only exists while the markup tab is shown
+      this.sourceBuilder().events.extractElements.subscribe(({ xpath, callback }) =>
+        callback(this.extractElements(xpath))
+      ),
       this.sourceBuilder().events.pickElement.subscribe(() => {
         this.viewModeFc.patchValue(this.viewModeMarkup);
       }),
@@ -237,6 +241,25 @@ export class InteractiveWebsiteComponent implements OnInit, OnDestroy {
 
   cancelPickMode() {
     this.sourceBuilder().events.cancel.emit();
+  }
+
+  private extractElements(xpath: string): HTMLElement[] {
+    if (!this.embedMarkup?.data) {
+      return [];
+    }
+    const document = new DOMParser().parseFromString(this.embedMarkup.data, 'text/html');
+    const elements: HTMLElement[] = [];
+    try {
+      const xpathResult = document.evaluate(xpath, document, null, XPathResult.ANY_TYPE, null);
+      let element = xpathResult.iterateNext();
+      while (element) {
+        elements.push(element as HTMLElement);
+        element = xpathResult.iterateNext();
+      }
+    } catch (e) {
+      console.warn(`Cannot evaluate xpath ${xpath}`, e);
+    }
+    return elements;
   }
 
   private handleScrapeResponse(scrapeResponse: ScrapeResponse) {
