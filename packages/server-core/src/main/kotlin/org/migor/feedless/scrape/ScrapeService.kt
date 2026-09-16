@@ -21,6 +21,7 @@ import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.capability.currentCorrId
+import org.migor.feedless.common.HostCooldownGuard
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
@@ -53,6 +54,9 @@ class ScrapeService : ScrapeRunner {
 
   @Autowired
   private lateinit var httpService: HttpService
+
+  @Autowired
+  private lateinit var hostCooldownGuard: HostCooldownGuard
 
   @Autowired
   private lateinit var browserAutomationService: BrowserAutomationService
@@ -271,6 +275,8 @@ class ScrapeService : ScrapeRunner {
     context: ScrapeContext
   ) {
     context.log("handleFetch $action")
+    // The agent fetches outside HttpService, so the cooldown is checked here for both paths.
+    hostCooldownGuard.requireOpen(action.resolveUrl())
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("send to agent")

@@ -38,7 +38,8 @@ import java.util.concurrent.TimeoutException
 @Service
 class HttpService(
   @Value("\${app.apiGatewayUrl}")
-  private val apiGatewayUrl: String
+  private val apiGatewayUrl: String,
+  private val hostCooldownGuard: HostCooldownGuard,
 ) : HttpFetcher {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
@@ -78,6 +79,7 @@ class HttpService(
   }
 
   suspend fun executeRequest(request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
+    hostCooldownGuard.requireOpen(request.build().uri.toUrl())
     return toHttpResponse(this.execute(request, expectedStatusCode))
   }
 
@@ -96,6 +98,7 @@ class HttpService(
     expectedHttpStatus: Int,
     headers: Map<String, String>?
   ): HttpResponse {
+    hostCooldownGuard.requireOpen(url)
     protectFromOverloading(url)
     log.debug("GET $url")
     val request = prepareGet(url)
@@ -162,16 +165,19 @@ class HttpService(
       }
       log.debug("-> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
+        val url = response.uri.toUrl()
         when (response.statusCode) {
+          429, 503 -> hostCooldownGuard.onThrottled(url, response.statusCode, response.getHeader("Retry-After"))
+          401, 403 -> hostCooldownGuard.onBlocked(url, response.statusCode)
           500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
-          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
 //          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          in 400..499 -> throw SiteNotFoundException(response.uri.toUrl())
-          in 500..599 -> throw ResumableHarvestException(response.uri.toUrl(), Duration.ofHours(5))
+          in 400..499 -> throw SiteNotFoundException(url)
+          in 500..599 -> throw ResumableHarvestException(url, Duration.ofHours(5))
           else -> throw FatalHarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
+        hostCooldownGuard.onSuccess(response.uri.toUrl())
         log.debug("-> ${response.getHeader("content-type")}")
       }
       response
