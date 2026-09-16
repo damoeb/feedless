@@ -4,6 +4,7 @@ import * as process from 'process';
 import { VerboseConfigService } from '../common/verbose-config.service';
 import { GraphqlClient } from '../../graphql-client';
 import { ScrapeResponseInput } from '../../generated/graphql';
+import { toErrorMessage } from '../common/error-message';
 
 @Injectable()
 export class SocketSubscriptionService implements OnModuleInit {
@@ -49,6 +50,7 @@ export class SocketSubscriptionService implements OnModuleInit {
           try {
             const scrapeResponse = await this.puppeteerService.submit(
               event.scrape as any,
+              event.corrId,
             );
             await graphqlClient.submitJobResponse({
               callbackId: event.callbackId,
@@ -56,11 +58,12 @@ export class SocketSubscriptionService implements OnModuleInit {
               scrapeResponse,
             });
           } catch (e) {
-            this.log.error(e?.message);
+            const errorMessage = toErrorMessage(e);
+            this.log.error(`[${event.corrId}] ${errorMessage}`);
 
             const errorResponse: ScrapeResponseInput = {
               ok: false,
-              errorMessage: e?.message,
+              errorMessage,
               // url: getHttpGet(event.scrape).url || 'unknown',
               outputs: [],
               logs: [],

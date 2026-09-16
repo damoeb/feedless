@@ -78,6 +78,76 @@ describe('PuppeteerService', () => {
     expect(response.errorMessage).toEqual('ERR_CONNECTION_RESET');
   });
 
+  function fetchJob(timeout?: number) {
+    return {
+      id: 'job-1',
+      title: '',
+      flow: {
+        sequence: [
+          {
+            fetch: {
+              get: {
+                url: {
+                  literal: 'https://foo.bar',
+                },
+                timeout,
+              },
+            },
+          },
+        ],
+      },
+    };
+  }
+
+  it('a timeout returns the logs collected so far', async () => {
+    service.newBrowser = jest
+      .fn()
+      .mockResolvedValue({ close: () => Promise.resolve() });
+    service.newPage = mockNewPage(() => new Promise(() => {}) as any);
+
+    const response = await service.submit(fetchJob(50) as any);
+
+    expect(response.ok).toBeFalsy();
+    expect(response.errorMessage).toEqual('timeout exceeded after 50ms');
+    expect(response.logs.map((l) => l.message)).toContain(
+      'Starting job id=job-1',
+    );
+  });
+
+  it('a browser that fails to launch fails only its job', async () => {
+    service.newBrowser = jest
+      .fn()
+      .mockRejectedValueOnce(new Error('Failed to launch the browser process'))
+      .mockResolvedValue({ close: () => Promise.resolve() });
+    service.newPage = mockNewPage(() => {
+      throw new Error('ERR_CONNECTION_RESET');
+    });
+
+    const [first, second] = await Promise.all([
+      service.submit(fetchJob() as any),
+      service.submit(fetchJob() as any),
+    ]);
+
+    expect(first.ok).toBeFalsy();
+    expect(first.errorMessage).toEqual('Failed to launch the browser process');
+    expect(second.errorMessage).toEqual('ERR_CONNECTION_RESET');
+  });
+
+  it('a page that cannot be opened returns an error, not a rejection', async () => {
+    service.newBrowser = jest
+      .fn()
+      .mockResolvedValue({ close: () => Promise.resolve() });
+    service.newPage = jest.fn().mockRejectedValue(new Error('Target closed'));
+
+    const response = await service.submit(fetchJob() as any);
+
+    expect(response.ok).toBeFalsy();
+    expect(response.errorMessage).toEqual('Target closed');
+    expect(response.logs.map((l) => l.message)).toContain(
+      'Starting job id=job-1',
+    );
+  });
+
   xit('extract', async () => {
     service.newBrowser = jest.fn().mockImplementation(() => {
       return {

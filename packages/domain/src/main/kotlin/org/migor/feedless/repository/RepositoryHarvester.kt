@@ -206,23 +206,23 @@ class RepositoryHarvester(
     source: Source,
     logCollector: LogCollector
   ) {
-    log.error("scrape failed ${e?.message}")
-    logCollector.log("scrape failed ${e?.message}")
+    val reason = e?.describe()
+    log.error("scrape failed $reason")
+    logCollector.log("scrape failed $reason")
 
     if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
-      logCollector.log("scrape error '${e?.message}'")
-      logCollector.log("error count '${source.errorsInSuccession}'")
-      log.info("source ${source.id} error '${e?.message}' increment -> '${source.errorsInSuccession}'")
+      logCollector.log("errors in succession before this one: ${source.errorsInSuccession}")
+      log.info("source ${source.id} error '$reason' increment -> '${source.errorsInSuccession}'")
 
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
 //            notificationService.createNotification(corrId, repository.ownerId, e.message)
-      sourceRepository.recordHarvestFailed(source.id, e?.message, LocalDateTime.now())
+      sourceRepository.recordHarvestFailed(source.id, reason, LocalDateTime.now())
 //      if (source.disabled) {
 //        logCollector.log("disabled source")
 //        log.info("source ${source.id} disabled")
 //      }
     } else {
-      sourceRepository.recordHarvestInterrupted(source.id, e.message, LocalDateTime.now())
+      sourceRepository.recordHarvestInterrupted(source.id, reason, LocalDateTime.now())
     }
   }
 
@@ -335,7 +335,7 @@ class RepositoryHarvester(
       )
 
     val validNewOrUpdatedDocuments =
-      filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository, logCollector)!!))
+      filterInvalidDocuments(listOf(createOrUpdate(updated, existing, repository)!!))
     documentRepository.saveAll(validNewOrUpdatedDocuments)
 
     return listOf(Pair(existing == null, updated))
@@ -396,13 +396,13 @@ class RepositoryHarvester(
     }
 
     log.info("importItems size=${items.size}")
-    logCollector.log("importItems size=${items.size}")
 
     val start = Instant.now()
     val retrievedDocuments = items
       .map { it.createDocument(repository.id, ReleaseStatus.released, source) }
       .distinctBy { it.contentHash }
       .filterIndexed { index, _ -> index < 300 }
+    val existingLabels = mutableListOf<String>()
     val newOrUpdatedDocuments = retrievedDocuments
       .mapNotNull { updated ->
         try {
@@ -412,14 +412,16 @@ class RepositoryHarvester(
               updated.url,
               repository.id
             )
+          if (existing != null) {
+            existingLabels.add(updated.harvestLabel())
+          }
           createOrUpdate(
             updated.copy(imageUrl = detectMainImageUrl(updated.html)),
             existing,
-            repository,
-            logCollector
+            repository
           )
         } catch (e: Exception) {
-          logCollector.log("importItems failed: ${e.message}")
+          logCollector.log("import failed for ${updated.harvestLabel()}: ${e.describe()}")
           log.error("importItems failed: ${e.message}", e)
           null
         }
@@ -432,9 +434,11 @@ class RepositoryHarvester(
       log.info("${repository.id}/${source.id} found ${validNewOrUpdatedDocuments.size} documents")
     }
 
-    log.debug("import took ${Duration.between(start, Instant.now()).toMillis()}")
-    logCollector.log("import took ${Duration.between(start, Instant.now()).toMillis()}ms")
-    val hasNew = newOrUpdatedDocuments.any { (new, _) -> new }
+    val took = Duration.between(start, Instant.now()).toMillis()
+    val newCount = newOrUpdatedDocuments.count { (isNew, _) -> isNew }
+    log.debug("import took $took")
+    logCollector.log(importSummary(retrievedDocuments.size, took, newCount, existingLabels))
+    val hasNew = newCount > 0
     if (next?.isNotEmpty() == true) {
       if (hasNew) {
         val pageUrls =
@@ -511,7 +515,6 @@ class RepositoryHarvester(
     document: Document,
     existing: Document?,
     repository: Repository,
-    logCollector: LogCollector
   ): Pair<Boolean, Document>? {
     return try {
       if (existing == null) {
@@ -519,16 +522,13 @@ class RepositoryHarvester(
 
         Pair(
           true, if (repository.plugins.isEmpty()) {
-            logCollector.log("released ${document.url}")
             document.copy(status = org.migor.feedless.document.ReleaseStatus.released)
           } else {
-            logCollector.log("queued for post-processing ${document.url}")
             document.copy(status = org.migor.feedless.document.ReleaseStatus.unreleased)
           }
         )
       } else {
         if (repository.plugins.isEmpty()) {
-          logCollector.log("updated item ${document.url}")
           Pair(
             false, document.copy(
               title = document.title,
@@ -540,7 +540,6 @@ class RepositoryHarvester(
             )
           )
         } else {
-          logCollector.log("skipped existing ${document.url}")
 //          if (repository.lastUpdatedAt.isAfter(existing.createdAt)) {
 //            existing.status = ReleaseStatus.unreleased
 //            Pair(false, existing)

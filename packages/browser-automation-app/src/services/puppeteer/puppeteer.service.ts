@@ -35,6 +35,8 @@ import {
   ScrapeResponseInput,
   Source,
 } from '../../generated/graphql';
+import { toErrorMessage } from '../common/error-message';
+import { newCorrId } from '../../corrId';
 
 interface EvaluateResponse {
   markup: string;
@@ -66,9 +68,9 @@ export class PuppeteerService {
   private readonly imageType = 'png';
   private readonly queue: {
     job: Source;
+    corrId: string;
     queuedAt: number;
     resolve: (response: ScrapeResponseInput) => void;
-    reject: (reason: string) => void;
   }[] = [];
   private readonly maxWorkers: number;
   private currentActiveWorkers = 0;
@@ -95,9 +97,13 @@ export class PuppeteerService {
     }
   }
 
-  public async submit(job: Source): Promise<ScrapeResponseInput> {
+  /** Resolves with ok=false on failure, carrying the logs collected until then. */
+  public async submit(
+    job: Source,
+    corrId: string = newCorrId(),
+  ): Promise<ScrapeResponseInput> {
     return new Promise<ScrapeResponseInput>((resolve, reject) => {
-      this.queue.push({ job, resolve, reject, queuedAt: Date.now() });
+      this.queue.push({ job, corrId, resolve, queuedAt: Date.now() });
       if (this.currentActiveWorkers < this.maxWorkers) {
         this.startWorker(this.currentActiveWorkers).catch(reject);
       }
@@ -154,17 +160,9 @@ export class PuppeteerService {
   private async executeRequest(
     request: Source,
     browser: Browser,
+    logs: LogStatementInput[],
+    appendLog: LogAppender,
   ): Promise<ScrapeResponseInput> {
-    const logs: LogStatementInput[] = [];
-    const appendLog: LogAppender = (msg: string) => {
-      logs.push({
-        time: new Date().getTime(),
-        message: msg,
-      });
-      this.log.log(msg);
-    };
-    appendLog(`Starting job id=${request.id}`);
-
     const page = await this.newPage(browser, request);
     const outputs: ScrapeOutputResponseInput[] = [];
     this.interceptConsole(page, appendLog);
@@ -229,12 +227,13 @@ export class PuppeteerService {
         ok: true,
       };
     } catch (e) {
-      appendLog(e.message);
-      this.log.error(e.message, e);
+      const errorMessage = toErrorMessage(e);
+      appendLog(errorMessage);
+      this.log.error(errorMessage, e);
       return {
         ok: false,
         logs,
-        errorMessage: e.message,
+        errorMessage,
         outputs: outputs || [],
       };
     }
@@ -431,39 +430,48 @@ export class PuppeteerService {
     this.log.debug(`startWorker #${workerId}`);
     this.currentActiveWorkers++;
     while (this.queue.length > 0) {
-      const { job, queuedAt, resolve, reject } = this.queue.shift();
-      const httpGet = getHttpGet(job);
-      this.log.debug(`worker #${workerId} consumes ${httpGet.url}`);
+      const { job, corrId, queuedAt, resolve } = this.queue.shift();
+      // Owned by the worker, not the request, so a timeout or launch failure still returns them.
+      const logs: LogStatementInput[] = [];
+      const appendLog: LogAppender = (msg: string) => {
+        logs.push({ time: Date.now(), message: msg });
+        this.log.log(`[${corrId}] ${msg}`);
+      };
+      appendLog(`Starting job id=${job.id}`);
+      const timeout = getHttpGet(job).timeout || this.prerenderTimeout;
 
-      const browser = await this.newBrowser(job);
+      let browser: Browser | undefined;
+      let timer: NodeJS.Timeout | undefined;
       try {
+        browser = await this.newBrowser(job);
         const response = await Promise.race([
-          this.executeRequest(job, browser),
-          new Promise<ScrapeResponseInput>((_, reject) =>
-            setTimeout(
-              () => reject(new Error(`timeout exceeded`)),
-              httpGet.timeout || this.prerenderTimeout,
-            ),
-          ),
+          this.executeRequest(job, browser, logs, appendLog),
+          new Promise<ScrapeResponseInput>((_, reject) => {
+            timer = setTimeout(
+              () => reject(new Error(`timeout exceeded after ${timeout}ms`)),
+              timeout,
+            );
+          }),
         ]);
-        if (!this.isDebug) {
-          await browser.close();
-        }
-        const totalTime = Date.now() - queuedAt;
-        this.log.log(`prerendered within ${totalTime / 1000}s`);
-        // const { metrics } = response.debug;
-        // response.debug.metrics.queue = totalTime - metrics.render;
-
+        this.log.log(
+          `[${corrId}] prerendered within ${(Date.now() - queuedAt) / 1000}s`,
+        );
         resolve(response);
       } catch (e) {
-        if (!this.isDebug) {
-          await browser.close();
-        }
-        this.log.warn(
-          `prerendered failed after ${(Date.now() - queuedAt) / 1000}s ${e.message}`,
-          e,
+        const errorMessage = toErrorMessage(e);
+        appendLog(
+          `failed after ${(Date.now() - queuedAt) / 1000}s: ${errorMessage}`,
         );
-        reject(e.message);
+        resolve({ ok: false, errorMessage, logs: [...logs], outputs: [] });
+      } finally {
+        clearTimeout(timer);
+        if (browser && !this.isDebug) {
+          await Promise.resolve(browser.close()).catch((e) =>
+            this.log.warn(
+              `[${corrId}] closing browser failed: ${toErrorMessage(e)}`,
+            ),
+          );
+        }
       }
     }
     this.currentActiveWorkers--;

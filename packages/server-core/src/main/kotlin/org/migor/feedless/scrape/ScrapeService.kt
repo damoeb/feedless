@@ -20,6 +20,7 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.browserautomation.BrowserAutomationService
+import org.migor.feedless.capability.currentCorrId
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
@@ -71,7 +72,9 @@ class ScrapeService : ScrapeRunner {
 
         val fetch = source.findFirstFetchOrNull()!!
 
-        logCollector.log("scrape ${source.id} ${fetch.resolveUrl()}")
+        // The agent logs under the same corrId, so its output can be matched to this harvest.
+        val corrId = currentCorrId()?.let { " corrId=$it" } ?: ""
+        logCollector.log("scrape ${source.id} ${fetch.resolveUrl()}$corrId")
 
         meterRegistry.counter(
           AppMetrics.scrape, listOf(
@@ -272,16 +275,12 @@ class ScrapeService : ScrapeRunner {
     if (prerender) {
       context.log("send to agent")
       val response = browserAutomationService.prerender(source).get()
+      // Before throwing, as the agent's trace explains a failure best.
+      context.logCollector.logs.addAll(response.agentLogEntries())
+      response.throwIfFailed()
       response.outputs.map { it.fromDto() }.forEach { scrapeActionOutput ->
-//        log.info("outputs @$outputIndex")
         context.setOutputAt(scrapeActionOutput.index, scrapeActionOutput)
       }
-      context.logCollector.logs.addAll(response.logs.map {
-        LogEntry(
-          time = it.time,
-          message = "[agent] ${it.message}"
-        )
-      })
       context.log("received -> ${response.outputs.size} outputs")
       log.debug("received -> ${response.outputs.size} outputs")
     } else {

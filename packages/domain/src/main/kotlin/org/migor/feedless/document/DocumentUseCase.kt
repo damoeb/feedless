@@ -35,6 +35,8 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.describe
+import org.migor.feedless.repository.harvestLabel
 import org.migor.feedless.repository.harvestLogLine
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
@@ -258,14 +260,14 @@ class DocumentUseCase(
             nextState
           } catch (e: Exception) {
             if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-              harvestLog.add(job, "delayed", e.message)
+              harvestLog.add(job, "delayed", e.describe())
               delayJob(job, e, state.currentDocument)
 
 
             } else {
               if (e !is FilterMismatchException) {
                 log.warn("${e::class.simpleName} ${e.message}")
-                harvestLog.add(job, "failed", "${e.message}, item dropped")
+                harvestLog.add(job, "failed", "${e.describe()}, item dropped")
               } else {
                 log.info("${e::class.simpleName} ${e.message}")
                 harvestLog.add(job, "filtered out")
@@ -285,7 +287,7 @@ class DocumentUseCase(
 
     } catch (throwable: Throwable) {
       log.warn("aborting pipeline for document, cause ${throwable.message}")
-      jobs.firstOrNull()?.let { harvestLog.add(it, "aborted", "${throwable.message}, item dropped") }
+      jobs.firstOrNull()?.let { harvestLog.add(it, "aborted", "${throwable.describe()}, item dropped") }
       deleteDocument(document)
       null
     } finally {
@@ -300,7 +302,7 @@ class DocumentUseCase(
 
     fun add(job: DocumentPipelineJob, outcome: String, detail: String? = null) {
       val suffix = detail?.let { ": $it" } ?: ""
-      lines.add(harvestLogLine(LocalDateTime.now(), "${job.pluginId} $outcome ${document.url}$suffix"))
+      lines.add(harvestLogLine(LocalDateTime.now(), "${job.pluginId} $outcome ${document.harvestLabel()}$suffix"))
     }
 
     suspend fun flush() {

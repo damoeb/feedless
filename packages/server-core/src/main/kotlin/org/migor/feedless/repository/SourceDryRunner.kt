@@ -39,8 +39,8 @@ class SourceDryRunner(
       outcome = outcome.copy(itemsAdded = items.size, errornous = items.isEmpty())
       summary = summarizeExtractedItems(items)
     } catch (e: Throwable) {
-      log.info("dry run of source ${source.id} failed: ${e.message}")
-      logCollector.log("scrape failed ${e.message}")
+      log.info("dry run of source ${source.id} failed: ${e.describe()}")
+      logCollector.log("scrape failed ${e.describe()}")
       outcome = outcome.copy(errornous = true)
     } finally {
       outcome = outcome.copy(

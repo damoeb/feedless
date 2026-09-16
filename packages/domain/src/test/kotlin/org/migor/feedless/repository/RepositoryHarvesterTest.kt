@@ -205,6 +205,18 @@ class RepositoryHarvesterTest {
   }
 
   @Test
+  fun `given scrape fails without message, the harvest log names the exception type once`() = runTest {
+    `when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException(""))
+
+    repositoryHarvester.harvestRepository(repositoryId)
+
+    verify(sourceRepository).recordHarvestFailed(eq(source.id), eq("IllegalArgumentException"), any2())
+    verify(harvestRepository).save(argThat {
+      it.logs.contains("scrape failed IllegalArgumentException") && !it.logs.contains("scrape error")
+    })
+  }
+
+  @Test
   fun `given scrape fails the harvest is recorded as errornous`() = runTest {
     `when`(
       scraper.scrape(
@@ -670,7 +682,7 @@ class RepositoryHarvesterTest {
       repositoryHarvester.harvestRepository(repositoryId)
 
       verify(harvestRepository).save(argThat {
-        it.logs.contains("skipped existing https://example.org/1") &&
+        it.logs.contains("0 new, 1 existing (https://example.org/1)") &&
           it.logs.contains("no new items, not running plugins [org_feedless_fulltext]") &&
           !it.logs.contains("with [org_feedless_fulltext]")
       })
@@ -693,7 +705,8 @@ class RepositoryHarvesterTest {
       repositoryHarvester.harvestRepository(repositoryId)
 
       verify(harvestRepository).save(argThat {
-        it.logs.contains("queued 1 new items for [org_feedless_fulltext]")
+        it.logs.contains("queued 1 new items for [org_feedless_fulltext]") &&
+          !it.logs.contains("queued for post-processing")
       })
       verify(documentPipelineJobRepository).saveAll(argThat<List<DocumentPipelineJob>> { jobs ->
         jobs.size == 1 && jobs.all { it.harvestId != null }
