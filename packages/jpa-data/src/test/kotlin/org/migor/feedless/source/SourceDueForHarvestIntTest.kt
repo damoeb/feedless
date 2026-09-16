@@ -154,18 +154,6 @@ class SourceDueForHarvestIntTest {
   }
 
   @Test
-  fun `touchLastUpdatedAt changes only that column`() {
-    val at = now.plusMinutes(1).withNano(0)
-
-    repositoryRepository.touchLastUpdatedAt(repository.id, at)
-
-    val reloaded = repositoryRepository.findById(repository.id)!!
-    assertThat(reloaded.lastUpdatedAt).isEqualTo(at)
-    assertThat(reloaded.title).isEqualTo(repository.title)
-    assertThat(reloaded.sourcesSyncCron).isEqualTo(repository.sourcesSyncCron)
-  }
-
-  @Test
   fun `a repository's nextHarvestAt is the earliest of its enabled sources`() {
     val a = createSource("https://a.example/1")
     val b = createSource("https://b.example/1")

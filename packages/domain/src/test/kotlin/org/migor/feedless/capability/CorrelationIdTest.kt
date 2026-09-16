@@ -32,7 +32,7 @@ class CorrelationIdTest {
       val first = childRequestContext(userId, groupId)
       val second = childRequestContext(userId, groupId)
 
-      assertThat(first.corrId).matches("p/[a-zA-Z0-9]{4}")
+      assertThat(first.corrId).matches("p/[a-zA-Z0-9]{6}")
       assertThat(second.corrId).startsWith("p/").isNotEqualTo(first.corrId)
       assertThat(first.userId).isEqualTo(userId)
       assertThat(first.groupId).isEqualTo(groupId)

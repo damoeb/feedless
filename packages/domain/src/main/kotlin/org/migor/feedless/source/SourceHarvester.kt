@@ -42,7 +42,6 @@ import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.repository.describe
-import org.migor.feedless.repository.harvestLabel
 import org.migor.feedless.repository.importSummary
 import org.migor.feedless.repository.toHarvestLog
 import org.migor.feedless.scrape.LogCollector
@@ -383,7 +382,7 @@ class SourceHarvester(
               repository.id
             )
           if (existing != null) {
-            existingLabels.add(updated.harvestLabel())
+            existingLabels.add(updated.url)
           }
           createOrUpdate(
             updated.copy(imageUrl = detectMainImageUrl(updated.html)),
@@ -391,7 +390,7 @@ class SourceHarvester(
             repository
           )
         } catch (e: Exception) {
-          logCollector.log("import failed for ${updated.harvestLabel()}: ${e.describe()}")
+          logCollector.log("import failed for ${updated.url}: ${e.describe()}")
           log.error("importItems failed: ${e.message}", e)
           null
         }

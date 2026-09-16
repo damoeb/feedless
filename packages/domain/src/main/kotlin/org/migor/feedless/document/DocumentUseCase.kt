@@ -36,6 +36,7 @@ import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.describe
+import org.migor.feedless.repository.toHarvestLog
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.userId
@@ -252,21 +253,21 @@ class DocumentUseCase(
             log.info("executed ${job.pluginId} for $documentId")
             val nextState = ProcessingState(updatedDocument, true, false)
             finalizeJob(job)
-            logCollector.appendJobReceipt(job, "ok")
+            logCollector.appendJobReceipt(job, state.currentDocument, "ok")
             nextState
           } catch (e: Exception) {
             if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
-              logCollector.appendJobReceipt(job, "delayed", e.describe())
+              logCollector.appendJobReceipt(job, state.currentDocument, "delayed", e.describe())
               delayJob(job, e, state.currentDocument)
 
 
             } else {
               if (e !is FilterMismatchException) {
                 log.warn("${e::class.simpleName} ${e.message}")
-                logCollector.appendJobReceipt(job, "failed", "${e.describe()}, item dropped")
+                logCollector.appendJobReceipt(job, state.currentDocument, "failed", "${e.describe()}, item dropped")
               } else {
                 log.info("${e::class.simpleName} ${e.message}")
-                logCollector.appendJobReceipt(job, "filtered out")
+                logCollector.appendJobReceipt(job, state.currentDocument, "filtered out")
               }
               deleteDocument(state.currentDocument)
             }
@@ -284,17 +285,17 @@ class DocumentUseCase(
     } catch (throwable: Throwable) {
       log.warn("aborting pipeline for document, cause ${throwable.message}")
 
-      jobs.firstOrNull()?.let { logCollector.appendJobReceipt(it, "aborted", "${throwable.describe()}, item dropped") }
+      jobs.firstOrNull()?.let { logCollector.appendJobReceipt(it, document, "aborted", "${throwable.describe()}, item dropped") }
 
       deleteDocument(document)
       null
     } finally {
 
-      jobs.first().let { job ->
-        val harvestId = job.harvestId
+      // A job outlives its pruned harvest; then there is no log to append to.
+      jobs.firstNotNullOfOrNull { it.harvestId }?.let { harvestId ->
         runCatching {
-          withContext(Dispatchers.IO) { harvestRepository.appendLog(harvestId!!, logCollector.logs.joinToString("\n")) }
-        }.onFailure { log.warn("cannot append plugin log to harvest ${harvestId?.uuid}: ${it.message}") }
+          withContext(Dispatchers.IO) { harvestRepository.appendLog(harvestId, logCollector.toHarvestLog()) }
+        }.onFailure { log.warn("cannot append plugin log to harvest ${harvestId.uuid}: ${it.message}") }
       }
     }
   }
@@ -525,9 +526,9 @@ class DocumentUseCase(
  
 }
 
-private fun LogCollector.appendJobReceipt(job: DocumentPipelineJob, outcome: String, detail: String? = null) {
-  val suffix = detail?.let { ": $it" } ?: ""
-  log(listOf(LocalDateTime.now().toString(), job.pluginId, outcome, suffix).joinToString(" "))
+// LogEntry carries the time already; the url names the item among the plugin's own log lines.
+private fun LogCollector.appendJobReceipt(job: DocumentPipelineJob, document: Document, outcome: String, detail: String? = null) {
+  log(listOfNotNull("${job.pluginId} $outcome", document.url.ifBlank { null }).joinToString(" ") + (detail?.let { ": $it" } ?: ""))
 }
 
 class FilterMismatchException : RuntimeException()

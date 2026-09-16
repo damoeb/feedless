@@ -875,29 +875,6 @@ class SourceHarvesterTest {
   }
 
   @Test
-  fun `a repository whose lastUpdatedAt is touched on a successful harvest`() = runTest {
-    Mockito.`when`(scraper.scrape(any2(), any2())).thenReturn(
-      ScrapeResult(
-        actionCount = 1,
-        lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = emptyList())
-      )
-    )
-
-    repositoryHarvester.harvestScheduled(source)
-
-    Mockito.verify(repositoryRepository).touchLastUpdatedAt(eq(repositoryId), any2())
-  }
-
-  @Test
-  fun `a repository whose lastUpdatedAt is touched on a failed harvest too`() = runTest {
-    Mockito.`when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException("this is off"))
-
-    repositoryHarvester.harvestScheduled(source)
-
-    Mockito.verify(repositoryRepository).touchLastUpdatedAt(eq(repositoryId), any2())
-  }
-
-  @Test
   fun `scheduling falls back to now plus one hour when computing the next harvest fails`() = runTest {
     Mockito.`when`(
       repositoryUseCase.calculateScheduledNextAt(

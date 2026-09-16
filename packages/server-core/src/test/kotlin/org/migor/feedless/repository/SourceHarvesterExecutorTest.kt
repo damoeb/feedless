@@ -47,7 +47,7 @@ class SourceHarvesterExecutorTest {
 
     SourceHarvesterExecutor(harvester, sourceRepository, repositoryRepository).refreshSubscriptions()
 
-    assertThat(seen).hasSize(2).allMatch { it != null && it.matches(Regex("[a-zA-Z0-9]{4}/[a-zA-Z0-9]{4}")) }
+    assertThat(seen).hasSize(2).allMatch { it != null && it.matches(Regex("[a-zA-Z0-9]{6}/[a-zA-Z0-9]{6}")) }
     assertThat(seen.map { it!!.substringBefore('/') }.distinct()).hasSize(1)
     assertThat(seen.distinct()).hasSize(2)
     assertThat(MDC.get(MdcKeys.CORR_ID)).isNull()
