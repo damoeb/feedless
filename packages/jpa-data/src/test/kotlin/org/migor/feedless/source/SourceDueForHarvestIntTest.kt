@@ -166,17 +166,6 @@ class SourceDueForHarvestIntTest {
   }
 
   @Test
-  fun `scheduling a repository moves all its sources`() {
-    val a = createSource("https://a.example/1")
-    val b = createSource("https://b.example/1")
-    val at = now.plusHours(2).withNano(0)
-
-    sourceRepository.scheduleNextHarvestOfRepository(a.repositoryId!!, at)
-
-    assertThat(listOf(a, b).map { sourceRepository.findById(it.id)!!.nextHarvestAt }).containsOnly(at)
-  }
-
-  @Test
   fun `a repository's nextHarvestAt is the earliest of its enabled sources`() {
     val a = createSource("https://a.example/1")
     val b = createSource("https://b.example/1")

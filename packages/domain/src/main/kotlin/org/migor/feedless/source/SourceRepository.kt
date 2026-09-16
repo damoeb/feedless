@@ -60,8 +60,6 @@ interface SourceRepository {
 
   fun scheduleNextHarvest(id: SourceId, at: LocalDateTime)
 
-  fun scheduleNextHarvestOfRepository(repositoryId: RepositoryId, at: LocalDateTime)
-
   /** Cheap single-column read, so a claimed-but-not-yet-started harvest can detect a reschedule since it was claimed. */
   fun findNextHarvestAt(id: SourceId): LocalDateTime?
 
