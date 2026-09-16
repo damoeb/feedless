@@ -17,6 +17,7 @@ data class Source(
   val lastRefreshedAt: LocalDateTime? = null,
   val errorsInSuccession: Int = 0,
   val lastErrorMessage: String? = null,
+  val nextHarvestAt: LocalDateTime? = null,
   val createdAt: LocalDateTime = LocalDateTime.now(),
   val actions: List<ScrapeAction> = emptyList()
 ) {

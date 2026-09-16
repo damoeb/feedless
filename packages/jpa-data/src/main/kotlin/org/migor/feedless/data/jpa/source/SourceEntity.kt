@@ -76,6 +76,9 @@ open class SourceEntity : EntityWithUUID() {
       field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
     }
 
+  @Column(name = "next_harvest_at")
+  open var nextHarvestAt: LocalDateTime? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(

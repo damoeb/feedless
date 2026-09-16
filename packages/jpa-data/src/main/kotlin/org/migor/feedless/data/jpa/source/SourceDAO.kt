@@ -12,6 +12,12 @@ import org.springframework.stereotype.Repository
 import java.time.LocalDateTime
 import java.util.*
 
+/** Host of a fetch url, as [org.migor.feedless.common.hostOf] computes it. */
+object SourceHostSql {
+  const val EXPRESSION =
+    "lower(substring(f.url from '^(?:[a-zA-Z][a-zA-Z0-9+.-]*://)?(?:[^@/?#]*@)?([^/:?#]+)'))"
+}
+
 @Repository
 @Profile("${AppProfiles.source} & ${AppLayer.repository}")
 interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor {
@@ -109,5 +115,42 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
   fun findAllWithActionsByIdIn(@Param("ids") ids: List<UUID>): List<SourceEntity>
 
   fun findAllByRepositoryIdAndIdIn(repositoryId: UUID, sourceIds: List<UUID>): List<SourceEntity>
+
+  @Query(
+    """
+    SELECT s.id FROM t_source s
+    JOIN t_repository r ON r.id = s.repository_id
+    JOIN t_user u ON u.id = r.owner_id
+    LEFT JOIN LATERAL (
+      SELECT ${SourceHostSql.EXPRESSION} AS host
+      FROM t_scrape_action a JOIN t_action_fetch f ON f.id = a.id
+      WHERE a.source_id = s.id
+      ORDER BY a.pos
+      LIMIT 1
+    ) fa ON true
+    WHERE s.is_disabled = false
+      AND (s.next_harvest_at IS NULL OR s.next_harvest_at < :now)
+      AND r.is_archived = false
+      AND r.scheduler_expression > ''
+      AND (r.disabled_from IS NULL OR r.disabled_from > :now)
+      AND u.is_locked = false
+      AND u.is_banned = false
+      AND u.hasapprovedterms = true
+      AND u.purge_scheduled_for IS NULL
+      AND NOT EXISTS (SELECT 1 FROM t_host_cooldown c WHERE c.host = fa.host AND c.blocked_until > :now)
+      AND NOT EXISTS (SELECT 1 FROM t_harvest h WHERE h.source_id = s.id AND h.status = 'running' AND h.dry_run = false)
+    ORDER BY s.next_harvest_at ASC NULLS FIRST
+    LIMIT :limit
+  """, nativeQuery = true
+  )
+  fun findIdsDueForHarvest(@Param("now") now: LocalDateTime, @Param("limit") limit: Int): List<UUID>
+
+  @Modifying
+  @Query("update SourceEntity s set s.nextHarvestAt = :at where s.id = :id")
+  fun updateNextHarvestAt(@Param("id") id: UUID, @Param("at") at: LocalDateTime): Int
+
+  @Modifying
+  @Query("update SourceEntity s set s.nextHarvestAt = :at where s.repositoryId = :repositoryId")
+  fun updateNextHarvestAtByRepositoryId(@Param("repositoryId") repositoryId: UUID, @Param("at") at: LocalDateTime): Int
 
 }

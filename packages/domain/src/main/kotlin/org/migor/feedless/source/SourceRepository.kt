@@ -52,4 +52,11 @@ interface SourceRepository {
     where: SourcesFilter? = null,
   ): List<Source>
 
+  /** Due, enabled, not on a cooling host, not running, of an active repository; with actions, oldest due first. */
+  fun findAllDueForHarvest(now: LocalDateTime, limit: Int): List<Source>
+
+  fun scheduleNextHarvest(id: SourceId, at: LocalDateTime)
+
+  fun scheduleNextHarvestOfRepository(repositoryId: RepositoryId, at: LocalDateTime)
+
 }
