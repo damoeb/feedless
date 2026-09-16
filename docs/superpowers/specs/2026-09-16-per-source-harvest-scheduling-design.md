@@ -120,7 +120,7 @@ In `execute`, keyed by the lower-cased request host:
 
 - `SourceUseCase.processSourceJobs`: unchanged; its existing `coolDownUntil = now + nextRetryAfter` now receives parsed delays.
 - `DocumentUseCase.processDocumentPlugins`: unchanged; `HostBlockedException` is resumable, so a 403 inside a plugin delays the job instead of deleting the document.
-- `QueuedHarvestExecutor` ("harvest now", dry runs): during a cooldown the run completes immediately without a network call, logging `host cooling down until <time>`. Dry runs never write `next_harvest_at`; a throttle or block they observe is recorded.
+- `OnDemandHarvestExecutor` ("harvest now", dry runs): during a cooldown the run completes immediately without a network call, logging `host cooling down until <time>`. Dry runs never write `next_harvest_at`; a throttle or block they observe is recorded.
 
 ## Testing
 

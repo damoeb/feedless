@@ -109,7 +109,7 @@ class OneRealHarvestPerSourceIntTest {
   private lateinit var scrapeService: ScrapeService
   private lateinit var scraper: Scraper
   private lateinit var harvester: SourceHarvester
-  private lateinit var executor: QueuedHarvestExecutor
+  private lateinit var executor: OnDemandHarvestExecutor
   private lateinit var repository: Repository
   private lateinit var source: Source
 
@@ -160,7 +160,7 @@ class OneRealHarvestPerSourceIntTest {
       repositoryRepository,
       harvestRepository,
     )
-    executor = QueuedHarvestExecutor(
+    executor = OnDemandHarvestExecutor(
       harvestRepository,
       sourceRepository,
       repositoryRepository,
