@@ -13,6 +13,7 @@ import org.migor.feedless.data.jpa.JpaDataTestApplication
 import org.migor.feedless.data.jpa.harvest.HarvestDAO
 import org.migor.feedless.group.Group
 import org.migor.feedless.group.GroupRepository
+import org.migor.feedless.repository.HARVEST_LOG_MAX_LENGTH
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.source.Source
@@ -234,6 +235,30 @@ class HarvestRepositoryIntTest {
     assertThat(harvestRepository.findById(oldCompleted.id)!!.errornous).isFalse()
   }
 
+  @Test
+  fun `appendLog adds lines after the existing log`() {
+    val saved = harvestRepository.save(
+      Harvest(sourceId = sourceA.id, logs = "import took 21ms", startedAt = LocalDateTime.now(), finishedAt = null)
+    )
+
+    harvestRepository.appendLog(saved.id, "org_feedless_fulltext ok https://example.org/1")
+
+    assertThat(harvestRepository.findById(saved.id)!!.logs)
+      .isEqualTo("import took 21ms\norg_feedless_fulltext ok https://example.org/1")
+  }
+
+  @Test
+  fun `appendLog keeps the newest lines when the log is full`() {
+    val saved = harvestRepository.save(
+      Harvest(sourceId = sourceA.id, logs = "x".repeat(HARVEST_LOG_MAX_LENGTH), startedAt = LocalDateTime.now(), finishedAt = null)
+    )
+
+    harvestRepository.appendLog(saved.id, "newest")
+
+    val logs = harvestRepository.findById(saved.id)!!.logs
+    assertThat(logs).hasSize(HARVEST_LOG_MAX_LENGTH).endsWith("\nnewest")
+  }
+
   private fun statusOf(vararg harvests: Harvest): List<HarvestStatus> =
     harvests.map { harvestRepository.findById(it.id)!!.status }
 
@@ -326,6 +351,16 @@ class HarvestRepositoryIntTest {
     assertThat(remainingDryRun.map { it.id }).containsExactlyInAnyOrderElementsOf(
       completedDryRun.take(4).map { it.id.uuid }
     )
+  }
+
+  @Test
+  fun `cleanup opens its own transaction, as callers on coroutines have none`() {
+    val stale = harvest(sourceA.id, LocalDateTime.now().minusDays(10), HarvestStatus.COMPLETED, dryRun = true)
+
+    harvestRepository.deleteAllTailingBySourceId()
+    harvestRepository.deleteAllDryRunByCreatedAtBefore(LocalDateTime.now().minusDays(7))
+
+    assertThat(harvestRepository.findById(stale.id)).isNull()
   }
 
   @Test

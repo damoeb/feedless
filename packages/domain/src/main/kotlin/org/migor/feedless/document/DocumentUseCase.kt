@@ -19,6 +19,7 @@ import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.common.AppConfig
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.message.Notifications
 import org.migor.feedless.pipeline.FilterEntityPlugin
 import org.migor.feedless.pipeline.MapEntityPlugin
@@ -34,6 +35,7 @@ import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryGuard
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.harvestLogLine
 import org.migor.feedless.repository.toJsonItem
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.userId
@@ -60,6 +62,7 @@ class DocumentUseCase(
   private val appConfig: AppConfig,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
+  private val harvestRepository: HarvestRepository,
 ) : DocumentProvider {
 
   private val log = LoggerFactory.getLogger(DocumentUseCase::class.simpleName)
@@ -185,6 +188,7 @@ class DocumentUseCase(
       documentRepository.findByIdWithSource(documentId)!!
     }
     val logCollector = LogCollector()
+    val harvestLog = HarvestLogOfJobs(jobs, document)
 
     return try {
       val repository = withContext(Dispatchers.IO) {
@@ -248,19 +252,23 @@ class DocumentUseCase(
               }
 
             log.info("executed ${job.pluginId} for $documentId")
+            val nextState = ProcessingState(updatedDocument, true, false)
             finalizeJob(job)
-
-            ProcessingState(updatedDocument, true, false)
+            harvestLog.add(job, "ok")
+            nextState
           } catch (e: Exception) {
             if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+              harvestLog.add(job, "delayed", e.message)
               delayJob(job, e, state.currentDocument)
 
 
             } else {
               if (e !is FilterMismatchException) {
                 log.warn("${e::class.simpleName} ${e.message}")
+                harvestLog.add(job, "failed", "${e.message}, item dropped")
               } else {
                 log.info("${e::class.simpleName} ${e.message}")
+                harvestLog.add(job, "filtered out")
               }
               deleteDocument(state.currentDocument)
             }
@@ -277,8 +285,32 @@ class DocumentUseCase(
 
     } catch (throwable: Throwable) {
       log.warn("aborting pipeline for document, cause ${throwable.message}")
+      jobs.firstOrNull()?.let { harvestLog.add(it, "aborted", "${throwable.message}, item dropped") }
       deleteDocument(document)
       null
+    } finally {
+      harvestLog.flush()
+    }
+  }
+
+  /** Collects one line per plugin run and appends them to the harvest that queued the jobs, if any. */
+  private inner class HarvestLogOfJobs(jobs: List<DocumentPipelineJob>, private val document: Document) {
+    private val harvestId = jobs.firstNotNullOfOrNull { it.harvestId }
+    private val lines = mutableListOf<String>()
+
+    fun add(job: DocumentPipelineJob, outcome: String, detail: String? = null) {
+      val suffix = detail?.let { ": $it" } ?: ""
+      lines.add(harvestLogLine(LocalDateTime.now(), "${job.pluginId} $outcome ${document.url}$suffix"))
+    }
+
+    suspend fun flush() {
+      val harvestId = harvestId ?: return
+      if (lines.isEmpty()) {
+        return
+      }
+      runCatching {
+        withContext(Dispatchers.IO) { harvestRepository.appendLog(harvestId, lines.joinToString("\n")) }
+      }.onFailure { log.warn("cannot append plugin log to harvest ${harvestId.uuid}: ${it.message}") }
     }
   }
 

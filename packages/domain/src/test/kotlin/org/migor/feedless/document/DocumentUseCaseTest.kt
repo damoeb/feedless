@@ -16,6 +16,8 @@ import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
+import org.migor.feedless.harvest.HarvestId
+import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
@@ -87,6 +89,7 @@ class DocumentUseCaseTest {
   private lateinit var repositoryId: RepositoryId
   private lateinit var document: Document
   private lateinit var repositoryGuard: RepositoryGuard
+  private lateinit var harvestRepository: HarvestRepository
 
   private val currentUserId = randomUserId()
   private val filterPluginId = "org_feedless_filter"
@@ -105,6 +108,7 @@ class DocumentUseCaseTest {
     planConstraintsService = mock(PlanConstraintsService::class.java)
     notifications = mock(Notifications::class.java)
     appConfig = mock(AppConfig::class.java)
+    harvestRepository = mock(HarvestRepository::class.java)
 
     @Suppress("UNCHECKED_CAST")
     filterPlugin = mock(FilterEntityPlugin::class.java) as FilterEntityPlugin<List<ItemFilterParams>>
@@ -128,6 +132,7 @@ class DocumentUseCaseTest {
       appConfig,
       documentGuard,
       repositoryGuard,
+      harvestRepository,
     )
 
     documentId = randomDocumentId()
@@ -333,6 +338,60 @@ class DocumentUseCaseTest {
     verify(notifications, times(0)).pushToOwner(any2(), any2())
   }
 
+
+  @Test
+  fun `processDocumentPlugins appends each plugin outcome to the harvest that queued it`() = runTest {
+    val harvestId = HarvestId()
+    val job = DocumentPipelineJob(
+      pluginId = fulltextPluginId,
+      sequenceId = 0,
+      documentId = documentId,
+      executorParams = PluginExecutionJson(paramsJsonString = "{}"),
+      harvestId = harvestId,
+    )
+    `when`(
+      fulltextPlugin.mapEntity(
+        any(Document::class.java),
+        any(Repository::class.java),
+        any(String::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenAnswer { it.arguments[0] as Document }
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+
+    documentUseCase.processDocumentPlugins(documentId, listOf(job))
+
+    verify(harvestRepository).appendLog(eq(harvestId), argThat<String> { it.contains("$fulltextPluginId ok http://localhost") })
+  }
+
+  @Test
+  fun `processDocumentPlugins logs a failed plugin to the harvest`() = runTest {
+    val harvestId = HarvestId()
+    val job = DocumentPipelineJob(
+      pluginId = fulltextPluginId,
+      sequenceId = 0,
+      documentId = documentId,
+      executorParams = PluginExecutionJson(paramsJsonString = "{}"),
+      harvestId = harvestId,
+    )
+    `when`(
+      fulltextPlugin.mapEntity(
+        any(Document::class.java),
+        any(Repository::class.java),
+        any(String::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenAnswer { throw IllegalStateException("boom") }
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+
+    documentUseCase.processDocumentPlugins(documentId, listOf(job))
+
+    verify(harvestRepository).appendLog(
+      eq(harvestId),
+      argThat<String> { it.contains("$fulltextPluginId failed http://localhost: boom, item dropped") })
+  }
 
   @Test
   fun `processDocumentPlugins will release document when all plugins are executed`() = runTest {
