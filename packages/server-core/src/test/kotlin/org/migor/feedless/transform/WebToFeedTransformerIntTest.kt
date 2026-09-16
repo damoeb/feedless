@@ -16,7 +16,10 @@ import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.scrape.ExtendContext
 import org.migor.feedless.scrape.GenericFeedParserOptions
+import org.migor.feedless.scrape.GenericFeedSelectors
+import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.WebExtractService
 import org.migor.feedless.scrape.WebToFeedTransformer
 import org.migor.feedless.scrape.WebToFeedTransformer.Companion.toAbsoluteUrl
@@ -103,6 +106,29 @@ internal class WebToFeedTransformerIntTest {
       "div[contains(id, 'democracy') or contains(id, 'economy') or contains(id, 'health')]/ul[1]/li",
       parser.__generalizeXPaths(xpaths)
     )
+  }
+
+  @Test
+  fun itemsWithoutLinkAreNotCollapsedIntoOne() = runTest {
+    val document = Jsoup.parse(
+      """
+      <table><tbody>
+        <tr><td>16.09.2026</td><td>Qi Gong</td><td></td></tr>
+        <tr><td>17.09.2026</td><td>Kafi-Traeff</td><td></td></tr>
+        <tr><td>18.09.2026</td><td>Eltern-Kind-Treff</td><td></td></tr>
+      </tbody></table>
+    """.trimIndent()
+    )
+
+    val selectors = GenericFeedSelectors(
+      contextXPath = "//table/tbody/tr",
+      linkXPath = "./td[3]/a",
+      extendContext = ExtendContext.NONE,
+    )
+
+    val feed = parser.getFeedBySelectors(selectors, document, URI("https://example.org"), LogCollector())
+
+    assertThat(feed.items).hasSize(3)
   }
 
   @Test

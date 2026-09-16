@@ -300,8 +300,9 @@ class WebToFeedTransformer(
     jsonFeed.websiteUrl = ""
     jsonFeed.publishedAt = LocalDateTime.now()
     jsonFeed.items = if (distinctUrls) {
+      // items whose link selector matched nothing share the empty url, so fall back to their id
       items
-        .distinctBy { it.url }
+        .distinctBy { it.url.ifBlank { it.id } }
     } else {
       items
     }
