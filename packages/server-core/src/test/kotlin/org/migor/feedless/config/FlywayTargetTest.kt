@@ -9,11 +9,15 @@ import java.io.File
 class FlywayTargetTest {
 
   private val migrationFilePattern = Regex("""^V(\d+)__.*\.sql$""")
+
+  companion object {
+    private const val PINNED_OUT_MARKER = "-- flyway:pinned-out"
+  }
   private val flywayTargetPattern = Regex("""(?m)^\s*target:\s*(\d+)\s*$""")
 
   @Test
   fun `spring flyway target matches the highest shipped migration version`() {
-    val highestMigrationVersion = highestMigrationVersion()
+    val highestMigrationVersion = highestAppliedMigrationVersion()
     val configuredTarget = configuredFlywayTarget()
 
     assertEquals(
@@ -21,6 +25,14 @@ class FlywayTargetTest {
       configuredTarget,
       "new migration V$highestMigrationVersion added but spring.flyway.target is $configuredTarget — raise the target"
     )
+  }
+
+  @Test
+  fun `pinned-out migrations all lie above the target`() {
+    val target = configuredFlywayTarget()
+    val misplaced = pinnedOutVersions().filter { it <= target }
+
+    assertTrue(misplaced.isEmpty(), "pinned-out migrations at or below target $target would be applied: V$misplaced")
   }
 
   // Rebasing onto develop can leave two branches' V<n> side by side; Flyway would refuse to start.
@@ -35,7 +47,13 @@ class FlywayTargetTest {
     )
   }
 
-  private fun highestMigrationVersion(): Int = migrationsByVersion().keys.max()
+  // Staged destructive migrations ship pinned out, so the target is raised deliberately later.
+  private fun pinnedOutVersions(): Set<Int> = migrationDirectory().listFiles().orEmpty()
+    .filter { it.readLines().firstOrNull()?.trim() == PINNED_OUT_MARKER }
+    .mapNotNull { migrationFilePattern.find(it.name)?.groupValues?.get(1)?.toInt() }
+    .toSet()
+
+  private fun highestAppliedMigrationVersion(): Int = (migrationsByVersion().keys - pinnedOutVersions()).max()
 
   private fun migrationsByVersion(): Map<Int, List<String>> {
     val migrationDir = migrationDirectory()

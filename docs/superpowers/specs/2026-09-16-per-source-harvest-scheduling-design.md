@@ -35,7 +35,7 @@ Harvests are scheduled per repository: `RepositoryHarvesterExecutor` picks due r
 **V96** (raises `spring.flyway.target` to 96):
 
 - `t_source.next_harvest_at timestamp null`, backfilled from the parent repository's `trigger_scheduled_next_at`.
-- `t_source.host text null`, lower-cased host of the source's first `FetchAction` URL; backfilled, and set on every source save.
+- The host for each source is derived from its first `FetchAction` URL with a SQL regex in the due query; `hostOf()` in Kotlin and the SQL expression are pinned together by one integration test.
 - Partial index on `t_source (next_harvest_at) where is_disabled = false`.
 - `t_host_cooldown`:
 
@@ -47,7 +47,7 @@ Harvests are scheduled per repository: `RepositoryHarvesterExecutor` picks due r
 | `last_status` | `int` | status that caused the cooldown |
 | `updated_at` | `timestamp not null` | |
 
-**V97** drops `t_repository.trigger_scheduled_next_at`. It is committed in this change but **pinned out**: `spring.flyway.target` stays at 96. The file starts with a comment stating the pin, so the next migration's author does not raise the target past it unknowingly. `AbstractRepositoryEntity` stops mapping the column and no domain code reads it, so raising the target to 97 later is safe. This knowingly deviates from the AGENTS.md rule that a new migration raises the target.
+**V97** drops `t_repository.trigger_scheduled_next_at`. It is committed in this change but **pinned out**: `spring.flyway.target` stays at 96. The file starts with `-- flyway:pinned-out` so `FlywayTargetTest` ignores it when checking target vs. highest version, and asserts every pinned-out migration lies above the target; the next migration's author will not raise the target past it unknowingly. `AbstractRepositoryEntity` stops mapping the column and no domain code reads it, so raising the target to 97 later is safe. This knowingly deviates from the AGENTS.md rule that a new migration raises the target.
 
 ### Scheduling
 
@@ -73,7 +73,7 @@ nextHarvest = max(cronNext, retryAt, host.blocked_until)
 
 `RepositoryUseCase`:
 
-- `nextUpdateAt` (read) = `min(next_harvest_at)` over the repository's enabled sources.
+- `nextHarvestAt` is a read-only Hibernate `@Formula` = `min(next_harvest_at)` over the repository's enabled sources; mappers produce `nextUpdateAt` from it.
 - Writing `nextUpdateAt` or `scheduleNextUpdateNow` sets that time on all the repository's sources.
 - Changing `sourcesSyncCron` recomputes `next_harvest_at` for all its sources.
 
@@ -121,7 +121,7 @@ In `execute`, keyed by the lower-cased request host:
 
 - `SourceUseCase.processSourceJobs`: unchanged; its existing `coolDownUntil = now + nextRetryAfter` now receives parsed delays.
 - `DocumentUseCase.processDocumentPlugins`: unchanged; `HostBlockedException` is resumable, so a 403 inside a plugin delays the job instead of deleting the document.
-- `QueuedHarvestExecutor` ("harvest now", dry runs): during a cooldown the run completes immediately without a network call, logging `host cooling down until <time>`. Dry runs never write `next_harvest_at` or cooldown rows but respect existing cooldowns.
+- `QueuedHarvestExecutor` ("harvest now", dry runs): during a cooldown the run completes immediately without a network call, logging `host cooling down until <time>`. Dry runs never write `next_harvest_at`; a throttle or block they observe is recorded.
 
 ## Testing
 
