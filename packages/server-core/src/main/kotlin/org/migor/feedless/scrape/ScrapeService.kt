@@ -78,7 +78,9 @@ class ScrapeService : ScrapeRunner {
 
         // The agent logs under the same corrId, so its output can be matched to this harvest.
         val corrId = currentCorrId()?.let { " corrId=$it" } ?: ""
-        logCollector.log("scrape ${source.id} ${fetch.resolveUrl()}$corrId")
+        // A variable url is not resolvable yet, so log the raw placeholder instead of asserting.
+        val fetchUrlForLog = if (fetch.isVariable) fetch.url else fetch.resolveUrl()
+        logCollector.log("scrape ${source.id} $fetchUrlForLog$corrId")
 
         meterRegistry.counter(
           AppMetrics.scrape, listOf(
@@ -275,8 +277,11 @@ class ScrapeService : ScrapeRunner {
     context: ScrapeContext
   ) {
     context.log("handleFetch $action")
-    // The agent fetches outside HttpService, so the cooldown is checked here for both paths.
-    hostCooldownGuard.requireOpen(action.resolveUrl())
+    // A variable url's host is unknown until the agent resolves it; the static branch is checked
+    // again inside HttpService on purpose, since prerender has no other cooldown check.
+    if (!action.isVariable) {
+      hostCooldownGuard.requireOpen(action.resolveUrl())
+    }
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("send to agent")

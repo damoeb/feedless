@@ -18,13 +18,16 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
+import org.migor.feedless.browserautomation.BrowserAutomationResponse
 import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
+import org.migor.feedless.common.HostCooldownGuard
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.eq
+import org.migor.feedless.generated.types.ScrapeResponse
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.needsPrerendering
@@ -35,7 +38,9 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
 import org.mockito.ArgumentMatchers.anyMap
+import org.mockito.ArgumentMatchers.anyString
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
@@ -54,7 +59,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 @MockitoBean(
   types = [
     PropertyService::class,
-    BrowserAutomationService::class,
     AttachmentDAO::class,
     SourceRepository::class,
     SourceUseCase::class,
@@ -69,6 +73,12 @@ class ScrapeServiceIntTest {
 
   @MockitoBean
   lateinit var httpService: HttpService
+
+  @MockitoBean
+  lateinit var browserAutomationService: BrowserAutomationService
+
+  @MockitoBean
+  lateinit var hostCooldownGuard: HostCooldownGuard
 
   lateinit var fetchAction: FetchAction
 
@@ -123,6 +133,21 @@ class ScrapeServiceIntTest {
     `when`(fetchAction.forcePrerender).thenReturn(true)
     assertThat(needsPrerendering(sourceWithActions(listOf(fetchAction)), 0)).isTrue()
   }
+
+  @Test
+  fun `a prerendered variable-url fetch action reaches the agent without an AssertionError or a cooldown check`() =
+    runTest {
+      val variableFetchAction = mock(FetchAction::class.java)
+      `when`(variableFetchAction.isVariable).thenReturn(true)
+      `when`(variableFetchAction.forcePrerender).thenReturn(true)
+      val agentResponse = mock(BrowserAutomationResponse::class.java)
+      `when`(agentResponse.get()).thenReturn(ScrapeResponse(ok = true, logs = emptyList(), outputs = emptyList()))
+      `when`(browserAutomationService.prerender(org.mockito.kotlin.any())).thenReturn(agentResponse)
+
+      scrapeService.scrape(sourceWithActions(listOf(variableFetchAction)), LogCollector())
+
+      verify(hostCooldownGuard, never()).requireOpen(anyString())
+    }
 
   @BeforeEach
   fun setUp() {
