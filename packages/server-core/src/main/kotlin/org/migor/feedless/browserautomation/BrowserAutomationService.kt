@@ -8,7 +8,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.future.await
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
@@ -126,11 +125,8 @@ class BrowserAutomationService(
   override suspend fun handleScrapeResponse(harvestJobId: String, scrapeResponse: ScrapeResponseInput) {
     log.info("handleScrapeResponse $harvestJobId, err=${scrapeResponse.errorMessage}")
     pendingJobs[harvestJobId]?.let {
-      if (scrapeResponse.ok) {
-        it.next(BrowserAutomationResponse(Gson().toJson(scrapeResponse.fromDto())))
-      } else {
-        it.error(IllegalArgumentException(StringUtils.trimToEmpty(scrapeResponse.errorMessage)))
-      }
+      // A failure is passed on too, so its logs reach the harvest log; the scraper throws on it.
+      it.next(BrowserAutomationResponse(Gson().toJson(scrapeResponse.fromDto())))
       pendingJobs.remove(harvestJobId)
     } ?: log.error("emitter for job ID not found (${pendingJobs.size} pending jobs)")
   }
