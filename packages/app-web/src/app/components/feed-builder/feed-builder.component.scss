@@ -19,3 +19,13 @@ ion-content::part(scroll) {
   display: flex;
   flex-direction: column;
 }
+
+.source-changes {
+  flex: 1;
+  overflow: hidden;
+
+  app-text-diff {
+    flex: 1;
+    max-height: none;
+  }
+}

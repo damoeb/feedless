@@ -6,7 +6,8 @@ import { FeedBuilderComponent } from './feed-builder.component';
 import { TransformWebsiteToFeedComponent } from '../transform-website-to-feed/transform-website-to-feed.component';
 import { standaloneV1WebToFeedRoute, standaloneV2WebToFeedRoute } from '../../router-utils';
 import { renderPath, renderQuery } from 'typesafe-routes';
-import { GqlExtendContentOptions } from '../../../generated/graphql';
+import { GqlExtendContentOptions, GqlSourceInput } from '../../../generated/graphql';
+import { formatSourceRequest, parseSourceRequest } from './source-request';
 import { ServerConfigService } from '../../services/server-config.service';
 import { SessionService } from '../../services/session.service';
 import { IonAccordionGroup } from '@ionic/angular/standalone';
@@ -181,6 +182,78 @@ describe('FeedBuilderComponent', () => {
     expect(component.url).toBe('https://new.example');
     expect(component.selectedFeed.genericFeed.hash).toBe('keep-me');
     expect(scrapeUrlSpy).toHaveBeenCalled();
+  });
+
+  describe('source request changes', () => {
+    const originalSource: GqlSourceInput = {
+      title: 'Original',
+      tags: ['news'],
+      flow: {
+        sequence: [{ fetch: { get: { url: { literal: 'https://example.com' } } } }],
+      },
+    };
+
+    let scrapeUrlSpy: jest.SpyInstance;
+
+    beforeEach(async () => {
+      scrapeUrlSpy = jest
+        .spyOn(FeedBuilderComponent.prototype, 'scrapeUrl')
+        .mockResolvedValue(undefined);
+      fixture = TestBed.createComponent(FeedBuilderComponent);
+      component = fixture.componentInstance;
+      fixture.componentRef.setInput('source', originalSource);
+      await component.ngOnInit();
+      scrapeUrlSpy.mockClear();
+    });
+
+    afterEach(() => scrapeUrlSpy.mockRestore());
+
+    it('has no changes right after loading the original', () => {
+      expect(component.hasSourceChanges()).toBe(false);
+    });
+
+    it('has changes after editing the title', () => {
+      component.titleFc.setValue('Edited');
+
+      expect(component.hasSourceChanges()).toBe(true);
+      expect(component.getCurrentSourceRequest()).toContain('"title": "Edited"');
+    });
+
+    it('applies a valid request and scrapes again', async () => {
+      const edited = parseSourceRequest(component.getCurrentSourceRequest());
+      edited.title = 'Applied';
+      edited.tags = ['tech'];
+
+      await component.applySourceRequest(formatSourceRequest(edited));
+
+      expect(component.sourceRequestError).toBeUndefined();
+      expect(component.titleFc.value).toBe('Applied');
+      expect(component.tags).toEqual(['tech']);
+      expect(component.getCurrentSourceRequest()).toEqual(formatSourceRequest(edited));
+      expect(scrapeUrlSpy).toHaveBeenCalled();
+    });
+
+    it('keeps the current state when the request is invalid json', async () => {
+      const before = component.getCurrentSourceRequest();
+
+      await component.applySourceRequest('{ "title": ');
+
+      expect(component.sourceRequestError).toMatch(/Invalid JSON/);
+      expect(component.getCurrentSourceRequest()).toEqual(before);
+      expect(scrapeUrlSpy).not.toHaveBeenCalled();
+    });
+
+    it('keeps the current state when the flow is invalid', async () => {
+      const before = component.getCurrentSourceRequest();
+
+      await component.applySourceRequest(
+        formatSourceRequest({ ...originalSource, flow: { sequence: [] } })
+      );
+
+      expect(component.sourceRequestError).toMatch(/fetch actions/);
+      expect(component.getCurrentSourceRequest()).toEqual(before);
+      expect(scrapeUrlSpy).not.toHaveBeenCalled();
+    });
   });
 
   describe('parse standalone url', () => {

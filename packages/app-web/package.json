@@ -41,6 +41,7 @@
     "@codemirror/autocomplete": "^6.12.0",
     "@codemirror/commands": "^6.3.3",
     "@codemirror/language": "^6.10.0",
+    "@codemirror/merge": "^6.12.2",
     "@codemirror/search": "^6.5.5",
     "@codemirror/state": "^6.4.0",
     "@codemirror/view": "^6.23.0",

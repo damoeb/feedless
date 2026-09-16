@@ -269,12 +269,15 @@
         }
         @if (compareByField !== compareByPixel) {
           @if (documents.length === 1) {
-            <app-text-diff [before]="documents[0]"></app-text-diff>
+            <app-text-diff [before]="getDiffText(documents[0])"></app-text-diff>
           }
           @if (documents.length > 1) {
             @for (pair of getDocumentPairs(); track pair) {
               <div>
-                <app-text-diff [after]="pair.b" [before]="pair.a"></app-text-diff>
+                <app-text-diff
+                  [after]="getDiffText(pair.b)"
+                  [before]="getDiffText(pair.a)"
+                ></app-text-diff>
               </div>
             }
           }
