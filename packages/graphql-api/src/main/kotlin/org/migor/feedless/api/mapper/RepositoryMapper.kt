@@ -31,7 +31,7 @@ fun Repository.toDto(currentUserIsOwner: Boolean): RepositoryDto {
     visibility = visibility.toDto(),
     createdAt = createdAt.toMillis(),
     lastUpdatedAt = lastUpdatedAt.toMillis(),
-    nextUpdateAt = triggerScheduledNextAt?.toMillis(),
+    nextUpdateAt = nextHarvestAt?.toMillis(),
     refreshCron = sourcesSyncCron,
     tags = tags.asList(),
     documentCount = documentCountSinceCreation.toLong(),

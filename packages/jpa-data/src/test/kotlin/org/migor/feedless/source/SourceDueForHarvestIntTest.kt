@@ -134,6 +134,17 @@ class SourceDueForHarvestIntTest {
     assertThat(listOf(a, b).map { sourceRepository.findById(it.id)!!.nextHarvestAt }).containsOnly(at)
   }
 
+  @Test
+  fun `a repository's nextHarvestAt is the earliest of its enabled sources`() {
+    val a = createSource("https://a.example/1")
+    val b = createSource("https://b.example/1")
+    val early = now.plusMinutes(5).withNano(0)
+    sourceRepository.scheduleNextHarvest(a.id, now.plusHours(1))
+    sourceRepository.scheduleNextHarvest(b.id, early)
+
+    assertThat(repositoryRepository.findById(a.repositoryId!!)!!.nextHarvestAt).isEqualTo(early)
+  }
+
   @ParameterizedTest
   @ValueSource(
     strings = [

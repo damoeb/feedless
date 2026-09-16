@@ -19,6 +19,7 @@ import jakarta.persistence.PrePersist
 import jakarta.persistence.Table
 import jakarta.validation.constraints.Size
 import org.apache.commons.lang3.StringUtils
+import org.hibernate.annotations.Formula
 import org.hibernate.annotations.JdbcTypeCode
 import org.hibernate.annotations.OnDelete
 import org.hibernate.annotations.OnDeleteAction
@@ -113,8 +114,8 @@ open class AbstractRepositoryEntity : EntityWithUUID() {
   @Column(nullable = false, name = "for_product", length = 20)
   open lateinit var product: Vertical
 
-  @Column(name = "trigger_scheduled_next_at")
-  open var triggerScheduledNextAt: LocalDateTime? = null
+  @Formula("(select min(s.next_harvest_at) from t_source s where s.repository_id = id and s.is_disabled = false)")
+  open var nextHarvestAt: LocalDateTime? = null
 
   @Column(nullable = false, name = "schema_version")
   open var schemaVersion: Int = 0

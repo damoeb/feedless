@@ -336,7 +336,7 @@ class RepositoryResolverTest {
     val pullsPerMonth = 500
     val product = Vertical.feedless
     val shareKey = "test-share-key-123"
-    val triggerScheduledNextAt = LocalDateTime.of(2024, 11, 22, 12, 0, 0)
+    val nextHarvestAt = LocalDateTime.of(2024, 11, 22, 12, 0, 0)
 
     val incoming = org.migor.feedless.repository.Repository(
       id = repositoryId,
@@ -357,7 +357,7 @@ class RepositoryResolverTest {
       documentCountSinceCreation = 0,
       archived = archived,
       product = product,
-      triggerScheduledNextAt = triggerScheduledNextAt,
+      nextHarvestAt = nextHarvestAt,
       schemaVersion = 0,
       pullsPerMonth = pullsPerMonth,
       lastPullSync = null,
@@ -383,7 +383,7 @@ class RepositoryResolverTest {
       product = VerticalDto.feedless,
       createdAt = createdAt.toMillis(),
       lastUpdatedAt = lastUpdatedAt.toMillis(),
-      nextUpdateAt = triggerScheduledNextAt.toMillis(),
+      nextUpdateAt = nextHarvestAt.toMillis(),
       disabledFrom = null,
       archived = archived,
       pushNotificationsEnabled = pushNotificationsEnabled,

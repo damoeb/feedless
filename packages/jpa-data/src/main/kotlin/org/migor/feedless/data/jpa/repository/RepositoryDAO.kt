@@ -18,25 +18,6 @@ import java.util.*
 @Profile("${AppProfiles.repository} & ${AppLayer.repository}")
 interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlExecutor {
 
-  @Query(
-    """
-      select distinct r from RepositoryEntity r
-      inner join UserEntity u
-        on u.id = r.ownerId
-      where r.archived = false
-        and (r.triggerScheduledNextAt is null or r.triggerScheduledNextAt < :now)
-        and u.locked = false
-        and u.banned = false
-        and u.hasAcceptedTerms = true
-        and r.archived = false
-        and u.purgeScheduledFor is null
-        and r.sourcesSyncCron > ''
-        and (r.disabledFrom is null or r.disabledFrom > :now)
-        and EXISTS (SELECT distinct true from SourceEntity s where s.disabled = false and s.repositoryId=r.id)
-      order by r.lastUpdatedAt asc """,
-  )
-  fun findAllWhereNextHarvestIsDue(@Param("now") now: LocalDateTime, pageable: Pageable): List<RepositoryEntity>
-
   fun countByOwnerId(id: UUID): Int
 
   fun countByOwnerIdAndArchivedIsFalseAndSourcesSyncCronIsNot(id: UUID, cron: String): Int

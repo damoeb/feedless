@@ -280,6 +280,10 @@ class SourceUseCase(
       Unit
     }
 
+  suspend fun scheduleNextHarvestOfRepository(repositoryId: RepositoryId, at: LocalDateTime) = withContext(Dispatchers.IO) {
+    sourceRepository.scheduleNextHarvestOfRepository(repositoryId, at)
+  }
+
   suspend fun deleteAllById(repositoryId: RepositoryId, sourceIds: List<SourceId>) = withContext(Dispatchers.IO) {
     val repository = repositoryRepository.findById(repositoryId)!!
     if (repository.groupId != coroutineContext.groupId()) {

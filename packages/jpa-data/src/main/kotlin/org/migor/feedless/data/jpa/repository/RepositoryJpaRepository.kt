@@ -146,13 +146,6 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
     return whereStatements
   }
 
-  override fun findAllWhereNextHarvestIsDue(
-    now: LocalDateTime,
-    pageable: PageableRequest
-  ): List<Repository> {
-    return repositoryDAO.findAllWhereNextHarvestIsDue(now, pageable.toPageRequest()).map { it.toDomain() }
-  }
-
   override fun countByGroupId(id: GroupId): Int {
     return repositoryDAO.countByGroupId(id.uuid)
   }

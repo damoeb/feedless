@@ -11,6 +11,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
+import org.migor.feedless.eq
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.AppConfig
 import org.migor.feedless.document.DocumentUseCase
@@ -244,7 +245,21 @@ class RepositoryUpdateTest {
         any2(),
         any2(),
       )
-      assertThat(savedRepo?.triggerScheduledNextAt).isEqualTo(coercedNextAt)
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(eq(repositoryId), eq(coercedNextAt))
+    }
+
+  @Test
+  fun `changing the cron re-seeds every source of the repository`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+      val coerced = LocalDateTime.of(2026, 9, 16, 17, 0)
+      `when`(planConstraintsService.coerceMinScheduledNextAt(any2(), any2(), any2())).thenReturn(coerced)
+      `when`(repositoryRepository.save(any2())).thenAnswer { it.arguments[0] }
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(refreshCron = "0 0 * * * *"))
+
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(eq(repositoryId), eq(coerced))
     }
 
   @Test

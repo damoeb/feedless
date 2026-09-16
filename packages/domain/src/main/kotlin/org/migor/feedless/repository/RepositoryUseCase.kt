@@ -201,15 +201,10 @@ class RepositoryUseCase(
     repository = data.description?.let { repository.copy(description = it) } ?: repository
 
     val groupId = currentCoroutineContext().groupId()
+    var scheduleSourcesAt: LocalDateTime? = null
     repository = data.refreshCron?.let {
-      repository.copy(
-        sourcesSyncCron = planConstraintsService.auditCronExpression(it),
-        triggerScheduledNextAt = calculateScheduledNextAt(
-          it,
-          groupId,
-          repository.lastUpdatedAt
-        )
-      )
+      scheduleSourcesAt = calculateScheduledNextAt(it, groupId, repository.lastUpdatedAt)
+      repository.copy(sourcesSyncCron = planConstraintsService.auditCronExpression(it))
     } ?: repository
 
     repository = data.pushNotificationsEnabled?.let {
@@ -237,13 +232,8 @@ class RepositoryUseCase(
 
     if (data.nextUpdateAt != null || data.scheduleNextUpdateNow) {
       val next = data.nextUpdateAt ?: LocalDateTime.now()
-      val nextAt = planConstraintsService.coerceMinScheduledNextAt(
-        repository.lastUpdatedAt,
-        next,
-        groupId
-      )
-      log.info("nextUpdateAt $nextAt")
-      repository = repository.copy(triggerScheduledNextAt = nextAt)
+      scheduleSourcesAt = planConstraintsService.coerceMinScheduledNextAt(repository.lastUpdatedAt, next, groupId)
+      log.info("nextUpdateAt $scheduleSourcesAt")
     }
 
     var retentionTouched = false
@@ -278,6 +268,7 @@ class RepositoryUseCase(
       sources.update?.let { sourceUseCase.updateSources(repository.id, it) }
       sources.remove?.let { sourceUseCase.deleteAllById(repository.id, it) }
     }
+    scheduleSourcesAt?.let { sourceUseCase.scheduleNextHarvestOfRepository(repository.id, it) }
     withContext(Dispatchers.IO) {
       repositoryRepository.save(repository)
     }
