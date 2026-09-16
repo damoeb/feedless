@@ -8,13 +8,13 @@ import jakarta.validation.Validation
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.lang3.StringUtils
 import org.apache.tika.Tika
+import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
-import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.document.Document
@@ -89,108 +89,41 @@ class RepositoryHarvester(
       .register(meterRegistry)
   }
 
-  suspend fun harvestRepository(repositoryId: RepositoryId) {
-    runCatching {
-      log.info("handleRepository $repositoryId")
-
-      meterRegistry.counter(
-        AppMetrics.fetchRepository, listOf(
-          Tag.of("type", "repository"),
-          Tag.of("id", repositoryId.toString()),
-        )
-      ).count()
-
-      val repository = repositoryRepository.findById(repositoryId)!!
-
-      repository.triggerScheduledNextAt?.let {
-        harvestOffsetTimer.record(Duration.between(it, LocalDateTime.now()))
-      }
-
-      scrapeSources(repositoryId)
-
-      val groupId = repository.groupId
-
-      val scheduledNextAt = repositoryUseCase.calculateScheduledNextAt(
-        repository.sourcesSyncCron,
-        groupId,
-        LocalDateTime.now()
+  /** One scheduled run of [source]; skipped when a harvest elsewhere holds its run slot. */
+  suspend fun harvestScheduled(source: Source) {
+    meterRegistry.counter(
+      AppMetrics.fetchRepository, listOf(
+        Tag.of("type", "source"),
+        Tag.of("id", source.id.toString()),
       )
-      log.debug("Next harvest at ${scheduledNextAt.format(iso8601DateFormat)}")
-      repositoryRepository.save(
-        repository.copy(
-          triggerScheduledNextAt = scheduledNextAt,
-          lastUpdatedAt = LocalDateTime.now()
-        )
-      )
+    ).count()
+    source.nextHarvestAt?.let { harvestOffsetTimer.record(Duration.between(it, LocalDateTime.now())) }
 
-    }.onFailure {
-      log.error("handleRepository failed: ${it.message}", it)
+    val harvest = harvestRepository.startRun(source.id, LocalDateTime.now())
+    if (harvest == null) {
+      log.info("skipping source ${source.id}: a real harvest of it is running already")
+    } else {
+      harvestSource(source, harvest)
     }
-  }
-
-  private suspend fun scrapeSources(
-    repositoryId: RepositoryId,
-  ) {
-    var sources: List<Source>
-    var currentPage = 0
-    do {
-      sources = sourceRepository.findAllByRepositoryIdFiltered(repositoryId, PageableRequest(currentPage++, 5))
-        .filter { !it.disabled }
-        .distinctBy { it.id }
-      log.info("queueing page $currentPage with ${sources.size} sources")
-
-      sources
-        .forEachIndexed { index, source ->
-          // Takes the source's one real-run slot, or finds it held by a harvest running elsewhere (on
-          // demand, or another scheduler instance): then the next scheduled run picks the source up.
-          val harvest = harvestRepository.startRun(source.id, LocalDateTime.now())
-          if (harvest == null) {
-            log.info("skipping source $currentPage/$index ${source.id}: a real harvest of it is running already")
-          } else {
-            log.info("scraping source $currentPage/$index ${source.id}")
-            harvestSource(source, harvest)
-          }
-        }
-    } while (sources.isNotEmpty())
-
-//    val defaultScheduledLastAt = Date.from(
-//      LocalDateTime.now().minus(1, ChronoUnit.MONTHS).toInstant(
-//        ZoneOffset.UTC
-//      )
-//    )
-//
-//    val segmentSize = importer.segmentSize ?: 100
-//    val segmentSortField = importer.segmentSortField ?: "score"
-//    val segmentSortOrder = if (importer.segmentSortAsc) {
-//      Sort.Order.asc(segmentSortField)
-//    } else {
-//      Sort.Order.desc(segmentSortField)
-//    }
-//    val pageable = PageRequest.of(0, segmentSize, Sort.by(segmentSortOrder))
-//    val articles = recordDAO.findAllThrottled(
-//      importer.feedId,
-//      importer.triggerScheduledLastAt ?: defaultScheduledLastAt,
-//      pageable
-//    )
-//
-//    refineAndImportArticlesScheduled(corrId, articles, importer)
   }
 
   /**
    * Shared by scheduled and queued runs, so both behave alike. Completing [harvest] frees the source's run slot, also on failure;
-   * the error state is updated atomically, never saved from the possibly stale [source].
+   * the error state is updated atomically, never saved from the possibly stale [source]. Also schedules the source's next run.
    */
   suspend fun harvestSource(source: Source, harvest: Harvest): Harvest {
     val logCollector = LogCollector()
     var outcome = harvest
+    var retryAfter: Duration? = null
     try {
       val count = scrapeSource(source, logCollector, harvest.id)
       outcome = outcome.copy(itemsAdded = count.added)
       sourceRepository.recordHarvestSucceeded(source.id, count.retrieved, LocalDateTime.now())
     } catch (e: Throwable) {
-      outcome = outcome.copy(errornous = true)
-      handleScrapeException(e, source, logCollector)
+      retryAfter = handleScrapeException(e, source, logCollector)
+      outcome = outcome.copy(errornous = retryAfter == null)
     } finally {
+      scheduleNextHarvest(source, retryAfter, logCollector)
       outcome = outcome.copy(
         status = HarvestStatus.COMPLETED,
         finishedAt = LocalDateTime.now(),
@@ -201,29 +134,46 @@ class RepositoryHarvester(
     return outcome
   }
 
-  private suspend fun handleScrapeException(
-    e: Throwable?,
-    source: Source,
-    logCollector: LogCollector
-  ) {
-    val reason = e?.describe()
-    log.error("scrape failed $reason")
-    logCollector.log("scrape failed $reason")
-
-    if (e !is ResumableHarvestException && e !is UnknownHostException && e !is ConnectException && e !is NoItemsRetrievedException) {
+  /** Returns the delay for a passing failure, null for a real one. */
+  private suspend fun handleScrapeException(e: Throwable, source: Source, logCollector: LogCollector): Duration? {
+    val reason = e.describe()
+    val retryAfter = passingFailureDelay(e)
+    if (retryAfter == null) {
+      log.error("scrape failed $reason")
+      logCollector.log("scrape failed $reason")
       logCollector.log("errors in succession before this one: ${source.errorsInSuccession}")
       log.info("source ${source.id} error '$reason' increment -> '${source.errorsInSuccession}'")
-
       meterRegistry.counter(AppMetrics.sourceHarvestError).increment()
-//            notificationService.createNotification(corrId, repository.ownerId, e.message)
       sourceRepository.recordHarvestFailed(source.id, reason, LocalDateTime.now())
-//      if (source.disabled) {
-//        logCollector.log("disabled source")
-//        log.info("source ${source.id} disabled")
-//      }
     } else {
+      log.info("scrape delayed $reason")
+      logCollector.log("delayed: $reason")
       sourceRepository.recordHarvestInterrupted(source.id, reason, LocalDateTime.now())
     }
+    return retryAfter
+  }
+
+  private fun passingFailureDelay(e: Throwable): Duration? = when (e) {
+    is ResumableHarvestException -> e.nextRetryAfter
+    is TooManyConnectionsPerHostException -> Duration.ofMinutes(2)
+    is UnknownHostException, is ConnectException -> Duration.ofMinutes(5)
+    is NoItemsRetrievedException -> Duration.ZERO
+    else -> null
+  }
+
+  // Swallows its own failure: a lost schedule write only means the source runs at the old time.
+  private suspend fun scheduleNextHarvest(source: Source, retryAfter: Duration?, logCollector: LogCollector) {
+    runCatching {
+      val repository = source.repositoryId?.let { repositoryRepository.findById(it) } ?: return@runCatching
+      if (repository.sourcesSyncCron.isBlank()) return@runCatching
+      val now = LocalDateTime.now()
+      val cronNext = repositoryUseCase.calculateScheduledNextAt(repository.sourcesSyncCron, repository.groupId, now)
+      val next = maxOf(cronNext, now.plus(retryAfter ?: Duration.ZERO))
+      if (retryAfter != null && retryAfter > Duration.ZERO) {
+        logCollector.log("delayed until ${next.format(iso8601DateFormat)}")
+      }
+      sourceRepository.scheduleNextHarvest(source.id, next)
+    }.onFailure { log.error("scheduling source ${source.id} failed: ${it.message}", it) }
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector, harvestId: HarvestId? = null): HarvestCount {

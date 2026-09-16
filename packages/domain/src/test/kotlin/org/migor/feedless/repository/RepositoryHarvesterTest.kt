@@ -5,13 +5,15 @@ import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
+import org.asynchttpclient.exception.TooManyConnectionsPerHostException
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
+import org.migor.feedless.HostBlockedException
+import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
-import org.migor.feedless.PageableRequest
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
@@ -49,6 +51,7 @@ import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
 import org.mockito.ArgumentMatchers.anyInt
+import org.mockito.Mockito.doReturn
 import org.mockito.Mockito.mock
 import org.mockito.Mockito.never
 import org.mockito.Mockito.times
@@ -119,18 +122,11 @@ class RepositoryHarvesterTest {
 
     repository = mock(Repository::class.java)
     `when`(repository.id).thenReturn(repositoryId)
-    `when`(repository.sourcesSyncCron).thenReturn("")
+    `when`(repository.sourcesSyncCron).thenReturn("0 0 * * * *")
+    `when`(repository.groupId).thenReturn(GroupId())
     `when`(repository.ownerId).thenReturn(UserId())
     `when`(repository.product).thenReturn(Vertical.feedless)
     `when`(repository.plugins).thenReturn(emptyList())
-
-    `when`(sourceRepository.findAllByRepositoryIdFiltered(any2(), any2(), eq(null), eq(null))).thenAnswer {
-      if ((it.arguments[1] as PageableRequest).pageNumber == 0) {
-        mutableListOf(source)
-      } else {
-        emptyList()
-      }
-    }
 
     // The source's real-run slot is free.
     `when`(harvestRepository.startRun(any2(), any2())).thenAnswer {
@@ -171,9 +167,9 @@ class RepositoryHarvesterTest {
       harvestRepository,
     )
     harvester.register()
-    `when`(repository.triggerScheduledNextAt).thenReturn(LocalDateTime.now().minusMinutes(10))
+    `when`(source.nextHarvestAt).thenReturn(LocalDateTime.now().minusMinutes(10))
 
-    harvester.harvestRepository(repositoryId)
+    harvester.harvestScheduled(source)
 
     val timer = registry.get("harvest.offset").timer()
     assertThat(timer.count()).isEqualTo(1)
@@ -192,7 +188,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(0)
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(scraper, times(1)).scrape(
       any2(),
@@ -208,7 +204,7 @@ class RepositoryHarvesterTest {
   fun `given scrape fails without message, the harvest log names the exception type once`() = runTest {
     `when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException(""))
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(sourceRepository).recordHarvestFailed(eq(source.id), eq("IllegalArgumentException"), any2())
     verify(harvestRepository).save(argThat {
@@ -227,7 +223,7 @@ class RepositoryHarvesterTest {
       IllegalArgumentException("this is off")
     )
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(harvestRepository, times(1)).save(argThat { it.errornous })
   }
@@ -254,7 +250,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(harvestRepository, times(1)).save(argThat { !it.errornous && it.itemsAdded == 3 })
     }
@@ -272,7 +268,7 @@ class RepositoryHarvesterTest {
       ScrapeResult(actionCount = 0, lastFragment = null)
     )
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(sourceRepository, times(1))
       .save(
@@ -296,7 +292,7 @@ class RepositoryHarvesterTest {
     )
     `when`(source.errorsInSuccession).thenReturn(4)
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(scraper, times(1)).scrape(
       any(Source::class.java),
@@ -327,7 +323,7 @@ class RepositoryHarvesterTest {
     )
 
     // when
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     // then
     assertThat(source.errorsInSuccession).isEqualTo(0)
@@ -364,7 +360,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(documentRepository).saveAll(argThat { it.count() == 3 })
     }
@@ -402,7 +398,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(documentRepository).saveAll(argThat { it.count() == 1 })
     }
@@ -430,7 +426,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(documentRepository).saveAll(argThat { it.count() == 2 })
     }
@@ -467,7 +463,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(documentRepository).saveAll(argThat {
         it.isEmpty()
@@ -516,7 +512,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(documentPipelineJobRepository).deleteAllByDocumentIdIn(argThat {
         it.count() == 1
@@ -562,7 +558,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       // then
       verify(documentUseCase, times(1)).triggerPostReleaseEffects(any2(), any2())
@@ -606,7 +602,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
 //    TODO        verify(existing).title = "updated.title"
 //            verify(existing).text = "updated.text"
@@ -652,7 +648,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(sourceRepository).recordHarvestSucceeded(eq(source.id), eq(2), any2())
       verify(harvestRepository).save(argThat { it.itemsAdded == 0 })
@@ -679,7 +675,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(harvestRepository).save(argThat {
         it.logs.contains("0 new, 1 existing (https://example.org/1)") &&
@@ -702,7 +698,7 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(harvestRepository).save(argThat {
         it.logs.contains("queued 1 new items for [org_feedless_fulltext]") &&
@@ -724,7 +720,7 @@ class RepositoryHarvesterTest {
       ScrapeResult(actionCount = 0, lastFragment = null)
     )
 
-    repositoryHarvester.harvestRepository(repositoryId)
+    repositoryHarvester.harvestScheduled(source)
 
     verify(sourceRepository).recordHarvestInterrupted(eq(source.id), any2(), any2())
     verify(sourceRepository, never()).recordHarvestSucceeded(any2(), anyInt(), any2())
@@ -763,10 +759,84 @@ class RepositoryHarvesterTest {
         )
       )
 
-      repositoryHarvester.harvestRepository(repositoryId)
+      repositoryHarvester.harvestScheduled(source)
 
       verify(sourcePipelineJobRepository).saveAll(argThat<List<SourcePipelineJob>> { it.count() == 1 })
     }
+
+  @Test
+  fun `a successful harvest schedules the source at the cron's next date`() = runTest {
+    val cronNext = LocalDateTime.now().plusHours(1)
+    `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(cronNext)
+    `when`(scraper.scrape(any2(), any2())).thenReturn(
+      ScrapeResult(actionCount = 1, lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = emptyList()))
+    )
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository).scheduleNextHarvest(eq(source.id), eq(cronNext))
+  }
+
+  @Test
+  fun `a throttled harvest is delayed, not failed, and waits for the longer of cron and retry`() = runTest {
+    val cronNext = LocalDateTime.now().plusMinutes(1)
+    `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(cronNext)
+    `when`(scraper.scrape(any2(), any2())).thenThrow(
+      HostOverloadingException("throttled by www.bueron.ch (429), retry in 10m", Duration.ofMinutes(10))
+    )
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository).recordHarvestInterrupted(eq(source.id), eq("throttled by www.bueron.ch (429), retry in 10m"), any2())
+    verify(sourceRepository, never()).recordHarvestFailed(any2(), any2(), any2())
+    verify(harvestRepository).save(argThat { !it.errornous && it.logs.contains("delayed until") })
+    verify(sourceRepository).scheduleNextHarvest(eq(source.id), argThat { it.isAfter(LocalDateTime.now().plusMinutes(9)) })
+  }
+
+  @Test
+  fun `a blocked harvest is delayed by its ladder step`() = runTest {
+    `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(LocalDateTime.now())
+    `when`(scraper.scrape(any2(), any2())).thenThrow(HostBlockedException("www.bueron.ch", 403, 2, Duration.ofMinutes(30)))
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository).recordHarvestInterrupted(eq(source.id), eq("blocked by www.bueron.ch (403, strike 2), retry in 30m"), any2())
+    verify(sourceRepository).scheduleNextHarvest(eq(source.id), argThat { it.isAfter(LocalDateTime.now().plusMinutes(29)) })
+  }
+
+  @Test
+  fun `too many connections is delayed by 2 minutes`() = runTest {
+    `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(LocalDateTime.now())
+    // thenThrow rejects it as an undeclared checked exception (it extends IOException); thenAnswer bypasses that check.
+    `when`(scraper.scrape(any2(), any2())).thenAnswer { throw TooManyConnectionsPerHostException(1) }
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository).recordHarvestInterrupted(eq(source.id), any2(), any2())
+    verify(sourceRepository).scheduleNextHarvest(eq(source.id), argThat { it.isAfter(LocalDateTime.now().plusSeconds(110)) })
+  }
+
+  @Test
+  fun `a repository without cron is not scheduled`() = runTest {
+    `when`(repository.sourcesSyncCron).thenReturn("")
+    `when`(scraper.scrape(any2(), any2())).thenReturn(
+      ScrapeResult(actionCount = 1, lastFragment = ScrapedFragmentOutput(fragments = emptyList(), items = emptyList()))
+    )
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(sourceRepository, never()).scheduleNextHarvest(any2(), any2())
+  }
+
+  @Test
+  fun `a source whose run slot is taken is skipped`() = runTest {
+    // doReturn, not when/thenReturn: the setUp answer casts its arguments, which throws when when() replays it with matcher placeholders.
+    doReturn(null).`when`(harvestRepository).startRun(any2(), any2())
+
+    repositoryHarvester.harvestScheduled(source)
+
+    verify(scraper, never()).scrape(any2(), any2())
+  }
 
   private fun newJsonItem(
     url: String,
