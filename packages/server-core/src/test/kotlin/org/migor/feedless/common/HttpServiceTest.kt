@@ -124,4 +124,24 @@ class HttpServiceTest {
 
     assertThat(cooldowns.rows).isEmpty()
   }
+
+  @Test
+  fun `a 429 after a redirect to another host is recorded under the request host`() = runTest {
+    val port = server.address.port
+    server.createContext("/a") { exchange ->
+      exchange.responseHeaders.add("Location", "http://127.0.0.1:$port/b")
+      exchange.sendResponseHeaders(302, -1)
+      exchange.close()
+    }
+    server.createContext("/b") { exchange ->
+      exchange.sendResponseHeaders(429, -1)
+      exchange.close()
+    }
+
+    val e = runCatching { httpService.httpGet("http://localhost:$port/a", 200) }.exceptionOrNull()
+
+    assertThat(e).isInstanceOf(HostOverloadingException::class.java)
+    assertThat(cooldowns.rows).containsKey("localhost")
+    assertThat(cooldowns.rows).doesNotContainKey("127.0.0.1")
+  }
 }
