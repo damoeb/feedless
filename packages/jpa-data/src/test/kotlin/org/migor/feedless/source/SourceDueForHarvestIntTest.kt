@@ -124,6 +124,30 @@ class SourceDueForHarvestIntTest {
   }
 
   @Test
+  fun `findNextHarvestAt reads the current column without loading the rest of the source`() {
+    val source = createSource("https://a.example/1")
+
+    assertThat(sourceRepository.findNextHarvestAt(source.id)).isNull()
+
+    val at = now.plusHours(1).withNano(0)
+    sourceRepository.scheduleNextHarvest(source.id, at)
+
+    assertThat(sourceRepository.findNextHarvestAt(source.id)).isEqualTo(at)
+  }
+
+  @Test
+  fun `touchLastUpdatedAt changes only that column`() {
+    val at = now.plusMinutes(1).withNano(0)
+
+    repositoryRepository.touchLastUpdatedAt(repository.id, at)
+
+    val reloaded = repositoryRepository.findById(repository.id)!!
+    assertThat(reloaded.lastUpdatedAt).isEqualTo(at)
+    assertThat(reloaded.title).isEqualTo(repository.title)
+    assertThat(reloaded.sourcesSyncCron).isEqualTo(repository.sourcesSyncCron)
+  }
+
+  @Test
   fun `scheduling a repository moves all its sources`() {
     val a = createSource("https://a.example/1")
     val b = createSource("https://b.example/1")

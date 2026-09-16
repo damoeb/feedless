@@ -303,4 +303,8 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
   override fun scheduleNextHarvestOfRepository(repositoryId: RepositoryId, at: LocalDateTime) {
     sourceDAO.updateNextHarvestAtByRepositoryId(repositoryId.uuid, at)
   }
+
+  override fun findNextHarvestAt(id: SourceId): LocalDateTime? {
+    return sourceDAO.findNextHarvestAt(id.uuid)
+  }
 }

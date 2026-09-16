@@ -153,4 +153,7 @@ interface SourceDAO : JpaRepository<SourceEntity, UUID>, KotlinJdslJpqlExecutor 
   @Query("update SourceEntity s set s.nextHarvestAt = :at where s.repositoryId = :repositoryId")
   fun updateNextHarvestAtByRepositoryId(@Param("repositoryId") repositoryId: UUID, @Param("at") at: LocalDateTime): Int
 
+  @Query("select s.nextHarvestAt from SourceEntity s where s.id = :id")
+  fun findNextHarvestAt(@Param("id") id: UUID): LocalDateTime?
+
 }

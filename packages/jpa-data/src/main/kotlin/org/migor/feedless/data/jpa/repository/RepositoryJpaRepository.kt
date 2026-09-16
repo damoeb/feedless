@@ -20,6 +20,7 @@ import org.springframework.data.domain.PageRequest
 import org.springframework.data.domain.Pageable
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
+import org.springframework.transaction.annotation.Transactional
 import java.time.LocalDateTime
 import kotlin.jvm.optionals.getOrNull
 
@@ -213,6 +214,11 @@ class RepositoryJpaRepository(private val repositoryDAO: RepositoryDAO) : Reposi
 
   override fun delete(repository: Repository) {
     repositoryDAO.delete(repository.toEntity())
+  }
+
+  @Transactional
+  override fun touchLastUpdatedAt(id: RepositoryId, at: LocalDateTime) {
+    repositoryDAO.touchLastUpdatedAt(id.uuid, at)
   }
 
 }

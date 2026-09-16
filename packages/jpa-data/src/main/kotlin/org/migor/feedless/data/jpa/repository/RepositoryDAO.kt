@@ -8,6 +8,7 @@ import org.migor.feedless.Vertical
 import org.springframework.context.annotation.Profile
 import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
@@ -61,5 +62,9 @@ interface RepositoryDAO : JpaRepository<RepositoryEntity, UUID>, KotlinJdslJpqlE
   fun findByDocumentId(@Param("documentId") documentId: UUID): RepositoryEntity?
   fun findAllByLastUpdatedAtBefore(lastUpdatedAt: LocalDateTime): List<RepositoryEntity>
   fun countByGroupId(groupId: UUID): Int
+
+  @Modifying
+  @Query("update RepositoryEntity r set r.lastUpdatedAt = :at where r.id = :id")
+  fun touchLastUpdatedAt(@Param("id") id: UUID, @Param("at") at: LocalDateTime): Int
 
 }
