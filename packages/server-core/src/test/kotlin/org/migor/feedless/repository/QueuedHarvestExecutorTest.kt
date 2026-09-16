@@ -35,6 +35,7 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.ScrapedFragmentOutput
 import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
@@ -82,7 +83,7 @@ class QueuedHarvestExecutorTest {
     `when`(meterRegistry.counter(any2())).thenReturn(mock(Counter::class.java))
 
     // The real harvester and dry runner: what a run touches is the behaviour under test.
-    val repositoryHarvester = RepositoryHarvester(
+    val sourceHarvester = SourceHarvester(
       documentUseCase,
       documentRepository,
       mock(DocumentPipelineJobRepository::class.java),
@@ -98,7 +99,7 @@ class QueuedHarvestExecutorTest {
       harvestRepository,
       sourceRepository,
       repositoryRepository,
-      repositoryHarvester,
+      sourceHarvester,
       SourceDryRunner(scrapeService, harvestRepository),
       flowMapper,
     )
@@ -233,7 +234,11 @@ class QueuedHarvestExecutorTest {
   @Test
   fun `each tick completes stale runs, then claims and runs queued harvests`() {
     val harvest = claimed(dryRun = true)
-    `when`(harvestRepository.claimQueued(eq(QueuedHarvestExecutor.MAX_CONCURRENT_RUNS), any2())).thenReturn(listOf(harvest))
+    `when`(harvestRepository.claimQueued(eq(QueuedHarvestExecutor.MAX_CONCURRENT_RUNS), any2())).thenReturn(
+      listOf(
+        harvest
+      )
+    )
     runTest { `when`(scrapeService.scrape(any2(), any2())).thenReturn(scrapeOutput()) }
     val before = LocalDateTime.now()
 

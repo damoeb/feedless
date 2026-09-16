@@ -1,4 +1,4 @@
-package org.migor.feedless.repository
+package org.migor.feedless.source
 
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
@@ -37,14 +37,20 @@ import org.migor.feedless.pipelineJob.PipelineJobId
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.repository.RepositoryRepository
+import org.migor.feedless.repository.RepositoryUseCase
+import org.migor.feedless.repository.describe
+import org.migor.feedless.repository.harvestLabel
+import org.migor.feedless.repository.importSummary
+import org.migor.feedless.repository.toHarvestLog
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.scrape.ScrapeMimeTypes.MIME_URL
 import org.migor.feedless.scrape.ScrapeResult
 import org.migor.feedless.scrape.ScrapedFragment
 import org.migor.feedless.scrape.ScrapedFragmentPart
 import org.migor.feedless.scrape.Scraper
-import org.migor.feedless.source.Source
-import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.util.CryptUtil
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -63,7 +69,7 @@ data class HarvestCount(val retrieved: Int, val added: Int)
 
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.service} & ${AppLayer.scheduler}")
-class RepositoryHarvester(
+class SourceHarvester(
   private val documentUseCase: DocumentUseCase,
   private val documentRepository: DocumentRepository,
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
@@ -76,7 +82,7 @@ class RepositoryHarvester(
   private val harvestRepository: HarvestRepository,
 ) {
 
-  private val log = LoggerFactory.getLogger(RepositoryHarvester::class.simpleName)
+  private val log = LoggerFactory.getLogger(SourceHarvester::class.simpleName)
   private val iso8601DateFormat: DateTimeFormatter = DateTimeFormatter.ISO_DATE_TIME
 
   private lateinit var harvestOffsetTimer: Timer
@@ -132,7 +138,6 @@ class RepositoryHarvester(
       outcome = outcome.copy(errornous = retryAfter == null)
     } finally {
       scheduleNextHarvest(source, retryAfter, logCollector)
-      touchRepository(source)
       outcome = outcome.copy(
         status = HarvestStatus.COMPLETED,
         finishedAt = LocalDateTime.now(),
@@ -189,14 +194,6 @@ class RepositoryHarvester(
       }
       sourceRepository.scheduleNextHarvest(source.id, next)
     }.onFailure { log.error("scheduling source ${source.id} failed: ${it.message}", it) }
-  }
-
-  // Swallows its own failure like scheduling: a lost touch only means lastUpdatedAt lags until the next harvest.
-  private suspend fun touchRepository(source: Source) {
-    runCatching {
-      val repositoryId = source.repositoryId ?: return@runCatching
-      repositoryRepository.touchLastUpdatedAt(repositoryId, LocalDateTime.now())
-    }.onFailure { log.error("touching repository of source ${source.id} failed: ${it.message}", it) }
   }
 
   suspend fun scrapeSource(source: Source, logCollector: LogCollector, harvestId: HarvestId? = null): HarvestCount {
@@ -495,9 +492,9 @@ class RepositoryHarvester(
 
         Pair(
           true, if (repository.plugins.isEmpty()) {
-            document.copy(status = org.migor.feedless.document.ReleaseStatus.released)
+            document.copy(status = ReleaseStatus.released)
           } else {
-            document.copy(status = org.migor.feedless.document.ReleaseStatus.unreleased)
+            document.copy(status = ReleaseStatus.unreleased)
           }
         )
       } else {
@@ -569,7 +566,7 @@ private fun ScrapedFragment.createDocument(repositoryId: RepositoryId, source: S
     html = html,
     imageUrl = "",
     text = StringUtils.trimToEmpty(text),
-    status = org.migor.feedless.document.ReleaseStatus.released,
+    status = ReleaseStatus.released,
     url = "https://does-not-exist",
     createdAt = now,
     publishedAt = now,

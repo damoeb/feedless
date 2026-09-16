@@ -2,8 +2,8 @@ package org.migor.feedless.common
 
 import org.migor.feedless.HostBlockedException
 import org.migor.feedless.HostOverloadingException
-import org.migor.feedless.hostCooldown.HostBlockLadder
 import org.migor.feedless.hostCooldown.HostCooldown
+import org.migor.feedless.hostCooldown.HostRequestBackoffLadder
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.time.Duration
@@ -46,7 +46,7 @@ class HostCooldownGuard(private val hostCooldown: HostCooldown?) {
     val state = host?.let { hostCooldown?.recordBlocked(it, status, now) }
     state?.let { hostsWithRow.add(it.host) }
     val strikes = state?.strikes ?: 1
-    val delay = state?.let { Duration.between(now, it.blockedUntil) } ?: HostBlockLadder.delayFor(strikes)
+    val delay = state?.let { Duration.between(now, it.blockedUntil) } ?: HostRequestBackoffLadder.delayFor(strikes)
     log.info("blocked by $host ($status, strike $strikes), retry in $delay")
     throw HostBlockedException(host ?: url, status, strikes, delay)
   }

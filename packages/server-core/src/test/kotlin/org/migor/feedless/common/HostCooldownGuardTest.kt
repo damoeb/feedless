@@ -5,9 +5,9 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.junit.jupiter.api.Test
 import org.migor.feedless.HostBlockedException
 import org.migor.feedless.HostOverloadingException
-import org.migor.feedless.hostCooldown.HostBlockLadder
 import org.migor.feedless.hostCooldown.HostCooldown
 import org.migor.feedless.hostCooldown.HostCooldownState
+import org.migor.feedless.hostCooldown.HostRequestBackoffLadder
 import java.time.Duration
 import java.time.LocalDateTime
 
@@ -25,7 +25,12 @@ class FakeHostCooldown : HostCooldown {
 
   override fun recordBlocked(host: String, status: Int, now: LocalDateTime): HostCooldownState {
     val strikes = (rows[host]?.strikes ?: 0) + 1
-    return HostCooldownState(host, now.plus(HostBlockLadder.delayFor(strikes)), strikes, status).also { rows[host] = it }
+    return HostCooldownState(
+      host,
+      now.plus(HostRequestBackoffLadder.delayFor(strikes)),
+      strikes,
+      status
+    ).also { rows[host] = it }
   }
 
   override fun recordSuccess(host: String, now: LocalDateTime): Boolean {

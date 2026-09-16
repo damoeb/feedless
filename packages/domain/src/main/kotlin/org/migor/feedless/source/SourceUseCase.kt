@@ -20,8 +20,6 @@ import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.currentThreadCorrId
 import org.migor.feedless.common.hostOf
-import org.migor.feedless.repository.RepositorySourceUpdate
-import org.migor.feedless.geo.LatLonPoint
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.hostCooldown.HostCooldown
 import org.migor.feedless.pipeline.SourcePipelineService
@@ -29,10 +27,9 @@ import org.migor.feedless.pipelineJob.PipelineJobStatus
 import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
-import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
-import org.migor.feedless.repository.nextCronDate
+import org.migor.feedless.repository.RepositorySourceUpdate
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
@@ -49,7 +46,7 @@ import java.time.LocalDateTime
 class SourceUseCase(
   private val sourcePipelineJobRepository: SourcePipelineJobRepository,
   private val sourceRepository: SourceRepository,
-  @param:Lazy private val repositoryHarvester: RepositoryHarvester,
+  @param:Lazy private val sourceHarvester: SourceHarvester,
   private val planConstraintsService: PlanConstraintsService,
   private val scrapeActionRepository: ScrapeActionRepository,
   private val repositoryRepository: RepositoryRepository,
@@ -71,7 +68,7 @@ class SourceUseCase(
 
     val updatedJob = try {
       try {
-        repositoryHarvester.scrapeSource(patchRequestUrl(source, job.url), LogCollector())
+        sourceHarvester.scrapeSource(patchRequestUrl(source, job.url), LogCollector())
         log.info("job ${job.id} done")
         job.copy(
           status = PipelineJobStatus.SUCCEEDED

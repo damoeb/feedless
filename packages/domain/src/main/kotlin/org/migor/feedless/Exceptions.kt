@@ -36,6 +36,6 @@ class NoItemsRetrievedException : RuntimeException("no items retireved")
 class TemporaryServerException(message: String, waitForRefill: Duration) :
   ResumableHarvestException(message, waitForRefill)
 
-/** The host refused us (401/403); retried on [org.migor.feedless.hostCooldown.HostBlockLadder] instead of failing. */
+/** The host refused us (401/403); retried on [org.migor.feedless.hostCooldown.HostRequestBackoffLadder] instead of failing. */
 class HostBlockedException(val host: String, val status: Int, val strikes: Int, delay: Duration) :
   ResumableHarvestException("blocked by $host ($status, strike $strikes), retry in ${delay.toMinutes()}m", delay)

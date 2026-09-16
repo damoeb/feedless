@@ -16,6 +16,7 @@ import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.StoredFlowParser
 import org.slf4j.LoggerFactory
@@ -34,10 +35,11 @@ import kotlin.coroutines.cancellation.CancellationException
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
 class QueuedHarvestExecutor internal constructor(
+  // todo why is this needed, its a byproduct of source harvest and document jobs
   private val harvestRepository: HarvestRepository,
   private val sourceRepository: SourceRepository,
   private val repositoryRepository: RepositoryRepository,
-  private val repositoryHarvester: RepositoryHarvester,
+  private val sourceHarvester: SourceHarvester,
   private val sourceDryRunner: SourceDryRunner,
   private val storedFlowParser: StoredFlowParser,
 ) {
@@ -87,7 +89,7 @@ class QueuedHarvestExecutor internal constructor(
           harvest.dryRun -> sourceDryRunner.dryRun(source.withFlowOf(harvest), harvest)
           // Checked when queued too (409); the source may have been disabled since.
           source.disabled -> completeAsFailed(harvest, "source is disabled; enable it to run it")
-          else -> repositoryHarvester.harvestSource(source, harvest)
+          else -> sourceHarvester.harvestSource(source, harvest)
         }
       }
     } catch (e: Throwable) {

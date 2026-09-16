@@ -17,14 +17,14 @@ interface HostCooldown {
   /** Never shortens an existing cooldown; strikes are left untouched. */
   fun recordThrottled(host: String, status: Int, retryAfter: Duration, now: LocalDateTime): HostCooldownState
 
-  /** Adds a strike and extends the cooldown by [HostBlockLadder]. */
+  /** Adds a strike and extends the cooldown by [HostRequestBackoffLadder]. */
   fun recordBlocked(host: String, status: Int, now: LocalDateTime): HostCooldownState
 
   /** Deletes the cooldown only if it has already expired; returns whether a row was deleted. */
   fun recordSuccess(host: String, now: LocalDateTime): Boolean
 }
 
-object HostBlockLadder {
+object HostRequestBackoffLadder {
   private val steps = listOf(
     Duration.ofMinutes(5),
     Duration.ofMinutes(30),

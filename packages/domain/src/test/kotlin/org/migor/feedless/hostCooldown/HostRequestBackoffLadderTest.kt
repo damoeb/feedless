@@ -4,11 +4,11 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import java.time.Duration
 
-class HostBlockLadderTest {
+class HostRequestBackoffLadderTest {
 
   @Test
   fun `escalates per strike and settles at 24 hours`() {
-    assertThat((1..7).map { HostBlockLadder.delayFor(it) }).containsExactly(
+    assertThat((1..7).map { HostRequestBackoffLadder.delayFor(it) }).containsExactly(
       Duration.ofMinutes(5),
       Duration.ofMinutes(30),
       Duration.ofHours(2),
@@ -21,6 +21,6 @@ class HostBlockLadderTest {
 
   @Test
   fun `strike zero or below is treated as the first strike`() {
-    assertThat(HostBlockLadder.delayFor(0)).isEqualTo(Duration.ofMinutes(5))
+    assertThat(HostRequestBackoffLadder.delayFor(0)).isEqualTo(Duration.ofMinutes(5))
   }
 }

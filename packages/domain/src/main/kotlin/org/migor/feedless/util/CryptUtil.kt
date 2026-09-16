@@ -22,7 +22,7 @@ object CryptUtil {
   fun newShareKey(length: Int = 9): String =
     (1..length).map { keyAlphabet[secureRandom.nextInt(keyAlphabet.size)] }.joinToString("")
 
-  fun newCorrId(length: Int = 4, parentCorrId: String? = null): String {
+  fun newCorrId(length: Int = 6, parentCorrId: String? = null): String {
     val charset = ('a'..'z') + ('A'..'Z') + ('0'..'9')
     val corrId = (1..length)
       .map { charset.random() }

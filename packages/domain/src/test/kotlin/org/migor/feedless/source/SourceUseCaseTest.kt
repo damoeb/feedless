@@ -5,8 +5,8 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
-import org.migor.feedless.NotFoundException
 import org.migor.feedless.Mother.randomRepositoryId
+import org.migor.feedless.NotFoundException
 import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
@@ -23,7 +23,6 @@ import org.migor.feedless.pipelineJob.SourcePipelineJob
 import org.migor.feedless.pipelineJob.SourcePipelineJobRepository
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.repository.Repository
-import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryId
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositorySourceUpdate
@@ -33,7 +32,7 @@ import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
 import org.slf4j.MDC
 import java.time.LocalDateTime
-import java.util.Collections
+import java.util.*
 
 class SourceUseCaseTest {
 
@@ -57,7 +56,7 @@ class SourceUseCaseTest {
     sourceUseCase = SourceUseCase(
       mock(SourcePipelineJobRepository::class.java),
       sourceRepository,
-      mock(RepositoryHarvester::class.java),
+      mock(SourceHarvester::class.java),
       planConstraintsService,
       scrapeActionRepository,
       repositoryRepository,
@@ -182,52 +181,56 @@ class SourceUseCaseTest {
   }
 
   @Test
-  fun `updateSources throws NotFound when source missing`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
-    val sourceId = SourceId()
-    `when`(sourceRepository.findById(eq(sourceId))).thenReturn(null)
+  fun `updateSources throws NotFound when source missing`() =
+    runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+      val sourceId = SourceId()
+      `when`(sourceRepository.findById(eq(sourceId))).thenReturn(null)
 
-    assertThrows<NotFoundException> {
-      sourceUseCase.updateSources(
-        repositoryId,
-        listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
-      )
+      assertThrows<NotFoundException> {
+        sourceUseCase.updateSources(
+          repositoryId,
+          listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
+        )
+      }
     }
-  }
 
   @Test
-  fun `updateSources throws NotFound when source belongs to another repository`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
-    val sourceId = SourceId()
-    val otherRepositoryId = randomRepositoryId()
-    val source = mock(Source::class.java)
-    `when`(source.repositoryId).thenReturn(otherRepositoryId)
-    `when`(sourceRepository.findById(eq(sourceId))).thenReturn(source)
+  fun `updateSources throws NotFound when source belongs to another repository`() =
+    runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+      val sourceId = SourceId()
+      val otherRepositoryId = randomRepositoryId()
+      val source = mock(Source::class.java)
+      `when`(source.repositoryId).thenReturn(otherRepositoryId)
+      `when`(sourceRepository.findById(eq(sourceId))).thenReturn(source)
 
-    assertThrows<NotFoundException> {
-      sourceUseCase.updateSources(
-        repositoryId,
-        listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
-      )
+      assertThrows<NotFoundException> {
+        sourceUseCase.updateSources(
+          repositoryId,
+          listOf(RepositorySourceUpdate(sourceId = sourceId, title = "new")),
+        )
+      }
     }
-  }
 
   @Test
-  fun `deleteAllById throws NotFound when no sources match`() = runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
-    val sourceId = SourceId()
-    `when`(sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, listOf(sourceId))).thenReturn(emptyList())
+  fun `deleteAllById throws NotFound when no sources match`() =
+    runTest(context = RequestContext(groupId = groupId, userId = UserId())) {
+      val sourceId = SourceId()
+      `when`(sourceRepository.findAllByRepositoryIdAndIdIn(repositoryId, listOf(sourceId))).thenReturn(emptyList())
 
-    assertThrows<NotFoundException> {
-      sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+      assertThrows<NotFoundException> {
+        sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+      }
     }
-  }
 
   @Test
-  fun `deleteAllById throws when group does not match`() = runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
-    val sourceId = SourceId()
+  fun `deleteAllById throws when group does not match`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = UserId())) {
+      val sourceId = SourceId()
 
-    assertThrows<IllegalArgumentException> {
-      sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+      assertThrows<IllegalArgumentException> {
+        sourceUseCase.deleteAllById(repositoryId, listOf(sourceId))
+      }
     }
-  }
 
   @Test
   fun `scheduleNextHarvestOfRepository coerces each source individually`() =
@@ -258,9 +261,21 @@ class SourceUseCaseTest {
         actions = listOf(FetchAction(sourceId = sourceBId, url = "https://$coolingHost/feed")),
       )
       `when`(sourceRepository.findAllWithActionsByRepositoryId(repositoryId)).thenReturn(listOf(sourceA, sourceB))
-      `when`(planConstraintsService.coerceMinScheduledNextAt(eq(sourceALastRefreshedAt), eq(sourceALastRefreshedAt), eq(groupId)))
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          eq(sourceALastRefreshedAt),
+          eq(sourceALastRefreshedAt),
+          eq(groupId)
+        )
+      )
         .thenReturn(sourceAPlanFloor)
-      `when`(planConstraintsService.coerceMinScheduledNextAt(eq(sourceBLastRefreshedAt), eq(sourceBLastRefreshedAt), eq(groupId)))
+      `when`(
+        planConstraintsService.coerceMinScheduledNextAt(
+          eq(sourceBLastRefreshedAt),
+          eq(sourceBLastRefreshedAt),
+          eq(groupId)
+        )
+      )
         .thenReturn(sourceBPlanFloor)
       `when`(hostCooldown.find(okHost)).thenReturn(null)
       `when`(hostCooldown.find(coolingHost)).thenReturn(
@@ -292,7 +307,7 @@ class SourceUseCaseTest {
       val useCase = SourceUseCase(
         jobRepository,
         sourceRepository,
-        mock(RepositoryHarvester::class.java),
+        mock(SourceHarvester::class.java),
         mock(PlanConstraintsService::class.java),
         scrapeActionRepository,
         repositoryRepository,

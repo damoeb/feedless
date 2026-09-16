@@ -2,9 +2,9 @@ package org.migor.feedless.data.jpa.hostCooldown
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.hostCooldown.HostBlockLadder
 import org.migor.feedless.hostCooldown.HostCooldown
 import org.migor.feedless.hostCooldown.HostCooldownState
+import org.migor.feedless.hostCooldown.HostRequestBackoffLadder
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
@@ -30,7 +30,7 @@ class HostCooldownJpaRepository(private val hostCooldownDAO: HostCooldownDAO) : 
   override fun recordBlocked(host: String, status: Int, now: LocalDateTime): HostCooldownState {
     hostCooldownDAO.upsertStrike(host, status, now)
     val strikes = find(host)!!.strikes
-    hostCooldownDAO.extendBlockedUntil(host, now.plus(HostBlockLadder.delayFor(strikes)))
+    hostCooldownDAO.extendBlockedUntil(host, now.plus(HostRequestBackoffLadder.delayFor(strikes)))
     return find(host)!!
   }
 

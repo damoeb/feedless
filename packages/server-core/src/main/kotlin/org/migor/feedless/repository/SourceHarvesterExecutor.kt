@@ -11,6 +11,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.withMdcCorrId
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceRepository
 import org.slf4j.LoggerFactory
 import org.springframework.context.annotation.Profile
@@ -21,7 +22,7 @@ import java.time.LocalDateTime
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
 class SourceHarvesterExecutor internal constructor(
-  private val repositoryHarvester: RepositoryHarvester,
+  private val sourceHarvester: SourceHarvester,
   private val sourceRepository: SourceRepository,
   private val repositoryRepository: RepositoryRepository,
 ) {
@@ -49,7 +50,7 @@ class SourceHarvesterExecutor internal constructor(
                   null
                 } else {
                   async(childRequestContext(repository.ownerId, repository.groupId)) {
-                    semaphore.withPermit { repositoryHarvester.harvestScheduled(source) }
+                    semaphore.withPermit { sourceHarvester.harvestScheduled(source) }
                   }
                 }
               }.awaitAll()

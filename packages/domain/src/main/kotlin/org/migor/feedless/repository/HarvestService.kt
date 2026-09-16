@@ -21,6 +21,7 @@ import java.time.LocalDateTime
 class HarvestService(
   private val harvestRepository: HarvestRepository,
 ) {
+  // todo this is obsolete
 
   private val log = LoggerFactory.getLogger(HarvestService::class.simpleName)
 

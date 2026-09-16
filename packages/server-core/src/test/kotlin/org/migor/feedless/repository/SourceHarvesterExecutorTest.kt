@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.MdcKeys
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.UserId
 import org.mockito.kotlin.any
@@ -16,7 +17,7 @@ import org.mockito.kotlin.doSuspendableAnswer
 import org.mockito.kotlin.mock
 import org.slf4j.MDC
 import org.springframework.scheduling.annotation.Scheduled
-import java.util.Collections
+import java.util.*
 import java.util.concurrent.atomic.AtomicInteger
 
 class SourceHarvesterExecutorTest {
@@ -37,7 +38,7 @@ class SourceHarvesterExecutorTest {
     val sourceRepository = mock<SourceRepository> { on { findAllDueForHarvest(any(), any()) } doReturn sources(2) }
     val repositoryRepository = mock<RepositoryRepository> { on { findById(any()) } doReturn repository }
     val seen = Collections.synchronizedList(mutableListOf<String?>())
-    val harvester = mock<RepositoryHarvester> {
+    val harvester = mock<SourceHarvester> {
       onBlocking { harvestScheduled(any()) } doSuspendableAnswer {
         seen.add(withContext(Dispatchers.IO) { MDC.get(MdcKeys.CORR_ID) })
         Unit
@@ -58,7 +59,7 @@ class SourceHarvesterExecutorTest {
     val repositoryRepository = mock<RepositoryRepository> { on { findById(any()) } doReturn repository }
     val running = AtomicInteger()
     val peak = AtomicInteger()
-    val harvester = mock<RepositoryHarvester> {
+    val harvester = mock<SourceHarvester> {
       onBlocking { harvestScheduled(any()) } doSuspendableAnswer {
         peak.accumulateAndGet(running.incrementAndGet()) { a, b -> maxOf(a, b) }
         delay(20)
@@ -77,7 +78,7 @@ class SourceHarvesterExecutorTest {
     val sourceRepository = mock<SourceRepository> { on { findAllDueForHarvest(any(), any()) } doReturn sources(1) }
     val repositoryRepository = mock<RepositoryRepository> { on { findById(any()) } doReturn null }
     val calls = AtomicInteger()
-    val harvester = mock<RepositoryHarvester> {
+    val harvester = mock<SourceHarvester> {
       onBlocking { harvestScheduled(any()) } doSuspendableAnswer { calls.incrementAndGet(); Unit }
     }
 

@@ -29,11 +29,11 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
+import org.migor.feedless.source.nextCronDate
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
@@ -270,7 +270,12 @@ class RepositoryUseCase(
       sources.remove?.let { sourceUseCase.deleteAllById(repository.id, it) }
     }
     if (scheduleSources) {
-      sourceUseCase.scheduleNextHarvestOfRepository(repository.id, requestedHarvestAt, repository.sourcesSyncCron, groupId)
+      sourceUseCase.scheduleNextHarvestOfRepository(
+        repository.id,
+        requestedHarvestAt,
+        repository.sourcesSyncCron,
+        groupId
+      )
     }
     withContext(Dispatchers.IO) {
       repositoryRepository.save(repository)
