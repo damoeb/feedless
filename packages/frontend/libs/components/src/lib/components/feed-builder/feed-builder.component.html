@@ -60,7 +60,8 @@
     <!--      </div>-->
     <!--    }-->
 
-    @if (sourceBuilder && sourceBuilder.response) {
+    <!-- an existing source stays editable when its url cannot be fetched -->
+    @if (sourceBuilder && !loading && (sourceBuilder.response || source())) {
       <app-transform-website-to-feed
         #webToFeedTransformer
         (selectedFeedChange)="selectedFeed = $event"
