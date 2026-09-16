@@ -18,9 +18,16 @@ import {
   ContentType,
 } from '../../form-elements/code-editor/code-editor.component';
 
+export type CodeEditorModalDetail = {
+  label: string;
+  value: string;
+  href?: string;
+};
+
 export interface CodeEditorModalComponentProps {
   text: string;
   title: string;
+  details?: CodeEditorModalDetail[];
   readOnly?: boolean;
   controls?: boolean;
   contentType?: ContentType;
@@ -57,6 +64,7 @@ export class CodeEditorModalComponent implements CodeEditorModalComponentProps {
 
   text: string;
   title: string;
+  details: CodeEditorModalDetail[] = [];
   contentType: ContentType;
   readOnly: boolean;
 

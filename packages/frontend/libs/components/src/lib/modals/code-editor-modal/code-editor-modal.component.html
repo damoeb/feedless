@@ -7,6 +7,20 @@
       </ion-button>
     </ion-buttons>
   </ion-toolbar>
+  @if (details?.length > 0) {
+    <dl class="details ion-padding-horizontal">
+      @for (detail of details; track detail.label) {
+        <dt>{{ detail.label }}</dt>
+        <dd>
+          @if (detail.href) {
+            <a [href]="detail.href" target="_blank" rel="noopener noreferrer">{{ detail.value }}</a>
+          } @else {
+            {{ detail.value }}
+          }
+        </dd>
+      }
+    </dl>
+  }
 </ion-header>
 <ion-content>
   <app-code-editor
