@@ -6,3 +6,19 @@ ion-content::part(scroll) {
 app-code-editor {
   flex: 1;
 }
+
+.details {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 8px 0;
+
+  dt {
+    color: var(--ion-color-medium);
+  }
+
+  dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+}

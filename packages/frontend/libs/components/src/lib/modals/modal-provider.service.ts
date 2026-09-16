@@ -164,7 +164,7 @@ export class ModalProvider {
       component,
       componentProps,
       showBackdrop: true,
-      backdropDismiss: false,
+      backdropDismiss: true,
     });
     await modal.present();
     const { data } = await modal.onDidDismiss();

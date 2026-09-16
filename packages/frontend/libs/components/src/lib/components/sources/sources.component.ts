@@ -55,6 +55,7 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { debounce, interval } from 'rxjs';
 import {
   CodeEditorModalComponent,
+  CodeEditorModalDetail,
   FeedBuilderModalComponent,
   ModalProvider,
   SearchAddressModalComponent,
@@ -456,23 +457,49 @@ export class SourcesComponent implements OnInit {
     await this.fetchSources(this.currentSourcesPage);
   }
 
-  async showLogs(source: Source) {
-    const harvest =
-      await this.repositoryService.getLastHarvestFromSourcesByRepository(
-        this.repository().id,
+  async showLogs(source: SourceWithLastHarvest) {
+    const repositoryId = this.repository().id;
+    const [harvest, sourceFull] = await Promise.all([
+      this.repositoryService.getLastHarvestFromSourcesByRepository(
+        repositoryId,
         source.id,
-      );
+      ),
+      this.repositoryService.getSourceFullByRepository(repositoryId, source.id),
+    ]);
+    const url = sourceFull?.flow?.sequence?.find((a) => a.fetch)?.fetch.get.url
+      .literal;
+    const formatDate = (date: number) =>
+      date ? dayjs(date).format('YYYY-MM-DD HH:mm:ss') : '-';
+    const details: CodeEditorModalDetail[] = [
+      { label: 'Source', value: source.title },
+      ...(url ? [{ label: 'URL', value: url, href: url }] : []),
+      {
+        label: 'Status',
+        value: source.disabled ? 'Disabled' : 'Enabled',
+      },
+      ...(source.lastErrorMessage
+        ? [{ label: 'Last error', value: source.lastErrorMessage }]
+        : []),
+      ...(source.tags?.length > 0
+        ? [{ label: 'Tags', value: tagsToString(source.tags) }]
+        : []),
+      ...(source.latLng
+        ? [{ label: 'Geo tag', value: this.stringifyLocalization(source) }]
+        : []),
+      { label: 'Items total', value: `${source.recordCount}` },
+      { label: 'Harvest', value: harvest.ok ? 'Succeeded' : 'Failed' },
+      { label: 'Started', value: formatDate(harvest.startedAt) },
+      { label: 'Finished', value: formatDate(harvest.finishedAt) },
+      {
+        label: 'Items',
+        value: `${source.lastRecordsRetrieved} found · ${harvest.itemsAdded} new · ${harvest.itemsIgnored} filtered`,
+      },
+    ];
     await this.modalProvider.openCodeEditorModal(CodeEditorModalComponent, {
       readOnly: true,
       contentType: 'text',
-      text: `ok: ${harvest.ok}
-startedAt: ${dayjs(harvest.startedAt).format()}
-finishedAt: ${dayjs(harvest.finishedAt).format()}
-new items: ${harvest.itemsAdded}
-filtered items: ${harvest.itemsIgnored}
--------------
-
-${harvest.logs}`,
+      text: harvest.logs,
+      details,
       title: 'Harvest Logs',
     });
   }

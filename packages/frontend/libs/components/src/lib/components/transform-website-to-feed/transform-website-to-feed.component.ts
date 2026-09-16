@@ -233,28 +233,22 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
             }
           }),
       );
-      const outputs = this.sourceBuilder().response?.outputs;
-      if (!outputs) {
-        throw new Error('No outputs found in response');
-      }
-      const elementWithFeeds = outputs.find((o) => o.response?.extract?.feeds);
-      if (elementWithFeeds) {
-        const feeds = elementWithFeeds.response.extract.feeds;
+      // a failed fetch has no feeds, but the source's configured feed still applies
+      const feeds = this.sourceBuilder().response?.outputs?.find(
+        (o) => o.response?.extract?.feeds,
+      )?.response.extract.feeds;
+      if (feeds) {
         this.genericFeeds = feeds.genericFeeds;
         this.nativeFeeds = feeds.nativeFeeds as GqlRemoteNativeFeed[]; // todo
         const scores = feeds.genericFeeds.map((gf) => gf.score);
-        const maxScore = max(scores);
-        const minScore = min(scores);
         this.scaleScore = scaleLinear()
-          .domain([minScore, maxScore])
+          .domain([min(scores), max(scores)])
           .range([0, 100]);
-      } else {
-        throw new Error('not supported');
       }
       const feed = this.feed();
       if (feed) {
         if (feed.nativeFeed) {
-          await this.pickNativeFeed(feed.nativeFeed);
+          await this.pickNativeFeed(this.findOrAddNativeFeed(feed.nativeFeed));
         } else if (feed.genericFeed) {
           await this.pickGenericFeed(feed.genericFeed);
         } else {
@@ -265,6 +259,15 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  private findOrAddNativeFeed(feed: GqlRemoteNativeFeed): GqlRemoteNativeFeed {
+    const listed = this.nativeFeeds.find((f) => f.feedUrl === feed.feedUrl);
+    if (listed) {
+      return listed;
+    }
+    this.nativeFeeds = [...this.nativeFeeds, feed];
+    return feed;
   }
 
   async pickNativeFeed(feed: GqlRemoteNativeFeed) {
