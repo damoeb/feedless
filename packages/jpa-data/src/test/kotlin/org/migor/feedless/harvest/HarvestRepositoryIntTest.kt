@@ -329,6 +329,16 @@ class HarvestRepositoryIntTest {
   }
 
   @Test
+  fun `cleanup opens its own transaction, as callers on coroutines have none`() {
+    val stale = harvest(sourceA.id, LocalDateTime.now().minusDays(10), HarvestStatus.COMPLETED, dryRun = true)
+
+    harvestRepository.deleteAllTailingBySourceId()
+    harvestRepository.deleteAllDryRunByCreatedAtBefore(LocalDateTime.now().minusDays(7))
+
+    assertThat(harvestRepository.findById(stale.id)).isNull()
+  }
+
+  @Test
   @Transactional
   fun `deleteAllDryRunByCreatedAtBefore only removes stale completed dry runs`() {
     val now = LocalDateTime.now()

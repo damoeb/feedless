@@ -32,10 +32,12 @@ class HarvestJpaRepository(private val harvestDAO: HarvestDAO) : HarvestReposito
     return harvestDAO.findById(id.uuid).getOrNull()?.toDomain()
   }
 
+  @Transactional
   override fun deleteAllTailingBySourceId() {
     harvestDAO.deleteAllTailingBySourceId()
   }
 
+  @Transactional
   override fun deleteAllDryRunByCreatedAtBefore(before: LocalDateTime) {
     harvestDAO.deleteAllByDryRunTrueAndStatusAndCreatedAtBefore("completed", before)
   }
