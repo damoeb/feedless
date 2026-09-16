@@ -136,6 +136,24 @@ class SourceDueForHarvestIntTest {
   }
 
   @Test
+  fun `saving a source never overwrites next_harvest_at`() {
+    val source = createSource("https://a.example/1")
+    val at = now.plusHours(1).withNano(0)
+    sourceRepository.scheduleNextHarvest(source.id, at)
+
+    val loaded = sourceRepository.findByIdWithActions(source.id)!!
+    sourceRepository.saveAll(listOf(loaded.copy(title = "edited", nextHarvestAt = null)))
+
+    assertThat(sourceRepository.findNextHarvestAt(source.id)).isEqualTo(at)
+    assertThat(sourceRepository.findByIdWithActions(source.id)!!.title).isEqualTo("edited")
+
+    val laterAt = now.plusHours(2).withNano(0)
+    sourceRepository.scheduleNextHarvest(source.id, laterAt)
+
+    assertThat(sourceRepository.findNextHarvestAt(source.id)).isEqualTo(laterAt)
+  }
+
+  @Test
   fun `touchLastUpdatedAt changes only that column`() {
     val at = now.plusMinutes(1).withNano(0)
 
