@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ develop ]
 
+# A new push supersedes an in-flight run on the same ref.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -19,6 +24,54 @@ jobs:
         with:
           distribution: 'corretto'
           java-version: '21'
+
+      # Caches ~/.gradle: dependency downloads, the wrapper distribution, kapt/annotation artifacts.
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      # settings.gradle.kts redirects the local build cache to build-cache/, outside ~/.gradle,
+      # so setup-gradle does not cover it. Task outputs restore from here.
+      - name: Cache Gradle build cache
+        uses: actions/cache@v4
+        with:
+          path: build-cache
+          key: gradle-build-cache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            gradle-build-cache-${{ github.ref_name }}-
+            gradle-build-cache-
+
+      # go.mod pins toolchain go1.27.1, which GOTOOLCHAIN downloads on every cold run.
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: packages/cli/go.mod
+          cache-dependency-path: packages/cli/go.sum
+
+      # The gradle-node plugin downloads Node per module (download.set(true)) into <module>/.gradle/nodejs.
+      - name: Cache Node distributions and package caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/*/.gradle/nodejs
+            packages/*/.gradle/yarn
+            packages/*/.gradle/npm
+            ~/.cache/yarn
+            ~/.npm
+          key: node-toolchain-${{ hashFiles('packages/*/.nvmrc', '**/yarn.lock', 'packages/frontend/package-lock.json') }}
+          restore-keys: |
+            node-toolchain-
+
+      # yarnInstall/npmInstall are not cacheable Gradle tasks, so node_modules needs its own cache.
+      # Keyed on the lockfiles alone — no restore-keys, a partial hit would leave a stale tree.
+      - name: Cache node_modules
+        uses: actions/cache@v4
+        with:
+          path: |
+            packages/app-web/node_modules
+            packages/browser-automation-app/node_modules
+            packages/frontend/node_modules
+            packages/nominatim-proxy/node_modules
+          key: node-modules-${{ hashFiles('packages/*/yarn.lock', 'packages/frontend/package-lock.json') }}
 
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew
