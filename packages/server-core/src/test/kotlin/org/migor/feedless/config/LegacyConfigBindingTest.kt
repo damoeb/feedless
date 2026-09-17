@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.LocaleProperties
 import org.migor.feedless.license.LicenseProperties
+import org.migor.feedless.mail.MailgunProperties
 import org.migor.feedless.pipeline.plugins.PrivacyProperties
 import org.migor.feedless.report.ReportProperties
 import org.migor.feedless.report.ReportSubscriptionMode
@@ -94,6 +95,11 @@ class LegacyConfigBindingTest {
 
     assertThat(licenseProperties.key).isEqualTo("a-key")
     assertThat(licenseProperties.pemFile).isEqualTo("./feedless.pem")
+  }
+
+  @Test
+  fun `the mailgun key comes from MAILGUN_KEY`() {
+    assertThat(bind<MailgunProperties>("MAILGUN_KEY=key-123").mailgunKey).isEqualTo("key-123")
   }
 
   // env vars resolve like any other property source, so a property value stands in for one
