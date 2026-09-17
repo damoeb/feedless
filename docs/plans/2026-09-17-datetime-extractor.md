@@ -78,6 +78,8 @@ At most 5 input strings are listed, then `+N more`; each is trimmed to 40 charac
 
 ## Slices
 
+### feat(server-core): log datetime candidates of event bodies with confidence against startingAt
+
 - `feature/datetime-extractor` — rename to DateTimeExtractor, candidate extraction, confidence, log line in FulltextPlugin <!-- builds: DateTimeExtractor.extractCandidates, a multi-candidate datetime scan with confidence against startingAt -->
 
 ## Notes
