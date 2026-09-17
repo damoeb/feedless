@@ -293,7 +293,7 @@ class DocumentUseCase(
       }
 
     } catch (throwable: Throwable) {
-      log.warn("aborting pipeline for document, cause ${throwable.message}")
+      log.warn("aborting pipeline for document $documentId: ${throwable.describe()}", throwable)
 
       jobs.firstOrNull()?.let { logCollector.appendJobReceipt(it, document, "aborted", "${throwable.describe()}, item dropped") }
 

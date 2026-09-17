@@ -6,6 +6,13 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Disabled
+import org.junit.jupiter.api.Test
+import org.migor.feedless.document.Document
+import org.migor.feedless.document.ReleaseStatus
+import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.scrape.LogCollector
+import java.time.LocalDateTime
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.Mother.randomDocumentId
@@ -65,6 +72,26 @@ internal class PrivacyPluginTest {
     plugin.propertyService = mockPropertyService
     mockHttpService = mock(HttpService::class.java)
     plugin.httpService = mockHttpService
+  }
+
+  @Test
+  fun `mapEntity with json params runs the plugin`() = runTest {
+    val url = "https://example.org/article"
+    `when`(mockHttpService.httpGetCaching(anyString(), anyInt(), Mockito.isNull()))
+      .thenReturn(HttpResponse(contentType = "text/html", url = url, statusCode = 200, responseBody = ByteArray(0)))
+    val item = Document(
+      url = url,
+      title = "article",
+      text = "",
+      contentHash = "",
+      status = ReleaseStatus.unreleased,
+      repositoryId = RepositoryId(),
+      publishedAt = LocalDateTime.now(),
+    )
+
+    val actual = plugin.mapEntity(item, mock(Repository::class.java), "{}", LogCollector())
+
+    assertThat(actual.url).isEqualTo(url)
   }
 
   @Disabled
