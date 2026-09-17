@@ -48,7 +48,6 @@ import org.migor.feedless.template.TemplateService
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.user.userIdMaybe
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.time.LocalDateTime
@@ -81,17 +80,12 @@ class ReportUseCase(
   private val mailService: MailService,
   private val reportGuard: ReportGuard,
   private val documentRepository: DocumentRepository,
-  // Defaulted because app.mail.sender only exists in application-mail.yaml;
-  // without it, a context with reports but without the mail profile wouldn't start.
-  @param:Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
+  private val reportProperties: ReportProperties,
   private val publicUrls: PublicUrls,
   private val userRepository: UserRepository,
   private val tokenIssuer: TokenIssuer,
   private val reportRecipientRepository: ReportRecipientRepository,
-  @Value("\${app.report.subscription-mode:opt-out}") subscriptionModeSetting: String,
 ) {
-
-  private val subscriptionMode = ReportSubscriptionMode.parse(subscriptionModeSetting)
 
   /** The token names the report; holding it is the proof, since recipients usually have no account. */
   private fun deactivationLink(report: Report): String {
@@ -131,7 +125,7 @@ class ReportUseCase(
     val recipient = recipientFor(segment.recipientEmail)
 
     // opt-out assumes no abuse; opt-in mode or an address whose owner reported abuse needs the owner's click
-    val needsConfirmation = subscriptionMode == ReportSubscriptionMode.OPT_IN || recipient.optInRequired
+    val needsConfirmation = reportProperties.subscriptionMode == ReportSubscriptionMode.OPT_IN || recipient.optInRequired
 
     val startingAt = segment.startingAt
 
@@ -214,7 +208,7 @@ class ReportUseCase(
     )
     val body = templateService.renderTemplate(MailTemplateReportCreated(params))
     val mail = OutgoingMail(
-      from = mailSender,
+      from = reportProperties.sender,
       to = listOf(report.recipientEmail),
       subject = "Dein Abo ist aktiv",
       htmlContent = body
@@ -233,7 +227,7 @@ class ReportUseCase(
     )
     mailService.send(
       OutgoingMail(
-        from = mailSender,
+        from = reportProperties.sender,
         to = listOf(report.recipientEmail),
         subject = "Bitte bestätige dein Abo",
         htmlContent = body
@@ -332,7 +326,7 @@ class ReportUseCase(
     resolveReporterPlugin(report.reporterPlugin)
       .report(
         documents, repository, EventsReportPluginParams(
-          from = mailSender,
+          from = reportProperties.sender,
           to = report.recipientEmail,
           subject = repository.title,
           language = "de",

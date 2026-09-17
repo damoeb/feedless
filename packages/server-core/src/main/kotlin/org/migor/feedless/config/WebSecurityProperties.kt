@@ -12,12 +12,12 @@ import org.springframework.validation.annotation.Validated
 @Profile(AppProfiles.properties)
 data class WebSecurityProperties(
   @field:NotBlank val actuatorPassword: String,
-  val cors: CorsProperties = CorsProperties(),
+  val cors: CorsProperties,
 ) {
   // the generated toString would put the password in every startup log
   override fun toString() = "WebSecurityProperties(actuatorPassword=***, cors=$cors)"
 }
 
 data class CorsProperties(
-  val allowedOrigins: List<String> = emptyList(),
+  val allowedOrigins: List<String>,
 )

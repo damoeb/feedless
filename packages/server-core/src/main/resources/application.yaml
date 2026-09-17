@@ -35,8 +35,16 @@ app:
     pem-file: ${APP_PEM_FILE:}
   privacy:
     blacklisted-domains: ${APP_BLACKLISTED_DOMAINS:}
+  analytics:
+    plausible-url: ${APP_PLAUSIBLE_URL:}
+    plausible-site: ${APP_PLAUSIBLE_SITE:}
+    plausible-api-key: ${APP_PLAUSIBLE_API_KEY:}
+  cli:
+    installScriptLocation: ${APP_CLI_INSTALL_SCRIPT_LOCATION:file:./static/cli/install.sh}
   mail:
     mailgun-key: ${MAILGUN_KEY:}
+    domain: feedless.org
+    from: no-reply@feedless.org
   auth:
     anonymous-token-valid-for: ${auth.token.anonymous.validForDays:28}
     products:

@@ -10,7 +10,7 @@ import org.springframework.validation.annotation.Validated
 @Validated
 @Profile(AppProfiles.properties)
 data class PrivacyProperties(
-  val blacklistedDomains: List<String> = emptyList(),
+  val blacklistedDomains: List<String>,
 ) {
   // APP_BLACKLISTED_DOMAINS was always space-separated, and comma-separated lists are the Boot convention
   fun domains(): Set<String> = blacklistedDomains.flatMap { it.trim().split(" ") }.filterNot { it.isBlank() }.toSet()

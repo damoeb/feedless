@@ -28,7 +28,6 @@ import org.migor.feedless.util.toLocalDateTime
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
 import org.springframework.core.env.Profiles
@@ -63,11 +62,8 @@ class LicenseUseCase { // todo split up into provider and usecase
 
   private var license: LicensePayload? = null
 
-  @Value("\${APP_LICENSE_KEY:}")
-  var licenseKey: String? = null
-
-  @Value("\${APP_PEM_FILE:}")
-  var pemFile: String? = null
+  @Autowired
+  lateinit var licenseProperties: LicenseProperties
 
   var feedlessPrivateKey: RSAKey? = null
   var feedlessPublicKey: RSAPublicKey? = null
@@ -93,10 +89,10 @@ class LicenseUseCase { // todo split up into provider and usecase
         val licenseRaw = if (getLicenseFile().exists()) {
           readLicenseFile()
         } else {
-          if (StringUtils.isNotBlank(licenseKey)) {
+          if (StringUtils.isNotBlank(licenseProperties.key)) {
             log.info("[boot] Using license from env")
-            writeLicenseKeyToFile(licenseKey!!)
-            licenseKey!!
+            writeLicenseKeyToFile(licenseProperties.key)
+            licenseProperties.key
           } else {
             log.warn("[boot] No license found in env APP_LICENSE_KEY or file ${getLicenseFile().absolutePath}")
             null
@@ -110,7 +106,7 @@ class LicenseUseCase { // todo split up into provider and usecase
       }
     } else if (isDev() && !privateKeyFileExists()) {
       // Local dev has no access to the production signing key.
-      log.warn("[boot] No private key at APP_PEM_FILE='$pemFile', licenses cannot be signed in dev")
+      log.warn("[boot] No private key at APP_PEM_FILE='${licenseProperties.pemFile}', licenses cannot be signed in dev")
     } else {
       loadPrivateKey()
     }
@@ -130,7 +126,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   }
 
   private fun loadPrivateKey() {
-    if (StringUtils.isBlank(pemFile)) {
+    if (StringUtils.isBlank(licenseProperties.pemFile)) {
       throw IllegalArgumentException("APP_PEM_FILE is not provided")
     }
     val privateKeyFile = getPrivateKeyFile()
@@ -169,7 +165,7 @@ class LicenseUseCase { // todo split up into provider and usecase
   private fun writeLicenseKeyToFile(licenseKey: String) {
     if (environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))) {
       FileWriter(getLicenseFile()).use { writer ->
-        writer.write(licenseKey)
+        writer.write(licenseProperties.key)
       }
     }
   }
@@ -214,13 +210,13 @@ class LicenseUseCase { // todo split up into provider and usecase
   private fun getPublicKeyFile(): InputStream =
     ClassPathResource("/certs/feedless.pub", this.javaClass.classLoader).inputStream
 
-  private fun getPrivateKeyFile(): File = File(pemFile!!)
+  private fun getPrivateKeyFile(): File = File(licenseProperties.pemFile)
 
   fun isSelfHosted() = environment.acceptsProfiles(Profiles.of(AppProfiles.selfHosted))
 
   private fun isDev() = environment.acceptsProfiles(Profiles.of(AppProfiles.DEV_ONLY))
 
-  private fun privateKeyFileExists() = StringUtils.isNotBlank(pemFile) && getPrivateKeyFile().exists()
+  private fun privateKeyFileExists() = StringUtils.isNotBlank(licenseProperties.pemFile) && getPrivateKeyFile().exists()
 
   fun getLicensePayload(): LicensePayload? {
     log.debug("getLicensePayload")

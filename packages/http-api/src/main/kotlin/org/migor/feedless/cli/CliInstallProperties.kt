@@ -1,16 +1,15 @@
-package org.migor.feedless.common
+package org.migor.feedless.cli
 
+import jakarta.validation.constraints.NotBlank
 import org.migor.feedless.AppProfiles
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.validation.annotation.Validated
-import java.util.Locale
 
-/** The locale and timezone this instance falls back to when a document carries none. */
-@ConfigurationProperties("app")
+/** Where the feedctl install script is served from. */
+@ConfigurationProperties("app.cli")
 @Validated
 @Profile(AppProfiles.properties)
-data class LocaleProperties(
-  val defaultLocale: Locale,
-  val timezone: String = "UTC",
+data class CliInstallProperties(
+  @field:NotBlank val installScriptLocation: String,
 )

@@ -4,7 +4,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.PublicUrls
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpHeaders
@@ -21,19 +20,17 @@ import java.nio.charset.StandardCharsets
 class CliInstallScriptController(
   private val publicUrls: PublicUrls,
   private val resourceLoader: ResourceLoader,
+  private val cliInstallProperties: CliInstallProperties,
 ) {
 
   private val log = LoggerFactory.getLogger(CliInstallScriptController::class.simpleName)
 
-  @Value("\${app.cli.installScriptLocation:file:./static/cli/install.sh}")
-  private lateinit var installScriptLocation: String
-
   @GetMapping("/cli/install.sh")
   fun installScript(): ResponseEntity<String> {
-    val resource = resourceLoader.getResource(installScriptLocation)
+    val resource = resourceLoader.getResource(cliInstallProperties.installScriptLocation)
     if (!resource.exists()) {
       // Only the image's Go stage fills static/cli, so a local bootRun answers 404.
-      log.debug("$installScriptLocation not found, feedctl was not cross-compiled into static/cli")
+      log.debug("${cliInstallProperties.installScriptLocation} not found, feedctl was not cross-compiled into static/cli")
       return ResponseEntity.notFound().build()
     }
 

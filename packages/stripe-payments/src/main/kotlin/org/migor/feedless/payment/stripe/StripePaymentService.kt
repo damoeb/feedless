@@ -18,7 +18,6 @@ import org.migor.feedless.payment.PaymentUseCase
 import org.migor.feedless.payment.WebhookEvent
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.util.*
@@ -30,14 +29,13 @@ import java.util.*
 @Service
 @Profile("${AppProfiles.plan} & ${AppLayer.api}")
 class StripeUseCase(
-  @param:Value("\${stripe.api-key}") private val apiKey: String,
-  @param:Value("\${stripe.webhook-secret}") private val webhookSecret: String
+  private val stripeProperties: StripeProperties
 ) : PaymentUseCase {
 
   private val log = LoggerFactory.getLogger(StripeUseCase::class.simpleName)
 
   init {
-    Stripe.apiKey = apiKey
+    Stripe.apiKey = stripeProperties.apiKey
     log.info("Stripe service initialized")
   }
 
@@ -131,7 +129,7 @@ class StripeUseCase(
     try {
       log.info("handleWebhook")
       // Verify webhook signature
-      val event = Webhook.constructEvent(payload, signature, webhookSecret)
+      val event = Webhook.constructEvent(payload, signature, stripeProperties.webhookSecret)
 
       log.info("Processing webhook event: ${event.type} (${event.id})")
 

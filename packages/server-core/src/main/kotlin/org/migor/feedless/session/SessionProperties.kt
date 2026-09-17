@@ -16,8 +16,8 @@ import java.time.temporal.ChronoUnit
 @Profile(AppProfiles.properties)
 data class SessionProperties(
   @field:NotBlank @field:Size(min = jwtSecretMinLength) val jwtSecret: String,
-  val whitelistedHosts: List<String> = emptyList(),
-  val auth: AnonymousTokenProperties = AnonymousTokenProperties(),
+  val whitelistedHosts: List<String>,
+  val auth: AnonymousTokenProperties,
 ) {
   init {
     require(!jwtSecret.startsWith("\${")) { "app.jwtSecret is unresolved; set APP_JWT_SECRET" }
@@ -32,5 +32,5 @@ data class SessionProperties(
 }
 
 data class AnonymousTokenProperties(
-  @param:DurationUnit(ChronoUnit.DAYS) val anonymousTokenValidFor: Duration = Duration.ofDays(28),
+  @param:DurationUnit(ChronoUnit.DAYS) val anonymousTokenValidFor: Duration,
 )

@@ -124,7 +124,7 @@ class ReportUseCaseTest {
       Jwt.withTokenValue("r").header("alg", "HS256").claim("recipient_id", "x").build()
     )
 
-    reportUseCase = newUseCase("opt-out")
+    reportUseCase = newUseCase(ReportSubscriptionMode.OPT_OUT)
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
     `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
@@ -140,7 +140,7 @@ class ReportUseCaseTest {
     `when`(templateService.renderTemplate(any2<MailTemplateReportCreated>())).thenReturn("")
   }
 
-  private fun newUseCase(subscriptionMode: String) = ReportUseCase(
+  private fun newUseCase(subscriptionMode: ReportSubscriptionMode) = ReportUseCase(
     reportRepository,
     cronScheduleRepository,
     repositoryRepository,
@@ -156,12 +156,11 @@ class ReportUseCaseTest {
     mailService,
     mock(ReportGuard::class.java),
     documentRepository,
-    "no-reply@test.local",
+    ReportProperties(subscriptionMode = subscriptionMode, sender = "no-reply@test.local"),
     publicUrls,
     userRepository,
     tokenIssuer,
     reportRecipientRepository,
-    subscriptionMode,
   )
 
   // mockito-kotlin instead of ArgumentCaptor.forClass: its capture() returns
@@ -312,17 +311,12 @@ class ReportUseCaseTest {
   fun `in opt-in mode every new report waits for confirmation`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
       `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
-      reportUseCase = newUseCase("opt-in")
+      reportUseCase = newUseCase(ReportSubscriptionMode.OPT_IN)
 
       reportUseCase.createReport(repositoryId, segment)
 
       assertThat(savedReport().authorized).isFalse()
     }
-
-  @Test
-  fun `rejects an unknown subscription mode`() {
-    assertThatThrownBy { newUseCase("sometimes") }.isInstanceOf(IllegalArgumentException::class.java)
-  }
 
   @Test
   fun `reporting abuse flags the address and stops its reports`() = runTest {

@@ -3,7 +3,10 @@ package org.migor.feedless.config
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.LocaleProperties
+import org.migor.feedless.license.LicenseProperties
 import org.migor.feedless.pipeline.plugins.PrivacyProperties
+import org.migor.feedless.report.ReportProperties
+import org.migor.feedless.report.ReportSubscriptionMode
 import org.migor.feedless.session.SessionProperties
 import org.migor.feedless.status.BuildInfo
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -53,6 +56,7 @@ class LegacyConfigBindingTest {
   fun `the anonymous token duration keeps its legacy key`() {
     val sessionProperties = bind<SessionProperties>(
       "app.jwtSecret=0123456789",
+      "app.whitelistedHosts=127.0.0.1",
       "auth.token.anonymous.validForDays=3",
     )
 
@@ -71,6 +75,25 @@ class LegacyConfigBindingTest {
     val privacyProperties = bind<PrivacyProperties>("APP_BLACKLISTED_DOMAINS=doubleclick.net ads.example.org")
 
     assertThat(privacyProperties.domains()).containsExactlyInAnyOrder("doubleclick.net", "ads.example.org")
+  }
+
+  @Test
+  fun `the report subscription mode binds its kebab-case value`() {
+    assertThat(bind<ReportProperties>("app.report.subscription-mode=opt-in").subscriptionMode)
+      .isEqualTo(ReportSubscriptionMode.OPT_IN)
+  }
+
+  @Test
+  fun `the report sender falls back to the mail sender`() {
+    assertThat(bind<ReportProperties>("app.mail.sender=reports@example.org").sender).isEqualTo("reports@example.org")
+  }
+
+  @Test
+  fun `the license key and pem file keep their env vars`() {
+    val licenseProperties = bind<LicenseProperties>("APP_LICENSE_KEY=a-key", "APP_PEM_FILE=./feedless.pem")
+
+    assertThat(licenseProperties.key).isEqualTo("a-key")
+    assertThat(licenseProperties.pemFile).isEqualTo("./feedless.pem")
   }
 
   // env vars resolve like any other property source, so a property value stands in for one

@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated
 @Profile(AppProfiles.properties)
 data class BuildInfo(
   @field:NotBlank val version: String,
-  val commit: String = "unknown",
+  val commit: String,
   /** epoch millis as a string; empty outside a release image */
-  val timestamp: String = "",
+  val timestamp: String,
 )

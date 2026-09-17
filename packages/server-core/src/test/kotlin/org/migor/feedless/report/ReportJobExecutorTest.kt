@@ -1,5 +1,7 @@
 package org.migor.feedless.report
 
+import org.migor.feedless.report.ReportProperties
+import org.migor.feedless.report.ReportSubscriptionMode
 import org.migor.feedless.common.testPublicUrls
 import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
@@ -120,12 +122,11 @@ class ReportJobExecutorTest {
       mock(MailService::class.java),
       mock(ReportGuard::class.java),
       mock(DocumentRepository::class.java),
-      "no-reply@test.local",
+      ReportProperties(subscriptionMode = ReportSubscriptionMode.OPT_OUT, sender = "no-reply@test.local"),
       testPublicUrls(),
       userRepository,
       jwtTokenIssuer,
       reportRecipientRepository,
-      "opt-out",
     )
   }
 

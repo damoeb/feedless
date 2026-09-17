@@ -33,10 +33,7 @@ class StripeUseCaseTest {
 
   @BeforeEach
   fun setup() {
-    stripeService = StripeUseCase(
-      apiKey = testApiKey,
-      webhookSecret = testWebhookSecret
-    )
+    stripeService = StripeUseCase(StripeProperties(apiKey = testApiKey, webhookSecret = testWebhookSecret))
   }
 
   @Test
@@ -47,10 +44,7 @@ class StripeUseCaseTest {
   @Test
   fun `test createPaymentSession with invalid API key throws exception`() = runTest {
     if (shouldRunIntegrationTests) {
-      val invalidService = StripeUseCase(
-        apiKey = "sk_test_invalid",
-        webhookSecret = testWebhookSecret
-      )
+      val invalidService = StripeUseCase(StripeProperties(apiKey = "sk_test_invalid", webhookSecret = testWebhookSecret))
 
       val exception = assertThrows<PaymentServiceException> {
         invalidService.createPaymentSession(

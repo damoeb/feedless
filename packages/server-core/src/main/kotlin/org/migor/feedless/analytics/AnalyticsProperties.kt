@@ -10,9 +10,9 @@ import org.springframework.validation.annotation.Validated
 @Validated
 @Profile(AppProfiles.properties)
 data class AnalyticsProperties(
-  val plausibleUrl: String = "",
-  val plausibleSite: String = "",
-  val plausibleApiKey: String = "",
+  val plausibleUrl: String,
+  val plausibleSite: String,
+  val plausibleApiKey: String,
 ) {
   // the generated toString would put the api key in every startup log
   override fun toString() = "AnalyticsProperties(plausibleUrl=$plausibleUrl, plausibleSite=$plausibleSite, plausibleApiKey=***)"

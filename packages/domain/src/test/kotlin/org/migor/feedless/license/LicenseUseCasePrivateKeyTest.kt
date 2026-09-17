@@ -14,7 +14,7 @@ class LicenseUseCasePrivateKeyTest {
   private fun licenseUseCase(pemFile: String, vararg profiles: String) = LicenseUseCase().apply {
     environment = StandardEnvironment().apply { setActiveProfiles(*profiles) }
     buildInfo = testBuildInfo(timestamp = (System.currentTimeMillis() - 60_000).toString())
-    this.pemFile = pemFile
+    licenseProperties = LicenseProperties(key = "", pemFile = pemFile)
   }
 
   @Test

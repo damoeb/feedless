@@ -15,7 +15,7 @@ class PropertiesValidationTest {
   fun `a short jwtSecret fails startup`() {
     ApplicationContextRunner()
       .withUserConfiguration(SessionPropertiesConfiguration::class.java)
-      .withPropertyValues("app.jwtSecret=short")
+      .withPropertyValues("app.jwtSecret=short", "app.whitelistedHosts=127.0.0.1", "app.auth.anonymous-token-valid-for=28")
       .run { context ->
         assertThat(context).hasFailed()
         assertThat(context.startupFailure).hasStackTraceContaining("app.jwtSecret")

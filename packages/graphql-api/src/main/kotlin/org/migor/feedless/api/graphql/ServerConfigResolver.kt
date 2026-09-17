@@ -91,7 +91,7 @@ class ServerConfigResolver {
       Vertical.untoldNotes -> productsAuthProperties.untold
       Vertical.upcoming -> productsAuthProperties.upcoming
       Vertical.visualDiff -> productsAuthProperties.visualDiff
-      else -> ProductAuthProperties()
+      else -> ProductAuthProperties(oauth = false)
     }
 
     val resolve: (Boolean, AuthType) -> AuthType? = { enabled, authType ->
