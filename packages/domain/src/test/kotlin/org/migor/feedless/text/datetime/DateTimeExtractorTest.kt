@@ -11,6 +11,7 @@ import org.migor.feedless.util.CryptUtil.newCorrId
 import org.migor.feedless.util.toMillis
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -103,5 +104,44 @@ internal class DateTimeExtractorTest {
   @Test
   fun `extractCandidates returns nothing for text without dates`() = runTest {
     assertThat(dateTimeExtractor.extractCandidates("Kein Termin bekannt", Locale.GERMAN)).isEmpty()
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "n. 2025, 14.00 Uhr - 15.45 Uhr, ;;[14:00, 15:45]",
+      "n. 2025, 14.00 Uhr - 15:45 Uhr, ;;[14:00, 15:45]",
+      "Beginn 9:30, Ende 17:00;;[09:30, 17:00]",
+      "Einlass 19.30Uhr;;[19:30]",
+      "this is not a time 15.4 Uhr, ;;[]",
+      "25:00 or 12:75 are no times;;[]",
+      "Version 1.10.3 or 123:45;;[]",
+    ],
+    delimiterString = ";;"
+  )
+  fun `extractTimes finds isolated times`(value: String, expected: String) = runTest {
+    val actual = dateTimeExtractor.extractTimes(value, Locale.GERMAN)
+
+    assertThat(actual.map { it.time }.toString()).isEqualTo(expected)
+  }
+
+  @Test
+  fun `extractTimes keeps the input string and its range`() = runTest {
+    val text = "Ende gegen 22.15 Uhr"
+
+    val actual = dateTimeExtractor.extractTimes(text, Locale.GERMAN)
+
+    assertThat(actual).hasSize(1)
+    assertThat(actual[0].input).isEqualTo("22.15")
+    assertThat(text.substring(actual[0].range)).isEqualTo("22.15")
+  }
+
+  @Test
+  fun `extractTimes skips times that belong to a date`() = runTest {
+    val text = "Am 27.09.2024, 20:15 Uhr bis 22:15 Uhr. Nochmals: 27.09.2024, 20:15 Uhr. Stand 19.01.2023"
+
+    val actual = dateTimeExtractor.extractTimes(text, Locale.GERMAN)
+
+    assertThat(actual.map { it.time }).containsExactly(LocalTime.of(22, 15))
   }
 }

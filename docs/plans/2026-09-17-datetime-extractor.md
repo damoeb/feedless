@@ -84,3 +84,4 @@ At most 5 input strings are listed, then `+N more`; each is trimmed to 40 charac
 
 - 2026-09-17: Design agreed in session. Rejected: a separate plugin (schema enum change), a fixed pipeline step for every document, and a separate trace table (migration before we know which signals matter). The step runs only when `startingAt` is set, so it never fills a missing start date in this plan.
 - Uncommitted work was stashed (`stash@{0}`, "wip before datetime-extractor") before branching. The committed `FulltextPlugin` discarded the fetched document, so the owner's stashed `FulltextPlugin` and its test were brought onto this branch as `fix(server-core): keep the fulltext result`; the rest of the stash stays stashed.
+- 2026-09-17: On the owner's request, the unused `TimeClaimer` was merged into `DateTimeExtractor.extractTimes` (times not part of a date, with input string and range) and deleted. Its dot and alternation regex bugs were not carried over.

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service
 import java.text.SimpleDateFormat
 import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
@@ -108,6 +109,9 @@ class DateTimeExtractor {
 //      }.firstOrNull()
 //  }
 
+  // H:mm, HH:mm, H.mm or HH.mm, not a piece of a longer number such as 1.10.3
+  private val timePattern = Regex("(?<![\\p{N}.:])(\\d{1,2})[:.](\\d{2})(?![\\p{N}]|[.:]\\p{N})")
+
   // edges keep a format from matching inside a longer word or number
   private val candidateFormats by lazy {
     dateFormatToRegexp
@@ -119,6 +123,26 @@ class DateTimeExtractor {
   }
 
   suspend fun extractCandidates(text: String, locale: Locale): List<DateTimeCandidate> {
+    return findCandidates(text, locale)
+      .groupBy { it.dateTime }
+      .values
+      .map { it.first().copy(occurrences = it.size) }
+  }
+
+  /** Times that are not part of a date, e.g. the end of an event. */
+  suspend fun extractTimes(text: String, locale: Locale): List<TimeCandidate> {
+    val dateRanges = findCandidates(text, locale).map { it.range }
+    return timePattern.findAll(text)
+      .filter { match -> dateRanges.none { it.first <= match.range.last && match.range.first <= it.last } }
+      .mapNotNull { match ->
+        runCatching { LocalTime.of(match.groupValues[1].toInt(), match.groupValues[2].toInt()) }
+          .getOrNull()
+          ?.let { time -> TimeCandidate(match.value, match.range, time) }
+      }
+      .toList()
+  }
+
+  private suspend fun findCandidates(text: String, locale: Locale): List<DateTimeCandidate> {
     val (normalized, origin) = normalizeWithOrigin(text, locale)
     val stripped = StringUtils.stripAccents(normalized)
     val searchable = if (stripped.length == normalized.length) stripped else normalized
@@ -138,11 +162,7 @@ class DateTimeExtractor {
         }
       }
     }
-    return candidates
-      .sortedBy { it.range.first }
-      .groupBy { it.dateTime }
-      .values
-      .map { it.first().copy(occurrences = it.size) }
+    return candidates.sortedBy { it.range.first }
   }
 
   /** Mirrors the normalization of [extractDateTime], keeping each character's index in [text]. */

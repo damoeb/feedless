@@ -1,6 +1,7 @@
 package org.migor.feedless.text.datetime
 
 import java.time.LocalDateTime
+import java.time.LocalTime
 
 data class DateTimeCandidate(
   val input: String,
@@ -9,6 +10,12 @@ data class DateTimeCandidate(
   val dateTime: LocalDateTime,
   val hasTime: Boolean,
   val occurrences: Int = 1,
+)
+
+data class TimeCandidate(
+  val input: String,
+  val range: IntRange,
+  val time: LocalTime,
 )
 
 enum class DateTimeConfidence {
