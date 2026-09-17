@@ -140,7 +140,7 @@ class JwtTokenIssuer(
   override fun issueTokenForCapabilities(capabilities: List<Capability<out Any>>) =
     AuthToken(createJwtForCapabilities(capabilities).tokenValue)
 
-  fun createJwtForService(securityKey: UserSecret): Jwt {
+  override fun createJwtForService(securityKey: UserSecret): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "agent"))).increment()
     log.debug("signedToken for agent")
     val capabilities: List<Capability<out Any>> = listOf(

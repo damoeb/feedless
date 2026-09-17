@@ -107,6 +107,7 @@ dependencies {
   implementation(project(":packages:jpa-data"))
   implementation(project(":packages:feed-parser"))
   implementation(project(":packages:feed"))
+  implementation(project(":packages:browser-automation-gateway"))
   api(project(":packages:graphql-api"))
   implementation(project(":packages:http-api"))
 
