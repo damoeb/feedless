@@ -77,7 +77,7 @@ No configuration changes. `@SpringBootApplication` sits on `org.migor.feedless.F
 
 2. **`scrape/WebToTextTransformer.kt`** moves from `server-core` to `domain/scrape`. It is 49 lines with no dependency beyond jsoup, which `domain` already exposes as an `api` dependency. It is used by `WebToFeedTransformer` (moving to `packages:feed`) and by `FulltextPlugin` (staying in `server-core`); `domain` is the only shared home that does not create a cycle.
 
-3. **`AppConfig` gains `locale`.** `WebToFeedTransformer`'s sole use of `PropertyService` is `propertyService.locale`. `PropertyService` already implements `AppConfig`, so adding the property to the port lets the transformer inject `AppConfig` and drop its dependency on a `server-core` class.
+3. **`AppConfig` gains `locale`.** *(Superseded: develop's per-use-case properties refactor (#110) deleted `AppConfig` and `PropertyService` outright. After merging develop, `WebToFeedTransformer` injects `LocaleProperties` and reads `defaultLocale`, which achieves the same thing — the transformer no longer depends on a `server-core` class.)* `WebToFeedTransformer`'s sole use of `PropertyService` is `propertyService.locale`. `PropertyService` already implements `AppConfig`, so adding the property to the port lets the transformer inject `AppConfig` and drop its dependency on a `server-core` class.
 
 4. **`FeedParserService` injects `HttpFetcher` instead of `HttpService`.** Its two calls, `httpService.prepareGet(url)` followed by `httpService.executeRequest(request, 200)`, map exactly onto the existing domain port's `httpGet(url, 200)`. `HttpService` remains in `server-core` as the adapter.
 

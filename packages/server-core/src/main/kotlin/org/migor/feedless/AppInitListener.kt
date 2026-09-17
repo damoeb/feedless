@@ -1,25 +1,24 @@
 package org.migor.feedless
 
+import org.springframework.context.annotation.Profile
+import org.migor.feedless.status.BuildInfo
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.LocaleProperties
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.context.event.ApplicationReadyEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
+@Profile(AppProfiles.properties)
+class AppInitListener(
+  private val buildInfo: BuildInfo,
+  private val localeProperties: LocaleProperties,
+  private val publicUrls: PublicUrls,
+) : ApplicationListener<ApplicationReadyEvent> {
 
   private val log = LoggerFactory.getLogger(AppInitListener::class.simpleName)
-
-  @Value("\${app.version}")
-  lateinit var version: String
-
-  @Value("\${app.git.commit}")
-  lateinit var commit: String
-
-  @Value("\${app.timezone}")
-  lateinit var tz: String
 
   override fun onApplicationEvent(event: ApplicationReadyEvent) {
     // http://www.patorjk.com/software/taag/#p=display&f=Shimrod&t=feedless
@@ -35,9 +34,10 @@ class AppInitListener : ApplicationListener<ApplicationReadyEvent> {
     """.trimIndent()
     )
 
-    System.out.println("Running v$version-$commit https://github.com/damoeb/feedless")
-    TimeZone.setDefault(TimeZone.getTimeZone(tz))
-    log.info("timezone=${tz} -> ${TimeZone.getDefault().id}")
+    System.out.println("Running v${buildInfo.version}-${buildInfo.commit} https://github.com/damoeb/feedless")
+    TimeZone.setDefault(TimeZone.getTimeZone(localeProperties.timezone))
+    log.info("timezone=${localeProperties.timezone} -> ${TimeZone.getDefault().id}")
+    log.info("apiGatewayUrl=${publicUrls.apiGatewayUrl} appHost=${publicUrls.appHost}")
   }
 
 }

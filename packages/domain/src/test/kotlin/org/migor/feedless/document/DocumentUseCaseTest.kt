@@ -23,7 +23,8 @@ import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.eq
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.document.DocumentCreate
@@ -77,7 +78,7 @@ class DocumentUseCaseTest {
   private lateinit var userRepository: UserRepository
 
   private lateinit var documentUseCase: DocumentUseCase
-  private lateinit var appConfig: AppConfig
+  private val publicUrls = testPublicUrls(apiGatewayUrl = "http://foo.bar")
 
   private lateinit var currentUser: User
   private lateinit var documentGuard: DocumentGuard
@@ -109,7 +110,6 @@ class DocumentUseCaseTest {
     documentGuard = spy(DocumentGuard(documentRepository, repositoryGuard))
     planConstraintsService = mock(PlanConstraintsService::class.java)
     notifications = mock(Notifications::class.java)
-    appConfig = mock(AppConfig::class.java)
     harvestRepository = mock(HarvestRepository::class.java)
 
     @Suppress("UNCHECKED_CAST")
@@ -131,7 +131,7 @@ class DocumentUseCaseTest {
       documentPipelineJobRepository,
       pipelinePlugins,
       notifications,
-      appConfig,
+      publicUrls,
       documentGuard,
       repositoryGuard,
       harvestRepository,
@@ -150,9 +150,8 @@ class DocumentUseCaseTest {
       contentHash = ""
     )
 
-    `when`(appConfig.apiGatewayUrl).thenReturn("http://foo.bar")
 
-    assertThat(document.toJsonItem(appConfig, EntityVisibility.isPublic)).isNotNull();
+    assertThat(document.toJsonItem(publicUrls, EntityVisibility.isPublic)).isNotNull();
 
     repository = Repository(
       id = repositoryId,

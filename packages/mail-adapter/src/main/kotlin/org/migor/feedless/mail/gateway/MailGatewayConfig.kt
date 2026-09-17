@@ -5,7 +5,7 @@ import com.mailgun.client.MailgunClient
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.mail.MailGateway
 import org.migor.feedless.mail.MailGatewayProperties
-import org.springframework.beans.factory.annotation.Value
+import org.migor.feedless.mail.MailgunProperties
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Bean
@@ -23,11 +23,11 @@ class MailGatewayConfig {
     matchIfMissing = false,
   )
   fun mailGunService(
-    @Value("MAILGUN_KEY") key: String,
+    mailgunProperties: MailgunProperties,
     mailGatewayProperties: MailGatewayProperties
   ): MailGunGateway {
     return MailGunGateway(
-      MailgunClient.config(key)
+      MailgunClient.config(mailgunProperties.mailgunKey)
         .createApi(MailgunMessagesApi::class.java),
       mailGatewayProperties
     )

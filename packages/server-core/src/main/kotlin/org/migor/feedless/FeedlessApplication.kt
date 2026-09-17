@@ -2,6 +2,7 @@ package org.migor.feedless
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.cache.autoconfigure.CacheAutoConfiguration
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan
 import org.springframework.boot.data.jpa.autoconfigure.DataJpaRepositoriesAutoConfiguration
 import org.springframework.boot.runApplication
 import org.springframework.context.annotation.Configuration
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration
     CacheAutoConfiguration::class,
   ]
 )
+@ConfigurationPropertiesScan
 class FeedlessApplication
 
 fun main(args: Array<String>) {

@@ -1,12 +1,12 @@
 package org.migor.feedless.pipeline.plugins
 
+import org.migor.feedless.common.PublicUrls
 import jakarta.annotation.PostConstruct
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.generated.types.FeedlessPlugins
@@ -16,7 +16,6 @@ import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.HtmlUtil
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.awt.Image
@@ -40,10 +39,10 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
   lateinit var httpService: HttpService
 
   @Autowired
-  lateinit var propertyService: PropertyService
+  lateinit var publicUrls: PublicUrls
 
-  @Value("\${APP_BLACKLISTED_DOMAINS:}")
-  lateinit var blacklistedDomainsStr: String
+  @Autowired
+  lateinit var privacyProperties: PrivacyProperties
 
   private val blacklistedDomains = mutableSetOf<String>("doubleclick.net")
 
@@ -146,7 +145,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
         val attachment = toAttachment(response, documentId)
 
         val attachmentLinkElement = JsoupElement(JsoupTag.valueOf("a"), "")
-        attachmentLinkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
+        attachmentLinkElement.attr("href", createAttachmentUrl(publicUrls, attachment.id))
         attachmentLinkElement.attr("target", "_blank")
         attachmentLinkElement.appendText("Full Image $origFormat")
 
@@ -194,7 +193,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     return try {
       val response = fetch(linkElement.attr("href"), arrayOf("application/pdf"))
       val attachment = toAttachment(response, documentId)
-      linkElement.attr("href", createAttachmentUrl(propertyService, attachment.id))
+      linkElement.attr("href", createAttachmentUrl(publicUrls, attachment.id))
       attachment
     } catch (t: Throwable) {
       log.debug("${t.message}")
@@ -234,7 +233,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
 
   @PostConstruct
   fun postConstruct() {
-    blacklistedDomains.addAll(blacklistedDomainsStr.split(" ").filterNot { it.trim().isBlank() })
+    blacklistedDomains.addAll(privacyProperties.domains())
   }
 }
 

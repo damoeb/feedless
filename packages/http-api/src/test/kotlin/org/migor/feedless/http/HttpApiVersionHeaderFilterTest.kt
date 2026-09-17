@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.status.testBuildInfo
 import jakarta.servlet.FilterChain
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito.mock
@@ -10,7 +11,7 @@ import org.springframework.mock.web.MockHttpServletResponse
 
 class HttpApiVersionHeaderFilterTest {
 
-  private val filter = HttpApiVersionHeaderFilter("1.2.3")
+  private val filter = HttpApiVersionHeaderFilter(testBuildInfo(version = "1.2.3"))
 
   @Test
   fun `stamps the version header on an api v1 request and continues the chain`() {

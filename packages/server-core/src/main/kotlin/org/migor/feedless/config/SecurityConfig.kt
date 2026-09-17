@@ -73,8 +73,8 @@ class SecurityConfig {
   private val log = LoggerFactory.getLogger(SecurityConfig::class.simpleName)
   private val metricRole = "METRIC_CONSUMER"
 
-  @Value("\${app.cors.allowedOrigins:}")
-  lateinit var allowedOrigins: String
+  @Autowired
+  private lateinit var webSecurityProperties: WebSecurityProperties
 
   @Autowired(required = false)
   private var userUseCase: UserUseCase? = null
@@ -297,10 +297,10 @@ class SecurityConfig {
   }
 
   @Bean
-  fun userDetailsService(@Value("\${app.actuatorPassword}") actuatorPassword: String): InMemoryUserDetailsManager {
+  fun userDetailsService(): InMemoryUserDetailsManager {
     val user: BasicAuthUserDetails = BasicAuthUser
       .withUsername("actuator")
-      .password(passwordEncoder().encode(actuatorPassword))
+      .password(passwordEncoder().encode(webSecurityProperties.actuatorPassword))
       .roles(metricRole)
       .build()
     return InMemoryUserDetailsManager(user)
@@ -318,7 +318,7 @@ class SecurityConfig {
     config.allowedHeaders = listOf(CorsConfiguration.ALL)
     // So a cross-origin browser client can read the id it sent or was assigned.
     config.exposedHeaders = listOf(ApiParams.corrId)
-    config.allowedOrigins = StringUtils.trimToNull(allowedOrigins)?.split(",")?.map { it.trim() }
+    config.allowedOrigins = webSecurityProperties.cors.allowedOrigins.ifEmpty { null }
     log.info("cors allowedOrigins = [${config.allowedOrigins?.joinToString(",")}]")
     val source = UrlBasedCorsConfigurationSource()
     source.registerCorsConfiguration("/**", config)

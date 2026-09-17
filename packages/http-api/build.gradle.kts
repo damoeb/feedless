@@ -21,6 +21,7 @@ dependencies {
   implementation(libs.kotlinx.coroutines.core)
   implementation(libs.kotlinx.coroutines.reactor)
   compileOnly("io.swagger.core.v3:swagger-annotations:2.2.30")
+  testImplementation(testFixtures(project(":packages:domain")))
   testImplementation(libs.spring.boot.test)
   testImplementation(libs.spring.boot.webmvc.test)
   testImplementation(libs.kotlinx.coroutines.test)

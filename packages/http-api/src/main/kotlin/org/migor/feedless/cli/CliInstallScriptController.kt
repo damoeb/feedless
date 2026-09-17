@@ -2,9 +2,8 @@ package org.migor.feedless.cli
 
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.core.io.ResourceLoader
 import org.springframework.http.HttpHeaders
@@ -19,25 +18,23 @@ import java.nio.charset.StandardCharsets
 @Controller
 @Profile("${AppProfiles.properties} & ${AppLayer.api}")
 class CliInstallScriptController(
-  private val appConfig: AppConfig,
+  private val publicUrls: PublicUrls,
   private val resourceLoader: ResourceLoader,
+  private val cliInstallProperties: CliInstallProperties,
 ) {
 
   private val log = LoggerFactory.getLogger(CliInstallScriptController::class.simpleName)
 
-  @Value("\${app.cli.installScriptLocation:file:./static/cli/install.sh}")
-  private lateinit var installScriptLocation: String
-
   @GetMapping("/cli/install.sh")
   fun installScript(): ResponseEntity<String> {
-    val resource = resourceLoader.getResource(installScriptLocation)
+    val resource = resourceLoader.getResource(cliInstallProperties.installScriptLocation)
     if (!resource.exists()) {
       // Only the image's Go stage fills static/cli, so a local bootRun answers 404.
-      log.debug("$installScriptLocation not found, feedctl was not cross-compiled into static/cli")
+      log.debug("${cliInstallProperties.installScriptLocation} not found, feedctl was not cross-compiled into static/cli")
       return ResponseEntity.notFound().build()
     }
 
-    val baseUrl = appConfig.apiGatewayUrl
+    val baseUrl = publicUrls.apiGatewayUrl
     if (!FeedctlBaseUrlValidator.isValid(baseUrl)) {
       // An unvalidated baseUrl would run arbitrary shell on every curl | sh. It's operator config, so logging it is fine; never echo it.
       log.error("app.apiGatewayUrl='$baseUrl' is not a valid feedctl base URL; refusing to serve /cli/install.sh")

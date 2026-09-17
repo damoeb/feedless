@@ -12,7 +12,7 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.LocaleProperties
 import org.migor.feedless.document.Document
 import org.migor.feedless.text.datetime.DateTimeExtractor
 import org.migor.feedless.text.datetime.summarize
@@ -55,7 +55,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
   private lateinit var dateTimeExtractor: DateTimeExtractor
 
   @Autowired
-  private lateinit var propertyService: PropertyService
+  private lateinit var localeProperties: LocaleProperties
 
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
   override fun name(): String = "Fulltext & Readability"
@@ -122,7 +122,7 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
         document.startingAt?.let { startingAt ->
           // a failed plugin drops the item, so extraction must not fail it
           runCatching {
-            val locale = it.lang?.let { lang -> Locale.forLanguageTag(lang) } ?: propertyService.locale
+            val locale = it.lang?.let { lang -> Locale.forLanguageTag(lang) } ?: localeProperties.defaultLocale
             dateTimeExtractor.extractCandidates(it.bodyText, locale)
           }
             .onSuccess { candidates -> logCollector.log(candidates.summarize(startingAt)) }

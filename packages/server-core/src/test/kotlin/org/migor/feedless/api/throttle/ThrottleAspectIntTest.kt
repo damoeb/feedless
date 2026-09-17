@@ -1,5 +1,6 @@
 package org.migor.feedless.api.throttle
 
+import org.migor.feedless.analytics.Analytics
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
 import kotlinx.coroutines.test.runTest
@@ -13,7 +14,6 @@ import org.migor.feedless.DisableSecurityConfiguration
 import org.migor.feedless.any2
 import org.migor.feedless.auth.AuthToken
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.group.GroupRepository
@@ -44,6 +44,7 @@ import kotlin.time.Duration.Companion.seconds
 @ActiveProfiles(
   profiles = [
     "test",
+    AppProfiles.properties,
     AppLayer.api,
     AppLayer.service,
     AppProfiles.session,
@@ -53,11 +54,11 @@ import kotlin.time.Duration.Companion.seconds
 )
 @MockitoBean(
   types = [
+    Analytics::class,
     LicenseUseCase::class,
     UserUseCase::class,
     DocumentUseCase::class,
     HttpService::class,
-    PropertyService::class,
     UserGuard::class,
     UserSecretUseCase::class,
     UserRepository::class,

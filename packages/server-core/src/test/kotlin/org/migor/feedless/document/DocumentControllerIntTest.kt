@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import org.migor.feedless.license.LicenseUseCase
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -13,7 +14,6 @@ import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.repository.RepositoryId
@@ -47,12 +47,12 @@ import java.time.LocalDateTime
 )
 @MockitoBean(
   types = [
+    LicenseUseCase::class,
     DocumentResolver::class,
     DocumentUseCase::class,
     HttpService::class,
     AuthService::class,
     UserUseCase::class,
-    PropertyService::class,
     JwtTokenIssuer::class,
     CookieProvider::class,
     UserGuard::class,
@@ -65,6 +65,7 @@ import java.time.LocalDateTime
 )
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   AppLayer.api,
   AppProfiles.document,
   AppProfiles.session,

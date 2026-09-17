@@ -9,7 +9,8 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.api.http.HttpExceptionHandler
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.DocumentQueryParser
 import org.migor.feedless.document.DocumentUseCase
@@ -79,10 +80,7 @@ class RepositoryFeedControllerTest {
     fun meterRegistry(): MeterRegistry = SimpleMeterRegistry()
 
     @Bean
-    fun appConfig(): AppConfig = object : AppConfig {
-      override val apiGatewayUrl = "http://localhost:8080"
-      override val appHost = "http://localhost:4200"
-    }
+    fun publicUrls(): PublicUrls = testPublicUrls()
   }
 
   @Autowired

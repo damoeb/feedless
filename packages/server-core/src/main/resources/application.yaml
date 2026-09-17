@@ -25,7 +25,28 @@ spring:
         size: 6
 
 app:
+  # aliases: each binds a legacy key or env var under the prefix of the properties class that reads it
+  build:
+    version: ${app.version}
+    commit: ${APP_GIT_COMMIT:${app.git.commit:unknown}}
+    timestamp: ${APP_BUILD_TIMESTAMP:}
+  license:
+    key: ${APP_LICENSE_KEY:}
+    pem-file: ${APP_PEM_FILE:}
+  privacy:
+    blacklisted-domains: ${APP_BLACKLISTED_DOMAINS:}
+  analytics:
+    plausible-url: ${APP_PLAUSIBLE_URL:}
+    plausible-site: ${APP_PLAUSIBLE_SITE:}
+    plausible-api-key: ${APP_PLAUSIBLE_API_KEY:}
+  cli:
+    installScriptLocation: ${APP_CLI_INSTALL_SCRIPT_LOCATION:file:./static/cli/install.sh}
+  mail:
+    mailgun-key: ${MAILGUN_KEY:}
+    domain: feedless.org
+    from: no-reply@feedless.org
   auth:
+    anonymous-token-valid-for: ${auth.token.anonymous.validForDays:28}
     products:
       rssProxy:
         oauth: true
@@ -41,25 +62,15 @@ app:
         mailToken: true
         oauth: true
   version: dev
-  git:
-    commit:
 
   report:
     # opt-out starts new subscriptions at once unless their address asked for opt-in; opt-in confirms every one
     subscription-mode: ${APP_REPORT_SUBSCRIPTION_MODE:opt-out}
-  dateFormat: dd-MM-yyyy
-  timeFormat: HH:mm
+    sender: ${app.mail.sender:feedless-sender@localhost}
   timezone: UTC
-  webToFeedVersion: 0.1
   defaultLocale: en
   cors:
     allowedOrigins: http://localhost:4200
-
-default:
-  auth:
-    token:
-      anonymous:
-        validForDays: 28
 
 auth:
   token:

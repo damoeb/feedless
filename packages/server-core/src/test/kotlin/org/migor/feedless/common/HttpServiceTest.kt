@@ -40,7 +40,7 @@ class HttpServiceTest {
     }
     server.start()
     cooldowns = FakeHostCooldown()
-    httpService = HttpService("http://localhost", HostCooldownGuard(cooldowns))
+    httpService = HttpService(testPublicUrls(apiGatewayUrl = "http://localhost"), HostCooldownGuard(cooldowns))
     httpService.postConstruct()
   }
 

@@ -28,8 +28,6 @@ graphql:
 app:
   apiGatewayUrl: ${APP_API_GATEWAY_URL}
   appHost: ${APP_HOST_URL}
-  defaultDateFormat: ${APP_DEFAULT_DATE_FORMAT}  # dd-MM-yyyy
-  defaultTimeFormat: ${APP_DEFAULT_TIME_FORMAT}  # HH:mm
   jwtSecret: ${APP_JWT_SECRET}
   rootEmail: ${APP_ROOT_EMAIL}
   rootSecretKey: ${APP_ROOT_SECRET_KEY}

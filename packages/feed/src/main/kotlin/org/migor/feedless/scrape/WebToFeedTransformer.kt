@@ -1,11 +1,11 @@
 package org.migor.feedless.scrape
 
+import org.migor.feedless.common.LocaleProperties
 import org.apache.commons.lang3.StringUtils
 import org.jsoup.nodes.Document
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.common.AppConfig
 import org.migor.feedless.feed.parser.json.JsonFeed
 import org.migor.feedless.feed.parser.json.JsonItem
 import org.migor.feedless.generated.types.DOMElementByXPath
@@ -83,7 +83,7 @@ data class LinkPointer(
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class WebToFeedTransformer(
-  private var appConfig: AppConfig,
+  private var localeProperties: LocaleProperties,
   private var webToTextTransformer: WebToTextTransformer,
   private var webExtractService: WebExtractService
 ) : WebToFeed {
@@ -241,7 +241,7 @@ class WebToFeedTransformer(
     uri: URI,
     logger: LogCollector,
   ): JsonFeed {
-    val locale = extractLocale(document, appConfig.locale)
+    val locale = extractLocale(document, localeProperties.defaultLocale)
     val element = withAbsUrls(document, uri)
     val response = webExtractService.extract(
       selectors.toScrapeExtracts(),

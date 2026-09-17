@@ -30,3 +30,6 @@ data class User(
   val notificationsLastViewedAt: LocalDateTime? = null,
   val createdAt: LocalDateTime = LocalDateTime.now(),
 )
+
+/** The account every unauthenticated request acts as; not configuration. */
+const val anonymousEmail: String = "anonymous@localhost"

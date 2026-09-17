@@ -21,7 +21,8 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.anyList
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
@@ -115,7 +116,7 @@ class FeedServiceTest {
     )
 
     feedService = FeedService(
-      mock(AppConfig::class.java),
+      testPublicUrls(),
       webToFeed,
       feedParser,
       scraper,

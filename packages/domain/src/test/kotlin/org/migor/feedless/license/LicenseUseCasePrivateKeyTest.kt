@@ -1,5 +1,6 @@
 package org.migor.feedless.license
 
+import org.migor.feedless.status.testBuildInfo
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertDoesNotThrow
@@ -12,8 +13,8 @@ class LicenseUseCasePrivateKeyTest {
 
   private fun licenseUseCase(pemFile: String, vararg profiles: String) = LicenseUseCase().apply {
     environment = StandardEnvironment().apply { setActiveProfiles(*profiles) }
-    buildTimestamp = (System.currentTimeMillis() - 60_000).toString()
-    this.pemFile = pemFile
+    buildInfo = testBuildInfo(timestamp = (System.currentTimeMillis() - 60_000).toString())
+    licenseProperties = LicenseProperties(key = "", pemFile = pemFile)
   }
 
   @Test

@@ -68,6 +68,7 @@ import javax.sql.DataSource
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.repository,
   AppProfiles.source,

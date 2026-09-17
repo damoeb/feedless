@@ -1,5 +1,8 @@
 package org.migor.feedless.report
 
+import org.migor.feedless.report.ReportProperties
+import org.migor.feedless.report.ReportSubscriptionMode
+import org.migor.feedless.common.testPublicUrls
 import com.google.gson.Gson
 import io.micrometer.core.instrument.MeterRegistry
 import kotlinx.coroutines.test.runTest
@@ -10,7 +13,6 @@ import org.migor.feedless.EntityVisibility
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.document.Document
@@ -120,12 +122,11 @@ class ReportJobExecutorTest {
       mock(MailService::class.java),
       mock(ReportGuard::class.java),
       mock(DocumentRepository::class.java),
-      "no-reply@test.local",
-      mock(PropertyService::class.java),
+      ReportProperties(subscriptionMode = ReportSubscriptionMode.OPT_OUT, sender = "no-reply@test.local"),
+      testPublicUrls(),
       userRepository,
       jwtTokenIssuer,
       reportRecipientRepository,
-      "opt-out",
     )
   }
 

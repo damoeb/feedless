@@ -17,7 +17,7 @@ import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.actions.WaitAction
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.common.LocaleProperties
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.text.datetime.DateTimeExtractor
@@ -65,7 +65,7 @@ class FulltextPluginTest {
   lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @Mock
-  lateinit var propertyService: PropertyService
+  lateinit var localeProperties: LocaleProperties
 
   @Spy
   var dateTimeExtractor = DateTimeExtractor()
@@ -171,7 +171,7 @@ class FulltextPluginTest {
 
   @Test
   fun `given no html lang, mapEntity reads the body in the default locale`() = runTest {
-    `when`(propertyService.locale).thenReturn(Locale.GERMAN)
+    `when`(localeProperties.defaultLocale).thenReturn(Locale.GERMAN)
     givenArticle(html = "<html/>", text = "Konzert am 27. September 2024")
     val logCollector = LogCollector()
 

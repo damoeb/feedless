@@ -14,7 +14,8 @@ import org.migor.feedless.api.mapper.DocumentMapper
 import org.migor.feedless.api.mapper.ScrapeResponseMapper
 import org.migor.feedless.api.mapper.UserSecretMapper
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.generated.types.Cursor
 import org.migor.feedless.generated.types.RecordsInput
 import org.migor.feedless.generated.types.RecordsWhereInput
@@ -62,7 +63,7 @@ class DocumentResolverAccessTest {
   private val userRepository = mock<UserRepository>()
   private val userGroupAssignmentRepository = mock<UserGroupAssignmentRepository>()
   private val repositoryUseCase = mock<RepositoryUseCase>()
-  private val appConfig = mock<AppConfig>()
+  private val publicUrls = testPublicUrls()
   private val repositoryGuard = RepositoryGuard(repositoryRepository, UserGuard(userRepository), userGroupAssignmentRepository)
   private val documentGuard = DocumentGuard(documentRepository, repositoryGuard)
   private val documentUseCase = DocumentUseCase(
@@ -72,12 +73,12 @@ class DocumentResolverAccessTest {
     mock<DocumentPipelineJobRepository>(),
     mock<PipelinePlugins>(),
     mock<Notifications>(),
-    appConfig,
+    publicUrls,
     documentGuard,
     repositoryGuard,
     mock<HarvestRepository>(),
   )
-  private val resolver = DocumentResolver(appConfig, documentUseCase, documentGuard, repositoryGuard)
+  private val resolver = DocumentResolver(publicUrls, documentUseCase, documentGuard, repositoryGuard)
   private val repository = Repository(
     title = "private feed",
     visibility = EntityVisibility.isPrivate,
@@ -110,8 +111,6 @@ class DocumentResolverAccessTest {
     whenever(repositoryUseCase.findById(eq(repository.id))).thenReturn(repository)
     whenever(documentRepository.findAllFiltered(any(), anyOrNull(), anyOrNull(), any(), any(), any()))
       .thenReturn(listOf(document))
-    whenever(appConfig.apiGatewayUrl).thenReturn("http://localhost:8080")
-    whenever(appConfig.appHost).thenReturn("http://localhost:4200")
   }
 
   @AfterEach
