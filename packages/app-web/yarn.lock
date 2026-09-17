@@ -2831,9 +2831,9 @@
     tslib "^2.3.0"
 
 "@ngx-translate/http-loader@^16.0.0":
-  version "16.0.0"
-  resolved "https://registry.npmjs.org/@ngx-translate/http-loader/-/http-loader-16.0.0.tgz"
-  integrity sha512-l3okOHGVxZ1Bm55OpakSfXvI2yYmVmhYqgwGU4aIQIRUqpkBCrSDZnmrHTcZfsGJzXKB5E2D2rko9i28gBijmA==
+  version "16.0.1"
+  resolved "https://registry.npmjs.org/@ngx-translate/http-loader/-/http-loader-16.0.1.tgz#01219d623ea810fd36ba2911d1452975cd32a041"
+  integrity sha512-xJEOUpvs6Zfc8G4cmQmegFOEpfYSoplTHHoisPNrATXjRBjpaKsBaPOXlZsuFUW2XV00s16gIyI4+9z1XkO5bw==
   dependencies:
     tslib "^2.3.0"
 
@@ -10080,7 +10080,7 @@ tsconfig-paths@^4.2.0:
 
 tslib@2.8.1, tslib@^2.0.3, tslib@^2.1.0, tslib@^2.3.0, tslib@^2.3.1, tslib@^2.4.0, tslib@^2.5.0, tslib@^2.6.3:
   version "2.8.1"
-  resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz"
+  resolved "https://registry.npmjs.org/tslib/-/tslib-2.8.1.tgz#612efe4ed235d567e8aba5f2a5fab70280ade83f"
   integrity sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==
 
 tslib@~2.6.0:
