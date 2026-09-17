@@ -18,3 +18,8 @@ export function cleanEventTitle(title: string | null | undefined): string {
   );
   return withoutNumericDate.replace(/\s{2,}/g, ' ').trim();
 }
+
+/** Ein Eintrag, dessen Titel nur aus Datum besteht, ist nicht darstellbar. */
+export function hasEventTitle(event: { title?: string | null }): boolean {
+  return cleanEventTitle(event.title).trim().length > 0;
+}
