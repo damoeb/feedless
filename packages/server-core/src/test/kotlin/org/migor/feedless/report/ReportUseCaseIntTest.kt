@@ -38,12 +38,12 @@ import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.product.ProductRepository
 import org.migor.feedless.product.ProductUseCase
 import org.migor.feedless.repository.Repository
-import org.migor.feedless.repository.RepositoryHarvester
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.repository.RepositoryUseCase
 import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.session.JwtTokenIssuer
 import org.migor.feedless.session.StatelessAuthService
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserGuard
 import org.migor.feedless.user.UserId
@@ -95,7 +95,7 @@ import java.time.temporal.ChronoUnit
     FeatureService::class,
     ProductUseCase::class,
     PropertyService::class,
-    RepositoryHarvester::class,
+    SourceHarvester::class,
     AttachmentRepository::class,
     GroupUseCase::class,
     UserGuard::class,

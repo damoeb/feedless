@@ -29,11 +29,11 @@ import org.migor.feedless.group.GroupId
 import org.migor.feedless.pipeline.plugins.createAttachmentUrl
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
+import org.migor.feedless.source.nextCronDate
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.groupId
 import org.migor.feedless.user.userId
 import org.migor.feedless.util.CryptUtil
-import org.migor.feedless.util.CryptUtil.newCorrId
 import org.slf4j.LoggerFactory
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.context.annotation.Profile
@@ -201,15 +201,11 @@ class RepositoryUseCase(
     repository = data.description?.let { repository.copy(description = it) } ?: repository
 
     val groupId = currentCoroutineContext().groupId()
+    var scheduleSources = false
+    var requestedHarvestAt: LocalDateTime? = null
     repository = data.refreshCron?.let {
-      repository.copy(
-        sourcesSyncCron = planConstraintsService.auditCronExpression(it),
-        triggerScheduledNextAt = calculateScheduledNextAt(
-          it,
-          groupId,
-          repository.lastUpdatedAt
-        )
-      )
+      scheduleSources = true
+      repository.copy(sourcesSyncCron = planConstraintsService.auditCronExpression(it))
     } ?: repository
 
     repository = data.pushNotificationsEnabled?.let {
@@ -236,14 +232,9 @@ class RepositoryUseCase(
     } ?: repository
 
     if (data.nextUpdateAt != null || data.scheduleNextUpdateNow) {
-      val next = data.nextUpdateAt ?: LocalDateTime.now()
-      val nextAt = planConstraintsService.coerceMinScheduledNextAt(
-        repository.lastUpdatedAt,
-        next,
-        groupId
-      )
-      log.info("nextUpdateAt $nextAt")
-      repository = repository.copy(triggerScheduledNextAt = nextAt)
+      scheduleSources = true
+      requestedHarvestAt = data.nextUpdateAt ?: LocalDateTime.now()
+      log.info("nextUpdateAt $requestedHarvestAt")
     }
 
     var retentionTouched = false
@@ -277,6 +268,14 @@ class RepositoryUseCase(
       sources.add?.let { sourceUseCase.createSources(it, repository.id) }
       sources.update?.let { sourceUseCase.updateSources(repository.id, it) }
       sources.remove?.let { sourceUseCase.deleteAllById(repository.id, it) }
+    }
+    if (scheduleSources) {
+      sourceUseCase.scheduleNextHarvestOfRepository(
+        repository.id,
+        requestedHarvestAt,
+        repository.sourcesSyncCron,
+        groupId
+      )
     }
     withContext(Dispatchers.IO) {
       repositoryRepository.save(repository)

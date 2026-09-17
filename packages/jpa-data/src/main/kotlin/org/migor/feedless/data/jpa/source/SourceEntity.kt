@@ -76,6 +76,10 @@ open class SourceEntity : EntityWithUUID() {
       field = StringUtils.substring(value, 0, LEN_STR_DEFAULT)
     }
 
+  // Scheduling owns this column exclusively (scheduleNextHarvest, scheduleNextHarvestOfRepository); a full save must never clobber it.
+  @Column(name = "next_harvest_at", updatable = false)
+  open var nextHarvestAt: LocalDateTime? = null
+
   @ManyToOne(fetch = FetchType.LAZY)
   @OnDelete(action = OnDeleteAction.CASCADE)
   @JoinColumn(

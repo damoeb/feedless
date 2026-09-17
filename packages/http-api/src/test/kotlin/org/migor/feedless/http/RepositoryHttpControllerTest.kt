@@ -178,7 +178,7 @@ class RepositoryHttpControllerTest {
     whenever(repositoryUseCase.findById(eq(private.id))).thenReturn(
       private.copy(
         lastUpdatedAt = java.time.LocalDateTime.now(),
-        triggerScheduledNextAt = java.time.LocalDateTime.now().plusHours(1),
+        nextHarvestAt = java.time.LocalDateTime.now().plusHours(1),
       ),
     )
     val second = mockMvc.getAs(access.owner, url(private))

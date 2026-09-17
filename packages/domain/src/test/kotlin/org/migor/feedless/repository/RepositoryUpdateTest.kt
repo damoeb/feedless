@@ -11,6 +11,7 @@ import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.Vertical
 import org.migor.feedless.any2
+import org.migor.feedless.eq
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.AppConfig
 import org.migor.feedless.document.DocumentUseCase
@@ -19,10 +20,13 @@ import org.migor.feedless.pipelineJob.MaxAgeDaysDateField
 import org.migor.feedless.plan.PlanConstraintsService
 import org.migor.feedless.source.SourceUseCase
 import org.migor.feedless.user.UserId
+import org.mockito.Mockito
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.verify
 import org.mockito.Mockito.`when`
+import org.mockito.kotlin.argumentCaptor
 import java.time.LocalDateTime
 
 
@@ -220,31 +224,34 @@ class RepositoryUpdateTest {
     }
 
   @Test
-  fun `schedule next update now coerces current time`() =
+  fun `schedule next update now requests the current time on the existing cron`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
       `when`(repositoryRepository.findById(any2())).thenReturn(repository)
-      val coercedNextAt = LocalDateTime.of(2026, 7, 18, 12, 0)
-      `when`(
-        planConstraintsService.coerceMinScheduledNextAt(
-          any2(),
-          any2(),
-          any2(),
-        )
-      ).thenReturn(coercedNextAt)
-      var savedRepo: Repository? = null
-      `when`(repositoryRepository.save(any2())).thenAnswer {
-        savedRepo = it.arguments[0] as Repository
-        savedRepo
-      }
+      mockRepositorySave()
 
+      val before = LocalDateTime.now()
       repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(scheduleNextUpdateNow = true))
+      val after = LocalDateTime.now()
 
-      verify(planConstraintsService).coerceMinScheduledNextAt(
-        any2(),
-        any2(),
-        any2(),
+      val requestedAtCaptor = argumentCaptor<LocalDateTime>()
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(
+        eq(repositoryId), requestedAtCaptor.capture(), eq(repository.sourcesSyncCron), any2()
       )
-      assertThat(savedRepo?.triggerScheduledNextAt).isEqualTo(coercedNextAt)
+      assertThat(requestedAtCaptor.firstValue).isBetween(before, after)
+    }
+
+  @Test
+  fun `changing the cron re-seeds every source of the repository with no explicit time`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      `when`(planConstraintsService.auditCronExpression(any2())).thenAnswer { it.arguments[0] }
+      mockRepositorySave()
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(refreshCron = "0 0 * * * *"))
+
+      verify(sourceUseCase).scheduleNextHarvestOfRepository(
+        eq(repositoryId), Mockito.isNull(), eq("0 0 * * * *"), any2()
+      )
     }
 
   @Test
@@ -263,6 +270,17 @@ class RepositoryUpdateTest {
       )
 
       assertThat(savedRepo?.retentionMaxAgeDaysReferenceField).isEqualTo(MaxAgeDaysDateField.publishedAt)
+    }
+
+  @Test
+  fun `a title-only update does not reschedule sources`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = ownerId)) {
+      `when`(repositoryRepository.findById(any2())).thenReturn(repository)
+      mockRepositorySave()
+
+      repositoryUseCase.updateRepository(repositoryId, RepositoryUpdate(title = "just-a-title"))
+
+      verify(sourceUseCase, never()).scheduleNextHarvestOfRepository(any2(), any2(), any2(), any2())
     }
 
   private fun mockRepositorySave() {

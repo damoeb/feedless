@@ -28,7 +28,8 @@ data class Repository(
   val documentCountSinceCreation: Int = 0,
   val archived: Boolean = false,
   val product: Vertical = Vertical.feedless,
-  val triggerScheduledNextAt: LocalDateTime? = null,
+  /** Earliest next harvest of its enabled sources; read-only. */
+  val nextHarvestAt: LocalDateTime? = null,
   val schemaVersion: Int = 0,
   val pullsPerMonth: Int = 0,
   val lastPullSync: LocalDateTime? = null,

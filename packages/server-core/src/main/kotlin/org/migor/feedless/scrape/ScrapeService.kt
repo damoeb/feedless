@@ -21,6 +21,7 @@ import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.capability.currentCorrId
+import org.migor.feedless.common.HostCooldownGuard
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
 import org.migor.feedless.generated.types.FetchActionDebugResponse
@@ -55,6 +56,9 @@ class ScrapeService : ScrapeRunner {
   private lateinit var httpService: HttpService
 
   @Autowired
+  private lateinit var hostCooldownGuard: HostCooldownGuard
+
+  @Autowired
   private lateinit var browserAutomationService: BrowserAutomationService
 
   @Autowired
@@ -74,7 +78,9 @@ class ScrapeService : ScrapeRunner {
 
         // The agent logs under the same corrId, so its output can be matched to this harvest.
         val corrId = currentCorrId()?.let { " corrId=$it" } ?: ""
-        logCollector.log("scrape ${source.id} ${fetch.resolveUrl()}$corrId")
+        // A variable url is not resolvable yet, so log the raw placeholder instead of asserting.
+        val fetchUrlForLog = if (fetch.isVariable) fetch.url else fetch.resolveUrl()
+        logCollector.log("scrape ${source.id} $fetchUrlForLog$corrId")
 
         meterRegistry.counter(
           AppMetrics.scrape, listOf(
@@ -271,6 +277,11 @@ class ScrapeService : ScrapeRunner {
     context: ScrapeContext
   ) {
     context.log("handleFetch $action")
+    // A variable url's host is unknown until the agent resolves it; the static branch is checked
+    // again inside HttpService on purpose, since prerender has no other cooldown check.
+    if (!action.isVariable) {
+      hostCooldownGuard.requireOpen(action.resolveUrl())
+    }
     val prerender = needsPrerendering(source, index)
     if (prerender) {
       context.log("send to agent")

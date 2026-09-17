@@ -38,7 +38,8 @@ import java.util.concurrent.TimeoutException
 @Service
 class HttpService(
   @Value("\${app.apiGatewayUrl}")
-  private val apiGatewayUrl: String
+  private val apiGatewayUrl: String,
+  private val hostCooldownGuard: HostCooldownGuard,
 ) : HttpFetcher {
 
   private val log = LoggerFactory.getLogger(HttpService::class.simpleName)
@@ -78,7 +79,9 @@ class HttpService(
   }
 
   suspend fun executeRequest(request: BoundRequestBuilder, expectedStatusCode: Int): HttpResponse {
-    return toHttpResponse(this.execute(request, expectedStatusCode))
+    val requestUrl = request.build().uri.toUrl()
+    hostCooldownGuard.requireOpen(requestUrl)
+    return toHttpResponse(this.execute(request, expectedStatusCode, requestUrl))
   }
 
   @Cacheable(value = [CacheNames.HTTP_RESPONSE], key = "#url")
@@ -96,6 +99,7 @@ class HttpService(
     expectedHttpStatus: Int,
     headers: Map<String, String>?
   ): HttpResponse {
+    hostCooldownGuard.requireOpen(url)
     protectFromOverloading(url)
     log.debug("GET $url")
     val request = prepareGet(url)
@@ -104,7 +108,7 @@ class HttpService(
         request.addHeader(it.key, it.value)
       }
     }
-    return toHttpResponse(execute(request, expectedHttpStatus))
+    return toHttpResponse(execute(request, expectedHttpStatus, url))
   }
 
   private suspend fun protectFromOverloading(url: String) {
@@ -155,23 +159,27 @@ class HttpService(
     statusCode = response.statusCode
   )
 
-  private suspend fun execute(request: BoundRequestBuilder, expectedStatusCode: Int): Response {
+  /** [requestUrl] is the URL the caller asked for; the guard keys on it, not [Response.uri], so a redirect to another host doesn't misfile the cooldown. */
+  private suspend fun execute(request: BoundRequestBuilder, expectedStatusCode: Int, requestUrl: String): Response {
     return try {
       val response = withContext(Dispatchers.IO) {
         request.execute().get(30, TimeUnit.SECONDS)
       }
       log.debug("-> ${response.statusCode}")
       if (response.statusCode != expectedStatusCode) {
+        val url = response.uri.toUrl()
         when (response.statusCode) {
+          429, 503 -> hostCooldownGuard.onThrottled(requestUrl, response.statusCode, response.getHeader("Retry-After"))
+          401, 403 -> hostCooldownGuard.onBlocked(requestUrl, response.statusCode)
           500 -> throw ResumableHarvestException("500 received", Duration.ofMinutes(5))
-          429 -> throw HostOverloadingException("429 received", Duration.ofMinutes(5))
           400 -> throw TemporaryServerException("400 received", Duration.ofHours(1))
 //          HttpStatus.SERVICE_UNAVAILABLE.value() -> throw ServiceUnavailableException(corrId)
-          in 400..499 -> throw SiteNotFoundException(response.uri.toUrl())
-          in 500..599 -> throw ResumableHarvestException(response.uri.toUrl(), Duration.ofHours(5))
+          in 400..499 -> throw SiteNotFoundException(url)
+          in 500..599 -> throw ResumableHarvestException(url, Duration.ofHours(5))
           else -> throw FatalHarvestException("Expected $expectedStatusCode received ${response.statusCode}")
         }
       } else {
+        hostCooldownGuard.onSuccess(requestUrl)
         log.debug("-> ${response.getHeader("content-type")}")
       }
       response

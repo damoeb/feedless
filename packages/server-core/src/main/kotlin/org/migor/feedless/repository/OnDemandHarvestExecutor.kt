@@ -16,6 +16,7 @@ import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.StoredFlowParser
 import org.slf4j.LoggerFactory
@@ -33,16 +34,17 @@ import kotlin.coroutines.cancellation.CancellationException
  */
 @Service
 @Profile("${AppProfiles.repository} & ${AppLayer.scheduler}")
-class QueuedHarvestExecutor internal constructor(
+class OnDemandHarvestExecutor internal constructor(
+  // t_harvest is the queue of API-requested runs and the one-real-run lock, not only their log.
   private val harvestRepository: HarvestRepository,
   private val sourceRepository: SourceRepository,
   private val repositoryRepository: RepositoryRepository,
-  private val repositoryHarvester: RepositoryHarvester,
+  private val sourceHarvester: SourceHarvester,
   private val sourceDryRunner: SourceDryRunner,
   private val storedFlowParser: StoredFlowParser,
 ) {
 
-  private val log = LoggerFactory.getLogger(QueuedHarvestExecutor::class.simpleName)
+  private val log = LoggerFactory.getLogger(OnDemandHarvestExecutor::class.simpleName)
 
   @Scheduled(fixedDelay = 2000, initialDelay = 5000)
   fun executeQueuedHarvests() {
@@ -87,7 +89,7 @@ class QueuedHarvestExecutor internal constructor(
           harvest.dryRun -> sourceDryRunner.dryRun(source.withFlowOf(harvest), harvest)
           // Checked when queued too (409); the source may have been disabled since.
           source.disabled -> completeAsFailed(harvest, "source is disabled; enable it to run it")
-          else -> repositoryHarvester.harvestSource(source, harvest)
+          else -> sourceHarvester.harvestSource(source, harvest)
         }
       }
     } catch (e: Throwable) {

@@ -32,6 +32,7 @@ import org.migor.feedless.scrape.ScrapeService
 import org.migor.feedless.scrape.Scraper
 import org.migor.feedless.session.StatelessAuthService
 import org.migor.feedless.source.Source
+import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.user.User
@@ -107,8 +108,8 @@ class OneRealHarvestPerSourceIntTest {
 
   private lateinit var scrapeService: ScrapeService
   private lateinit var scraper: Scraper
-  private lateinit var harvester: RepositoryHarvester
-  private lateinit var executor: QueuedHarvestExecutor
+  private lateinit var harvester: SourceHarvester
+  private lateinit var executor: OnDemandHarvestExecutor
   private lateinit var repository: Repository
   private lateinit var source: Source
 
@@ -120,7 +121,13 @@ class OneRealHarvestPerSourceIntTest {
     harvestDAO.deleteAllInBatch()
     userRepository.deleteAll()
 
-    val user = userRepository.save(User(email = "one-harvest-${System.currentTimeMillis()}@test.com", lastLogin = LocalDateTime.now()))
+    val user = userRepository.save(
+      User(
+        email = "one-harvest-${System.currentTimeMillis()}@test.com",
+        lastLogin = LocalDateTime.now(),
+        hasAcceptedTerms = true,
+      )
+    )
     val group = groupRepository.save(Group(name = "one-harvest-group", ownerId = user.id))
     repository = repositoryRepository.save(
       Repository(title = "one-harvest-repo", ownerId = user.id, groupId = group.id, sourcesSyncCron = "0 0 * * * *")
@@ -136,10 +143,12 @@ class OneRealHarvestPerSourceIntTest {
     runBlocking {
       `when`(scrapeService.scrape(any2(), any2())).thenThrow(IllegalArgumentException("broken selector"))
       `when`(scraper.scrape(any2(), any2())).thenThrow(IllegalArgumentException("broken selector"))
-      `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(LocalDateTime.now().plusHours(1))
+      `when`(repositoryUseCase.calculateScheduledNextAt(any2(), any2(), any2())).thenReturn(
+        LocalDateTime.now().plusHours(1)
+      )
     }
 
-    harvester = RepositoryHarvester(
+    harvester = SourceHarvester(
       mock(DocumentUseCase::class.java),
       mock(DocumentRepository::class.java),
       mock(DocumentPipelineJobRepository::class.java),
@@ -151,7 +160,7 @@ class OneRealHarvestPerSourceIntTest {
       repositoryRepository,
       harvestRepository,
     )
-    executor = QueuedHarvestExecutor(
+    executor = OnDemandHarvestExecutor(
       harvestRepository,
       sourceRepository,
       repositoryRepository,
@@ -178,11 +187,11 @@ class OneRealHarvestPerSourceIntTest {
   }
 
   @Test
-  fun `the scheduled loop skips a source whose real harvest is running and moves on to the next`() = runBlocking<Unit> {
+  fun `a scheduled tick skips a source whose real harvest is running and harvests the next`() = runBlocking<Unit> {
     val running = harvestRepository.save(harvest(HarvestStatus.RUNNING))
     val idle = createSource("idle")
 
-    harvester.harvestRepository(repository.id)
+    SourceHarvesterExecutor(harvester, sourceRepository, repositoryRepository).refreshSubscriptions()
 
     verify(scraper, never()).scrape(argThat { it.id == source.id }, any2())
     verify(scraper).scrape(argThat { it.id == idle.id }, any2())
@@ -192,6 +201,17 @@ class OneRealHarvestPerSourceIntTest {
     assertThat(sourceRepository.findById(idle.id)!!.errorsInSuccession).isEqualTo(1)
     // The scheduled run recorded its harvest as running first, then completed it.
     assertThat(realHarvestsOf(idle).map { it.second }).containsExactly(HarvestStatus.COMPLETED)
+  }
+
+  @Test
+  fun `harvestScheduled skips a source whose run slot is claimed elsewhere, without scraping`() = runBlocking<Unit> {
+    // Covers the race where findAllDueForHarvest returns a source just before another run claims its slot.
+    harvestRepository.save(harvest(HarvestStatus.RUNNING))
+
+    harvester.harvestScheduled(sourceRepository.findByIdWithActions(source.id)!!)
+
+    verify(scraper, never()).scrape(argThat { it.id == source.id }, any2())
+    assertThat(sourceRepository.findById(source.id)!!.errorsInSuccession).isEqualTo(0)
   }
 
   @Test
@@ -227,19 +247,20 @@ class OneRealHarvestPerSourceIntTest {
   }
 
   @Test
-  fun `two overlapping failed harvests, both loaded before either finished, leave errorsInSuccession at 2`() = runBlocking<Unit> {
-    // Both runs load the source at 0 errors.
-    val loadedByFirst = sourceRepository.findByIdWithActions(source.id)!!
-    val loadedBySecond = sourceRepository.findByIdWithActions(source.id)!!
+  fun `two overlapping failed harvests, both loaded before either finished, leave errorsInSuccession at 2`() =
+    runBlocking<Unit> {
+      // Both runs load the source at 0 errors.
+      val loadedByFirst = sourceRepository.findByIdWithActions(source.id)!!
+      val loadedBySecond = sourceRepository.findByIdWithActions(source.id)!!
 
-    harvester.harvestSource(loadedByFirst, harvest(HarvestStatus.RUNNING))
-    harvester.harvestSource(loadedBySecond, harvest(HarvestStatus.RUNNING))
+      harvester.harvestSource(loadedByFirst, harvest(HarvestStatus.RUNNING))
+      harvester.harvestSource(loadedBySecond, harvest(HarvestStatus.RUNNING))
 
-    val reloaded = sourceRepository.findById(source.id)!!
-    assertThat(reloaded.errorsInSuccession).isEqualTo(2)
-    assertThat(reloaded.lastErrorMessage).isEqualTo("broken selector")
-    assertThat(reloaded.lastRefreshedAt).isNotNull()
-  }
+      val reloaded = sourceRepository.findById(source.id)!!
+      assertThat(reloaded.errorsInSuccession).isEqualTo(2)
+      assertThat(reloaded.lastErrorMessage).isEqualTo("broken selector")
+      assertThat(reloaded.lastRefreshedAt).isNotNull()
+    }
 
   @Test
   fun `startRun gives a source's slot to one caller, and a running dry run neither takes nor blocks it`() {
@@ -271,9 +292,11 @@ class OneRealHarvestPerSourceIntTest {
 
   @Test
   fun `two failure updates overlapping at the SQL level both count`() {
-    val first = holdTransactionOpenAfter { sourceRepository.recordHarvestFailed(source.id, "first", LocalDateTime.now()) }
+    val first =
+      holdTransactionOpenAfter { sourceRepository.recordHarvestFailed(source.id, "first", LocalDateTime.now()) }
     // Blocks on the first's row lock, then re-reads the committed row before incrementing.
-    val second = pool.submit(Callable { sourceRepository.recordHarvestFailed(source.id, "second", LocalDateTime.now()) })
+    val second =
+      pool.submit(Callable { sourceRepository.recordHarvestFailed(source.id, "second", LocalDateTime.now()) })
     awaitSessionWaitingForLock()
     release.countDown()
     first.get(30, SECONDS)
@@ -367,7 +390,11 @@ class OneRealHarvestPerSourceIntTest {
   private fun awaitSessionWaitingForLock() {
     val jdbc = JdbcTemplate(dataSource)
     val deadline = System.currentTimeMillis() + 10_000
-    while (jdbc.queryForObject("SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock'", Int::class.java) == 0) {
+    while (jdbc.queryForObject(
+        "SELECT count(*) FROM pg_stat_activity WHERE wait_event_type = 'Lock'",
+        Int::class.java
+      ) == 0
+    ) {
       check(System.currentTimeMillis() < deadline) { "no session started waiting for a lock" }
       Thread.sleep(20)
     }

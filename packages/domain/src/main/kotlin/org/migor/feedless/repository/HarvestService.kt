@@ -21,7 +21,6 @@ import java.time.LocalDateTime
 class HarvestService(
   private val harvestRepository: HarvestRepository,
 ) {
-
   private val log = LoggerFactory.getLogger(HarvestService::class.simpleName)
 
   suspend fun lastHarvests(sourceId: SourceId): List<Harvest> = withContext(Dispatchers.IO) {

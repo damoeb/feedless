@@ -32,6 +32,9 @@ interface SourceRepository {
 
   fun findAllWithActionsByIdIn(ids: List<SourceId>): List<Source>
 
+  /** Every source of a repository, enabled or not, with actions — for per-source reseeding of next_harvest_at. */
+  fun findAllWithActionsByRepositoryId(repositoryId: RepositoryId): List<Source>
+
   fun findAllByRepositoryIdAndIdIn(repositoryId: RepositoryId, sourceIds: List<SourceId>): List<Source>
   fun save(source: Source): Source
   fun deleteAllById(ids: List<SourceId>)
@@ -51,5 +54,13 @@ interface SourceRepository {
     pageable: PageableRequest,
     where: SourcesFilter? = null,
   ): List<Source>
+
+  /** Due, enabled, not on a cooling host, not running, of an active repository; with actions, oldest due first. */
+  fun findAllDueForHarvest(now: LocalDateTime, limit: Int): List<Source>
+
+  fun scheduleNextHarvest(id: SourceId, at: LocalDateTime)
+
+  /** Cheap single-column read, so a claimed-but-not-yet-started harvest can detect a reschedule since it was claimed. */
+  fun findNextHarvestAt(id: SourceId): LocalDateTime?
 
 }

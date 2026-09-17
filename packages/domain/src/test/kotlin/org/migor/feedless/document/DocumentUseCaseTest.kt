@@ -366,32 +366,6 @@ class DocumentUseCaseTest {
   }
 
   @Test
-  fun `processDocumentPlugins labels a linkless document by its title in the harvest log`() = runTest {
-    val harvestId = HarvestId()
-    val job = DocumentPipelineJob(
-      pluginId = fulltextPluginId,
-      sequenceId = 0,
-      documentId = documentId,
-      executorParams = PluginExecutionJson(paramsJsonString = "{}"),
-      harvestId = harvestId,
-    )
-    `when`(
-      fulltextPlugin.mapEntity(
-        any(Document::class.java),
-        any(Repository::class.java),
-        any(String::class.java),
-        any(LogCollector::class.java),
-      )
-    ).thenAnswer { it.arguments[0] as Document }
-    mockDocumentFindById(documentId, document.copy(url = ""))
-    mockRepositoryFindById(repositoryId, repository)
-
-    documentUseCase.processDocumentPlugins(documentId, listOf(job))
-
-    verify(harvestRepository).appendLog(eq(harvestId), argThat<String> { it.contains("$fulltextPluginId ok 'foo'") })
-  }
-
-  @Test
   fun `processDocumentPlugins logs a failed plugin to the harvest`() = runTest {
     val harvestId = HarvestId()
     val job = DocumentPipelineJob(

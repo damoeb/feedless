@@ -79,6 +79,10 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     return sourceDAO.findAllWithActionsByIdIn(ids.map { it.uuid }).map { it.toDomain() }
   }
 
+  override fun findAllWithActionsByRepositoryId(repositoryId: RepositoryId): List<Source> {
+    return sourceDAO.findAllWithActionsByRepositoryId(repositoryId.uuid).map { it.toDomain() }
+  }
+
   override fun findAllByRepositoryIdAndIdIn(
     repositoryId: RepositoryId,
     sourceIds: List<SourceId>
@@ -286,5 +290,20 @@ class SourceJpaRepository(private val sourceDAO: SourceDAO, private val entityMa
     val orderedIds = q.resultList
     val byId = sourceDAO.findAllWithActionsByIdIn(orderedIds).associateBy { it.id }
     return orderedIds.mapNotNull { byId[it] }.map { it.toDomain() }
+  }
+
+  override fun findAllDueForHarvest(now: LocalDateTime, limit: Int): List<Source> {
+    val ids = sourceDAO.findIdsDueForHarvest(now, limit)
+    val byId = sourceDAO.findAllWithActionsByIdIn(ids).associateBy { it.id }
+    return ids.mapNotNull { byId[it]?.toDomain() }
+  }
+
+  @Transactional
+  override fun scheduleNextHarvest(id: SourceId, at: LocalDateTime) {
+    sourceDAO.updateNextHarvestAt(id.uuid, at)
+  }
+
+  override fun findNextHarvestAt(id: SourceId): LocalDateTime? {
+    return sourceDAO.findNextHarvestAt(id.uuid)
   }
 }

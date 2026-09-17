@@ -35,7 +35,7 @@ class HttpRepositoryMapper(
       tags = repo.tags.toList(),
       createdAt = repo.createdAt.toOffsetDateTime(),
       lastUpdatedAt = repo.lastUpdatedAt.toOffsetDateTime(),
-      nextUpdateAt = repo.triggerScheduledNextAt?.toOffsetDateTime(),
+      nextUpdateAt = repo.nextHarvestAt?.toOffsetDateTime(),
       documentCount = repo.documentCountSinceCreation.toLong(),
       archived = repo.archived,
       pullsPerMonth = repo.pullsPerMonth,

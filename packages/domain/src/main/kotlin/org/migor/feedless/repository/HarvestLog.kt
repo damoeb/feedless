@@ -1,7 +1,6 @@
 package org.migor.feedless.repository
 
 import org.apache.commons.lang3.StringUtils
-import org.migor.feedless.document.Document
 import org.migor.feedless.scrape.LogCollector
 import org.migor.feedless.util.toLocalDateTime
 import java.time.LocalDateTime
@@ -25,13 +24,6 @@ fun harvestLogLine(time: LocalDateTime, message: String): String =
 /** The message, or the type when there is none, so a failure never logs as blank. */
 fun Throwable.describe(): String =
   message?.takeIf { it.isNotBlank() } ?: this::class.simpleName ?: "unknown error"
-
-/** How the harvest log names a document: its url, else its title, as items without link exist. */
-fun Document.harvestLabel(): String = when {
-  url.isNotBlank() -> url
-  !title.isNullOrBlank() -> "'$title'"
-  else -> "(no url, no title)"
-}
 
 fun importSummary(retrieved: Int, took: Long, new: Int, existing: List<String>): String {
   val listed = if (existing.isEmpty()) {
