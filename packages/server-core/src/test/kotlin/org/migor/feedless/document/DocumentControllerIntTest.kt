@@ -1,5 +1,6 @@
 package org.migor.feedless.document
 
+import org.migor.feedless.license.LicenseUseCase
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -47,6 +48,7 @@ import java.time.LocalDateTime
 )
 @MockitoBean(
   types = [
+    LicenseUseCase::class,
     DocumentResolver::class,
     DocumentUseCase::class,
     HttpService::class,
@@ -65,6 +67,7 @@ import java.time.LocalDateTime
 )
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   AppLayer.api,
   AppProfiles.document,
   AppProfiles.session,

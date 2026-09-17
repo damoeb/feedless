@@ -36,6 +36,7 @@ class DisableMailConfiguration
 class PropertiesConfiguration
 
 
+
 @TestConfiguration
 @EnableAutoConfiguration(
   exclude = [

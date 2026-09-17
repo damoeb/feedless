@@ -1,12 +1,50 @@
 package org.migor.feedless.config
 
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Test
+import org.migor.feedless.common.LocaleProperties
+import org.migor.feedless.status.BuildInfo
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import java.util.Locale
 
 /** Binds properties classes against the real application.yaml, so legacy keys and env vars keep working. */
 class LegacyConfigBindingTest {
+
+  @Test
+  fun `build commit comes from APP_GIT_COMMIT`() {
+    assertThat(bind<BuildInfo>("APP_GIT_COMMIT=abc123").commit).isEqualTo("abc123")
+  }
+
+  @Test
+  fun `build commit falls back to the app git commit key`() {
+    assertThat(bind<BuildInfo>("app.git.commit=def456").commit).isEqualTo("def456")
+  }
+
+  @Test
+  fun `build commit is unknown when neither is set`() {
+    assertThat(bind<BuildInfo>().commit).isEqualTo("unknown")
+  }
+
+  @Test
+  fun `build version comes from app version`() {
+    assertThat(bind<BuildInfo>("app.version=1.2.3").version).isEqualTo("1.2.3")
+  }
+
+  @Test
+  fun `build timestamp comes from APP_BUILD_TIMESTAMP`() {
+    assertThat(bind<BuildInfo>("APP_BUILD_TIMESTAMP=1757000000000").timestamp).isEqualTo("1757000000000")
+  }
+
+  @Test
+  fun `locale and timezone keep their keys`() {
+    val localeProperties = bind<LocaleProperties>("app.defaultLocale=de", "app.timezone=Europe/Zurich")
+
+    assertThat(localeProperties.defaultLocale).isEqualTo(Locale.forLanguageTag("de"))
+    assertThat(localeProperties.timezone).isEqualTo("Europe/Zurich")
+  }
 
   // env vars resolve like any other property source, so a property value stands in for one
   private inline fun <reified T : Any> bind(vararg legacyValues: String): T {

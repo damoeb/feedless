@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.status.BuildInfo
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -17,7 +18,7 @@ import org.springframework.web.filter.OncePerRequestFilter
 @Component
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class HttpApiVersionHeaderFilter(
-  @param:Value("\${app.version}") private val appVersion: String,
+  private val buildInfo: BuildInfo,
 ) : OncePerRequestFilter() {
 
   companion object {
@@ -33,7 +34,7 @@ class HttpApiVersionHeaderFilter(
     response: HttpServletResponse,
     filterChain: FilterChain,
   ) {
-    response.setHeader(VERSION_HEADER, appVersion)
+    response.setHeader(VERSION_HEADER, buildInfo.version)
     filterChain.doFilter(request, response)
   }
 }

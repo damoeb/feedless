@@ -13,6 +13,7 @@ import org.migor.feedless.api.fromDto
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthType
 import org.migor.feedless.generated.types.BuildInfo
+import org.migor.feedless.status.BuildInfo as BuildInfoProperties
 import org.migor.feedless.generated.types.ProfileName
 import org.migor.feedless.generated.types.ServerSettings
 import org.migor.feedless.generated.types.ServerSettingsContextInput
@@ -31,14 +32,11 @@ class ServerConfigResolver {
 
   private val log = LoggerFactory.getLogger(ServerConfigResolver::class.simpleName)
 
-  @Value("\${APP_GIT_COMMIT}")
-  private lateinit var commit: String
+  @Autowired
+  private lateinit var buildInfo: BuildInfoProperties
 
   @Autowired
   private lateinit var environment: Environment
-
-  @Value("\${app.version}")
-  private lateinit var version: String
 
   @Autowired
   private lateinit var licenseUseCase: LicenseUseCase
@@ -70,10 +68,10 @@ class ServerConfigResolver {
     }
 
     ServerSettings(
-      version = version,
+      version = buildInfo.version,
       build = BuildInfo(
         date = licenseUseCase.getBuildDate(),
-        commit = commit
+        commit = buildInfo.commit
       ),
       auth = getProductAuthProperties(product),
       profiles = environment.activeProfiles.map {

@@ -1,5 +1,6 @@
 package org.migor.feedless.license
 
+import org.migor.feedless.status.BuildInfo
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.nimbusds.jose.JWSAlgorithm
@@ -71,19 +72,19 @@ class LicenseUseCase { // todo split up into provider and usecase
   var feedlessPrivateKey: RSAKey? = null
   var feedlessPublicKey: RSAPublicKey? = null
 
-  @Value("\${APP_BUILD_TIMESTAMP:}")
-  var buildTimestamp: String? = null
+  @Autowired
+  lateinit var buildInfo: BuildInfo
 
   @PostConstruct
   fun onInit() {
-    if (NumberUtils.isParsable(buildTimestamp)) {
-      val buildTime = buildTimestamp!!.toLong().toLocalDateTime()
+    if (NumberUtils.isParsable(buildInfo.timestamp)) {
+      val buildTime = buildInfo.timestamp.toLong().toLocalDateTime()
       val now = LocalDateTime.now()
       if (buildTime.isAfter(now)) {
         throw IllegalArgumentException("Invalid properties. Build time $buildTime is in the future (system time $now)")
       }
     } else {
-      throw IllegalArgumentException("Invalid properties. APP_BUILD_TIMESTAMP expected, found '$buildTimestamp'")
+      throw IllegalArgumentException("Invalid properties. APP_BUILD_TIMESTAMP expected, found '${buildInfo.timestamp}'")
     }
     loadPublicKey()
 
@@ -228,7 +229,7 @@ class LicenseUseCase { // todo split up into provider and usecase
 
   fun getBuildDate(): Long {
     log.debug("getBuildDate")
-    return parseBuildTimestamp(buildTimestamp)
+    return parseBuildTimestamp(buildInfo.timestamp)
   }
 
   fun hasValidLicenseOrLicenseNotNeeded(): Boolean {
