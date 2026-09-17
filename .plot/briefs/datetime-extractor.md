@@ -32,4 +32,4 @@ Open the PR with `plot-open-pr.sh`, then append `→ #<n>` to the slice line in 
 
 ### Scope guard
 
-Owns `domain/.../text/datetime/DateTime*` (renamed from `server-core/.../feed/DateClaimer*` and moved), `scrape/WebExtractService.kt` (call site only), `pipeline/plugins/FulltextPlugin.kt`, `domain/.../pipeline/plugins/PluginParams.kt` (`FulltextPluginParams`), and their tests. The owner's `FulltextPlugin` WIP is in `stash@{0}`; do not apply it. Report anything the plan did not anticipate rather than improvising outside this scope.
+Owns `domain/.../text/datetime/DateTime*` (renamed from `server-core/.../feed/DateClaimer*` and moved), `scrape/WebExtractService.kt` (call site only), `pipeline/plugins/FulltextPlugin.kt`, `domain/.../pipeline/plugins/PluginParams.kt` (`FulltextPluginParams`), and their tests. The owner's `FulltextPlugin` WIP from `stash@{0}` is already on this branch; do not apply the rest of the stash. Report anything the plan did not anticipate rather than improvising outside this scope.
