@@ -12,7 +12,10 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.Document
+import org.migor.feedless.text.datetime.DateTimeExtractor
+import org.migor.feedless.text.datetime.summarize
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
@@ -26,19 +29,17 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.util.HtmlUtil
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.util.Locale
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransformerPlugin {
-
-  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
   @Autowired
   private lateinit var webToArticleTransformer: WebToArticleTransformer
@@ -50,6 +51,12 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
   @Autowired
   private lateinit var scrapeService: ScrapeService
 
+  @Autowired
+  private lateinit var dateTimeExtractor: DateTimeExtractor
+
+  @Autowired
+  private lateinit var propertyService: PropertyService
+
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
   override fun name(): String = "Fulltext & Readability"
   override fun listed() = true
@@ -60,71 +67,70 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     params: FulltextPluginParams,
     logCollector: LogCollector
   ): Document {
-    logCollector.log("mapEntity ${document.url}")
-
-    return if (StringUtils.isBlank(document.url)) {
+    if (StringUtils.isBlank(document.url)) {
       logCollector.log("skipping, url is empty")
-      document
-    } else {
-      val request = Source(
-        id = SourceId(),
-        title = "Feed from ${document.url}",
-        repositoryId = repository.id,
-        createdAt = LocalDateTime.now(),
-        actions = emptyList(),
-      )
-
-
-      val fetchAction = FetchAction(
-        sourceId = SourceId(),
-        url = document.url,
-      )
-
-      val source = document.source(sourceRepository)
-      val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
-
-      val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
-        logCollector.log("inheritParams from source")
-        request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
-      } else {
-        request.copy(actions = listOf(fetchAction))
-      }
-
-      try {
-        val scrapeOutput = scrapeService.scrape(requestWithAction, logCollector)
-
-        if (scrapeOutput.outputs.isNotEmpty()) {
-          val lastOutput = scrapeOutput.outputs.last()
-          val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-          if (params.readability || params.summary) {
-            logCollector.log("convert to readability/summary")
-            val readability = webToArticleTransformer.fromHtml(
-              html,
-              document.url.replace(Regex("#[^/]+$"), ""),
-              params.summary
-            )
-            log.debug("${document.id} title ${document.title} -> ${readability.title}")
-
-            document.copy(
-              html = readability.html,
-              text = StringUtils.trimToEmpty(readability.text),
-              title = readability.title
-            )
-          } else {
-            document.copy(
-              html = html,
-              title = HtmlUtil.parseHtml(html, document.url).title()
-            )
-          }
-        }
-      } catch (e: Exception) {
-        if (e !is SiteNotFoundException) {
-//                    document.url = ""
-          throw e
-        }
-      }
-      document
+      return document
     }
+    val request = Source(
+      id = SourceId(),
+      title = "Feed from ${document.url}",
+      repositoryId = repository.id,
+      createdAt = LocalDateTime.now(),
+      actions = emptyList(),
+    )
+
+    val fetchAction = FetchAction(
+      sourceId = SourceId(),
+      url = document.url,
+    )
+
+    val source = document.source(sourceRepository)
+    val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
+
+    val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
+      request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
+    } else {
+      request.copy(actions = listOf(fetchAction))
+    }
+
+    val fetched = try {
+      // scrape internals stay out of the plugin's report
+      val scrapeOutput = scrapeService.scrape(requestWithAction, LogCollector())
+      scrapeOutput.outputs.lastOrNull()?.let { lastOutput ->
+        val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+        val page = HtmlUtil.parseHtml(html, document.url)
+        val lang = StringUtils.trimToNull(page.select("html").attr("lang"))
+        if (params.readability || params.summary) {
+          val readability = webToArticleTransformer.fromHtml(
+            html,
+            document.url.replace(Regex("#[^/]+$"), ""),
+            params.summary
+          )
+          val text = StringUtils.trimToEmpty(readability.text)
+          Fetched(document.copy(html = readability.html, text = text, title = readability.title), text, lang)
+        } else {
+          Fetched(document.copy(html = html, title = page.title()), page.text(), lang)
+        }
+      }
+    } catch (e: SiteNotFoundException) {
+      null
+    }
+
+    fetched?.let {
+      logCollector.log("title '${document.title}' -> '${it.document.title}'")
+      if (params.extractDates != false) {
+        document.startingAt?.let { startingAt ->
+          // a failed plugin drops the item, so extraction must not fail it
+          runCatching {
+            val locale = it.lang?.let { lang -> Locale.forLanguageTag(lang) } ?: propertyService.locale
+            dateTimeExtractor.extractCandidates(it.bodyText, locale)
+          }
+            .onSuccess { candidates -> logCollector.log(candidates.summarize(startingAt)) }
+            .onFailure { e -> logCollector.log("datetime extraction failed: ${e.message}") }
+        }
+      }
+    }
+    return fetched?.document ?: document
   }
 
   override suspend fun mapEntity(
@@ -174,6 +180,8 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     )
   }
 }
+
+private data class Fetched(val document: Document, val bodyText: String, val lang: String?)
 
 private fun Document.source(sourceRepository: SourceRepository): Source? {
   return sourceId?.let { sourceRepository.findByIdWithActions(it) }

@@ -66,6 +66,8 @@ data class FulltextPluginParams(
   @SerializedName("summary") val summary: Boolean,
   @SerializedName("inheritParams") val inheritParams: Boolean,
   @SerializedName("onErrorRemove") val onErrorRemove: Boolean? = null,
+  // nullable because Gson skips Kotlin defaults; null means on
+  @SerializedName("extractDates") val extractDates: Boolean? = null,
 )
 
 data class EventsReportPluginParams(
