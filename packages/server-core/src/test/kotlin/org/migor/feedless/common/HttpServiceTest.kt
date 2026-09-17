@@ -51,6 +51,26 @@ class HttpServiceTest {
   private fun url() = "http://localhost:${server.address.port}/feed"
 
   @Test
+  fun `a host allows a burst of 5, then about 1 request per second`() = runTest {
+    val bucket = httpService.resolveHostBucket(java.net.URI("https://www.newsweek.com/a").toURL())
+
+    repeat(5) { assertThat(bucket.tryConsume(1)).isTrue() }
+    val sixth = bucket.tryConsumeAndReturnRemaining(1)
+
+    assertThat(sixth.isConsumed).isFalse()
+    assertThat(Duration.ofNanos(sixth.nanosToWaitForRefill)).isLessThanOrEqualTo(Duration.ofSeconds(1))
+  }
+
+  @Test
+  fun `the same url is fetched at most twice a minute`() = runTest {
+    val bucket = httpService.resolveUrlBucket(java.net.URI("https://www.newsweek.com/a").toURL())
+
+    repeat(2) { assertThat(bucket.tryConsume(1)).isTrue() }
+
+    assertThat(bucket.tryConsume(1)).isFalse()
+  }
+
+  @Test
   fun `httpGet will validate url`() {
     assertThatExceptionOfType(MalformedURLException::class.java).isThrownBy {
       runTest { httpService.httpGet("gemma", 200) }
