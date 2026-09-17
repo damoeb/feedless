@@ -106,6 +106,7 @@ dependencies {
   implementation(project(":packages:stripe-payments"))
   implementation(project(":packages:jpa-data"))
   implementation(project(":packages:feed-parser"))
+  implementation(project(":packages:feed"))
   api(project(":packages:graphql-api"))
   implementation(project(":packages:http-api"))
 

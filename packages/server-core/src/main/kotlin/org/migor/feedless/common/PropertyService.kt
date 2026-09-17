@@ -27,7 +27,7 @@ class PropertyService : AppConfig {
   lateinit var timeFormat: String
   lateinit var webToFeedVersion: String
   lateinit var timezone: String
-  lateinit var locale: Locale
+  override lateinit var locale: Locale
   lateinit var defaultLocale: String
   lateinit var jwtSecret: String
   lateinit var rootEmail: String
