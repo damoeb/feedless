@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test
 import org.migor.feedless.any2
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.user.User
@@ -44,9 +43,7 @@ class TokenAuthenticatorTest {
 
   @BeforeEach
   fun setUp() {
-    val propertyService = mock(PropertyService::class.java)
-    `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    jwtTokenIssuer = JwtTokenIssuer(testSessionProperties(), testPublicUrls(), SimpleMeterRegistry())
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     authService = mock(AuthService::class.java)
     `when`(authService.useApiSecret(any2(), any2(), any2())).thenAnswer {

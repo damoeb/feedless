@@ -5,7 +5,6 @@ import com.google.gson.Gson
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
 import io.micrometer.core.instrument.Tag
-import jakarta.annotation.PostConstruct
 import jakarta.servlet.http.HttpServletRequest
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.AppLayer
@@ -16,7 +15,6 @@ import org.migor.feedless.capability.AgentCapability
 import org.migor.feedless.capability.Capability
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.repository.RepositoryClaimId
 import org.migor.feedless.user.User
@@ -24,7 +22,6 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.JwsHeader
@@ -36,37 +33,22 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder
 import org.springframework.stereotype.Service
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
-import kotlin.properties.Delegates
 import kotlin.time.Clock
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.days
 import kotlin.time.Duration.Companion.hours
-import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
-import kotlin.time.toDuration
 
 
 @OptIn(ExperimentalTime::class)
 @Service
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtTokenIssuer(
-  private val propertyService: PropertyService,
+  private val sessionProperties: SessionProperties,
   private val publicUrls: PublicUrls,
   private val meterRegistry: MeterRegistry,
-  @Value("\${auth.token.anonymous.validForDays}")
-  private val tokenAnonymousValidForDays: String,
-  @Value("\${default.auth.token.anonymous.validForDays}")
-  private val defaultTokenAnonymousValidForDays: String
 ) : TokenIssuer {
   private val log = LoggerFactory.getLogger(JwtTokenIssuer::class.simpleName)
-
-  private var tokenAnonymousValidFor: Long by Delegates.notNull()
-
-  @PostConstruct
-  fun postConstruct() {
-    tokenAnonymousValidFor = parseDuration(tokenAnonymousValidForDays, defaultTokenAnonymousValidForDays)
-    log.info("tokenAnonymousValidFor=${tokenAnonymousValidFor}")
-  }
 
   fun createJwtForAnonymous(): Jwt {
     meterRegistry.counter(AppMetrics.issueToken, listOf(Tag.of("type", "anonymous"))).increment()
@@ -233,7 +215,7 @@ class JwtTokenIssuer(
   }
 
   private fun getSecretKey(): SecretKey {
-    return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    return SecretKeySpec(sessionProperties.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }
 
   private fun toAuthorities(capabilities: List<Capability<out Any>>): Map<String, String> {
@@ -241,9 +223,5 @@ class JwtTokenIssuer(
       it.capabilityId.value to Gson().toJson(it.capabilityPayload)
     }
   }
-
-  private fun parseDuration(actual: String, fallback: String) = runCatching {
-    actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
-  }.getOrElse { fallback.toLong() }
 
 }

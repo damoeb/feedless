@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.session.testSessionProperties
 import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
@@ -10,7 +11,6 @@ import org.migor.feedless.api.ApiParams
 import org.migor.feedless.capability.CORR_ID_REQUEST_ATTR
 import org.migor.feedless.capability.HTTP_API_REQUEST_CONTEXT_ATTR
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.any2
@@ -46,9 +46,7 @@ class HttpApiJwtFilterTest {
     // The filter authenticates through SecurityContextHolder, a thread-local shared with every
     // other test on this Gradle worker — start from a clean one.
     SecurityContextHolder.clearContext()
-    val propertyService = mock(PropertyService::class.java)
-    `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    jwtTokenIssuer = JwtTokenIssuer(testSessionProperties(), testPublicUrls(), SimpleMeterRegistry())
     // The token's user owns actingGroup, and no other group.
     val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(any2(), any2())).thenAnswer {

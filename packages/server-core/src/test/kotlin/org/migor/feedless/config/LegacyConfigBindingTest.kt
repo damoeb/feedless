@@ -3,11 +3,13 @@ package org.migor.feedless.config
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.LocaleProperties
+import org.migor.feedless.session.SessionProperties
 import org.migor.feedless.status.BuildInfo
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.bind.Binder
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer
 import org.springframework.boot.test.context.runner.ApplicationContextRunner
+import java.time.Duration
 import java.util.Locale
 
 /** Binds properties classes against the real application.yaml, so legacy keys and env vars keep working. */
@@ -44,6 +46,23 @@ class LegacyConfigBindingTest {
 
     assertThat(localeProperties.defaultLocale).isEqualTo(Locale.forLanguageTag("de"))
     assertThat(localeProperties.timezone).isEqualTo("Europe/Zurich")
+  }
+
+  @Test
+  fun `the anonymous token duration keeps its legacy key`() {
+    val sessionProperties = bind<SessionProperties>(
+      "app.jwtSecret=0123456789",
+      "auth.token.anonymous.validForDays=3",
+    )
+
+    assertThat(sessionProperties.auth.anonymousTokenValidFor).isEqualTo(Duration.ofDays(3))
+  }
+
+  @Test
+  fun `whitelisted hosts bind as a list`() {
+    val sessionProperties = bind<SessionProperties>("app.jwtSecret=0123456789", "app.whitelistedHosts=127.0.0.1,::1")
+
+    assertThat(sessionProperties.whitelistedHosts).containsExactly("127.0.0.1", "::1")
   }
 
   // env vars resolve like any other property source, so a property value stands in for one

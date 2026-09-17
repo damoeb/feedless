@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import org.migor.feedless.session.testSessionProperties
 import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.http.HttpServletRequest
@@ -9,7 +10,6 @@ import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.Mother.randomUser
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.session.CookieProvider
@@ -65,9 +65,7 @@ class SecurityConfigSsoTokenTest {
     userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     cookieProvider = mock(CookieProvider::class.java)
 
-    val propertyService = mock(PropertyService::class.java)
-    whenever(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    val jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    val jwtTokenIssuer = JwtTokenIssuer(testSessionProperties(), testPublicUrls(), SimpleMeterRegistry())
 
     securityConfig = SecurityConfig()
     ReflectionTestUtils.setField(securityConfig, "userUseCase", mock(UserUseCase::class.java))
