@@ -3,6 +3,7 @@ package org.migor.feedless.feed
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Test
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.CsvSource
 import org.migor.feedless.scrape.LogCollector
@@ -13,14 +14,14 @@ import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-internal class DateClaimerTest {
+internal class DateTimeExtractorTest {
 
-  private lateinit var dateClaimer: DateClaimer
+  private lateinit var dateTimeExtractor: DateTimeExtractor
   private lateinit var logCollector: LogCollector
 
   @BeforeEach
   fun setUp() {
-    dateClaimer = DateClaimer()
+    dateTimeExtractor = DateTimeExtractor()
     logCollector = LogCollector()
   }
 
@@ -49,7 +50,7 @@ internal class DateClaimerTest {
   )
   fun testClaimDateFromString(dateStringInput: String, expectedOuput: String, lang: String) = runTest {
     val actual =
-      dateClaimer.claimDatesFromString(
+      dateTimeExtractor.extractDateTime(
         "${newCorrId()} $dateStringInput ${newCorrId()}",
         Locale.of(lang),
         logCollector
@@ -61,5 +62,46 @@ internal class DateClaimerTest {
         DateTimeFormatter.ofPattern("yyyy-MM-dd' 'HH:mm:ss' 'z")
       ).toMillis()
     )
+  }
+
+  @Test
+  fun `extractCandidates finds every datetime in a body`() = runTest {
+    val body = """
+      Konzert am 27.09.2024, 20:15 Uhr im Saal.
+      Anmeldeschluss: 12.08.2024
+    """.trimIndent()
+
+    val actual = dateTimeExtractor.extractCandidates(body, Locale.GERMAN)
+
+    assertThat(actual.map { it.dateTime }).containsExactly(
+      LocalDateTime.of(2024, 9, 27, 20, 15),
+      LocalDateTime.of(2024, 8, 12, 8, 0),
+    )
+    assertThat(actual.map { it.hasTime }).containsExactly(true, false)
+    assertThat(actual[0].input).isEqualTo("27.09.2024, 20:15")
+    assertThat(body.substring(actual[1].range)).isEqualTo("12.08.2024")
+  }
+
+  @Test
+  fun `extractCandidates merges repeated datetimes and counts them`() = runTest {
+    val body = "Beginn 4. Juli 2024, 19:30 Uhr. Wir sehen uns am 4. Juli 2024, 19:30 Uhr!"
+
+    val actual = dateTimeExtractor.extractCandidates(body, Locale.GERMAN)
+
+    assertThat(actual).hasSize(1)
+    assertThat(actual[0].dateTime).isEqualTo(LocalDateTime.of(2024, 7, 4, 19, 30))
+    assertThat(actual[0].occurrences).isEqualTo(2)
+  }
+
+  @Test
+  fun `extractCandidates ignores digits inside longer numbers`() = runTest {
+    val actual = dateTimeExtractor.extractCandidates("Tel. 0441 234 5678, Ticket 123456789", Locale.GERMAN)
+
+    assertThat(actual).isEmpty()
+  }
+
+  @Test
+  fun `extractCandidates returns nothing for text without dates`() = runTest {
+    assertThat(dateTimeExtractor.extractCandidates("Kein Termin bekannt", Locale.GERMAN)).isEmpty()
   }
 }

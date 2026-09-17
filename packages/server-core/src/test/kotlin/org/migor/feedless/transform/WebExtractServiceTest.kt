@@ -6,7 +6,7 @@ import org.jsoup.Jsoup
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import org.migor.feedless.feed.DateClaimer
+import org.migor.feedless.feed.DateTimeExtractor
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.ScrapeEmit
@@ -37,7 +37,7 @@ class WebExtractServiceTest {
 
   @BeforeEach
   fun setUp() {
-    webExtractService = WebExtractService(mock(DateClaimer::class.java))
+    webExtractService = WebExtractService(mock(DateTimeExtractor::class.java))
   }
 
   @Test

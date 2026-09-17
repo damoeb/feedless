@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.toList
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.feed.DateClaimer
+import org.migor.feedless.feed.DateTimeExtractor
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.MimeData
@@ -39,7 +39,7 @@ data class MarkupData(
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
-class WebExtractService(private val dateClaimer: DateClaimer) :
+class WebExtractService(private val dateTimeExtractor: DateTimeExtractor) :
   Transformer<MarkupData, ScrapeExtractResponse, WebExtractServiceParameters> {
   private val log = LoggerFactory.getLogger(WebExtractService::class.simpleName)
 
@@ -115,7 +115,7 @@ class WebExtractService(private val dateClaimer: DateClaimer) :
             },
             uniqueBy = ScrapeExtractFragmentPart.html, // todo check this
             data = if (extract.emit.contains(ScrapeEmit.date)) {
-              dateClaimer.claimDatesFromString(fragment.text(), locale, logger)?.let { date ->
+              dateTimeExtractor.extractDateTime(fragment.text(), locale, logger)?.let { date ->
                 MimeData(
                   mimeType = MIME_DATE,
                   data = date.toMillis().toString()

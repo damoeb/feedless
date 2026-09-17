@@ -12,9 +12,9 @@ import java.util.*
 
 
 @Service
-class DateClaimer {
+class DateTimeExtractor {
 
-  private val log = LoggerFactory.getLogger(DateClaimer::class.simpleName)
+  private val log = LoggerFactory.getLogger(DateTimeExtractor::class.simpleName)
 
   private val allMonth = (1..12).map {
     LocalDate.parse(
@@ -108,7 +108,67 @@ class DateClaimer {
 //      }.firstOrNull()
 //  }
 
-  suspend fun claimDatesFromString(
+  // edges keep a format from matching inside a longer word or number
+  private val candidateFormats by lazy {
+    dateFormatToRegexp
+      .sortedByDescending { it.second.length }
+      .sortedByDescending { it.third }
+      .map { (regex, format, hasTime) ->
+        Triple(toRegex("(?<![\\p{L}\\p{N}])(?:${regex.pattern})(?![\\p{L}\\p{N}])"), format, hasTime)
+      }
+  }
+
+  suspend fun extractCandidates(text: String, locale: Locale): List<DateTimeCandidate> {
+    val (normalized, origin) = normalizeWithOrigin(text, locale)
+    val stripped = StringUtils.stripAccents(normalized)
+    val searchable = if (stripped.length == normalized.length) stripped else normalized
+
+    val claimed = mutableListOf<IntRange>()
+    val candidates = mutableListOf<DateTimeCandidate>()
+    candidateFormats.forEach { (regex, format, hasTime) ->
+      regex.findAll(searchable).forEach { match ->
+        val span = match.range
+        if (claimed.none { it.first <= span.last && span.first <= it.last }) {
+          applyDateFormat(normalized.substring(span), locale, format, hasTime)?.let { dateTime ->
+            claimed.add(span)
+            val range = origin[span.first]..origin[span.last]
+            val input = text.substring(range).replace("\\s+".toRegex(), " ")
+            candidates.add(DateTimeCandidate(input, range, format, dateTime, hasTime))
+          }
+        }
+      }
+    }
+    return candidates
+      .sortedBy { it.range.first }
+      .groupBy { it.dateTime }
+      .values
+      .map { it.first().copy(occurrences = it.size) }
+  }
+
+  /** Mirrors the normalization of [extractDateTime], keeping each character's index in [text]. */
+  private fun normalizeWithOrigin(text: String, locale: Locale): Pair<String, IntArray> {
+    val monthChars = allMonth
+      .joinToString("") { DateTimeFormatter.ofPattern("MMMM", locale).format(it) }
+      .lowercase()
+      .toSet()
+    val normalized = StringBuilder()
+    val origin = ArrayList<Int>()
+    text.forEachIndexed { index, char ->
+      val isDateTimeSeparator = char == 'T' && text.getOrNull(index - 1)?.isDigit() == true &&
+        text.getOrNull(index + 1)?.isDigit() == true
+      val keep = char == ':' || (char.isLetterOrDigit() && (char.code < 128 || char.lowercaseChar() in monthChars))
+      if (keep && !isDateTimeSeparator) {
+        normalized.append(char)
+        origin.add(index)
+      } else if (normalized.isNotEmpty() && normalized.last() != ' ') {
+        normalized.append(' ')
+        origin.add(index)
+      }
+    }
+    return Pair(normalized.toString(), origin.toIntArray())
+  }
+
+  suspend fun extractDateTime(
     dateTimeStrParam: String,
     locale: Locale,
     logger: LogCollector
