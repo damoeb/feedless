@@ -12,7 +12,10 @@ import org.migor.feedless.actions.ExtractXpathAction
 import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.common.HttpResponse
+import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.Document
+import org.migor.feedless.text.datetime.DateTimeExtractor
+import org.migor.feedless.text.datetime.summarize
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FragmentOutput
 import org.migor.feedless.pipeline.FragmentTransformerPlugin
@@ -32,6 +35,7 @@ import org.springframework.context.annotation.Profile
 import org.springframework.stereotype.Service
 import java.nio.charset.StandardCharsets
 import java.time.LocalDateTime
+import java.util.Locale
 
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
@@ -46,6 +50,12 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
   @Lazy
   @Autowired
   private lateinit var scrapeService: ScrapeService
+
+  @Autowired
+  private lateinit var dateTimeExtractor: DateTimeExtractor
+
+  @Autowired
+  private lateinit var propertyService: PropertyService
 
   override fun id(): String = FeedlessPlugins.org_feedless_fulltext.name
   override fun name(): String = "Fulltext & Readability"
@@ -83,36 +93,44 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
       request.copy(actions = listOf(fetchAction))
     }
 
-    val mapped = try {
+    val fetched = try {
       // scrape internals stay out of the plugin's report
       val scrapeOutput = scrapeService.scrape(requestWithAction, LogCollector())
       scrapeOutput.outputs.lastOrNull()?.let { lastOutput ->
         val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+        val page = HtmlUtil.parseHtml(html, document.url)
+        val lang = StringUtils.trimToNull(page.select("html").attr("lang"))
         if (params.readability || params.summary) {
           val readability = webToArticleTransformer.fromHtml(
             html,
             document.url.replace(Regex("#[^/]+$"), ""),
             params.summary
           )
-          document.copy(
-            html = readability.html,
-            text = StringUtils.trimToEmpty(readability.text),
-            title = readability.title
-          )
+          val text = StringUtils.trimToEmpty(readability.text)
+          Fetched(document.copy(html = readability.html, text = text, title = readability.title), text, lang)
         } else {
-          document.copy(
-            html = html,
-            title = HtmlUtil.parseHtml(html, document.url).title()
-          )
+          Fetched(document.copy(html = html, title = page.title()), page.text(), lang)
         }
       }
     } catch (e: SiteNotFoundException) {
       null
     }
 
-    return mapped
-      ?.also { logCollector.log("title '${document.title}' -> '${it.title}'") }
-      ?: document
+    fetched?.let {
+      logCollector.log("title '${document.title}' -> '${it.document.title}'")
+      if (params.extractDates != false) {
+        document.startingAt?.let { startingAt ->
+          // a failed plugin drops the item, so extraction must not fail it
+          runCatching {
+            val locale = it.lang?.let { lang -> Locale.forLanguageTag(lang) } ?: propertyService.locale
+            dateTimeExtractor.extractCandidates(it.bodyText, locale)
+          }
+            .onSuccess { candidates -> logCollector.log(candidates.summarize(startingAt)) }
+            .onFailure { e -> logCollector.log("datetime extraction failed: ${e.message}") }
+        }
+      }
+    }
+    return fetched?.document ?: document
   }
 
   override suspend fun mapEntity(
@@ -162,6 +180,8 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     )
   }
 }
+
+private data class Fetched(val document: Document, val bodyText: String, val lang: String?)
 
 private fun Document.source(sourceRepository: SourceRepository): Source? {
   return sourceId?.let { sourceRepository.findByIdWithActions(it) }

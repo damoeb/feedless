@@ -31,7 +31,7 @@ Goals, in order: determine the start datetime, then the end time, then whether t
 
 ### Approach
 
-**Rename.** `DateClaimer` → `DateTimeExtractor`, `DateClaimerTest` → `DateTimeExtractorTest`, both in `server-core/.../feed/`. `claimDatesFromString` → `extractDateTime`; `WebExtractService` keeps calling it, and its behaviour does not change.
+**Rename.** `DateClaimer` → `DateTimeExtractor`, `DateClaimerTest` → `DateTimeExtractorTest`, moved to `domain`, package `org.migor.feedless.text.datetime` (owner request during implementation). `claimDatesFromString` → `extractDateTime`; `WebExtractService` keeps calling it, and its behaviour does not change.
 
 **Candidates.** A new `extractCandidates(text, locale): List<DateTimeCandidate>` finds every match in the text (`findAll` rather than the current first `find` per format). A `DateTimeCandidate` holds the matched input string, its range in the text, the format pattern, the parsed `LocalDateTime`, and whether it carried a time. Candidates resolving to the same instant are merged, keeping an occurrence count; a string matched by several formats keeps the most specific one, using the existing ordering (time first, then longest pattern).
 
