@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/packages/cli" />
             <option value="$PROJECT_DIR$/packages/document-classifier" />
             <option value="$PROJECT_DIR$/packages/domain" />
+            <option value="$PROJECT_DIR$/packages/feed" />
             <option value="$PROJECT_DIR$/packages/feed-parser" />
             <option value="$PROJECT_DIR$/packages/freemarker-templates" />
             <option value="$PROJECT_DIR$/packages/frontend" />
