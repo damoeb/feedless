@@ -108,6 +108,7 @@ dependencies {
   implementation(project(":packages:feed-parser"))
   implementation(project(":packages:feed"))
   implementation(project(":packages:browser-automation-gateway"))
+  implementation(project(":packages:telegram-gateway"))
   api(project(":packages:graphql-api"))
   implementation(project(":packages:http-api"))
 
@@ -201,7 +202,6 @@ dependencies {
 
   // Property-Based-Testing https://mvnrepository.com/artifact/net.jqwik/jqwik
   testImplementation(libs.jqwik)
-  implementation(libs.telegrambots.meta)
 }
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
