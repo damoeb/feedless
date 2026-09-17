@@ -135,8 +135,6 @@ func StartStack(ctx context.Context, t *testing.T) *Stack {
 			"APP_HOST_URL":            "http://localhost:4200",
 			"APP_WHITELISTED_HOSTS":   "core",
 			"APP_MAIL_SENDER":         "noreply@feedless.test",
-			"APP_DEFAULT_DATE_FORMAT": "dd-MM-yyyy",
-			"APP_DEFAULT_TIME_FORMAT": "HH:mm",
 			"APP_TIMEZONE":            "UTC",
 			"APP_LOG_LEVEL":           "info",
 			// Without an OAuth2 client registration SecurityConfig can't start; deployments always have one. sso stays off.

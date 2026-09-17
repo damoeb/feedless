@@ -15,7 +15,6 @@ import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -67,7 +66,6 @@ import java.util.UUID
     DocumentRepository::class,
     DocumentUseCase::class,
     ProductUseCase::class,
-    PropertyService::class,
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,

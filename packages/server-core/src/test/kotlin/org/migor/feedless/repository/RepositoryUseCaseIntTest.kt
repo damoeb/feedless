@@ -16,7 +16,6 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.source.actions.ExtractXpathActionEntity
 import org.migor.feedless.data.jpa.source.actions.ScrapeActionDAO
 import org.migor.feedless.document.DocumentRepository
@@ -67,7 +66,6 @@ import org.migor.feedless.Vertical
     DocumentRepository::class,
     DocumentUseCase::class,
     ProductUseCase::class,
-    PropertyService::class,
     InboxService::class,
     StatelessAuthService::class,
     OrderRepository::class,

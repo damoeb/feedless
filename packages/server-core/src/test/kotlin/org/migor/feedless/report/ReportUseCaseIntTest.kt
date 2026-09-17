@@ -16,7 +16,6 @@ import org.migor.feedless.any
 import org.migor.feedless.attachment.AttachmentRepository
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.JtsUtil
 import org.migor.feedless.data.jpa.order.OrderDAO
 import org.migor.feedless.data.jpa.repository.RepositoryClaimJpaRepository
@@ -95,7 +94,6 @@ import java.time.temporal.ChronoUnit
     DocumentPipelineJobRepository::class,
     FeatureService::class,
     ProductUseCase::class,
-    PropertyService::class,
     SourceHarvester::class,
     AttachmentRepository::class,
     GroupUseCase::class,

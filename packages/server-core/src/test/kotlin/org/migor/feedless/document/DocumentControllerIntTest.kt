@@ -14,7 +14,6 @@ import org.migor.feedless.analytics.AnalyticsService
 import org.migor.feedless.NotFoundException
 import org.migor.feedless.any2
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.repository.RepositoryId
@@ -54,7 +53,6 @@ import java.time.LocalDateTime
     HttpService::class,
     AuthService::class,
     UserUseCase::class,
-    PropertyService::class,
     JwtTokenIssuer::class,
     CookieProvider::class,
     UserGuard::class,

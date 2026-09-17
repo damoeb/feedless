@@ -59,6 +59,28 @@ To change the API, edit the **contract** and rebuild. Both contract modules also
 
 Note: there is no checked-in copy of the JavaCC output. `server-core`'s `compileJavacc` task writes it to `build/generated/javacc/org/migor/feedless/document/filter/generated`, which is on the source path; that is the only place to look for it.
 
+## CRITICAL: Configuration only through a properties class
+
+Every configuration value reaches code through a small, immutable `@ConfigurationProperties` data class that lives next to the code reading it — never through `@Value`, an `Environment` lookup, or one global config bean.
+
+```kotlin
+@ConfigurationProperties("app.report")
+@Validated
+@Profile(AppProfiles.properties)
+data class ReportProperties(
+  val subscriptionMode: ReportSubscriptionMode,
+  @field:NotBlank val sender: String,
+)
+```
+
+- **One class per use case**, in that use case's module and package. Only `PublicUrls` and `BuildInfo` are shared.
+- **Give at least one parameter no default.** Kotlin synthesises a no-arg constructor when every parameter has one, and Boot then binds by setter and fails with `No setter found for property`. Optional values get their default in `application.yaml`, which is also where a deployment overrides them.
+- **Keep the legacy key.** A value that lives under a bare env var or a foreign prefix gets an alias under the class's prefix in `application.yaml`, with an assertion in `LegacyConfigBindingTest`.
+- **Validate at startup** with Jakarta constraints and `init { require(…) }`, so a bad value fails the context with Boot's binding report naming the key.
+- **Type at the boundary** — `Locale`, `Duration` (`@param:DurationUnit`), `List<String>`, enums — instead of parsing a `String` in the consumer.
+- **Mask secrets** by overriding `toString()`; the generated one would leak them into the startup log.
+- **A test needs the profile.** These classes carry `@Profile(AppProfiles.properties)`, so a context that injects one lists `properties` in its `@ActiveProfiles` (Critical Rule #1). A properties class cannot be supplied as a `@Bean` — Boot re-binds it and fails on the missing setters; use `@EnableConfigurationProperties` instead. Unit tests construct the class, or the fixture (`testPublicUrls()`, `testBuildInfo()`, `testSessionProperties()`).
+
 ## Package and naming conventions
 
 Code is organised by **feature**, not by layer — `document/`, `repository/`, `source/`, `plan/`, `session/`, `user/`, `scrape/`, `pipeline/`, … — and the same package spans modules: use cases and guards in `domain`, resolvers in `graphql-api`, controllers in `http-api`, infrastructure in `server-core`. `graphql-api` and `http-api` never depend on `server-core`, and `domain` depends on no project module.

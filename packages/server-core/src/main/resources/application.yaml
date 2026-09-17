@@ -67,19 +67,10 @@ app:
     # opt-out starts new subscriptions at once unless their address asked for opt-in; opt-in confirms every one
     subscription-mode: ${APP_REPORT_SUBSCRIPTION_MODE:opt-out}
     sender: ${app.mail.sender:feedless-sender@localhost}
-  dateFormat: dd-MM-yyyy
-  timeFormat: HH:mm
   timezone: UTC
-  webToFeedVersion: 0.1
   defaultLocale: en
   cors:
     allowedOrigins: http://localhost:4200
-
-default:
-  auth:
-    token:
-      anonymous:
-        validForDays: 28
 
 auth:
   token:

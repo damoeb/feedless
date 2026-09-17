@@ -24,7 +24,6 @@ import org.migor.feedless.any
 import org.migor.feedless.common.HostCooldownGuard
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.HttpService
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.data.jpa.attachment.AttachmentDAO
 import org.migor.feedless.eq
 import org.migor.feedless.generated.types.ScrapeResponse
@@ -59,7 +58,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 )
 @MockitoBean(
   types = [
-    PropertyService::class,
     AttachmentDAO::class,
     SourceRepository::class,
     SourceUseCase::class,

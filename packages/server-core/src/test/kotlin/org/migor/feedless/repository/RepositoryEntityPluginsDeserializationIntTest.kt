@@ -15,7 +15,6 @@ import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.browserautomation.BrowserAutomationService
 import org.migor.feedless.any
 import org.migor.feedless.attachment.AttachmentRepository
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
@@ -63,7 +62,6 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
     DocumentRepository::class,
     DocumentUseCase::class,
     ProductUseCase::class,
-    PropertyService::class,
     InboxService::class,
     BrowserAutomationService::class,
     AttachmentRepository::class,
