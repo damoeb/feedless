@@ -1,4 +1,4 @@
-package org.migor.feedless.feed
+package org.migor.feedless.text.datetime
 
 import org.apache.commons.lang3.StringUtils
 import org.migor.feedless.scrape.LogCollector

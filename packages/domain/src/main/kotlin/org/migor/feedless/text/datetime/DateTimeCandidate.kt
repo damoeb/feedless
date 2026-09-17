@@ -1,4 +1,4 @@
-package org.migor.feedless.feed
+package org.migor.feedless.text.datetime
 
 import java.time.LocalDateTime
 

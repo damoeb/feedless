@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.toList
 import org.jsoup.nodes.Element
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
-import org.migor.feedless.feed.DateTimeExtractor
+import org.migor.feedless.text.datetime.DateTimeExtractor
 import org.migor.feedless.generated.types.DOMElementByXPath
 import org.migor.feedless.generated.types.DOMExtract
 import org.migor.feedless.generated.types.MimeData

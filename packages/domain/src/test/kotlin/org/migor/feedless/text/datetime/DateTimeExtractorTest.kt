@@ -1,4 +1,4 @@
-package org.migor.feedless.feed
+package org.migor.feedless.text.datetime
 
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat

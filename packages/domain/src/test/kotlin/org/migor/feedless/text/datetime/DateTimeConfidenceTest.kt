@@ -1,4 +1,4 @@
-package org.migor.feedless.feed
+package org.migor.feedless.text.datetime
 
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
