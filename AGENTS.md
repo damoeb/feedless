@@ -31,11 +31,11 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 
 ## Modules
 
-`packages/` holds 24 directories; **only 19 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
+`packages/` holds 20 directories; **only 19 are Gradle modules.** `document-classifier-models` is the one that is not — `./gradlew :packages:document-classifier-models:test` will fail.
 
 | Module | Owns | Build |
 |---|---|---|
-| `server-core` | The Spring Boot application that assembles the modules: security composition (`SecurityConfig`, JWT filters, `TokenAuthenticator`), scheduler executors, the scraping pipeline and plugins, infrastructure behind `domain`'s outbound ports (`JwtTokenIssuer`, `PluginService`, `ScrapeService`, `AnalyticsService`, …), `ThrottleAspect`, `TestingEndpoint`. 114 Kotlin files; start at `FeedlessApplication.kt`. | Gradle |
+| `server-core` | The Spring Boot application that assembles the modules: security composition (`SecurityConfig`, JWT filters, `TokenAuthenticator`), scheduler executors, the scraping pipeline and plugins, infrastructure behind `domain`'s outbound ports (`JwtTokenIssuer`, `PluginService`, `ScrapeService`, `AnalyticsService`, …), `ThrottleAspect`, `TestingEndpoint`. 91 Kotlin files; start at `FeedlessApplication.kt`. | Gradle |
 | `domain` | Domain types, repository interfaces, all use cases and guards, outbound ports (`TokenIssuer`, `PipelinePlugins`, `Scraper`, `Analytics`, …), the shared properties classes (`PublicUrls`, `BuildInfo`, `LocaleProperties`), the security bridge (`injectCapabilitiesFrom*`), `@Throttled`, shared exceptions, `AppProfiles`/`AppLayer`. Spring annotations allowed; no generated GraphQL types, no `data.jpa`. Depends on no project module; changes ripple everywhere. | Gradle |
 | `jpa-data` | JPA adapters: entities, DAOs, MapStruct mappers, PostGIS types. Flyway migrations (`src/main/resources/db/migration`) and persistence integration tests (Testcontainers/PostGIS; `PostgreSQLExtension` is its test fixture). | Gradle |
 | `graphql-api` | `schema.graphqls` (**contract**: generates the Kotlin DGS types and every TS client) plus all DGS resolvers, `ProductDataLoader`, GraphQL mappers (MapStruct via kapt), `GraphQLExceptionHandler`, `GraphqlConfig`. Never depends on `server-core`. | Gradle (codegen, kapt) |
@@ -44,6 +44,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `feed` | The feed engine: `WebToFeedTransformer` and `WebExtractService` (turning a page into a feed), the native and generic feed locators, `FeedParserService`, and the `org_feedless_feed` / `org_feedless_feeds` pipeline plugins. Depends on `graphql-api` because the engine works on the generated types. Never depends on `server-core`. | Gradle |
 | `browser-automation-app` | NestJS headless-Chromium worker (the prerender agent). Dials out to the core over a GraphQL subscription; needs no public IP. Env vars in its `README.md`. | Gradle → yarn |
 | `browser-automation-gateway` | The core side of that connection: `BrowserAutomationService` (agent registration, job dispatch, the `BrowserAutomationGateway` implementation) with `BrowserAutomationRef` and `BrowserAutomationResponse`. Needs reactor and the generated GraphQL types, which is why it is not in `domain`. Never depends on `server-core`. | Gradle |
+| `telegram-gateway` | The Telegram vertical: `TelegramBotService` (long-polling bot, chat linking, push), `TelegramConfig`/`TelegramProperties`, the `Notifications` port adapter and the `MessageService` pub/sub it fans out through. Depends on `domain` and `jpa-data` only. Never depends on `server-core`. | Gradle |
 | `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
 | `frontend` | Nx 22 workspace, Angular 21. Apps `upcoming`, `feed-reader`, `auction-alert`; libs `@feedless/{components,core,geo,graphql-api,guards,testing}`. **npm.** | Gradle → npm |
 | `document-classifier` | fastText classifier wrapper. Models/training data in `document-classifier-models`. | Gradle |
@@ -54,7 +55,6 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `freemarker-templates` | Freemarker rendering service. | Gradle |
 | `nominatim-proxy` | Standalone TS geocoding proxy. | Gradle → yarn |
 | `cli` | `feedctl` — a `gh`-style Go CLI over `/api/v1`. Its HTTP client (`internal/api`) is generated from `http-api`'s `openapi.yaml`; a spec change without regeneration fails `lint`'s generate-drift check. | Gradle → go |
-| `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter` | Empty stubs. Do not assume they work. | none |
 
 ## Pre-Commit Checklist
 
