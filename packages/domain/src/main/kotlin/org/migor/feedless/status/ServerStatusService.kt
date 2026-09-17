@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("${AppProfiles.properties} & ${AppLayer.service}")
 class ServerStatusService(
-  @param:Value("\${app.version}") private val version: String,
-  @param:Value("\${APP_GIT_COMMIT:unknown}") private val commit: String,
-  @Value("\${APP_BUILD_TIMESTAMP:}") buildTimestamp: String,
+  private val buildInfo: BuildInfo,
   private val browserAutomationDirectory: ObjectProvider<BrowserAutomationDirectory>,
 ) {
 
@@ -24,7 +22,7 @@ class ServerStatusService(
 
   // Parsed once: a bad APP_BUILD_TIMESTAMP reports 0 instead of turning a health check into a 500.
   private val buildDate: Long = try {
-    parseBuildTimestamp(buildTimestamp)
+    parseBuildTimestamp(buildInfo.timestamp)
   } catch (e: IllegalArgumentException) {
     log.warn("[boot] ${e.message}; GET /api/v1/status reports build.date 0")
     0
@@ -32,8 +30,8 @@ class ServerStatusService(
 
   suspend fun status(): ServerStatus {
     return ServerStatus(
-      version = version,
-      commit = commit,
+      version = buildInfo.version,
+      commit = buildInfo.commit,
       buildDate = buildDate,
       connectedAgents = browserAutomationDirectory.ifAvailable?.countConnected() ?: 0,
     )

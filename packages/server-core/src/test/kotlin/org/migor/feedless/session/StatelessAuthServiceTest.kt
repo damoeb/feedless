@@ -15,8 +15,11 @@ class StatelessAuthServiceTest {
 
   @BeforeEach
   fun setUp() {
-    ReflectionTestUtils.setField(service, "rootEmail", "root@example.org")
-    ReflectionTestUtils.setField(service, "rootSecretKey", "root-secret")
+    ReflectionTestUtils.setField(
+      service,
+      "rootUserProperties",
+      testRootUserProperties(rootEmail = "root@example.org", rootSecretKey = "root-secret"),
+    )
     service.init()
     root = ReflectionTestUtils.getField(service, "root") as User
   }

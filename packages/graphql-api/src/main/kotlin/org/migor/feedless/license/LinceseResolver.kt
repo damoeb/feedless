@@ -16,7 +16,6 @@ import org.migor.feedless.generated.types.UpdateLicenseInput
 import org.migor.feedless.util.toMillis
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
 
 @DgsComponent
@@ -24,9 +23,6 @@ import org.springframework.context.annotation.Profile
 class LinceseResolver {
 
   private val log = LoggerFactory.getLogger(LinceseResolver::class.simpleName)
-
-  @Value("\${app.version}")
-  lateinit var version: String
 
   @Autowired
   private lateinit var licenseUseCase: LicenseUseCase

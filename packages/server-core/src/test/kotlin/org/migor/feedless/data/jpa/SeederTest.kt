@@ -1,12 +1,13 @@
 package org.migor.feedless.data.jpa
 
+import org.migor.feedless.user.anonymousEmail
 import kotlinx.coroutines.test.runTest
 import net.jqwik.api.Disabled
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.any2
 import org.migor.feedless.argThat
-import org.migor.feedless.common.PropertyService
+import org.migor.feedless.session.testRootUserProperties
 import org.migor.feedless.data.Seeder
 import org.migor.feedless.eq
 import org.migor.feedless.feature.FeatureGroupRepository
@@ -32,7 +33,6 @@ class SeederTest {
   private lateinit var featureGroupRepository: FeatureGroupRepository
   private lateinit var featureService: FeatureService
   private lateinit var environment: Environment
-  private lateinit var propertyService: PropertyService
   private lateinit var productRepository: ProductRepository
   private lateinit var pricedProductRepository: PricedProductRepository
   private lateinit var userSecretRepository: UserSecretRepository
@@ -46,7 +46,6 @@ class SeederTest {
     featureGroupRepository = mock(FeatureGroupRepository::class.java)
     featureService = mock(FeatureService::class.java)
     environment = mock(Environment::class.java)
-    propertyService = mock(PropertyService::class.java)
     productRepository = mock(ProductRepository::class.java)
     pricedProductRepository = mock(PricedProductRepository::class.java)
     userSecretRepository = mock(UserSecretRepository::class.java)
@@ -58,7 +57,7 @@ class SeederTest {
       featureGroupRepository,
       featureService,
       environment,
-      propertyService,
+      testRootUserProperties(rootEmail = "admin@foo", rootSecretKey = "aSecretSecret"),
       productRepository,
       pricedProductRepository,
       userSecretRepository,
@@ -67,9 +66,6 @@ class SeederTest {
       userGroupAssignmentRepository
     )
 
-    `when`(propertyService.rootEmail).thenReturn("admin@foo")
-    `when`(propertyService.anonymousEmail).thenReturn("anon@foo")
-    `when`(propertyService.rootSecretKey).thenReturn("aSecretSecret")
     `when`(userRepository.save(any2())).thenAnswer { it.arguments[0] }
     `when`(userRepository.existsByEmail(any2())).thenReturn(false)
     `when`(featureGroupRepository.save(any2())).thenAnswer { it.arguments[0] }
@@ -94,7 +90,7 @@ class SeederTest {
     `when`(root.id).thenReturn(UserId())
     `when`(root.email).thenReturn("admin@foo")
     `when`(userRepository.findFirstByAdminIsTrue()).thenReturn(root)
-    `when`(userRepository.findByEmail(eq("anon@foo"))).thenReturn(mock(User::class.java))
+    `when`(userRepository.findByEmail(eq(anonymousEmail))).thenReturn(mock(User::class.java))
     `when`(userSecretRepository.existsByValueAndOwnerId(any2(), any2())).thenReturn(true)
 
     seeder.seed()

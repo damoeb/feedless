@@ -31,6 +31,7 @@ import java.util.UUID
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.browserAutomation,
   AppProfiles.user,

@@ -13,6 +13,7 @@ repositories {
 dependencies {
   implementation(platform(libs.spring.boot.bom))
   implementation(project(":packages:domain"))
+  implementation(libs.spring.boot.validation)
   testImplementation(testFixtures(project(":packages:domain")))
 
   implementation(kotlin("stdlib"))

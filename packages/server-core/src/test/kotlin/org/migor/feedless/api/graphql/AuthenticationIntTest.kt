@@ -1,5 +1,7 @@
 package org.migor.feedless.api.graphql
 
+import org.migor.feedless.session.SessionProperties
+import org.migor.feedless.common.PublicUrls
 import tools.jackson.databind.ObjectMapper
 import com.netflix.graphql.dgs.client.MonoGraphQLClient
 import com.netflix.graphql.dgs.client.WebClientGraphQLClient
@@ -13,7 +15,6 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.DisableDatabaseConfiguration
 import org.migor.feedless.Mother.randomUser
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.generated.DgsClient
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.AuthUserInput
@@ -90,11 +91,15 @@ class AuthenticationIntTest {
   @Autowired
   lateinit var authService: AuthService
 
-  @Autowired
-  lateinit var propertyService: PropertyService
 
   @Autowired
   lateinit var jwtTokenIssuer: JwtTokenIssuer
+
+  @Autowired
+  lateinit var sessionProperties: SessionProperties
+
+  @Autowired
+  lateinit var publicUrls: PublicUrls
 
   @MockitoBean
   lateinit var userSecretRepository: UserSecretRepository
@@ -110,7 +115,7 @@ class AuthenticationIntTest {
     this.monoGraphQLClient = MonoGraphQLClient.createWithWebClient(webClient)
 
     // Create JWT decoder with the same secret key used to sign tokens
-    val secretKey: SecretKey = SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    val secretKey: SecretKey = SecretKeySpec(sessionProperties.jwtSecret.encodeToByteArray(), "HmacSHA256")
     this.jwtDecoder = NimbusJwtDecoder.withSecretKey(secretKey).build()
   }
 
@@ -152,7 +157,7 @@ class AuthenticationIntTest {
     val jwt = jwtDecoder.decode(actualToken)
     assertThat(jwt).isNotNull()
     assertThat(jwt.tokenValue).isEqualTo(actualToken)
-    assertThat(jwt.issuer.toString()).isEqualTo(propertyService.apiGatewayUrl)
+    assertThat(jwt.issuer.toString()).isEqualTo(publicUrls.apiGatewayUrl)
   }
 
   // Regression for C1: under authRoot (no oauth), a logged-in user must not read back as anonymous.

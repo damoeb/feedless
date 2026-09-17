@@ -1,5 +1,6 @@
 package org.migor.feedless.license
 
+import org.migor.feedless.status.testBuildInfo
 import com.nimbusds.jose.jwk.RSAKey
 import kotlinx.coroutines.test.runTest
 import org.apache.commons.lang3.time.DateUtils
@@ -105,20 +106,20 @@ class LicenseUseCaseTest {
     Assertions.assertThat(service.getTrialDuration() / DateUtils.MILLIS_PER_DAY).isEqualTo(trialPeriodDays)
 
     val now = LocalDateTime.now()
-    service.buildTimestamp = "${now.getTime()}"
+    service.buildInfo = testBuildInfo(timestamp = "${now.getTime()}")
     Assertions.assertThat(service.isTrial()).isTrue()
 
-    service.buildTimestamp = "${now.minusDays(trialPeriodDays).plusMinutes(1).getTime()}"
+    service.buildInfo = testBuildInfo(timestamp = "${now.minusDays(trialPeriodDays).plusMinutes(1).getTime()}")
     Assertions.assertThat(service.isTrial()).isTrue()
 
-    service.buildTimestamp = "${now.minusDays(trialPeriodDays + 1).getTime()}"
+    service.buildInfo = testBuildInfo(timestamp = "${now.minusDays(trialPeriodDays + 1).getTime()}")
     Assertions.assertThat(service.isTrial()).isFalse()
   }
 
   @Test
   fun `license not required after 2 years`() {
     val now = LocalDateTime.now()
-    service.buildTimestamp = "${now.minusDays(365 * 2 + 1).getTime()}"
+    service.buildInfo = testBuildInfo(timestamp = "${now.minusDays(365 * 2 + 1).getTime()}")
     Assertions.assertThat(service.hasValidLicense()).isFalse()
     Assertions.assertThat(service.isLicenseNotNeeded()).isTrue()
     Assertions.assertThat(service.hasValidLicenseOrLicenseNotNeeded()).isTrue()
@@ -126,7 +127,7 @@ class LicenseUseCaseTest {
 
   @Test
   fun `given no license and within trial period, hasValidLicenseOrLicenseNotNeeded returns true`() {
-    service.buildTimestamp = "${Date().time}"
+    service.buildInfo = testBuildInfo(timestamp = "${Date().time}")
     Assertions.assertThat(service.isTrial()).isTrue()
   }
 
@@ -181,7 +182,7 @@ class LicenseUseCaseTest {
 
   private fun mockAfterTrial() {
     val now = LocalDateTime.now()
-    service.buildTimestamp = "${now.minusDays(100).getTime()}"
+    service.buildInfo = testBuildInfo(timestamp = "${now.minusDays(100).getTime()}")
   }
 
   private fun mockPublicKey(publicKey: RSAPublicKey) {

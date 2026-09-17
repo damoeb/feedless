@@ -19,7 +19,7 @@ import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
 import org.migor.feedless.capability.UserCapability
 import org.migor.feedless.capability.childRequestContext
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.message.Notifications
 import org.migor.feedless.pipeline.FilterEntityPlugin
@@ -60,7 +60,7 @@ class DocumentUseCase(
   private val documentPipelineJobRepository: DocumentPipelineJobRepository,
   private val pipelinePlugins: PipelinePlugins,
   private val notifications: Notifications,
-  private val appConfig: AppConfig,
+  private val publicUrls: PublicUrls,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
   private val harvestRepository: HarvestRepository,
@@ -213,7 +213,7 @@ class DocumentUseCase(
                 is FilterEntityPlugin<*> -> {
                   if (!plugin.filterEntity(
                       state.currentDocument.toJsonItem(
-                        appConfig,
+                        publicUrls,
                         EntityVisibility.isPublic
                       ),
                       job.executorParams.paramsJsonString,

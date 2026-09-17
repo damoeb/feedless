@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.common.testPublicUrls
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSVerifier
 import com.nimbusds.jose.crypto.MACVerifier
@@ -14,7 +15,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.group.GroupAndRole
 import org.migor.feedless.group.GroupId
 import org.migor.feedless.user.User
@@ -33,25 +33,18 @@ import java.time.temporal.ChronoUnit
 class JwtTokenIssuerTest {
 
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
-  private lateinit var propertyService: PropertyService
   private lateinit var meterRegistry: MeterRegistry
   private val testJwtSecret = "test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm"
 
   @BeforeEach
   fun setUp() {
-    propertyService = mock(PropertyService::class.java)
     meterRegistry = SimpleMeterRegistry()
 
-    `when`(propertyService.jwtSecret).thenReturn(testJwtSecret)
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
-
     jwtTokenIssuer = JwtTokenIssuer(
-      propertyService = propertyService,
+      sessionProperties = testSessionProperties(jwtSecret = testJwtSecret),
+      publicUrls = testPublicUrls(),
       meterRegistry = meterRegistry,
-      tokenAnonymousValidForDays = "1",
-      defaultTokenAnonymousValidForDays = "1"
     )
-    jwtTokenIssuer.postConstruct()
   }
 
   @Test

@@ -1,5 +1,6 @@
 package org.migor.feedless.status
 
+import org.migor.feedless.status.testBuildInfo
 import ch.qos.logback.classic.Level
 import ch.qos.logback.classic.Logger
 import ch.qos.logback.classic.spi.ILoggingEvent
@@ -66,6 +67,6 @@ class ServerStatusServiceTest {
     buildTimestamp: String = "1757000000000",
   ): ServerStatusService {
     val provider = mock<ObjectProvider<BrowserAutomationDirectory>> { on { ifAvailable } doReturn registry }
-    return ServerStatusService("0.3.0", "abc123", buildTimestamp, provider)
+    return ServerStatusService(testBuildInfo(version = "0.3.0", commit = "abc123", timestamp = buildTimestamp), provider)
   }
 }

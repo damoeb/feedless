@@ -14,7 +14,6 @@ import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.repository.RepositoryId
 import org.slf4j.LoggerFactory
-import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.context.annotation.Profile
 import org.springframework.http.HttpHeaders
 import org.springframework.stereotype.Service
@@ -39,14 +38,11 @@ fun toFullUrlString(request: HttpServletRequest): String {
 
 @Service
 @Profile("${AppProfiles.analytics} & ${AppLayer.service}")
-@ConfigurationProperties("app.analytics")
-class AnalyticsService : Analytics {
+class AnalyticsService(
+  private val properties: AnalyticsProperties,
+) : Analytics {
 
   private val log = LoggerFactory.getLogger(AnalyticsService::class.simpleName)
-
-  lateinit var plausibleUrl: String
-  lateinit var plausibleSite: String
-  lateinit var plausibleApiKey: String
 
   private lateinit var httpClient: AsyncHttpClient
   private var canPush: Boolean = true
@@ -56,21 +52,21 @@ class AnalyticsService : Analytics {
   @PostConstruct
   private fun postConstruct() {
 
-    log.info("plausibleUrl: $plausibleUrl")
-    val hasUrl = plausibleUrl.isNotBlank() && isValidPlausibleUrl(plausibleUrl)
+    log.info("plausibleUrl: ${properties.plausibleUrl}")
+    val hasUrl = properties.plausibleUrl.isNotBlank() && isValidPlausibleUrl(properties.plausibleUrl)
     if (!hasUrl) {
-      if (plausibleUrl.isNotBlank()) {
-        log.error("plausibleUrl is malformed (e.g. missing host like http://:8000): $plausibleUrl")
+      if (properties.plausibleUrl.isNotBlank()) {
+        log.error("plausibleUrl is malformed (e.g. missing host like http://:8000): ${properties.plausibleUrl}")
       } else {
         log.error("plausibleUrl is empty")
       }
     }
-    log.info("plausibleSite: $plausibleSite")
-    val hasSite = plausibleSite.isNotBlank()
+    log.info("plausibleSite: ${properties.plausibleSite}")
+    val hasSite = properties.plausibleSite.isNotBlank()
     if (!hasSite) {
       log.error("plausibleSite is empty")
     }
-    val hasKey = plausibleApiKey.isNotBlank()
+    val hasKey = properties.plausibleApiKey.isNotBlank()
     if (!hasKey) {
       log.warn("plausibleApiKey is empty")
     }
@@ -108,7 +104,7 @@ class AnalyticsService : Analytics {
         val url = toFullUrlString(request)
         log.debug("track url $url")
         // https://plausible.io/docs/events-api
-        val event = PlausibleEvent(name = "pageview", url = url, domain = plausibleSite)
+        val event = PlausibleEvent(name = "pageview", url = url, domain = properties.plausibleSite)
         val expectedStatusCode = 202
 
         val getHeader = { header: String ->
@@ -117,7 +113,7 @@ class AnalyticsService : Analytics {
 
         // https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/X-Forwarded-For
         val forwardedForHeader = "X-Forwarded-For"
-        httpClient.preparePost("$plausibleUrl/api/event")
+        httpClient.preparePost("${properties.plausibleUrl}/api/event")
           .addHeader(HttpHeaders.USER_AGENT, getHeader(HttpHeaders.USER_AGENT))
           .addHeader(HttpHeaders.CONTENT_TYPE, "application/json")
           .addHeader(HttpHeaders.REFERER, getHeader(HttpHeaders.REFERER))
@@ -136,8 +132,8 @@ class AnalyticsService : Analytics {
   suspend fun getUniquePageViewsForRepository(repoId: RepositoryId): Int {
 //    curl "https://plausible.io/api/v1/stats/timeseries?site_id=$SITE_ID&period=6mo&filters=visit:source%3D%3DGoogle" \
 //    -H "Authorization: Bearer ${TOKEN}"
-    val response = httpClient.prepareGet("$plausibleUrl/api/event")
-      .addHeader(HttpHeaders.AUTHORIZATION, "Bearer $plausibleApiKey")
+    val response = httpClient.prepareGet("${properties.plausibleUrl}/api/event")
+      .addHeader(HttpHeaders.AUTHORIZATION, "Bearer ${properties.plausibleApiKey}")
       .execute()
       .toCompletableFuture()
       .orTimeout(5, TimeUnit.SECONDS)

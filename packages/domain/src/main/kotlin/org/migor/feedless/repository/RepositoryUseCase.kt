@@ -14,7 +14,7 @@ import org.migor.feedless.Vertical
 import org.migor.feedless.api.createDocumentUrl
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentUseCase
@@ -67,7 +67,7 @@ class RepositoryUseCase(
   private val repositoryRepository: RepositoryRepository,
   private val planConstraintsService: PlanConstraintsService,
   private val documentUseCase: DocumentUseCase,
-  private val appConfig: AppConfig,
+  private val publicUrls: PublicUrls,
   private val sourceUseCase: SourceUseCase,
   private val repositoryGuard: RepositoryGuard,
 ) : RepositoryProvider {
@@ -117,7 +117,7 @@ class RepositoryUseCase(
         filter = filter,
         orderBy = order,
         pageable = pageable,
-      ).map { it.toJsonItem(appConfig, repository.visibility) }.toList()
+      ).map { it.toJsonItem(publicUrls, repository.visibility) }.toList()
 
     } catch (e: EmptyResultDataAccessException) {
       log.error("empty result", e)
@@ -135,13 +135,13 @@ class RepositoryUseCase(
 //    jsonFeed.tags = tags
     jsonFeed.title = title
     jsonFeed.description = repository.description
-    jsonFeed.websiteUrl = "${appConfig.appHost}/feeds/$repositoryId"
+    jsonFeed.websiteUrl = "${publicUrls.appHost}/feeds/$repositoryId"
     jsonFeed.publishedAt = items.maxOfOrNull { it.publishedAt } ?: LocalDateTime.now()
     jsonFeed.items = items.filterIndexed { index, _ -> index < pageSize - 1 }
     jsonFeed.imageUrl = null
     jsonFeed.page = page
     jsonFeed.expired = false
-    val urlBuilder = UriComponentsBuilder.fromUriString("${appConfig.apiGatewayUrl}/f/${repositoryId}/atom")
+    val urlBuilder = UriComponentsBuilder.fromUriString("${publicUrls.apiGatewayUrl}/f/${repositoryId}/atom")
     jsonFeed.feedUrl = urlBuilder.build().toUri().toString()
     jsonFeed.isLast = items.size < pageSize
 
@@ -400,7 +400,7 @@ class RepositoryUseCase(
 }
 
 fun Document.toJsonItem(
-  appConfig: AppConfig,
+  publicUrls: PublicUrls,
   visibility: EntityVisibility,
   requestURI: String? = null
 ): JsonItem {
@@ -415,14 +415,14 @@ fun Document.toJsonItem(
   article.title = StringUtils.trimToEmpty(title)
   article.attachments = attachments.map {
     JsonAttachment(
-      url = it.remoteDataUrl ?: createAttachmentUrl(appConfig, it.id),
+      url = it.remoteDataUrl ?: createAttachmentUrl(publicUrls, it.id),
       type = it.mimeType,
       length = it.size,
       duration = it.duration
     )
   }
   if (visibility === EntityVisibility.isPublic) {
-    article.url = createDocumentUrl(appConfig, id)
+    article.url = createDocumentUrl(publicUrls, id)
     article.text = StringUtils.abbreviate(text, "...", 160)
   } else {
     article.url = url

@@ -29,6 +29,7 @@ dependencies {
   implementation(libs.nimbus.jose.jwt)
   implementation(libs.tika.core)
   implementation(libs.spring.boot.validation)
+  implementation("org.springframework.boot:spring-boot")
   api("org.springframework.data:spring-data-commons")
   implementation("org.springframework:spring-web")
   implementation("jakarta.annotation:jakarta.annotation-api")

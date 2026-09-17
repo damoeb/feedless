@@ -1,5 +1,6 @@
 package org.migor.feedless.transport
 
+import org.migor.feedless.common.PublicUrls
 import com.google.gson.Gson
 import jakarta.annotation.PostConstruct
 import kotlinx.coroutines.Dispatchers
@@ -26,7 +27,6 @@ import org.migor.feedless.systemSettings.SystemSettings
 import org.migor.feedless.systemSettings.SystemSettingsRepository
 import org.migor.feedless.user.UserId
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean
 import org.springframework.context.annotation.Profile
 import org.springframework.core.env.Environment
@@ -45,8 +45,7 @@ import java.time.Duration
 @ConditionalOnBean(TelegramConnectionDAO::class, TelegramProperties::class)
 class TelegramBotService(
   private val telegramProperties: TelegramProperties,
-  @Value("\${app.appHost}")
-  private val appHost: String,
+  private val publicUrls: PublicUrls,
   private val telegramConnectionRepository: TelegramConnectionRepository,
   private val environment: Environment,
   private val messageService: MessageService,
@@ -197,7 +196,7 @@ class TelegramBotService(
     )
 
     log.info("welcome telegram user ${link.id}")
-    sendMessage(chatId, "Hi, to proceed connect your feedless account here ${appHost}/connect-app/${link.id}")
+    sendMessage(chatId, "Hi, to proceed connect your feedless account here ${publicUrls.appHost}/connect-app/${link.id}")
   }
 
   fun showOptionsForKnownUser(chatId: Long) {

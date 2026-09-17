@@ -9,7 +9,6 @@ import org.migor.feedless.userSecret.UserSecret
 import org.migor.feedless.userSecret.UserSecretId
 import org.migor.feedless.userSecret.UserSecretType
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.security.access.AccessDeniedException
 import org.springframework.security.oauth2.jwt.Jwt
@@ -20,11 +19,8 @@ import java.time.LocalDateTime
 @Service
 @ConditionalOnMissingBean(StatefulAuthService::class)
 class StatelessAuthService : AuthService() {
-  @Value("\${app.rootEmail}")
-  private lateinit var rootEmail: String
-
-  @Value("\${app.rootSecretKey}")
-  private lateinit var rootSecretKey: String
+  @Autowired
+  private lateinit var rootUserProperties: RootUserProperties
 
   @Autowired
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
@@ -36,13 +32,13 @@ class StatelessAuthService : AuthService() {
   @PostConstruct
   fun init() {
     root = User(
-      email = rootEmail,
+      email = rootUserProperties.rootEmail,
       lastLogin = LocalDateTime.now(),
       hasAcceptedTerms = true,
     )
     key = UserSecret(
       name = "Root secret key",
-      value = rootSecretKey,
+      value = rootUserProperties.rootSecretKey,
       validUntil = LocalDateTime.now().plusDays(1),
       type = UserSecretType.SecretKey,
       ownerId = root.id,
@@ -52,7 +48,7 @@ class StatelessAuthService : AuthService() {
   override fun isWhitelisted(request: HttpServletRequest): Boolean = true
 
   override suspend fun authenticateUser(email: String, secretKey: String): Jwt {
-    return if (email == rootEmail && secretKey == rootSecretKey) {
+    return if (email == rootUserProperties.rootEmail && secretKey == rootUserProperties.rootSecretKey) {
       jwtTokenIssuer.createJwtForCapabilities(listOf(UserCapability(root.id)))
     } else {
       throw AccessDeniedException("User does not exist or password invalid")
@@ -68,7 +64,7 @@ class StatelessAuthService : AuthService() {
   }
 
   override suspend fun findBySecretKeyValue(secretKey: String, email: String): UserSecret? {
-    return if (email == rootEmail && secretKey == rootSecretKey) {
+    return if (email == rootUserProperties.rootEmail && secretKey == rootUserProperties.rootSecretKey) {
       key
     } else {
       throw AccessDeniedException("User does not exist or password invalid")

@@ -10,7 +10,6 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PermissionDeniedException
 import org.migor.feedless.capability.GroupCapability
 import org.migor.feedless.capability.UserCapability
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.user.User
 import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
@@ -29,7 +28,6 @@ import java.time.Duration
 import java.time.LocalDateTime
 import javax.crypto.SecretKey
 import javax.crypto.spec.SecretKeySpec
-import kotlin.properties.Delegates
 import kotlin.time.DurationUnit
 import kotlin.time.toDuration
 
@@ -41,7 +39,7 @@ class StatefulAuthService : AuthService() {
   private val log = LoggerFactory.getLogger(StatefulAuthService::class.simpleName)
 
   @Autowired
-  private lateinit var propertyService: PropertyService
+  private lateinit var sessionProperties: SessionProperties
 
   @Autowired
   private lateinit var userRepository: UserRepository
@@ -52,28 +50,14 @@ class StatefulAuthService : AuthService() {
   @Autowired
   private lateinit var userGroupAssignmentRepository: UserGroupAssignmentRepository
 
-  @Value("\${auth.token.anonymous.validForDays}")
-  lateinit var tokenAnonymousValidForDays: String
-
-  @Value("\${default.auth.token.anonymous.validForDays}")
-  lateinit var defaultTokenAnonymousValidForDays: String
-
-  @Value("\${app.whitelistedHosts}")
-  lateinit var whitelistedHostsParam: String
-
   @Autowired
   private lateinit var jwtTokenIssuer: JwtTokenIssuer
-
-  private var tokenAnonymousValidFor: Long by Delegates.notNull()
 
   // Bounds last-used writes to one per secret per interval, however busy the token is.
   private val lastUsedResolution = Duration.ofMinutes(1)
 
   @PostConstruct
   fun postConstruct() {
-    tokenAnonymousValidFor = parseDuration(tokenAnonymousValidForDays, defaultTokenAnonymousValidForDays)
-    log.info("tokenAnonymousValidFor=${tokenAnonymousValidFor}")
-
     resolveWhitelistedHosts()
   }
 
@@ -137,9 +121,8 @@ class StatefulAuthService : AuthService() {
   // --
 
   private fun resolveWhitelistedHosts() {
-    this.whitelistedIps = whitelistedHostsParam
-      .trim()
-      .split(" ", ",").mapNotNull {
+    this.whitelistedIps = sessionProperties.whitelistedHosts
+      .mapNotNull {
         try {
           InetAddress.getByName(it.trim()).hostAddress
         } catch (e: Exception) {
@@ -159,11 +142,7 @@ class StatefulAuthService : AuthService() {
     log.info("whitelistedIps=${whitelistedIps}")
   }
 
-  private fun parseDuration(actual: String, fallback: String) = runCatching {
-    actual.toLong().toDuration(DurationUnit.DAYS).inWholeMinutes
-  }.getOrElse { fallback.toLong() }
-
   private fun getSecretKey(): SecretKey {
-    return SecretKeySpec(propertyService.jwtSecret.encodeToByteArray(), "HmacSHA256")
+    return SecretKeySpec(sessionProperties.jwtSecret.encodeToByteArray(), "HmacSHA256")
   }
 }

@@ -1,10 +1,11 @@
 package org.migor.feedless.data
 
+import org.migor.feedless.user.anonymousEmail
+import org.migor.feedless.session.RootUserProperties
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.BadRequestException
 import org.migor.feedless.Vertical
-import org.migor.feedless.common.PropertyService
 import org.migor.feedless.feature.FeatureGroup
 import org.migor.feedless.feature.FeatureGroupId
 import org.migor.feedless.feature.FeatureGroupRepository
@@ -46,7 +47,7 @@ class Seeder(
   private val featureGroupRepository: FeatureGroupRepository,
   private val featureService: FeatureService,
   private val environment: Environment,
-  private val propertyService: PropertyService,
+  private val rootUserProperties: RootUserProperties,
   private val productRepository: ProductRepository,
   private val pricedProductRepository: PricedProductRepository,
   private val userSecretRepository: UserSecretRepository,
@@ -98,30 +99,30 @@ class Seeder(
 
   private fun seedUsers() {
     log.info("Seed Users started")
-    userRepository.findByEmail(propertyService.anonymousEmail) ?: createAnonymousUser()
+    userRepository.findByEmail(anonymousEmail) ?: createAnonymousUser()
   }
 
   private fun seedRootUser(): User {
     val root = userRepository.findFirstByAdminIsTrue() ?: createUser(
-      propertyService.rootEmail,
+      rootUserProperties.rootEmail,
       isRoot = true,
     )
-    if (root.email != propertyService.rootEmail) {
+    if (root.email != rootUserProperties.rootEmail) {
       log.info("Updated rootEmail")
       userRepository.save(
         root.copy(
-          email = propertyService.rootEmail
+          email = rootUserProperties.rootEmail
         )
       )
     }
 
-    if (!userSecretRepository.existsByValueAndOwnerId(propertyService.rootSecretKey, root.id)) {
+    if (!userSecretRepository.existsByValueAndOwnerId(rootUserProperties.rootSecretKey, root.id)) {
       log.info("created secretKey for root")
       userSecretRepository.save(
         UserSecret(
           name = "Root secret key",
           ownerId = root.id,
-          value = propertyService.rootSecretKey,
+          value = rootUserProperties.rootSecretKey,
           type = UserSecretType.SecretKey,
           validUntil = LocalDateTime.now().plus(Duration.ofDays(356))
         )
@@ -189,7 +190,7 @@ class Seeder(
 //  }
 
   private fun createAnonymousUser() = createUser(
-    propertyService.anonymousEmail,
+    anonymousEmail,
     isAnonymous = true,
   )
 

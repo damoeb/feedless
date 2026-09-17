@@ -17,7 +17,8 @@ import org.migor.feedless.argThat
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.document.DocumentRepository
@@ -63,7 +64,7 @@ import java.time.temporal.ChronoUnit
 class ReportUseCaseTest {
 
   private lateinit var documentRepository: DocumentRepository
-  private lateinit var appConfig: AppConfig
+  private val publicUrls = testPublicUrls(apiGatewayUrl = "https://api.test.local")
   private lateinit var tokenIssuer: TokenIssuer
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var reportRepository: ReportRepository
@@ -101,8 +102,6 @@ class ReportUseCaseTest {
       .thenReturn(mock(ReportPlugin::class.java))
 
     documentRepository = mock(DocumentRepository::class.java)
-    appConfig = mock(AppConfig::class.java)
-    `when`(appConfig.apiGatewayUrl).thenReturn("https://api.test.local")
     tokenIssuer = mock(TokenIssuer::class.java)
     `when`(tokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
       Jwt.withTokenValue("t")
@@ -125,7 +124,7 @@ class ReportUseCaseTest {
       Jwt.withTokenValue("r").header("alg", "HS256").claim("recipient_id", "x").build()
     )
 
-    reportUseCase = newUseCase("opt-out")
+    reportUseCase = newUseCase(ReportSubscriptionMode.OPT_OUT)
 
     `when`(segmentationRepository.save(any(Segmentation::class.java))).thenAnswer { it.arguments[0] }
     `when`(reportRepository.save(any(Report::class.java))).thenAnswer { it.arguments[0] }
@@ -141,7 +140,7 @@ class ReportUseCaseTest {
     `when`(templateService.renderTemplate(any2<MailTemplateReportCreated>())).thenReturn("")
   }
 
-  private fun newUseCase(subscriptionMode: String) = ReportUseCase(
+  private fun newUseCase(subscriptionMode: ReportSubscriptionMode) = ReportUseCase(
     reportRepository,
     cronScheduleRepository,
     repositoryRepository,
@@ -157,12 +156,11 @@ class ReportUseCaseTest {
     mailService,
     mock(ReportGuard::class.java),
     documentRepository,
-    "no-reply@test.local",
-    appConfig,
+    ReportProperties(subscriptionMode = subscriptionMode, sender = "no-reply@test.local"),
+    publicUrls,
     userRepository,
     tokenIssuer,
     reportRecipientRepository,
-    subscriptionMode,
   )
 
   // mockito-kotlin instead of ArgumentCaptor.forClass: its capture() returns
@@ -313,17 +311,12 @@ class ReportUseCaseTest {
   fun `in opt-in mode every new report waits for confirmation`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = anonymousId)) {
       `when`(repository.visibility).thenReturn(EntityVisibility.isPublic)
-      reportUseCase = newUseCase("opt-in")
+      reportUseCase = newUseCase(ReportSubscriptionMode.OPT_IN)
 
       reportUseCase.createReport(repositoryId, segment)
 
       assertThat(savedReport().authorized).isFalse()
     }
-
-  @Test
-  fun `rejects an unknown subscription mode`() {
-    assertThatThrownBy { newUseCase("sometimes") }.isInstanceOf(IllegalArgumentException::class.java)
-  }
 
   @Test
   fun `reporting abuse flags the address and stops its reports`() = runTest {
