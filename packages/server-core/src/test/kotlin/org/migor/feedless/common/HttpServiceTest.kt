@@ -2,6 +2,7 @@ package org.migor.feedless.common
 
 import com.sun.net.httpserver.HttpServer
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.withContext
 import org.assertj.core.api.Assertions.assertThat
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.AfterEach
@@ -68,6 +69,29 @@ class HttpServiceTest {
     repeat(2) { assertThat(bucket.tryConsume(1)).isTrue() }
 
     assertThat(bucket.tryConsume(1)).isFalse()
+  }
+
+  // localhost is the gateway, which is never throttled.
+  private fun throttledUrl(path: String) = "http://127.0.0.1:${server.address.port}/$path"
+
+  @Test
+  fun `given a caller that handles backpressure, an empty host bucket fails fast`() = runTest {
+    withContext(Backpressure) {
+      repeat(HttpService.HOST_BURST.toInt()) { httpService.httpGet(throttledUrl("a$it"), 200) }
+
+      val e = runCatching { httpService.httpGet(throttledUrl("next"), 200) }.exceptionOrNull()
+
+      assertThat(e).isInstanceOf(HostOverloadingException::class.java)
+    }
+  }
+
+  @Test
+  fun `given a caller without backpressure, an empty host bucket waits`() = runTest {
+    repeat(HttpService.HOST_BURST.toInt()) { httpService.httpGet(throttledUrl("a$it"), 200) }
+
+    val response = httpService.httpGet(throttledUrl("next"), 200)
+
+    assertThat(response.statusCode).isEqualTo(200)
   }
 
   @Test

@@ -122,7 +122,7 @@ class HttpService(
         listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
       if (probes.any { !it.isConsumed }) {
         val waitFor = Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
-        if (waitFor.toMillis() < 1000) {
+        if (waitFor.toMillis() < 1000 && !handlesBackpressure()) {
           delay(waitFor.toMillis())
         } else {
           throw HostOverloadingException(

@@ -11,6 +11,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.capability.childRequestContext
 import org.migor.feedless.capability.withMdcCorrId
+import org.migor.feedless.common.Backpressure
 import org.migor.feedless.source.SourceHarvester
 import org.migor.feedless.source.SourceRepository
 import org.slf4j.LoggerFactory
@@ -34,7 +35,7 @@ class SourceHarvesterExecutor internal constructor(
     withMdcCorrId { corrId ->
       try {
         // Explicit, so an IO dispatcher hop inside the lookup carries this run's id.
-        runBlocking(RequestContext(corrId = corrId)) {
+        runBlocking(RequestContext(corrId = corrId) + Backpressure) {
           val due = sourceRepository.findAllDueForHarvest(LocalDateTime.now(), BATCH_SIZE)
           log.debug("batch refresh with ${due.size} sources")
           if (due.isEmpty()) {
