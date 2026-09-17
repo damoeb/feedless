@@ -1,5 +1,6 @@
 package org.migor.feedless.config
 
+import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
@@ -66,8 +67,7 @@ class SecurityConfigSsoTokenTest {
 
     val propertyService = mock(PropertyService::class.java)
     whenever(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    whenever(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
-    val jwtTokenIssuer = JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    val jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
 
     securityConfig = SecurityConfig()
     ReflectionTestUtils.setField(securityConfig, "userUseCase", mock(UserUseCase::class.java))

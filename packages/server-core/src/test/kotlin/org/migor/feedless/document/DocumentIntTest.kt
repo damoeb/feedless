@@ -57,6 +57,7 @@ import java.time.LocalDateTime
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.document,
   AppProfiles.repository,

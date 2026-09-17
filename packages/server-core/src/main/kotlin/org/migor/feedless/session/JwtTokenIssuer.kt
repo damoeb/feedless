@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.common.PublicUrls
 import com.google.gson.Gson
 import com.nimbusds.jose.jwk.source.ImmutableSecret
 import io.micrometer.core.instrument.MeterRegistry
@@ -50,6 +51,7 @@ import kotlin.time.toDuration
 @Profile("${AppProfiles.session} & ${AppLayer.service}")
 class JwtTokenIssuer(
   private val propertyService: PropertyService,
+  private val publicUrls: PublicUrls,
   private val meterRegistry: MeterRegistry,
   @Value("\${auth.token.anonymous.validForDays}")
   private val tokenAnonymousValidForDays: String,
@@ -185,7 +187,7 @@ class JwtTokenIssuer(
     // https://en.wikipedia.org/wiki/JSON_Web_Token
     val jwsHeader = JwsHeader.with { "HS256" }.build()
     var claimsSet = JwtClaimsSet.builder()
-      .issuer(propertyService.apiGatewayUrl)
+      .issuer(publicUrls.apiGatewayUrl)
       .claims { c -> c.putAll(claims) }
       .claims { c -> c[JwtParameterNames.ID] = "feedless" }
       .claims { c -> c[JwtParameterNames.IAT] = Clock.System.now().toEpochMilliseconds() }

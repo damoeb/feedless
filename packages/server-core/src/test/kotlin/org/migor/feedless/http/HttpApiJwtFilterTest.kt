@@ -1,5 +1,6 @@
 package org.migor.feedless.http
 
+import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
 import org.assertj.core.api.Assertions.assertThat
@@ -47,8 +48,7 @@ class HttpApiJwtFilterTest {
     SecurityContextHolder.clearContext()
     val propertyService = mock(PropertyService::class.java)
     `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")
-    jwtTokenIssuer = JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
     // The token's user owns actingGroup, and no other group.
     val userGroupAssignmentRepository = mock(UserGroupAssignmentRepository::class.java)
     `when`(userGroupAssignmentRepository.findByUserIdAndGroupId(any2(), any2())).thenAnswer {

@@ -1,5 +1,6 @@
 package org.migor.feedless.transport
 
+import org.migor.feedless.common.testPublicUrls
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
@@ -64,7 +65,7 @@ class TelegramBotServiceTest {
     `when`(properties.token).thenReturn(botToken)
     telegramBotService = TelegramBotService(
       properties,
-      appHost,
+      testPublicUrls(appHost = appHost),
       telegramConnectionRepository,
       mock(Environment::class.java),
       messageService,

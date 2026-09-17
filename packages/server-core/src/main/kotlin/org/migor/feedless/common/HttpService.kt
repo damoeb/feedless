@@ -20,7 +20,6 @@ import org.migor.feedless.TemporaryServerException
 import org.migor.feedless.config.CacheNames
 import org.migor.feedless.util.SafeGuards
 import org.slf4j.LoggerFactory
-import org.springframework.beans.factory.annotation.Value
 import org.springframework.cache.annotation.Cacheable
 import org.springframework.security.web.util.UrlUtils
 import org.springframework.stereotype.Service
@@ -38,8 +37,7 @@ import java.util.concurrent.TimeoutException
 
 @Service
 class HttpService(
-  @Value("\${app.apiGatewayUrl}")
-  private val apiGatewayUrl: String,
+  private val publicUrls: PublicUrls,
   private val hostCooldownGuard: HostCooldownGuard,
 ) : HttpFetcher {
 
@@ -62,7 +60,7 @@ class HttpService(
 
   @PostConstruct
   fun postConstruct() {
-    gatewayHost = URI(apiGatewayUrl).toURL().host
+    gatewayHost = URI(publicUrls.apiGatewayUrl).toURL().host
   }
 
   suspend fun prepareGet(url: String): BoundRequestBuilder {

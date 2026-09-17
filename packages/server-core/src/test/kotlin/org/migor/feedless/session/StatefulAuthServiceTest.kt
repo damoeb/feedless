@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import kotlinx.coroutines.test.runTest
 import org.assertj.core.api.Assertions.assertThat
@@ -51,8 +52,7 @@ class StatefulAuthServiceTest {
 
     val propertyService = mock(PropertyService::class.java)
     `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
-    val jwtTokenIssuer = JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    val jwtTokenIssuer = JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
 
     authService = StatefulAuthService()
     ReflectionTestUtils.setField(authService, "userRepository", userRepository)

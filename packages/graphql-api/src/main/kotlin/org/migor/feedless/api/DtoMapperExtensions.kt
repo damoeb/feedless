@@ -5,7 +5,7 @@ import org.migor.feedless.api.mapper.ScrapeResponseMapper
 import org.migor.feedless.api.mapper.UserSecretMapper
 import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.api.mapper.toSource
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.migor.feedless.document.Document
 import org.migor.feedless.feed.discovery.RemoteNativeFeedRef
 import org.migor.feedless.scrape.GenericFeedRule
@@ -89,8 +89,8 @@ class DtoMapperFacade(
   // Domain object mappings
 //    fun toDto(user: User): UserDto = userMapper.toDto(user)
 
-  fun toDto(document: Document, appConfig: AppConfig): RecordDto =
-    documentMapper.toDto(document, appConfig)
+  fun toDto(document: Document, publicUrls: PublicUrls): RecordDto =
+    documentMapper.toDto(document, publicUrls)
 
 //    fun toDto(product: Product): ProductDto = productMapper.toDto(product)
 //    fun toDto(pricedProduct: PricedProduct): PricedProductDto = productMapper.toDto(pricedProduct)
@@ -148,8 +148,8 @@ class DtoMapperFacade(
 
 //fun User.toDTO(): UserDto = DtoMapperFacade.getInstance().toDto(this)
 
-fun Document.toDto(appConfig: AppConfig): RecordDto =
-  DtoMapperFacade.getInstance().toDto(this, appConfig)
+fun Document.toDto(publicUrls: PublicUrls): RecordDto =
+  DtoMapperFacade.getInstance().toDto(this, publicUrls)
 
 //fun Product.toDTO(): ProductDto = DtoMapperFacade.getInstance().toDto(this)
 //fun PricedProduct.toDto(): PricedProductDto = DtoMapperFacade.getInstance().toDto(this)

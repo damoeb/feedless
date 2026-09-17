@@ -11,7 +11,7 @@ import org.migor.feedless.NotFoundException
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.api.ApiUrls
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.document.DatesWhereInput
@@ -84,7 +84,7 @@ class ReportUseCase(
   // Defaulted because app.mail.sender only exists in application-mail.yaml;
   // without it, a context with reports but without the mail profile wouldn't start.
   @param:Value("\${app.mail.sender:feedless-sender@localhost}") private val mailSender: String,
-  private val appConfig: AppConfig,
+  private val publicUrls: PublicUrls,
   private val userRepository: UserRepository,
   private val tokenIssuer: TokenIssuer,
   private val reportRecipientRepository: ReportRecipientRepository,
@@ -96,17 +96,17 @@ class ReportUseCase(
   /** The token names the report; holding it is the proof, since recipients usually have no account. */
   private fun deactivationLink(report: Report): String {
     val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
-    return "${appConfig.apiGatewayUrl}${ApiUrls.reportDelete}/${report.id.uuid}?token=${token.tokenValue}"
+    return "${publicUrls.apiGatewayUrl}${ApiUrls.reportDelete}/${report.id.uuid}?token=${token.tokenValue}"
   }
 
   private fun confirmationLink(report: Report): String {
     val token = tokenIssuer.createJwtForReport(report.id.uuid.toString(), LINK_VALID_FOR_DAYS)
-    return "${appConfig.apiGatewayUrl}${ApiUrls.reportConfirm}/${report.id.uuid}?token=${token.tokenValue}"
+    return "${publicUrls.apiGatewayUrl}${ApiUrls.reportConfirm}/${report.id.uuid}?token=${token.tokenValue}"
   }
 
   private fun abuseLink(recipient: ReportRecipient): String {
     val token = tokenIssuer.createJwtForRecipient(recipient.id.uuid.toString(), LINK_VALID_FOR_DAYS)
-    return "${appConfig.apiGatewayUrl}${ApiUrls.reportAbuse}/${recipient.id.uuid}?token=${token.tokenValue}"
+    return "${publicUrls.apiGatewayUrl}${ApiUrls.reportAbuse}/${recipient.id.uuid}?token=${token.tokenValue}"
   }
 
   /** A concurrent first subscription of the same address loses the insert and reads the winner. */

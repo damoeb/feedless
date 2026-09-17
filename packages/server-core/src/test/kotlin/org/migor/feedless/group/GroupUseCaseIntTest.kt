@@ -52,6 +52,7 @@ import java.util.UUID
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.repository,
   AppProfiles.source,

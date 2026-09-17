@@ -17,7 +17,7 @@ import org.migor.feedless.api.mapper.toDto
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.CapabilityService
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.Paging
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.toDomain
 import org.migor.feedless.document.toDomainStringFilter
@@ -53,8 +53,8 @@ import org.migor.feedless.config.requestContext
 fun Cursor.toPageable(maxPageSize: Int? = null): Pageable {
   val pageNumber = page.coerceAtLeast(0)
   val pageSize =
-    (pageSize ?: AppConfig.maxPageSize).coerceAtLeast(1)
-      .coerceAtMost(maxPageSize ?: AppConfig.maxPageSize)
+    (pageSize ?: Paging.maxPageSize).coerceAtLeast(1)
+      .coerceAtMost(maxPageSize ?: Paging.maxPageSize)
   return PageRequest.of(pageNumber, pageSize, Sort.by(Sort.Direction.DESC, "createdAt"))
 }
 

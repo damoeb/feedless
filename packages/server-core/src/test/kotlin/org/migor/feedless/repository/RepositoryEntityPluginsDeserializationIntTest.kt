@@ -48,6 +48,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.repository,
   AppProfiles.source,

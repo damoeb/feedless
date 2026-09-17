@@ -77,6 +77,7 @@ import java.time.temporal.ChronoUnit
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.report,
   AppProfiles.document,

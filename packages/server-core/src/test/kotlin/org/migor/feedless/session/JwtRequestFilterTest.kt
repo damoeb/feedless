@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.common.testPublicUrls
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry
 import jakarta.servlet.FilterChain
 import jakarta.servlet.http.Cookie
@@ -115,8 +116,7 @@ class JwtRequestFilterTest {
   private val jwtTokenIssuer = run {
     val propertyService = mock(PropertyService::class.java)
     `when`(propertyService.jwtSecret).thenReturn("test-secret-key-that-is-long-enough-for-hmac-sha256-algorithm")
-    `when`(propertyService.apiGatewayUrl).thenReturn("https://localhost")
-    JwtTokenIssuer(propertyService, SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
+    JwtTokenIssuer(propertyService, testPublicUrls(), SimpleMeterRegistry(), "1", "1").also { it.postConstruct() }
   }
 
   private fun cookieRequest(): MockHttpServletRequest {

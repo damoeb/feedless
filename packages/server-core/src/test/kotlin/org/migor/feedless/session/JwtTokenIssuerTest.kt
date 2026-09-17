@@ -1,5 +1,6 @@
 package org.migor.feedless.session
 
+import org.migor.feedless.common.testPublicUrls
 import com.nimbusds.jose.JWSAlgorithm
 import com.nimbusds.jose.JWSVerifier
 import com.nimbusds.jose.crypto.MACVerifier
@@ -43,10 +44,10 @@ class JwtTokenIssuerTest {
     meterRegistry = SimpleMeterRegistry()
 
     `when`(propertyService.jwtSecret).thenReturn(testJwtSecret)
-    `when`(propertyService.apiGatewayUrl).thenReturn("http://localhost:8080")
 
     jwtTokenIssuer = JwtTokenIssuer(
       propertyService = propertyService,
+      publicUrls = testPublicUrls(),
       meterRegistry = meterRegistry,
       tokenAnonymousValidForDays = "1",
       defaultTokenAnonymousValidForDays = "1"

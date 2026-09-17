@@ -53,6 +53,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean
 @SpringBootTest
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   AppProfiles.scrape,
   AppLayer.service,
 )

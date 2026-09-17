@@ -18,7 +18,8 @@ import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.any
 import org.migor.feedless.any2
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.document.DocumentUseCase
 import org.migor.feedless.eq
 import org.migor.feedless.group.GroupId
@@ -61,7 +62,7 @@ class RepositoryUseCaseTest {
       repositoryRepository,
       planConstraintsService,
       mock(DocumentUseCase::class.java),
-      mock(AppConfig::class.java),
+      testPublicUrls(),
       sourceUseCase,
       repositoryGuard
     )

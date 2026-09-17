@@ -14,7 +14,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.throttle.Throttled
 import org.migor.feedless.api.mapper.toDomain
 import org.migor.feedless.api.toDto
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
 import org.migor.feedless.config.DgsCustomContext
 import org.migor.feedless.generated.DgsConstants
 import org.migor.feedless.generated.types.CreateRecordInput
@@ -47,7 +47,7 @@ import org.migor.feedless.config.requestContext
 @DgsComponent
 @Profile("${AppProfiles.document} & ${AppLayer.api}")
 class DocumentResolver(
-  private val appConfig: AppConfig,
+  private val publicUrls: PublicUrls,
   private val documentUseCase: DocumentUseCase,
   private val documentGuard: DocumentGuard,
   private val repositoryGuard: RepositoryGuard,
@@ -67,7 +67,7 @@ class DocumentResolver(
 
     DgsContext.getCustomContext<DgsCustomContext>(dfe).documentId = documentId
 
-    document.toDto(appConfig)
+    document.toDto(publicUrls)
   }
 
   @Throttled
@@ -90,7 +90,7 @@ class DocumentResolver(
         pageable = pageable.toPageableRequest()
       ).map {
         it.toDto(
-          appConfig
+          publicUrls
         )
       }.toList()
     }
@@ -121,7 +121,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.CREATERECORDS_INPUT_ARGUMENT.Records) records: List<CreateRecordInput>,
   ): List<Record> = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    records.map { documentUseCase.createDocument(it.toDomain()).toDto(appConfig) }
+    records.map { documentUseCase.createDocument(it.toDomain()).toDto(publicUrls) }
   }
 
   @DgsMutation(field = DgsConstants.MUTATION.UpdateRecord)
@@ -130,7 +130,7 @@ class DocumentResolver(
     dfe: DataFetchingEnvironment,
     @InputArgument(DgsConstants.MUTATION.UPDATERECORD_INPUT_ARGUMENT.Data) data: UpdateRecordInput,
   ): Boolean = withContext(context = injectCapabilitiesFromSecurityContext()) {
-    documentUseCase.updateDocument(data.data.toDomain(), DocumentId(data.where.id)).toDto(appConfig)
+    documentUseCase.updateDocument(data.data.toDomain(), DocumentId(data.where.id)).toDto(publicUrls)
     true
   }
 

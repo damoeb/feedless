@@ -17,7 +17,8 @@ import org.migor.feedless.argThat
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.pipelineJob.PluginExecution
 import org.migor.feedless.capability.RequestContext
-import org.migor.feedless.common.AppConfig
+import org.migor.feedless.common.PublicUrls
+import org.migor.feedless.common.testPublicUrls
 import org.migor.feedless.cronSchedule.CronSchedule
 import org.migor.feedless.cronSchedule.CronScheduleRepository
 import org.migor.feedless.document.DocumentRepository
@@ -63,7 +64,7 @@ import java.time.temporal.ChronoUnit
 class ReportUseCaseTest {
 
   private lateinit var documentRepository: DocumentRepository
-  private lateinit var appConfig: AppConfig
+  private val publicUrls = testPublicUrls(apiGatewayUrl = "https://api.test.local")
   private lateinit var tokenIssuer: TokenIssuer
   private lateinit var reportUseCase: ReportUseCase
   private lateinit var reportRepository: ReportRepository
@@ -101,8 +102,6 @@ class ReportUseCaseTest {
       .thenReturn(mock(ReportPlugin::class.java))
 
     documentRepository = mock(DocumentRepository::class.java)
-    appConfig = mock(AppConfig::class.java)
-    `when`(appConfig.apiGatewayUrl).thenReturn("https://api.test.local")
     tokenIssuer = mock(TokenIssuer::class.java)
     `when`(tokenIssuer.createJwtForReport(anyString(), anyLong())).thenReturn(
       Jwt.withTokenValue("t")
@@ -158,7 +157,7 @@ class ReportUseCaseTest {
     mock(ReportGuard::class.java),
     documentRepository,
     "no-reply@test.local",
-    appConfig,
+    publicUrls,
     userRepository,
     tokenIssuer,
     reportRecipientRepository,

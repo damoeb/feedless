@@ -52,6 +52,7 @@ import org.migor.feedless.Vertical
 @DirtiesContext
 @ActiveProfiles(
   "test",
+  AppProfiles.properties,
   "database",
   AppProfiles.repository,
   AppProfiles.source,
