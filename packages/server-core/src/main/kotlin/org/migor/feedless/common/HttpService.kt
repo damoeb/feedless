@@ -11,6 +11,7 @@ import org.asynchttpclient.AsyncHttpClient
 import org.asynchttpclient.BoundRequestBuilder
 import org.asynchttpclient.Dsl
 import org.asynchttpclient.Response
+import org.asynchttpclient.handler.MaxRedirectException
 import org.migor.feedless.FatalHarvestException
 import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.ResumableHarvestException
@@ -188,6 +189,9 @@ class HttpService(
       if (e is NullPointerException) {
         log.error(e.message, e)
       }
+      if (generateSequence<Throwable>(e) { it.cause }.any { it is MaxRedirectException }) {
+        hostCooldownGuard.onBlocked(requestUrl, REDIRECT_LOOP_STATUS)
+      }
       if (e is UnknownHostException || e is ConnectException || e is TimeoutException || e is ExecutionException) {
         throw ResumableHarvestException("${e.message}", Duration.ofMinutes(5))
       } else {
@@ -226,6 +230,8 @@ class HttpService(
     // About 1 request per second per host, as polite crawlers do; 429/503 back off via HostCooldownGuard.
     const val HOST_BURST = 5L
     const val URL_FETCHES_PER_MINUTE = 2L
+    // No HTTP status names a redirect loop; 310 is the unassigned code after the redirects, to tell it apart in t_host_cooldown.
+    const val REDIRECT_LOOP_STATUS = 310
   }
 
 }
