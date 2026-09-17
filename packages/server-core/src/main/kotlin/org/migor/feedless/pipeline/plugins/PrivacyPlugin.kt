@@ -91,7 +91,7 @@ class PrivacyPlugin : MapEntityPlugin<Unit> {
     paramsJson: String?,
     logCollector: LogCollector
   ): Document {
-    return mapEntity(document, repository, null, logCollector)
+    return mapEntity(document, repository, Unit, logCollector)
   }
 
   override suspend fun fromJson(jsonParams: String?) {
