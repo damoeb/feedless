@@ -25,7 +25,20 @@ spring:
         size: 6
 
 app:
+  # aliases: each binds a legacy key or env var under the prefix of the properties class that reads it
+  build:
+    version: ${app.version}
+    commit: ${APP_GIT_COMMIT:${app.git.commit:unknown}}
+    timestamp: ${APP_BUILD_TIMESTAMP:}
+  license:
+    key: ${APP_LICENSE_KEY:}
+    pem-file: ${APP_PEM_FILE:}
+  privacy:
+    blacklisted-domains: ${APP_BLACKLISTED_DOMAINS:}
+  mail:
+    mailgun-key: ${MAILGUN_KEY:}
   auth:
+    anonymous-token-valid-for: ${auth.token.anonymous.validForDays:28}
     products:
       rssProxy:
         oauth: true
@@ -41,12 +54,14 @@ app:
         mailToken: true
         oauth: true
   version: dev
+  # empty until BuildInfo replaces the @Value readers
   git:
     commit:
 
   report:
     # opt-out starts new subscriptions at once unless their address asked for opt-in; opt-in confirms every one
     subscription-mode: ${APP_REPORT_SUBSCRIPTION_MODE:opt-out}
+    sender: ${app.mail.sender:feedless-sender@localhost}
   dateFormat: dd-MM-yyyy
   timeFormat: HH:mm
   timezone: UTC
