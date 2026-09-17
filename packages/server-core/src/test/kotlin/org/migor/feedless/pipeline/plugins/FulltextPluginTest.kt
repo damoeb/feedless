@@ -16,14 +16,23 @@ import org.migor.feedless.actions.HeaderAction
 import org.migor.feedless.actions.ScrapeAction
 import org.migor.feedless.actions.WaitAction
 import org.migor.feedless.any2
+import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.ReleaseStatus
+import org.migor.feedless.feed.parser.json.JsonItem
+import org.migor.feedless.generated.types.FetchActionDebugResponse
 import org.migor.feedless.repository.Repository
+import org.migor.feedless.repository.RepositoryId
+import org.migor.feedless.scrape.HttpFetchOutput
 import org.migor.feedless.scrape.LogCollector
+import org.migor.feedless.scrape.ScrapeActionOutput
 import org.migor.feedless.scrape.ScrapeOutput
 import org.migor.feedless.scrape.ScrapeService
+import org.migor.feedless.scrape.WebToArticleTransformer
 import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.source.SourceUseCase
+import org.mockito.ArgumentMatchers.anyBoolean
 import org.mockito.InjectMocks
 import org.mockito.Mock
 import org.mockito.Mockito.mock
@@ -46,6 +55,9 @@ class FulltextPluginTest {
 
   @Mock
   lateinit var sourceRepository: SourceRepository
+
+  @Mock
+  lateinit var webToArticleTransformer: WebToArticleTransformer
 
   @InjectMocks
   lateinit var fulltextPlugin: FulltextPlugin
@@ -94,6 +106,41 @@ class FulltextPluginTest {
       any2(),
       any2()
     )
+  }
+
+  @Test
+  fun `given readability, mapEntity returns the article and logs the title change`() = runTest {
+    val document = Document(
+      url = "https://example.org/a",
+      title = "before",
+      text = "",
+      contentHash = "",
+      repositoryId = RepositoryId(),
+      status = ReleaseStatus.unreleased,
+    )
+    val fetch = HttpFetchOutput(
+      response = HttpResponse("text/html", document.url, 200, "<html/>".toByteArray()),
+      debug = mock(FetchActionDebugResponse::class.java),
+    )
+    `when`(scrapeService.scrape(any2(), any2()))
+      .thenReturn(ScrapeOutput(outputs = listOf(ScrapeActionOutput(index = 0, fetch = fetch)), time = 0))
+    val article = JsonItem()
+    article.title = "after"
+    article.html = "<p>body</p>"
+    article.text = "body"
+    `when`(webToArticleTransformer.fromHtml(any2(), any2(), anyBoolean())).thenReturn(article)
+    val logCollector = LogCollector()
+
+    val actual = fulltextPlugin.mapEntity(
+      document = document,
+      repository = mock(Repository::class.java),
+      params = FulltextPluginParams(readability = true, summary = false, inheritParams = false),
+      logCollector = logCollector
+    )
+
+    assertThat(actual.title).isEqualTo("after")
+    assertThat(actual.html).isEqualTo("<p>body</p>")
+    assertThat(logCollector.logs.map { it.message }).containsExactly("title 'before' -> 'after'")
   }
 
   @Test

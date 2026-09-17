@@ -26,7 +26,6 @@ import org.migor.feedless.source.Source
 import org.migor.feedless.source.SourceId
 import org.migor.feedless.source.SourceRepository
 import org.migor.feedless.util.HtmlUtil
-import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.context.annotation.Lazy
 import org.springframework.context.annotation.Profile
@@ -37,8 +36,6 @@ import java.time.LocalDateTime
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransformerPlugin {
-
-  private val log = LoggerFactory.getLogger(FulltextPlugin::class.simpleName)
 
   @Autowired
   private lateinit var webToArticleTransformer: WebToArticleTransformer
@@ -60,71 +57,62 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
     params: FulltextPluginParams,
     logCollector: LogCollector
   ): Document {
-    logCollector.log("mapEntity ${document.url}")
-
-    return if (StringUtils.isBlank(document.url)) {
+    if (StringUtils.isBlank(document.url)) {
       logCollector.log("skipping, url is empty")
-      document
-    } else {
-      val request = Source(
-        id = SourceId(),
-        title = "Feed from ${document.url}",
-        repositoryId = repository.id,
-        createdAt = LocalDateTime.now(),
-        actions = emptyList(),
-      )
-
-
-      val fetchAction = FetchAction(
-        sourceId = SourceId(),
-        url = document.url,
-      )
-
-      val source = document.source(sourceRepository)
-      val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
-
-      val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
-        logCollector.log("inheritParams from source")
-        request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
-      } else {
-        request.copy(actions = listOf(fetchAction))
-      }
-
-      try {
-        val scrapeOutput = scrapeService.scrape(requestWithAction, logCollector)
-
-        if (scrapeOutput.outputs.isNotEmpty()) {
-          val lastOutput = scrapeOutput.outputs.last()
-          val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
-          if (params.readability || params.summary) {
-            logCollector.log("convert to readability/summary")
-            val readability = webToArticleTransformer.fromHtml(
-              html,
-              document.url.replace(Regex("#[^/]+$"), ""),
-              params.summary
-            )
-            log.debug("${document.id} title ${document.title} -> ${readability.title}")
-
-            document.copy(
-              html = readability.html,
-              text = StringUtils.trimToEmpty(readability.text),
-              title = readability.title
-            )
-          } else {
-            document.copy(
-              html = html,
-              title = HtmlUtil.parseHtml(html, document.url).title()
-            )
-          }
-        }
-      } catch (e: Exception) {
-        if (e !is SiteNotFoundException) {
-//                    document.url = ""
-          throw e
-        }
-      }
-      document
+      return document
     }
+    val request = Source(
+      id = SourceId(),
+      title = "Feed from ${document.url}",
+      repositoryId = repository.id,
+      createdAt = LocalDateTime.now(),
+      actions = emptyList(),
+    )
+
+    val fetchAction = FetchAction(
+      sourceId = SourceId(),
+      url = document.url,
+    )
+
+    val source = document.source(sourceRepository)
+    val prerender = source?.let { source -> needsPrerendering(source, 0) } == true
+
+    val requestWithAction = if (BooleanUtils.isTrue(params.inheritParams) && prerender) {
+      request.copy(actions = mergeWithSourceActions(fetchAction, source.actions))
+    } else {
+      request.copy(actions = listOf(fetchAction))
+    }
+
+    val mapped = try {
+      // scrape internals stay out of the plugin's report
+      val scrapeOutput = scrapeService.scrape(requestWithAction, LogCollector())
+      scrapeOutput.outputs.lastOrNull()?.let { lastOutput ->
+        val html = lastOutput.fetch!!.response.responseBody.toString(StandardCharsets.UTF_8)
+        if (params.readability || params.summary) {
+          val readability = webToArticleTransformer.fromHtml(
+            html,
+            document.url.replace(Regex("#[^/]+$"), ""),
+            params.summary
+          )
+          document.copy(
+            html = readability.html,
+            text = StringUtils.trimToEmpty(readability.text),
+            title = readability.title
+          )
+        } else {
+          document.copy(
+            html = html,
+            title = HtmlUtil.parseHtml(html, document.url).title()
+          )
+        }
+      }
+    } catch (e: SiteNotFoundException) {
+      null
+    }
+
+    return mapped
+      ?.also { logCollector.log("title '${document.title}' -> '${it.title}'") }
+      ?: document
   }
 
   override suspend fun mapEntity(
