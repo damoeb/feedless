@@ -122,7 +122,7 @@ class HttpService(
         listOf(resolveHostBucket(actualUrl), resolveUrlBucket(actualUrl)).map { it.tryConsumeAndReturnRemaining(1) }
       if (probes.any { !it.isConsumed }) {
         val waitFor = Duration.ofNanos(probes.maxOf { it.nanosToWaitForRefill })
-        if (waitFor.toMillis() < 1000) {
+        if (waitFor.toMillis() < 1000 && !handlesBackpressure()) {
           delay(waitFor.toMillis())
         } else {
           throw HostOverloadingException(
@@ -138,7 +138,8 @@ class HttpService(
     val cacheKey = url.host
     return cache.computeIfAbsent(cacheKey) {
       Bucket.builder()
-        .addLimit(Bandwidth.classic(50, Refill.intervally(50, Duration.ofSeconds(30))))
+        // Greedy refill keeps the wait under a second, so a request is delayed instead of its job failing.
+        .addLimit(Bandwidth.classic(HOST_BURST, Refill.greedy(1, Duration.ofSeconds(1))))
         .build()
     }
   }
@@ -147,7 +148,7 @@ class HttpService(
     val cacheKey = "${url.host}${url.path}"
     return cache.computeIfAbsent(cacheKey) {
       Bucket.builder()
-        .addLimit(Bandwidth.classic(2, Refill.intervally(2, Duration.ofMinutes(1))))
+        .addLimit(Bandwidth.classic(URL_FETCHES_PER_MINUTE, Refill.greedy(URL_FETCHES_PER_MINUTE, Duration.ofMinutes(1))))
         .build()
     }
   }
@@ -220,5 +221,11 @@ class HttpService(
 //      }
 //    }
 //  }
+
+  companion object {
+    // About 1 request per second per host, as polite crawlers do; 429/503 back off via HostCooldownGuard.
+    const val HOST_BURST = 5L
+    const val URL_FETCHES_PER_MINUTE = 2L
+  }
 
 }

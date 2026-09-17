@@ -5,6 +5,7 @@ import kotlinx.coroutines.runBlocking
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.capability.RequestContext
+import org.migor.feedless.common.Backpressure
 import org.migor.feedless.document.DocumentUseCase
 import org.springframework.context.annotation.Profile
 import org.springframework.scheduling.annotation.Scheduled
@@ -18,7 +19,7 @@ class DocumentPipelineJobExecutor internal constructor(
 
   @Scheduled(fixedDelay = 2245, initialDelay = 2000)
   fun processDocumentJobs() {
-    runBlocking(RequestContext()) {
+    runBlocking(RequestContext() + Backpressure) {
       coroutineScope {
         documentUseCase.processDocumentJobs()
       }

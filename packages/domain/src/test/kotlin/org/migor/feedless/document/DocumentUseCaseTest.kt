@@ -13,6 +13,7 @@ import org.migor.feedless.Mother.randomDocumentId
 import org.migor.feedless.Mother.randomRepositoryId
 import org.migor.feedless.Mother.randomUserId
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
 import org.migor.feedless.actions.PluginExecutionJson
@@ -54,6 +55,7 @@ import org.migor.feedless.user.UserId
 import org.migor.feedless.user.UserRepository
 import org.migor.feedless.util.toLegacyDate
 import org.mockito.Mockito.mock
+import org.mockito.Mockito.never
 import org.mockito.Mockito.spy
 import org.mockito.Mockito.times
 import org.mockito.Mockito.verify
@@ -407,6 +409,69 @@ class DocumentUseCaseTest {
     // then
     verify(documentRepository).save(argThat { it.status == ReleaseStatus.released })
     verify(documentRepository).save(argThat { it.id == documentId })
+  }
+
+  private suspend fun processFailingFulltextJob(attempt: Int, failure: Exception): DocumentPipelineJob? {
+    val job = DocumentPipelineJob(
+      pluginId = fulltextPluginId,
+      sequenceId = 0,
+      attempt = attempt,
+      documentId = documentId,
+      executorParams = PluginExecutionJson(paramsJsonString = "{}"),
+      harvestId = HarvestId(),
+    )
+    `when`(
+      fulltextPlugin.mapEntity(
+        any(Document::class.java),
+        any(Repository::class.java),
+        any(String::class.java),
+        any(LogCollector::class.java),
+      )
+    ).thenAnswer { throw failure }
+    mockDocumentFindById(documentId, document)
+    mockRepositoryFindById(repositoryId, repository)
+    var savedJob: DocumentPipelineJob? = null
+    `when`(documentPipelineJobRepository.save(any(DocumentPipelineJob::class.java))).thenAnswer {
+      savedJob = it.arguments[0] as DocumentPipelineJob
+      savedJob
+    }
+
+    documentUseCase.processDocumentPlugins(documentId, listOf(job))
+    return savedJob
+  }
+
+  @Test
+  fun `given a resumable failure, the job is delayed and its attempt counted`() = runTest {
+    val savedJob = processFailingFulltextJob(1, ResumableHarvestException("timeout", Duration.ofMinutes(5)))
+
+    assertThat(savedJob!!.attempt).isEqualTo(2)
+    assertThat(savedJob.coolDownUntil).isNotNull()
+    verify(documentRepository, never()).deleteById(any2())
+  }
+
+  @Test
+  fun `given a resumable failure on the last attempt, the job fails and the item is dropped`() = runTest {
+    processFailingFulltextJob(
+      DocumentUseCase.MAX_JOB_ATTEMPTS,
+      ResumableHarvestException("PKIX path building failed", Duration.ofMinutes(5))
+    )
+
+    verify(documentRepository).deleteById(eq(documentId))
+    verify(harvestRepository).appendLog(
+      any2(),
+      argThat<String> { it.contains("failed http://localhost: PKIX path building failed, gave up after ${DocumentUseCase.MAX_JOB_ATTEMPTS} attempts, item dropped") })
+  }
+
+  @Test
+  fun `given our own host throttle, the job is delayed without counting an attempt`() = runTest {
+    val savedJob = processFailingFulltextJob(
+      DocumentUseCase.MAX_JOB_ATTEMPTS,
+      HostOverloadingException("host overloading www.newsweek.com", Duration.ofMinutes(1))
+    )
+
+    assertThat(savedJob!!.attempt).isEqualTo(DocumentUseCase.MAX_JOB_ATTEMPTS)
+    assertThat(savedJob.coolDownUntil).isNotNull()
+    verify(documentRepository, never()).deleteById(any2())
   }
 
   @Test
