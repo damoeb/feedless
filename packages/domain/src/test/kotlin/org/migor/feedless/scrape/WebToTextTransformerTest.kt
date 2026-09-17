@@ -1,4 +1,4 @@
-package org.migor.feedless.transform
+package org.migor.feedless.scrape
 
 import kotlinx.coroutines.test.runTest
 import org.jsoup.Jsoup
@@ -6,7 +6,6 @@ import org.jsoup.nodes.Element
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.migor.feedless.scrape.WebToTextTransformer
 
 internal class WebToTextTransformerTest {
 

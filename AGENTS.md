@@ -31,7 +31,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 
 ## Modules
 
-`packages/` holds 22 directories; **only 17 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
+`packages/` holds 23 directories; **only 18 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
 
 | Module | Owns | Build |
 |---|---|---|
@@ -41,6 +41,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `graphql-api` | `schema.graphqls` (**contract**: generates the Kotlin DGS types and every TS client) plus all DGS resolvers, `ProductDataLoader`, GraphQL mappers (MapStruct via kapt), `GraphQLExceptionHandler`, `GraphqlConfig`. Never depends on `server-core`. | Gradle (codegen, kapt) |
 | `http-api` | `openapi.yaml` for `/api/v1` (**contract**: generates Kotlin Spring interfaces (`interfaceOnly`) and the `feedctl` Go client in `packages/cli`) plus the `/api/v1` controllers and the other web controllers (feed export, repository feeds, documents, attachments, payment callbacks, CLI install script, mail and report links), `HttpExceptionHandler`, `AppErrorController`. Never depends on `server-core`. | Gradle (codegen) |
 | `feed-parser` | RSS/Atom/JSON/calendar parsing, plus the lenient `BrokenXmlParser`. | Gradle |
+| `feed` | The feed engine: `WebToFeedTransformer` and `WebExtractService` (turning a page into a feed), the native and generic feed locators, `FeedParserService`, and the `org_feedless_feed` / `org_feedless_feeds` pipeline plugins. Depends on `graphql-api` because the engine works on the generated types. Never depends on `server-core`. | Gradle |
 | `browser-automation-app` | NestJS headless-Chromium worker (the prerender agent). Dials out to the core over a GraphQL subscription; needs no public IP. Env vars in its `README.md`. | Gradle → yarn |
 | `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
 | `frontend` | Nx 22 workspace, Angular 21. Apps `upcoming`, `feed-reader`, `auction-alert`; libs `@feedless/{components,core,geo,graphql-api,guards,testing}`. **npm.** | Gradle → npm |

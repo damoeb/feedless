@@ -4,10 +4,11 @@
 
 ## Status
 
-- **State:** Proposed
+- **State:** Approved
 - **Type:** infra
 - **Review:** PR
 - **Impl:** same branch
+- **Approved:** 2026-09-17, damoeb, plan-PR #125 reviewed
 
 ## Approval
 
@@ -76,7 +77,7 @@ No configuration changes. `@SpringBootApplication` sits on `org.migor.feedless.F
 
 2. **`scrape/WebToTextTransformer.kt`** moves from `server-core` to `domain/scrape`. It is 49 lines with no dependency beyond jsoup, which `domain` already exposes as an `api` dependency. It is used by `WebToFeedTransformer` (moving to `packages:feed`) and by `FulltextPlugin` (staying in `server-core`); `domain` is the only shared home that does not create a cycle.
 
-3. **`AppConfig` gains `locale`.** `WebToFeedTransformer`'s sole use of `PropertyService` is `propertyService.locale`. `PropertyService` already implements `AppConfig`, so adding the property to the port lets the transformer inject `AppConfig` and drop its dependency on a `server-core` class.
+3. **`AppConfig` gains `locale`.** *(Superseded: develop's per-use-case properties refactor (#110) deleted `AppConfig` and `PropertyService` outright. After merging develop, `WebToFeedTransformer` injects `LocaleProperties` and reads `defaultLocale`, which achieves the same thing — the transformer no longer depends on a `server-core` class.)* `WebToFeedTransformer`'s sole use of `PropertyService` is `propertyService.locale`. `PropertyService` already implements `AppConfig`, so adding the property to the port lets the transformer inject `AppConfig` and drop its dependency on a `server-core` class.
 
 4. **`FeedParserService` injects `HttpFetcher` instead of `HttpService`.** Its two calls, `httpService.prepareGet(url)` followed by `httpService.executeRequest(request, 200)`, map exactly onto the existing domain port's `httpGet(url, 200)`. `HttpService` remains in `server-core` as the adapter.
 
@@ -93,6 +94,16 @@ No configuration changes. `@SpringBootApplication` sits on `org.migor.feedless.F
 | `transform/WebToFeedTransformerIntTest` | stays in `server-core` | `@SpringBootTest` booting `FeedlessApplication` |
 
 The three integration tests boot the assembled application and use `server-core` test fixtures (`DisableDatabaseConfiguration`, `PropertiesConfiguration`, `any2`, the Mockito bean overrides). Moving them would put `server-core` on the new module's test classpath, which is a dependency cycle. Leaving them where they are is consistent with `server-core`'s stated role as the module that assembles the others, but it does mean `packages:feed` ships with unit tests only, and that `WebToFeedTransformer`'s principal coverage stays behind in `server-core`. This is accepted for this change.
+
+## Deviations found during implementation
+
+Two corrections to the file lists above, both forced by the compiler.
+
+1. **`FragmentTransformerPlugin` goes to `graphql-api`, not `domain`.** Its `transformFragment` returns `FragmentOutput`, which is built from the generated `ScrapeExtractFragment` and `ScrapedFeeds`. `graphql-api` depends on `domain`, not the reverse, so `domain` cannot name that return type. The interface now sits beside `FragmentOutput` in `graphql-api/pipeline/`, carrying the same note that `BrowserAutomationGateway` already carries. `packages:feed` and `server-core` both depend on `graphql-api`, so every caller still resolves it. The domain push is therefore three items, not four.
+
+2. **`pipeline/plugins/SelectorsInput.kt` and `ExtendContentOptions.kt` move to `packages:feed` too.** `FeedParamsInput` references `SelectorsInput` unqualified, as a same-package type; these two hand-written plugin-param DTOs are used by no other plugin in `server-core` main code. They are feed's own params, so they travel with `FeedPlugin`. Twelve files move to `packages:feed`, not ten.
+
+`packages:feed` also needs two dependencies the plan did not list: `commons-text`, which `WebToFeedTransformer` uses for `LevenshteinDistance` in pagination detection, and `testFixtures(project(":packages:domain"))` for the `any2` Mockito helper that `FeedPluginTest` uses.
 
 ## Documentation to update
 

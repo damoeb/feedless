@@ -4,6 +4,7 @@ import org.migor.feedless.actions.ExecuteAction
 import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.scrape.LogCollector
 
+// Lives here, not in domain: FragmentOutput is made of generated GraphQL types.
 interface FragmentTransformerPlugin : Plugin {
 
   suspend fun transformFragment(

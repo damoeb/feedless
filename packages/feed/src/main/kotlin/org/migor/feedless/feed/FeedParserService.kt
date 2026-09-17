@@ -4,7 +4,7 @@ import kotlinx.coroutines.currentCoroutineContext
 import org.migor.feedless.AppLayer
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.common.HttpResponse
-import org.migor.feedless.common.HttpService
+import org.migor.feedless.common.HttpFetcher
 import org.migor.feedless.feed.parser.CalendarFeedParser
 import org.migor.feedless.feed.parser.FeedBodyParser
 import org.migor.feedless.feed.parser.JsonFeedParser
@@ -20,7 +20,7 @@ import org.springframework.stereotype.Service
 @Service
 @Profile("${AppProfiles.scrape} & ${AppLayer.service}")
 class FeedParserService(
-  private val httpService: HttpService,
+  private val httpFetcher: HttpFetcher,
 ) : FeedParser {
 
   private val log = LoggerFactory.getLogger(FeedParserService::class.simpleName)
@@ -57,18 +57,8 @@ class FeedParserService(
 
   override suspend fun parseFeedFromUrl(url: String): JsonFeed {
     log.debug("parseFeedFromUrl $url")
-//    httpService.guardedHttpResource(
-//      corrId,
-//      url,
-//      200,
-//      listOf("text/", "application/xml", "application/json", "application/rss", "application/atom", "application/rdf")
-//    )
-    val request = httpService.prepareGet(url)
-//    authHeader?.let {
-//      request.setHeader("Authorization", it)
-//    }
     log.debug("GET $url")
-    val response = httpService.executeRequest(request, 200)
+    val response = httpFetcher.httpGet(url, 200)
     return parseFeed(response)
   }
 }
