@@ -14,8 +14,9 @@ import java.util.*
 
 /** Host of a fetch url, as [org.migor.feedless.common.hostOf] computes it. */
 object SourceHostSql {
-  const val EXPRESSION =
-    "lower(substring(f.url from '^(?:[a-zA-Z][a-zA-Z0-9+.-]*://)?(?:[^@/?#]*@)?([^/:?#]+)'))"
+  private const val PATTERN = "'^(?:[a-zA-Z][a-zA-Z0-9+.-]*://)?(?:[^@/?#]*@)?([^/:?#]+)'"
+  const val EXPRESSION = "lower(substring(f.url from $PATTERN))"
+  const val DOCUMENT_EXPRESSION = "lower(substring(d.url from $PATTERN))"
 }
 
 @Repository

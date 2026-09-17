@@ -10,6 +10,7 @@ import org.migor.feedless.PostgreSQLExtension
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.data.jpa.JpaDataTestApplication
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.group.Group
@@ -17,6 +18,7 @@ import org.migor.feedless.group.GroupRepository
 import org.migor.feedless.harvest.Harvest
 import org.migor.feedless.harvest.HarvestRepository
 import org.migor.feedless.harvest.HarvestStatus
+import org.migor.feedless.hostCooldown.HostCooldown
 import org.migor.feedless.repository.Repository
 import org.migor.feedless.repository.RepositoryRepository
 import org.migor.feedless.source.Source
@@ -25,10 +27,12 @@ import org.migor.feedless.user.User
 import org.migor.feedless.user.UserRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.context.SpringBootTest
+import org.springframework.jdbc.core.JdbcTemplate
 import org.springframework.test.annotation.DirtiesContext
 import org.springframework.test.context.ActiveProfiles
 import org.testcontainers.junit.jupiter.Testcontainers
 import java.time.LocalDateTime
+import java.util.UUID
 
 @SpringBootTest(classes = [JpaDataTestApplication::class])
 @ExtendWith(PostgreSQLExtension::class)
@@ -68,11 +72,18 @@ class DocumentPipelineJobRepositoryIntTest {
   @Autowired
   private lateinit var groupRepository: GroupRepository
 
+  @Autowired
+  private lateinit var hostCooldown: HostCooldown
+
+  @Autowired
+  private lateinit var jdbcTemplate: JdbcTemplate
+
   private lateinit var repository: Repository
   private lateinit var source: Source
 
   @BeforeEach
   fun setUp() {
+    jdbcTemplate.update("DELETE FROM t_host_cooldown")
     userRepository.deleteAll()
     val user = userRepository.save(User(email = "pipeline-job-${System.currentTimeMillis()}@test.com", lastLogin = LocalDateTime.now()))
     val group = groupRepository.save(Group(name = "pipeline-job-group", ownerId = user.id))
@@ -110,15 +121,42 @@ class DocumentPipelineJobRepositoryIntTest {
     assertThat(pending.single { it.id == job.id }.harvestId).isNull()
   }
 
+  @Test
+  fun `jobs on a cooling host are not picked`() {
+    val now = LocalDateTime.now()
+    val job = queueJob(url = "https://Loop.example/article")
+    hostCooldown.recordBlocked("loop.example", 403, now)
+
+    assertThat(documentPipelineJobRepository.findAllPendingBatched(now).map { it.id }).doesNotContain(job.id)
+  }
+
+  @Test
+  fun `jobs on a host with strikes come after jobs on clean hosts`() {
+    val now = LocalDateTime.now()
+    // The lowest document id, so only the strikes can push it behind the clean job.
+    val struck = queueJob(url = "https://loop.example/article", documentId = DocumentId(UUID(0, 1)))
+    val clean = queueJob(url = "https://clean.example/article")
+    hostCooldown.recordBlocked("loop.example", 403, now.minusDays(2))
+
+    val picked = documentPipelineJobRepository.findAllPendingBatched(now).map { it.id }
+
+    assertThat(picked).containsSubsequence(clean.id, struck.id)
+  }
+
   private fun completedHarvest(at: LocalDateTime): Harvest =
     harvestRepository.save(
       Harvest(sourceId = source.id, logs = "", startedAt = at, finishedAt = at, createdAt = at, status = HarvestStatus.COMPLETED)
     )
 
-  private fun queueJob(harvest: Harvest): DocumentPipelineJob {
+  private fun queueJob(
+    harvest: Harvest? = null,
+    url: String = "https://example.org/${System.nanoTime()}",
+    documentId: DocumentId = DocumentId(),
+  ): DocumentPipelineJob {
     val document = documentRepository.save(
       Document(
-        url = "https://example.org/${System.nanoTime()}",
+        id = documentId,
+        url = url,
         title = "event",
         text = "",
         contentHash = "${System.nanoTime()}",
@@ -134,7 +172,7 @@ class DocumentPipelineJobRepositoryIntTest {
         documentId = document.id,
         pluginId = "org_feedless_fulltext",
         executorParams = PluginExecutionJson(),
-        harvestId = harvest.id,
+        harvestId = harvest?.id,
       )
     )
   }

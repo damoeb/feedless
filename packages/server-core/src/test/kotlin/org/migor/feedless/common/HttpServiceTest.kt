@@ -140,6 +140,20 @@ class HttpServiceTest {
   }
 
   @Test
+  fun `a redirect loop is a strike on the host`() = runTest {
+    server.createContext("/loop") { exchange ->
+      exchange.responseHeaders.add("Location", "/loop")
+      exchange.sendResponseHeaders(302, -1)
+      exchange.close()
+    }
+
+    val e = runCatching { httpService.httpGet("http://localhost:${server.address.port}/loop", 200) }.exceptionOrNull()
+
+    assertThat(e).isInstanceOf(HostBlockedException::class.java)
+    assertThat(cooldowns.rows["localhost"]!!.strikes).isEqualTo(1)
+  }
+
+  @Test
   fun `404 stays not found`() = runTest {
     status = 404
     assertThat(runCatching { httpService.httpGet(url(), 200) }.exceptionOrNull()).isInstanceOf(SiteNotFoundException::class.java)
