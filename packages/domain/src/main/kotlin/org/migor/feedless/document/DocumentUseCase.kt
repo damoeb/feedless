@@ -13,6 +13,7 @@ import org.migor.feedless.AppProfiles
 import org.migor.feedless.EntityVisibility
 import org.migor.feedless.PageableRequest
 import org.migor.feedless.PermissionDeniedException
+import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.capability.CapabilityId
 import org.migor.feedless.capability.UnresolvedCapability
@@ -256,11 +257,20 @@ class DocumentUseCase(
             logCollector.appendJobReceipt(job, state.currentDocument, "ok")
             nextState
           } catch (e: Exception) {
-            if (e is ResumableHarvestException || e is TooManyConnectionsPerHostException) {
+            // Our own throttles say nothing about the site, so they never use up an attempt.
+            val ownThrottle = e is HostOverloadingException || e is TooManyConnectionsPerHostException
+            if (ownThrottle || (e is ResumableHarvestException && job.attempt < MAX_JOB_ATTEMPTS)) {
               logCollector.appendJobReceipt(job, state.currentDocument, "delayed", e.describe())
-              delayJob(job, e, state.currentDocument)
-
-
+              delayJob(if (ownThrottle) job else job.copy(attempt = job.attempt + 1), e, state.currentDocument)
+            } else if (e is ResumableHarvestException) {
+              log.warn("giving up ${job.documentId} (${job.pluginId}): ${e.message}")
+              logCollector.appendJobReceipt(
+                job,
+                state.currentDocument,
+                "failed",
+                "${e.describe()}, gave up after ${job.attempt} attempts, item dropped"
+              )
+              deleteDocument(state.currentDocument)
             } else {
               if (e !is FilterMismatchException) {
                 log.warn("${e::class.simpleName} ${e.message}")
@@ -524,6 +534,11 @@ class DocumentUseCase(
 //    }
 //  }
  
+
+  companion object {
+    // With the 5 min retry of a failed connection, a site gets about 20 minutes to recover.
+    const val MAX_JOB_ATTEMPTS = 5
+  }
 }
 
 // LogEntry carries the time already; the url names the item among the plugin's own log lines.
@@ -532,5 +547,3 @@ private fun LogCollector.appendJobReceipt(job: DocumentPipelineJob, document: Do
 }
 
 class FilterMismatchException : RuntimeException()
-
-
