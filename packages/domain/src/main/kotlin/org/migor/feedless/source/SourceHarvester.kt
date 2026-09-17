@@ -226,8 +226,12 @@ class SourceHarvester(
             logCollector
           )
         } else {
-          if (fragments?.isEmpty() == false) {
-            Pair(fragments.size, fragments.flatMap { importFragment(repository, it, source, logCollector) })
+          // URL fragments are pagination links, not content.
+          val contentFragments = fragments?.filter { it.data?.mimeType != MIME_URL }
+          if (contentFragments?.isEmpty() == false) {
+            Pair(
+              contentFragments.size,
+              contentFragments.flatMap { importFragment(repository, it, source, logCollector) })
           } else {
             Pair(0, emptyList())
           }

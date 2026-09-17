@@ -403,6 +403,35 @@ class SourceHarvesterTest {
     }
 
   @Test
+  fun `given no items but pagination links, the links will not be persisted as documents`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = Mother.randomUserId())) {
+      Mockito.`when`(
+        scraper.scrape(
+          any(Source::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = listOf(
+              ScrapedFragment(
+                data = ScrapedData(mimeType = ScrapeMimeTypes.MIME_URL, data = "https://foo.bar/page/2"),
+                uniqueBy = ScrapedFragmentPart.data
+              )
+            ),
+            items = emptyList(),
+          )
+        )
+      )
+
+      repositoryHarvester.harvestScheduled(source)
+
+      Mockito.verify(documentRepository, Mockito.never()).saveAll(any2())
+      Mockito.verify(sourceRepository, Mockito.never()).recordHarvestFailed(any2(), any2(), any2())
+    }
+
+  @Test
   fun `given documents feature no url, then titles will be used to deduplicate`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = Mother.randomUserId())) {
       Mockito.`when`(
