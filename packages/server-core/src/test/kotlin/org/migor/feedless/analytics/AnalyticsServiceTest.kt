@@ -13,10 +13,7 @@ class AnalyticsServiceTest {
 
   @BeforeEach
   fun setUp() {
-    service = AnalyticsService()
-    service.plausibleUrl = ""
-    service.plausibleApiKey = ""
-    service.plausibleSite = ""
+    service = AnalyticsService(AnalyticsProperties())
   }
 
   @ParameterizedTest

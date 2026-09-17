@@ -3,6 +3,7 @@ package org.migor.feedless.config
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.migor.feedless.common.LocaleProperties
+import org.migor.feedless.pipeline.plugins.PrivacyProperties
 import org.migor.feedless.session.SessionProperties
 import org.migor.feedless.status.BuildInfo
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -63,6 +64,13 @@ class LegacyConfigBindingTest {
     val sessionProperties = bind<SessionProperties>("app.jwtSecret=0123456789", "app.whitelistedHosts=127.0.0.1,::1")
 
     assertThat(sessionProperties.whitelistedHosts).containsExactly("127.0.0.1", "::1")
+  }
+
+  @Test
+  fun `blacklisted domains keep their space-separated env var`() {
+    val privacyProperties = bind<PrivacyProperties>("APP_BLACKLISTED_DOMAINS=doubleclick.net ads.example.org")
+
+    assertThat(privacyProperties.domains()).containsExactlyInAnyOrder("doubleclick.net", "ads.example.org")
   }
 
   // env vars resolve like any other property source, so a property value stands in for one
