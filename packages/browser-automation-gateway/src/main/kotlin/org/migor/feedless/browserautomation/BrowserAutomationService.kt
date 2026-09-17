@@ -20,8 +20,9 @@ import org.migor.feedless.generated.types.AgentAuthentication
 import org.migor.feedless.generated.types.AgentEvent
 import org.migor.feedless.generated.types.RegisterAgentInput
 import org.migor.feedless.generated.types.ScrapeResponseInput
-import org.migor.feedless.session.AuthService
-import org.migor.feedless.session.JwtTokenIssuer
+import org.migor.feedless.session.TokenIssuer
+import org.migor.feedless.userSecret.UserSecretId
+import org.migor.feedless.userSecret.UserSecretRepository
 import org.migor.feedless.source.Source
 import org.migor.feedless.user.UserId
 import org.migor.feedless.util.CryptUtil.newCorrId
@@ -42,8 +43,8 @@ import java.util.concurrent.atomic.AtomicInteger
 @Service
 @Profile("${AppProfiles.browserAutomation} & ${AppLayer.service}")
 class BrowserAutomationService(
-  private val authService: AuthService,
-  private val jwtTokenIssuer: JwtTokenIssuer,
+  private val userSecretRepository: UserSecretRepository,
+  private val tokenIssuer: TokenIssuer,
   private val browserAutomationRegistry: BrowserAutomationRegistry,
   private val meterRegistry: MeterRegistry,
   private val context: ApplicationContext
@@ -58,18 +59,32 @@ class BrowserAutomationService(
     meterRegistry.gauge(AppMetrics.agentCounter, agentCounter)
   }
 
+  private suspend fun findBySecretKeyValue(secretKey: String, email: String) = withContext(Dispatchers.IO) {
+    userSecretRepository.findBySecretKeyValue(secretKey, email)
+  }
+
+  private suspend fun updateLastUsed(id: UserSecretId, date: LocalDateTime) {
+    try {
+      withContext(Dispatchers.IO) {
+        userSecretRepository.updateLastUsed(id, date)
+      }
+    } catch (e: Exception) {
+      log.warn("Exception while updating secret key", e)
+    }
+  }
+
   override suspend fun registerAgent(data: RegisterAgentInput): Publisher<AgentEvent> {
     val requestContext = RequestContext(corrId = currentCorrId() ?: newCorrId())
     return Flux.create { emitter ->
       CoroutineScope(requestContext).launch {
-        authService.findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
+        findBySecretKeyValue(data.secretKey.secretKey, data.secretKey.email)
           ?.let { securityKey ->
             val now = LocalDateTime.now()
             if (securityKey.validUntil.isBefore(now)) {
               emitter.error(IllegalAccessException("Key is expired"))
               emitter.complete()
             } else {
-              authService.updateLastUsed(securityKey.id, now)
+              updateLastUsed(securityKey.id, now)
               val agentRef =
                 BrowserAutomationRef(
                   securityKey.id,
@@ -92,7 +107,7 @@ class BrowserAutomationService(
                   corrId = requestContext.corrId,
                   callbackId = "none",
                   authentication = AgentAuthentication(
-                    token = jwtTokenIssuer.createJwtForService(securityKey).tokenValue
+                    token = tokenIssuer.createJwtForService(securityKey).tokenValue
                   )
                 )
               )

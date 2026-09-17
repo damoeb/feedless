@@ -31,7 +31,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 
 ## Modules
 
-`packages/` holds 23 directories; **only 18 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
+`packages/` holds 24 directories; **only 19 are Gradle modules.** `karma-gate`, `karma-gated-comments`, `ollama-engine`, `plausible-adapter`, and `document-classifier-models` are not — `./gradlew :packages:karma-gate:test` will fail.
 
 | Module | Owns | Build |
 |---|---|---|
@@ -43,6 +43,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `feed-parser` | RSS/Atom/JSON/calendar parsing, plus the lenient `BrokenXmlParser`. | Gradle |
 | `feed` | The feed engine: `WebToFeedTransformer` and `WebExtractService` (turning a page into a feed), the native and generic feed locators, `FeedParserService`, and the `org_feedless_feed` / `org_feedless_feeds` pipeline plugins. Depends on `graphql-api` because the engine works on the generated types. Never depends on `server-core`. | Gradle |
 | `browser-automation-app` | NestJS headless-Chromium worker (the prerender agent). Dials out to the core over a GraphQL subscription; needs no public IP. Env vars in its `README.md`. | Gradle → yarn |
+| `browser-automation-gateway` | The core side of that connection: `BrowserAutomationService` (agent registration, job dispatch, the `BrowserAutomationGateway` implementation) with `BrowserAutomationRef` and `BrowserAutomationResponse`. Needs reactor and the generated GraphQL types, which is why it is not in `domain`. Never depends on `server-core`. | Gradle |
 | `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
 | `frontend` | Nx 22 workspace, Angular 21. Apps `upcoming`, `feed-reader`, `auction-alert`; libs `@feedless/{components,core,geo,graphql-api,guards,testing}`. **npm.** | Gradle → npm |
 | `document-classifier` | fastText classifier wrapper. Models/training data in `document-classifier-models`. | Gradle |
