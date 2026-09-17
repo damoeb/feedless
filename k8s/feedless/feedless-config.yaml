@@ -23,7 +23,7 @@ kind: ConfigMap
 metadata:
   name: feedless-config
 data:
-  APP_PRERENDER_TIMEOUT_MILLIS: "10000"
+  APP_PRERENDER_TIMEOUT_MILLIS: "30000"
   APP_DATABASE_URL: "jdbc:postgresql://postgis.default.svc.cluster.local:5432/feedless?ssl=false"
   # `mailpit` sends all mail to the catch-all in k8s/mailpit.yaml; remove it to use a real provider
   APP_ACTIVE_PROFILES: "saas,api,mailpit"
