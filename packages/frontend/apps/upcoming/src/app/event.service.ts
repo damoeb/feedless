@@ -14,6 +14,7 @@ import type { DefaultContext } from '@apollo/client/core/types';
 import { Dayjs } from 'dayjs';
 import { getDateConstraints } from './pages/event-calendar/event-calendar.page';
 import { dedupeEvents } from './event-dedup';
+import { hasEventTitle } from './event-title';
 
 export type LocalizedEvent = GetElementType<GqlEventsByIdsQuery['records']>;
 
@@ -53,7 +54,7 @@ export class EventService {
           before: maxDate.endOf('day').valueOf(),
         },
       },
-    }).then(dedupeEvents);
+    }).then((events) => dedupeEvents(events.filter(hasEventTitle)));
   }
 
   /**

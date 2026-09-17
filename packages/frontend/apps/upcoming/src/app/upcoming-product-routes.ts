@@ -18,7 +18,7 @@ import {
 import { AdminGeoService, GeoSearchService } from '@feedless/geo';
 import { inject } from '@angular/core';
 import { EventService, LocalizedEvent } from './event.service';
-import { cleanEventTitle } from './event-title';
+import { cleanEventTitle, hasEventTitle } from './event-title';
 
 export const perimeterUnit = 'Km';
 
@@ -251,7 +251,7 @@ export const eventDetailResolver: ResolveFn<
   }
 
   const event = await eventService.findById(eventId);
-  if (!event) {
+  if (!event || !hasEventTitle(event)) {
     return null;
   }
   return { event, place };

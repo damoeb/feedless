@@ -15,6 +15,7 @@ import org.migor.feedless.HostOverloadingException
 import org.migor.feedless.Mother
 import org.migor.feedless.ResumableHarvestException
 import org.migor.feedless.Vertical
+import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.actions.PluginExecutionJson
 import org.migor.feedless.any
 import org.migor.feedless.any2
@@ -427,6 +428,40 @@ class SourceHarvesterTest {
       repositoryHarvester.harvestScheduled(source)
 
       Mockito.verify(documentRepository).saveAll(argThat { it.count() == 2 })
+    }
+
+  @Test
+  fun `given documents feature no url, then the source url will be used as their url`() =
+    runTest(context = RequestContext(groupId = GroupId(), userId = Mother.randomUserId())) {
+      Mockito.`when`(source.actions).thenReturn(listOf(FetchAction(sourceId = SourceId(), url = "https://example.org/events")))
+      Mockito.`when`(
+        scraper.scrape(
+          any(Source::class.java),
+          any(LogCollector::class.java)
+        )
+      ).thenReturn(
+        ScrapeResult(
+          actionCount = 1,
+          lastFragment = ScrapedFragmentOutput(
+            fragments = emptyList(),
+            items = listOf(
+              newJsonItem(url = "", title = "1"),
+              newJsonItem(url = "", title = "2"),
+              newJsonItem(url = "https://example.org/events/3", title = "3"),
+            )
+          )
+        )
+      )
+
+      repositoryHarvester.harvestScheduled(source)
+
+      Mockito.verify(documentRepository).saveAll(argThat {
+        it.map { document -> document.url } == listOf(
+          "https://example.org/events",
+          "https://example.org/events",
+          "https://example.org/events/3"
+        )
+      })
     }
 
   @Test
