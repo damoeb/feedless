@@ -16,6 +16,7 @@ import org.migor.feedless.AppMetrics
 import org.migor.feedless.AppProfiles
 import org.migor.feedless.NoItemsRetrievedException
 import org.migor.feedless.ResumableHarvestException
+import org.migor.feedless.actions.FetchAction
 import org.migor.feedless.attachment.Attachment
 import org.migor.feedless.document.Document
 import org.migor.feedless.document.DocumentId
@@ -385,7 +386,11 @@ class SourceHarvester(
             existingLabels.add(updated.url)
           }
           createOrUpdate(
-            updated.copy(imageUrl = detectMainImageUrl(updated.html)),
+            updated.copy(
+              imageUrl = detectMainImageUrl(updated.html),
+              // a linkless item points to the page it was found on, not to nowhere
+              url = updated.url.ifBlank { source.fetchUrl() ?: updated.url }
+            ),
             existing,
             repository
           )
@@ -546,6 +551,8 @@ class SourceHarvester(
     )
   }
 }
+
+private fun Source.fetchUrl(): String? = actions.filterIsInstance<FetchAction>().firstOrNull()?.url
 
 private fun ScrapedFragment.createDocument(repositoryId: RepositoryId, source: Source): Document {
   val now = LocalDateTime.now()
