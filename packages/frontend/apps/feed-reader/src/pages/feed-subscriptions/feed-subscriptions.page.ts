@@ -6,7 +6,7 @@ import {
 } from '@angular/core';
 import { IonContent, ToastController } from '@ionic/angular/standalone';
 
-import { PageService, PageTags } from '@feedless/components';
+import { PageService, PageTags } from '@feedless/data-access';
 
 import dayjs from 'dayjs';
 import { ArticleViewComponent } from '../../components/article-view/article-view.component';

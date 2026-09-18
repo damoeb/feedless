@@ -3,8 +3,8 @@ import { provideServerRendering, withRoutes } from '@angular/ssr';
 import { readFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { SERVER_APP_CONFIG } from '@feedless/components';
+ 
+import { SERVER_APP_CONFIG } from '@feedless/data-access-auth';
 import { VerticalAppConfig } from '@feedless/core';
 import { appConfig } from './app.config';
 import { serverRoutes } from './app.routes.server';

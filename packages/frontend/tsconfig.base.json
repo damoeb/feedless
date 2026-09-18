@@ -10,24 +10,80 @@
     "importHelpers": true,
     "target": "es2015",
     "module": "esnext",
-    "lib": ["es2020", "dom"],
+    "lib": [
+      "es2020",
+      "dom"
+    ],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "strictNullChecks": false,
     "baseUrl": ".",
     "paths": {
-      "@feedless/graphql-api": ["libs/graphql-api/src/index.ts"],
-      "@feedless/components": ["libs/components/src/index.ts"],
-      "@feedless/guards": ["libs/guards/src/index.ts"],
-      "@feedless/core": ["libs/core/src/index.ts"],
-      "@feedless/testing": ["libs/testing/src/index.ts"],
-      "@feedless/geo": ["libs/geo/src/index.ts"]
+      "@feedless/graphql-api": [
+        "libs/shared/graphql-api/src/index.ts"
+      ],
+      "@feedless/components": [
+        "libs/shared/components/src/index.ts"
+      ],
+      "@feedless/core": [
+        "libs/shared/core/src/index.ts"
+      ],
+      "@feedless/testing": [
+        "libs/shared/testing/src/index.ts"
+      ],
+      "@feedless/geo": [
+        "libs/shared/geo/src/index.ts"
+      ],
+      "@feedless/data-access-auth": [
+        "libs/shared/data-access-auth/src/index.ts"
+      ],
+      "@feedless/data-access": [
+        "libs/shared/data-access/src/index.ts"
+      ],
+      "@feedless/ui": [
+        "libs/shared/ui/src/index.ts"
+      ],
+      "@feedless/feature-login": [
+        "libs/shared/feature-login/src/index.ts"
+      ],
+      "@feedless/upcoming-util": [
+        "libs/upcoming/util/src/index.ts"
+      ],
+      "@feedless/upcoming-data-access": [
+        "libs/upcoming/data-access/src/index.ts"
+      ],
+      "@feedless/upcoming-ui": [
+        "libs/upcoming/ui/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-common": [
+        "libs/upcoming/feature-common/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-event-calendar": [
+        "libs/upcoming/feature-event-calendar/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-event-detail": [
+        "libs/upcoming/feature-event-detail/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-hubs": [
+        "libs/upcoming/feature-hubs/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-account": [
+        "libs/upcoming/feature-account/src/index.ts"
+      ],
+      "@feedless/upcoming-feature-static": [
+        "libs/upcoming/feature-static/src/index.ts"
+      ]
     },
     "strict": false,
     "noUncheckedSideEffectImports": false,
-    "types": ["*"],
+    "types": [
+      "*"
+    ],
     "esModuleInterop": false,
     "ignoreDeprecations": "6.0"
   },
-  "exclude": ["node_modules", "tmp"]
+  "exclude": [
+    "node_modules",
+    "tmp"
+  ]
 }

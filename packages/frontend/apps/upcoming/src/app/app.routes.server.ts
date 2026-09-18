@@ -1,6 +1,6 @@
 import { RenderMode, ServerRoute } from '@angular/ssr';
 import { template } from 'typesafe-routes';
-import { upcomingBaseRoute } from './upcoming-product-routes';
+import { upcomingBaseRoute } from '@feedless/upcoming-util';
 
 export const serverRoutes: ServerRoute[] = [
   {

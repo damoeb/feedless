@@ -1,0 +1,19 @@
+{
+  "name": "data-access-auth",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/data-access-auth/src",
+  "prefix": "app",
+  "projectType": "library",
+  "tags": [
+    "scope:shared",
+    "type:data-access"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

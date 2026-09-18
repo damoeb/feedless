@@ -6,8 +6,8 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { IonApp } from '@ionic/angular/standalone';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { AuthService, SessionService } from '@feedless/components';
+ 
+import { AuthService, SessionService } from '@feedless/data-access-auth';
 
 @Component({
   imports: [RouterModule, RouterOutlet, IonApp],

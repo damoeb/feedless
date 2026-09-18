@@ -4,14 +4,21 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/upcoming/src",
-  "tags": [],
+  "tags": [
+    "scope:upcoming",
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "dependsOn": [
         {
-          "projects": ["graphql-api"],
+          "projects": [
+            "graphql-api"
+          ],
           "target": "codegen"
         },
         "sitemap"
@@ -34,7 +41,9 @@
           "apps/upcoming/src/global.scss",
           "apps/upcoming/src/styles.scss"
         ],
-        "polyfills": ["zone.js"],
+        "polyfills": [
+          "zone.js"
+        ],
         "server": "apps/upcoming/src/main.server.ts",
         "ssr": {
           "entry": "apps/upcoming/src/server.ts"
@@ -97,15 +106,8 @@
     },
     "test": {
       "executor": "@angular/build:unit-test",
-      "dependsOn": [
-        {
-          "projects": ["graphql-api"],
-          "target": "codegen"
-        }
-      ],
       "options": {
-        "runnerConfig": true,
-        "setupFiles": ["test/vitest-setup.ts", "test/vitest-ionic-setup.ts"]
+        "buildTarget": "upcoming:build:development"
       }
     },
     "serve-static": {
@@ -113,12 +115,14 @@
       "executor": "@nx/web:file-server",
       "dependsOn": [
         {
-          "projects": ["graphql-api"],
+          "projects": [
+            "graphql-api"
+          ],
           "target": "codegen"
         }
       ],
       "options": {
-        "buildTarget": "upcoming:build",
+        "buildTarget": "upcoming:build:development",
         "port": 4200,
         "staticFilePath": "dist/apps/upcoming/browser",
         "spa": true
@@ -126,7 +130,9 @@
     },
     "sitemap": {
       "executor": "nx:run-commands",
-      "outputs": ["{workspaceRoot}/apps/upcoming/public/sitemap.xml"],
+      "outputs": [
+        "{workspaceRoot}/apps/upcoming/public/sitemap.xml"
+      ],
       "options": {
         "command": "node apps/upcoming/generate-sitemaps.ts"
       }

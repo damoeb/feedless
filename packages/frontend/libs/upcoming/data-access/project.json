@@ -1,0 +1,19 @@
+{
+  "name": "upcoming-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/upcoming/data-access/src",
+  "prefix": "app",
+  "projectType": "library",
+  "tags": [
+    "scope:upcoming",
+    "type:data-access"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
