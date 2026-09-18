@@ -4,6 +4,7 @@ import {
   OnDestroy,
   OnInit,
   PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical, SessionResponse } from '@feedless/graphql-api';
@@ -52,6 +53,7 @@ import { RemoveIfProdDirective } from '../../directives';
     RouterLinkActive,
     RemoveIfProdDirective,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {

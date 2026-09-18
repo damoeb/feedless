@@ -4,6 +4,7 @@ import {
   inject,
   OnDestroy,
   OnInit,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { LicenseService, ServerConfigService } from '../../services';
 import { GqlServerSettingsQuery } from '@feedless/graphql-api';
@@ -19,6 +20,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './trial-warning.component.html',
   styleUrls: ['./trial-warning.component.scss'],
   imports: [IonToolbar, RouterLink, RouterLinkActive, IonText, IonButton],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {

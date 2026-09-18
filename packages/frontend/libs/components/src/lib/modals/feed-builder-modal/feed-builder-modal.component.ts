@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { FeedBuilderComponent } from '../../components/feed-builder/feed-builder.component';
 import { FeedWithRequest } from '../../components/feed-builder/feed-builder.types';
 import {
@@ -27,6 +27,7 @@ export interface FeedBuilderModalComponentProps {
   templateUrl: './feed-builder-modal.component.html',
   styleUrls: ['./feed-builder-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     IonHeader,
     IonToolbar,

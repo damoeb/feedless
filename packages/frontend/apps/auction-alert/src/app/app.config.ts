@@ -7,12 +7,13 @@ import { appRoutes } from './app.routes';
 import {
   provideClientHydration,
   withEventReplay,
+  withNoIncrementalHydration
 } from '@angular/platform-browser';
 import { provideIonicAngular } from '@ionic/angular/standalone';
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
     provideIonicAngular(),

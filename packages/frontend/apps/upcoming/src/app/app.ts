@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   ActivatedRoute,
   Router,
@@ -13,6 +13,7 @@ import { AuthService, SessionService } from '@feedless/components';
   imports: [RouterModule, RouterOutlet, IonApp],
   selector: 'app-root',
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.scss',
 })
 export class App implements OnInit {

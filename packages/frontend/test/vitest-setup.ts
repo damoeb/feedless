@@ -30,15 +30,6 @@ for (const proto of [
 }
 
 /**
- * Ionic's components pick their styles by mode (`ios`/`md`). Without this
- * initialization the mode is unset, Stencil registers `undefined` as a component's
- * style text and rendering fails. Imported dynamically so that it runs after the
- * polyfill above — Stencil reads the DOM as soon as it is loaded.
- */
-const { initialize } = await import('@ionic/core/components');
-initialize();
-
-/**
  * jsdom implements no media queries at all. Both Ionic and the app's own colour-scheme
  * detection call `matchMedia` during construction, so a query that matches nothing is
  * enough to keep them on their default (light) branch.

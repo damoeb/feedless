@@ -8,6 +8,7 @@ import {
   PLATFORM_ID,
   viewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { LatLng } from '@feedless/core';
 import { isPlatformBrowser } from '@angular/common';
@@ -20,6 +21,7 @@ export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
   templateUrl: './map.component.html',
   // styleUrls: ['./map.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MapComponent implements AfterViewInit {

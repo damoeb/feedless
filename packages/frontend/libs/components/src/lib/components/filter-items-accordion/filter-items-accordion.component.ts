@@ -5,6 +5,7 @@ import {
   OnInit,
   output,
   PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   FormControl,
@@ -83,6 +84,7 @@ type GeneralFilterParams = ArrayElement<
     IconComponent,
     IonTextarea,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FilterItemsAccordionComponent implements OnInit {

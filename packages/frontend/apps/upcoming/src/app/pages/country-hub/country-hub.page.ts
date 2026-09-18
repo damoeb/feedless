@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import dayjs from 'dayjs';
@@ -27,6 +27,7 @@ const COUNTRY_PATH = '/events/in/CH';
   templateUrl: './country-hub.page.html',
   styleUrls: ['./country-hub.page.scss'],
   imports: [IonContent, RouterLink, UpcomingFooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class CountryHubPage implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, inject, input, output, PLATFORM_ID } from '@angular/core';
+import { Component, inject, input, output, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { GetElementType, Record } from '@feedless/graphql-api';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { first } from 'lodash-es';
@@ -17,6 +17,7 @@ type Enclosure = GetElementType<Record['attachments']>;
   templateUrl: './player.component.html',
   styleUrls: ['./player.component.scss'],
   imports: [IonButton, IconComponent, IonNote],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class PlayerComponent {

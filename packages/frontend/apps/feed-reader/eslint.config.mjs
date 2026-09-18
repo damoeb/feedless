@@ -8,6 +8,8 @@ export default [
   {
     files: ['**/*.ts'],
     rules: {
+      // Angular 22 migration pins existing components to Eager; moving them to OnPush is separate work.
+      '@angular-eslint/prefer-on-push-component-change-detection': 'off',
       '@angular-eslint/directive-selector': [
         'error',
         {

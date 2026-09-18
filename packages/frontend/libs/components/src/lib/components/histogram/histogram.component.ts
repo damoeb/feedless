@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { GqlRecordFrequency } from '@feedless/graphql-api';
 import dayjs from 'dayjs';
 import { sumBy, times } from 'lodash-es';
@@ -10,6 +10,7 @@ import { NgClass } from '@angular/common';
   templateUrl: './histogram.component.html',
   styleUrls: ['./histogram.component.scss'],
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class HistogramComponent implements OnInit {

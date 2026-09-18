@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, OnInit } from '@angular/core';
+import { Component, forwardRef, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   FormsModule,
   NG_VALUE_ACCESSOR,
@@ -19,6 +19,7 @@ import { ControlValueAccessorDirective } from '../../directives/control-value-ac
     },
   ],
   imports: [IonInput, FormsModule, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class InputComponent<T>

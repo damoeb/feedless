@@ -22,7 +22,12 @@
       "@feedless/core": ["libs/core/src/index.ts"],
       "@feedless/testing": ["libs/testing/src/index.ts"],
       "@feedless/geo": ["libs/geo/src/index.ts"]
-    }
+    },
+    "strict": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "esModuleInterop": false,
+    "ignoreDeprecations": "6.0"
   },
   "exclude": ["node_modules", "tmp"]
 }

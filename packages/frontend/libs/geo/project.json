@@ -12,9 +12,7 @@
         "buildTarget": "upcoming:build:development",
         "tsConfig": "libs/geo/tsconfig.spec.json",
         "runnerConfig": true,
-        "setupFiles": [
-          "test/vitest-setup.ts"
-        ]
+        "setupFiles": ["test/vitest-setup.ts", "test/vitest-ionic-setup.ts"]
       }
     },
     "lint": {

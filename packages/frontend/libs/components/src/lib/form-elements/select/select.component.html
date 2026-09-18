@@ -2,7 +2,7 @@
   (valueChanged)="setValue($event.key)"
   [color]="color()"
   [disabled]="disabled()"
-  [error]="control?.invalid"
+  [error]="$safeNavigationMigration(control?.invalid)"
   [hideFilter]="hideFilter()"
   [items]="items()"
   [labelFn]="'label'"

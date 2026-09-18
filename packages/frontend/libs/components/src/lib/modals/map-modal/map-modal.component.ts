@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -25,6 +25,7 @@ export interface MapModalComponentProps {
   templateUrl: './map-modal.component.html',
   styleUrls: ['./map-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     IonHeader,
     IonToolbar,

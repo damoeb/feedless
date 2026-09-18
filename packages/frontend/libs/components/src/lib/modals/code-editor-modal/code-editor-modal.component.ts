@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -38,6 +38,7 @@ export interface CodeEditorModalComponentProps {
   templateUrl: './code-editor-modal.component.html',
   styleUrls: ['./code-editor-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     CommonModule,
     FormsModule,

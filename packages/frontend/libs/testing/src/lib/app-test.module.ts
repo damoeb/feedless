@@ -61,6 +61,7 @@ import {
   HttpClient,
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 import { of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -210,7 +211,7 @@ const defaultAppTestModuleConfig: AppTestOptions = {
   imports: [RouterTestingModule.withRoutes([])],
   providers: [
     // { provide: SwUpdate, useClass: SwUpdateMock },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     provideHttpClientTesting(),
   ],
 })

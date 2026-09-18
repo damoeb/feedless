@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { NgClass } from '@angular/common';
 
 @Component({
@@ -6,6 +6,7 @@ import { NgClass } from '@angular/common';
   templateUrl: './block-element.component.html',
   styleUrls: ['./block-element.component.scss'],
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class BlockElementComponent {

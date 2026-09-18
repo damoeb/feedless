@@ -73,7 +73,7 @@
       "executor": "@angular/build:unit-test",
       "options": {
         "runnerConfig": true,
-        "setupFiles": ["test/vitest-setup.ts"]
+        "setupFiles": ["test/vitest-setup.ts", "test/vitest-ionic-setup.ts"]
       }
     },
     "serve-static": {

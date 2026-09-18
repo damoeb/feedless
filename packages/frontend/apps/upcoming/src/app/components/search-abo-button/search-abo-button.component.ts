@@ -1,4 +1,4 @@
-import { Component, inject, input, PLATFORM_ID } from '@angular/core';
+import { Component, inject, input, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
 import { IonButton, ModalController } from '@ionic/angular/standalone';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -27,6 +27,7 @@ type SubscriptionType = 'cal' | 'atom';
   templateUrl: './search-abo-button.component.html',
   styleUrls: ['./search-abo-button.component.scss'],
   imports: [IonButton, IconComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchAboButtonComponent {

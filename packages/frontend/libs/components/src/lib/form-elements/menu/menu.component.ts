@@ -5,6 +5,7 @@ import {
   OnInit,
   output,
   viewChild,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   IonButton,
@@ -56,6 +57,7 @@ export function labelProvider<T>(
     IonLabel,
     IonButton,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MenuComponent<T> implements OnInit {

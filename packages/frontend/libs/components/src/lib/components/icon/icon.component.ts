@@ -1,4 +1,4 @@
-import { Component, inject, input, PLATFORM_ID } from '@angular/core';
+import { Component, inject, input, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { IonIcon } from '@ionic/angular/standalone';
 import { isPlatformBrowser } from '@angular/common';
 
@@ -6,6 +6,7 @@ import { isPlatformBrowser } from '@angular/common';
   selector: 'app-icon',
   templateUrl: './icon.component.html',
   imports: [IonIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class IconComponent {

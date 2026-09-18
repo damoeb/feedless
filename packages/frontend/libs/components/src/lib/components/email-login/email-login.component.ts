@@ -3,6 +3,7 @@ import {
   Component,
   inject,
   PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { AuthService, ConfirmCode, SessionService } from '../../services';
 import { Router } from '@angular/router';
@@ -47,6 +48,7 @@ type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
     IconComponent,
     IonSpinner,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class EmailLoginComponent {

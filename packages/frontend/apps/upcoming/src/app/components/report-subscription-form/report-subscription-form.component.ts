@@ -6,6 +6,7 @@ import {
   input,
   output,
   PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
@@ -52,6 +53,7 @@ import { ReportSubscriptionValue } from './report-subscription';
     IonButton,
     IconComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class ReportSubscriptionFormComponent {

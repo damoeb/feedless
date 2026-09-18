@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { IonHeader, IonToolbar } from '@ionic/angular/standalone';
 
 @Component({
@@ -6,6 +6,7 @@ import { IonHeader, IonToolbar } from '@ionic/angular/standalone';
   templateUrl: './promotion-header.component.html',
   styleUrls: ['./promotion-header.component.scss'],
   imports: [IonHeader, IonToolbar],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class PromotionHeaderComponent {

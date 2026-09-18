@@ -1,4 +1,4 @@
-import { Component, inject, input, PLATFORM_ID } from '@angular/core';
+import { Component, inject, input, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 import { FeatureComponent } from '../feature/feature.component';
@@ -15,6 +15,7 @@ export type StringFeatureGroup = {
   templateUrl: './plan-column.component.html',
   styleUrls: ['./plan-column.component.scss'],
   imports: [FeatureComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class PlanColumnComponent {

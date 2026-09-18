@@ -23,7 +23,10 @@ import { isDevMode } from '@angular/core';
 
 const app = express();
 app.use(compression());
-const angularApp = new AngularNodeAppEngine();
+const angularApp = new AngularNodeAppEngine({
+  // TODO: This is a security-sensitive option. Remove if not needed. For more information, see https://angular.dev/best-practices/security#configuring-trusted-proxy-headers
+  trustProxyHeaders: ['x-forwarded-host', 'x-forwarded-proto'],
+});
 
 const LOKALE_EVENTS_HOST = 'lokale.events';
 const LOKALE_EVENTS_WWW = 'www.lokale.events';

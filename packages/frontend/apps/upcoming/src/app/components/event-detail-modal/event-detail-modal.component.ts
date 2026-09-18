@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import {
   AlertController,
@@ -30,6 +30,7 @@ import { LocalizedEvent } from '../../event.service';
   templateUrl: './event-detail-modal.component.html',
   styleUrls: ['./event-detail-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     ReactiveFormsModule,
     IonButton,

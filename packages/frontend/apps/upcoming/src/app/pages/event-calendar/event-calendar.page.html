@@ -110,9 +110,9 @@
                               @for (place of placesGroup.places; track place) {
                                 <h2>
                                   <a
-                                    [routerLink]="getPlaceLink(place?.place).path"
-                                    [queryParams]="getPlaceLink(place?.place).queryParams"
-                                    [title]="'Wechsle nach ' + place?.place?.place"
+                                    [routerLink]="getPlaceLink($safeNavigationMigration(place?.place)).path"
+                                    [queryParams]="getPlaceLink($safeNavigationMigration(place?.place)).queryParams"
+                                    [title]="'Wechsle nach ' + $safeNavigationMigration(place?.place?.place)"
                                   >{{ place?.place?.place }}</a
                                   >
                                   @if (placesGroup?.distance && placesGroup.distance > 0) {

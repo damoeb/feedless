@@ -12,6 +12,7 @@ import {
   SimpleChanges,
   viewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy
 } from '@angular/core';
 
 import { EditorState, Extension, StateField } from '@codemirror/state';
@@ -128,6 +129,7 @@ export type AutoSuggestionsProvider = (
     },
   ],
   imports: [NgClass],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class CodeEditorComponent

@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, PLATFORM_ID } from '@angular/core';
+import { Component, effect, inject, input, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
@@ -21,6 +21,7 @@ type StringFeature = {
   templateUrl: './feature.component.html',
   styleUrls: ['./feature.component.scss'],
   imports: [IonRow, IconComponent, IonCol],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FeatureComponent {

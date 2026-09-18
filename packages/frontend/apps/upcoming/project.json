@@ -8,14 +8,10 @@
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": [
-        "{options.outputPath}"
-      ],
+      "outputs": ["{options.outputPath}"],
       "dependsOn": [
         {
-          "projects": [
-            "graphql-api"
-          ],
+          "projects": ["graphql-api"],
           "target": "codegen"
         },
         "sitemap"
@@ -38,9 +34,7 @@
           "apps/upcoming/src/global.scss",
           "apps/upcoming/src/styles.scss"
         ],
-        "polyfills": [
-          "zone.js"
-        ],
+        "polyfills": ["zone.js"],
         "server": "apps/upcoming/src/main.server.ts",
         "ssr": {
           "entry": "apps/upcoming/src/server.ts"
@@ -99,17 +93,13 @@
       "executor": "@angular/build:unit-test",
       "dependsOn": [
         {
-          "projects": [
-            "graphql-api"
-          ],
+          "projects": ["graphql-api"],
           "target": "codegen"
         }
       ],
       "options": {
         "runnerConfig": true,
-        "setupFiles": [
-          "test/vitest-setup.ts"
-        ]
+        "setupFiles": ["test/vitest-setup.ts", "test/vitest-ionic-setup.ts"]
       }
     },
     "serve-static": {
@@ -117,9 +107,7 @@
       "executor": "@nx/web:file-server",
       "dependsOn": [
         {
-          "projects": [
-            "graphql-api"
-          ],
+          "projects": ["graphql-api"],
           "target": "codegen"
         }
       ],
@@ -132,9 +120,7 @@
     },
     "sitemap": {
       "executor": "nx:run-commands",
-      "outputs": [
-        "{workspaceRoot}/apps/upcoming/public/sitemap.xml"
-      ],
+      "outputs": ["{workspaceRoot}/apps/upcoming/public/sitemap.xml"],
       "options": {
         "command": "node apps/upcoming/generate-sitemaps.ts"
       }

@@ -5,6 +5,7 @@ import {
   OnDestroy,
   OnInit,
   PLATFORM_ID,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import { SessionService } from '../../services';
 import { Subscription } from 'rxjs';
@@ -19,6 +20,7 @@ import { IconComponent } from '../icon/icon.component';
   templateUrl: './dark-mode-button.component.html',
   styleUrls: ['./dark-mode-button.component.scss'],
   imports: [IonButton, IconComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DarkModeButtonComponent implements OnInit, OnDestroy {

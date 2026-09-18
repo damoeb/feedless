@@ -1,4 +1,4 @@
-import { Component, inject, input, PLATFORM_ID } from '@angular/core';
+import { Component, inject, input, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { NamedLatLon } from '@feedless/core';
 import { AlertController, IonButton } from '@ionic/angular/standalone';
 // eslint-disable-next-line @nx/enforce-module-boundaries
@@ -21,6 +21,7 @@ import { isPlatformBrowser } from '@angular/common';
   templateUrl: './upcoming-footer.component.html',
   styleUrls: ['./upcoming-footer.component.scss'],
   imports: [IonButton, RouterLink],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class UpcomingFooterComponent {

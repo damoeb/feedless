@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -26,6 +26,7 @@ export type FlowModalComponentProps = {
   templateUrl: './flow-modal.component.html',
   styleUrls: ['./flow-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     IonHeader,
     IonToolbar,

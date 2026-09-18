@@ -7,6 +7,7 @@ import {
   output,
   PLATFORM_ID,
   SimpleChanges,
+  ChangeDetectionStrategy
 } from '@angular/core';
 import {
   FormControl,
@@ -32,6 +33,7 @@ import { IconComponent } from '../../components/icon/icon.component';
     IconComponent,
     IonSpinner,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {

@@ -15,6 +15,7 @@ import {
   BrowserModule,
   provideClientHydration,
   withEventReplay,
+  withNoIncrementalHydration
 } from '@angular/platform-browser';
 import {
   IonicRouteStrategy,
@@ -69,7 +70,7 @@ export const appConfig: ApplicationConfig = {
       // IonApp,
       // IonRouterOutlet,
     ),
-    provideClientHydration(withEventReplay()),
+    provideClientHydration(withEventReplay(), withNoIncrementalHydration()),
     provideBrowserGlobalErrorListeners(),
     provideRouter(appRoutes),
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },

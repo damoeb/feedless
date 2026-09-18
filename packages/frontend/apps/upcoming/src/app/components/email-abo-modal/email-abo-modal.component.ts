@@ -1,4 +1,4 @@
-import { Component, inject, PLATFORM_ID } from '@angular/core';
+import { Component, inject, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import {
   AlertController,
@@ -48,6 +48,7 @@ export interface EmailAboModalComponentProps {
     IconComponent,
     ReportSubscriptionFormComponent,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class EmailAboModalComponent implements EmailAboModalComponentProps {

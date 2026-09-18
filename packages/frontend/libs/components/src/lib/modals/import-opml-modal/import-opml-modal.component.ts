@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { Outline, RepositoryService } from '../../services';
 import {
   IonButton,
@@ -51,6 +51,7 @@ type FcOutline = {
   templateUrl: './import-opml-modal.component.html',
   styleUrls: ['./import-opml-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     IonHeader,
     IonToolbar,

@@ -1,5 +1,5 @@
 
-import { Component, input, output } from '@angular/core';
+import { Component, input, output, ChangeDetectionStrategy } from '@angular/core';
 import { IonButton, IonCol, IonGrid, IonRow } from '@ionic/angular/standalone';
 import { InputComponent } from '../../form-elements/input/input.component';
 import { KeyLabelOption } from '../../form-elements/select/select.component';
@@ -29,6 +29,7 @@ export type SegmentedOutput = {
   templateUrl: './segmented-output.component.html',
   styleUrls: ['./segmented-output.component.scss'],
   imports: [IonGrid, IonRow, IonCol, IonButton, InputComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SegmentedOutputComponent {

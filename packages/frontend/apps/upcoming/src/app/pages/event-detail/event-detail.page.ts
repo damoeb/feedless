@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, inject, OnInit, PLATFORM_ID, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { IonContent } from '@ionic/angular/standalone';
 import { isPlatformBrowser } from '@angular/common';
@@ -25,6 +25,7 @@ const BASE_URL = 'https://lokale.events';
   templateUrl: './event-detail.page.html',
   styleUrls: ['./event-detail.page.scss'],
   imports: [IonContent, RouterLink, UpcomingFooterComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class EventDetailPage implements OnInit {
