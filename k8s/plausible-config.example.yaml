@@ -5,8 +5,8 @@ metadata:
 data:
   BASE_URL: "https://feedles.org"
   # see https://github.com/plausible/community-edition/tree/v2.1.0?tab=readme-ov-file#secret_key_base
-  SECRET_KEY_BASE: "B79eOyceUn6NHigYUrWrda3p7uMX2CruAleh8fft+XQ1P2mh53Sdrzlq4bFmWpH4"
-  TOTP_VAULT_KEY: "R1j1GZgjbrl/oJtg5o4OXsbwMssUgiN45iP3CeqD8Bo="
+  SECRET_KEY_BASE: "<generate: openssl rand -base64 64>"
+  TOTP_VAULT_KEY: "<generate: openssl rand -base64 32>"
 
 ---
 

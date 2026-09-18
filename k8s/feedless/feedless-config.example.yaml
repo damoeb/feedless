@@ -7,7 +7,7 @@ stringData:
   APP_ROOT_SECRET_KEY: "password"
   APP_TELEGRAM_TOKEN: ""
   APP_ACTUATOR_PASSWORD: "password"
-  APP_JWT_SECRET: "60ae393744191ee58869f700c1d27647b0b64d42"
+  APP_JWT_SECRET: "<generate: openssl rand -hex 20>"
   feedless.pem: ""
 
   # github
