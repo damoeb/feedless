@@ -508,7 +508,7 @@ class SourceHarvester(
       } else {
         if (repository.plugins.isEmpty()) {
           Pair(
-            false, document.copy(
+            false, existing.copy(
               title = document.title,
               text = document.text,
               contentHash = document.contentHash,
