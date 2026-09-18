@@ -15,6 +15,7 @@ import org.migor.feedless.common.HttpResponse
 import org.migor.feedless.common.LocaleProperties
 import org.migor.feedless.document.Document
 import org.migor.feedless.text.datetime.DateTimeExtractor
+import org.migor.feedless.text.datetime.TimeCandidate
 import org.migor.feedless.text.datetime.summarize
 import org.migor.feedless.generated.types.FeedlessPlugins
 import org.migor.feedless.pipeline.FragmentOutput
@@ -118,14 +119,30 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
 
     fetched?.let {
       logCollector.log("title '${document.title}' -> '${it.document.title}'")
+      logCollector.log("text ${document.text.excerpt()} -> ${it.bodyText.excerpt()}")
       if (params.extractDates != false) {
         document.startingAt?.let { startingAt ->
           // a failed plugin drops the item, so extraction must not fail it
           runCatching {
             val locale = it.lang?.let { lang -> Locale.forLanguageTag(lang) } ?: localeProperties.defaultLocale
-            dateTimeExtractor.extractCandidates(it.bodyText, locale)
+            // readability may drop the date, so the original title and text are searched as well
+            val texts = listOfNotNull(document.title, document.text, it.bodyText)
+            val candidates = texts
+              .flatMap { text -> dateTimeExtractor.extractCandidates(text, locale) }
+              .groupBy { candidate -> candidate.dateTime }
+              .values
+              .map { same -> same.first().copy(occurrences = same.sumOf { candidate -> candidate.occurrences }) }
+            val times = texts
+              .flatMap { text -> dateTimeExtractor.extractTimes(text, locale) }
+              .distinctBy { time -> time.time }
+            Pair(candidates, times)
           }
-            .onSuccess { candidates -> logCollector.log(candidates.summarize(startingAt)) }
+            .onSuccess { (candidates, times) ->
+              logCollector.log(candidates.summarize(startingAt))
+              if (times.isNotEmpty()) {
+                logCollector.log(times.summarize())
+              }
+            }
             .onFailure { e -> logCollector.log("datetime extraction failed: ${e.message}") }
         }
       }
@@ -179,6 +196,22 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
       ),
     )
   }
+}
+
+private const val MAX_EXCERPT_LENGTH = 80
+private const val MAX_LISTED_TIMES = 5
+
+private fun List<TimeCandidate>.summarize(): String {
+  val noun = if (size == 1) "standalone time" else "standalone times"
+  val inputs = take(MAX_LISTED_TIMES).joinToString(", ") { "'${it.input}'" }
+  val more = if (size > MAX_LISTED_TIMES) " +${size - MAX_LISTED_TIMES} more" else ""
+  return "$size $noun [$inputs$more]"
+}
+
+private fun String.excerpt(): String {
+  val flat = replace(Regex("\\s+"), " ").trim()
+  val shown = if (flat.length > MAX_EXCERPT_LENGTH) "${flat.take(MAX_EXCERPT_LENGTH)}…" else flat
+  return "'$shown' ($length chars)"
 }
 
 private data class Fetched(val document: Document, val bodyText: String, val lang: String?)
