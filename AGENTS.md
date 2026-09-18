@@ -31,11 +31,11 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 
 ## Modules
 
-`packages/` holds 20 directories; **only 19 are Gradle modules.** `document-classifier-models` is the one that is not — `./gradlew :packages:document-classifier-models:test` will fail.
+`packages/` holds 21 directories; **only 20 are Gradle modules.** `document-classifier-models` is the one that is not — `./gradlew :packages:document-classifier-models:test` will fail.
 
 | Module | Owns | Build |
 |---|---|---|
-| `server-core` | The Spring Boot application that assembles the modules: security composition (`SecurityConfig`, JWT filters, `TokenAuthenticator`), scheduler executors, the scraping pipeline and plugins, infrastructure behind `domain`'s outbound ports (`JwtTokenIssuer`, `PluginService`, `ScrapeService`, `AnalyticsService`, …), `ThrottleAspect`, `TestingEndpoint`. 91 Kotlin files; start at `FeedlessApplication.kt`. | Gradle |
+| `server-core` | The Spring Boot application that assembles the modules: security composition (`SecurityConfig`, JWT filters, `TokenAuthenticator`), scheduler executors, the scraping pipeline and plugins, infrastructure behind `domain`'s outbound ports (`JwtTokenIssuer`, `PluginService`, `ScrapeService`, `AnalyticsService`, …), `ThrottleAspect`, `TestingEndpoint`. 66 Kotlin files; start at `FeedlessApplication.kt`. | Gradle |
 | `domain` | Domain types, repository interfaces, all use cases and guards, outbound ports (`TokenIssuer`, `PipelinePlugins`, `Scraper`, `Analytics`, …), the shared properties classes (`PublicUrls`, `BuildInfo`, `LocaleProperties`), the security bridge (`injectCapabilitiesFrom*`), `@Throttled`, shared exceptions, `AppProfiles`/`AppLayer`. Spring annotations allowed; no generated GraphQL types, no `data.jpa`. Depends on no project module; changes ripple everywhere. | Gradle |
 | `jpa-data` | JPA adapters: entities, DAOs, MapStruct mappers, PostGIS types. Flyway migrations (`src/main/resources/db/migration`) and persistence integration tests (Testcontainers/PostGIS; `PostgreSQLExtension` is its test fixture). | Gradle |
 | `graphql-api` | `schema.graphqls` (**contract**: generates the Kotlin DGS types and every TS client) plus all DGS resolvers, `ProductDataLoader`, GraphQL mappers (MapStruct via kapt), `GraphQLExceptionHandler`, `GraphqlConfig`. Never depends on `server-core`. | Gradle (codegen, kapt) |
@@ -47,6 +47,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `telegram-gateway` | The Telegram vertical: `TelegramBotService` (long-polling bot, chat linking, push), `TelegramConfig`/`TelegramProperties`, the `Notifications` port adapter and the `MessageService` pub/sub it fans out through. Depends on `domain` and `jpa-data` only. Never depends on `server-core`. | Gradle |
 | `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
 | `frontend` | Nx 22 workspace, Angular 21. Apps `upcoming`, `feed-reader`, `auction-alert`; libs `@feedless/{components,core,geo,graphql-api,guards,testing}`. **npm.** | Gradle → npm |
+| `community` | Comment scoring: `ScoreService`, `CommentGraphService`, the tokenizer/stemmer/part-of-speech/language services, and the scorers under `text/{simple,complex,hyphenation}`. OpenNLP, LanguageTool, Lucene and commons-math live here and nowhere else. Gated on `${AppProfiles.community}`. | Gradle |
 | `document-classifier` | fastText classifier wrapper. Models/training data in `document-classifier-models`. | Gradle |
 | `document-classifier-models` | Python: training data, `categories.yaml`, `build.sh`. | `build.sh` |
 | `github-connector` | Git-backed document provider (GitHub accounts, repos as sources). | Gradle |
