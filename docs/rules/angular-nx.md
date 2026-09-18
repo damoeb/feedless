@@ -1,6 +1,6 @@
 # Angular / Nx Rules
 
-Two Angular clients: `packages/app-web` (Angular 20.3, Ionic 8, **yarn**) and `packages/frontend` (Nx 22, Angular 21, Ionic 8, **npm**). Both use Apollo Client over `graphql-ws`, Jest, and GraphQL codegen against the same schema.
+Two Angular clients: `packages/app-web` (Angular 22.1, Ionic 8, **yarn**) and `packages/frontend` (Nx 23, Angular 22.1, Ionic 8, **npm**). Both use Apollo Client over `graphql-ws`, Jest, and GraphQL codegen against the same schema.
 
 Related: [`kotlin-spring.md`](kotlin-spring.md) (the schema's other consumer), [`../../AGENTS.md`](../../AGENTS.md) (hub).
 
@@ -11,7 +11,7 @@ There is no single frontend. Check before editing — the two do not share code,
 | | `app-web` | `frontend` |
 |---|---|---|
 | Verticals | feedless, rss-proxy, page-change-tracker, untold-notes, reader, visual-diff | upcoming, feed-reader, auction-alert |
-| Angular / Nx | 20.3, no Nx | 21.0, Nx 22.3 |
+| Angular / Nx | 22.1, no Nx | 22.1, Nx 23.2 |
 | Package manager | **yarn** (`yarn.lock`) | **npm** (`package-lock.json`) |
 | Layout | one app, `src/app/{components,pages,modals,guards,elements,directives}` | `apps/<name>` + `libs/@feedless/*` |
 | E2E | `e2e/` | Playwright, `apps/<name>-e2e` |
