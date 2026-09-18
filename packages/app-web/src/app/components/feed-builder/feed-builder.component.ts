@@ -620,10 +620,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   sourceAccordionHighlighted(): boolean {
     return Boolean(
       this.url?.length ||
-        this.tags?.length ||
-        this.geoLocation ||
-        this.titleFc.value?.length ||
-        (this.sourceBuilder && this.needsJavaScript())
+      this.tags?.length ||
+      this.geoLocation ||
+      this.titleFc.value?.length ||
+      (this.sourceBuilder && this.needsJavaScript())
     );
   }
 

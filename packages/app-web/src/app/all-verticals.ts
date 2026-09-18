@@ -6,13 +6,7 @@ import { visualDiff } from './products/visual-diff/visual-diff';
 import { rssBuilder } from './products/rss-builder/rss-builder';
 
 export type VerticalId =
-  | 'changeTracker'
-  | 'rss-proxy'
-  | 'visual-diff'
-  | 'reader'
-  | 'digest'
-  | 'untold'
-  | 'feedless';
+  'changeTracker' | 'rss-proxy' | 'visual-diff' | 'reader' | 'digest' | 'untold' | 'feedless';
 
 // export type AppStage = 'idea' | 'development' | 'alpha' | 'stable'
 

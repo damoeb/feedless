@@ -14,8 +14,11 @@
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2020",
-    "lib": ["ES2022", "dom"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "noUncheckedSideEffectImports": false,
+    "types": ["*"],
+    "ignoreDeprecations": "6.0",
+    "skipLibCheck": true
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,

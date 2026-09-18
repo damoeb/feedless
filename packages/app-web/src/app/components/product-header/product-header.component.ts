@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { ProductHeadlineComponent } from '../product-headline/product-headline.component';
 
 @Component({
@@ -6,6 +6,7 @@ import { ProductHeadlineComponent } from '../product-headline/product-headline.c
   templateUrl: './product-header.component.html',
   styleUrls: ['./product-header.component.scss'],
   imports: [ProductHeadlineComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class ProductHeaderComponent {

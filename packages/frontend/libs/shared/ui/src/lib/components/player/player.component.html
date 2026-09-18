@@ -1,0 +1,18 @@
+@if (hasAudioStream(document())) {
+  <div class="ion-margin-top">
+    @if (!isPlaying) {
+      <ion-button (click)="playAudio()" color="dark" fill="clear" shape="round">
+        <app-icon color="primary" name="play-outline" slot="start"></app-icon>
+        Play
+        <ion-note class="ion-padding-start">{{
+          firstAudioLength(document())
+        }}</ion-note>
+      </ion-button>
+    }
+    @if (isPlaying) {
+      <audio autoplay controls style="width: 100%">
+        <source [src]="firstAudioStream(document())" />
+      </audio>
+    }
+  </div>
+}

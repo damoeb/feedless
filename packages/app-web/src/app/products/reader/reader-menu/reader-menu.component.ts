@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angular/standalone';
 
 @Component({
@@ -6,6 +6,7 @@ import { IonItem, IonLabel, IonList, IonListHeader } from '@ionic/angular/standa
   templateUrl: './reader-menu.component.html',
   styleUrls: ['./reader-menu.component.scss'],
   imports: [IonList, IonListHeader, IonItem, IonLabel],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class ReaderMenuComponent {

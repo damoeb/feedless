@@ -1,4 +1,12 @@
-import { Component, inject, input, OnInit, output, viewChild } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  viewChild,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import {
   IonButton,
   IonContent,
@@ -46,6 +54,7 @@ export function labelProvider<T>(value: T, labelFn: keyof T | ((value: T) => str
     IonLabel,
     IonButton,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MenuComponent<T> implements OnInit {

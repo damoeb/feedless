@@ -1,0 +1,257 @@
+import {
+  Component,
+  inject,
+  input,
+  OnInit,
+  output,
+  PLATFORM_ID,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import {
+  FormControl,
+  FormGroup,
+  FormsModule,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import {
+  GqlCompositeFieldFilterParamsInput,
+  GqlCompositeFilterParamsInput,
+  GqlItemFilterParamsInput,
+  GqlStringFilterOperator,
+  RepositoryFull,
+  RepositoryWithFrequency,
+} from '@feedless/graphql-api';
+import { dateFormat } from '@feedless/data-access-auth';
+import { debounce, interval, merge, ReplaySubject } from 'rxjs';
+import { without } from 'lodash-es';
+import { ArrayElement, TypedFormGroup } from '@feedless/core';
+import { addIcons } from 'ionicons';
+import { addOutline, trashOutline } from 'ionicons/icons';
+
+import {
+  IonAccordion,
+  IonButton,
+  IonCheckbox,
+  IonChip,
+  IonInput,
+  IonItem,
+  IonLabel,
+  IonNote,
+  IonSelect,
+  IonSelectOption,
+  IonText,
+  IonTextarea,
+} from '@ionic/angular/standalone';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '@feedless/ui';
+
+export type FilterOperator = GqlStringFilterOperator;
+export type FilterField = keyof GqlCompositeFieldFilterParamsInput;
+export type FilterType = keyof GqlCompositeFilterParamsInput;
+
+interface GeneralFilterData {
+  type: FilterType;
+  field: FilterField;
+  operator: FilterOperator;
+  value: string;
+}
+
+type GeneralFilterParams = ArrayElement<
+  ArrayElement<
+    RepositoryWithFrequency['plugins']
+  >['params']['org_feedless_filter']
+>;
+
+@Component({
+  selector: 'app-filter-feed-accordion',
+  templateUrl: './filter-items-accordion.component.html',
+  styleUrls: ['./filter-items-accordion.component.scss'],
+  imports: [
+    IonAccordion,
+    IonItem,
+    IonLabel,
+    IonChip,
+    IonNote,
+    IonCheckbox,
+    FormsModule,
+    ReactiveFormsModule,
+    IonText,
+    IonSelect,
+    IonSelectOption,
+    IonInput,
+    IonButton,
+    IconComponent,
+    IonTextarea,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: true,
+})
+export class FilterItemsAccordionComponent implements OnInit {
+  protected formFg = new FormGroup({
+    applyFiltersLast: new FormControl<boolean>(false),
+    filterExpression: new FormControl<string>(''),
+  });
+  protected filters: FormGroup<TypedFormGroup<GeneralFilterData>>[] = [];
+
+  readonly filterPlugin =
+    input.required<
+      ArrayElement<RepositoryFull['plugins']>['params']['org_feedless_filter']
+    >();
+
+  readonly labelPrefix = input.required<string>();
+
+  readonly advanced = input<boolean>();
+
+  readonly hideIfEmpty = input<boolean>(false);
+
+  readonly disabled = input<boolean>();
+
+  readonly filterChange = output<GqlItemFilterParamsInput[]>();
+
+  filterChanges = new ReplaySubject<void>();
+
+  protected readonly dateFormat = dateFormat;
+  protected readonly GqlStringFilterOperator = GqlStringFilterOperator;
+  protected FilterTypeInclude: FilterType = 'include';
+  protected FilterTypeExclude: FilterType = 'exclude';
+  protected FilterFieldLink: FilterField = 'link';
+  protected FilterFieldTitle: FilterField = 'title';
+  protected FilterFieldContent: FilterField = 'content';
+  private readonly platformId = inject(PLATFORM_ID);
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({ trashOutline, addOutline });
+    }
+  }
+
+  addGeneralFilter(params: GeneralFilterParams = null, isNew = true) {
+    if (isNew && this.filters.some((filter) => filter.invalid)) {
+      return;
+    }
+
+    const filter = new FormGroup({
+      type: new FormControl<FilterType>('exclude', [Validators.required]),
+      field: new FormControl<FilterField>('title', [Validators.required]),
+      operator: new FormControl<FilterOperator>(
+        GqlStringFilterOperator.Contains,
+        [Validators.required],
+      ),
+      value: new FormControl<string>('', [
+        Validators.required,
+        Validators.minLength(1),
+      ]),
+    });
+
+    if (params?.composite) {
+      const data = params.composite;
+      const type = Object.keys(data).find(
+        // @ts-expect-error - dynamic composite key access
+        (field) => field != '__typename' && !!data[field],
+      );
+      // @ts-expect-error - dynamic composite key access
+      const field = Object.keys(data[type]).find(
+        // @ts-expect-error - dynamic composite key access
+        (field) => field != '__typename' && !!data[type][field],
+      );
+      filter.patchValue({
+        type: type as never,
+        field: field as never,
+        // @ts-expect-error - dynamic composite key access
+        value: data[type][field].value,
+        // @ts-expect-error - dynamic composite key access
+        operator: data[type][field].operator,
+      });
+    }
+
+    if (params?.expression) {
+      this.formFg.controls.filterExpression.patchValue(params.expression);
+    }
+
+    if (isNew || params?.composite) {
+      this.filters.push(filter);
+      filter.statusChanges.subscribe((status) => {
+        if (status === 'VALID') {
+          this.filterChanges.next();
+        }
+      });
+    }
+  }
+
+  removeFilter(index: number) {
+    this.filters = without(this.filters, this.filters[index]);
+    this.filterChanges.next();
+  }
+
+  async ngOnInit(): Promise<void> {
+    if (this.filterPlugin()) {
+      this.filterPlugin().forEach((f) => this.addGeneralFilter(f, false));
+
+      if (!this.hasCompositeFilters()) {
+        this.addGeneralFilter(null, true);
+      }
+    } else {
+      this.addGeneralFilter(null, true);
+    }
+
+    merge(
+      this.formFg.controls.filterExpression.valueChanges,
+      this.filterChanges,
+    )
+      .pipe(debounce(() => interval(100)))
+      .subscribe(async () => {
+        this.emitParams();
+      });
+
+    this.emitParams();
+  }
+
+  private getItemFilterParams(): GqlItemFilterParamsInput[] {
+    const itemFilters = this.filters
+      .filter((filterFg) => filterFg.valid)
+      .map((filterFg) => filterFg.value)
+      .map<GqlItemFilterParamsInput>((filter) => ({
+        composite: {
+          [filter.type]: {
+            [filter.field]: {
+              value: filter.value,
+              operator: filter.operator,
+            },
+          },
+        },
+      }));
+
+    if (this.hasFilterExpression()) {
+      itemFilters.push({
+        expression: this.formFg.value.filterExpression,
+      });
+      console.log(`expression: ${this.formFg.value.filterExpression}`);
+    }
+    return itemFilters;
+  }
+
+  hasFilters() {
+    return this.hasCompositeFilters() || this.hasFilterExpression();
+  }
+
+  protected hasCompositeFilters() {
+    return this.filters.filter((it) => it.valid).length > 0;
+  }
+
+  protected hasFilterExpression() {
+    return this.formFg.value.filterExpression.trim().length > 0;
+  }
+
+  applyFiltersLast() {
+    return this.formFg.value.applyFiltersLast;
+  }
+
+  countValidFilters() {
+    return this.filters.filter((it) => it.valid).length;
+  }
+
+  private emitParams() {
+    this.filterChange.emit(this.getItemFilterParams());
+  }
+}

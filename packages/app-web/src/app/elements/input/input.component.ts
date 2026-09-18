@@ -1,4 +1,4 @@
-import { Component, forwardRef, input, OnInit } from '@angular/core';
+import { Component, forwardRef, input, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule, NG_VALUE_ACCESSOR, ReactiveFormsModule } from '@angular/forms';
 import { ControlValueAccessorDirective } from '../../directives/control-value-accessor/control-value-accessor.directive';
 import { IonInput } from '@ionic/angular/standalone';
@@ -15,6 +15,7 @@ import { IonInput } from '@ionic/angular/standalone';
     },
   ],
   imports: [IonInput, FormsModule, ReactiveFormsModule],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class InputComponent<T> extends ControlValueAccessorDirective<T> implements OnInit {

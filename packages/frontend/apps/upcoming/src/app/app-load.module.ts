@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { AppConfigService, ServerConfigService } from '@feedless/components';
+ 
+import { AppConfigService, ServerConfigService } from '@feedless/data-access-auth';
 
 @NgModule({
   declarations: [],
@@ -27,7 +28,7 @@ import { AppConfigService, ServerConfigService } from '@feedless/components';
       )(inject(ServerConfigService), inject(AppConfigService));
       return initializerFn();
     }),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
 })
 export class AppLoadModule {}

@@ -7,7 +7,7 @@ plugins {
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
 // https://github.com/node-gradle/gradle-node-plugin/blob/master/src/test/resources/fixtures/kotlin/build.gradle.kts
 node {
-  val nvmrcFile = file(".nvmrc")
+  val nvmrcFile = rootProject.file(".nvmrc")
   val nodeVersion = if (nvmrcFile.exists()) {
     nvmrcFile.readText().trim()
   } else {

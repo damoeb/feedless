@@ -7,7 +7,7 @@
 
     <div class="title">
       <div class="ion-padding-start" routerLink="/" style="cursor: pointer">
-        <span [innerHtml]="productConfig?.titleHtml"></span>
+        <span [innerHtml]="$safeNavigationMigration(productConfig?.titleHtml)"></span>
       </div>
     </div>
 

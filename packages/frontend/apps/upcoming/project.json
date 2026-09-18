@@ -4,7 +4,10 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/upcoming/src",
-  "tags": [],
+  "tags": [
+    "scope:upcoming",
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
@@ -52,7 +55,10 @@
           "dayjs/plugin/weekday",
           "dayjs/plugin/relativeTime",
           "leaflet"
-        ]
+        ],
+        "security": {
+          "allowedHosts": ["lokale.events", "www.lokale.events"]
+        }
       },
       "configurations": {
         "production": {
@@ -74,7 +80,10 @@
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "security": {
+            "allowedHosts": ["lokale.events", "www.lokale.events", "localhost"]
+          }
         }
       },
       "defaultConfiguration": "production"
@@ -97,19 +106,8 @@
     },
     "test": {
       "executor": "@angular/build:unit-test",
-      "dependsOn": [
-        {
-          "projects": [
-            "graphql-api"
-          ],
-          "target": "codegen"
-        }
-      ],
       "options": {
-        "runnerConfig": true,
-        "setupFiles": [
-          "test/vitest-setup.ts"
-        ]
+        "buildTarget": "upcoming:build:development"
       }
     },
     "serve-static": {
@@ -124,7 +122,7 @@
         }
       ],
       "options": {
-        "buildTarget": "upcoming:build",
+        "buildTarget": "upcoming:build:development",
         "port": 4200,
         "staticFilePath": "dist/apps/upcoming/browser",
         "spa": true

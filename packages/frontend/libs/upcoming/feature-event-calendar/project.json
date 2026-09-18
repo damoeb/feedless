@@ -1,0 +1,19 @@
+{
+  "name": "upcoming-feature-event-calendar",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/upcoming/feature-event-calendar/src",
+  "prefix": "app",
+  "projectType": "library",
+  "tags": [
+    "scope:upcoming",
+    "type:feature"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}

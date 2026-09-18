@@ -1,0 +1,175 @@
+@if (date && perimeter) {
+  <app-upcoming-header
+    #header
+    [date]="date"
+    [location]="namedLatLon"
+    [perimeter]="perimeter"
+  ></app-upcoming-header>
+}
+<ion-content>
+  @if (isBrowser && false) {
+    <app-page-sidebar style="position: absolute; left: 0; height: 100%">
+      <ion-list lines="none">
+        <ion-list-header>
+          <ion-label>Email Abos</ion-label>
+        </ion-list-header>
+      </ion-list>
+    </app-page-sidebar>
+  }
+  <div class="events">
+    @if (namedLatLon) {
+      <!--      <ion-toolbar style="&#45;&#45;background: transparent">-->
+        <!--        <ion-buttons slot="start">-->
+        <!--          <ion-button-->
+        <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+        <!--                    formatDate(date?.subtract(1, 'day'), 'DD.MM')"-->
+        <!--            (click)="changeDate(-1)"-->
+        <!--          >-->
+        <!--            <app-icon name="arrow-back-outline" slot="start"></app-icon>-->
+        <!--            vorheriger Tag-->
+        <!--          </ion-button>-->
+        <!--        </ion-buttons>-->
+        <!--        <ion-buttons slot="end">-->
+        <!--          <ion-button-->
+        <!--            [title]="'Veranstaltungen nahe ' + location?.displayName + ' am ' +-->
+        <!--                    formatDate(date?.add(1, 'day'), 'DD.MM')"-->
+        <!--            (click)="changeDate(+1)"-->
+        <!--          >-->
+        <!--            <app-icon name="arrow-forward-outline" slot="end"></app-icon>-->
+        <!--            nächster Tag-->
+        <!--          </ion-button>-->
+        <!--        </ion-buttons>-->
+        <!--      </ion-toolbar>-->
+
+      <main id="main-content" class="events-main">
+        <div class="ion-margin-bottom">
+          @if (date) {
+            <h1>Veranstaltungen in {{ namedLatLon.place }}</h1>
+
+            <app-inline-calendar
+              [date]="date"
+              [dateLinkFactory]="getDateLinkFactory()"
+              [minDate]="minDate"
+              [maxDate]="maxDate"
+              [paddingLeft]="1"
+              (changeDate)="changeDate($event)"
+              [paddingRight]="5"
+            >
+            </app-inline-calendar>
+
+            <p
+              class="event-description"
+              tabindex="0"
+              role="button"
+              [ngClass]="{
+              'event-description--collapsed': collapsedDescription
+              }"
+              (click)="collapsedDescription = !collapsedDescription"
+              (keydown.enter)="collapsedDescription = !collapsedDescription"
+              (keydown.space)="collapsedDescription = !collapsedDescription; $event.preventDefault()"
+            >
+              Du suchst nach Events in {{ namedLatLon.displayName }}? Hier findest du eine bunte Mischung aus
+              lokalen Veranstaltungen – oft klein, charmant und echte Geheimtipps. Ideal zum Stöbern und
+              Entdecken von Events für Familien mit Kindern!
+            </p>
+
+            <p class="event-disclaimer">
+              Alle Angaben ohne Gewähr – bitte beim Anbieter prüfen.
+            </p>
+
+            <div class="calendar-days">
+              @if (loadingDay) {
+                <ion-spinner name="dots"></ion-spinner>
+              }
+              @if (!loadingDay) {
+                @for (day of placesByDistancePerDay; track day) {
+                  <div class="calendar-day">
+                    <div>
+                      <header>
+                        <h2>
+                          <time [attr.datetime]="day.date.toDate().toISOString()">
+                            {{ getWeekday(day.date) }}, {{ formatDate(day.date, 'DD.MM.YYYY') }}
+                          </time>
+                          @if (getRelativeDateLabel(day.date)) {
+                            <div class="ion-margin-top" style="opacity: 0.7">
+                              <span class="badge">{{ getRelativeDateLabel(day.date) }} </span>
+                            </div>
+                          }
+                        </h2>
+                      </header>
+
+                      <div class="event-list" [ngClass]="{'past-events': isPast(day.date)}">
+                        <div>
+                          @if (day.eventGroups.length === 0) {
+                            <div class="localized-event localized-event--gray">
+                              <ion-text color="medium"> Keine Veranstaltungen gefunden</ion-text>
+                            </div>
+                          }
+                          @for (placesGroup of day.eventGroups; track placesGroup) {
+                            <div>
+                              @for (place of placesGroup.places; track place) {
+                                <h2>
+                                  <a
+                                    [routerLink]="getPlaceLink($safeNavigationMigration(place?.place)).path"
+                                    [queryParams]="getPlaceLink($safeNavigationMigration(place?.place)).queryParams"
+                                    [title]="'Wechsle nach ' + $safeNavigationMigration(place?.place?.place)"
+                                  >{{ place?.place?.place }}</a
+                                  >
+                                  @if (placesGroup?.distance && placesGroup.distance > 0) {
+                                    <ion-chip class="distance"> ~ {{ placesGroup.distance }} Km</ion-chip>
+                                  }
+                                </h2>
+                                <div>
+                                  @for (event of place.events; track event) {
+                                    <!--                                    <a-->
+                                      <!--                                      [routerLink]="createEventUrl(event)"-->
+                                      <!--                                      class="localized-event localized-event&#45;&#45;clickable"-->
+                                      <!--                                    >-->
+                                    @if (eventDetailsEnabled) {
+                                      <article class="localized-event">
+                                        <h3>
+                                          <a [routerLink]="getEventUrl(event, place.place)">
+                                            {{ cleanTitle(event.title) }}
+                                          </a>
+                                        </h3>
+                                        @if (event.url) {
+                                          <a
+                                            class="localized-event__source"
+                                            [href]="event.url"
+                                            rel="nofollow noopener"
+                                            [attr.title]="'Zur Quelle: ' + cleanTitle(event.title)"
+                                          >zur Quelle</a>
+                                        }
+                                      </article>
+                                    } @else {
+                                      <a
+                                        [href]="event.url"
+                                        class="localized-event localized-event--clickable"
+                                      >
+                                        <article>
+                                          <header>
+                                            <h3> {{ cleanTitle(event.title) }} </h3>
+                                          </header>
+                                        </article>
+                                      </a>
+                                    }
+                                  }
+                                </div>
+                              }
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+          }
+        </div>
+      </main>
+    }
+  </div>
+  <app-search-abo-button [location]="namedLatLon"></app-search-abo-button>
+  <app-upcoming-footer [location]="namedLatLon" [perimeter]="perimeter"></app-upcoming-footer>
+</ion-content>

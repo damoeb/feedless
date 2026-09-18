@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { relativeTimeOrElse } from '../agents/agents.component';
 import { GqlVertical } from '../../../generated/graphql';
 import { AppConfigService, VerticalSpecWithRoutes } from '../../services/app-config.service';
@@ -44,6 +51,7 @@ import { RemoveIfProdDirective } from '../../directives/remove-if-prod/remove-if
     RouterLinkActive,
     RemoveIfProdDirective,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FeedlessHeaderComponent implements OnInit, OnDestroy {

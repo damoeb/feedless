@@ -27,7 +27,7 @@ Six rules, each one a mistake this repo actively invites. Everything else is in 
 | `yarn codegen` (in `app-web`, `browser-automation-app`) | Regenerate the GraphQL TS client after a schema change. |
 | `./gradlew :packages:cli:test` | Test the `feedctl` CLI. |
 
-Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 via `./gradlew`, Go 1.27 (`packages/cli`).
+Prerequisites: JDK 21, Node 24 (repo-root `.nvmrc`, used by every JS module; Angular 22 needs ≥ 24.15), Docker, Gradle 8.14.5 via `./gradlew`, Go 1.27 (`packages/cli`).
 
 ## Modules
 
@@ -45,8 +45,8 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 | `browser-automation-app` | NestJS headless-Chromium worker (the prerender agent). Dials out to the core over a GraphQL subscription; needs no public IP. Env vars in its `README.md`. | Gradle → yarn |
 | `browser-automation-gateway` | The core side of that connection: `BrowserAutomationService` (agent registration, job dispatch, the `BrowserAutomationGateway` implementation) with `BrowserAutomationRef` and `BrowserAutomationResponse`. Needs reactor and the generated GraphQL types, which is why it is not in `domain`. Never depends on `server-core`. | Gradle |
 | `telegram-gateway` | The Telegram vertical: `TelegramBotService` (long-polling bot, chat linking, push), `TelegramConfig`/`TelegramProperties`, the `Notifications` port adapter and the `MessageService` pub/sub it fans out through. Depends on `domain` and `jpa-data` only. Never depends on `server-core`. | Gradle |
-| `app-web` | Angular 20 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
-| `frontend` | Nx 22 workspace, Angular 21. Apps `upcoming`, `feed-reader`, `auction-alert`; libs `@feedless/{components,core,geo,graphql-api,guards,testing}`. **npm.** | Gradle → npm |
+| `app-web` | Angular 22 + Ionic 8, one build per vertical. The shipped web UI. **yarn.** | Gradle → yarn |
+| `frontend` | Nx 23 workspace, Angular 22. Apps `upcoming`, `feed-reader`, `auction-alert`; libs grouped by scope under `libs/shared/` and `libs/upcoming/`, with tag-enforced module boundaries (see [`docs/rules/angular-nx.md`](docs/rules/angular-nx.md)). **npm.** | Gradle → npm |
 | `community` | Comment scoring: `ScoreService`, `CommentGraphService`, the tokenizer/stemmer/part-of-speech/language services, and the scorers under `text/{simple,complex,hyphenation}`. OpenNLP, LanguageTool, Lucene and commons-math live here and nowhere else. Gated on `${AppProfiles.community}`. | Gradle |
 | `document-classifier` | fastText classifier wrapper. Models/training data in `document-classifier-models`. | Gradle |
 | `document-classifier-models` | Python: training data, `categories.yaml`, `build.sh`. | `build.sh` |
@@ -81,7 +81,7 @@ Prerequisites: JDK 21, Node 24 (`.nvmrc` per JS module), Docker, Gradle 8.14.5 v
 
 `CONTRIBUTING.md` and `docs/development.md` are placeholders — do not rely on them.
 
-**Stack:** Kotlin 2.3 / JDK 21 / Spring Boot 4.1 / Netflix DGS 12 (Spring for GraphQL) / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 20–21, Ionic 8, Nx 22, NestJS, Node 24 · Go 1.27 · Gradle 8.14.5 · Docker
+**Stack:** Kotlin 2.3 / JDK 21 / Spring Boot 4.1 / Netflix DGS 12 (Spring for GraphQL) / JPA + Flyway + PostGIS / Testcontainers / JUnit 5 · Angular 22, Ionic 8, Nx 23, NestJS 11, Node 24 · Go 1.27 · Gradle 8.14.5 · Docker
 
 ## Plot Config
 

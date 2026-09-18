@@ -3,7 +3,7 @@
     <ion-toolbar color="danger" style="padding-right: 5px; padding-left: 5px">
       <ion-label>
         This account is scheduled to be deleted in
-        {{ fromNow(session.user?.purgeScheduledFor) }}
+        {{ fromNow($safeNavigationMigration(session.user?.purgeScheduledFor)) }}
       </ion-label>
       <ion-button (click)="cancelAccountDeletion()" color="dark" slot="end">
         Cancel Deletion
@@ -17,7 +17,7 @@
 
     <div class="title">
       <div routerLink="/" style="cursor: pointer">
-        <span [innerHtml]="productConfig?.titleHtml"></span>
+        <span [innerHtml]="$safeNavigationMigration(productConfig?.titleHtml)"></span>
       </div>
 
       <ion-buttons class="ion-margin-horizontal">

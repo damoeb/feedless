@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { IonContent } from '@ionic/angular/standalone';
 
@@ -7,6 +7,7 @@ import { IonContent } from '@ionic/angular/standalone';
   templateUrl: './privacy.page.html',
   styleUrls: ['./privacy.page.scss'],
   imports: [IonContent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class PrivacyPage {

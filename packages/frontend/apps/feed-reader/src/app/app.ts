@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ChangeDetectionStrategy } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { IonApp } from '@ionic/angular/standalone';
 
@@ -6,6 +6,7 @@ import { IonApp } from '@ionic/angular/standalone';
   imports: [RouterModule, IonApp],
   selector: 'app-root',
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.scss',
 })
 export class App {

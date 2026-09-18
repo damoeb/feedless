@@ -125,8 +125,11 @@ export class GraphqlClient {
               connected: (options) => {
                 this.log.log('Connected');
               },
-              error: (err: ErrorEvent) => {
-                this.log.error('graphql ws connection failed', err.error);
+              error: (err) => {
+                this.log.error(
+                  'graphql ws connection failed',
+                  (err as ErrorEvent).error,
+                );
                 process.exit(1);
               },
             },

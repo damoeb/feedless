@@ -16,7 +16,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { removeTypenameFromVariables } from '@apollo/client/link/remove-typename';
 import { onError } from '@apollo/client/link/error';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 // export const appConfig: ApplicationConfig = {
@@ -100,7 +100,7 @@ export const appConfig: ApplicationConfig = {
         });
       },
     },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     provideIonicAngular(),
     provideAnimations(),
   ],

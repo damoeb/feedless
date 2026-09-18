@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -25,6 +25,7 @@ import { SearchbarComponent } from '../../elements/searchbar/searchbar.component
   templateUrl: './search-address-modal.component.html',
   styleUrls: ['./search-address-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
     IonHeader,
     IonToolbar,

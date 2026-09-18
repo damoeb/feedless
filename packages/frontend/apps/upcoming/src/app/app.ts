@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import {
   ActivatedRoute,
   Router,
@@ -6,13 +6,14 @@ import {
   RouterOutlet,
 } from '@angular/router';
 import { IonApp } from '@ionic/angular/standalone';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import { AuthService, SessionService } from '@feedless/components';
+ 
+import { AuthService, SessionService } from '@feedless/data-access-auth';
 
 @Component({
   imports: [RouterModule, RouterOutlet, IonApp],
   selector: 'app-root',
   templateUrl: './app.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './app.scss',
 })
 export class App implements OnInit {

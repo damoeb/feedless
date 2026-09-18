@@ -25,7 +25,7 @@ import {
   ToastController,
 } from '@ionic/angular/standalone';
 
-import { PageService, PageTags } from '@feedless/components';
+import { PageService, PageTags } from '@feedless/data-access';
 
 import { AutocompleteSelectComponent } from '../../app/components/autocomplete-select/autocomplete-select.component';
 import dayjs from 'dayjs';

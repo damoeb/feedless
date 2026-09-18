@@ -1,0 +1,13 @@
+<app-menu
+  (valueChanged)="setValue($event.key)"
+  [color]="color()"
+  [disabled]="disabled()"
+  [error]="$safeNavigationMigration(control?.invalid)"
+  [hideFilter]="hideFilter()"
+  [items]="items()"
+  [labelFn]="'label'"
+  [placeholder]="placeholder()"
+  [value]="selectedItem()"
+>
+  {{ label() }}
+</app-menu>

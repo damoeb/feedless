@@ -1,0 +1,19 @@
+{
+  "name": "geo",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/shared/geo/src",
+  "prefix": "lib",
+  "projectType": "library",
+  "tags": [
+    "scope:shared",
+    "type:data-access"
+  ],
+  "targets": {
+    "test": {
+      "executor": "@angular/build:unit-test"
+    },
+    "lint": {
+      "executor": "@nx/eslint:lint"
+    }
+  }
+}
