@@ -23,6 +23,7 @@ import org.migor.feedless.anyList
 import org.migor.feedless.argThat
 import org.migor.feedless.capability.RequestContext
 import org.migor.feedless.document.Document
+import org.migor.feedless.document.ReleaseStatus
 import org.migor.feedless.document.DocumentId
 import org.migor.feedless.document.DocumentRepository
 import org.migor.feedless.document.DocumentUseCase
@@ -629,7 +630,15 @@ class SourceHarvesterTest {
   @Test
   fun `updates for existing documents will be processed, if repository has no plugins`() =
     runTest(context = RequestContext(groupId = GroupId(), userId = Mother.randomUserId())) {
-      val existing = Mockito.mock(Document::class.java)
+      val existing = Document(
+        url = "https://example.org/a",
+        title = "old.title",
+        text = "old.text",
+        contentHash = "old.hash",
+        repositoryId = RepositoryId(),
+        status = ReleaseStatus.released,
+        createdAt = LocalDateTime.now().minusDays(3),
+      )
       Mockito.`when`(
         documentUseCase.findFirstByContentHashOrUrlAndRepositoryId(
           any(String::class.java),
@@ -653,7 +662,7 @@ class SourceHarvesterTest {
             fragments = emptyList(),
             items = listOf(
               newJsonItem(
-                url = "",
+                url = existing.url,
                 title = "updated.title",
                 text = "updated.text",
                 tags = listOf("up", "date", "ed"),
@@ -666,12 +675,15 @@ class SourceHarvesterTest {
 
       repositoryHarvester.harvestScheduled(source)
 
-//    TODO        verify(existing).title = "updated.title"
-//            verify(existing).text = "updated.text"
-//            verify(existing).startingAt = updatedStartingAt
-//            verify(documentService).saveAll(argThat<List<Document>> {
-//                it.count() == 1 && it.first() == existing
-//            })
+      // a fresh id would insert a duplicate row on every harvest
+      Mockito.verify(documentRepository).saveAll(argThat {
+        val saved = it.single()
+        saved.id == existing.id &&
+          saved.createdAt == existing.createdAt &&
+          saved.title == "updated.title" &&
+          saved.text == "updated.text" &&
+          saved.startingAt == updatedStartingAt
+      })
     }
 
   @Test
