@@ -11,6 +11,7 @@ import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.*
 
+private const val MAX_RANGE_GAP = 12
 
 @Service
 class DateTimeExtractor {
@@ -123,15 +124,33 @@ class DateTimeExtractor {
   }
 
   suspend fun extractCandidates(text: String, locale: Locale): List<DateTimeCandidate> {
-    return findCandidates(text, locale)
+    val candidates = findCandidates(text, locale)
+    val times = standaloneTimes(text, candidates)
+    return candidates
+      .map { candidate -> candidate.copy(endsAt = endTimeOf(candidate, times)) }
       .groupBy { it.dateTime }
       .values
-      .map { it.first().copy(occurrences = it.size) }
+      .map { same -> (same.firstOrNull { it.endsAt != null } ?: same.first()).copy(occurrences = same.size) }
   }
 
   /** Times that are not part of a date, e.g. the end of an event. */
   suspend fun extractTimes(text: String, locale: Locale): List<TimeCandidate> {
-    val dateRanges = findCandidates(text, locale).map { it.range }
+    return standaloneTimes(text, findCandidates(text, locale))
+  }
+
+  // "19:30 bis 21:00 Uhr" or "19:30 Uhr - 21:00": the end follows the start closely
+  private fun endTimeOf(candidate: DateTimeCandidate, times: List<TimeCandidate>): LocalTime? {
+    if (!candidate.hasTime) {
+      return null
+    }
+    return times.firstOrNull { it.range.first > candidate.range.last }
+      ?.takeIf { it.range.first - candidate.range.last <= MAX_RANGE_GAP }
+      ?.time
+      ?.takeIf { it.isAfter(candidate.dateTime.toLocalTime()) }
+  }
+
+  private fun standaloneTimes(text: String, candidates: List<DateTimeCandidate>): List<TimeCandidate> {
+    val dateRanges = candidates.map { it.range }
     return timePattern.findAll(text)
       .filter { match -> dateRanges.none { it.first <= match.range.last && match.range.first <= it.last } }
       .mapNotNull { match ->
@@ -245,7 +264,7 @@ class DateTimeExtractor {
       if (hasTime) {
         LocalDateTime.parse(simpleDateTimeStr, formatter)
       } else {
-        LocalDate.parse(simpleDateTimeStr, formatter).atTime(8, 0)
+        LocalDate.parse(simpleDateTimeStr, formatter).atTime(DATE_ONLY_TIME)
       }
     } catch (e: Exception) {
       null

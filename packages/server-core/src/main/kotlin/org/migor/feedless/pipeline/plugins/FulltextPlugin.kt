@@ -131,10 +131,15 @@ class FulltextPlugin : MapEntityPlugin<FulltextPluginParams>, FragmentTransforme
               .flatMap { text -> dateTimeExtractor.extractCandidates(text, locale) }
               .groupBy { candidate -> candidate.dateTime }
               .values
-              .map { same -> same.first().copy(occurrences = same.sumOf { candidate -> candidate.occurrences }) }
+              .map { same ->
+                val ranged = same.firstOrNull { candidate -> candidate.endsAt != null } ?: same.first()
+                ranged.copy(occurrences = same.sumOf { candidate -> candidate.occurrences })
+              }
+            val endTimes = candidates.mapNotNull { candidate -> candidate.endsAt }.toSet()
             val times = texts
               .flatMap { text -> dateTimeExtractor.extractTimes(text, locale) }
               .distinctBy { time -> time.time }
+              .filter { time -> time.time !in endTimes }
             Pair(candidates, times)
           }
             .onSuccess { (candidates, times) ->

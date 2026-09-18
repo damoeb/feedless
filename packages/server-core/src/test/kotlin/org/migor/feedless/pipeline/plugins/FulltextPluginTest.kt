@@ -210,7 +210,7 @@ class FulltextPluginTest {
   }
 
   @Test
-  fun `given the date is only in the original title, mapEntity still logs it and its standalone end time`() = runTest {
+  fun `given the date is only in the original title, mapEntity rates it with its end time`() = runTest {
     givenArticle(html = "<html lang=\"de\"/>", text = "Referat Mobbing und Ausgrenzung")
     val logCollector = LogCollector()
 
@@ -224,10 +224,25 @@ class FulltextPluginTest {
       logCollector = logCollector
     )
 
-    assertThat(logCollector.logs.map { it.message }.takeLast(2)).containsExactly(
-      "1 datetime candidate ['24. September 2026, 19:30'] vs startingAt 2026-09-24T08:00 -> confidence low",
-      "1 standalone time ['21:00']",
+    assertThat(logCollector.logs.map { it.message }.last()).isEqualTo(
+      "1 datetime candidate ['24. September 2026, 19:30'] vs startingAt 2026-09-24T08:00 " +
+        "-> confidence medium, range 19:30-21:00"
     )
+  }
+
+  @Test
+  fun `given a standalone time apart from any date, mapEntity logs it`() = runTest {
+    givenArticle(html = "<html lang=\"de\"/>", text = "Konzert am 27. September 2024. Türöffnung ab 19:00 Uhr")
+    val logCollector = LogCollector()
+
+    fulltextPlugin.mapEntity(
+      document = document(startingAt = LocalDateTime.of(2024, 9, 27, 8, 0)),
+      repository = mock(Repository::class.java),
+      params = FulltextPluginParams(readability = true, summary = false, inheritParams = false),
+      logCollector = logCollector
+    )
+
+    assertThat(logCollector.logs.map { it.message }.last()).isEqualTo("1 standalone time ['19:00']")
   }
 
   private suspend fun givenArticle(html: String, text: String) {

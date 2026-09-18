@@ -6,6 +6,7 @@ import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
 import org.junit.jupiter.params.provider.MethodSource
 import java.time.LocalDateTime
+import java.time.LocalTime
 import java.util.stream.Stream
 
 internal class DateTimeConfidenceTest {
@@ -33,8 +34,22 @@ internal class DateTimeConfidenceTest {
       .isEqualTo("1 datetime candidate ['27.09.2024 20:15'] vs startingAt 2024-09-27T20:15 -> confidence high")
   }
 
+  @Test
+  fun `a same-day range confirms a startingAt that has only a date`() {
+    assertThat(listOf(sameDayRange, otherDay).rateAgainst(dateOnly)).isEqualTo(DateTimeConfidence.medium)
+  }
+
+  @Test
+  fun `summary names the range of the rated day`() {
+    assertThat(listOf(otherDay, sameDayRange).summarize(dateOnly)).isEqualTo(
+      "2 datetime candidates ['12.09.2024', '27.09.2024 18:00'] vs startingAt 2024-09-27T08:00 " +
+        "-> confidence medium, range 18:00-21:00"
+    )
+  }
+
   companion object {
     private val startingAt = LocalDateTime.of(2024, 9, 27, 20, 15)
+    private val dateOnly = LocalDateTime.of(2024, 9, 27, 8, 0)
 
     private fun candidate(input: String, day: Int, hasTime: Boolean, hour: Int = 8, minute: Int = 0) =
       DateTimeCandidate(
@@ -49,6 +64,7 @@ internal class DateTimeConfidenceTest {
     private val sameDayNoTime = candidate("27.09.2024", 27, false)
     private val sameDayOtherTime = candidate("27.09.2024 18:00", 27, true, 18, 0)
     private val otherDay = candidate("12.09.2024", 12, false)
+    private val sameDayRange = sameDayOtherTime.copy(endsAt = LocalTime.of(21, 0))
 
     @JvmStatic
     fun cases(): Stream<Arguments> = Stream.of(
@@ -57,6 +73,7 @@ internal class DateTimeConfidenceTest {
       Arguments.of("only candidate, same day without time", listOf(sameDayNoTime), DateTimeConfidence.medium),
       Arguments.of("same day without time among others", listOf(sameDayNoTime, otherDay), DateTimeConfidence.low),
       Arguments.of("same day, other time", listOf(sameDayOtherTime), DateTimeConfidence.low),
+      Arguments.of("same-day range starting at another time", listOf(sameDayRange), DateTimeConfidence.mismatch),
       Arguments.of("no candidate on that day", listOf(otherDay), DateTimeConfidence.mismatch),
       Arguments.of("no candidates", emptyList<DateTimeCandidate>(), DateTimeConfidence.none),
     )
