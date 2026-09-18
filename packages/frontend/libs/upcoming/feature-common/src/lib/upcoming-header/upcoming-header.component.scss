@@ -1,0 +1,140 @@
+@use '../../../../ui/src/lib/upcoming-mixins';
+
+ion-header {
+  box-shadow: none;
+}
+
+ion-searchbar {
+  flex: 1;
+  border-radius: 8px;
+  --box-shadow: none;
+  margin: 5px;
+  --border-color: var(--ion-color-primary);
+  box-shadow: 0px 0px 4px 1px var(--ion-color-primary);
+}
+
+.action-buttons {
+  display: flex;
+  position: absolute;
+  right: 0;
+  top: 10px
+}
+
+
+.calendar {
+  //--app-border-color: rgba(var(--app-foreground-rgb), 0.15);
+
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  padding: 0 10px 15px 10px;
+  background: rgba(var(--app-foreground-rgb), 0.05);
+
+  .calendar__body {
+    flex-wrap: wrap;
+    display: flex;
+    flex: 1;
+    column-gap: 2px;
+    row-gap: 2px;
+  }
+}
+
+.day {
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 13%;
+
+  a {
+    color: var(--ion-color-dark);
+  }
+
+  time {
+    align-content: center;
+  }
+
+  &:not(.day--no-header) {
+    min-height: 65px;
+  }
+
+  display: flex;
+  flex-direction: column;
+  padding: 5px;
+  color: rgba(var(--app-foreground-rgb), 0.8);
+  border-radius: 10px;
+  border: 2px solid transparent;
+
+  &:not(.no-background) {
+    background: rgba(var(--app-foreground-rgb), 0.05);
+  }
+
+  &--past {
+    time {
+      color: var(--ion-color-medium);
+    }
+  }
+
+  &--other {
+    opacity: 0.5;
+  }
+
+  &--active {
+    --app-border-color: rgba(var(--ion-color-primary-rgb), 0.8) !important;
+    --app-day-bg: rgba(var(--ion-color-primary-rgb), 0.2);
+  }
+
+  &--today {
+    --app-border-color: rgba(var(--ion-color-medium-rgb), 1);
+    background: repeating-linear-gradient(
+        45deg,
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)),
+        color-mix(in srgb, transparent 95%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 10px,
+        color-mix(in srgb, transparent 80%, var(--ion-color-dark)) 20px
+    ) !important;
+  }
+
+  &--active,
+  &--today {
+    border-color: var(--app-border-color);
+  }
+
+  //&--active {
+  //  background: var(--app-day-bg) !important;
+  //}
+
+  a {
+    flex: 1;
+    display: flex;
+    text-decoration: none;
+
+    & > * {
+      flex: 1;
+    }
+  }
+}
+
+.centric-panel {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  
+  display: flex;
+  flex-direction: column;
+}
+
+.suggestion {
+  margin-left: 50px;
+  //@media screen and (min-width: 401px) and (max-width: 575px) {
+  //  margin-left: 100px;
+  //}
+  //@media screen and (max-width: 400px) {
+  //  margin-left: 80px;
+  //}
+
+  //color: color-mix(in srgb, var(--app-foreground) 70%, var(--app-background));
+}
+
+.suggestions {
+  max-height: 20vh;
+  overflow-y: auto;
+}

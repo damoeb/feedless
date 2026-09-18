@@ -1,0 +1,91 @@
+<!--<ion-header *ngIf="!loading && !canSignUp && showNoSignupBanner">-->
+<!--  <ion-toolbar color="danger">-->
+<!--    <ion-text class="ion-margin-horizontal">-->
+<!--      Sign Up <span *ngIf="!canLogin">and Log In</span> is currently-->
+<!--      deactivated.-->
+<!--      <span *ngIf="canLogin"-->
+<!--        >If you have an account, Log In works as usual.</span-->
+<!--      >-->
+<!--    </ion-text>-->
+<!--  </ion-toolbar>-->
+<!--</ion-header>-->
+<ion-content>
+  <div
+    class="flex__column"
+    style="justify-content: center; align-items: center; margin-top: 200px"
+  >
+    @if (loading) {
+    <ion-spinner name="dots"></ion-spinner>
+    } @if (!loading) {
+    <div style="width: 400px">
+      @if (showUserPasswordLogin) {
+      <form (ngSubmit)="loginWithUserPassword(email.value, password.value)">
+        <h1 class="ion-margin-start">Login</h1>
+        <ion-card-content>
+          <ion-list>
+            <ion-item>
+              <ion-input
+                #email
+                class="cy-email"
+                label="Email"
+                labelPlacement="start"
+              ></ion-input>
+            </ion-item>
+            <ion-item>
+              <ion-input
+                #password
+                class="cy-password"
+                label="Password"
+                labelPlacement="start"
+                type="password"
+              ></ion-input>
+            </ion-item>
+            <ion-item
+              (click)="loginWithUserPassword(email.value, password.value)"
+              [button]="true"
+              class="ion-margin-top cy-login-button"
+              color="primary"
+            >
+              Login
+            </ion-item>
+            @if (errorMessage) {
+            <ion-item>
+              <ion-label color="danger">{{ errorMessage }}</ion-label>
+            </ion-item>
+            }
+          </ion-list>
+        </ion-card-content>
+      </form>
+      } @else {
+      <div class="ion-margin-top">
+        <h1 class="ion-margin-start">Login</h1>
+        @if (showMailTokenForm) {
+        <app-email-login></app-email-login>
+        } @if (showOauth) {
+        <div>
+          @if (showMailTokenForm) {
+          <h3 class="ion-margin ion-text-center">or</h3>
+          }
+          <ion-card class="ion-margin-top">
+            <ion-card-content>
+              <ion-button [href]="loginUrl" rel="nofollow" expand="block">
+                <ion-icon name="logo-github" slot="start"></ion-icon>
+                Sign-In with Github
+              </ion-button>
+            </ion-card-content>
+          </ion-card>
+        </div>
+        }
+      </div>
+      } @if (serverConfig.isSelfHosted()) {
+      <ion-item class="ion-margin" color="dark">
+        <ion-label>
+          <strong>Note</strong>: Use <code>APP_ROOT_EMAIL</code> and
+          <code>APP_ROOT_SECRET_KEY</code> to log in.
+        </ion-label>
+      </ion-item>
+      }
+    </div>
+    }
+  </div>
+</ion-content>

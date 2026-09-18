@@ -1,0 +1,99 @@
+import {
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  PLATFORM_ID,
+  ChangeDetectionStrategy,
+} from '@angular/core';
+import { relativeTimeOrElse } from '../agents/agents.component';
+import { GqlVertical, SessionResponse } from '@feedless/graphql-api';
+import { Authentication, AuthService, ServerConfigService, SessionService } from '@feedless/data-access-auth';
+import { Subscription } from 'rxjs';
+import {
+  IonButton,
+  IonButtons,
+  IonHeader,
+  IonLabel,
+  IonMenuButton,
+  IonToolbar,
+} from '@ionic/angular/standalone';
+
+import { RouterLink, RouterLinkActive } from '@angular/router';
+import { RepositoriesButtonComponent } from '../repositories-button/repositories-button.component';
+import { DarkModeButtonComponent } from '../dark-mode-button/dark-mode-button.component';
+import { ProfileButtonComponent } from '../profile-button/profile-button.component';
+import { addIcons } from 'ionicons';
+import { logoGithub, logoSlack, notificationsOutline } from 'ionicons/icons';
+import { isPlatformBrowser } from '@angular/common';
+import { IconComponent } from '@feedless/ui';
+import { RemoveIfProdDirective } from '@feedless/ui';
+
+@Component({
+  selector: 'app-feedless-header',
+  templateUrl: './feedless-header.component.html',
+  styleUrls: ['./feedless-header.component.scss'],
+  imports: [
+    IonHeader,
+    IonToolbar,
+    IonLabel,
+    IonButton,
+    IonButtons,
+    IonMenuButton,
+    RouterLink,
+    RepositoriesButtonComponent,
+    DarkModeButtonComponent,
+    ProfileButtonComponent,
+    IconComponent,
+    RouterLinkActive,
+    RemoveIfProdDirective,
+  ],
+  changeDetection: ChangeDetectionStrategy.Eager,
+  standalone: true,
+})
+export class FeedlessHeaderComponent implements OnInit, OnDestroy {
+  private readonly authService = inject(AuthService);
+  readonly serverConfig = inject(ServerConfigService);
+  private readonly sessionService = inject(SessionService);
+
+  private subscriptions: Subscription[] = [];
+  protected authorization: Authentication;
+  protected session: SessionResponse;
+  protected readonly GqlProductName = GqlVertical;
+  protected fromNow = relativeTimeOrElse;
+  private readonly platformId = inject(PLATFORM_ID);
+
+  constructor() {
+    if (isPlatformBrowser(this.platformId)) {
+      addIcons({
+        logoSlack,
+        logoGithub,
+        notificationsOutline,
+      });
+    }
+  }
+
+  async ngOnInit() {
+    this.subscriptions.push(
+      this.sessionService.getSession().subscribe((session) => {
+        this.session = session;
+      }),
+      this.authService.authorizationChange().subscribe((authorization) => {
+        this.authorization = authorization;
+      }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.forEach((s) => s.unsubscribe());
+  }
+
+  async cancelAccountDeletion() {
+    await this.sessionService.updateCurrentUser({
+      purgeScheduledFor: {
+        assignNull: true,
+      },
+    });
+    location.reload();
+  }
+}

@@ -29,12 +29,9 @@ import {
   withFetch,
   withInterceptorsFromDi,
 } from '@angular/common/http';
-// eslint-disable-next-line @nx/enforce-module-boundaries
-import {
-  ApolloAbortControllerService,
-  HttpErrorInterceptorService,
-  ServerConfigService,
-} from '@feedless/components';
+ 
+import { ApolloAbortControllerService } from '@feedless/data-access';
+import { HttpErrorInterceptorService, ServerConfigService } from '@feedless/data-access-auth';
 import {
   ApolloClient,
   ApolloLink,

@@ -7,7 +7,7 @@ import { buildSitemapLinks } from './src/sitemap-links.ts';
 // toolchain, so it cannot resolve the @feedless/geo path alias, and the
 // barrel would pull in Angular services it has no injector for.
 // eslint-disable-next-line @nx/enforce-module-boundaries
-import { getCachedLocations } from '../../libs/geo/src/lib/places.ts';
+import { getCachedLocations } from '../../libs/shared/geo/src/lib/places.ts';
 
 // Single source of truth: the same list the app resolves urls against. This was
 // a ~740-line hand-maintained copy, which only stays correct for as long as

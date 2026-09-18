@@ -4,11 +4,16 @@
   "projectType": "application",
   "prefix": "app",
   "sourceRoot": "apps/auction-alert/src",
-  "tags": [],
+  "tags": [
+    "scope:auction-alert",
+    "type:app"
+  ],
   "targets": {
     "build": {
       "executor": "@angular/build:application",
-      "outputs": ["{options.outputPath}"],
+      "outputs": [
+        "{options.outputPath}"
+      ],
       "options": {
         "outputPath": "dist/apps/auction-alert",
         "browser": "apps/auction-alert/src/main.ts",
@@ -20,8 +25,12 @@
             "input": "apps/auction-alert/public"
           }
         ],
-        "styles": ["apps/auction-alert/src/styles.scss"],
-        "polyfills": ["zone.js"],
+        "styles": [
+          "apps/auction-alert/src/styles.scss"
+        ],
+        "polyfills": [
+          "zone.js"
+        ],
         "server": "apps/auction-alert/src/main.server.ts",
         "ssr": {
           "entry": "apps/auction-alert/src/server.ts"
@@ -75,15 +84,14 @@
     "test": {
       "executor": "@angular/build:unit-test",
       "options": {
-        "runnerConfig": true,
-        "setupFiles": ["test/vitest-setup.ts", "test/vitest-ionic-setup.ts"]
+        "buildTarget": "auction-alert:build:development"
       }
     },
     "serve-static": {
       "continuous": true,
       "executor": "@nx/web:file-server",
       "options": {
-        "buildTarget": "auction-alert:build",
+        "buildTarget": "auction-alert:build:development",
         "port": 4200,
         "staticFilePath": "dist/apps/auction-alert/browser",
         "spa": true
