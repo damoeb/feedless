@@ -46,7 +46,10 @@
           "dayjs/plugin/weekday",
           "dayjs/plugin/relativeTime",
           "leaflet"
-        ]
+        ],
+        "security": {
+          "allowedHosts": ["lokale.events", "www.lokale.events"]
+        }
       },
       "configurations": {
         "production": {
@@ -68,7 +71,10 @@
         "development": {
           "optimization": false,
           "extractLicenses": false,
-          "sourceMap": true
+          "sourceMap": true,
+          "security": {
+            "allowedHosts": ["lokale.events", "www.lokale.events", "localhost"]
+          }
         }
       },
       "defaultConfiguration": "production"
