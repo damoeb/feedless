@@ -311,7 +311,7 @@ export class RepositoryService {
     repository: RepositoryFull
   ): Promise<GqlRepositoryCreateInput> {
     const sources: GqlSourceInput[] = [];
-    for (let page = 0; ; ) {
+    for (let page = 0; ;) {
       const sourcesPage = await this.getSourcesFullByRepository(repository.id, {
         page,
         pageSize: 10,

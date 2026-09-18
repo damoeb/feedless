@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AuthService, ConfirmCode } from '../../services/auth.service';
 import { Router } from '@angular/router';
 import { SessionService } from 'src/app/services/session.service';
@@ -36,6 +36,7 @@ type StepMode = 'enterMail' | 'enterConfirmationCode' | 'finalized';
     IonIcon,
     IonSpinner,
   ],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class EmailLoginComponent {

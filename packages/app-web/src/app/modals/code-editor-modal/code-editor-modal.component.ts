@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import {
   IonButton,
   IonButtons,
@@ -12,7 +12,7 @@ import {
 import { CodeEditorComponent, ContentType } from '../../elements/code-editor/code-editor.component';
 import { addIcons } from 'ionicons';
 import { closeOutline } from 'ionicons/icons';
-import { CommonModule } from '@angular/common';
+
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 export interface CodeEditorModalComponentProps {
@@ -28,8 +28,8 @@ export interface CodeEditorModalComponentProps {
   templateUrl: './code-editor-modal.component.html',
   styleUrls: ['./code-editor-modal.component.scss'],
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [
-    CommonModule,
     FormsModule,
     IonHeader,
     ReactiveFormsModule,

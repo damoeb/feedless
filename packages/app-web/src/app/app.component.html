@@ -44,7 +44,8 @@
                 version
                 <a
                   [href]="
-                    'https://github.com/damoeb/feedless/commit/' + serverConfig.getBuild()?.commit
+                    'https://github.com/damoeb/feedless/commit/' +
+                    $safeNavigationMigration(serverConfig.getBuild()?.commit)
                   "
                 >
                   {{ getBuildCommit() }}

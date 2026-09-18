@@ -1,4 +1,12 @@
-import { Component, input, OnChanges, OnInit, output, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  input,
+  OnChanges,
+  OnInit,
+  output,
+  SimpleChanges,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { addIcons } from 'ionicons';
 import { chevronForwardOutline } from 'ionicons/icons';
@@ -9,6 +17,7 @@ import { IonButton, IonIcon, IonInput, IonSpinner } from '@ionic/angular/standal
   templateUrl: './searchbar.component.html',
   styleUrls: ['./searchbar.component.scss'],
   imports: [FormsModule, IonInput, ReactiveFormsModule, IonButton, IonIcon, IonSpinner],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class SearchbarComponent implements OnInit, OnChanges {

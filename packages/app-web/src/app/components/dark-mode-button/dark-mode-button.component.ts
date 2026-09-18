@@ -1,4 +1,11 @@
-import { Component, inject, input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  inject,
+  input,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -10,6 +17,7 @@ import { IonButton, IonIcon } from '@ionic/angular/standalone';
   templateUrl: './dark-mode-button.component.html',
   styleUrls: ['./dark-mode-button.component.scss'],
   imports: [IonButton, IonIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DarkModeButtonComponent implements OnInit, OnDestroy {

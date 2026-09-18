@@ -1,4 +1,4 @@
-import { Component, effect, input } from '@angular/core';
+import { Component, effect, input, ChangeDetectionStrategy } from '@angular/core';
 import { addIcons } from 'ionicons';
 import { checkmarkOutline, closeOutline } from 'ionicons/icons';
 
@@ -20,6 +20,7 @@ type StringFeature = {
   templateUrl: './feature.component.html',
   styleUrls: ['./feature.component.scss'],
   imports: [IonRow, IonIcon, IonCol],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class FeatureComponent {

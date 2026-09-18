@@ -8,6 +8,7 @@ import {
   output,
   viewChild,
   ViewEncapsulation,
+  ChangeDetectionStrategy,
 } from '@angular/core';
 import { LatLng } from '../../types';
 
@@ -18,6 +19,7 @@ export type LatLngBoundingBox = { northEast: LatLng; southWest: LatLng };
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
   encapsulation: ViewEncapsulation.None,
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class MapComponent implements AfterViewInit {

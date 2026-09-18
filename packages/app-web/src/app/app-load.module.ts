@@ -1,6 +1,6 @@
 import { inject, NgModule, provideAppInitializer } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import { provideHttpClient, withInterceptorsFromDi, withXhr } from '@angular/common/http';
 import { ServerConfigService } from './services/server-config.service';
 import { AppConfigService } from './services/app-config.service';
 
@@ -18,7 +18,7 @@ import { AppConfigService } from './services/app-config.service';
       )(inject(ServerConfigService), inject(AppConfigService));
       return initializerFn();
     }),
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
   ],
 })
 export class AppLoadModule {}

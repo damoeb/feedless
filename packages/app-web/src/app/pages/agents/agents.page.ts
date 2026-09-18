@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import {
   IonBreadcrumb,
@@ -15,6 +15,7 @@ import { AgentsComponent } from '../../components/agents/agents.component';
   templateUrl: './agents.page.html',
   styleUrls: ['./agents.page.scss'],
   imports: [IonContent, IonBreadcrumbs, IonBreadcrumb, RouterLink, IonRow, IonCol, AgentsComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class AgentsPage {

@@ -8,7 +8,7 @@
     </ion-buttons>
     <div class="title">
       <div routerLink="/" style="cursor: pointer">
-        <span [innerHtml]="productConfig?.titleHtml"></span>
+        <span [innerHtml]="$safeNavigationMigration(productConfig?.titleHtml)"></span>
       </div>
       <ion-buttons class="ion-margin-horizontal">
         <app-repositories-button link="/feeds" name="Feeds"></app-repositories-button>

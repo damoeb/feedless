@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { AppConfigService } from '../../services/app-config.service';
 import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
 
@@ -7,6 +7,7 @@ import { IonContent, IonRouterOutlet } from '@ionic/angular/standalone';
   templateUrl: './documents.page.html',
   styleUrls: ['./documents.page.scss'],
   imports: [IonContent, IonRouterOutlet],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class DocumentsPage {

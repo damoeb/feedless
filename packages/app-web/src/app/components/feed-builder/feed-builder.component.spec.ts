@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 
 import { AppTestModule, mockPlugins, mockRecords, mockRepository } from '../../app-test.module';
 import { FeedBuilderComponent } from './feed-builder.component';
@@ -18,6 +18,7 @@ import { IonAccordionGroup } from '@ionic/angular/standalone';
     ><ng-content select="[beforeFeedsSlot]"></ng-content
   ></ion-accordion-group>`,
   standalone: true,
+  changeDetection: ChangeDetectionStrategy.Eager,
   imports: [IonAccordionGroup],
 })
 class StubTransformWebsiteToFeedComponent {

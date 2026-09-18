@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { SessionService } from '../../services/session.service';
 import { Subscription } from 'rxjs';
 import { addIcons } from 'ionicons';
@@ -11,6 +11,7 @@ import { RouterLink } from '@angular/router';
   templateUrl: './notifications-button.component.html',
   styleUrls: ['./notifications-button.component.scss'],
   imports: [IonButton, RouterLink, IonIcon],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class NotificationsButtonComponent implements OnInit, OnDestroy {

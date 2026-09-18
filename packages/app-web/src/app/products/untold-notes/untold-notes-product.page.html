@@ -7,7 +7,7 @@
     <div class="flex__row">
       <div class="title">
         <div class="ion-hide-xl-up" routerLink="/" style="cursor: pointer">
-          <span [innerHtml]="productConfig?.titleHtml"></span>
+          <span [innerHtml]="$safeNavigationMigration(productConfig?.titleHtml)"></span>
         </div>
       </div>
     </div>

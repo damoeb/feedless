@@ -50,7 +50,12 @@ import {
 import { assignIn, isUndefined } from 'lodash-es';
 import { TestBed } from '@angular/core/testing';
 import { ServerConfigService } from './services/server-config.service';
-import { HttpClient, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HttpClient,
+  provideHttpClient,
+  withInterceptorsFromDi,
+  withXhr,
+} from '@angular/common/http';
 import { BehaviorSubject, of } from 'rxjs';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppConfigService, VerticalSpecWithRoutes } from './services/app-config.service';
@@ -190,7 +195,7 @@ const defaultAppTestModuleConfig: AppTestOptions = {
   imports: [RouterTestingModule.withRoutes([])],
   providers: [
     { provide: SwUpdate, useClass: SwUpdateMock },
-    provideHttpClient(withInterceptorsFromDi()),
+    provideHttpClient(withXhr(), withInterceptorsFromDi()),
     provideHttpClientTesting(),
   ],
 })

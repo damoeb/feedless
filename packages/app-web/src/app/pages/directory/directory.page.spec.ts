@@ -18,10 +18,9 @@ describe('DirectoryPage', () => {
         AppTestModule.withDefaults({
           configurer: (apolloMockController) =>
             apolloMockController
-              .mockQuery<
-                GqlListPublicRepositoriesQuery,
-                GqlListPublicRepositoriesQueryVariables
-              >(ListPublicRepositories)
+              .mockQuery<GqlListPublicRepositoriesQuery, GqlListPublicRepositoriesQueryVariables>(
+                ListPublicRepositories
+              )
               .and.resolveOnce(async () => {
                 return {
                   data: {

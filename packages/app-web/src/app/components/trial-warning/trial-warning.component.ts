@@ -1,4 +1,11 @@
-import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import {
+  ChangeDetectorRef,
+  Component,
+  inject,
+  OnDestroy,
+  OnInit,
+  ChangeDetectionStrategy,
+} from '@angular/core';
 import { ServerConfigService } from '../../services/server-config.service';
 import { GqlServerSettingsQuery } from '../../../generated/graphql';
 import { LicenseService } from '../../services/license.service';
@@ -14,6 +21,7 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './trial-warning.component.html',
   styleUrls: ['./trial-warning.component.scss'],
   imports: [IonToolbar, RouterLink, RouterLinkActive, IonText, IonButton],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class TrialWarningComponent implements OnInit, OnDestroy {

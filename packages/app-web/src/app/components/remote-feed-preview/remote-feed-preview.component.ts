@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, ChangeDetectionStrategy } from '@angular/core';
 import { Record } from '../../graphql/types';
 
 import { IonItem, IonLabel, IonList } from '@ionic/angular/standalone';
@@ -9,6 +9,7 @@ import { RemoteFeedItemComponent } from '../remote-feed-item/remote-feed-item.co
   templateUrl: './remote-feed-preview.component.html',
   styleUrls: ['./remote-feed-preview.component.scss'],
   imports: [IonList, IonItem, IonLabel, RemoteFeedItemComponent],
+  changeDetection: ChangeDetectionStrategy.Eager,
   standalone: true,
 })
 export class RemoteFeedPreviewComponent {
