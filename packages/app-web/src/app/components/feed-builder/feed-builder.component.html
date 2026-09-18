@@ -50,11 +50,53 @@
     @if (sourceBuilder && sourceBuilder.response) {
       <app-transform-website-to-feed
         #webToFeedTransformer
+        (segmentChange)="handleSegmentChange($event)"
         (selectedFeedChange)="selectedFeed = $event"
         (statusChange)="hasValidFeed = $event === 'valid'"
         [feed]="getFeed()"
         [sourceBuilder]="sourceBuilder"
       >
+        @if (originalSourceRequest) {
+          <ion-segment-button segmentButton value="changes">
+            <div>
+              Changes
+              @if (hasSourceChanges()) {
+                <app-bubble color="red" style="position: absolute; top: 10px"></app-bubble>
+              }
+            </div>
+          </ion-segment-button>
+        }
+        @if (originalSourceRequest && activeSegment === 'changes') {
+          <div class="flex__column source-changes" segmentBody>
+            <ion-toolbar>
+              <ion-note class="ion-margin-horizontal">
+                Original (left) and current request (right, editable)
+              </ion-note>
+              <ion-buttons slot="end">
+                <ion-button
+                  (click)="applySourceRequest(editedSourceRequest)"
+                  [disabled]="editedSourceRequest === undefined"
+                  color="primary"
+                  fill="solid"
+                  size="small"
+                >
+                  Apply
+                </ion-button>
+              </ion-buttons>
+            </ion-toolbar>
+            @if (sourceRequestError) {
+              <ion-note class="ion-margin-horizontal" color="danger">{{
+                sourceRequestError
+              }}</ion-note>
+            }
+            <app-text-diff
+              (afterChange)="editedSourceRequest = $event"
+              [after]="getCurrentSourceRequest()"
+              [before]="originalSourceRequest"
+              [editable]="true"
+            ></app-text-diff>
+          </div>
+        }
         <ion-accordion beforeFeedsSlot toggleIconSlot="start" value="source">
           <ion-item slot="header">
             <ion-label [color]="sourceAccordionHighlighted() ? 'dark' : 'medium'">

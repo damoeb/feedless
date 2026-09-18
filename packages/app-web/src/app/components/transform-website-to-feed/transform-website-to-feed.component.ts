@@ -129,6 +129,8 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
 
   readonly selectedFeedChange = output<NativeOrGenericFeed>();
 
+  readonly segmentChange = output<string>();
+
   readonly genFeedXpathsFg: FormGroup<TypedFormControls<Selectors>> = new FormGroup<
     TypedFormControls<Selectors>
   >(
@@ -490,6 +492,7 @@ export class TransformWebsiteToFeedComponent implements OnInit, OnDestroy {
   handleSegmentChange(segment: string) {
     if (this.activeSegment != segment) {
       this.activeSegment = segment;
+      this.segmentChange.emit(segment);
 
       if (segment === 'feed' && this.shouldRefresh) {
         this.fetchFeedPreview(false);

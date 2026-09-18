@@ -23,6 +23,7 @@ import {
   AlertController,
   IonAccordion,
   IonButton,
+  IonButtons,
   IonIcon,
   IonInput,
   IonItem,
@@ -30,6 +31,7 @@ import {
   IonList,
   IonNote,
   IonProgressBar,
+  IonSegmentButton,
   IonToolbar,
   ModalController,
   ToastController,
@@ -73,6 +75,9 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { SearchAddressModalComponent } from '../../modals/search-address-modal/search-address-modal.component';
 import { TagsModalComponent } from '../../modals/tags-modal/tags-modal.component';
 import { SessionService } from '../../services/session.service';
+import { TextDiffComponent } from '../text-diff/text-diff.component';
+import { BubbleComponent } from '../bubble/bubble.component';
+import { formatSourceRequest, parseSourceRequest } from './source-request';
 
 /**
  * IDEEN
@@ -148,6 +153,10 @@ export type StandaloneUrlParams = {
     RemoveIfProdDirective,
     IonInput,
     ReactiveFormsModule,
+    IonSegmentButton,
+    IonButtons,
+    BubbleComponent,
+    TextDiffComponent,
   ],
   standalone: true,
 })
@@ -199,6 +208,12 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   // protected repositories: Repository[] = [];
   hasValidFeed: boolean;
   protected sourceBuilder: SourceBuilder;
+  protected activeSegment: string;
+  protected originalSourceRequest: string;
+  protected editedSourceRequest: string;
+  sourceRequestError: string;
+  // Replaces source() as the feed selection to restore once an edited request was applied
+  private appliedSource: GqlSourceInput;
 
   constructor() {
     addIcons({
@@ -216,12 +231,10 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
     const source = this.source();
     if (source) {
       console.log('this.source', source);
-      this.tags = source.tags;
-      this.geoLocation = source.latLng;
-      this.titleFc.setValue(source.title);
-      this.sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
-      this.url = this.sourceBuilder.getUrl();
-      await this.scrapeUrl();
+      this.originalSourceRequest = formatSourceRequest(
+        SourceBuilder.fromSource(source, this.scrapeService).build()
+      );
+      await this.loadSource(SourceBuilder.fromSource(source, this.scrapeService), source);
     }
 
     this.subscriptions.push(
@@ -259,6 +272,60 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   //   this.changeRef.detectChanges();
   // }
   //
+  private async loadSource(sourceBuilder: SourceBuilder, source: GqlSourceInput) {
+    this.tags = source.tags ?? [];
+    this.geoLocation = source.latLng;
+    this.titleFc.setValue(source.title);
+    this.sourceBuilder = sourceBuilder;
+    this.url = this.sourceBuilder.getUrl();
+    await this.scrapeUrl();
+  }
+
+  getCurrentSourceRequest(): string {
+    const source = this.sourceBuilder.build();
+    return formatSourceRequest({
+      ...source,
+      title: this.titleFc.value,
+      tags: this.tags,
+      latLng: this.geoLocation
+        ? { lat: this.geoLocation.lat, lng: this.geoLocation.lng }
+        : source.latLng,
+    });
+  }
+
+  hasSourceChanges(): boolean {
+    return (
+      Boolean(this.sourceBuilder) && this.getCurrentSourceRequest() !== this.originalSourceRequest
+    );
+  }
+
+  async applySourceRequest(text: string) {
+    let source: GqlSourceInput;
+    let sourceBuilder: SourceBuilder;
+    try {
+      source = parseSourceRequest(text);
+      sourceBuilder = SourceBuilder.fromSource(source, this.scrapeService);
+    } catch (e) {
+      this.sourceRequestError = (e as Error).message;
+      this.changeRef.detectChanges();
+      return;
+    }
+    this.sourceRequestError = undefined;
+    this.editedSourceRequest = undefined;
+    this.appliedSource = source;
+    // Recreates the transform component so it restores the feed selection of the applied source
+    this.sourceBuilder = null;
+    this.changeRef.detectChanges();
+    await this.loadSource(sourceBuilder, source);
+  }
+
+  handleSegmentChange(segment: string) {
+    this.activeSegment = segment;
+    this.editedSourceRequest = undefined;
+    this.sourceRequestError = undefined;
+    this.changeRef.detectChanges();
+  }
+
   async scrapeUrl() {
     if (!this.url) {
       return;
@@ -656,13 +723,14 @@ export class FeedBuilderComponent implements OnInit, OnDestroy {
   uploadFile($event: Event) {}
 
   getFeed(): Nullable<NativeOrGenericFeed> {
-    if (this.source()) {
+    const source = this.appliedSource ?? this.source();
+    if (source) {
       const feedPlugin = first(
-        this.source().flow.sequence.filter(
+        source.flow.sequence.filter(
           (a) => a.execute?.pluginId === GqlFeedlessPlugins.OrgFeedlessFeed
         )
       )?.execute?.params?.org_feedless_feed;
-      const fetchPlugin = first(this.source().flow.sequence.filter((a) => a.fetch))?.fetch;
+      const fetchPlugin = first(source.flow.sequence.filter((a) => a.fetch))?.fetch;
       if (feedPlugin) {
         if (feedPlugin.generic) {
           return {

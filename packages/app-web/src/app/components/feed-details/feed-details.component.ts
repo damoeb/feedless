@@ -443,6 +443,12 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
     return pairs;
   }
 
+  getDiffText(document: Record): string {
+    return this.compareByField === GqlRecordField.Text
+      ? document.text
+      : formatHtml(document.html ?? '');
+  }
+
   async forceSync() {
     await this.repositoryService.forceSourceSync(this.repository().id);
   }
@@ -527,4 +533,24 @@ export class FeedDetailsComponent implements OnInit, OnDestroy {
   }
 
   async openDataModal() {}
+}
+
+function formatHtml(html: string): string {
+  const tab = '\t';
+  let result = '';
+  let indent = '';
+
+  html.split(/>\s*</).forEach((element) => {
+    if (element.match(/^\/\w/)) {
+      indent = indent.substring(tab.length);
+    }
+
+    result += indent + '<' + element + '>\r\n';
+
+    if (element.match(/^<?\w[^>]*[^\/]$/) && !element.startsWith('input')) {
+      indent += tab;
+    }
+  });
+
+  return result.substring(1, result.length - 3);
 }

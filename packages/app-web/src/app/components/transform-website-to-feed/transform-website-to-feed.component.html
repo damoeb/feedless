@@ -208,6 +208,12 @@
             }
           </div>
         </ion-segment-button>
+        <ng-container ngProjectAs="[segmentButton]">
+          <ng-content select="[segmentButton]"></ng-content>
+        </ng-container>
+        <ng-container ngProjectAs="[segmentBody]">
+          <ng-content select="[segmentBody]"></ng-content>
+        </ng-container>
         @if (selectedFeed && activeSegment === 'feed') {
           <div class="flex__column" segmentBody style="position: relative">
             @if (loadingFeedPreview) {
