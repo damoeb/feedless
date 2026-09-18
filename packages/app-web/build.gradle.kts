@@ -7,7 +7,7 @@ plugins {
 // https://github.com/node-gradle/gradle-node-plugin/tree/master/examples/simple-node
 // https://github.com/node-gradle/gradle-node-plugin/blob/master/src/test/resources/fixtures/kotlin/build.gradle.kts
 node {
-  val nvmrcFile = file(".nvmrc")
+  val nvmrcFile = rootProject.file(".nvmrc")
   val nodeVersion = if (nvmrcFile.exists()) {
     nvmrcFile.readText().trim()
   } else {
@@ -25,7 +25,7 @@ val prepareTask = tasks.register("prepare") {
 val yarnInstallTask = tasks.register<YarnTask>("yarnInstall") {
   args.set(listOf("install", "--frozen-lockfile", "--ignore-scripts"))
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.files("yarn.lock")
   outputs.dir("node_modules")
 }
@@ -34,7 +34,7 @@ val codegenTask = tasks.register<YarnTask>("codegen") {
   args.set(listOf("codegen"))
   dependsOn(yarnInstallTask)
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.files("../graphql-api/src/main/resources/schema/schema.graphqls", "generate-verticals-data.ts")
 
   outputs.files(
@@ -58,7 +58,7 @@ val lintTask = tasks.register<YarnTask>("lint") {
 
   args.set(listOf("lint"))
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.dir("src")
   inputs.files(
     "angular.json",
@@ -77,7 +77,7 @@ val testTask = tasks.register<YarnTask>("test") {
   dependsOn(prepareTask)
   args.set(listOf("test:ci"))
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.dir("src")
   inputs.files(
     "angular.json", ".browserslistrc", "jest.config.js", "yarn.lock", "tsconfig.json", "tsconfig.app.json",
@@ -90,7 +90,7 @@ val buildTask = tasks.register<YarnTask>("build") {
   dependsOn(prepareTask, lintTask, testTask, codegenTask)
   args.set(listOf("build:prod"))
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.dir(project.fileTree("src").exclude("**/*.spec.ts"))
   inputs.files("yarn.lock", "tsconfig.json", "tsconfig.build.json")
   outputs.dir("www")
@@ -118,7 +118,7 @@ tasks.register("bundle", Exec::class) {
 val cleanTask = tasks.register<YarnTask>("clean") {
   args.set(listOf("clean"))
 
-  inputs.file(".nvmrc")
+  inputs.file(rootProject.file(".nvmrc"))
   inputs.files("package.json")
   outputs.upToDateWhen { false }
 }

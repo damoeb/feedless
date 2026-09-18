@@ -57,7 +57,7 @@ jobs:
             packages/*/.gradle/npm
             ~/.cache/yarn
             ~/.npm
-          key: node-toolchain-${{ hashFiles('packages/*/.nvmrc', '**/yarn.lock', 'packages/frontend/package-lock.json') }}
+          key: node-toolchain-${{ hashFiles('.nvmrc', '**/yarn.lock', 'packages/frontend/package-lock.json') }}
           restore-keys: |
             node-toolchain-
 
