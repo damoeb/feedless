@@ -106,6 +106,27 @@ internal class DateTimeExtractorTest {
     assertThat(dateTimeExtractor.extractCandidates("Kein Termin bekannt", Locale.GERMAN)).isEmpty()
   }
 
+  @Test
+  fun `extractCandidates pairs a start with the end time that follows it`() = runTest {
+    val actual = dateTimeExtractor.extractCandidates("Referat 24. September 2026, 19:30 bis 21:00 Uhr", Locale.GERMAN)
+
+    assertThat(actual.map { it.endsAt }).containsExactly(LocalTime.of(21, 0))
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    value = [
+      "Konzert 27.09.2024, 20:15 Uhr. Weitere Infos folgen in Kürze, Einlass ab 19:00", // too far away
+      "Konzert 27.09.2024, 20:15 - 19:00", // before the start
+      "Konzert 27.09.2024 bis 21:00", // start without a time
+    ]
+  )
+  fun `extractCandidates leaves the end open without a matching end time`(text: String) = runTest {
+    val actual = dateTimeExtractor.extractCandidates(text, Locale.GERMAN)
+
+    assertThat(actual.map { it.endsAt }).containsExactly(null)
+  }
+
   @ParameterizedTest
   @CsvSource(
     value = [

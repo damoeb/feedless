@@ -133,7 +133,10 @@ class FulltextPluginTest {
 
     assertThat(actual.title).isEqualTo("after")
     assertThat(actual.html).isEqualTo("<p>body</p>")
-    assertThat(logCollector.logs.map { it.message }).containsExactly("title 'before' -> 'after'")
+    assertThat(logCollector.logs.map { it.message }).containsExactly(
+      "title 'before' -> 'after'",
+      "text '' (0 chars) -> 'body' (4 chars)",
+    )
   }
 
   @Test
@@ -150,6 +153,7 @@ class FulltextPluginTest {
 
     assertThat(logCollector.logs.map { it.message }).containsExactly(
       "title 'before' -> 'after'",
+      "text '' (0 chars) -> 'Konzert am 27. September 2024, 20:15 Uhr' (40 chars)",
       "1 datetime candidate ['27. September 2024, 20:15'] vs startingAt 2024-09-27T20:15 -> confidence high",
     )
   }
@@ -166,7 +170,10 @@ class FulltextPluginTest {
       logCollector = logCollector
     )
 
-    assertThat(logCollector.logs.map { it.message }).containsExactly("title 'before' -> 'after'")
+    assertThat(logCollector.logs.map { it.message }).containsExactly(
+      "title 'before' -> 'after'",
+      "text '' (0 chars) -> 'Konzert am 27.09.2024, 20:15 Uhr' (32 chars)",
+    )
   }
 
   @Test
@@ -186,6 +193,58 @@ class FulltextPluginTest {
       .isEqualTo("1 datetime candidate ['27. September 2024'] vs startingAt 2024-09-27T20:15 -> confidence medium")
   }
 
+  @Test
+  fun `given a long body, mapEntity logs its transformation abbreviated`() = runTest {
+    givenArticle(html = "<html/>", text = "a".repeat(100))
+    val logCollector = LogCollector()
+
+    fulltextPlugin.mapEntity(
+      document = document(startingAt = null).copy(text = "teaser\n  text"),
+      repository = mock(Repository::class.java),
+      params = FulltextPluginParams(readability = true, summary = false, inheritParams = false),
+      logCollector = logCollector
+    )
+
+    assertThat(logCollector.logs.last().message)
+      .isEqualTo("text 'teaser text' (13 chars) -> '${"a".repeat(80)}…' (100 chars)")
+  }
+
+  @Test
+  fun `given the date is only in the original title, mapEntity rates it with its end time`() = runTest {
+    givenArticle(html = "<html lang=\"de\"/>", text = "Referat Mobbing und Ausgrenzung")
+    val logCollector = LogCollector()
+
+    fulltextPlugin.mapEntity(
+      document = document(
+        startingAt = LocalDateTime.of(2026, 9, 24, 8, 0),
+        title = "Referat 24. September 2026, 19:30 bis 21:00 Uhr"
+      ),
+      repository = mock(Repository::class.java),
+      params = FulltextPluginParams(readability = true, summary = false, inheritParams = false),
+      logCollector = logCollector
+    )
+
+    assertThat(logCollector.logs.map { it.message }.last()).isEqualTo(
+      "1 datetime candidate ['24. September 2026, 19:30'] vs startingAt 2026-09-24T08:00 " +
+        "-> confidence medium, range 19:30-21:00"
+    )
+  }
+
+  @Test
+  fun `given a standalone time apart from any date, mapEntity logs it`() = runTest {
+    givenArticle(html = "<html lang=\"de\"/>", text = "Konzert am 27. September 2024. Türöffnung ab 19:00 Uhr")
+    val logCollector = LogCollector()
+
+    fulltextPlugin.mapEntity(
+      document = document(startingAt = LocalDateTime.of(2024, 9, 27, 8, 0)),
+      repository = mock(Repository::class.java),
+      params = FulltextPluginParams(readability = true, summary = false, inheritParams = false),
+      logCollector = logCollector
+    )
+
+    assertThat(logCollector.logs.map { it.message }.last()).isEqualTo("1 standalone time ['19:00']")
+  }
+
   private suspend fun givenArticle(html: String, text: String) {
     val fetch = HttpFetchOutput(
       response = HttpResponse("text/html", "https://example.org/a", 200, html.toByteArray()),
@@ -200,9 +259,9 @@ class FulltextPluginTest {
     `when`(webToArticleTransformer.fromHtml(any2(), any2(), anyBoolean())).thenReturn(article)
   }
 
-  private fun document(startingAt: LocalDateTime?) = Document(
+  private fun document(startingAt: LocalDateTime?, title: String = "before") = Document(
     url = "https://example.org/a",
-    title = "before",
+    title = title,
     text = "",
     contentHash = "",
     repositoryId = RepositoryId(),
