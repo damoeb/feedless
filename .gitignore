@@ -18,3 +18,13 @@ bin
 .worktrees/
 .omc/
 data
+
+# Real cluster config and secrets live only on the server; the repo tracks the
+# *.example.yaml templates beside each of these. See k8s/README.md.
+k8s/feedless/feedless-config.yaml
+k8s/feedless/rss-proxy-config.yaml
+k8s/feedless/untold-config.yaml
+k8s/feedless/upcoming-config.yaml
+k8s/plausible-config.yaml
+k8s/plausible-ingress-config.yaml
+k8s/postgis-config.yaml

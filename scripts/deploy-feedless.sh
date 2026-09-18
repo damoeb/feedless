@@ -1,4 +1,8 @@
 echo "Starting deployment"
+
+# Workload manifests only. Config and secrets live on this host as the git-ignored
+# *-config.yaml files; applying the tracked *.example.yaml templates would overwrite
+# the cluster's real secrets with placeholders. See k8s/README.md.
 #registry_container_id=$(docker run -d -p 5000:5000 registry)
 docker tag damoeb/feedless:app-latest localhost:5000/damoeb/feedless:app-latest
 docker tag damoeb/feedless:app-upcoming-latest localhost:5000/damoeb/feedless:app-upcoming-latest
