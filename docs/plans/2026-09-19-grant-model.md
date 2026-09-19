@@ -6,7 +6,7 @@
 
 - **State:** Draft
 - **Type:** feature
-- **Review:** in-session
+- **Review:** pr
 - **Impl:** own branches
 
 ## Changelog
@@ -156,7 +156,7 @@ The result shows exactly today's data, and other organisers can then be invited.
   - path-scoped inheritance (user: no preference),
   - invite then accept (user: no preference),
   - Type `feature` (Plot normally asks),
-  - `in-session` review, so nothing was pushed and no PR was opened,
+  - review switched from `in-session` to `pr` at the user's request,
   - Postgres grants over OpenFGA/SpiceDB.
 - The user's stated requirements:
   - a group X is designated the event-listing group, and its members' repositories feed it;
